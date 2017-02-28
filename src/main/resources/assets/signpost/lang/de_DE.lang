@@ -1,0 +1,8 @@
+tile.SignpostBase.name=Wegstein
+tile.SignpostPost.name=Wegweiser
+
+item.SignpostTool.name=Wegweiser-Werkzeug
+
+signpost.discovered=Du hast '<Waystone>' entdeckt!
+signpost.notDiscovered=Du hast <Waystone> noch nicht entdeckt
+signpost.errorWorld=FEHLER: Die Welt '<world>' existiert nicht
