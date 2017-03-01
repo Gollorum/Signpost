@@ -38,8 +38,10 @@ public class BasePost extends BlockContainer {
 		if (!Signpost.serverSide) {
 			BaseInfo ws = getWaystoneRootTile(world, x, y, z).ws;
 			if (!player.isSneaking()) {
-//				player.addChatMessage(new ChatComponentText("You have discovered the waystone '"+ws.name+"'"));
 				String out = LanguageRegistry.instance().getStringLocalization("signpost.discovered");
+				if(out.equals("")){
+					out = LanguageRegistry.instance().getStringLocalization("signpost.discovered", "en_US");
+				}
 				out = out.replaceAll("<Waystone>", ws.name);
 				Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText(out));
 				NetworkHandler.netWrap.sendToServer(new SendDiscoveredToServerMessage(ws.name));

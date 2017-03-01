@@ -17,7 +17,23 @@ public class PostHandler {
 
 	public static StonedHashSet allWaystones = new StonedHashSet();
 	public static HashMap<UUID, StringSet> playerKnownWaystones = new HashMap<UUID, StringSet>();
-	public static HashMap<BlockPos, DoubleBaseInfo> posts = new HashMap<BlockPos, DoubleBaseInfo>();	
+	public static PostMap posts = new PostMap();	
+	
+	public static class PostMap extends HashMap<BlockPos, DoubleBaseInfo>{
+		@Override
+		public DoubleBaseInfo remove(Object key){
+			if(key instanceof BlockPos){
+				BlockPos k = (BlockPos) key;
+				for(Entry<BlockPos, DoubleBaseInfo> now: this.entrySet()){
+					if(now.getKey().equals(k)){
+						key = now.getKey();
+						break;
+					}
+				}
+			}
+			return super.remove(key);
+		}
+	}
 	
 	public static BaseInfo getWSbyName(String name){
 		for(BaseInfo now:allWaystones){

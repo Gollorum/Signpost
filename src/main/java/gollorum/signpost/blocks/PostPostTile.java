@@ -40,12 +40,8 @@ public class PostPostTile extends TileEntity {
 	}
 
 	public void onBlockDestroy() {
-		System.out.println("bd");
-		System.out.println(Signpost.serverSide);
-		if(PostHandler.posts.remove(bases)!=null){
+		if(PostHandler.posts.remove(toPos())!=null){
 			NetworkHandler.netWrap.sendToAll(new SendAllPostBasesMessage());
-		}else{
-			System.out.println("nä. seh ich nich");
 		}
 	}
 
