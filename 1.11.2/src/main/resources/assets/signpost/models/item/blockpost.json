@@ -1,0 +1,27 @@
+{
+    "parent": "block/cube_all",
+    "textures": {
+        "all": "minecraft:blocks/planks_oak"
+    },"display": {
+	"thirdperson_righthand": {
+	"rotation": [ 62, 41, 0 ],
+	"translation": [ 0, 0, 0 ],
+	"scale": [ 0.1, 0.4, 0.1 ]
+	},
+	"thirdperson_lefthand": {
+	"rotation": [ 62, 41, 0 ],
+	"translation": [ 0, 0, 0 ],
+	"scale": [ 0.1, 0.4, 0.1 ]
+	},
+	"firstperson_righthand": {
+	"rotation": [ 10, 48, -3 ],
+	"translation": [ -1.89, 0, 0 ],
+	"scale": [ 0.1, 0.38, 0.1 ]
+	},
+	"firstperson_lefthand": {
+	"rotation": [ 10, 48, -3 ],
+	"translation": [ -1.89, 0, 0 ],
+	"scale": [ 0.1, 0.38, 0.1 ]
+	}
+    }
+}

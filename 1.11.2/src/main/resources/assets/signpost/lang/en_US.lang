@@ -1,0 +1,8 @@
+tile.signpost:base.name=Waystone
+tile.signpost:post.name=Signpost
+
+item.signpost:wrench.name=Signpost wrench
+
+signpost.discovered=You have discovered the waystone '<Waystone>'
+signpost.notDiscovered=You have not yet discovered <Waystone>
+signpost.errorWorld=ERROR: world '<world>' does not exist
