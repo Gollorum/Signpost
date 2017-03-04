@@ -27,18 +27,11 @@ public class BasePostTile extends TileEntity {
 					}
 				}
 				if (!found) {
-					System.out.println("ERROR: Waystone not found!");
 					ws = new BaseInfo(null, new MyBlockPos("", pos, world.provider.getDimension()), null);
 					PostHandler.allWaystones.add(ws);
 				}
 			}
 		}, 20);
-	}
-
-	public void onBlockDestroy() {
-		if(PostHandler.allWaystones.remove(ws)){
-			NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage().init());
-		}
 	}
 
 	public void setName(String name) {

@@ -2,7 +2,9 @@ package gollorum.signpost.blocks;
 
 import gollorum.signpost.Signpost;
 import gollorum.signpost.items.PostWrench;
+import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
+import gollorum.signpost.network.messages.SendAllPostBasesMessage;
 import gollorum.signpost.network.messages.SendPostBasesMessage;
 import gollorum.signpost.network.messages.TeleportMeMessage;
 import gollorum.signpost.util.BaseInfo;
@@ -57,18 +59,20 @@ public class PostPost extends GolloBlock {
 			return;
 		}
 		PostPostTile tile = getTile(world, pos);
-		Vec3d lookVec = player.getLookVec();
-		BlockPos pPos = player.getPosition(); 
-		pPos = pPos.subtract(new Vec3i(pos.getX()+0.5, pos.getY()+0.5 - player.eyeHeight, pos.getZ()+0.5));
+		double lookY  = player.getLookVec().yCoord;
+		double playerX = player.posX;
+		double playerY = player.posY+player.eyeHeight;
+		double playerZ = player.posZ;
 		if (player.getHeldItemMainhand() != null && player.getHeldItemMainhand().getItem() instanceof PostWrench) {
+			double deltaY = MyBlockPos.normalizedY(pos.getX()+0.5-playerX, pos.getY()+0.5-playerY, pos.getZ()+0.5-playerZ);
 			if (player.isSneaking()) {
-				if (-pPos.getY() / MyBlockPos.toLength(pPos) < lookVec.yCoord) {
+				if (deltaY < lookY) {
 					tile.bases.flip1 = !tile.bases.flip1;
 				} else {
 					tile.bases.flip2 = !tile.bases.flip2;
 				}
 			} else {
-				if (-pPos.getY() / MyBlockPos.toLength(pPos) < lookVec.yCoord) {
+				if (deltaY < lookY) {
 					tile.bases.rotation1 = (tile.bases.rotation1 - 15) % 360;
 				} else {
 					tile.bases.rotation2 = (tile.bases.rotation2 - 15) % 360;
@@ -103,14 +107,14 @@ public class PostPost extends GolloBlock {
 			PostPostTile tile = getTile(world, pos);
 			if (!player.isSneaking()) {
 				BaseInfo destination = hitY > 0.5 ? tile.bases.base1 : tile.bases.base2;
-				if (!(destination == null || Signpost.serverSide)) {
+				if (!(destination == null || !world.isRemote)) {
 					NetworkHandler.netWrap.sendToServer(new TeleportMeMessage(destination));
 				}
 			}else{
 				player.openGui(Signpost.instance, Signpost.GuiPostID, world, pos.getX(), pos.getY(), pos.getZ());
 			}
 		}
-		return super.onBlockActivated(world, pos, state, player, hand, facing, hitX, hitY, hitZ);
+		return true;
 	}
 
 	@Override
@@ -121,17 +125,11 @@ public class PostPost extends GolloBlock {
 		EntityPlayer player = ((EntityPlayer)entity);
 		return !(player.getHeldItemMainhand()!=null&&player.getHeldItemMainhand().getItem() instanceof PostWrench);
 	}
-	
-	@Override
-	public void onBlockDestroyedByPlayer(World world, BlockPos pos, IBlockState state){
-		getTile(world, pos).onBlockDestroy();
-		super.onBlockDestroyedByPlayer(world, pos, state);
-	}
-	
-	@Override
-	public void onBlockDestroyedByExplosion(World world, BlockPos pos, Explosion explosionIn){
-		getTile(world, pos).onBlockDestroy();
-		super.onBlockDestroyedByExplosion(world, pos, explosionIn);
+
+	public static void onBlockDestroy(MyBlockPos pos) {
+		if(PostHandler.posts.remove(pos)!=null){
+			NetworkHandler.netWrap.sendToAll(new SendAllPostBasesMessage());
+		}
 	}
 
 	@Override

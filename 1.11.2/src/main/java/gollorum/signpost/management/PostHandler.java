@@ -1,9 +1,11 @@
 package gollorum.signpost.management;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 
+import gollorum.signpost.network.messages.SendAllPostBasesMessage.DoubleStringInt;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.DoubleBaseInfo;
 import gollorum.signpost.util.MyBlockPos;
@@ -15,9 +17,15 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 
 public class PostHandler {
 
-	public static StonedHashSet allWaystones = new StonedHashSet();
-	public static HashMap<UUID, StringSet> playerKnownWaystones = new HashMap<UUID, StringSet>();
-	public static PostMap posts = new PostMap();	
+	public static StonedHashSet allWaystones;
+	public static HashMap<UUID, StringSet> playerKnownWaystones;
+	public static PostMap posts;	
+
+	public static void preinit() {
+		allWaystones = new StonedHashSet();
+		playerKnownWaystones = new HashMap<UUID, StringSet>();
+		posts = new PostMap();	
+	}
 	
 	public static class PostMap extends HashMap<MyBlockPos, DoubleBaseInfo>{
 		@Override
@@ -33,6 +41,28 @@ public class PostHandler {
 			}
 			return super.remove(key);
 		}
+
+		public void keepSame(HashMap<MyBlockPos, DoubleStringInt> posts) {
+			HashSet<MyBlockPos> toDelete = new HashSet<MyBlockPos>();
+			toDelete.addAll(this.keySet());
+			for(Entry<MyBlockPos, DoubleStringInt> now: posts.entrySet()){
+				for(Entry<MyBlockPos, DoubleBaseInfo> now2: this.entrySet()){
+					if(now.getKey().equals(now2.getKey())){
+						toDelete.remove(now2.getKey());
+					}
+				}
+			}
+			for(MyBlockPos now: toDelete){
+				this.remove(now);
+			}
+		}
+
+		public void print(){
+			for(Entry<MyBlockPos, DoubleBaseInfo> now: this.entrySet()){
+				System.out.println("at "+now.getKey()+": "+now.getValue());
+			}
+		}
+		
 	}
 	
 	public static BaseInfo getWSbyName(String name){
@@ -111,5 +141,5 @@ public class PostHandler {
 		}
 		return null;
 	}
-	
+
 }

@@ -3,15 +3,15 @@ package gollorum.signpost.blocks;
 import java.util.Map.Entry;
 
 import gollorum.signpost.SPEventHandler;
-import gollorum.signpost.Signpost;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
-import gollorum.signpost.network.messages.SendAllPostBasesMessage;
 import gollorum.signpost.network.messages.SendPostBasesMessage;
-import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.util.DoubleBaseInfo;
+import gollorum.signpost.util.MyBlockPos;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.relauncher.Side;
 
 public class PostPostTile extends TileEntity {
 
@@ -24,7 +24,7 @@ public class PostPostTile extends TileEntity {
 			@Override
 			public void run() {
 				MyBlockPos myPos = toPos();
-				if(Signpost.serverSide){
+				if(FMLCommonHandler.instance().getSide().equals(Side.SERVER)){
 					PostHandler.posts.put(myPos, bases);
 				}else{
 					for(Entry<MyBlockPos, DoubleBaseInfo> now: PostHandler.posts.entrySet()){
@@ -36,17 +36,11 @@ public class PostPostTile extends TileEntity {
 					PostHandler.posts.put(myPos, bases);
 				}
 			}
-		}, 10);
-	}
-
-	public void onBlockDestroy() {
-		if(PostHandler.posts.remove(toPos())!=null){
-			NetworkHandler.netWrap.sendToAll(new SendAllPostBasesMessage());
-		}
+		}, 20);
 	}
 
 	public MyBlockPos toPos(){
-		if(Signpost.serverSide){
+		if(!world.isRemote){
 			return new MyBlockPos(world, pos, dim());
 		}else{
 			return new MyBlockPos("", pos, dim());
@@ -63,6 +57,9 @@ public class PostPostTile extends TileEntity {
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound tagCompound) {
 		super.writeToNBT(tagCompound);
+//		if(!FMLCommonHandler.instance().getSide().equals(Side.SERVER)){
+//			return tagCompound;
+//		}
 		tagCompound.setString("base1", ""+bases.base1);
 		tagCompound.setString("base2", ""+bases.base2);
 		tagCompound.setInteger("rot1", bases.rotation1);
@@ -75,6 +72,10 @@ public class PostPostTile extends TileEntity {
 	@Override
 	public void readFromNBT(NBTTagCompound tagCompound) {
 		super.readFromNBT(tagCompound);
+//		System.out.println("read: "+world);
+//		if(!FMLCommonHandler.instance().getSide().equals(Side.SERVER)){
+//			return;
+//		}
 		
 		bases.base1 = PostHandler.getWSbyName(tagCompound.getString("base1"));
 		bases.base2 = PostHandler.getWSbyName(tagCompound.getString("base2"));
@@ -84,13 +85,15 @@ public class PostPostTile extends TileEntity {
 
 		bases.flip1 = tagCompound.getBoolean("flip1");
 		bases.flip2 = tagCompound.getBoolean("flip2");
-		
-		SPEventHandler.scheduleTask(new Runnable(){
-			@Override
-			public void run() {
-				NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(toPos(), bases));
-			}
-		}, 10);
+
+		if(FMLCommonHandler.instance().getSide().equals(Side.SERVER)){
+			SPEventHandler.scheduleTask(new Runnable(){
+				@Override
+				public void run() {
+					NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(toPos(), bases));
+				}
+			}, 10);
+		}
 	}
 	
 }

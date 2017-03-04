@@ -34,7 +34,7 @@ import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
 
 public class BasePost extends GolloBlock {
-	
+
 	public BasePost() {
 		super(Material.ROCK, "base");
 		this.setHarvestLevel("pickaxe", 1);
@@ -44,19 +44,21 @@ public class BasePost extends GolloBlock {
 	}
 
 	@Override
-	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ){
-    	if (!Signpost.serverSide) {
-			BaseInfo ws = getWaystoneRootTile(world, pos).ws;
-			if (!player.isSneaking()) {
-				String out = I18n.translateToLocal("signpost.discovered");
-				out = out.replaceAll("<Waystone>", ws.name);
-				Minecraft.getMinecraft().player.sendMessage(new TextComponentString(out));
-				NetworkHandler.netWrap.sendToServer(new SendDiscoveredToServerMessage(ws.name));
-			}else{
-				player.openGui(Signpost.instance, Signpost.GuiBaseID, world, pos.getX(), pos.getY(), pos.getZ());
-			}
+	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+		if (!world.isRemote) {
+			return false;
 		}
-		return super.onBlockActivated(world, pos, state, player, hand, facing, hitX, hitY, hitZ);
+		BaseInfo ws = getWaystoneRootTile(world, pos).ws;
+		if (!player.isSneaking()) {
+			String out = I18n.translateToLocal("signpost.discovered");
+			out = out.replaceAll("<Waystone>", ws.name);
+			Minecraft.getMinecraft().player.sendMessage(new TextComponentString(out));
+			NetworkHandler.netWrap.sendToServer(new SendDiscoveredToServerMessage(ws.name));
+		} else {
+			player.openGui(Signpost.instance, Signpost.GuiBaseID, world, pos.getX(), pos.getY(), pos.getZ());
+		}
+
+		return true;
 	}
 
 	@Override
@@ -74,10 +76,11 @@ public class BasePost extends GolloBlock {
 	}
 
 	@Override
-	public void onBlockPlacedBy(final World world, final BlockPos inPos, IBlockState state, final EntityLivingBase entity, ItemStack stack) {
+	public void onBlockPlacedBy(final World world, final BlockPos inPos, IBlockState state,
+			final EntityLivingBase entity, ItemStack stack) {
 		if (entity instanceof EntityPlayerMP) {
 			BasePostTile tile = getWaystoneRootTile(world, inPos);
-			String name = "Waystone" + "" + inPos.getX() + "" + inPos.getY() + "" + inPos.getZ();
+			String name = "Waystone" + inPos.getX() + inPos.getY() + inPos.getZ();
 			MyBlockPos pos = new MyBlockPos(world, inPos, entity.dimension);
 			UUID owner = entity.getUniqueID();
 			tile.ws = new BaseInfo(name, pos, owner);
@@ -85,19 +88,20 @@ public class BasePost extends GolloBlock {
 				PostHandler.addDiscovered(entity.getUniqueID(), tile.ws);
 				NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage().init());
 			} else {
-				System.out.println("Dies ist ein Fehler und wird deshalb niemals auftreten. Ich bin also nur Einbildung :D");
+				System.out.println(
+						"Dies ist ein Fehler und wird deshalb niemals auftreten. Ich bin also nur Einbildung :D");
 			}
 		} else {
 			SPEventHandler.scheduleTask(new Runnable() {
 				@Override
 				public void run() {
 					BasePostTile tile = getWaystoneRootTile(world, inPos);
-					if(tile!=null&&tile.ws==null){
-						String name = "Waystone " + inPos.getX() + "|" + inPos.getY() + "|" + inPos.getZ();
+					if (tile != null && tile.ws == null) {
+						String name = "Waystone " + inPos.getX() + inPos.getY() + inPos.getZ();
 						MyBlockPos pos = new MyBlockPos("", inPos, entity.dimension);
 						UUID owner = entity.getUniqueID();
-						for(BaseInfo now: PostHandler.allWaystones){
-							if(now.pos.equals(pos)){
+						for (BaseInfo now : PostHandler.allWaystones) {
+							if (now.pos.equals(pos)) {
 								tile.ws = now;
 								return;
 							}
@@ -110,16 +114,14 @@ public class BasePost extends GolloBlock {
 		}
 	}
 
-	@Override
-	public void onBlockDestroyedByPlayer(World world, BlockPos pos, IBlockState state){
-		getWaystoneRootTile(world, pos).onBlockDestroy();
-		super.onBlockDestroyedByPlayer(world, pos, state);
-	}
-	
-	@Override
-	public void onBlockDestroyedByExplosion(World world, BlockPos pos, Explosion explosionIn){
-		getWaystoneRootTile(world, pos).onBlockDestroy();
-		super.onBlockDestroyedByExplosion(world, pos, explosionIn);
+	public static void onBlockDestroy(MyBlockPos pos) {
+		System.out.println("DESASTRÖS!");
+		if (PostHandler.allWaystones.removeBaseInfo(pos)) {
+			System.out.println("is weg");
+			NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage().init());
+		}else{
+			System.out.println("is nich weg");
+		}
 	}
 
 	@Override
@@ -128,22 +130,22 @@ public class BasePost extends GolloBlock {
 	}
 
 	@Override
-	public EnumBlockRenderType getRenderType(IBlockState state){
+	public EnumBlockRenderType getRenderType(IBlockState state) {
 		return EnumBlockRenderType.MODEL;
 	}
 
 	@Override
-    public boolean isOpaqueCube(IBlockState state){
-        return true;
-    }
-	
-	@Override
-	public boolean isFullCube(IBlockState state){
+	public boolean isOpaqueCube(IBlockState state) {
 		return true;
 	}
-	
+
 	@Override
-	public BlockRenderLayer getBlockLayer(){
+	public boolean isFullCube(IBlockState state) {
+		return true;
+	}
+
+	@Override
+	public BlockRenderLayer getBlockLayer() {
 		return BlockRenderLayer.SOLID;
 	}
 
