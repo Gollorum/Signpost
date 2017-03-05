@@ -1,0 +1,8 @@
+tile.signpost:base.name=地标石
+tile.signpost:post.name=路标
+
+item.signpost:wrench.name=路标钳
+
+signpost.discovered=你已经发现地标石'<Waystone>'
+signpost.notDiscovered=你没有发现<Waystone>
+signpost.errorWorld=错误：世界'<world>'不存在
