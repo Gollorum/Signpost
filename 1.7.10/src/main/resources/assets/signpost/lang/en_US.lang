@@ -6,3 +6,8 @@ item.SignpostTool.name=Signpost wrench
 signpost.discovered=You have discovered the waystone '<Waystone>'
 signpost.notDiscovered=You have not yet discovered <Waystone>
 signpost.errorWorld=ERROR: world '<world>' does not exist
+signpost.payment=You have to pay <amount>x<itemName> to use this signpost
+
+signpost.guiPrev=The waystone is <distance> blocks away. Players will have to pay <amount>x<itemName> to use this.
+signpost.guiWorldDim=The waystone is not in the same world/dimension. Interdimensional travel is disabled.
+signpost.guiTooFar=The waystone is too far away (<distance> blocks). The maximum distance is <maxDist> blocks.
