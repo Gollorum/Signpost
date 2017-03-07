@@ -6,3 +6,8 @@ item.SignpostTool.name=路标钳
 signpost.discovered=你已经发现地标石'<Waystone>'
 signpost.notDiscovered=你没有发现<Waystone>
 signpost.errorWorld=错误：世界'<world>'不存在
+signpost.payment=你必须支付<amount>个<itemName>来使用这个路标
+
+signpost.guiPrev=地标石有<distance>个方块远。玩家将会支付<amount>个<itemName>来使用它。
+signpost.guiWorldDim=这个地标石不在同一个世界/维度。跨维度传送是禁止的。
+signpost.guiTooFar=这个地标石太远了（相距<distance>方块）。最大距离应该是<maxDist>方块远。
