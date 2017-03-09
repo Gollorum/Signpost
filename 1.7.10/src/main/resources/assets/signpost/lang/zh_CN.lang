@@ -1,5 +1,12 @@
 tile.SignpostBase.name=地标石
-tile.SignpostPost.name=路标
+tile.SignpostPostOak.name=橡木路标
+tile.SignpostPostAcacia.name=金合欢路标
+tile.SignpostPostBigoak.name=深色橡木路标
+tile.SignpostPostBirch.name=桦木路标
+tile.SignpostPostIron.name=铁质路标
+tile.SignpostPostJungle.name=丛林木路标
+tile.SignpostPostSpruce.name=云杉木路标
+tile.SignpostPostStone.name=石质路标
 
 item.SignpostTool.name=路标钳
 
