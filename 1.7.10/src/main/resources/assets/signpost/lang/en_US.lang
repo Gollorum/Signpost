@@ -1,5 +1,12 @@
 tile.SignpostBase.name=Waystone
-tile.SignpostPost.name=Signpost
+tile.SignpostPostOak.name=Oak Signpost
+tile.SignpostPostAcacia.name=Acacia Signpost
+tile.SignpostPostBigoak.name=Dark Oak Signpost
+tile.SignpostPostBirch.name=Birch Signpost
+tile.SignpostPostIron.name=Iron Signpost
+tile.SignpostPostJungle.name=Jungle Signpost
+tile.SignpostPostSpruce.name=Spruce Signpost
+tile.SignpostPostStone.name=Stone Signpost
 
 item.SignpostTool.name=Signpost wrench
 
