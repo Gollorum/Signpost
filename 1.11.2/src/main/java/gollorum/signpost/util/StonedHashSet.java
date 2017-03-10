@@ -26,10 +26,10 @@ public class StonedHashSet extends HashSet<BaseInfo>{
 		}
 		this.removeAll(toDelete);
 	}
-	
+
 	public boolean nameTaken(String name){
 		for(BaseInfo now:this){
-			if(now.name.equals(name)){
+			if(name.equals(now.name)){
 				return true;
 			}
 		}
@@ -78,7 +78,7 @@ public class StonedHashSet extends HashSet<BaseInfo>{
 	public boolean removeBaseInfo(MyBlockPos pos){
 		return remove(getByPos(pos));
 	}
-	
+
 	public BaseInfo getByPos(MyBlockPos pos){
 		for(BaseInfo base: this){
 			if(base.pos.equals(pos)){
@@ -86,5 +86,29 @@ public class StonedHashSet extends HashSet<BaseInfo>{
 			}
 		}
 		return null;
+	}
+
+	public boolean removeByPos(MyBlockPos pos){
+		BaseInfo toDelete = getByPos(pos);
+		if(toDelete==null){
+			return true;
+		}else{
+			return super.remove(toDelete);
+		}
+	}
+	
+	@Override
+	public boolean remove(Object obj) {
+		if(!(obj instanceof BaseInfo)){
+			return false;
+		}
+		BaseInfo toDelete = (BaseInfo)obj;
+		for(BaseInfo now: this){
+			if(now.sameAs(toDelete)){
+				toDelete = now;
+				break;
+			}
+		}
+		return super.remove(toDelete);
 	}
 }

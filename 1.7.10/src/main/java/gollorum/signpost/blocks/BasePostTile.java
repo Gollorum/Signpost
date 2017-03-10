@@ -7,50 +7,77 @@ import gollorum.signpost.network.messages.BaseUpdateClientMessage;
 import gollorum.signpost.network.messages.BaseUpdateServerMessage;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.BlockPos;
+import gollorum.signpost.util.BoolRun;
 import net.minecraft.tileentity.TileEntity;
 
 public class BasePostTile extends TileEntity {
 
-	public BaseInfo ws;
+//	public BaseInfo ws;
+	public boolean isCanceled = false;
 
 	public BasePostTile() {
-		SPEventHandler.scheduleTask(new Runnable() {
+		SPEventHandler.scheduleTask(new BoolRun() {
 			@Override
-			public void run() {
-				boolean found = false;
-				for (BaseInfo now : PostHandler.allWaystones) {
-					if (now.sameAs(new BaseInfo(null, new BlockPos("", xCoord, yCoord, zCoord, worldObj.provider.dimensionId), null))) {
-						ws = now;
-						found = true;
-						break;
-					}
+			public boolean run() {
+				if(isCanceled){
+					return true;
 				}
-				if (!found) {
-					System.out.println("ERROR: Waystone not found!");
-					ws = new BaseInfo(null, new BlockPos("", xCoord, yCoord, zCoord, worldObj.provider.dimensionId), null);
-					PostHandler.allWaystones.add(ws);
+				if(worldObj==null){
+					return false;
 				}
+				init();
+				return true;
 			}
-		}, 20);
+		});
+	}
+	
+	public BaseInfo getBaseInfo(){
+		return PostHandler.allWaystones.getByPos(toPos());
 	}
 
-	public void onBlockDestroy() {
-		if(PostHandler.allWaystones.remove(ws)){
+	public void init(){
+		boolean found = false;
+		if(getBaseInfo()!=null){
+			return;
+		}
+		BaseInfo ws = new BaseInfo(null, toPos(), null);
+		PostHandler.allWaystones.add(ws);
+	}
+
+	public BlockPos toPos(){
+		if(worldObj==null||worldObj.isRemote){
+			return new BlockPos("", xCoord, yCoord, zCoord, dim());
+		}else{
+			return new BlockPos(worldObj.getWorldInfo().getWorldName(), xCoord, yCoord, zCoord, dim());
+		}
+	}
+
+	public int dim(){
+		if(worldObj==null||worldObj.provider==null){
+			return Integer.MIN_VALUE;
+		}else
+			return worldObj.provider.dimensionId;
+	}
+	
+	public void onBlockDestroy(BlockPos pos) {
+		isCanceled = true;
+		if(PostHandler.allWaystones.removeByPos(pos)){
 			NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage().init());
 		}
 	}
 
 	public void setName(String name) {
-		ws.name = name;
-		NetworkHandler.netWrap.sendToServer(new BaseUpdateServerMessage(ws, false));
+		BaseInfo bi = getBaseInfo();
+		bi.name = name;
+		NetworkHandler.netWrap.sendToServer(new BaseUpdateServerMessage(bi, false));
 	}
 
 	public String getName() {
-		return ws == null ? "null" : ws.toString();
+		return getBaseInfo() == null ? "nulll" : getBaseInfo().toString();
 	}
 
 	@Override
 	public String toString() {
-		return "wsn:" + getName();
+		return getName();
 	}
 }

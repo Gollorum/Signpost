@@ -49,9 +49,9 @@ public class BaseInfo {
 	}
 	
 	public void setAll(BaseInfo newWS){
-		name = newWS.name;
-		pos.update(newWS.pos);
-		owner = newWS.owner;
+		this.name = newWS.name;
+		this.pos.update(newWS.pos);
+		this.owner = newWS.owner;
 	}
 	
 	public boolean update(BaseInfo newWS){

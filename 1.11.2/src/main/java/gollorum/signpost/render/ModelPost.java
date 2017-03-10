@@ -38,7 +38,7 @@ public class ModelPost extends ModelBase {
 	public void render(Entity entity, float f, float f1, float f2, float f3, float f4, float f5, PostPostTile tile) {
 		super.render(entity, f, f1, f2, f3, f4, f5);
 		post.render(f5);
-		if (tile.bases.base1 != null || tile.isItem) {
+		if ((tile.bases.base1 != null&&!tile.bases.base1.name.equals("null")&&!tile.bases.base1.name.equals("")) || tile.isItem) {
 			if (tile.bases.flip1) {
 				GL11.glRotated(180, 0, 0, 1);
 				GL11.glTranslated(0, -1.5, 0);
@@ -51,7 +51,7 @@ public class ModelPost extends ModelBase {
 				board1.render(f5);
 			}
 		}
-		if (tile.bases.base2 != null || tile.isItem) {
+		if ((tile.bases.base2 != null&&!tile.bases.base2.name.equals("null")&&!tile.bases.base2.name.equals("")) || tile.isItem) {
 			if (tile.bases.flip2) {
 				GL11.glRotated(180, 0, 0, 1);
 				GL11.glTranslated(0, -0.5, 0);

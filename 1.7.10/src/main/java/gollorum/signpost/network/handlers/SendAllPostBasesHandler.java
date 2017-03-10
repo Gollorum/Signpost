@@ -20,17 +20,9 @@ public class SendAllPostBasesHandler implements IMessageHandler<SendAllPostBases
 			for(Entry<BlockPos, DoubleBaseInfo> nowPost: PostHandler.posts.entrySet()){
 				if(nowPost.getKey().equals(now.getKey())){
 					found = true;
-					if(nowPost.getValue().base1==null||PostHandler.getWSbyName(now.getValue().string1)==null){
-						nowPost.getValue().base1 = PostHandler.getWSbyName(now.getValue().string1);
-					}else{
-						nowPost.getValue().base1.update(PostHandler.getWSbyName(now.getValue().string1));
-					}
 
-					if(nowPost.getValue().base2==null||PostHandler.getWSbyName(now.getValue().string2)==null){
-						nowPost.getValue().base2 = PostHandler.getWSbyName(now.getValue().string2);
-					}else{
-						nowPost.getValue().base2.update(PostHandler.getWSbyName(now.getValue().string2));
-					}
+					nowPost.getValue().base1 = PostHandler.getWSbyName(now.getValue().string1);
+					nowPost.getValue().base2 = PostHandler.getWSbyName(now.getValue().string2);
 
 					nowPost.getValue().rotation1 = now.getValue().int1;
 					nowPost.getValue().rotation2 = now.getValue().int2;
@@ -45,6 +37,7 @@ public class SendAllPostBasesHandler implements IMessageHandler<SendAllPostBases
 				PostHandler.posts.put(now.getKey(), new DoubleBaseInfo(PostHandler.getWSbyName(now.getValue().string1), PostHandler.getWSbyName(now.getValue().string2), now.getValue().int1, now.getValue().int2, now.getValue().bool1, now.getValue().bool2));
 			}
 		}
+		PostHandler.posts.keepSame(message.posts);
 		return null;
 	}
 	

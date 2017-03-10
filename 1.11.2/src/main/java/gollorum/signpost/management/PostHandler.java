@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 
+import gollorum.signpost.network.NetworkHandler;
+import gollorum.signpost.network.messages.ChatMessage;
 import gollorum.signpost.network.messages.SendAllPostBasesMessage.DoubleStringInt;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.DoubleBaseInfo;
@@ -13,6 +15,7 @@ import gollorum.signpost.util.StonedHashSet;
 import gollorum.signpost.util.StringSet;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
 public class PostHandler {
@@ -56,24 +59,51 @@ public class PostHandler {
 				this.remove(now);
 			}
 		}
+	}
 
-		public void print(){
-			for(Entry<MyBlockPos, DoubleBaseInfo> now: this.entrySet()){
-				System.out.println("at "+now.getKey()+": "+now.getValue());
+	public static BaseInfo getWSbyName(String name){
+		if(ConfigHandler.deactivateTeleportation){
+			return new BaseInfo(name, null, null);
+		}else{
+			for(BaseInfo now:allWaystones){
+				if(now.name.equals(name)){
+					return now;
+				}
 			}
+			return null;
 		}
-		
+	}
+
+	public static void teleportMe(BaseInfo destination, EntityPlayerMP player, int stackSize){
+		if(ConfigHandler.deactivateTeleportation){
+			return;
+		}
+		if(canTeleport(player, destination)){
+			World world = PostHandler.getWorldByName(destination.pos.world);
+			if(world == null){
+				NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.errorWorld", "<world>", destination.pos.world), player);
+			}else{
+				player.inventory.clearMatchingItems(ConfigHandler.cost, 0, stackSize, null);
+//				if(Con-igHandler.cost!=null){
+//					for(int i=0; i<stackSize; i++){
+//						player.inventory.consumeInventoryItem(ConfigHandler.cost);
+//					}
+//				}
+				if(!player.world.equals(world)){
+					player.setWorld(world);
+//					manager.transferEntityToWorld(player, 1, (WorldServer)player.worldObj, (WorldServer)world);
+				}
+				if(!(player.dimension==destination.pos.dim)){
+					player.changeDimension(destination.pos.dim);
+//					manager.transferPlayerToDimension(player, destination.pos.dim);
+				}
+				player.setPositionAndUpdate(destination.pos.x+0.5, destination.pos.y+1, destination.pos.z+0.5);
+			}
+		}else{
+			NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.notDiscovered", "<Waystone>", destination.name), player);
+		}
 	}
 	
-	public static BaseInfo getWSbyName(String name){
-		for(BaseInfo now:allWaystones){
-			if(now.name.equals(name)){
-				return now;
-			}
-		}
-		return null;
-	}
-
 	public static StonedHashSet getByWorld(String world){
 		StonedHashSet ret = new StonedHashSet();
 		for(BaseInfo now: allWaystones){

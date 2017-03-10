@@ -1,5 +1,6 @@
 package gollorum.signpost.network.handlers;
 
+import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.messages.InitPlayerResponseMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -10,7 +11,17 @@ public class InitPlayerResponseHandler implements IMessageHandler<InitPlayerResp
 
 	@Override
 	public IMessage onMessage(InitPlayerResponseMessage message, MessageContext ctx) {
-		PostHandler.allWaystones.merge(message.allWaystones);
+		if(!message.deactivateTeleportation){
+			PostHandler.allWaystones.addAll(message.allWaystones);
+		}
+		ConfigHandler.deactivateTeleportation = message.deactivateTeleportation;
+		ConfigHandler.interdimensional = message.interdimensional;
+		ConfigHandler.maxDist = message.maxDist;
+		ConfigHandler.paymentItem = message.paymentItem;
+		ConfigHandler.costMult = message.costMult;
+		ConfigHandler.securityLevelWaystone = message.securityLevelWaystone;
+		ConfigHandler.securityLevelSignpost = message.securityLevelSignpost;
+		ConfigHandler.postInit();
 		return null;
 	}
 

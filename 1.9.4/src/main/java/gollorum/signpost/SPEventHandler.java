@@ -5,10 +5,10 @@ import java.util.HashSet;
 import java.util.Map.Entry;
 
 import gollorum.signpost.blocks.BasePost;
-import gollorum.signpost.blocks.BasePostTile;
 import gollorum.signpost.blocks.PostPost;
 import gollorum.signpost.blocks.PostPostTile;
 import gollorum.signpost.items.PostWrench;
+import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PlayerProvider;
 import gollorum.signpost.management.PlayerStore;
 import gollorum.signpost.management.PostHandler;
@@ -16,23 +16,23 @@ import gollorum.signpost.management.WorldSigns;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.InitPlayerResponseMessage;
 import gollorum.signpost.network.messages.SendAllPostBasesMessage;
+import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.MyBlockPos;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
+import net.minecraftforge.event.world.BlockEvent.PlaceEvent;
 import net.minecraftforge.event.world.WorldEvent;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.relauncher.Side;
 
 public class SPEventHandler {
 
 	private static HashMap<Runnable, Integer> tasks = new HashMap<Runnable, Integer>();
+	private static HashSet<BoolRun> predicatedTasks = new HashSet<BoolRun>();
 
 	/**
 	 * Schedules a task
@@ -46,22 +46,34 @@ public class SPEventHandler {
 		tasks.put(task, delay);
 	}
 
+	public static void scheduleTask(BoolRun task){
+		predicatedTasks.add(task);
+	}
+	
 	@SubscribeEvent
 	public void onTick(TickEvent event) {
 		if (!(event instanceof TickEvent.ServerTickEvent || event instanceof TickEvent.ClientTickEvent)) {
 			return;
 		}
 		// time++;
-		HashSet<Runnable> deletedTasks = new HashSet<Runnable>();
+		HashMap<Runnable, Integer> remainingTasks = new HashMap<Runnable, Integer>();
 		for (Entry<Runnable, Integer> now : tasks.entrySet()) {
-			if ((now.setValue(now.getValue() - 1)) < 2) {
+			int val = now.getValue()-1;
+			if (val < 2) {
 				now.getKey().run();
-				deletedTasks.add(now.getKey());
+			}else{
+				remainingTasks.put(now.getKey(), val);
 			}
 		}
-		for (Runnable now : deletedTasks) {
-			tasks.remove(now);
+		tasks = remainingTasks;
+		
+		HashSet<BoolRun> remainingPreds = new HashSet<BoolRun>();
+		for(BoolRun now: predicatedTasks){
+			if(!now.run()){
+				remainingPreds.add(now);
+			}
 		}
+		predicatedTasks = remainingPreds;
 	}
 	
 	/*@SubscribeEvent
@@ -106,23 +118,59 @@ public class SPEventHandler {
 			WorldSigns.worldSigns(event.getWorld());
 		}
 	}
-	
+
+	@SubscribeEvent
+	public void oBlockPlace(PlaceEvent event){
+		if(!(event.getPlayer() instanceof EntityPlayerMP)){
+			if(event.getState().getBlock() instanceof BasePost){
+				BasePost.placeClient(event.getWorld(), new MyBlockPos("", event.getPos(), event.getPlayer().dimension), event.getPlayer());
+			}else if(event.getState().getBlock() instanceof PostPost){
+				PostPost.placeClient(event.getWorld(), new MyBlockPos("", event.getPos(), event.getPlayer().dimension), event.getPlayer());
+			}
+			return;
+		}
+		EntityPlayerMP player = (EntityPlayerMP)event.getPlayer();
+		if(event.getState().getBlock() instanceof BasePost){
+			if(!ConfigHandler.securityLevelWaystone.canUse(player)){
+				BasePost.getWaystoneRootTile(event.getWorld(), event.getPos()).onBlockDestroy(new MyBlockPos(event.getWorld(), event.getPos(), player.dimension));
+				event.setCanceled(true);
+			}else{
+				BasePost.placeServer(event.getWorld(), new MyBlockPos(event.getWorld(), event.getPos(), event.getPlayer().dimension), (EntityPlayerMP) event.getPlayer());
+			}
+		}else if(event.getState().getBlock() instanceof PostPost){
+			if(!ConfigHandler.securityLevelSignpost.canUse(player)){
+				PostPost.getWaystonePostTile(event.getWorld(), event.getPos()).onBlockDestroy(new MyBlockPos(event.getWorld(), event.getPos(), player.dimension));
+				event.setCanceled(true);
+			}else{
+				PostPost.placeServer(event.getWorld(), new MyBlockPos(event.getWorld(), event.getPos(), event.getPlayer().dimension), (EntityPlayerMP) event.getPlayer());
+			}
+			
+		}
+	}
+
 	@SubscribeEvent
 	public void onBlockBreak(BreakEvent event){
+		if(!(event.getPlayer() instanceof EntityPlayerMP)){
+			return;
+		}
+		EntityPlayerMP player = (EntityPlayerMP)event.getPlayer();
+		if(event.getState().getBlock() instanceof BasePost){
+			if(!ConfigHandler.securityLevelWaystone.canUse(player)){
+				event.setCanceled(true);
+			}else{
+				BasePost.getWaystoneRootTile(event.getWorld(), event.getPos()).onBlockDestroy(new MyBlockPos(event.getWorld(), event.getPos(), player.dimension));
+			}
+		}else if(event.getState().getBlock() instanceof PostPost){
+			if(!ConfigHandler.securityLevelSignpost.canUse(player)){
+				event.setCanceled(true);
+			}else{
+				PostPost.getWaystonePostTile(event.getWorld(), event.getPos()).onBlockDestroy(new MyBlockPos(event.getWorld(), event.getPos(), player.dimension));
+			}
+		}
 		TileEntity tile = event.getWorld().getTileEntity(event.getPos());
 		if(tile instanceof PostPostTile){
 			if(event.getPlayer().getHeldItemMainhand()!=null&&event.getPlayer().getHeldItemMainhand().getItem() instanceof PostWrench){
 				event.setCanceled(true);
-			}else{
-				if(!FMLCommonHandler.instance().getSide().equals(Side.SERVER)){
-					PostPost.onBlockDestroy(new MyBlockPos(event.getWorld(), event.getPos(), event.getPlayer().dimension));
-				}
-			}
-		}else{
-			if(tile instanceof BasePostTile){
-				if(!FMLCommonHandler.instance().getSide().equals(Side.SERVER)){
-					BasePost.onBlockDestroy(new MyBlockPos(event.getWorld(), event.getPos(), event.getPlayer().dimension));
-				}
 			}
 		}
 	}

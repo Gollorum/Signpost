@@ -1,17 +1,23 @@
 package gollorum.signpost.management;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 
 import cpw.mods.fml.common.FMLCommonHandler;
+import gollorum.signpost.network.NetworkHandler;
+import gollorum.signpost.network.messages.ChatMessage;
+import gollorum.signpost.network.messages.SendAllPostBasesMessage.DoubleStringInt;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.BlockPos;
 import gollorum.signpost.util.DoubleBaseInfo;
 import gollorum.signpost.util.StonedHashSet;
 import gollorum.signpost.util.StringSet;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.server.management.ServerConfigurationManager;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 
 public class PostHandler {
 
@@ -33,17 +39,65 @@ public class PostHandler {
 			}
 			return super.remove(key);
 		}
+
+		public void keepSame(HashMap<BlockPos, DoubleStringInt> posts) {
+			HashSet<BlockPos> toDelete = new HashSet<BlockPos>();
+			toDelete.addAll(this.keySet());
+			for(Entry<BlockPos, DoubleStringInt> now: posts.entrySet()){
+				for(Entry<BlockPos, DoubleBaseInfo> now2: this.entrySet()){
+					if(now.getKey().equals(now2.getKey())){
+						toDelete.remove(now2.getKey());
+					}
+				}
+			}
+			for(BlockPos now: toDelete){
+				this.remove(now);
+			}
+		}
+
 	}
 	
 	public static BaseInfo getWSbyName(String name){
-		for(BaseInfo now:allWaystones){
-			if(now.name.equals(name)){
-				return now;
+		if(ConfigHandler.deactivateTeleportation){
+			return new BaseInfo(name, null, null);
+		}else{
+			for(BaseInfo now:allWaystones){
+				if(now.name.equals(name)){
+					return now;
+				}
 			}
+			return null;
 		}
-		return null;
 	}
 
+	public static void teleportMe(BaseInfo destination, EntityPlayerMP player, int stackSize){
+		if(ConfigHandler.deactivateTeleportation){
+			return;
+		}
+		if(canTeleport(player, destination)){
+			World world = PostHandler.getWorldByName(destination.pos.world);
+			if(world == null){
+				NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.errorWorld", "<world>", destination.pos.world), player);
+			}else{
+				if(ConfigHandler.cost!=null){
+					for(int i=0; i<stackSize; i++){
+						player.inventory.consumeInventoryItem(ConfigHandler.cost);
+					}
+				}
+				ServerConfigurationManager manager = FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager();
+				if(!player.worldObj.equals(world)){
+					manager.transferEntityToWorld(player, 1, (WorldServer)player.worldObj, (WorldServer)world);
+				}
+				if(!(player.dimension==destination.pos.dim)){
+					manager.transferPlayerToDimension(player, destination.pos.dim);
+				}
+				player.setPositionAndUpdate(destination.pos.x+0.5, destination.pos.y+1, destination.pos.z+0.5);
+			}
+		}else{
+			NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.notDiscovered", "<Waystone>", destination.name), player);
+		}
+	}
+	
 	public static StonedHashSet getByWorld(String world){
 		StonedHashSet ret = new StonedHashSet();
 		for(BaseInfo now: allWaystones){
@@ -61,6 +115,7 @@ public class PostHandler {
 					return(now.getValue().remove(newWS));
 				}
 			}
+			return false;
 		}
 		for(BaseInfo now: allWaystones){
 			if(now.update(newWS)){
@@ -111,5 +166,11 @@ public class PostHandler {
 		}
 		return null;
 	}
-	
+
+	public static boolean addRep(BaseInfo ws) {
+		BaseInfo toDelete = allWaystones.getByPos(ws.pos);
+		allWaystones.removeByPos(toDelete.pos);
+		allWaystones.add(ws);
+		return true;
+	}
 }

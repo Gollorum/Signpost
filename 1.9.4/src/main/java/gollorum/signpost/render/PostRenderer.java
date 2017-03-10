@@ -13,11 +13,6 @@ import net.minecraft.util.ResourceLocation;
 public class PostRenderer extends TileEntitySpecialRenderer<PostPostTile>{
 
 	private ModelPost model;
-	private static final ResourceLocation texture = new ResourceLocation(Signpost.MODID + ":textures/blocks/post.png");
-	
-	private static final int r = 63;
-	private static final int g = 48;
-	private static final int b = 27;
 	
 	public PostRenderer(){
 		model = new ModelPost();
@@ -27,7 +22,7 @@ public class PostRenderer extends TileEntitySpecialRenderer<PostPostTile>{
 	public void renderTileEntityAt(PostPostTile tile, double x, double y, double z, float partialTicks, int destroyStage) {
 		GL11.glPushMatrix();
 		GL11.glTranslated(x+0.5, y, z+0.5);
-		bindTexture(texture);
+		bindTexture(new ResourceLocation(Signpost.MODID + ":textures/blocks/"+tile.type.texture+".png"));
 		model.render((Entity)null, 0, 0.1f, 0, 0, 0, 0.0625f, tile);
         
         FontRenderer fontrenderer = this.getFontRenderer();
@@ -40,7 +35,7 @@ public class PostRenderer extends TileEntitySpecialRenderer<PostPostTile>{
 		int color =(1<<16) + (1<<8);
 		
         if(!tile.isItem){
-        	if(tile.bases.base1!=null){
+        	if(tile.bases.base1!=null&&!tile.bases.base1.name.equals("null")&&!tile.bases.base1.name.equals("")){
         		double lurch = tile.bases.flip1?0.45-fontrenderer.getStringWidth(tile.bases.base1.name)*sc:-0.45;
             	double alpha = Math.atan(lurch*16/3.1);
             	double d = Math.sqrt(Math.pow(3.1/16, 2)+Math.pow(lurch, 2));
@@ -51,13 +46,19 @@ public class PostRenderer extends TileEntitySpecialRenderer<PostPostTile>{
         		GL11.glScaled(sc, ys, sc);
         		GL11.glRotated(-tile.bases.rotation1, 0, 1, 0);
         		String s = tile.bases.base1.name;
+        		double sc2 = 100d/fontrenderer.getStringWidth(s);
+        		if(sc2>=1){
+        			sc2 = 1;
+        		}
+        		GL11.glScaled(sc2,  sc2,  sc2);
                 fontrenderer.drawString(s, 0, 0, color);
+        		GL11.glScaled(1/sc2,  1/sc2,  1/sc2);
         		GL11.glRotated(tile.bases.rotation1, 0, 1, 0);
         		GL11.glScaled(1/sc, 1/ys, 1/sc);
         		GL11.glTranslated(-dx, 0, -dz);
         	}
 
-        	if(tile.bases.base2!=null){
+        	if(tile.bases.base2!=null&&!tile.bases.base2.name.equals("null")&&!tile.bases.base2.name.equals("")){
         		GL11.glTranslated(0, 0.5d, 0);
         		double lurch = tile.bases.flip2?0.45-fontrenderer.getStringWidth(tile.bases.base2.name)*sc:-0.45;
             	double alpha = Math.atan(lurch*16/3.1);
@@ -69,7 +70,13 @@ public class PostRenderer extends TileEntitySpecialRenderer<PostPostTile>{
         		GL11.glScaled(sc, ys, sc);
         		GL11.glRotated(-tile.bases.rotation2, 0, 1, 0);
         		String s = tile.bases.base2.name;
+        		double sc2 = 100d/fontrenderer.getStringWidth(s);
+        		if(sc2>=1){
+        			sc2 = 1;
+        		}
+        		GL11.glScaled(sc2,  sc2,  sc2);
                 fontrenderer.drawString(s, 0, 0, color);
+        		GL11.glScaled(1/sc2,  1/sc2,  1/sc2);
         		GL11.glRotated(tile.bases.rotation1, 0, 1, 0);
         		GL11.glScaled(1/sc, 1/ys, 1/sc);
         		GL11.glTranslated(-dx, 0, -dz);

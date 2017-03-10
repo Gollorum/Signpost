@@ -6,16 +6,20 @@ import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.messages.BaseUpdateClientMessage;
 import gollorum.signpost.util.BaseInfo;
+import gollorum.signpost.util.StonedHashSet;
 
 public class BaseUpdateClientHandler implements IMessageHandler<BaseUpdateClientMessage, IMessage> {
 
 	@Override
 	public IMessage onMessage(BaseUpdateClientMessage message, MessageContext ctx) {
+		StonedHashSet toDelete = new StonedHashSet();
+		toDelete.addAll(PostHandler.allWaystones);
 		for (BaseInfo now : message.waystones) {
 			boolean hasChanged = false;
 			for (BaseInfo now2 : PostHandler.allWaystones) {
 				if (now2.update(now)) {
 					hasChanged = true;
+					toDelete.remove(now2);
 					break;
 				}
 			}
@@ -23,6 +27,7 @@ public class BaseUpdateClientHandler implements IMessageHandler<BaseUpdateClient
 				PostHandler.allWaystones.add(now);
 			}
 		}
+		PostHandler.allWaystones.removeAll(toDelete);
 		return null;
 	}
 

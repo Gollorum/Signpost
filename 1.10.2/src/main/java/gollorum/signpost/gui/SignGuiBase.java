@@ -42,7 +42,7 @@ public class SignGuiBase extends GuiScreen {
 		String before = nameInputBox.getText();
 		super.keyTyped(par1, par2);
 		this.nameInputBox.textboxKeyTyped(par1, par2);
-		if(nameInputBox.getText().equals(tile.ws.name)){
+		if(nameInputBox.getText().equals(tile.getBaseInfo().name)){
 			nameInputBox.setTextColor(Color.white.getRGB());
 			textChanged = false;
 		}else if (!before.equals(nameInputBox.getText())) {

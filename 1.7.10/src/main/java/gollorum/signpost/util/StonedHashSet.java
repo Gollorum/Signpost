@@ -7,9 +7,21 @@ import gollorum.signpost.management.PostHandler;
 
 public class StonedHashSet extends HashSet<BaseInfo>{
 
+	public BaseInfo getByPos(BlockPos pos){
+		for(BaseInfo now: this){
+			if(now.pos.equals(pos)){
+				return now;
+			}
+		}
+		return null;
+	}
+	
 	public boolean nameTaken(String name){
+		if(name==null){
+			return false;
+		}
 		for(BaseInfo now:this){
-			if(now.name.equals(name)){
+			if(name.equals(now.name)){
 				return true;
 			}
 		}
@@ -19,18 +31,16 @@ public class StonedHashSet extends HashSet<BaseInfo>{
 	@Override
 	public boolean add(BaseInfo now){
 		boolean nowFound = false;
-		boolean hasChanged = false;
 		for(BaseInfo org: this){
-			if(now.sameAs(org)){
-				hasChanged = hasChanged | org.update(now);
+			if(org.update(now)){
 				nowFound = true;
 				break;
 			}
 		}
 		if(!nowFound){
-			hasChanged = hasChanged | super.add(now);
+			nowFound = super.add(now);
 		}
-		return hasChanged;
+		return nowFound;
 	}
 	
 	@Override
@@ -55,4 +65,27 @@ public class StonedHashSet extends HashSet<BaseInfo>{
 		return ret;
 	}
 	
+	public boolean removeByPos(BlockPos pos){
+		BaseInfo toDelete = getByPos(pos);
+		if(toDelete==null){
+			return true;
+		}else{
+			return super.remove(toDelete);
+		}
+	}
+	
+	@Override
+	public boolean remove(Object obj) {
+		if(!(obj instanceof BaseInfo)){
+			return false;
+		}
+		BaseInfo toDelete = (BaseInfo)obj;
+		for(BaseInfo now: this){
+			if(now.sameAs(toDelete)){
+				toDelete = now;
+				break;
+			}
+		}
+		return super.remove(toDelete);
+	}
 }

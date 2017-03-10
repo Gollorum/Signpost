@@ -5,6 +5,7 @@ import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 import cpw.mods.fml.common.registry.LanguageRegistry;
+import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.messages.ChatMessage;
 import gollorum.signpost.network.messages.TeleportMeMessage;
@@ -18,6 +19,9 @@ public class TeleportMeHandler implements IMessageHandler<TeleportMeMessage, IMe
 
 	@Override
 	public IMessage onMessage(TeleportMeMessage message, MessageContext ctx) {
+		if(ConfigHandler.deactivateTeleportation){
+			return null;
+		}
 		if(PostHandler.canTeleport(ctx.getServerHandler().playerEntity, message.base)){
 			World world = PostHandler.getWorldByName(message.base.pos.world);
 			if(world == null){

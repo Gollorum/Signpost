@@ -3,9 +3,12 @@ package gollorum.signpost.blocks;
 import java.util.Map.Entry;
 
 import gollorum.signpost.SPEventHandler;
+import gollorum.signpost.blocks.PostPost.PostType;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
+import gollorum.signpost.network.messages.SendAllPostBasesMessage;
 import gollorum.signpost.network.messages.SendPostBasesMessage;
+import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.DoubleBaseInfo;
 import gollorum.signpost.util.MyBlockPos;
 import net.minecraft.nbt.NBTTagCompound;
@@ -16,27 +19,53 @@ import net.minecraftforge.fml.relauncher.Side;
 public class PostPostTile extends TileEntity {
 
 	public DoubleBaseInfo bases;
-	public boolean isItem = true;
+	public PostType type = PostType.OAK;
+	public boolean isItem = false;
+	public boolean isCanceled = false;
 
 	public PostPostTile(){
 		bases = new DoubleBaseInfo(null, null, 0, 0, false, false);
-		SPEventHandler.scheduleTask(new Runnable(){
+		SPEventHandler.scheduleTask(new BoolRun() {
 			@Override
-			public void run() {
-				MyBlockPos myPos = toPos();
-				if(FMLCommonHandler.instance().getSide().equals(Side.SERVER)){
-					PostHandler.posts.put(myPos, bases);
-				}else{
-					for(Entry<MyBlockPos, DoubleBaseInfo> now: PostHandler.posts.entrySet()){
-						if(now.getKey().equals(myPos)){
-							bases = now.getValue();
-							return;
-						}
-					}
-					PostHandler.posts.put(myPos, bases);
+			public boolean run() {
+				if(isCanceled||isItem){
+					return true;
+				}
+				if(worldObj==null){
+					return false;
+				}
+				init();
+				return true;
+			}
+		});
+	}
+
+
+	public PostPostTile(PostType type){
+		this();
+		this.type = type;
+	}
+	
+	private void init(){
+		MyBlockPos myPos = toPos();
+		if(FMLCommonHandler.instance().getSide().equals(Side.SERVER)){
+			PostHandler.posts.put(myPos, bases);
+		}else{
+			for(Entry<MyBlockPos, DoubleBaseInfo> now: PostHandler.posts.entrySet()){
+				if(now.getKey().equals(myPos)){
+					bases = now.getValue();
+					return;
 				}
 			}
-		}, 20);
+			PostHandler.posts.put(myPos, bases);
+		}
+	}
+
+	public void onBlockDestroy(MyBlockPos pos) {
+		isCanceled = true;
+		if(PostHandler.posts.remove(pos)!=null){
+			NetworkHandler.netWrap.sendToAll(new SendAllPostBasesMessage());
+		}
 	}
 
 	public MyBlockPos toPos(){
@@ -57,9 +86,6 @@ public class PostPostTile extends TileEntity {
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound tagCompound) {
 		super.writeToNBT(tagCompound);
-//		if(!FMLCommonHandler.instance().getSide().equals(Side.SERVER)){
-//			return tagCompound;
-//		}
 		tagCompound.setString("base1", ""+bases.base1);
 		tagCompound.setString("base2", ""+bases.base2);
 		tagCompound.setInteger("rot1", bases.rotation1);
@@ -72,10 +98,6 @@ public class PostPostTile extends TileEntity {
 	@Override
 	public void readFromNBT(NBTTagCompound tagCompound) {
 		super.readFromNBT(tagCompound);
-//		System.out.println("read: "+world);
-//		if(!FMLCommonHandler.instance().getSide().equals(Side.SERVER)){
-//			return;
-//		}
 		
 		bases.base1 = PostHandler.getWSbyName(tagCompound.getString("base1"));
 		bases.base2 = PostHandler.getWSbyName(tagCompound.getString("base2"));
@@ -86,14 +108,17 @@ public class PostPostTile extends TileEntity {
 		bases.flip1 = tagCompound.getBoolean("flip1");
 		bases.flip2 = tagCompound.getBoolean("flip2");
 
-		if(FMLCommonHandler.instance().getSide().equals(Side.SERVER)){
-			SPEventHandler.scheduleTask(new Runnable(){
-				@Override
-				public void run() {
-					NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(toPos(), bases));
+		SPEventHandler.scheduleTask(new BoolRun(){
+			@Override
+			public boolean run() {
+				if(worldObj==null){
+					return false;
+				}else{
+					NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(new MyBlockPos(worldObj, pos, dim()), bases));
+					return true;
 				}
-			}, 10);
-		}
+			}
+		});
 	}
-	
+
 }

@@ -1,8 +1,20 @@
 tile.signpost:base.name=Wegstein
-tile.signpost:post.name=Wegweiser
+tile.signpost:postoak.name=Wegweiser - Eiche
+tile.signpost:postacacia.name=Wegweiser - Akazie
+tile.signpost:postbigoak.name=Wegweiser - Schwarzeiche
+tile.signpost:postbirch.name=Wegweiser - Birke
+tile.signpost:postiron.name=Wegweiser - Eisen
+tile.signpost:postjungle.name=Wegweiser - Tropenholz
+tile.signpost:postspruce.name=Wegweiser - Fichte
+tile.signpost:poststone.name=Wegweiser - Stein
 
 item.signpost:wrench.name=Wegweiser-Werkzeug
 
 signpost.discovered=Du hast '<Waystone>' entdeckt!
 signpost.notDiscovered=Du hast <Waystone> noch nicht entdeckt
 signpost.errorWorld=FEHLER: Die Welt '<world>' existiert nicht
+signpost.payment=Du musst <amount>x<itemName> bezahlen, um diesen Wegweiser verwenden zu können
+
+signpost.guiPrev=Der Wegstein ist <distance> Blöcke entfernt. Spieler werden <amount>x<itemName> bezahlen müssen.
+signpost.guiWorldDim=Der Wegstein ist nicht in dieser Welt/Dimension. Interdimensionale Wegweiser sind deaktivert.
+signpost.guiTooFar=Der Wegstein ist zu weit entfernt (<distance> Blöcke). Die maximale Distanz beträgt <maxDist> Blöcke.

@@ -1,5 +1,6 @@
 package gollorum.signpost.util;
 
+import gollorum.signpost.management.ConfigHandler;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
@@ -36,6 +37,24 @@ public class MyBlockPos{
 		this.dim = dim;
 	}
 
+	public Connection canConnectTo(BaseInfo inf){
+		if(inf==null){
+			return Connection.VALID;
+		}
+		if(ConfigHandler.deactivateTeleportation){
+			return Connection.VALID;
+		}
+		if(!(ConfigHandler.interdimensional||(sameWorld(inf.pos) && sameDim(inf.pos)))){
+			return Connection.WORLD;
+		}
+		if(ConfigHandler.maxDist>-1&&distance(inf.pos)>ConfigHandler.maxDist){
+			return Connection.DIST;
+		}
+		return Connection.VALID;
+	}
+
+	public static enum Connection{VALID, WORLD, DIST}
+	
 	public void writeToNBT(NBTTagCompound tC){
 		int[] arr = {x, y, z, dim};
 		tC.setIntArray("Position", arr);
@@ -63,33 +82,70 @@ public class MyBlockPos{
 		int dim = buf.readInt();
 		return new MyBlockPos(world, x, y, z, dim);
 	}
-	
+
 	@Override
 	public boolean equals(Object obj){
 		if(!(obj instanceof MyBlockPos)){
-			return super.equals(obj);
+			return false;
 		}
 		MyBlockPos other = (MyBlockPos)obj;
-			return other.x==this.x &&
-					other.y==this.y &&
-					other.z==this.z &&
-					(other.dim==this.dim || other.dim==Integer.MIN_VALUE || this.dim == Integer.MIN_VALUE) &&
-					(other.world.equals(world) || other.world.equals("") || world.equals(""));
+			if(other.x!=this.x){
+				return false;
+			}else if(other.y!=this.y){
+				return false;
+			}else if(other.z!=this.z){
+				return false;
+			}else if(!sameWorld(other)){
+				return false;
+			}else if(!sameDim(other)){
+				return false;
+			}else return true;
 	}
 	
+	public boolean sameWorld(MyBlockPos other){
+		if(other.world.equals("")){
+			other.world = this.world;
+		}else if(this.world.equals("")){
+			this.world = other.world;
+		}else if(!this.world.equals(other.world)){
+			return false;
+		}
+		return true;
+	}
+	
+	public boolean sameDim(MyBlockPos other){
+		if(other.dim==Integer.MIN_VALUE || this.dim == Integer.MIN_VALUE){
+			other.dim = this.dim = Math.max(other.dim, this.dim);
+		}else if(other.dim!=this.dim){
+				return false;
+		}
+		return true;
+	}
+
 	public MyBlockPos update(MyBlockPos newPos){
 		x = newPos.x;
 		y = newPos.y;
 		z = newPos.z;
 		if(!(newPos.dim==Integer.MIN_VALUE)){
 			dim = newPos.dim;
+		}else{
+			newPos.dim = dim;
 		}
 		if(!newPos.world.equals("")){
 			world = newPos.world;
+		}else{
+			newPos.world = world;
 		}
 		return this;
 	}
 	
+	public double distance(MyBlockPos other){
+		int dx = this.x-other.x;
+		int dy = this.y-other.y;
+		int dz = this.z-other.z;
+		return Math.sqrt(dx*dx+dy*dy+dz*dz);
+	}
+
 	public BlockPos toBlockPos(){
 		return new BlockPos(x, y, z);
 	}

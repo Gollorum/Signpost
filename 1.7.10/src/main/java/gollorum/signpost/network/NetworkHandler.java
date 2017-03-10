@@ -8,6 +8,7 @@ import gollorum.signpost.network.handlers.BaseUpdateClientHandler;
 import gollorum.signpost.network.handlers.BaseUpdateServerHandler;
 import gollorum.signpost.network.handlers.ChatHandler;
 import gollorum.signpost.network.handlers.InitPlayerResponseHandler;
+import gollorum.signpost.network.handlers.OpenGuiHandler;
 import gollorum.signpost.network.handlers.SendAllPostBasesHandler;
 import gollorum.signpost.network.handlers.SendDiscoveredToServerHandler;
 import gollorum.signpost.network.handlers.SendPostBasesHandler;
@@ -16,6 +17,7 @@ import gollorum.signpost.network.messages.BaseUpdateClientMessage;
 import gollorum.signpost.network.messages.BaseUpdateServerMessage;
 import gollorum.signpost.network.messages.ChatMessage;
 import gollorum.signpost.network.messages.InitPlayerResponseMessage;
+import gollorum.signpost.network.messages.OpenGuiMessage;
 import gollorum.signpost.network.messages.SendAllPostBasesMessage;
 import gollorum.signpost.network.messages.SendDiscoveredToServerMessage;
 import gollorum.signpost.network.messages.SendPostBasesMessage;
@@ -35,6 +37,7 @@ public class NetworkHandler {
 		netWrap.registerMessage(SendAllPostBasesHandler.class, SendAllPostBasesMessage.class, 6, Side.CLIENT);
 		netWrap.registerMessage(TeleportMeHandler.class, TeleportMeMessage.class, 7, Side.SERVER);
 		netWrap.registerMessage(ChatHandler.class, ChatMessage.class, 8, Side.CLIENT);
+		netWrap.registerMessage(OpenGuiHandler.class, OpenGuiMessage.class, 9, Side.CLIENT);
 	}
 	
 }

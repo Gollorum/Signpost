@@ -6,40 +6,72 @@ import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.BaseUpdateClientMessage;
 import gollorum.signpost.network.messages.BaseUpdateServerMessage;
 import gollorum.signpost.util.BaseInfo;
+import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.MyBlockPos;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
 
 public class BasePostTile extends TileEntity {
 
-	public BaseInfo ws;
+	public boolean isCanceled = false;
 
 	public BasePostTile() {
-		SPEventHandler.scheduleTask(new Runnable() {
+		SPEventHandler.scheduleTask(new BoolRun() {
 			@Override
-			public void run() {
-				boolean found = false;
-				for (BaseInfo now : PostHandler.allWaystones) {
-					if (now.sameAs(new BaseInfo(null, new MyBlockPos("", pos, worldObj.provider.getDimension()), null))) {
-						ws = now;
-						found = true;
-						break;
-					}
+			public boolean run() {
+				if(isCanceled){
+					return true;
 				}
-				if (!found) {
-					ws = new BaseInfo(null, new MyBlockPos("", pos, worldObj.provider.getDimension()), null);
-					PostHandler.allWaystones.add(ws);
+				if(worldObj==null){
+					return false;
 				}
+				init();
+				return true;
 			}
-		}, 20);
+		});
+	}
+
+	public BaseInfo getBaseInfo(){
+		return PostHandler.allWaystones.getByPos(toPos());
+	}
+	
+	public void init(){
+		boolean found = false;
+		if(getBaseInfo()!=null){
+			return;
+		}
+		PostHandler.allWaystones.add(new BaseInfo(null, toPos(), null));
+	}
+
+	public MyBlockPos toPos(){
+		if(worldObj==null||worldObj.isRemote){
+			return new MyBlockPos("", pos.getX(), pos.getY(), pos.getZ(), dim());
+		}else{
+			return new MyBlockPos(worldObj.getWorldInfo().getWorldName(), pos.getX(), pos.getY(), pos.getZ(), dim());
+		}
+	}
+
+	public int dim(){
+		if(worldObj==null||worldObj.provider==null){
+			return Integer.MIN_VALUE;
+		}else
+			return worldObj.provider.getDimension();
+	}
+	
+	public void onBlockDestroy(MyBlockPos pos) {
+		isCanceled = true;
+		if(PostHandler.allWaystones.removeByPos(pos)){
+			NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage().init());
+		}
 	}
 
 	public void setName(String name) {
+		BaseInfo ws = getBaseInfo();
 		ws.name = name;
 		NetworkHandler.netWrap.sendToServer(new BaseUpdateServerMessage(ws, false));
 	}
 
 	public String getName() {
+		BaseInfo ws = getBaseInfo();
 		return ws == null ? "null" : ws.toString();
 	}
 
@@ -47,4 +79,5 @@ public class BasePostTile extends TileEntity {
 	public String toString() {
 		return "wsn:" + getName();
 	}
+
 }

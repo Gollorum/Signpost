@@ -5,15 +5,19 @@ import gollorum.signpost.blocks.PostPostTile;
 import gollorum.signpost.management.PlayerStorage;
 import gollorum.signpost.management.PlayerStore;
 import gollorum.signpost.network.NetworkHandler;
+import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 
 public class CommonProxy {
 
+	public static BlockHandler blockHandler = new BlockHandler();
+	
 	void preInit(){
-		BlockHandler.init();
-		BlockHandler.register();
+		blockHandler.init();
+		blockHandler.register();
 
 		ItemHandler.init();
 		ItemHandler.register();
@@ -40,4 +44,8 @@ public class CommonProxy {
 		CapabilityManager.INSTANCE.register(PlayerStore.class, new PlayerStorage(), PlayerStore.class);
 	}
 
+	public World getWorld(MessageContext ctx){
+		return ctx.getServerHandler().playerEntity.worldObj;
+	}
+	
 }

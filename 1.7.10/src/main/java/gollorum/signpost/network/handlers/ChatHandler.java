@@ -16,10 +16,22 @@ public class ChatHandler implements IMessageHandler<ChatMessage, IMessage> {
 		if(out.equals("")){
 			out = LanguageRegistry.instance().getStringLocalization(message.message, "en_US");
 		}
-		System.out.println(out);
-		out = out.replaceAll(message.keyword, message.replacement);
+		for(int i=0; i<message.keyword.length; i++){
+			out = out.replaceAll(message.keyword[i], getReplacement(message.replacement[i]));
+		}
 		Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText(out));
 		return null;
+	}
+	
+	public String getReplacement(String replace){
+		String ret = LanguageRegistry.instance().getStringLocalization(replace);
+		if(!ret.equals("")){
+			return ret;
+		}
+		if(!(ret = LanguageRegistry.instance().getStringLocalization(replace, "en_US")).equals("")){
+			return ret;
+		}
+		return replace;
 	}
 
 }

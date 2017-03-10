@@ -5,8 +5,8 @@ public class DoubleBaseInfo {
 	public BaseInfo base1;
 	public BaseInfo base2;
 	
-	public int rotation1 = 0;
-	public int rotation2 = 45;
+	public int rotation1 = 90;
+	public int rotation2 = 90;
 
 	public boolean flip1;
 	public boolean flip2;

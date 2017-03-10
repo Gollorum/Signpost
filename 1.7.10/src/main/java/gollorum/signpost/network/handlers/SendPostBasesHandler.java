@@ -5,12 +5,17 @@ import java.util.Map.Entry;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
+import cpw.mods.fml.relauncher.Side;
 import gollorum.signpost.Signpost;
+import gollorum.signpost.blocks.PostPost;
+import gollorum.signpost.blocks.PostPostTile;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.SendPostBasesMessage;
 import gollorum.signpost.util.BlockPos;
 import gollorum.signpost.util.DoubleBaseInfo;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.World;
 
 public class SendPostBasesHandler implements IMessageHandler<SendPostBasesMessage, IMessage>{
 
@@ -22,17 +27,14 @@ public class SendPostBasesHandler implements IMessageHandler<SendPostBasesMessag
 				now.getValue().rotation2 = message.base2rot;
 				now.getValue().flip1 = message.flip1;
 				now.getValue().flip2 = message.flip2;
-				if(message.base1.equals("null")){
-					now.getValue().base1 = null;
-				}else{
-					now.getValue().base1 = PostHandler.getWSbyName(message.base1);
+				
+				PostPostTile tile = PostPost.getWaystonePostTile(Signpost.proxy.getWorld(ctx), message.pos.x, message.pos.y, message.pos.z);
+				now.getValue().base1 = PostHandler.getWSbyName(message.base1);
+				now.getValue().base2 = PostHandler.getWSbyName(message.base2);
+				if(tile.bases!=now.getValue()){
+					tile.bases = now.getValue();
 				}
-				if(message.base2.equals("null")){
-					now.getValue().base2 = null;
-				}else{
-					now.getValue().base2 = PostHandler.getWSbyName(message.base2);
-				}
-				if(Signpost.serverSide){
+				if(ctx.side.equals(Side.SERVER)){
 					NetworkHandler.netWrap.sendToAll(message);
 				}
 				return null;
