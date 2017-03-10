@@ -45,6 +45,15 @@ public class PostHandler {
 			return super.remove(key);
 		}
 
+		public DoubleBaseInfo get(Object obj){
+			for(Entry<MyBlockPos, DoubleBaseInfo> now: this.entrySet()){
+				if(now.getKey().equals(obj)){
+					return now.getValue();
+				}
+			}
+			return null;
+		}
+		
 		public void keepSame(HashMap<MyBlockPos, DoubleStringInt> posts) {
 			HashSet<MyBlockPos> toDelete = new HashSet<MyBlockPos>();
 			toDelete.addAll(this.keySet());
@@ -66,7 +75,7 @@ public class PostHandler {
 			return new BaseInfo(name, null, null);
 		}else{
 			for(BaseInfo now:allWaystones){
-				if(now.name.equals(name)){
+				if(name.equals(now.name)){
 					return now;
 				}
 			}
@@ -84,18 +93,11 @@ public class PostHandler {
 				NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.errorWorld", "<world>", destination.pos.world), player);
 			}else{
 				player.inventory.clearMatchingItems(ConfigHandler.cost, 0, stackSize, null);
-//				if(Con-igHandler.cost!=null){
-//					for(int i=0; i<stackSize; i++){
-//						player.inventory.consumeInventoryItem(ConfigHandler.cost);
-//					}
-//				}
 				if(!player.world.equals(world)){
 					player.setWorld(world);
-//					manager.transferEntityToWorld(player, 1, (WorldServer)player.worldObj, (WorldServer)world);
 				}
 				if(!(player.dimension==destination.pos.dim)){
 					player.changeDimension(destination.pos.dim);
-//					manager.transferPlayerToDimension(player, destination.pos.dim);
 				}
 				player.setPositionAndUpdate(destination.pos.x+0.5, destination.pos.y+1, destination.pos.z+0.5);
 			}
@@ -118,9 +120,11 @@ public class PostHandler {
 		if(destroyed){
 			if(allWaystones.remove(getWSbyName(newWS.name))){
 				for(Map.Entry<UUID, StringSet> now: playerKnownWaystones.entrySet()){
-					return(now.getValue().remove(newWS));
+					now.getValue().remove(newWS);
 				}
+				return true;
 			}
+			return false;
 		}
 		for(BaseInfo now: allWaystones){
 			if(now.update(newWS)){

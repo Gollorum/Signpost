@@ -2,7 +2,6 @@ package gollorum.signpost.blocks;
 
 import java.util.UUID;
 
-import gollorum.signpost.SPEventHandler;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
@@ -12,7 +11,6 @@ import gollorum.signpost.network.messages.ChatMessage;
 import gollorum.signpost.network.messages.OpenGuiMessage;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.BlockPos;
-import gollorum.signpost.util.BoolRun;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
@@ -56,7 +54,7 @@ public class BasePost extends BlockContainer {
 
 	@Override
 	public TileEntity createNewTileEntity(World world, int p_149915_2_) {
-		return new BasePostTile();
+		return new BasePostTile().setup();
 	}
 
 	public static BasePostTile getWaystoneRootTile(World world, int x, int y, int z) {
@@ -88,7 +86,7 @@ public class BasePost extends BlockContainer {
 			tile.getBaseInfo().setAll(ws);
 		}
 		PostHandler.addDiscovered(player.getUniqueID(), tile.getBaseInfo());
-		NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage().init());
+		NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
 	}
 
 	public static void placeClient(final World world, final BlockPos pos, final EntityPlayer player) {

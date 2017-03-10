@@ -4,10 +4,11 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 
 import gollorum.signpost.management.PostHandler;
+import gollorum.signpost.management.PostHandler.PostMap;
+import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.DoubleBaseInfo;
 import gollorum.signpost.util.MyBlockPos;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
@@ -34,6 +35,16 @@ public class SendAllPostBasesMessage implements IMessage{
 	}
 	
 	public HashMap<MyBlockPos, DoubleStringInt> posts = new HashMap<MyBlockPos, DoubleStringInt>();
+
+	public PostMap toPostMap(){
+		PostMap postMap = new PostMap();
+		for(Entry<MyBlockPos, DoubleStringInt> now: posts.entrySet()){
+			BaseInfo base1 = PostHandler.getWSbyName(now.getValue().string1);
+			BaseInfo base2 = PostHandler.getWSbyName(now.getValue().string2);
+			postMap.put(now.getKey(), new DoubleBaseInfo(base1, base2, now.getValue().int1, now.getValue().int2, now.getValue().bool1, now.getValue().bool2));
+		}
+		return postMap;
+	}
 	
 	public SendAllPostBasesMessage(){
 		for(Entry<MyBlockPos, DoubleBaseInfo> now: PostHandler.posts.entrySet()){

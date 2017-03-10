@@ -40,6 +40,15 @@ public class PostHandler {
 			return super.remove(key);
 		}
 
+		public DoubleBaseInfo get(Object obj){
+			for(Entry<BlockPos, DoubleBaseInfo> now: this.entrySet()){
+				if(now.getKey().equals(obj)){
+					return now.getValue();
+				}
+			}
+			return null;
+		}
+		
 		public void keepSame(HashMap<BlockPos, DoubleStringInt> posts) {
 			HashSet<BlockPos> toDelete = new HashSet<BlockPos>();
 			toDelete.addAll(this.keySet());
@@ -62,7 +71,7 @@ public class PostHandler {
 			return new BaseInfo(name, null, null);
 		}else{
 			for(BaseInfo now:allWaystones){
-				if(now.name.equals(name)){
+				if(name.equals(now.name)){
 					return now;
 				}
 			}
@@ -112,8 +121,9 @@ public class PostHandler {
 		if(destroyed){
 			if(allWaystones.remove(getWSbyName(newWS.name))){
 				for(Map.Entry<UUID, StringSet> now: playerKnownWaystones.entrySet()){
-					return(now.getValue().remove(newWS));
+					now.getValue().remove(newWS);
 				}
+				return true;
 			}
 			return false;
 		}

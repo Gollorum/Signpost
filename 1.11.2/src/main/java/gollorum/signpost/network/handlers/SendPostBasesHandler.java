@@ -19,24 +19,17 @@ public class SendPostBasesHandler implements IMessageHandler<SendPostBasesMessag
 
 	@Override
 	public IMessage onMessage(SendPostBasesMessage message, MessageContext ctx) {
-		for(Entry<MyBlockPos, DoubleBaseInfo> now: PostHandler.posts.entrySet()){
-			if(now.getKey().equals(message.pos)){
-				now.getValue().rotation1 = message.base1rot;
-				now.getValue().rotation2 = message.base2rot;
-				now.getValue().flip1 = message.flip1;
-				now.getValue().flip2 = message.flip2;
+		DoubleBaseInfo bases = PostHandler.posts.get(message.pos);
+		bases.rotation1 = message.base1rot;
+		bases.rotation2 = message.base2rot;
+		bases.flip1 = message.flip1;
+		bases.flip2 = message.flip2;
 
-				PostPostTile tile = PostPost.getWaystonePostTile(Signpost.proxy.getWorld(ctx), message.pos.toBlockPos());
-				now.getValue().base1 = PostHandler.getWSbyName(message.base1);
-				now.getValue().base2 = PostHandler.getWSbyName(message.base2);
-				if(tile.bases!=now.getValue()){
-					tile.bases = now.getValue();
-				}
-				if(ctx.side.equals(Side.SERVER)){
-					NetworkHandler.netWrap.sendToAll(message);
-				}
-				return null;
-			}
+		bases.base1 = PostHandler.getWSbyName(message.base1);
+		bases.base2 = PostHandler.getWSbyName(message.base2);
+
+		if(ctx.side.equals(Side.SERVER)){
+			NetworkHandler.netWrap.sendToAll(message);
 		}
 		return null;
 	}

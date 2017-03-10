@@ -10,11 +10,9 @@ import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.SendPostBasesMessage;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.BlockPos.Connection;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiOptionSlider;
+import gollorum.signpost.util.DoubleBaseInfo;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
-import net.minecraft.client.settings.GameSettings.Options;
 
 public class SignGuiPost extends GuiScreen {
 
@@ -36,14 +34,15 @@ public class SignGuiPost extends GuiScreen {
 	}
 
 	public void initGui() {
+		DoubleBaseInfo tilebases = tile.getBases();
 		base1InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137, 20);
 		base1InputBox.setMaxStringLength(23);
-		base1InputBox.setText(tile.bases.base1==null?"":tile.bases.base1.toString());
+		base1InputBox.setText(tilebases.base1==null?"":tilebases.base1.toString());
 		go1 = true;
 		
 		base2InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, this.height / 2 + 40, 137, 20);
 		base2InputBox.setMaxStringLength(23);
-		base2InputBox.setText(tile.bases.base2==null?"":tile.bases.base2.toString());
+		base2InputBox.setText(tilebases.base2==null?"":tilebases.base2.toString());
 		go2 = true;
 	}
 	
@@ -159,16 +158,17 @@ public class SignGuiPost extends GuiScreen {
 
 	@Override
 	public void onGuiClosed() {
+		DoubleBaseInfo tilebases = tile.getBases();
 		if(ConfigHandler.deactivateTeleportation||go2){
-			tile.bases.base1 = PostHandler.getWSbyName(base1InputBox.getText());
+			tilebases.base1 = PostHandler.getWSbyName(base1InputBox.getText());
 		}else{
-			tile.bases.base1 = null;
+			tilebases.base1 = null;
 		}
 		if(ConfigHandler.deactivateTeleportation||go1){
-			tile.bases.base2 = PostHandler.getWSbyName(base2InputBox.getText());
+			tilebases.base2 = PostHandler.getWSbyName(base2InputBox.getText());
 		}else{
-			tile.bases.base2 = null;
+			tilebases.base2 = null;
 		}
-		NetworkHandler.netWrap.sendToServer(new SendPostBasesMessage(tile.toPos(), tile.bases));
+		NetworkHandler.netWrap.sendToServer(new SendPostBasesMessage(tile.toPos(), tilebases));
 	}
 }

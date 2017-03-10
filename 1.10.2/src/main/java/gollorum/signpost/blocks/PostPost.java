@@ -10,6 +10,7 @@ import gollorum.signpost.network.messages.OpenGuiMessage;
 import gollorum.signpost.network.messages.SendAllPostBasesMessage;
 import gollorum.signpost.network.messages.SendPostBasesMessage;
 import gollorum.signpost.util.BaseInfo;
+import gollorum.signpost.util.DoubleBaseInfo;
 import gollorum.signpost.util.MyBlockPos;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -115,20 +116,21 @@ public class PostPost extends GolloBlock {
 		double playerZ = player.posZ;
 		if (player.getHeldItemMainhand() != null && player.getHeldItemMainhand().getItem() instanceof PostWrench) {
 			double deltaY = MyBlockPos.normalizedY(pos.getX()+0.5-playerX, pos.getY()+0.5-playerY, pos.getZ()+0.5-playerZ);
+			DoubleBaseInfo tilebases = tile.getBases();
 			if (player.isSneaking()) {
 				if (deltaY < lookY) {
-					tile.bases.flip1 = !tile.bases.flip1;
+					tilebases.flip1 = !tilebases.flip1;
 				} else {
-					tile.bases.flip2 = !tile.bases.flip2;
+					tilebases.flip2 = !tilebases.flip2;
 				}
 			} else {
 				if (deltaY < lookY) {
-					tile.bases.rotation1 = (tile.bases.rotation1 - 15) % 360;
+					tilebases.rotation1 = (tilebases.rotation1 - 15) % 360;
 				} else {
-					tile.bases.rotation2 = (tile.bases.rotation2 - 15) % 360;
+					tilebases.rotation2 = (tilebases.rotation2 - 15) % 360;
 				}
 			}
-			NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile.toPos(), tile.bases));
+			NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile.toPos(), tilebases));
 		}
 	}
 
@@ -142,27 +144,28 @@ public class PostPost extends GolloBlock {
 				return true;
 			}
 			PostPostTile tile = getTile(world, pos);
+			DoubleBaseInfo tilebases = tile.getBases();
 			if(player.isSneaking()){
 				if(hitY > 0.5){
-					tile.bases.flip1 = !tile.bases.flip1;
+					tilebases.flip1 = !tilebases.flip1;
 				}else{
-					tile.bases.flip2 = !tile.bases.flip2;
+					tilebases.flip2 = !tilebases.flip2;
 				}
 			}else{
 				if(hitY > 0.5){
-					tile.bases.rotation1 = (tile.bases.rotation1+15)%360;
+					tilebases.rotation1 = (tilebases.rotation1+15)%360;
 				}else{
-					tile.bases.rotation2 = (tile.bases.rotation2+15)%360;
+					tilebases.rotation2 = (tilebases.rotation2+15)%360;
 				}
 			}
-			NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile.toPos(), tile.bases));
+			NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile.toPos(), tilebases));
 		} else {
 			PostPostTile tile = getTile(world, pos);
 			if (!player.isSneaking()) {
 				if (ConfigHandler.deactivateTeleportation) {
 					return true;
 				}
-				BaseInfo destination = hitY > 0.5 ? tile.bases.base1 : tile.bases.base2;
+				BaseInfo destination = hitY > 0.5 ? tile.getBases().base1 : tile.getBases().base2;
 				if (destination != null) {
 					if (ConfigHandler.cost == null) {
 						PostHandler.teleportMe(destination, (EntityPlayerMP) player, 0);

@@ -18,7 +18,7 @@ public class BaseUpdateServerHandler implements IMessageHandler<BaseUpdateServer
 		}
 		PostHandler.updateWS(message.wayStone, message.destroyed);
 		if (PostHandler.updateWS(message.wayStone, message.destroyed)) {
-			NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage().init());
+			NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
 		}
 		return null;
 	}

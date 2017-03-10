@@ -5,6 +5,8 @@ import java.io.File;
 import gollorum.signpost.gui.SignGuiHandler;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
+import gollorum.signpost.management.PostHandler.PostMap;
+import gollorum.signpost.util.StonedHashSet;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -56,6 +58,8 @@ public class Signpost{
 	public void postInit(FMLPostInitializationEvent event){
 		proxy.postInit();
 		ConfigHandler.postInit();
+		PostHandler.allWaystones = new StonedHashSet();
+		PostHandler.posts = new PostMap();
 	}
 	
 }

@@ -58,7 +58,7 @@ public class BasePost extends GolloBlock {
 
 	@Override
 	public TileEntity createTileEntity(World world, IBlockState state) {
-		return new BasePostTile();
+		return new BasePostTile().setup();
 	}
 
 	public static BasePostTile getWaystoneRootTile(World world, BlockPos pos) {
@@ -85,7 +85,7 @@ public class BasePost extends GolloBlock {
 		UUID owner = player.getUniqueID();
 		if (PostHandler.updateWS(new BaseInfo(name, pos, owner), false)) {
 			PostHandler.addDiscovered(player.getUniqueID(), tile.getBaseInfo());
-			NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage().init());
+			NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
 		} else {
 			System.out.println("Dies ist ein Fehler und wird deshalb niemals auftreten. Ich bin also nur Einbildung :D");
 		}

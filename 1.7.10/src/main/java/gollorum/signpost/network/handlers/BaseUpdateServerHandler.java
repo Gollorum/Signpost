@@ -17,7 +17,7 @@ public class BaseUpdateServerHandler implements IMessageHandler<BaseUpdateServer
 			PostHandler.addDiscovered(ctx.getServerHandler().playerEntity.getUniqueID(), message.wayStone);
 		}
 		if (PostHandler.updateWS(message.wayStone, message.destroyed)) {
-			NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage().init());
+			NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
 		}
 		return null;
 	}

@@ -6,6 +6,8 @@ import java.util.Map.Entry;
 import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import gollorum.signpost.management.PostHandler;
+import gollorum.signpost.management.PostHandler.PostMap;
+import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.BlockPos;
 import gollorum.signpost.util.DoubleBaseInfo;
 import io.netty.buffer.ByteBuf;
@@ -33,6 +35,16 @@ public class SendAllPostBasesMessage implements IMessage{
 	}
 	
 	public HashMap<BlockPos, DoubleStringInt> posts = new HashMap<BlockPos, DoubleStringInt>();
+
+	public PostMap toPostMap(){
+		PostMap postMap = new PostMap();
+		for(Entry<BlockPos, DoubleStringInt> now: posts.entrySet()){
+			BaseInfo base1 = PostHandler.getWSbyName(now.getValue().string1);
+			BaseInfo base2 = PostHandler.getWSbyName(now.getValue().string2);
+			postMap.put(now.getKey(), new DoubleBaseInfo(base1, base2, now.getValue().int1, now.getValue().int2, now.getValue().bool1, now.getValue().bool2));
+		}
+		return postMap;
+	}
 	
 	public SendAllPostBasesMessage(){
 		for(Entry<BlockPos, DoubleBaseInfo> now: PostHandler.posts.entrySet()){

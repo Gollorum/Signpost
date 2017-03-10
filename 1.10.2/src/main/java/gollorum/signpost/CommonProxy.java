@@ -35,7 +35,6 @@ public class CommonProxy {
 	void postInit() {}
 
 	protected void registerTiles(){
-		System.out.println("register tiles");
 		GameRegistry.registerTileEntity(BasePostTile.class, "SignpostBaseTile");
 		GameRegistry.registerTileEntity(PostPostTile.class, "SignpostPostTile");
 	}

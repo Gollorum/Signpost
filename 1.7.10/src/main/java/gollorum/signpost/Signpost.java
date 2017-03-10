@@ -2,7 +2,6 @@ package gollorum.signpost;
 
 import java.io.File;
 
-import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -11,9 +10,11 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkRegistry;
-import cpw.mods.fml.relauncher.Side;
 import gollorum.signpost.gui.SignGuiHandler;
 import gollorum.signpost.management.ConfigHandler;
+import gollorum.signpost.management.PostHandler;
+import gollorum.signpost.management.PostHandler.PostMap;
+import gollorum.signpost.util.StonedHashSet;
 import net.minecraft.nbt.NBTTagCompound;
 
 @Mod(modid = Signpost.MODID, version = Signpost.VERSION, name = "SignPost")
@@ -53,6 +54,8 @@ public class Signpost{
 	@EventHandler
 	public void postInit(FMLPostInitializationEvent event){
 		ConfigHandler.postInit();
+		PostHandler.allWaystones = new StonedHashSet();
+		PostHandler.posts = new PostMap();
 	}
 	
 }

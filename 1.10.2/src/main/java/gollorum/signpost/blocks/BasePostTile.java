@@ -14,7 +14,9 @@ public class BasePostTile extends TileEntity {
 
 	public boolean isCanceled = false;
 
-	public BasePostTile() {
+	public BasePostTile() {}
+	
+	public BasePostTile setup(){
 		SPEventHandler.scheduleTask(new BoolRun() {
 			@Override
 			public boolean run() {
@@ -28,6 +30,7 @@ public class BasePostTile extends TileEntity {
 				return true;
 			}
 		});
+		return this;
 	}
 
 	public BaseInfo getBaseInfo(){
@@ -60,7 +63,7 @@ public class BasePostTile extends TileEntity {
 	public void onBlockDestroy(MyBlockPos pos) {
 		isCanceled = true;
 		if(PostHandler.allWaystones.removeByPos(pos)){
-			NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage().init());
+			NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
 		}
 	}
 

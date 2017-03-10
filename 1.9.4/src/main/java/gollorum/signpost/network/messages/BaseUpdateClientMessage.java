@@ -10,11 +10,8 @@ public class BaseUpdateClientMessage implements IMessage {
 
 	public StonedHashSet waystones = new StonedHashSet();
 	
-	public BaseUpdateClientMessage(){}
-	
-	public BaseUpdateClientMessage init(){
+	public BaseUpdateClientMessage(){
 		waystones = PostHandler.allWaystones;
-		return this;
 	}
 	
 	@Override

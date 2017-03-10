@@ -1,9 +1,5 @@
 package gollorum.signpost.blocks;
 
-import java.util.List;
-
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.items.PostWrench;
 import gollorum.signpost.management.ConfigHandler;
@@ -14,6 +10,7 @@ import gollorum.signpost.network.messages.OpenGuiMessage;
 import gollorum.signpost.network.messages.SendPostBasesMessage;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.BlockPos;
+import gollorum.signpost.util.DoubleBaseInfo;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
@@ -22,7 +19,6 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
@@ -106,20 +102,21 @@ public class PostPost extends BlockContainer {
 		pos.yCoord = y + 0.5 - pos.yCoord - player.eyeHeight;
 		pos.zCoord = z + 0.5 - pos.zCoord;
 		if (player.getHeldItem() != null && player.getHeldItem().getItem() instanceof PostWrench) {
+			DoubleBaseInfo tilebases = tile.getBases();
 			if (player.isSneaking()) {
 				if (pos.yCoord / pos.lengthVector() < lookVec.yCoord) {
-					tile.bases.flip1 = !tile.bases.flip1;
+					tilebases.flip1 = !tilebases.flip1;
 				} else {
-					tile.bases.flip2 = !tile.bases.flip2;
+					tilebases.flip2 = !tilebases.flip2;
 				}
 			} else {
 				if (pos.yCoord / pos.lengthVector() < lookVec.yCoord) {
-					tile.bases.rotation1 = (tile.bases.rotation1 - 15) % 360;
+					tilebases.rotation1 = (tilebases.rotation1 - 15) % 360;
 				} else {
-					tile.bases.rotation2 = (tile.bases.rotation2 - 15) % 360;
+					tilebases.rotation2 = (tilebases.rotation2 - 15) % 360;
 				}
 			}
-			NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile.toPos(), tile.bases));
+			NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile.toPos(), tilebases));
 		}
 	}
 
@@ -132,27 +129,28 @@ public class PostPost extends BlockContainer {
 				return true;
 			}
 			PostPostTile tile = getTile(world, x, y, z);
+			DoubleBaseInfo tilebases = tile.getBases();
 			if (player.isSneaking()) {
 				if (hitY > 0.5) {
-					tile.bases.flip1 = !tile.bases.flip1;
+					tilebases.flip1 = !tilebases.flip1;
 				} else {
-					tile.bases.flip2 = !tile.bases.flip2;
+					tilebases.flip2 = !tilebases.flip2;
 				}
 			} else {
 				if (hitY > 0.5) {
-					tile.bases.rotation1 = (tile.bases.rotation1 + 15) % 360;
+					tilebases.rotation1 = (tilebases.rotation1 + 15) % 360;
 				} else {
-					tile.bases.rotation2 = (tile.bases.rotation2 + 15) % 360;
+					tilebases.rotation2 = (tilebases.rotation2 + 15) % 360;
 				}
 			}
-			NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile.toPos(), tile.bases));
+			NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile.toPos(), tilebases));
 		} else {
 			PostPostTile tile = getTile(world, x, y, z);
 			if (!player.isSneaking()) {
 				if (ConfigHandler.deactivateTeleportation) {
 					return true;
 				}
-				BaseInfo destination = hitY > 0.5 ? tile.bases.base1 : tile.bases.base2;
+				BaseInfo destination = hitY > 0.5 ? tile.getBases().base1 : tile.getBases().base2;
 				if (destination != null) {
 					if (ConfigHandler.cost == null) {
 						PostHandler.teleportMe(destination, (EntityPlayerMP) player, 0);
