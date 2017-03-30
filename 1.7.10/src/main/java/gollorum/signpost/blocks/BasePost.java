@@ -79,13 +79,14 @@ public class BasePost extends BlockContainer {
 		BasePostTile tile = getWaystoneRootTile(world, pos.x, pos.y, pos.z);
 		String name = generateName();
 		UUID owner = player.getUniqueID();
-		BaseInfo ws = new BaseInfo(name, pos, owner);
-		if(tile.getBaseInfo()==null){
+		BaseInfo ws;
+		if((ws = tile.getBaseInfo())==null){
+			ws = new BaseInfo(name, pos, owner);
 			PostHandler.allWaystones.add(ws);
 		}else{
-			tile.getBaseInfo().setAll(ws);
+			ws.setAll(new BaseInfo(name, pos, owner));
 		}
-		PostHandler.addDiscovered(player.getUniqueID(), tile.getBaseInfo());
+		PostHandler.addDiscovered(player.getUniqueID(), ws);
 		NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
 	}
 

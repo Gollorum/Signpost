@@ -105,7 +105,7 @@ public class PostPost extends GolloBlock {
 
 	@Override
 	public void onBlockClicked(World world, BlockPos pos, EntityPlayer player) {
-		if (world.isRemote||ConfigHandler.securityLevelSignpost.canUse((EntityPlayerMP) player)) {
+		if (world.isRemote||!ConfigHandler.securityLevelSignpost.canUse((EntityPlayerMP) player)) {
 			return;
 		}
 		PostPostTile tile = getTile(world, pos);
@@ -182,6 +182,9 @@ public class PostPost extends GolloBlock {
 					}
 				}
 			} else {
+				if(!ConfigHandler.securityLevelSignpost.canUse((EntityPlayerMP) player)){
+					return true;
+				}
 				NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiPostID, pos.getX(), pos.getY(), pos.getZ()), (EntityPlayerMP) player);
 			}
 		}

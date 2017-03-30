@@ -106,7 +106,7 @@ public class PostPost extends GolloBlock {
 
 	@Override
 	public void onBlockClicked(World world, BlockPos pos, EntityPlayer player) {
-		if (world.isRemote||ConfigHandler.securityLevelSignpost.canUse((EntityPlayerMP) player)) {
+		if (world.isRemote||!ConfigHandler.securityLevelSignpost.canUse((EntityPlayerMP) player)) {
 			return;
 		}
 		PostPostTile tile = getTile(world, pos);
@@ -130,7 +130,9 @@ public class PostPost extends GolloBlock {
 					tilebases.rotation2 = (tilebases.rotation2 - 15) % 360;
 				}
 			}
-			NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile.toPos(), tilebases));
+			if(ConfigHandler.securityLevelSignpost.canUse((EntityPlayerMP) player)) {
+				NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile.toPos(), tilebases));
+			}
 		}
 	}
 

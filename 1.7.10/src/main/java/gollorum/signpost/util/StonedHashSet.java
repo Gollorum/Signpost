@@ -4,8 +4,9 @@ import java.util.Collection;
 import java.util.HashSet;
 
 import gollorum.signpost.management.PostHandler;
+import gollorum.signpost.util.collections.Lurchsauna;
 
-public class StonedHashSet extends HashSet<BaseInfo>{
+public class StonedHashSet extends Lurchsauna<BaseInfo>{
 
 	public BaseInfo getByPos(BlockPos pos){
 		for(BaseInfo now: this){
@@ -43,14 +44,14 @@ public class StonedHashSet extends HashSet<BaseInfo>{
 		return nowFound;
 	}
 	
-	@Override
+	/*@Override
 	public boolean addAll(Collection<? extends BaseInfo> c){
 		boolean hasChanged = false;
 		for(BaseInfo now: c){
 			hasChanged = hasChanged | add(now);
 		}
 		return hasChanged;
-	}
+	}*/
 	
 	public boolean addAll(HashSet<String> names){
 		boolean ret = false;

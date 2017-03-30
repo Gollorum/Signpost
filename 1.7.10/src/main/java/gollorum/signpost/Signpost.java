@@ -9,12 +9,15 @@ import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.event.FMLServerAboutToStartEvent;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import gollorum.signpost.gui.SignGuiHandler;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
-import gollorum.signpost.management.PostHandler.PostMap;
+import gollorum.signpost.util.BlockPos;
+import gollorum.signpost.util.DoubleBaseInfo;
 import gollorum.signpost.util.StonedHashSet;
+import gollorum.signpost.util.collections.Lurchpaerchensauna;
 import net.minecraft.nbt.NBTTagCompound;
 
 @Mod(modid = Signpost.MODID, version = Signpost.VERSION, name = "SignPost")
@@ -55,7 +58,12 @@ public class Signpost{
 	public void postInit(FMLPostInitializationEvent event){
 		ConfigHandler.postInit();
 		PostHandler.allWaystones = new StonedHashSet();
-		PostHandler.posts = new PostMap();
+		PostHandler.posts = new Lurchpaerchensauna<BlockPos, DoubleBaseInfo>();
 	}
-	
+
+    @EventHandler
+    public void preServerStart(FMLServerAboutToStartEvent event) {
+        PostHandler.init();
+    }
+
 }

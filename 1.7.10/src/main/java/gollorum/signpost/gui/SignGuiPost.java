@@ -11,6 +11,7 @@ import gollorum.signpost.network.messages.SendPostBasesMessage;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.BlockPos.Connection;
 import gollorum.signpost.util.DoubleBaseInfo;
+import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 
@@ -18,6 +19,8 @@ public class SignGuiPost extends GuiScreen {
 
 	private GuiTextField base1InputBox;
 	private GuiTextField base2InputBox;
+	
+	private GuiButton pointButton1;
 
 	private String std1 = "";
 	private int col1 = 0;
@@ -44,6 +47,8 @@ public class SignGuiPost extends GuiScreen {
 		base2InputBox.setMaxStringLength(23);
 		base2InputBox.setText(tilebases.base2==null?"":tilebases.base2.toString());
 		go2 = true;
+		
+//		pointButton1. TODO
 	}
 	
 	@Override
@@ -169,6 +174,6 @@ public class SignGuiPost extends GuiScreen {
 		}else{
 			tilebases.base2 = null;
 		}
-		NetworkHandler.netWrap.sendToServer(new SendPostBasesMessage(tile.toPos(), tilebases));
+		NetworkHandler.netWrap.sendToServer(new SendPostBasesMessage(tile, tilebases));
 	}
 }

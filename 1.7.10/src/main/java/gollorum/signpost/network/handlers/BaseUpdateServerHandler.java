@@ -7,6 +7,7 @@ import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.BaseUpdateClientMessage;
 import gollorum.signpost.network.messages.BaseUpdateServerMessage;
+import gollorum.signpost.util.BlockPos;
 
 public class BaseUpdateServerHandler implements IMessageHandler<BaseUpdateServerMessage, IMessage> {
 
@@ -17,6 +18,8 @@ public class BaseUpdateServerHandler implements IMessageHandler<BaseUpdateServer
 			PostHandler.addDiscovered(ctx.getServerHandler().playerEntity.getUniqueID(), message.wayStone);
 		}
 		if (PostHandler.updateWS(message.wayStone, message.destroyed)) {
+			BlockPos pos = message.wayStone.pos;
+			ctx.getServerHandler().playerEntity.worldObj.getTileEntity(pos.x, pos.y, pos.z).markDirty();
 			NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
 		}
 		return null;

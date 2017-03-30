@@ -1,19 +1,17 @@
 package gollorum.signpost.management;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.ChatMessage;
-import gollorum.signpost.network.messages.SendAllPostBasesMessage.DoubleStringInt;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.BlockPos;
 import gollorum.signpost.util.DoubleBaseInfo;
 import gollorum.signpost.util.StonedHashSet;
 import gollorum.signpost.util.StringSet;
+import gollorum.signpost.util.collections.Lurchpaerchensauna;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.management.ServerConfigurationManager;
 import net.minecraft.world.World;
@@ -22,10 +20,18 @@ import net.minecraft.world.WorldServer;
 public class PostHandler {
 
 	public static StonedHashSet allWaystones = new StonedHashSet();
-	public static HashMap<UUID, StringSet> playerKnownWaystones = new HashMap<UUID, StringSet>();
-	public static PostMap posts = new PostMap();	
+	public static Lurchpaerchensauna<BlockPos, DoubleBaseInfo> posts = new Lurchpaerchensauna<BlockPos, DoubleBaseInfo>();	
+//	public static PostMap posts = new PostMap();	
+	//ServerSide
+	public static Lurchpaerchensauna<UUID, StringSet> playerKnownWaystones = new Lurchpaerchensauna<UUID, StringSet>();
 	
-	public static class PostMap extends HashMap<BlockPos, DoubleBaseInfo>{
+	public static void init(){
+		allWaystones = new StonedHashSet();
+		playerKnownWaystones = new Lurchpaerchensauna<UUID, StringSet>();
+		posts = new Lurchpaerchensauna<BlockPos, DoubleBaseInfo>();
+	}
+	
+	/*public static class PostMap extends Lurchpaerchensauna<BlockPos, DoubleBaseInfo>{
 		@Override
 		public DoubleBaseInfo remove(Object key){
 			if(key instanceof BlockPos){
@@ -64,7 +70,7 @@ public class PostHandler {
 			}
 		}
 
-	}
+	}*/
 	
 	public static BaseInfo getWSbyName(String name){
 		if(ConfigHandler.deactivateTeleportation){
