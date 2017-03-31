@@ -18,3 +18,7 @@ signpost.payment=You have to pay <amount>x<itemName> to use this signpost
 signpost.guiPrev=The waystone is <distance> blocks away. Players will have to pay <amount>x<itemName> to use this.
 signpost.guiWorldDim=The waystone is not in the same world/dimension. Interdimensional travel is disabled.
 signpost.guiTooFar=The waystone is too far away (<distance> blocks). The maximum distance is <maxDist> blocks.
+
+signpost.confirmTeleport=Type '/signpostconfirm' to teleport to <Waystone> for <amount>x<itemName>.
+signpost.confirmTeleportNoCost=Type '/signpostconfirm' to teleport to <Waystone>.
+signpost.noConfirm=There is no signpost teleport to confirm. Teleportation requests expire after 30 seconds.
