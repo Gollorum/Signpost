@@ -4,6 +4,7 @@ import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.SendPostBasesMessage;
 import gollorum.signpost.util.DoubleBaseInfo;
+import gollorum.signpost.util.DoubleBaseInfo.OverlayType;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -20,6 +21,12 @@ public class SendPostBasesHandler implements IMessageHandler<SendPostBasesMessag
 		bases.flip2 = message.flip2;
 		bases.base1 = PostHandler.getWSbyName(message.base1);
 		bases.base2 = PostHandler.getWSbyName(message.base2);
+		
+		bases.overlay1 = OverlayType.get(message.overlay1);
+		bases.overlay2 = OverlayType.get(message.overlay2);
+		
+		bases.point1 = message.point1;
+		bases.point2 = message.point2;
 		if(ctx.side.equals(Side.SERVER)){
 			NetworkHandler.netWrap.sendToAll(message);
 		}

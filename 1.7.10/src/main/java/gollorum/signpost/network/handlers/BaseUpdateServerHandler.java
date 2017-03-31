@@ -7,7 +7,7 @@ import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.BaseUpdateClientMessage;
 import gollorum.signpost.network.messages.BaseUpdateServerMessage;
-import gollorum.signpost.util.BlockPos;
+import gollorum.signpost.util.BaseInfo;
 
 public class BaseUpdateServerHandler implements IMessageHandler<BaseUpdateServerMessage, IMessage> {
 
@@ -17,11 +17,16 @@ public class BaseUpdateServerHandler implements IMessageHandler<BaseUpdateServer
 		} else {
 			PostHandler.addDiscovered(ctx.getServerHandler().playerEntity.getUniqueID(), message.wayStone);
 		}
-		if (PostHandler.updateWS(message.wayStone, message.destroyed)) {
-			BlockPos pos = message.wayStone.pos;
-			ctx.getServerHandler().playerEntity.worldObj.getTileEntity(pos.x, pos.y, pos.z).markDirty();
-			NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
-		}
+		PostHandler.allWaystones.getByPos(message.wayStone.pos).setAll(message.wayStone);
+		NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
+//		if (PostHandler.updateWS(message.wayStone, message.destroyed)) {
+////			BlockPos pos = message.wayStone.pos;
+////			BasePostTile tile = (BasePostTile) ctx.getServerHandler().playerEntity.worldObj.getTileEntity(pos.x, pos.y, pos.z);
+//			BaseInfo base = PostHandler.allWaystones.getByPos(message.wayStone.pos);
+//			base;
+////			.markDirty()
+//			NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
+//		}
 		return null;
 	}
 

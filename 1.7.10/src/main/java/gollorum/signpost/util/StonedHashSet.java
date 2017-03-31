@@ -82,7 +82,7 @@ public class StonedHashSet extends Lurchsauna<BaseInfo>{
 		}
 		BaseInfo toDelete = (BaseInfo)obj;
 		for(BaseInfo now: this){
-			if(now.sameAs(toDelete)){
+			if(now.equals(toDelete)){
 				toDelete = now;
 				break;
 			}

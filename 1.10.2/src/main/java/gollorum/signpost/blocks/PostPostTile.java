@@ -9,7 +9,11 @@ import gollorum.signpost.network.messages.SendPostBasesMessage;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.DoubleBaseInfo;
+import gollorum.signpost.util.DoubleBaseInfo.OverlayType;
 import gollorum.signpost.util.MyBlockPos;
+import gollorum.signpost.util.math.tracking.DDDVector;
+import net.minecraft.entity.item.EntityItem;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 
@@ -19,8 +23,10 @@ public class PostPostTile extends TileEntity {
 	public boolean isItem = false;
 	public boolean isCanceled = false;
 
+	@Deprecated
+	public DoubleBaseInfo bases = null;
+	
 	public PostPostTile(){}
-
 
 	public PostPostTile(PostType type){
 		this();
@@ -30,14 +36,24 @@ public class PostPostTile extends TileEntity {
 	public DoubleBaseInfo getBases(){
 		DoubleBaseInfo bases = PostHandler.posts.get(toPos());
 		if(bases==null){
-			bases = new DoubleBaseInfo(null, null, 0, 0, false, false);
+			bases = new DoubleBaseInfo(null, null, 0, 0, false, false, null, null, false, false);
 			PostHandler.posts.put(toPos(), bases);
 		}
+		this.bases = bases;
 		return bases;
 	}
 
 	public void onBlockDestroy(MyBlockPos pos) {
 		isCanceled = true;
+		DoubleBaseInfo bases = getBases();
+		if(bases.overlay1!=null){
+			EntityItem item = new EntityItem(worldObj, pos.x, pos.y, pos.z, new ItemStack(bases.overlay1.item, 1));
+			worldObj.spawnEntityInWorld(item);
+		}
+		if(bases.overlay2!=null){
+			EntityItem item = new EntityItem(worldObj, pos.x, pos.y, pos.z, new ItemStack(bases.overlay2.item, 1));
+			worldObj.spawnEntityInWorld(item);
+		}
 		if(PostHandler.posts.remove(pos)!=null){
 			NetworkHandler.netWrap.sendToAll(new SendAllPostBasesMessage());
 		}
@@ -68,6 +84,10 @@ public class PostPostTile extends TileEntity {
 		tagCompound.setInteger("rot2", bases.rotation2);
 		tagCompound.setBoolean("flip1", bases.flip1);
 		tagCompound.setBoolean("flip2", bases.flip2);
+		tagCompound.setString("overlay1", ""+bases.overlay1);
+		tagCompound.setString("overlay2", ""+bases.overlay2);
+		tagCompound.setBoolean("point1", bases.point1);
+		tagCompound.setBoolean("point2", bases.point2);
 		return tagCompound;
 	}
 
@@ -83,7 +103,13 @@ public class PostPostTile extends TileEntity {
 
 		final boolean flip1 = tagCompound.getBoolean("flip1");
 		final boolean flip2 = tagCompound.getBoolean("flip2");
-		
+
+		final OverlayType overlay1 = OverlayType.get(tagCompound.getString("overlay1"));
+		final OverlayType overlay2 = OverlayType.get(tagCompound.getString("overlay2"));
+
+		final boolean point1 = tagCompound.getBoolean("point1");
+		final boolean point2 = tagCompound.getBoolean("point2");
+
 		SPEventHandler.scheduleTask(new BoolRun(){
 			@Override
 			public boolean run() {
@@ -100,11 +126,43 @@ public class PostPostTile extends TileEntity {
 					bases.rotation2 = rotation2;
 					bases.flip1 = flip1;
 					bases.flip2 = flip2;
-					NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(new MyBlockPos(worldObj, pos, dim()), bases));
+					bases.overlay1 = overlay1;
+					bases.overlay2 = overlay2;
+					bases.point1 = point1;
+					bases.point2 = point2;
+					NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage((PostPostTile) worldObj.getTileEntity(pos), bases));
 					return true;
 				}
 			}
 		});
+	}
+
+	public static double calcRot1(DoubleBaseInfo tilebases, int x, int z) {
+		if(tilebases.point1){
+			if(tilebases.base1==null){
+				return 0;
+			}else{
+				int dx = x-tilebases.base1.pos.x;
+				int dz = z-tilebases.base1.pos.z;
+				return DDDVector.genAngle(dx, dz)+Math.toRadians(-90+(tilebases.flip1?0:180)+(dx<0&&dz>0?180:0));
+			}
+		}else{
+			return Math.toRadians(tilebases.rotation1);
+		}
+	}
+
+	public static double calcRot2(DoubleBaseInfo tilebases, int x, int z) {
+		if(tilebases.point2){
+			if(tilebases.base2==null){
+				return 0;
+			}else{
+				int dx = x-tilebases.base2.pos.x;
+				int dz = z-tilebases.base2.pos.z;
+				return DDDVector.genAngle(dx, dz)+Math.toRadians(-90+(tilebases.flip2?0:180)+(dx<0&&dz>0?180:0));
+			}
+		}else{
+			return Math.toRadians(tilebases.rotation2);
+		}
 	}
 
 }

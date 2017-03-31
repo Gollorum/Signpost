@@ -49,6 +49,10 @@ public class SPEventHandler {
 	public static void scheduleTask(BoolRun task){
 		predicatedTasks.add(task);
 	}
+
+	public static boolean cancelTask(BoolRun task){
+		return predicatedTasks.remove(task);
+	}
 	
 	@SubscribeEvent
 	public void onTick(TickEvent event) {

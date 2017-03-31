@@ -44,8 +44,13 @@ public class BaseInfo {
 		return new BaseInfo(name, pos/*, adj*/, owner);
 	}
 
-	public boolean sameAs(BaseInfo other){
-		return other.pos.equals(this.pos);
+	@Override
+	public boolean equals(Object other){
+		if(!(other instanceof BaseInfo)){
+			return super.equals(other);
+		}else{
+			return ((BaseInfo)other).pos.equals(this.pos);
+		}
 	}
 	
 	public void setAll(BaseInfo newWS){
@@ -55,7 +60,7 @@ public class BaseInfo {
 	}
 	
 	public boolean update(BaseInfo newWS){
-		if(sameAs(newWS)){
+		if(equals(newWS)){
 			setAll(newWS);
 			return true;
 		}else{

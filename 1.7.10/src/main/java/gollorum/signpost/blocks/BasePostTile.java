@@ -75,7 +75,7 @@ public class BasePostTile extends TileEntity {
 	}
 
 	public String getName() {
-		return getBaseInfo() == null ? "nulll" : getBaseInfo().toString();
+		return getBaseInfo() == null ? "null" : getBaseInfo().toString();
 	}
 
 	@Override

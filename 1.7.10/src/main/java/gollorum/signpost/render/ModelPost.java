@@ -22,9 +22,6 @@ public class ModelPost extends ModelBase {
 		textureWidth = 24;
 		textureHeight = 22;
 
-//		textureWidth = 16;
-//		textureHeight = 16;
-
 		board1 = new Board(this, 8);
 		board2 = new Board(this, 0);
 
@@ -32,15 +29,7 @@ public class ModelPost extends ModelBase {
 		post.addBox(-2F, 0F, -2F, 4, 16, 4, 0.0F);
 	}
 
-	public void render(Entity entity, float f, float f1, float f2, float f3, float f4, float f5) {
-		super.render(entity, f, f1, f2, f3, f4, f5);
-		post.render(f5);
-		board1.render(f5, false);
-		board2.render(f5, false);
-	}
-
 	public void render(PostRenderer postRenderer, float f1, float f5, DoubleBaseInfo tilebases, PostPostTile tile, double rotation1, double rotation2) {
-		postRenderer.setTexture(tile.type.texture);
 		super.render(null, 0, f1, 0, 0, 0, f5);
 		post.render(f5);
 		if ((tilebases.base1 != null&&!tilebases.base1.name.equals("null")&&!tilebases.base1.name.equals("")) || tile.isItem) {

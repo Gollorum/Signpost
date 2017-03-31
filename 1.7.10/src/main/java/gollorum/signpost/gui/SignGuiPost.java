@@ -20,8 +20,6 @@ public class SignGuiPost extends GuiScreen {
 	private GuiTextField base1InputBox;
 	private GuiTextField base2InputBox;
 	
-	private GuiButton pointButton1;
-
 	private String std1 = "";
 	private int col1 = 0;
 	private boolean go1;

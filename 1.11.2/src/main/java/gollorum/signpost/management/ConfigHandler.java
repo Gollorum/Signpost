@@ -14,6 +14,8 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 public class ConfigHandler {
 
 	private static Configuration config;
+
+	public static boolean skipTeleportConfirm;
 	
 	public static boolean deactivateTeleportation;
 	public static boolean interdimensional;
@@ -44,6 +46,7 @@ public class ConfigHandler {
 	
 	public static void init(File file) {
 		config = new Configuration(file);
+		loadClientSettings();
 		loadLimitation();
 		loadSecurity();
 		config.save();
@@ -54,6 +57,14 @@ public class ConfigHandler {
 		if(cost==null){
 			cost = (Item) Item.REGISTRY.getObject(new ResourceLocation("minecraft:"+paymentItem));
 		}
+	}
+
+	public static void loadClientSettings(){
+		String category = "Client Settings";
+		
+		config.addCustomCategoryComment(category, "Client-Side settings");
+		
+		skipTeleportConfirm = config.getBoolean("skipTeleportConfirm", category, true, "Directly teleports the player on waystone right-click");
 	}
 	
 	public static void loadLimitation(){

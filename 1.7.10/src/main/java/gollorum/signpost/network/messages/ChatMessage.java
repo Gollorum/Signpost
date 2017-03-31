@@ -25,6 +25,10 @@ public class ChatMessage implements IMessage {
 		this.replacement = replacement;
 	}
 	
+	public ChatMessage(String message) {
+		this(message, new String[0], new String[0]);
+	}
+
 	@Override
 	public void toBytes(ByteBuf buf) {
 		ByteBufUtils.writeUTF8String(buf, message);

@@ -161,6 +161,6 @@ public class SignGuiPost extends GuiScreen {
 		}else{
 			tilebases.base2 = null;
 		}
-		NetworkHandler.netWrap.sendToServer(new SendPostBasesMessage(tile.toPos(), tilebases));
+		NetworkHandler.netWrap.sendToServer(new SendPostBasesMessage(tile, tilebases));
 	}
 }

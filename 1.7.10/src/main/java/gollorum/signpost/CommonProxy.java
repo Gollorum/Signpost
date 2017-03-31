@@ -5,8 +5,6 @@ import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 import cpw.mods.fml.common.registry.GameRegistry;
 import gollorum.signpost.blocks.BasePost;
 import gollorum.signpost.blocks.BasePostTile;
-import gollorum.signpost.blocks.CustomPostPost;
-import gollorum.signpost.blocks.CustomPostPostTile;
 import gollorum.signpost.blocks.PostPost;
 import gollorum.signpost.blocks.PostPost.PostType;
 import gollorum.signpost.blocks.PostPostTile;
@@ -22,7 +20,6 @@ import net.minecraftforge.common.MinecraftForge;
 public class CommonProxy {
 
 	public BasePost base = new BasePost();
-	public CustomPostPost customPost = new CustomPostPost();
 	public PostPost post_oak = new PostPost(PostType.OAK);
 	public PostPost post_spruce = new PostPost(PostType.SPRUCE);
 	public PostPost post_birch = new PostPost(PostType.BIRCH);
@@ -48,7 +45,6 @@ public class CommonProxy {
 
 	protected void registerBlocks(){
 		GameRegistry.registerBlock(base, "SignpostBase");
-		GameRegistry.registerBlock(customPost, "SignpostCustomPost");
 		for(PostPost now: posts){
 			GameRegistry.registerBlock(now, "SignpostPost"+now.type.name());
 		}
@@ -57,7 +53,6 @@ public class CommonProxy {
 	protected void registerTiles(){
 		GameRegistry.registerTileEntity(BasePostTile.class, "SignpostBaseTile");
 		GameRegistry.registerTileEntity(PostPostTile.class, "SignpostPostTile");
-		GameRegistry.registerTileEntity(CustomPostPostTile.class, "SignpostCustomPostTile");
 	}
 	
 	protected void registerItems(){

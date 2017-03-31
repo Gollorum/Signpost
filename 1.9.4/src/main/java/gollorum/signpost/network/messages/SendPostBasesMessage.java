@@ -1,9 +1,9 @@
 package gollorum.signpost.network.messages;
 
+import gollorum.signpost.blocks.PostPostTile;
 import gollorum.signpost.util.DoubleBaseInfo;
 import gollorum.signpost.util.MyBlockPos;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
@@ -19,17 +19,28 @@ public class SendPostBasesMessage implements IMessage {
 
 	public boolean flip1;
 	public boolean flip2;
-	
+
+	public String overlay1;
+	public String overlay2;
+
+	public boolean point1;
+	public boolean point2;
+
 	public SendPostBasesMessage(){}
-	
-	public SendPostBasesMessage(MyBlockPos pos, DoubleBaseInfo base) {
-		this.pos = pos;
+
+	public SendPostBasesMessage(PostPostTile tile, DoubleBaseInfo base) {
+		tile.markDirty();
+		this.pos = tile.toPos();
 		this.base1 = ""+base.base1;
 		this.base2 = ""+base.base2;
 		base1rot = base.rotation1;
 		base2rot = base.rotation2;
 		flip1 = base.flip1;
 		flip2 = base.flip2;
+		overlay1 = ""+base.overlay1;
+		overlay2 = ""+base.overlay2;
+		point1 = base.point1;
+		point2 = base.point2;
 	}
 
 	@Override
@@ -41,6 +52,10 @@ public class SendPostBasesMessage implements IMessage {
 		buf.writeInt(base2rot);
 		buf.writeBoolean(flip1);
 		buf.writeBoolean(flip2);
+		ByteBufUtils.writeUTF8String(buf, overlay1);
+		ByteBufUtils.writeUTF8String(buf, overlay2);
+		buf.writeBoolean(point1);
+		buf.writeBoolean(point2);
 	}
 
 	@Override
@@ -52,6 +67,10 @@ public class SendPostBasesMessage implements IMessage {
 		base2rot = buf.readInt();
 		flip1 = buf.readBoolean();
 		flip2 = buf.readBoolean();
+		overlay1 = ByteBufUtils.readUTF8String(buf);
+		overlay2 = ByteBufUtils.readUTF8String(buf);
+		point1 = buf.readBoolean();
+		point2 = buf.readBoolean();
 	}
 
 }

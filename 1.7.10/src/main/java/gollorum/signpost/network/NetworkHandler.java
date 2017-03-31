@@ -13,6 +13,7 @@ import gollorum.signpost.network.handlers.SendAllPostBasesHandler;
 import gollorum.signpost.network.handlers.SendDiscoveredToServerHandler;
 import gollorum.signpost.network.handlers.SendPostBasesHandler;
 import gollorum.signpost.network.handlers.TeleportMeHandler;
+import gollorum.signpost.network.handlers.TeleportRequestHandler;
 import gollorum.signpost.network.messages.BaseUpdateClientMessage;
 import gollorum.signpost.network.messages.BaseUpdateServerMessage;
 import gollorum.signpost.network.messages.ChatMessage;
@@ -22,6 +23,7 @@ import gollorum.signpost.network.messages.SendAllPostBasesMessage;
 import gollorum.signpost.network.messages.SendDiscoveredToServerMessage;
 import gollorum.signpost.network.messages.SendPostBasesMessage;
 import gollorum.signpost.network.messages.TeleportMeMessage;
+import gollorum.signpost.network.messages.TeleportRequestMessage;
 
 public class NetworkHandler {
 
@@ -38,6 +40,8 @@ public class NetworkHandler {
 		netWrap.registerMessage(TeleportMeHandler.class, TeleportMeMessage.class, 7, Side.SERVER);
 		netWrap.registerMessage(ChatHandler.class, ChatMessage.class, 8, Side.CLIENT);
 		netWrap.registerMessage(OpenGuiHandler.class, OpenGuiMessage.class, 9, Side.CLIENT);
+		netWrap.registerMessage(TeleportRequestHandler.class, TeleportRequestMessage.class, 10, Side.CLIENT);
+		netWrap.registerMessage(TeleportRequestHandler.class, TeleportRequestMessage.class, 11, Side.SERVER);
 	}
 	
 }

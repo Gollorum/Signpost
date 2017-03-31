@@ -19,6 +19,8 @@ import gollorum.signpost.network.messages.InitPlayerResponseMessage;
 import gollorum.signpost.network.messages.SendAllPostBasesMessage;
 import gollorum.signpost.util.BlockPos;
 import gollorum.signpost.util.BoolRun;
+import gollorum.signpost.util.collections.Lurchpaerchensauna;
+import gollorum.signpost.util.collections.Lurchsauna;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.event.entity.EntityEvent;
@@ -28,8 +30,8 @@ import net.minecraftforge.event.world.WorldEvent;
 
 public class SPEventHandler {
 
-	private static HashMap<Runnable, Integer> tasks = new HashMap<Runnable, Integer>();
-	private static HashSet<BoolRun> predicatedTasks = new HashSet<BoolRun>();
+	private static Lurchpaerchensauna<Runnable, Integer> tasks = new Lurchpaerchensauna<Runnable, Integer>();
+	private static Lurchsauna<BoolRun> predicatedTasks = new Lurchsauna<BoolRun>();
 
 	/**
 	 * Schedules a task
@@ -47,13 +49,17 @@ public class SPEventHandler {
 		predicatedTasks.add(task);
 	}
 	
+	public static boolean cancelTask(BoolRun task){
+		return predicatedTasks.remove(task);
+	}
+	
 	@SubscribeEvent
 	public void onTick(TickEvent event) {
 		if (!(event instanceof TickEvent.ServerTickEvent || event instanceof TickEvent.ClientTickEvent)) {
 			return;
 		}
 		// time++;
-		HashMap<Runnable, Integer> remainingTasks = new HashMap<Runnable, Integer>();
+		Lurchpaerchensauna<Runnable, Integer> remainingTasks = new Lurchpaerchensauna<Runnable, Integer>();
 		for (Entry<Runnable, Integer> now : tasks.entrySet()) {
 			int val = now.getValue()-1;
 			if (val < 2) {
@@ -64,7 +70,7 @@ public class SPEventHandler {
 		}
 		tasks = remainingTasks;
 		
-		HashSet<BoolRun> remainingPreds = new HashSet<BoolRun>();
+		Lurchsauna<BoolRun> remainingPreds = new Lurchsauna<BoolRun>();
 		for(BoolRun now: predicatedTasks){
 			if(!now.run()){
 				remainingPreds.add(now);

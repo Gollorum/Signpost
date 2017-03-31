@@ -15,6 +15,8 @@ public class ConfigHandler {
 
 	private static Configuration config;
 	
+	public static boolean skipTeleportConfirm;
+	
 	public static boolean deactivateTeleportation;
 	public static boolean interdimensional;
 	public static int maxDist;
@@ -44,6 +46,7 @@ public class ConfigHandler {
 	
 	public static void init(File file) {
 		config = new Configuration(file);
+		loadClientSettings();
 		loadLimitation();
 		loadSecurity();
 		config.save();
@@ -54,6 +57,14 @@ public class ConfigHandler {
 		if(cost==null){
 			cost = (Item) Item.itemRegistry.getObject("minecraft:"+paymentItem);
 		}
+	}
+	
+	public static void loadClientSettings(){
+		String category = "Client Settings";
+		
+		config.addCustomCategoryComment(category, "Client-Side settings");
+		
+		skipTeleportConfirm = config.getBoolean("skipTeleportConfirm", category, true, "Directly teleports the player on waystone right-click");
 	}
 	
 	public static void loadLimitation(){
@@ -67,7 +78,7 @@ public class ConfigHandler {
 		
 		maxDist = config.getInt("maxDistance", category, -1, -1, (int)Math.sqrt(Integer.MAX_VALUE), "The allowed distance between signpost an waystone (-1 = unlimited)");
 		
-		paymentItem = config.getString("paymentItem", category, "", "The item players have to pay in order to use a signpost (e.g. Minecraft:enderPearl, '' = free)");
+		paymentItem = config.getString("paymentItem", category, "", "The item players have to pay in order to use a signpost (e.g. minecraft:enderPearl, '' = free)");
 		
 		costMult = config.getInt("distancePerPayment", category, 0, 0, Integer.MAX_VALUE, "The distance a Player can teleport with one item (the total cost of a teleportation is calculated using the total distance)(0 = unlimited)");
 	}

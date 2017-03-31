@@ -12,21 +12,41 @@ import net.minecraft.util.ResourceLocation;
 
 public class PostRenderer extends TileEntitySpecialRenderer<PostPostTile>{
 
-	private ModelPost model;
+	private static final ModelPost model = new ModelPost();
+
+	public PostRenderer(){}
 	
-	public PostRenderer(){
-		model = new ModelPost();
+	void setTexture(ResourceLocation loc){
+		bindTexture(loc);
 	}
 	
 	@Override
-	public void renderTileEntityAt(PostPostTile tile, double x, double y, double z, float partialTicks, int destroyStage) {
-		DoubleBaseInfo tilebases = tile.getBases();
+    public void renderTileEntityAt(PostPostTile tile, double x, double y, double z, float partialTicks, int destroyStage){
+		DoubleBaseInfo tilebases = tile.bases;
+		if(tilebases==null){
+			tilebases = tile.getBases();
+		}
+		double rotation1 = PostPostTile.calcRot1(tilebases, tile.getPos().getX(), tile.getPos().getZ());
+		double rotation2 = PostPostTile.calcRot2(tilebases, tile.getPos().getX(), tile.getPos().getZ());
 		GL11.glPushMatrix();
 		GL11.glTranslated(x+0.5, y, z+0.5);
-		bindTexture(new ResourceLocation(Signpost.MODID + ":textures/blocks/"+tile.type.texture+".png"));
-		model.render((Entity)null, 0, 0.1f, 0, 0, 0, 0.0625f, tilebases, tile.isItem);
+		this.bindTexture(tile.type.texture);
+		model.render(this, 0.1f, 0.0625f, tilebases, tile, rotation1, rotation2);
+
+		//Overlays
+		if(!tile.isItem){
+			if(tilebases.base1!=null && tilebases.overlay1!=null){
+				bindTexture(new ResourceLocation(Signpost.MODID + ":textures/blocks/sign_overlay_"+tilebases.overlay1.texture+".png"));
+				model.renderOverlay1(tilebases, 0.0625f, rotation1);
+			}
+			if(tilebases.base2!=null && tilebases.overlay2!=null){
+				bindTexture(new ResourceLocation(Signpost.MODID + ":textures/blocks/sign_overlay_"+tilebases.overlay2.texture+".png"));
+				model.renderOverlay2(tilebases, 0.0625f, rotation2);
+			}
+		}
         
         FontRenderer fontrenderer = this.getFontRenderer();
+        GL11.glPushMatrix();
 		GL11.glTranslated(0, 0.8d, 0);
 		GL11.glRotated(180, 0, 0, 1);
 		GL11.glRotated(180, 0, 1, 0);
@@ -37,52 +57,49 @@ public class PostRenderer extends TileEntitySpecialRenderer<PostPostTile>{
 		
         if(!tile.isItem){
         	if(tilebases.base1!=null&&!tilebases.base1.name.equals("null")&&!tilebases.base1.name.equals("")){
-        		double lurch = tilebases.flip1?0.45-fontrenderer.getStringWidth(tilebases.base1.name)*sc:-0.45;
-            	double alpha = Math.atan(lurch*16/3.1);
-            	double d = Math.sqrt(Math.pow(3.1/16, 2)+Math.pow(lurch, 2));
-            	double beta = alpha + Math.toRadians(tilebases.rotation1);
-            	double dx = Math.sin(beta)*d;
-            	double dz = -Math.cos(beta)*d;
-        		GL11.glTranslated(dx, 0, dz);
-        		GL11.glScaled(sc, ys, sc);
-        		GL11.glRotated(-tilebases.rotation1, 0, 1, 0);
         		String s = tilebases.base1.name;
         		double sc2 = 100d/fontrenderer.getStringWidth(s);
         		if(sc2>=1){
         			sc2 = 1;
         		}
+        		double lurch = (tilebases.flip1?-0.2:0.2)-fontrenderer.getStringWidth(s)*sc*sc2/2;
+            	double alpha = Math.atan(lurch*16/3.001);
+            	double d = Math.sqrt(Math.pow(3.001/16, 2)+Math.pow(lurch, 2));
+            	double beta = alpha + rotation1;
+            	double dx = Math.sin(beta)*d;
+            	double dz = -Math.cos(beta)*d;
+            	GL11.glPushMatrix();
+        		GL11.glTranslated(dx, 0, dz);
+        		GL11.glScaled(sc, ys, sc);
+        		GL11.glRotated(-Math.toDegrees(rotation1), 0, 1, 0);
         		GL11.glScaled(sc2,  sc2,  sc2);
                 fontrenderer.drawString(s, 0, 0, color);
-        		GL11.glScaled(1/sc2,  1/sc2,  1/sc2);
-        		GL11.glRotated(tilebases.rotation1, 0, 1, 0);
-        		GL11.glScaled(1/sc, 1/ys, 1/sc);
-        		GL11.glTranslated(-dx, 0, -dz);
+                GL11.glPopMatrix();
         	}
 
         	if(tilebases.base2!=null&&!tilebases.base2.name.equals("null")&&!tilebases.base2.name.equals("")){
         		GL11.glTranslated(0, 0.5d, 0);
-        		double lurch = tilebases.flip2?0.45-fontrenderer.getStringWidth(tilebases.base2.name)*sc:-0.45;
-            	double alpha = Math.atan(lurch*16/3.1);
-            	double d = Math.sqrt(Math.pow(3.1/16, 2)+Math.pow(lurch, 2));
-            	double beta = alpha + Math.toRadians(tilebases.rotation2);
-            	double dx = Math.sin(beta)*d;
-            	double dz = -Math.cos(beta)*d;
-        		GL11.glTranslated(dx, 0, dz);
-        		GL11.glScaled(sc, ys, sc);
-        		GL11.glRotated(-tilebases.rotation2, 0, 1, 0);
         		String s = tilebases.base2.name;
         		double sc2 = 100d/fontrenderer.getStringWidth(s);
         		if(sc2>=1){
         			sc2 = 1;
         		}
+        		double lurch = (tilebases.flip2?-0.2:0.2)-fontrenderer.getStringWidth(s)*sc*sc2/2;
+            	double alpha = Math.atan(lurch*16/3.001);
+            	double d = Math.sqrt(Math.pow(3.001/16, 2)+Math.pow(lurch, 2));
+            	double beta = alpha + rotation2;
+            	double dx = Math.sin(beta)*d;
+            	double dz = -Math.cos(beta)*d;
+    			GL11.glPushMatrix();
+        		GL11.glTranslated(dx, 0, dz);
+        		GL11.glScaled(sc, ys, sc);
+        		GL11.glRotated(-Math.toDegrees(rotation2), 0, 1, 0);
         		GL11.glScaled(sc2,  sc2,  sc2);
                 fontrenderer.drawString(s, 0, 0, color);
-        		GL11.glScaled(1/sc2,  1/sc2,  1/sc2);
-        		GL11.glRotated(tilebases.rotation1, 0, 1, 0);
-        		GL11.glScaled(1/sc, 1/ys, 1/sc);
-        		GL11.glTranslated(-dx, 0, -dz);
+                GL11.glPopMatrix();
         	}
         }
+        GL11.glPopMatrix();
         GL11.glPopMatrix();
 
 	}

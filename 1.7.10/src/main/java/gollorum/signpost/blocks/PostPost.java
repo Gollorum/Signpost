@@ -169,6 +169,7 @@ public class PostPost extends BlockContainer {
 								tilebases.overlay2 = now;
 							}
 							player.inventory.consumeInventoryItem(now.item);
+							NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile, tilebases));
 							return;
 						}
 					}
@@ -177,20 +178,17 @@ public class PostPost extends BlockContainer {
 					}else{
 						tilebases.overlay2 = null;
 					}
+					NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile, tilebases));
 				}
 			}
 		}else{
 			DoubleBaseInfo tilebases = tile.getBases();
 			if (hit.target == HitTarget.BASE1) {
-				if(tilebases.overlay1 != null){
-					player.inventory.addItemStackToInventory(new ItemStack(tilebases.overlay1.item, 1));
-					tilebases.overlay1 = null;
-				}
+				tilebases.point1 = !tilebases.point1;
+				NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile, tilebases));
 			}else{
-				if(tilebases.overlay2 != null){
-					player.inventory.addItemStackToInventory(new ItemStack(tilebases.overlay2.item, 1));
-					tilebases.overlay2 = null;
-				}
+				tilebases.point2 = !tilebases.point2;
+				NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile, tilebases));
 			}
 		}
 	}
@@ -261,19 +259,19 @@ public class PostPost extends BlockContainer {
 		DDDVector signPos;
 		DDDVector edges = new DDDVector(1.4375, 0.375, 0.0625);
 		
-		if(!bases.flip1){
+		if(bases.flip1){
 			signPos = new DDDVector(x-0.375, y+0.5625, z+0.625);
 		}else{
 			signPos = new DDDVector(x-0.0625, y+0.5625, z+0.625);
 		}
-		Cuboid sign1 = new Cuboid(signPos, edges, PostRenderer.calcRot1(bases, x, z), rotPos);
+		Cuboid sign1 = new Cuboid(signPos, edges, PostPostTile.calcRot1(bases, x, z), rotPos);
 		
-		if(!bases.flip2){
+		if(bases.flip2){
 			signPos = new DDDVector(x-0.375, y+0.0625, z+0.625);
 		}else{
 			signPos = new DDDVector(x-0.0625, y+0.0625, z+0.625);
 		}
-		Cuboid sign2 = new Cuboid(signPos, edges, PostRenderer.calcRot2(bases, x, z), rotPos);
+		Cuboid sign2 = new Cuboid(signPos, edges, PostPostTile.calcRot2(bases, x, z), rotPos);
 		Cuboid post = new Cuboid(new DDDVector(x+0.375, y, z+0.375), new DDDVector(0.25, 1, 0.25), 0);
 
 		DDDVector start = new DDDVector(head.xCoord, head.yCoord, head.zCoord);

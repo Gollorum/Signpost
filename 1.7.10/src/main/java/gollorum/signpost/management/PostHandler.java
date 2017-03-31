@@ -4,10 +4,13 @@ import java.util.Map;
 import java.util.UUID;
 
 import cpw.mods.fml.common.FMLCommonHandler;
+import gollorum.signpost.SPEventHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.ChatMessage;
+import gollorum.signpost.network.messages.TeleportRequestMessage;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.BlockPos;
+import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.DoubleBaseInfo;
 import gollorum.signpost.util.StonedHashSet;
 import gollorum.signpost.util.StringSet;
@@ -21,56 +24,15 @@ public class PostHandler {
 
 	public static StonedHashSet allWaystones = new StonedHashSet();
 	public static Lurchpaerchensauna<BlockPos, DoubleBaseInfo> posts = new Lurchpaerchensauna<BlockPos, DoubleBaseInfo>();	
-//	public static PostMap posts = new PostMap();	
 	//ServerSide
 	public static Lurchpaerchensauna<UUID, StringSet> playerKnownWaystones = new Lurchpaerchensauna<UUID, StringSet>();
+	public static Lurchpaerchensauna<UUID, TeleportInformation> awaiting =  new Lurchpaerchensauna<UUID, TeleportInformation>(); 
 	
 	public static void init(){
 		allWaystones = new StonedHashSet();
 		playerKnownWaystones = new Lurchpaerchensauna<UUID, StringSet>();
 		posts = new Lurchpaerchensauna<BlockPos, DoubleBaseInfo>();
 	}
-	
-	/*public static class PostMap extends Lurchpaerchensauna<BlockPos, DoubleBaseInfo>{
-		@Override
-		public DoubleBaseInfo remove(Object key){
-			if(key instanceof BlockPos){
-				BlockPos k = (BlockPos) key;
-				for(Entry<BlockPos, DoubleBaseInfo> now: this.entrySet()){
-					if(now.getKey().equals(k)){
-						key = now.getKey();
-						break;
-					}
-				}
-			}
-			return super.remove(key);
-		}
-
-		public DoubleBaseInfo get(Object obj){
-			for(Entry<BlockPos, DoubleBaseInfo> now: this.entrySet()){
-				if(now.getKey().equals(obj)){
-					return now.getValue();
-				}
-			}
-			return null;
-		}
-		
-		public void keepSame(HashMap<BlockPos, DoubleStringInt> posts) {
-			HashSet<BlockPos> toDelete = new HashSet<BlockPos>();
-			toDelete.addAll(this.keySet());
-			for(Entry<BlockPos, DoubleStringInt> now: posts.entrySet()){
-				for(Entry<BlockPos, DoubleBaseInfo> now2: this.entrySet()){
-					if(now.getKey().equals(now2.getKey())){
-						toDelete.remove(now2.getKey());
-					}
-				}
-			}
-			for(BlockPos now: toDelete){
-				this.remove(now);
-			}
-		}
-
-	}*/
 	
 	public static BaseInfo getWSbyName(String name){
 		if(ConfigHandler.deactivateTeleportation){
@@ -84,8 +46,44 @@ public class PostHandler {
 			return null;
 		}
 	}
+	
+	public static class TeleportInformation{
+		public BaseInfo destination;
+		public int stackSize;
+		public World world;
+		public BoolRun boolRun;
+		public TeleportInformation(BaseInfo destination, int stackSize, World world, BoolRun boolRun) {
+			this.destination = destination;
+			this.stackSize = stackSize;
+			this.world = world;
+			this.boolRun = boolRun;
+		}
+	}
+	
+	public static void confirm(EntityPlayerMP player){
+		TeleportInformation info = awaiting.get(player.getUniqueID());
+		if(info==null){
+			NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.noConfirm"), player);
+			return;
+		}else{
+			SPEventHandler.cancelTask(awaiting.remove(player.getUniqueID()).boolRun);
+			if(ConfigHandler.cost!=null){
+				for(int i=0; i<info.stackSize; i++){
+					player.inventory.consumeInventoryItem(ConfigHandler.cost);
+				}
+			}
+			ServerConfigurationManager manager = FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager();
+			if(!player.worldObj.equals(info.world)){
+				manager.transferEntityToWorld(player, 1, (WorldServer)player.worldObj, (WorldServer)info.world);
+			}
+			if(!(player.dimension==info.destination.pos.dim)){
+				manager.transferPlayerToDimension(player, info.destination.pos.dim);
+			}
+			player.setPositionAndUpdate(info.destination.pos.x+0.5, info.destination.pos.y+1, info.destination.pos.z+0.5);
+		}
+	}
 
-	public static void teleportMe(BaseInfo destination, EntityPlayerMP player, int stackSize){
+	public static void teleportMe(BaseInfo destination, final EntityPlayerMP player, int stackSize){
 		if(ConfigHandler.deactivateTeleportation){
 			return;
 		}
@@ -94,19 +92,18 @@ public class PostHandler {
 			if(world == null){
 				NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.errorWorld", "<world>", destination.pos.world), player);
 			}else{
-				if(ConfigHandler.cost!=null){
-					for(int i=0; i<stackSize; i++){
-						player.inventory.consumeInventoryItem(ConfigHandler.cost);
+				SPEventHandler.scheduleTask(awaiting.put(player.getUniqueID(), new TeleportInformation(destination, stackSize, world, new BoolRun(){
+					private short ticksLeft = 2400;
+					@Override
+					public boolean run() {
+						if(ticksLeft--<=0){
+							awaiting.remove(player.getUniqueID());
+							return true;
+						}
+						return false;
 					}
-				}
-				ServerConfigurationManager manager = FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager();
-				if(!player.worldObj.equals(world)){
-					manager.transferEntityToWorld(player, 1, (WorldServer)player.worldObj, (WorldServer)world);
-				}
-				if(!(player.dimension==destination.pos.dim)){
-					manager.transferPlayerToDimension(player, destination.pos.dim);
-				}
-				player.setPositionAndUpdate(destination.pos.x+0.5, destination.pos.y+1, destination.pos.z+0.5);
+				})).boolRun);
+				NetworkHandler.netWrap.sendTo(new TeleportRequestMessage(stackSize, destination.name), player);
 			}
 		}else{
 			NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.notDiscovered", "<Waystone>", destination.name), player);

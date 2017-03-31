@@ -15,15 +15,9 @@ import net.minecraft.util.ResourceLocation;
 
 public class PostRenderer extends TileEntitySpecialRenderer{
 
-	final ModelPost model;
+	private static final ModelPost model = new ModelPost();
 	
-	public PostRenderer(boolean custom){
-		if(custom){
-			model = new CustomModelPost();
-		}else{
-			model = new ModelPost();
-		}
-	}
+	public PostRenderer(){}
 	
 	void setTexture(ResourceLocation loc){
 		bindTexture(loc);
@@ -36,10 +30,11 @@ public class PostRenderer extends TileEntitySpecialRenderer{
 		if(tilebases==null){
 			tilebases = tile.getBases();
 		}
-		double rotation1 = calcRot1(tilebases, tile.xCoord, tile.zCoord);
-		double rotation2 = calcRot2(tilebases, tile.xCoord, tile.zCoord);
+		double rotation1 = PostPostTile.calcRot1(tilebases, tile.xCoord, tile.zCoord);
+		double rotation2 = PostPostTile.calcRot2(tilebases, tile.xCoord, tile.zCoord);
 		GL11.glPushMatrix();
 		GL11.glTranslated(x+0.5, y, z+0.5);
+		this.bindTexture(tile.type.texture);
 		model.render(this, 0.1f, 0.0625f, tilebases, tile, rotation1, rotation2);
 
 		//Overlays
@@ -72,7 +67,6 @@ public class PostRenderer extends TileEntitySpecialRenderer{
         			sc2 = 1;
         		}
         		double lurch = (tilebases.flip1?-0.2:0.2)-fontrenderer.getStringWidth(s)*sc*sc2/2;
-//        		double lurch = tilebases.flip1?0.45-fontrenderer.getStringWidth(tilebases.base1.name)*sc:-0.45;
             	double alpha = Math.atan(lurch*16/3.001);
             	double d = Math.sqrt(Math.pow(3.001/16, 2)+Math.pow(lurch, 2));
             	double beta = alpha + rotation1;
@@ -95,7 +89,6 @@ public class PostRenderer extends TileEntitySpecialRenderer{
         			sc2 = 1;
         		}
         		double lurch = (tilebases.flip2?-0.2:0.2)-fontrenderer.getStringWidth(s)*sc*sc2/2;
-//        		double lurch = tilebases.flip2?0.45-fontrenderer.getStringWidth(tilebases.base2.name)*sc:-0.45;
             	double alpha = Math.atan(lurch*16/3.001);
             	double d = Math.sqrt(Math.pow(3.001/16, 2)+Math.pow(lurch, 2));
             	double beta = alpha + rotation2;
@@ -114,34 +107,6 @@ public class PostRenderer extends TileEntitySpecialRenderer{
         GL11.glPopMatrix();
         GL11.glPopMatrix();
 
-	}
-
-	public static double calcRot1(DoubleBaseInfo tilebases, int x, int z) {
-		if(tilebases.point1){
-			if(tilebases.base1==null){
-				return 0;
-			}else{
-				int dx = x-tilebases.base1.pos.x;
-				int dz = z-tilebases.base1.pos.z;
-				return DDDVector.genAngle(dx, dz)+Math.toRadians(-90+(tilebases.flip1?0:180));
-			}
-		}else{
-			return Math.toRadians(tilebases.rotation1);
-		}
-	}
-
-	public static double calcRot2(DoubleBaseInfo tilebases, int x, int z) {
-		if(tilebases.point2){
-			if(tilebases.base2==null){
-				return 0;
-			}else{
-				int dx = x-tilebases.base2.pos.x;
-				int dz = z-tilebases.base2.pos.z;
-				return DDDVector.genAngle(dx, dz)+Math.toRadians(-90+(tilebases.flip2?0:180));
-			}
-		}else{
-			return Math.toRadians(tilebases.rotation2);
-		}
 	}
 
 }

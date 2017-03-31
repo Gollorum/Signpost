@@ -1,75 +1,37 @@
 package gollorum.signpost.management;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 
+import gollorum.signpost.SPEventHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.ChatMessage;
-import gollorum.signpost.network.messages.SendAllPostBasesMessage.DoubleStringInt;
+import gollorum.signpost.network.messages.TeleportRequestMessage;
 import gollorum.signpost.util.BaseInfo;
+import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.DoubleBaseInfo;
 import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.util.StonedHashSet;
 import gollorum.signpost.util.StringSet;
+import gollorum.signpost.util.collections.Lurchpaerchensauna;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
 public class PostHandler {
 
-	public static StonedHashSet allWaystones;
-	public static HashMap<UUID, StringSet> playerKnownWaystones;
-	public static PostMap posts;	
+	public static StonedHashSet allWaystones = new StonedHashSet();
+	public static Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo> posts = new Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo>();	
+	//ServerSide
+	public static Lurchpaerchensauna<UUID, StringSet> playerKnownWaystones = new Lurchpaerchensauna<UUID, StringSet>();
+	public static Lurchpaerchensauna<UUID, TeleportInformation> awaiting =  new Lurchpaerchensauna<UUID, TeleportInformation>(); 
 
 	public static void preinit() {
 		allWaystones = new StonedHashSet();
-		playerKnownWaystones = new HashMap<UUID, StringSet>();
-		posts = new PostMap();	
+		playerKnownWaystones = new Lurchpaerchensauna<UUID, StringSet>();
+		posts = new Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo>();
 	}
 	
-	public static class PostMap extends HashMap<MyBlockPos, DoubleBaseInfo>{
-		@Override
-		public DoubleBaseInfo remove(Object key){
-			if(key instanceof MyBlockPos){
-				MyBlockPos k = (MyBlockPos) key;
-				for(Entry<MyBlockPos, DoubleBaseInfo> now: this.entrySet()){
-					if(now.getKey().equals(k)){
-						key = now.getKey();
-						break;
-					}
-				}
-			}
-			return super.remove(key);
-		}
-
-		public DoubleBaseInfo get(Object obj){
-			for(Entry<MyBlockPos, DoubleBaseInfo> now: this.entrySet()){
-				if(now.getKey().equals(obj)){
-					return now.getValue();
-				}
-			}
-			return null;
-		}
-		
-		public void keepSame(HashMap<MyBlockPos, DoubleStringInt> posts) {
-			HashSet<MyBlockPos> toDelete = new HashSet<MyBlockPos>();
-			toDelete.addAll(this.keySet());
-			for(Entry<MyBlockPos, DoubleStringInt> now: posts.entrySet()){
-				for(Entry<MyBlockPos, DoubleBaseInfo> now2: this.entrySet()){
-					if(now.getKey().equals(now2.getKey())){
-						toDelete.remove(now2.getKey());
-					}
-				}
-			}
-			for(MyBlockPos now: toDelete){
-				this.remove(now);
-			}
-		}
-	}
-
 	public static BaseInfo getWSbyName(String name){
 		if(ConfigHandler.deactivateTeleportation){
 			return new BaseInfo(name, null, null);
@@ -83,7 +45,38 @@ public class PostHandler {
 		}
 	}
 
-	public static void teleportMe(BaseInfo destination, EntityPlayerMP player, int stackSize){
+	public static class TeleportInformation{
+		public BaseInfo destination;
+		public int stackSize;
+		public World world;
+		public BoolRun boolRun;
+		public TeleportInformation(BaseInfo destination, int stackSize, World world, BoolRun boolRun) {
+			this.destination = destination;
+			this.stackSize = stackSize;
+			this.world = world;
+			this.boolRun = boolRun;
+		}
+	}
+	
+	public static void confirm(EntityPlayerMP player){
+		TeleportInformation info = awaiting.get(player.getUniqueID());
+		if(info==null){
+			NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.noConfirm"), player);
+			return;
+		}else{
+			SPEventHandler.cancelTask(awaiting.remove(player.getUniqueID()).boolRun);
+			player.inventory.clearMatchingItems(ConfigHandler.cost, 0, info.stackSize, null);
+			if(!player.worldObj.equals(info.world)){
+				player.setWorld(info.world);
+			}
+			if(!(player.dimension==info.destination.pos.dim)){
+				player.changeDimension(info.destination.pos.dim);
+			}
+			player.setPositionAndUpdate(info.destination.pos.x+0.5, info.destination.pos.y+1, info.destination.pos.z+0.5);
+		}
+	}
+
+	public static void teleportMe(BaseInfo destination, final EntityPlayerMP player, int stackSize){
 		if(ConfigHandler.deactivateTeleportation){
 			return;
 		}
@@ -92,14 +85,18 @@ public class PostHandler {
 			if(world == null){
 				NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.errorWorld", "<world>", destination.pos.world), player);
 			}else{
-				player.inventory.clearMatchingItems(ConfigHandler.cost, 0, stackSize, null);
-				if(!player.worldObj.equals(world)){
-					player.setWorld(world);
-				}
-				if(!(player.dimension==destination.pos.dim)){
-					player.changeDimension(destination.pos.dim);
-				}
-				player.setPositionAndUpdate(destination.pos.x+0.5, destination.pos.y+1, destination.pos.z+0.5);
+				SPEventHandler.scheduleTask(awaiting.put(player.getUniqueID(), new TeleportInformation(destination, stackSize, world, new BoolRun(){
+					private short ticksLeft = 2400;
+					@Override
+					public boolean run() {
+						if(ticksLeft--<=0){
+							awaiting.remove(player.getUniqueID());
+							return true;
+						}
+						return false;
+					}
+				})).boolRun);
+				NetworkHandler.netWrap.sendTo(new TeleportRequestMessage(stackSize, destination.name), player);
 			}
 		}else{
 			NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.notDiscovered", "<Waystone>", destination.name), player);
@@ -176,4 +173,10 @@ public class PostHandler {
 		return null;
 	}
 
+	public static boolean addRep(BaseInfo ws) {
+		BaseInfo toDelete = allWaystones.getByPos(ws.pos);
+		allWaystones.removeByPos(toDelete.pos);
+		allWaystones.add(ws);
+		return true;
+	}
 }

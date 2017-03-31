@@ -14,12 +14,8 @@ public class Board {
 		//Not flipped
 		ModelRenderer ltnf = new ModelRenderer(modelPost, 15, -1);
 		ltnf.addBox(-9, heightOffset+2f, 2, 1, 4, 1, 0f);
-//		ltnf.setTextureSize(24, 22);
-//		ltnf.setTextureSize(32, 32);
 		baseNotFlipped = new ModelRenderer(modelPost, -1, 15);
 		baseNotFlipped.addBox(-8, heightOffset+1, 2, 18, 6, 1, 0.0F);
-//		baseNotFlipped.setTextureSize(24, 22);
-//		ltnf.setTextureSize(32, 32);
 		baseNotFlipped.addChild(ltnf);
 		
     	int i = 1;
@@ -28,8 +24,6 @@ public class Board {
     		ModelRenderer now = new ModelRenderer(modelPost, 15 , hv);
         	hv += 8-2*i;
         	now.addBox(8+i*2, heightOffset+i, 2, 2, 8-2*i, 1, 0f);
-//    		ltnf.setTextureSize(24, 22);
-//    		ltnf.setTextureSize(32, 32);
     		baseNotFlipped.addChild(now);
         	i++;
     	}
@@ -37,12 +31,8 @@ public class Board {
 		//flipped
 		ModelRenderer ltf = new ModelRenderer(modelPost, 15, -1);
 		ltf.addBox(8, heightOffset+2f, 2, 1, 4, 1, 0f);
-//		ltnf.setTextureSize(24, 22);
-//		ltnf.setTextureSize(32, 32);
 		baseFlipped = new ModelRenderer(modelPost, -1, 15);
 		baseFlipped.addBox(-10, heightOffset+1, 2, 18, 6, 1, 0.0F);
-//		baseFlipped.setTextureSize(24, 22);
-//		ltnf.setTextureSize(32, 32);
 		baseFlipped.addChild(ltf);
 		
     	i = 1;
@@ -51,8 +41,6 @@ public class Board {
     		ModelRenderer now = new ModelRenderer(modelPost, 15 , hv);
         	hv += 8-2*i;
         	now.addBox(-10-i*2, heightOffset+i, 2, 2, 8-2*i, 1, 0f);
-//    		ltnf.setTextureSize(24, 22);
-//    		ltnf.setTextureSize(32, 32);
     		baseFlipped.addChild(now);
         	i++;
     	}

@@ -10,6 +10,7 @@ import gollorum.signpost.util.BlockPos;
 import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.DoubleBaseInfo;
 import gollorum.signpost.util.DoubleBaseInfo.OverlayType;
+import gollorum.signpost.util.math.tracking.DDDVector;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -133,5 +134,33 @@ public class PostPostTile extends TileEntity {
 			}
 		});
 	}
-	
+
+	public static double calcRot1(DoubleBaseInfo tilebases, int x, int z) {
+		if(tilebases.point1){
+			if(tilebases.base1==null){
+				return 0;
+			}else{
+				int dx = x-tilebases.base1.pos.x;
+				int dz = z-tilebases.base1.pos.z;
+				return DDDVector.genAngle(dx, dz)+Math.toRadians(-90+(tilebases.flip1?0:180)+(dx<0&&dz>0?180:0));
+			}
+		}else{
+			return Math.toRadians(tilebases.rotation1);
+		}
+	}
+
+	public static double calcRot2(DoubleBaseInfo tilebases, int x, int z) {
+		if(tilebases.point2){
+			if(tilebases.base2==null){
+				return 0;
+			}else{
+				int dx = x-tilebases.base2.pos.x;
+				int dz = z-tilebases.base2.pos.z;
+				return DDDVector.genAngle(dx, dz)+Math.toRadians(-90+(tilebases.flip2?0:180)+(dx<0&&dz>0?180:0));
+			}
+		}else{
+			return Math.toRadians(tilebases.rotation2);
+		}
+	}
+
 }

@@ -18,3 +18,7 @@ signpost.payment=Du musst <amount>x<itemName> bezahlen, um diesen Wegweiser verw
 signpost.guiPrev=Der Wegstein ist <distance> Blöcke entfernt. Spieler werden <amount>x<itemName> bezahlen müssen.
 signpost.guiWorldDim=Der Wegstein ist nicht in dieser Welt/Dimension. Interdimensionale Wegweiser sind deaktivert.
 signpost.guiTooFar=Der Wegstein ist zu weit entfernt (<distance> Blöcke). Die maximale Distanz beträgt <maxDist> Blöcke.
+
+signpost.confirmTeleport=Gib '/signpostconfirm' ein, um für <amount>x<itemName> nach <Waystone> zu reisen.
+signpost.confirmTeleportNoCost=Gib '/signpostconfirm' ein, um nach <Waystone> zu reisen.
+signpost.noConfirm=Es existiert keine Teleportationsanfrage, die es zu bestätigen gilt. Anfragen halten für 30 Sekunden.
