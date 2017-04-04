@@ -23,7 +23,6 @@ public class SignGuiHandler implements IGuiHandler {
 		case Signpost.GuiPostID:
 			return new SignGuiPost((PostPostTile) world.getTileEntity(new BlockPos(x, y, z)));
 		}
-		System.out.println("return null");
 		return null;
 	}
 

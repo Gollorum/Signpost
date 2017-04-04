@@ -2,6 +2,7 @@ package gollorum.signpost.gui;
 
 import java.awt.Color;
 
+import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.registry.LanguageRegistry;
 import gollorum.signpost.blocks.PostPostTile;
 import gollorum.signpost.management.ConfigHandler;
@@ -11,7 +12,6 @@ import gollorum.signpost.network.messages.SendPostBasesMessage;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.BlockPos.Connection;
 import gollorum.signpost.util.DoubleBaseInfo;
-import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 
@@ -29,11 +29,16 @@ public class SignGuiPost extends GuiScreen {
 	private boolean go2;
 	
 	private PostPostTile tile;
+
+	private boolean resetMouse;
 	
 	public SignGuiPost(PostPostTile tile) {
 		this.tile = tile;
+		base1InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137, 20);
+		base2InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, this.height / 2 + 40, 137, 20);
 	}
 
+	@Override
 	public void initGui() {
 		DoubleBaseInfo tilebases = tile.getBases();
 		base1InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137, 20);
@@ -45,8 +50,7 @@ public class SignGuiPost extends GuiScreen {
 		base2InputBox.setMaxStringLength(23);
 		base2InputBox.setText(tilebases.base2==null?"":tilebases.base2.toString());
 		go2 = true;
-		
-//		pointButton1. TODO
+		resetMouse = true;
 	}
 	
 	@Override
@@ -58,14 +62,22 @@ public class SignGuiPost extends GuiScreen {
 
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+		super.drawScreen(mouseX, mouseY, partialTicks);
+		if(mc==null){
+			mc = FMLClientHandler.instance().getClient();
+		}
 		drawDefaultBackground();
 		base1InputBox.drawTextBox();
 		this.drawCenteredString(fontRendererObj, std2, this.width/2, base1InputBox.yPosition+25, col2);
 		base2InputBox.drawTextBox();
 		this.drawCenteredString(fontRendererObj, std1, this.width/2, base2InputBox.yPosition+25, col1);
-		super.drawScreen(mouseX, mouseY, partialTicks);
+		if(resetMouse){
+			resetMouse = false;
+			org.lwjgl.input.Mouse.setGrabbed(false);
+		}
 	}
 
+	@Override
 	protected void keyTyped(char par1, int par2) {
 		super.keyTyped(par1, par2);
 		baseType(par1, par2, false);

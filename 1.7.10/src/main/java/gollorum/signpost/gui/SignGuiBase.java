@@ -2,6 +2,7 @@ package gollorum.signpost.gui;
 
 import java.awt.Color;
 
+import cpw.mods.fml.client.FMLClientHandler;
 import gollorum.signpost.blocks.BasePostTile;
 import gollorum.signpost.management.PostHandler;
 import net.minecraft.client.gui.GuiScreen;
@@ -15,10 +16,14 @@ public class SignGuiBase extends GuiScreen {
 
 	public SignGuiBase(BasePostTile tile) {
 		this.tile = tile;
+		nameInputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137, 20);
 	}
 
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+		if(mc==null){
+			mc = FMLClientHandler.instance().getClient();
+		}
 		drawDefaultBackground();
 		nameInputBox.drawTextBox();
 		super.drawScreen(mouseX, mouseY, partialTicks);
@@ -29,6 +34,7 @@ public class SignGuiBase extends GuiScreen {
 		return false;
 	}
 
+	@Override
 	public void initGui() {
 		nameInputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137, 20);
 		nameInputBox.setMaxStringLength(23);
@@ -36,6 +42,7 @@ public class SignGuiBase extends GuiScreen {
 		nameInputBox.setFocused(true);
 	}
 
+	@Override
 	protected void keyTyped(char par1, int par2) {
 		String before = nameInputBox.getText();
 		super.keyTyped(par1, par2);
@@ -54,6 +61,7 @@ public class SignGuiBase extends GuiScreen {
 		}
 	}
 
+	@Override
 	public void updateScreen() {
 		super.updateScreen();
 		this.nameInputBox.updateCursorCounter();
@@ -65,6 +73,7 @@ public class SignGuiBase extends GuiScreen {
 		}
 	}
 
+	@Override
 	protected void mouseClicked(int x, int y, int btn) {
 		super.mouseClicked(x, y, btn);
 		this.nameInputBox.mouseClicked(x, y, btn);

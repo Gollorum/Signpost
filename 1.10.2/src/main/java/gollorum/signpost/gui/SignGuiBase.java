@@ -7,6 +7,7 @@ import gollorum.signpost.blocks.BasePostTile;
 import gollorum.signpost.management.PostHandler;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
+import net.minecraftforge.fml.client.FMLClientHandler;
 
 public class SignGuiBase extends GuiScreen {
 
@@ -16,10 +17,14 @@ public class SignGuiBase extends GuiScreen {
 
 	public SignGuiBase(BasePostTile tile) {
 		this.tile = tile;
+		nameInputBox = new GuiTextField(0, this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137, 20);
 	}
 
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+		if(mc==null){
+			mc = FMLClientHandler.instance().getClient();
+		}
 		drawDefaultBackground();
 		nameInputBox.drawTextBox();
 		super.drawScreen(mouseX, mouseY, partialTicks);
@@ -30,6 +35,7 @@ public class SignGuiBase extends GuiScreen {
 		return false;
 	}
 
+	@Override
 	public void initGui() {
 		nameInputBox = new GuiTextField(0, this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137, 20);
 		nameInputBox.setMaxStringLength(23);
@@ -56,6 +62,7 @@ public class SignGuiBase extends GuiScreen {
 		}
 	}
 
+	@Override
 	public void updateScreen() {
 		super.updateScreen();
 		this.nameInputBox.updateCursorCounter();
