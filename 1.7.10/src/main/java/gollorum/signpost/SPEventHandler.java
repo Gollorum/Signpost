@@ -140,6 +140,10 @@ public class SPEventHandler {
 
 	@SubscribeEvent
 	public void onBlockBreak(BreakEvent event){
+		TileEntity tile = event.world.getTileEntity(event.x, event.y, event.z);
+		if(tile instanceof PostPostTile && event.getPlayer().getHeldItem()!=null && event.getPlayer().getHeldItem().getItem() instanceof PostWrench){
+				event.setCanceled(true);
+		}
 		if(!(event.getPlayer() instanceof EntityPlayerMP)){
 			return;
 		}
@@ -155,12 +159,6 @@ public class SPEventHandler {
 				event.setCanceled(true);
 			}else{
 				PostPost.getWaystonePostTile(event.world, event.x, event.y, event.z).onBlockDestroy(new BlockPos(event.world, event.x, event.y, event.z, player.dimension));
-			}
-		}
-		TileEntity tile = event.world.getTileEntity(event.x, event.y, event.z);
-		if(tile instanceof PostPostTile){
-			if(event.getPlayer().getHeldItem()!=null&&event.getPlayer().getHeldItem().getItem() instanceof PostWrench){
-				event.setCanceled(true);
 			}
 		}
 	}

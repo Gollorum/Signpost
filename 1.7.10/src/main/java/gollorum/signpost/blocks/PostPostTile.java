@@ -2,6 +2,7 @@ package gollorum.signpost.blocks;
 
 import gollorum.signpost.SPEventHandler;
 import gollorum.signpost.blocks.PostPost.PostType;
+import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.SendAllPostBasesMessage;
@@ -136,28 +137,20 @@ public class PostPostTile extends TileEntity {
 	}
 
 	public static double calcRot1(DoubleBaseInfo tilebases, int x, int z) {
-		if(tilebases.point1){
-			if(tilebases.base1==null){
-				return 0;
-			}else{
-				int dx = x-tilebases.base1.pos.x;
-				int dz = z-tilebases.base1.pos.z;
-				return DDDVector.genAngle(dx, dz)+Math.toRadians(-90+(tilebases.flip1?0:180)+(dx<0&&dz>0?180:0));
-			}
+ 		if(tilebases.point1&&!(tilebases.base1==null||tilebases.base1.pos==null||ConfigHandler.deactivateTeleportation)){
+			int dx = x-tilebases.base1.pos.x;
+			int dz = z-tilebases.base1.pos.z;
+			return DDDVector.genAngle(dx, dz)+Math.toRadians(-90+(tilebases.flip1?0:180)+(dx<0&&dz>0?180:0));
 		}else{
 			return Math.toRadians(tilebases.rotation1);
 		}
 	}
 
 	public static double calcRot2(DoubleBaseInfo tilebases, int x, int z) {
-		if(tilebases.point2){
-			if(tilebases.base2==null){
-				return 0;
-			}else{
-				int dx = x-tilebases.base2.pos.x;
-				int dz = z-tilebases.base2.pos.z;
-				return DDDVector.genAngle(dx, dz)+Math.toRadians(-90+(tilebases.flip2?0:180)+(dx<0&&dz>0?180:0));
-			}
+		if(tilebases.point2&&!(tilebases.base2==null||tilebases.base2.pos==null||ConfigHandler.deactivateTeleportation)){
+			int dx = x-tilebases.base2.pos.x;
+			int dz = z-tilebases.base2.pos.z;
+			return DDDVector.genAngle(dx, dz)+Math.toRadians(-90+(tilebases.flip2?0:180)+(dx<0&&dz>0?180:0));
 		}else{
 			return Math.toRadians(tilebases.rotation2);
 		}

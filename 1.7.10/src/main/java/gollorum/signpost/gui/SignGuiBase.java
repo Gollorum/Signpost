@@ -44,6 +44,10 @@ public class SignGuiBase extends GuiScreen {
 
 	@Override
 	protected void keyTyped(char par1, int par2) {
+		if(par1==13){
+			this.mc.displayGuiScreen(null);
+			return;
+		}
 		String before = nameInputBox.getText();
 		super.keyTyped(par1, par2);
 		this.nameInputBox.textboxKeyTyped(par1, par2);

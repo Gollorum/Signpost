@@ -47,6 +47,7 @@ public class SignGuiPost extends GuiScreen {
 		base1InputBox = new GuiTextField(0, this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137, 20);
 		base1InputBox.setMaxStringLength(23);
 		base1InputBox.setText(tilebases.base1==null?"":tilebases.base1.toString());
+		base1InputBox.setFocused(true);
 		go1 = true;
 		
 		base2InputBox = new GuiTextField(1, this.fontRendererObj, this.width / 2 - 68, this.height / 2 + 40, 137, 20);
@@ -83,6 +84,28 @@ public class SignGuiPost extends GuiScreen {
 	@Override
 	protected void keyTyped(char par1, int par2) throws IOException {
 		super.keyTyped(par1, par2);
+		if(par1==13){
+			if(base1InputBox.isFocused()){
+				base1InputBox.setFocused(false);
+				base2InputBox.setFocused(true);
+			}else if(base2InputBox.isFocused()){
+				this.mc.displayGuiScreen(null);
+			}else{
+				base1InputBox.setFocused(true);
+			}
+			return;
+		}else if(par1==9){
+			if(base1InputBox.isFocused()){
+				base1InputBox.setFocused(false);
+				base2InputBox.setFocused(true);
+			}else if(base2InputBox.isFocused()){
+				base2InputBox.setFocused(false);
+				base1InputBox.setFocused(true);
+			}else{
+				base1InputBox.setFocused(true);
+			}
+			return;
+		}
 		baseType(par1, par2, false);
 		baseType(par1, par2, true);
 	}
