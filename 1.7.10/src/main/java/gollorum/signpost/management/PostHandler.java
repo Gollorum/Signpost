@@ -9,6 +9,7 @@ import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.ChatMessage;
 import gollorum.signpost.network.messages.TeleportRequestMessage;
 import gollorum.signpost.util.BaseInfo;
+import gollorum.signpost.util.BigBaseInfo;
 import gollorum.signpost.util.BlockPos;
 import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.DoubleBaseInfo;
@@ -23,7 +24,8 @@ import net.minecraft.world.WorldServer;
 public class PostHandler {
 
 	public static StonedHashSet allWaystones = new StonedHashSet();
-	public static Lurchpaerchensauna<BlockPos, DoubleBaseInfo> posts = new Lurchpaerchensauna<BlockPos, DoubleBaseInfo>();	
+	public static Lurchpaerchensauna<BlockPos, DoubleBaseInfo> posts = new Lurchpaerchensauna<BlockPos, DoubleBaseInfo>();
+	public static Lurchpaerchensauna<BlockPos, BigBaseInfo> bigPosts = new Lurchpaerchensauna<BlockPos, BigBaseInfo>();
 	//ServerSide
 	public static Lurchpaerchensauna<UUID, StringSet> playerKnownWaystones = new Lurchpaerchensauna<UUID, StringSet>();
 	public static Lurchpaerchensauna<UUID, TeleportInformation> awaiting =  new Lurchpaerchensauna<UUID, TeleportInformation>(); 
@@ -32,6 +34,7 @@ public class PostHandler {
 		allWaystones = new StonedHashSet();
 		playerKnownWaystones = new Lurchpaerchensauna<UUID, StringSet>();
 		posts = new Lurchpaerchensauna<BlockPos, DoubleBaseInfo>();
+		bigPosts = new Lurchpaerchensauna<BlockPos, BigBaseInfo>();
 	}
 	
 	public static BaseInfo getWSbyName(String name){

@@ -18,6 +18,7 @@ import gollorum.signpost.gui.SignGuiHandler;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.management.PostHandler.TeleportInformation;
+import gollorum.signpost.util.BigBaseInfo;
 import gollorum.signpost.util.BlockPos;
 import gollorum.signpost.util.DoubleBaseInfo;
 import gollorum.signpost.util.StonedHashSet;
@@ -46,6 +47,7 @@ public class Signpost{
 
 	public static final int GuiBaseID = 0;
 	public static final int GuiPostID = 1;
+	public static final int GuiBigPostID = 2;
 	
 	public static NBTTagCompound saveFile;
 	
@@ -75,6 +77,7 @@ public class Signpost{
 		ConfigHandler.postInit();
 		PostHandler.allWaystones = new StonedHashSet();
 		PostHandler.posts = new Lurchpaerchensauna<BlockPos, DoubleBaseInfo>();
+		PostHandler.bigPosts = new Lurchpaerchensauna<BlockPos, BigBaseInfo>();
 		PostHandler.awaiting = new Lurchpaerchensauna<UUID, TeleportInformation>();
 	}
 

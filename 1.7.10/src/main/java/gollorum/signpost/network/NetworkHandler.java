@@ -9,7 +9,9 @@ import gollorum.signpost.network.handlers.BaseUpdateServerHandler;
 import gollorum.signpost.network.handlers.ChatHandler;
 import gollorum.signpost.network.handlers.InitPlayerResponseHandler;
 import gollorum.signpost.network.handlers.OpenGuiHandler;
+import gollorum.signpost.network.handlers.SendAllBigPostBasesHandler;
 import gollorum.signpost.network.handlers.SendAllPostBasesHandler;
+import gollorum.signpost.network.handlers.SendBigPostBasesHandler;
 import gollorum.signpost.network.handlers.SendDiscoveredToServerHandler;
 import gollorum.signpost.network.handlers.SendPostBasesHandler;
 import gollorum.signpost.network.handlers.TeleportMeHandler;
@@ -19,7 +21,9 @@ import gollorum.signpost.network.messages.BaseUpdateServerMessage;
 import gollorum.signpost.network.messages.ChatMessage;
 import gollorum.signpost.network.messages.InitPlayerResponseMessage;
 import gollorum.signpost.network.messages.OpenGuiMessage;
+import gollorum.signpost.network.messages.SendAllBigPostBasesMessage;
 import gollorum.signpost.network.messages.SendAllPostBasesMessage;
+import gollorum.signpost.network.messages.SendBigPostBasesMessage;
 import gollorum.signpost.network.messages.SendDiscoveredToServerMessage;
 import gollorum.signpost.network.messages.SendPostBasesMessage;
 import gollorum.signpost.network.messages.TeleportMeMessage;
@@ -37,11 +41,14 @@ public class NetworkHandler {
 		netWrap.registerMessage(SendPostBasesHandler.class, SendPostBasesMessage.class, 4, Side.CLIENT);
 		netWrap.registerMessage(SendPostBasesHandler.class, SendPostBasesMessage.class, 5, Side.SERVER);
 		netWrap.registerMessage(SendAllPostBasesHandler.class, SendAllPostBasesMessage.class, 6, Side.CLIENT);
-		netWrap.registerMessage(TeleportMeHandler.class, TeleportMeMessage.class, 7, Side.SERVER);
-		netWrap.registerMessage(ChatHandler.class, ChatMessage.class, 8, Side.CLIENT);
-		netWrap.registerMessage(OpenGuiHandler.class, OpenGuiMessage.class, 9, Side.CLIENT);
-		netWrap.registerMessage(TeleportRequestHandler.class, TeleportRequestMessage.class, 10, Side.CLIENT);
-		netWrap.registerMessage(TeleportRequestHandler.class, TeleportRequestMessage.class, 11, Side.SERVER);
+		netWrap.registerMessage(SendBigPostBasesHandler.class, SendBigPostBasesMessage.class, 7, Side.CLIENT);
+		netWrap.registerMessage(SendBigPostBasesHandler.class, SendBigPostBasesMessage.class, 8, Side.SERVER);
+		netWrap.registerMessage(SendAllBigPostBasesHandler.class, SendAllBigPostBasesMessage.class, 9, Side.CLIENT);
+		netWrap.registerMessage(TeleportMeHandler.class, TeleportMeMessage.class, 10, Side.SERVER);
+		netWrap.registerMessage(ChatHandler.class, ChatMessage.class, 11, Side.CLIENT);
+		netWrap.registerMessage(OpenGuiHandler.class, OpenGuiMessage.class, 12, Side.CLIENT);
+		netWrap.registerMessage(TeleportRequestHandler.class, TeleportRequestMessage.class, 13, Side.CLIENT);
+		netWrap.registerMessage(TeleportRequestHandler.class, TeleportRequestMessage.class, 14, Side.SERVER);
 	}
 	
 }

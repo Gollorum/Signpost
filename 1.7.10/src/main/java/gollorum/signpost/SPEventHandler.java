@@ -1,13 +1,12 @@
 package gollorum.signpost;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map.Entry;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import gollorum.signpost.blocks.BasePost;
+import gollorum.signpost.blocks.BigPostPost;
 import gollorum.signpost.blocks.PostPost;
 import gollorum.signpost.blocks.PostPostTile;
 import gollorum.signpost.items.PostWrench;
@@ -16,6 +15,7 @@ import gollorum.signpost.management.PlayerStore;
 import gollorum.signpost.management.WorldSigns;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.InitPlayerResponseMessage;
+import gollorum.signpost.network.messages.SendAllBigPostBasesMessage;
 import gollorum.signpost.network.messages.SendAllPostBasesMessage;
 import gollorum.signpost.util.BlockPos;
 import gollorum.signpost.util.BoolRun;
@@ -85,6 +85,7 @@ public class SPEventHandler {
 		if (event.player instanceof EntityPlayerMP) {
 			NetworkHandler.netWrap.sendTo(new InitPlayerResponseMessage(), (EntityPlayerMP) event.player);
 			NetworkHandler.netWrap.sendTo(new SendAllPostBasesMessage(), (EntityPlayerMP) event.player);
+			NetworkHandler.netWrap.sendTo(new SendAllBigPostBasesMessage(), (EntityPlayerMP) event.player);
 		}
 	}
 
@@ -116,6 +117,8 @@ public class SPEventHandler {
 				BasePost.placeClient(event.world, new BlockPos("", event.x, event.y, event.z, event.player.dimension), event.player);
 			}else if(event.block instanceof PostPost){
 				PostPost.placeClient(event.world, new BlockPos("", event.x, event.y, event.z, event.player.dimension), event.player);
+			}else if(event.block instanceof BigPostPost){
+				BigPostPost.placeClient(event.world, new BlockPos("", event.x, event.y, event.z, event.player.dimension), event.player);
 			}
 			return;
 		}
@@ -133,6 +136,14 @@ public class SPEventHandler {
 				event.setCanceled(true);
 			}else{
 				PostPost.placeServer(event.world, new BlockPos(event.world.getWorldInfo().getWorldName(), event.x, event.y, event.z, event.player.dimension), (EntityPlayerMP) event.player);
+			}
+			
+		}else if(event.block instanceof BigPostPost){
+			if(!ConfigHandler.securityLevelSignpost.canUse(player)){
+				BigPostPost.getWaystonePostTile(event.world, event.x, event.y, event.z).onBlockDestroy(new BlockPos(event.world, event.x, event.y, event.z, player.dimension));
+				event.setCanceled(true);
+			}else{
+				BigPostPost.placeServer(event.world, new BlockPos(event.world.getWorldInfo().getWorldName(), event.x, event.y, event.z, event.player.dimension), (EntityPlayerMP) event.player);
 			}
 			
 		}

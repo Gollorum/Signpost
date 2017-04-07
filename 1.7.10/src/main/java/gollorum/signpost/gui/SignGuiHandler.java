@@ -3,6 +3,7 @@ package gollorum.signpost.gui;
 import cpw.mods.fml.common.network.IGuiHandler;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blocks.BasePostTile;
+import gollorum.signpost.blocks.BigPostPostTile;
 import gollorum.signpost.blocks.PostPostTile;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
@@ -21,6 +22,8 @@ public class SignGuiHandler implements IGuiHandler {
 			return new SignGuiBase((BasePostTile) world.getTileEntity(x, y, z));
 		case Signpost.GuiPostID:
 			return new SignGuiPost((PostPostTile) world.getTileEntity(x, y, z));
+		case Signpost.GuiBigPostID:
+			return new SignGuiBigPost((BigPostPostTile) world.getTileEntity(x, y, z));
 		}
 		return null;
 	}
