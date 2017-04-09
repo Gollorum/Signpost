@@ -115,6 +115,7 @@ public class BigPostPostTile extends TileEntity {
 					bases.flip = flip;
 					bases.overlay = overlay;
 					bases.point = point;
+					bases.description = description;
 					NetworkHandler.netWrap.sendToAll(new SendBigPostBasesMessage((BigPostPostTile) worldObj.getTileEntity(xCoord, yCoord, zCoord), bases));
 					return true;
 				}

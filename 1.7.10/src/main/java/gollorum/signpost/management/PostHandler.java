@@ -16,7 +16,9 @@ import gollorum.signpost.util.DoubleBaseInfo;
 import gollorum.signpost.util.StonedHashSet;
 import gollorum.signpost.util.StringSet;
 import gollorum.signpost.util.collections.Lurchpaerchensauna;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemStack;
 import net.minecraft.server.management.ServerConfigurationManager;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -63,6 +65,43 @@ public class PostHandler {
 		}
 	}
 	
+	public static boolean pay(EntityPlayer player, int x1, int y1, int z1, int x2, int y2, int z2){
+		if(canPay(player, x1, y1, 1, x2, y2, z2)){
+			doPay(player, x1, y1, z1, x2, y2, z2);
+			return true;
+		}else{
+			return false;
+		}
+	}
+	
+	public static boolean canPay(EntityPlayer player, int x1, int y1, int z1, int x2, int y2, int z2){
+		if(ConfigHandler.cost == null){
+			return true;
+		}else{
+			int playerItemCount = 0;
+			for(ItemStack now: player.inventory.mainInventory){
+				if(now != null && now.getItem() !=null && now.getItem().getClass() == ConfigHandler.cost.getClass()){
+					playerItemCount += now.stackSize;
+				}
+			}
+			int dx = x1-x2; int dy = y1-y2; int dz = z1-z2;
+			int stackSize = (int) Math.sqrt(dx*dx+dy*dy+dz*dz) / ConfigHandler.costMult + 1;
+			return playerItemCount>=stackSize;
+		}
+	}
+	
+	public static void doPay(EntityPlayer player, int x1, int y1, int z1, int x2, int y2, int z2){
+		if(ConfigHandler.cost == null){
+			return;
+		}else{
+			int dx = x1-x2; int dy = y1-y2; int dz = z1-z2;
+			int stackSize = (int) Math.sqrt(dx*dx+dy*dy+dz*dz) / ConfigHandler.costMult + 1;
+			while(stackSize-->0){
+				player.inventory.consumeInventoryItem(ConfigHandler.cost);
+			}
+		}
+	}
+	
 	public static void confirm(EntityPlayerMP player){
 		TeleportInformation info = awaiting.get(player.getUniqueID());
 		if(info==null){
@@ -70,11 +109,12 @@ public class PostHandler {
 			return;
 		}else{
 			SPEventHandler.cancelTask(awaiting.remove(player.getUniqueID()).boolRun);
-			if(ConfigHandler.cost!=null){
-				for(int i=0; i<info.stackSize; i++){
-					player.inventory.consumeInventoryItem(ConfigHandler.cost);
-				}
-			}
+			doPay(player, 0, 0, 0, 0, 0, (info.stackSize-1)*ConfigHandler.costMult);
+//			if(ConfigHandler.cost!=null){
+//				for(int i=0; i<info.stackSize; i++){
+//					player.inventory.consumeInventoryItem(ConfigHandler.cost);
+//				}
+//			}
 			ServerConfigurationManager manager = FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager();
 			if(!player.worldObj.equals(info.world)){
 				manager.transferEntityToWorld(player, 1, (WorldServer)player.worldObj, (WorldServer)info.world);

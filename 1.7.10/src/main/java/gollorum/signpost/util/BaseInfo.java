@@ -10,6 +10,7 @@ public class BaseInfo {
 
 	public String name;
 	public BlockPos pos;
+	/** unused */
 	public UUID owner;
 
 	public BaseInfo(String name, BlockPos pos, UUID owner){

@@ -18,6 +18,11 @@ import net.minecraft.client.gui.GuiTextField;
 public class SignGuiBigPost extends GuiScreen {
 
 	private GuiTextField baseInputBox;
+
+	private GuiTextField desc1InputBox;
+	private GuiTextField desc2InputBox;
+	private GuiTextField desc3InputBox;
+	private GuiTextField desc4InputBox;
 	
 	private String std = "";
 	private int col = 0;
@@ -29,17 +34,30 @@ public class SignGuiBigPost extends GuiScreen {
 	
 	public SignGuiBigPost(BigPostPostTile tile) {
 		this.tile = tile;
-		baseInputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, this.height / 2 + 40, 137, 20);
+		baseInputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, 46, 137, 20);
+
+		desc1InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, 106, 137, 20);
+		desc2InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, 136, 137, 20);
+		desc3InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, 166, 137, 20);
+		desc4InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, 196, 137, 20);
 	}
 
 	@Override
 	public void initGui() {
 		BigBaseInfo tilebases = tile.getBases();
-		baseInputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137, 20);
-		baseInputBox.setMaxStringLength(23);
+		baseInputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, 46, 137, 20);
 		baseInputBox.setText(tilebases.base==null?"":tilebases.base.toString());
 		go = true;
 		baseInputBox.setFocused(true);
+
+		desc1InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, 106, 137, 20);
+		desc1InputBox.setText(""+tilebases.description[0]);
+		desc2InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, 136, 137, 20);
+		desc2InputBox.setText(""+tilebases.description[1]);
+		desc3InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, 166, 137, 20);
+		desc3InputBox.setText(""+tilebases.description[2]);
+		desc4InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, 196, 137, 20);
+		desc4InputBox.setText(""+tilebases.description[3]);
 		
 		resetMouse = true;
 	}
@@ -48,6 +66,10 @@ public class SignGuiBigPost extends GuiScreen {
     protected void mouseClicked(int x, int y, int bla){
 		super.mouseClicked(x, y, bla);
 		baseInputBox.mouseClicked(x, y, bla);
+		desc1InputBox.mouseClicked(x, y, bla);
+		desc2InputBox.mouseClicked(x, y, bla);
+		desc3InputBox.mouseClicked(x, y, bla);
+		desc4InputBox.mouseClicked(x, y, bla);
 	}
 
 	@Override
@@ -59,6 +81,10 @@ public class SignGuiBigPost extends GuiScreen {
 		drawDefaultBackground();
 		baseInputBox.drawTextBox();
 		this.drawCenteredString(fontRendererObj, std, this.width/2, baseInputBox.yPosition+25, col);
+		desc1InputBox.drawTextBox();
+		desc2InputBox.drawTextBox();
+		desc3InputBox.drawTextBox();
+		desc4InputBox.drawTextBox();
 		if(resetMouse){
 			resetMouse = false;
 			org.lwjgl.input.Mouse.setGrabbed(false);
@@ -82,6 +108,10 @@ public class SignGuiBigPost extends GuiScreen {
 			return;
 		}
 		baseType(par1, par2);
+		desc1InputBox.textboxKeyTyped(par1, par2);
+		desc2InputBox.textboxKeyTyped(par1, par2);
+		desc3InputBox.textboxKeyTyped(par1, par2);
+		desc4InputBox.textboxKeyTyped(par1, par2);
 	}
 	
 	private void baseType(char par1, int par2){
@@ -151,6 +181,10 @@ public class SignGuiBigPost extends GuiScreen {
 		}else{
 			tilebases.base = null;
 		}
+		tilebases.description[0] = desc1InputBox.getText();
+		tilebases.description[1] = desc2InputBox.getText();
+		tilebases.description[2] = desc3InputBox.getText();
+		tilebases.description[3] = desc4InputBox.getText();
 		NetworkHandler.netWrap.sendToServer(new SendBigPostBasesMessage(tile, tilebases));
 	}
 }

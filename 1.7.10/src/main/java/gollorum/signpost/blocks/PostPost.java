@@ -1,6 +1,7 @@
 package gollorum.signpost.blocks;
 
 import gollorum.signpost.Signpost;
+import gollorum.signpost.event.UseSignpostEvent;
 import gollorum.signpost.items.PostWrench;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
@@ -8,7 +9,6 @@ import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.ChatMessage;
 import gollorum.signpost.network.messages.OpenGuiMessage;
 import gollorum.signpost.network.messages.SendPostBasesMessage;
-import gollorum.signpost.render.PostRenderer;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.BlockPos;
 import gollorum.signpost.util.DoubleBaseInfo;
@@ -30,6 +30,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
+import net.minecraftforge.common.MinecraftForge;
 
 public class PostPost extends BlockContainer {
 	
@@ -198,6 +199,9 @@ public class PostPost extends BlockContainer {
 	}
 
 	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitX, float hitY, float hitZ) {
+		if(MinecraftForge.EVENT_BUS.post(new UseSignpostEvent(player, world, x, y, z))){
+			return true;
+		}
 		if (world.isRemote) {
 			return true;
 		}
@@ -226,7 +230,15 @@ public class PostPost extends BlockContainer {
 				}
 				BaseInfo destination = hit.target == HitTarget.BASE1 ? tile.getBases().base1 : tile.getBases().base2;
 				if (destination != null) {
-					if (ConfigHandler.cost == null) {
+					int stackSize = (int) destination.pos.distance(tile.toPos()) / ConfigHandler.costMult + 1;
+					if(PostHandler.canPay(player, destination.pos.x, destination.pos.y, destination.pos.z, x, y, z)){
+						PostHandler.teleportMe(destination, (EntityPlayerMP) player, stackSize);
+					}else{
+						String[] keyword = { "<itemName>", "<amount>" };
+						String[] replacement = { ConfigHandler.cost.getUnlocalizedName() + ".name",	"" + stackSize };
+						NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.payment", keyword, replacement), (EntityPlayerMP) player);
+					}
+					/*if (ConfigHandler.cost == null) {
 						PostHandler.teleportMe(destination, (EntityPlayerMP) player, 0);
 					} else {
 						int stackSize = (int) destination.pos.distance(tile.toPos()) / ConfigHandler.costMult + 1;
@@ -239,7 +251,7 @@ public class PostPost extends BlockContainer {
 							String[] replacement = { ConfigHandler.cost.getUnlocalizedName() + ".name",	"" + stackSize };
 							NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.payment", keyword, replacement), (EntityPlayerMP) player);
 						}
-					}
+					}*/
 				}
 			} else {
 				NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiPostID, x, y, z), (EntityPlayerMP) player);

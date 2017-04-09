@@ -58,11 +58,11 @@ public class BigPostRenderer extends TileEntitySpecialRenderer{
 	        		if(s==null){
 	        			continue;
 	        		}
-	        		double sc2 = 100d/fontrenderer.getStringWidth(s);
+	        		double sc2 = 90d/fontrenderer.getStringWidth(s);
 	        		if(sc2>=1){
 	        			sc2 = 1;
 	        		}
-	        		double lurch = (tilebases.flip?-0.2:0.2)-fontrenderer.getStringWidth(s)*sc*sc2/2;
+	        		double lurch = (tilebases.flip?-0.1:0.1)-fontrenderer.getStringWidth(s)*sc*sc2/2;
 	            	double alpha = Math.atan(lurch*16/3.001);
 	            	double d = Math.sqrt(Math.pow(3.001/16, 2)+Math.pow(lurch, 2));
 	            	double beta = alpha + rotation;

@@ -9,6 +9,8 @@ import gollorum.signpost.blocks.BasePost;
 import gollorum.signpost.blocks.BigPostPost;
 import gollorum.signpost.blocks.PostPost;
 import gollorum.signpost.blocks.PostPostTile;
+import gollorum.signpost.event.UpdateWaystoneEvent;
+import gollorum.signpost.event.UseSignpostEvent;
 import gollorum.signpost.items.PostWrench;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PlayerStore;
@@ -71,7 +73,7 @@ public class SPEventHandler {
 		tasks = remainingTasks;
 		
 		Lurchsauna<BoolRun> remainingPreds = new Lurchsauna<BoolRun>();
-		for(BoolRun now: predicatedTasks){
+		for(BoolRun now: predicatedTasks){int a = 0;
 			if(!now.run()){
 				remainingPreds.add(now);
 			}
@@ -153,7 +155,8 @@ public class SPEventHandler {
 	public void onBlockBreak(BreakEvent event){
 		TileEntity tile = event.world.getTileEntity(event.x, event.y, event.z);
 		if(tile instanceof PostPostTile && event.getPlayer().getHeldItem()!=null && event.getPlayer().getHeldItem().getItem() instanceof PostWrench){
-				event.setCanceled(true);
+			event.setCanceled(true);
+			return;
 		}
 		if(!(event.getPlayer() instanceof EntityPlayerMP)){
 			return;
@@ -173,4 +176,14 @@ public class SPEventHandler {
 			}
 		}
 	}
+	
+	/*@SubscribeEvent
+	public void onWaystoneChange(UpdateWaystoneEvent event){
+		System.out.println(event.type+"|"+event.name+": "+event.x+"|"+event.y+"|"+event.z);
+	}
+	
+	@SubscribeEvent
+	public void onUseSignpost(UseSignpostEvent event){
+		System.out.println(event.x+"|"+event.y+"|"+event.z);
+	}*/
 }

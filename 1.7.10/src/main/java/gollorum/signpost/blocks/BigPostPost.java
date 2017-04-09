@@ -1,6 +1,7 @@
 package gollorum.signpost.blocks;
 
 import gollorum.signpost.Signpost;
+import gollorum.signpost.event.UseSignpostEvent;
 import gollorum.signpost.items.PostWrench;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
@@ -29,6 +30,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
+import net.minecraftforge.common.MinecraftForge;
 
 public class BigPostPost extends BlockContainer {
 
@@ -181,6 +183,9 @@ public class BigPostPost extends BlockContainer {
 	}
 
 	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitX, float hitY, float hitZ) {
+		if(MinecraftForge.EVENT_BUS.post(new UseSignpostEvent(player, world, x, y, z))){
+			return true;
+		}
 		if (world.isRemote) {
 			return true;
 		}
