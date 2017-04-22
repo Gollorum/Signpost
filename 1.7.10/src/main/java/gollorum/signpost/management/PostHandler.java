@@ -65,8 +65,11 @@ public class PostHandler {
 		}
 	}
 	
+	/**
+	 * @return whether the player could pay
+	 */
 	public static boolean pay(EntityPlayer player, int x1, int y1, int z1, int x2, int y2, int z2){
-		if(canPay(player, x1, y1, 1, x2, y2, z2)){
+		if(canPay(player, x1, y1, z1, x2, y2, z2)){
 			doPay(player, x1, y1, z1, x2, y2, z2);
 			return true;
 		}else{
@@ -84,22 +87,36 @@ public class PostHandler {
 					playerItemCount += now.stackSize;
 				}
 			}
-			int dx = x1-x2; int dy = y1-y2; int dz = z1-z2;
-			int stackSize = (int) Math.sqrt(dx*dx+dy*dy+dz*dz) / ConfigHandler.costMult + 1;
-			return playerItemCount>=stackSize;
+//			int dx = x1-x2; int dy = y1-y2; int dz = z1-z2;
+//			int stackSize = (int) Math.sqrt(dx*dx+dy*dy+dz*dz) / ConfigHandler.costMult + 1;
+			return playerItemCount>=getStackSize(x1, y1, z1, x2, y2, z2);
 		}
 	}
-	
+
 	public static void doPay(EntityPlayer player, int x1, int y1, int z1, int x2, int y2, int z2){
 		if(ConfigHandler.cost == null){
 			return;
 		}else{
-			int dx = x1-x2; int dy = y1-y2; int dz = z1-z2;
-			int stackSize = (int) Math.sqrt(dx*dx+dy*dy+dz*dz) / ConfigHandler.costMult + 1;
+			int stackSize = getStackSize(x1, y1, z1, x2, y2, z2);
+//			int dx = x1-x2; int dy = y1-y2; int dz = z1-z2;
+//			int stackSize = (int) Math.sqrt(dx*dx+dy*dy+dz*dz) / ConfigHandler.costMult + 1;
 			while(stackSize-->0){
 				player.inventory.consumeInventoryItem(ConfigHandler.cost);
 			}
 		}
+	}
+	
+	public static int getStackSize(int x1, int y1, int z1, int x2, int y2, int z2){
+		if(ConfigHandler.costMult==0){
+			return 1;
+		}else{
+			int dx = x1-x2; int dy = y1-y2; int dz = z1-z2;
+			return (int) Math.sqrt(dx*dx+dy*dy+dz*dz) / ConfigHandler.costMult + 1;
+		}
+	}
+	
+	public static int getStackSize(BlockPos pos1, BlockPos pos2){
+		return getStackSize(pos1.x, pos1.y, pos1.z, pos2.x, pos2.y, pos2.z);
 	}
 	
 	public static void confirm(EntityPlayerMP player){

@@ -230,7 +230,12 @@ public class PostPost extends BlockContainer {
 				}
 				BaseInfo destination = hit.target == HitTarget.BASE1 ? tile.getBases().base1 : tile.getBases().base2;
 				if (destination != null) {
-					int stackSize = (int) destination.pos.distance(tile.toPos()) / ConfigHandler.costMult + 1;
+//					int dx = destination.pos.x-x;
+//					int dy = destination.pos.y-y;
+//					int dz = destination.pos.z-z;
+//					int stackSize = (int) Math.sqrt(dx*dx+dy*dy+dz*dz) / ConfigHandler.costMult + 1;
+//					int stackSize = PostHandler.getStackSize(x, y, z, destination.pos.x, destination.pos.y, destination.pos.z);
+					int stackSize = PostHandler.getStackSize(destination.pos, tile.toPos());
 					if(PostHandler.canPay(player, destination.pos.x, destination.pos.y, destination.pos.z, x, y, z)){
 						PostHandler.teleportMe(destination, (EntityPlayerMP) player, stackSize);
 					}else{

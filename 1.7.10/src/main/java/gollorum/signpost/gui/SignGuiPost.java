@@ -180,7 +180,7 @@ public class SignGuiPost extends GuiScreen {
 					}
 					int distance = (int) tile.toPos().distance(inf.pos)+1;
 					out = out.replaceAll("<distance>", ""+distance);
-					out = out.replaceAll("<amount>", Integer.toString((int) (tile.toPos().distance(inf.pos)/ConfigHandler.costMult+1)));
+					out = out.replaceAll("<amount>", Integer.toString(PostHandler.getStackSize(tile.toPos(), inf.pos)));
 					out = out.replaceAll("<itemName>", ConfigHandler.costName());
 					if(base2){
 						col1 = Color.white.getRGB();
