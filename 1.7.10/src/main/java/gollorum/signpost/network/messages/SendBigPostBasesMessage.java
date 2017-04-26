@@ -3,9 +3,11 @@ package gollorum.signpost.network.messages;
 import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import gollorum.signpost.blocks.BigPostPostTile;
+import gollorum.signpost.blocks.SuperPostPostTile;
 import gollorum.signpost.util.BigBaseInfo;
 import gollorum.signpost.util.BlockPos;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.util.ResourceLocation;
 
 public class SendBigPostBasesMessage implements IMessage {
 
@@ -16,6 +18,7 @@ public class SendBigPostBasesMessage implements IMessage {
 	public String overlay;
 	public boolean point;
 	public String[] description;
+	public ResourceLocation paint;
 
 	public SendBigPostBasesMessage(){}
 	
@@ -28,6 +31,7 @@ public class SendBigPostBasesMessage implements IMessage {
 		overlay = ""+base.overlay;
 		point = base.point;
 		description = base.description;
+		paint = base.signPaint;
 	}
 
 	@Override
@@ -42,6 +46,7 @@ public class SendBigPostBasesMessage implements IMessage {
 		for(String now: description){
 			ByteBufUtils.writeUTF8String(buf, now);
 		}
+		ByteBufUtils.writeUTF8String(buf, SuperPostPostTile.LocToString(paint));
 	}
 
 	@Override
@@ -56,6 +61,7 @@ public class SendBigPostBasesMessage implements IMessage {
 		for(int i=0; i<description.length; i++){
 			description[i] = ByteBufUtils.readUTF8String(buf);
 		}
+		paint = SuperPostPostTile.stringToLoc(ByteBufUtils.readUTF8String(buf));
 	}
 
 }

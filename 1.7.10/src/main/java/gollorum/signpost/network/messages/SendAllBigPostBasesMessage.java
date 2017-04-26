@@ -5,6 +5,7 @@ import java.util.Map.Entry;
 
 import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
+import gollorum.signpost.blocks.SuperPostPostTile;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.BigBaseInfo;
@@ -12,6 +13,7 @@ import gollorum.signpost.util.BigBaseInfo.OverlayType;
 import gollorum.signpost.util.BlockPos;
 import gollorum.signpost.util.collections.Lurchpaerchensauna;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.util.ResourceLocation;
 
 public class SendAllBigPostBasesMessage implements IMessage{
 
@@ -22,14 +24,16 @@ public class SendAllBigPostBasesMessage implements IMessage{
 		public OverlayType overlay;
 		public boolean bool2;
 		public String[] strings;
+		public ResourceLocation paint;
 		
-		public BigStringInt(String string, int datInt, boolean bool, OverlayType overlay, boolean bool2, String[] strings) {
+		public BigStringInt(String string, int datInt, boolean bool, OverlayType overlay, boolean bool2, String[] strings, ResourceLocation paint) {
 			this.string = string;
 			this.datInt = datInt;
 			this.bool = bool;
 			this.overlay = overlay;
 			this.bool2 = bool2;
 			this.strings = strings;
+			this.paint = paint;
 		}
 	}
 	
@@ -44,7 +48,8 @@ public class SendAllBigPostBasesMessage implements IMessage{
 													  now.getValue().bool,
 													  now.getValue().overlay,
 													  now.getValue().bool2,
-													  now.getValue().strings));
+													  now.getValue().strings,
+													  now.getValue().paint));
 		}
 		return postMap;
 	}
@@ -65,6 +70,7 @@ public class SendAllBigPostBasesMessage implements IMessage{
 			for(String now2: now.getValue().description){
 				ByteBufUtils.writeUTF8String(buf, now2);
 			}
+			ByteBufUtils.writeUTF8String(buf, SuperPostPostTile.LocToString(now.getValue().signPaint));
 		}
 	}
 	
@@ -78,7 +84,8 @@ public class SendAllBigPostBasesMessage implements IMessage{
 										buf.readBoolean(),
 										OverlayType.get(ByteBufUtils.readUTF8String(buf)),
 										buf.readBoolean(),
-										readDescription(buf)));
+										readDescription(buf),
+										SuperPostPostTile.stringToLoc(ByteBufUtils.readUTF8String(buf))));
 		}
 	}
 

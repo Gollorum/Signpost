@@ -1,8 +1,6 @@
 package gollorum.signpost.blocks;
 
 import gollorum.signpost.Signpost;
-import gollorum.signpost.event.UseSignpostEvent;
-import gollorum.signpost.items.PostWrench;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
@@ -10,13 +8,11 @@ import gollorum.signpost.network.messages.ChatMessage;
 import gollorum.signpost.network.messages.OpenGuiMessage;
 import gollorum.signpost.network.messages.SendPostBasesMessage;
 import gollorum.signpost.util.BaseInfo;
-import gollorum.signpost.util.BlockPos;
 import gollorum.signpost.util.DoubleBaseInfo;
 import gollorum.signpost.util.DoubleBaseInfo.OverlayType;
 import gollorum.signpost.util.math.tracking.Cuboid;
 import gollorum.signpost.util.math.tracking.DDDVector;
 import gollorum.signpost.util.math.tracking.Intersect;
-import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
@@ -24,15 +20,13 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
-import net.minecraftforge.common.MinecraftForge;
 
-public class PostPost extends BlockContainer {
+public class PostPost extends SuperPostPost {
 	
 	public PostType type;
 
@@ -110,162 +104,137 @@ public class PostPost extends BlockContainer {
 	}
 
 	@Override
-	public void onBlockClicked(World world, int x, int y, int z, EntityPlayer player) {
-		if (world.isRemote||!ConfigHandler.securityLevelSignpost.canUse((EntityPlayerMP) player)) {
-			return;
+	public void clickWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z) {
+		Hit hit = (Hit)hitObj;
+		DoubleBaseInfo tilebases = ((PostPostTile)superTile).getBases();
+		if (hit.target == HitTarget.BASE1) {
+			tilebases.rotation1 = (tilebases.rotation1 - 15) % 360;
+		} else if(hit.target == HitTarget.BASE2) {
+			tilebases.rotation2 = (tilebases.rotation2 - 15) % 360;
 		}
-		Hit hit = getHitTarget(world, x, y, z, player);
-		if(hit.target == HitTarget.POST){
-			return;
+	}
+
+	@Override
+	public void rightClickWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z) {
+		Hit hit = (Hit)hitObj;
+		DoubleBaseInfo tilebases = ((PostPostTile)superTile).getBases();
+		if (hit.target == HitTarget.BASE1) {
+			tilebases.rotation1 = (tilebases.rotation1 + 15) % 360;
+		} else if (hit.target == HitTarget.BASE2) {
+			tilebases.rotation2 = (tilebases.rotation2 + 15) % 360;
+//		} else if (hit.target == HitTarget.POST){
+//			NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiPostID, x, y, z), (EntityPlayerMP) player);
 		}
-		PostPostTile tile = getTile(world, x, y, z);
-		if (player.getHeldItem() != null){
-			Item item = player.getHeldItem().getItem();
-			if(item instanceof ItemBlock && doThingsWithItem(item, hit, tile)){
-				NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile, tile.getBases()));
+	}
+
+	@Override
+	public void shiftClickWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z) {
+		Hit hit = (Hit)hitObj;
+		DoubleBaseInfo tilebases = ((PostPostTile)superTile).getBases();
+		if (hit.target == HitTarget.BASE1) {
+			tilebases.flip1 = !tilebases.flip1;
+		} else if(hit.target == HitTarget.BASE2) {
+			tilebases.flip2 = !tilebases.flip2;
+		}
+	}
+
+	@Override
+	public void click(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z) {
+		Hit hit = (Hit)hitObj;
+		PostPostTile tile = (PostPostTile)superTile;
+		DoubleBaseInfo tilebases = tile.getBases();
+		if (hit.target == HitTarget.BASE1) {
+			if(tilebases.overlay1 != null){
+				player.inventory.addItemStackToInventory(new ItemStack(tilebases.overlay1.item, 1));
+			}
+		} else if(hit.target == HitTarget.BASE2) {
+			if(tilebases.overlay2 != null){
+				player.inventory.addItemStackToInventory(new ItemStack(tilebases.overlay2.item, 1));
+			}
+		}
+		for(OverlayType now: OverlayType.values()){
+			if(player.getHeldItem().getItem().getClass() == now.item.getClass()){
+				if (hit.target == HitTarget.BASE1) {
+					tilebases.overlay1 = now;
+				} else if(hit.target == HitTarget.BASE2) {
+					tilebases.overlay2 = now;
+				}
+				player.inventory.consumeInventoryItem(now.item);
+				NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile, tilebases));
 				return;
 			}
-			if(item instanceof PostWrench) {
-				DoubleBaseInfo tilebases = tile.getBases();
-				if (player.isSneaking()) {
-					if (hit.target == HitTarget.BASE1) {
-						tilebases.flip1 = !tilebases.flip1;
-					} else {
-						tilebases.flip2 = !tilebases.flip2;
-					}
-				} else {
-					if (hit.target == HitTarget.BASE1) {
-						tilebases.rotation1 = (tilebases.rotation1 - 15) % 360;
-					} else {
-						tilebases.rotation2 = (tilebases.rotation2 - 15) % 360;
-					}
-				}
-				if(ConfigHandler.securityLevelSignpost.canUse((EntityPlayerMP) player)) {
-					NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile, tilebases));
-				}
-			}else{
-				if (player.isSneaking()) {
-					DoubleBaseInfo tilebases = tile.getBases();
-					if (hit.target == HitTarget.BASE1) {
-						tilebases.point1 = !tilebases.point1;
-					} else {
-						tilebases.point2 = !tilebases.point2;
-					}
+		}
+		if (hit.target == HitTarget.BASE1) {
+			tilebases.overlay1 = null;
+		} else if(hit.target == HitTarget.BASE2) {
+			tilebases.overlay2 = null;
+		}
+		NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile, tilebases));
+	}
+
+	@Override
+	public void rightClick(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z) {
+		Hit hit = (Hit)hitObj;
+		PostPostTile tile = (PostPostTile)superTile;
+		if (hit.target != HitTarget.POST) {
+			if (ConfigHandler.deactivateTeleportation) {
+				return;
+			}
+			BaseInfo destination = hit.target == HitTarget.BASE1 ? tile.getBases().base1 : tile.getBases().base2;
+			if (destination != null) {
+				int stackSize = PostHandler.getStackSize(destination.pos, tile.toPos());
+				if(PostHandler.canPay(player, destination.pos.x, destination.pos.y, destination.pos.z, x, y, z)){
+					PostHandler.teleportMe(destination, (EntityPlayerMP) player, stackSize);
 				}else{
-					DoubleBaseInfo tilebases = tile.getBases();
-					if (hit.target == HitTarget.BASE1) {
-						if(tilebases.overlay1 != null){
-							player.inventory.addItemStackToInventory(new ItemStack(tilebases.overlay1.item, 1));
-						}
-					}else{
-						if(tilebases.overlay2 != null){
-							player.inventory.addItemStackToInventory(new ItemStack(tilebases.overlay2.item, 1));
-						}
-					}
-					for(OverlayType now: OverlayType.values()){
-						if(item.getClass() == now.item.getClass()){
-							if (hit.target == HitTarget.BASE1) {
-								tilebases.overlay1 = now;
-							}else{
-								tilebases.overlay2 = now;
-							}
-							player.inventory.consumeInventoryItem(now.item);
-							NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile, tilebases));
-							return;
-						}
-					}
-					if (hit.target == HitTarget.BASE1) {
-						tilebases.overlay1 = null;
-					}else{
-						tilebases.overlay2 = null;
-					}
-					NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile, tilebases));
+					String[] keyword = { "<itemName>", "<amount>" };
+					String[] replacement = { ConfigHandler.cost.getUnlocalizedName() + ".name",	"" + stackSize };
+					NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.payment", keyword, replacement), (EntityPlayerMP) player);
 				}
 			}
-		}else{
-			DoubleBaseInfo tilebases = tile.getBases();
-			if (hit.target == HitTarget.BASE1) {
-				tilebases.point1 = !tilebases.point1;
-				NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile, tilebases));
-			}else{
-				tilebases.point2 = !tilebases.point2;
-				NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile, tilebases));
-			}
-		}
-	}
-
-	protected boolean doThingsWithItem(Item item, Hit hit, PostPostTile tile) {
-		return false;
-	}
-
-	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitX, float hitY, float hitZ) {
-		if(MinecraftForge.EVENT_BUS.post(new UseSignpostEvent(player, world, x, y, z))){
-			return true;
-		}
-		if (world.isRemote) {
-			return true;
-		}
-		if (player.getHeldItem() != null && player.getHeldItem().getItem() instanceof PostWrench) {
-			if(!ConfigHandler.securityLevelSignpost.canUse((EntityPlayerMP) player)){
-				return true;
-			}
-			PostPostTile tile = getTile(world, x, y, z);
-			DoubleBaseInfo tilebases = tile.getBases();
-			Hit hit = getHitTarget(world, x, y, z, player);
-			if (hit.target == HitTarget.BASE1) {
-				tilebases.rotation1 = (tilebases.rotation1 + 15) % 360;
-			} else if (hit.target == HitTarget.BASE2) {
-				tilebases.rotation2 = (tilebases.rotation2 + 15) % 360;
-			} else if (hit.target == HitTarget.POST){
-				NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiPostID, x, y, z), (EntityPlayerMP) player);
-				return true;
-			}
-			NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile, tilebases));
 		} else {
-			PostPostTile tile = getTile(world, x, y, z);
-			Hit hit = getHitTarget(world, x, y, z, player);
-			if (hit.target != HitTarget.POST) {
-				if (ConfigHandler.deactivateTeleportation) {
-					return true;
-				}
-				BaseInfo destination = hit.target == HitTarget.BASE1 ? tile.getBases().base1 : tile.getBases().base2;
-				if (destination != null) {
-//					int dx = destination.pos.x-x;
-//					int dy = destination.pos.y-y;
-//					int dz = destination.pos.z-z;
-//					int stackSize = (int) Math.sqrt(dx*dx+dy*dy+dz*dz) / ConfigHandler.costMult + 1;
-//					int stackSize = PostHandler.getStackSize(x, y, z, destination.pos.x, destination.pos.y, destination.pos.z);
-					int stackSize = PostHandler.getStackSize(destination.pos, tile.toPos());
-					if(PostHandler.canPay(player, destination.pos.x, destination.pos.y, destination.pos.z, x, y, z)){
-						PostHandler.teleportMe(destination, (EntityPlayerMP) player, stackSize);
-					}else{
-						String[] keyword = { "<itemName>", "<amount>" };
-						String[] replacement = { ConfigHandler.cost.getUnlocalizedName() + ".name",	"" + stackSize };
-						NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.payment", keyword, replacement), (EntityPlayerMP) player);
-					}
-					/*if (ConfigHandler.cost == null) {
-						PostHandler.teleportMe(destination, (EntityPlayerMP) player, 0);
-					} else {
-						int stackSize = (int) destination.pos.distance(tile.toPos()) / ConfigHandler.costMult + 1;
-						if (player.getHeldItem() != null
-								&& player.getHeldItem().getItem().getClass() == ConfigHandler.cost.getClass()
-								&& player.getHeldItem().stackSize >= stackSize) {
-							PostHandler.teleportMe(destination, (EntityPlayerMP) player, stackSize);
-						} else {
-							String[] keyword = { "<itemName>", "<amount>" };
-							String[] replacement = { ConfigHandler.cost.getUnlocalizedName() + ".name",	"" + stackSize };
-							NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.payment", keyword, replacement), (EntityPlayerMP) player);
-						}
-					}*/
-				}
-			} else {
-				NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiPostID, x, y, z), (EntityPlayerMP) player);
-			}
+			NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiPostID, x, y, z), (EntityPlayerMP) player);
 		}
-		return true;
 	}
 
-	public Hit getHitTarget(World world, int x, int y, int z, EntityPlayer/*MP*/ player){
+	@Override
+	public void shiftClick(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z) {
+		Hit hit = (Hit)hitObj;
+		DoubleBaseInfo tilebases = ((PostPostTile)superTile).getBases();
+		if (hit.target == HitTarget.BASE1) {
+			tilebases.point1 = !tilebases.point1;
+		} else if(hit.target == HitTarget.BASE2) {
+			tilebases.point2 = !tilebases.point2;
+		}
+	}
+
+	@Override
+	public void clickBare(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z) {
+		Hit hit = (Hit)hitObj;
+		PostPostTile tile = (PostPostTile)superTile;
+		DoubleBaseInfo tilebases = tile.getBases();
+		if (hit.target == HitTarget.BASE1) {
+			tilebases.point1 = !tilebases.point1;
+			NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile, tilebases));
+		} else if(hit.target == HitTarget.BASE2) {
+			tilebases.point2 = !tilebases.point2;
+			NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile, tilebases));
+		}
+	}
+
+	@Override
+	public void shiftClickBare(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z) {
+		shiftClick(hitObj, superTile, player, x, y, z);
+	}
+
+	@Override
+	public void sendPostBases(SuperPostPostTile superTile) {
+		PostPostTile tile = (PostPostTile)superTile;
+		DoubleBaseInfo tilebases = tile.getBases();
+		NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile, tilebases));
+	}
+	
+	@Override
+	public Object getHitTarget(World world, int x, int y, int z, EntityPlayer player){
 		Vec3 head = Vec3.createVectorHelper(player.posX, player.posY, player.posZ);
 		head.yCoord+=player.getEyeHeight();
 		if(player.isSneaking())
@@ -319,18 +288,6 @@ public class PostPost extends BlockContainer {
 		return new Hit(target, pos);
 	}
 
-	public int getRenderType() {
-		return -1;
-	}
-
-	public boolean renderAsNormalBlock() {
-		return false;
-	}
-
-	public boolean isOpaqueCube() {
-		return false;
-	}
-
 	public static PostPostTile getTile(World world, int x, int y, int z) {
 		TileEntity ret = world.getTileEntity(x, y, z);
 		if (ret instanceof PostPostTile) {
@@ -340,13 +297,4 @@ public class PostPost extends BlockContainer {
 		}
 	}
 	
-	public static void placeClient(World world, BlockPos blockPos, EntityPlayer player) {
-		// TODO Auto-generated method stub
-
-	}
-
-	public static void placeServer(World world, BlockPos blockPos, EntityPlayerMP player) {
-		// TODO Auto-generated method stub
-
-	}
 }

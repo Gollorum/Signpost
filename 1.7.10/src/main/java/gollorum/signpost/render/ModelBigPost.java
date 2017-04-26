@@ -5,6 +5,7 @@ import org.lwjgl.opengl.GL11;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import gollorum.signpost.blocks.BigPostPostTile;
+import gollorum.signpost.blocks.SuperPostPostTile;
 import gollorum.signpost.util.BigBaseInfo;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelRenderer;
@@ -35,6 +36,9 @@ public class ModelBigPost extends ModelBase {
 			GL11.glRotated(180, 0, 0, 1);
 			GL11.glTranslated(0, -1, 0);
 			GL11.glRotated(-Math.toDegrees(rotation), 0, 1, 0);
+			if(tilebases.signPaint!=null){
+				postRenderer.setTexture(tilebases.signPaint);
+			}
 			board.render(f5, tilebases.flip);
 			GL11.glPopMatrix();
 		}

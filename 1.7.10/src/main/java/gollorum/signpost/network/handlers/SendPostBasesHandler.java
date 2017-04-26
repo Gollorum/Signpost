@@ -6,6 +6,7 @@ import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 import cpw.mods.fml.relauncher.Side;
 import gollorum.signpost.blocks.PostPostTile;
+import gollorum.signpost.blocks.SuperPostPostTile;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.SendPostBasesMessage;
@@ -27,6 +28,8 @@ public class SendPostBasesHandler implements IMessageHandler<SendPostBasesMessag
 		bases.overlay2 = OverlayType.get(message.overlay2);
 		bases.point1 = message.point1;
 		bases.point2 = message.point2;
+		bases.sign1Paint = SuperPostPostTile.stringToLoc(message.paint1);
+		bases.sign2Paint = SuperPostPostTile.stringToLoc(message.paint2);
 		if(ctx.side.equals(Side.SERVER)){
 			ctx.getServerHandler().playerEntity.worldObj.getTileEntity(message.pos.x, message.pos.y, message.pos.z).markDirty();
 			NetworkHandler.netWrap.sendToAll(message);

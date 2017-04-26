@@ -49,7 +49,7 @@ public class BigPostRenderer extends TileEntitySpecialRenderer{
 		double sc = 0.013d;
 //		double ys = sc;
         
-		int color = (1<<16) + (1<<8);
+		int color = 0;
 		
         if(!tile.isItem){
         	if(tilebases.base!=null&&!tilebases.base.name.equals("null")&&!tilebases.base.name.equals("")){

@@ -30,12 +30,12 @@ public class ClientProxy extends CommonProxy{
 			MinecraftForgeClient.registerItemRenderer(Item.getItemFromBlock(now), new BlockItemRenderer(tile, new PostRenderer()));
 		}
 
-		/*ClientRegistry.bindTileEntitySpecialRenderer(BigPostPostTile.class, new BigPostRenderer());
+		ClientRegistry.bindTileEntitySpecialRenderer(BigPostPostTile.class, new BigPostRenderer());
 		for(BigPostPost now: bigposts){
 			BigPostPostTile tile = new BigPostPostTile(now.type);
 			tile.isItem = true;
 			MinecraftForgeClient.registerItemRenderer(Item.getItemFromBlock(now), new BlockItemRenderer(tile, new PostRenderer()));
-		}*/
+		}
 	}
 
 	@Override

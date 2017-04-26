@@ -16,12 +16,11 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ResourceLocation;
 
-public class PostPostTile extends TileEntity {
+public class PostPostTile extends SuperPostPostTile {
 
 	public PostType type = PostType.OAK;
-	public boolean isItem = false;
-	public boolean isCanceled = false;
 
 	@Deprecated
 	public DoubleBaseInfo bases = null;
@@ -36,13 +35,14 @@ public class PostPostTile extends TileEntity {
 	public DoubleBaseInfo getBases(){
 		DoubleBaseInfo bases = PostHandler.posts.get(toPos());
 		if(bases==null){
-			bases = new DoubleBaseInfo(null, null, 0, 0, false, false, null, null, false, false);
+			bases = new DoubleBaseInfo(null, null, 0, 0, false, false, null, null, false, false, null, null);
 			PostHandler.posts.put(toPos(), bases);
 		}
 		this.bases = bases;
 		return bases;
 	}
 	
+	@Override
 	public void onBlockDestroy(BlockPos pos) {
 		isCanceled = true;
 		DoubleBaseInfo bases = getBases();
@@ -59,21 +59,6 @@ public class PostPostTile extends TileEntity {
 		}
 	}
 
-	public BlockPos toPos(){
-		if(worldObj==null||worldObj.isRemote){
-			return new BlockPos("", xCoord, yCoord, zCoord, dim());
-		}else{
-			return new BlockPos(worldObj.getWorldInfo().getWorldName(), xCoord, yCoord, zCoord, dim());
-		}
-	}
-	
-	public int dim(){
-		if(worldObj==null||worldObj.provider==null){
-			return Integer.MIN_VALUE;
-		}else
-			return worldObj.provider.dimensionId;
-	}
-	
 	@Override
 	public void writeToNBT(NBTTagCompound tagCompound) {
 		super.writeToNBT(tagCompound);
@@ -88,6 +73,8 @@ public class PostPostTile extends TileEntity {
 		tagCompound.setString("overlay2", ""+bases.overlay2);
 		tagCompound.setBoolean("point1", bases.point1);
 		tagCompound.setBoolean("point2", bases.point2);
+		tagCompound.setString("paint1", SuperPostPostTile.LocToString(bases.sign1Paint));
+		tagCompound.setString("paint2", SuperPostPostTile.LocToString(bases.sign2Paint));
 	}
 
 	@Override
@@ -109,6 +96,9 @@ public class PostPostTile extends TileEntity {
 		final boolean point1 = tagCompound.getBoolean("point1");
 		final boolean point2 = tagCompound.getBoolean("point2");
 
+		final String paint1 = tagCompound.getString("paint1");
+		final String paint2 = tagCompound.getString("paint2");
+
 		SPEventHandler.scheduleTask(new BoolRun(){
 			@Override
 			public boolean run() {
@@ -129,6 +119,8 @@ public class PostPostTile extends TileEntity {
 					bases.overlay2 = overlay2;
 					bases.point1 = point1;
 					bases.point2 = point2;
+					bases.sign1Paint = stringToLoc(paint1);
+					bases.sign2Paint = stringToLoc(paint2);
 					NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage((PostPostTile) worldObj.getTileEntity(xCoord, yCoord, zCoord), bases));
 					return true;
 				}
@@ -136,7 +128,7 @@ public class PostPostTile extends TileEntity {
 		});
 	}
 
-	public static double calcRot1(DoubleBaseInfo tilebases, int x, int z) {
+	public static final double calcRot1(DoubleBaseInfo tilebases, int x, int z) {
  		if(tilebases.point1&&!(tilebases.base1==null||tilebases.base1.pos==null||ConfigHandler.deactivateTeleportation)){
 			int dx = x-tilebases.base1.pos.x;
 			int dz = z-tilebases.base1.pos.z;
@@ -146,7 +138,7 @@ public class PostPostTile extends TileEntity {
 		}
 	}
 
-	public static double calcRot2(DoubleBaseInfo tilebases, int x, int z) {
+	public static final double calcRot2(DoubleBaseInfo tilebases, int x, int z) {
 		if(tilebases.point2&&!(tilebases.base2==null||tilebases.base2.pos==null||ConfigHandler.deactivateTeleportation)){
 			int dx = x-tilebases.base2.pos.x;
 			int dz = z-tilebases.base2.pos.z;

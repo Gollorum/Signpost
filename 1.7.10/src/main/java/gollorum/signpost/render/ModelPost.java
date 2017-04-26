@@ -5,10 +5,11 @@ import org.lwjgl.opengl.GL11;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import gollorum.signpost.blocks.PostPostTile;
+import gollorum.signpost.blocks.SuperPostPostTile;
 import gollorum.signpost.util.DoubleBaseInfo;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelRenderer;
-import net.minecraft.entity.Entity;
+import net.minecraft.util.ResourceLocation;
 
 @SideOnly(Side.CLIENT)
 public class ModelPost extends ModelBase {
@@ -19,8 +20,8 @@ public class ModelPost extends ModelBase {
 
 	public ModelPost() {
 
-		textureWidth = 24;
-		textureHeight = 22;
+		textureWidth = 16;
+		textureHeight = 16;
 
 		board1 = new Board(this, 8);
 		board2 = new Board(this, 0);
@@ -32,12 +33,19 @@ public class ModelPost extends ModelBase {
 	public void render(PostRenderer postRenderer, float f1, float f5, DoubleBaseInfo tilebases, PostPostTile tile, double rotation1, double rotation2) {
 		super.render(null, 0, f1, 0, 0, 0, f5);
 		post.render(f5);
+		ResourceLocation mainLoc = tile.type.texture;
 		if ((tilebases.base1 != null&&!tilebases.base1.name.equals("null")&&!tilebases.base1.name.equals("")) || tile.isItem) {
 			GL11.glPushMatrix();
 			GL11.glRotated(180, 0, 0, 1);
 			GL11.glTranslated(0, -1.5, 0);
 			GL11.glRotated(-Math.toDegrees(rotation1), 0, 1, 0);
-			board1.render(f5, tilebases.flip1);
+			if(tilebases.sign1Paint!=null){
+				postRenderer.setTexture(tilebases.sign1Paint);
+				board1.render(f5, tilebases.flip1);
+				postRenderer.setTexture(mainLoc);
+			}else{
+				board1.render(f5, tilebases.flip1);
+			}
 			GL11.glPopMatrix();
 		}
 		if ((tilebases.base2 != null&&!tilebases.base2.name.equals("null")&&!tilebases.base2.name.equals("")) || tile.isItem) {
@@ -45,7 +53,13 @@ public class ModelPost extends ModelBase {
 			GL11.glRotated(180, 0, 0, 1);
 			GL11.glTranslated(0, -0.5, 0);
 			GL11.glRotated(-Math.toDegrees(rotation2), 0, 1, 0);
-			board2.render(f5, tilebases.flip2);
+			if(tilebases.sign2Paint!=null){
+				postRenderer.setTexture(tilebases.sign2Paint);
+				board2.render(f5, tilebases.flip2);
+				postRenderer.setTexture(mainLoc);
+			}else{
+				board2.render(f5, tilebases.flip2);
+			}
 			GL11.glPopMatrix();
 		}
 	}

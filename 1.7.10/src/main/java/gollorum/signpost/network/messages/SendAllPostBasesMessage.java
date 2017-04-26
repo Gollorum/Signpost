@@ -5,6 +5,7 @@ import java.util.Map.Entry;
 
 import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
+import gollorum.signpost.blocks.SuperPostPostTile;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.BlockPos;
@@ -12,6 +13,7 @@ import gollorum.signpost.util.DoubleBaseInfo;
 import gollorum.signpost.util.DoubleBaseInfo.OverlayType;
 import gollorum.signpost.util.collections.Lurchpaerchensauna;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.util.ResourceLocation;
 
 public class SendAllPostBasesMessage implements IMessage{
 
@@ -30,8 +32,16 @@ public class SendAllPostBasesMessage implements IMessage{
 		
 		public boolean bool3;
 		public boolean bool4;
+
+		public String paint1;
+		public String paint2;
 		
-		public DoubleStringInt(String string1, String string2, int int1, int int2, boolean bool1, boolean bool2, OverlayType overlay1, OverlayType overlay2, boolean bool3, boolean bool4) {
+		public DoubleStringInt(String string1, String string2, 
+							   int int1, int int2, 
+							   boolean bool1, boolean bool2, 
+							   OverlayType overlay1, OverlayType overlay2, 
+							   boolean bool3, boolean bool4,
+							   String paint1, String paint2) {
 			this.string1 = string1;
 			this.string2 = string2;
 			this.int1 = int1;
@@ -42,6 +52,8 @@ public class SendAllPostBasesMessage implements IMessage{
 			this.overlay2 = overlay2;
 			this.bool3 = bool3;
 			this.bool4 = bool4;
+			this.paint1 = paint1;
+			this.paint2 = paint2;
 		}
 	}
 	
@@ -52,11 +64,14 @@ public class SendAllPostBasesMessage implements IMessage{
 		for(Entry<BlockPos, DoubleStringInt> now: posts.entrySet()){
 			BaseInfo base1 = PostHandler.getWSbyName(now.getValue().string1);
 			BaseInfo base2 = PostHandler.getWSbyName(now.getValue().string2);
+			ResourceLocation paint1 = SuperPostPostTile.stringToLoc(now.getValue().paint1);
+			ResourceLocation paint2 = SuperPostPostTile.stringToLoc(now.getValue().paint2);
 			postMap.put(now.getKey(), new DoubleBaseInfo(base1, base2,
 														 now.getValue().int1, now.getValue().int2,
 														 now.getValue().bool1, now.getValue().bool2,
 														 now.getValue().overlay1, now.getValue().overlay2,
-														 now.getValue().bool3, now.getValue().bool4));
+														 now.getValue().bool3, now.getValue().bool4,
+														 paint1, paint2));
 		}
 		return postMap;
 	}
@@ -78,6 +93,8 @@ public class SendAllPostBasesMessage implements IMessage{
 				ByteBufUtils.writeUTF8String(buf, ""+now.getValue().overlay2);
 				buf.writeBoolean(now.getValue().point1);
 				buf.writeBoolean(now.getValue().point2);
+				ByteBufUtils.writeUTF8String(buf, SuperPostPostTile.LocToString(now.getValue().sign1Paint));
+				ByteBufUtils.writeUTF8String(buf, SuperPostPostTile.LocToString(now.getValue().sign2Paint));
 		}
 	}
 	
@@ -92,7 +109,8 @@ public class SendAllPostBasesMessage implements IMessage{
 										buf.readBoolean(), buf.readBoolean(),
 										OverlayType.get(ByteBufUtils.readUTF8String(buf)),
 										OverlayType.get(ByteBufUtils.readUTF8String(buf)),
-										buf.readBoolean(), buf.readBoolean()));
+										buf.readBoolean(), buf.readBoolean(),
+										ByteBufUtils.readUTF8String(buf), ByteBufUtils.readUTF8String(buf)));
 		}
 	}
 

@@ -34,7 +34,7 @@ public class CommonProxy {
 	public PostPost post_stone = new PostPost(PostType.STONE);
 	public PostPost[] posts = {post_oak, post_spruce, post_birch, post_jungle, post_acacia, post_big_oak, post_iron, post_stone};
 
-	/*public BigPostPost bigpost_oak = new BigPostPost(BigPostType.OAK);
+	public BigPostPost bigpost_oak = new BigPostPost(BigPostType.OAK);
 	public BigPostPost bigpost_spruce = new BigPostPost(BigPostType.SPRUCE);
 	public BigPostPost bigpost_birch = new BigPostPost(BigPostType.BIRCH);
 	public BigPostPost bigpost_jungle = new BigPostPost(BigPostType.JUNGLE);
@@ -43,7 +43,7 @@ public class CommonProxy {
 	public BigPostPost bigpost_iron = new BigPostPost(BigPostType.IRON);
 	public BigPostPost bigpost_stone = new BigPostPost(BigPostType.STONE);
 	public BigPostPost[] bigposts = {bigpost_oak, bigpost_spruce, bigpost_birch, bigpost_jungle, bigpost_acacia, bigpost_big_oak, bigpost_iron, bigpost_stone};
-	*/
+	
 	public PostWrench tool = new PostWrench();
 
 	public void init(){
@@ -63,15 +63,15 @@ public class CommonProxy {
 		for(PostPost now: posts){
 			GameRegistry.registerBlock(now, "SignpostPost"+now.type.name());
 		}
-		/*for(BigPostPost now: bigposts){
+		for(BigPostPost now: bigposts){
 			GameRegistry.registerBlock(now, "BigSignpostPost"+now.type.name());
-		}*/
+		}
 	}
 	
 	protected void registerTiles(){
 		GameRegistry.registerTileEntity(BasePostTile.class, "SignpostBaseTile");
 		GameRegistry.registerTileEntity(PostPostTile.class, "SignpostPostTile");
-//		GameRegistry.registerTileEntity(BigPostPostTile.class, "SignpostBigPostTile");
+		GameRegistry.registerTileEntity(BigPostPostTile.class, "SignpostBigPostTile");
 	}
 	
 	protected void registerItems(){
@@ -96,14 +96,14 @@ public class CommonProxy {
 										'A', Items.sign,
 										'B', new ItemStack(now.type.baseItem, 1, now.type.metadata));
 			}
-			/*for(BigPostPost now: bigposts){
+			for(BigPostPost now: bigposts){
 				GameRegistry.addRecipe(new ItemStack(now, 4),
 										"AAA",
 										"AAA",
 										" B ",
 										'A', Items.sign,
 										'B', new ItemStack(now.type.baseItem, 1, now.type.metadata));
-			}*/
+			}
 			GameRegistry.addRecipe(new ItemStack(tool),
 									"II",
 									"IS",

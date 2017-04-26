@@ -16,12 +16,11 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ResourceLocation;
 
-public class BigPostPostTile extends TileEntity {
+public class BigPostPostTile extends SuperPostPostTile {
 
 	public BigPostType type = BigPostType.OAK;
-	public boolean isItem = false;
-	public boolean isCanceled = false;
 	public static final int DESCRIPTIONLENGTH = 4;
 
 	@Deprecated
@@ -37,13 +36,14 @@ public class BigPostPostTile extends TileEntity {
 	public BigBaseInfo getBases(){
 		BigBaseInfo bases = PostHandler.bigPosts.get(toPos());
 		if(bases==null){
-			bases = new BigBaseInfo(null, 0, false, null, false);
+			bases = new BigBaseInfo(null, 0, false, null, false, null);
 			PostHandler.bigPosts.put(toPos(), bases);
 		}
 		this.bases = bases;
 		return bases;
 	}
-	
+
+	@Override
 	public void onBlockDestroy(BlockPos pos) {
 		isCanceled = true;
 		BigBaseInfo bases = getBases();
@@ -56,21 +56,6 @@ public class BigPostPostTile extends TileEntity {
 		}
 	}
 
-	public BlockPos toPos(){
-		if(worldObj==null||worldObj.isRemote){
-			return new BlockPos("", xCoord, yCoord, zCoord, dim());
-		}else{
-			return new BlockPos(worldObj.getWorldInfo().getWorldName(), xCoord, yCoord, zCoord, dim());
-		}
-	}
-	
-	public int dim(){
-		if(worldObj==null||worldObj.provider==null){
-			return Integer.MIN_VALUE;
-		}else
-			return worldObj.provider.dimensionId;
-	}
-	
 	@Override
 	public void writeToNBT(NBTTagCompound tagCompound) {
 		super.writeToNBT(tagCompound);
@@ -80,6 +65,7 @@ public class BigPostPostTile extends TileEntity {
 		tagCompound.setBoolean("flip", bases.flip);
 		tagCompound.setString("overlay", ""+bases.overlay);
 		tagCompound.setBoolean("point", bases.point);
+		tagCompound.setString("paint", SuperPostPostTile.LocToString(bases.signPaint));
 		for(int i=0; i<bases.description.length; i++){
 			tagCompound.setString("description"+i, bases.description[i]);
 		}
@@ -95,6 +81,7 @@ public class BigPostPostTile extends TileEntity {
 		final OverlayType overlay = OverlayType.get(tagCompound.getString("overlay"));
 		final boolean point = tagCompound.getBoolean("point");
 		final String[] description = new String[DESCRIPTIONLENGTH];
+		final String paint = tagCompound.getString("paint");
 
 		for(int i=0; i<DESCRIPTIONLENGTH; i++){
 			description[i] = tagCompound.getString("description"+i);
@@ -116,6 +103,7 @@ public class BigPostPostTile extends TileEntity {
 					bases.overlay = overlay;
 					bases.point = point;
 					bases.description = description;
+					bases.signPaint = stringToLoc(paint);
 					NetworkHandler.netWrap.sendToAll(new SendBigPostBasesMessage((BigPostPostTile) worldObj.getTileEntity(xCoord, yCoord, zCoord), bases));
 					return true;
 				}

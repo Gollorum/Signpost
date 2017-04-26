@@ -56,8 +56,9 @@ public class PostRenderer extends TileEntitySpecialRenderer{
 		GL11.glRotated(180, 0, 1, 0);
 		double sc = 0.013d;
 		double ys = 1.3d*sc;
-        
-		int color = (1<<16) + (1<<8);
+
+		int color = 0;
+//		int color = (1<<16) + (1<<8);
 		
         if(!tile.isItem){
         	if(tilebases.base1!=null&&!tilebases.base1.name.equals("null")&&!tilebases.base1.name.equals("")){

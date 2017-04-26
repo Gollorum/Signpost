@@ -3,6 +3,7 @@ package gollorum.signpost.network.messages;
 import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import gollorum.signpost.blocks.PostPostTile;
+import gollorum.signpost.blocks.SuperPostPostTile;
 import gollorum.signpost.util.BlockPos;
 import gollorum.signpost.util.DoubleBaseInfo;
 import io.netty.buffer.ByteBuf;
@@ -26,6 +27,9 @@ public class SendPostBasesMessage implements IMessage {
 	public boolean point1;
 	public boolean point2;
 
+	public String paint1;
+	public String paint2;
+
 	public SendPostBasesMessage(){}
 	
 	public SendPostBasesMessage(PostPostTile tile, DoubleBaseInfo base) {
@@ -41,6 +45,8 @@ public class SendPostBasesMessage implements IMessage {
 		overlay2 = ""+base.overlay2;
 		point1 = base.point1;
 		point2 = base.point2;
+		paint1 = SuperPostPostTile.LocToString(base.sign1Paint);
+		paint2 = SuperPostPostTile.LocToString(base.sign2Paint);
 		
 	}
 
@@ -57,6 +63,8 @@ public class SendPostBasesMessage implements IMessage {
 		ByteBufUtils.writeUTF8String(buf, overlay2);
 		buf.writeBoolean(point1);
 		buf.writeBoolean(point2);
+		ByteBufUtils.writeUTF8String(buf, ""+paint1);
+		ByteBufUtils.writeUTF8String(buf, ""+paint2);
 	}
 
 	@Override
@@ -72,6 +80,8 @@ public class SendPostBasesMessage implements IMessage {
 		overlay2 = ByteBufUtils.readUTF8String(buf);
 		point1 = buf.readBoolean();
 		point2 = buf.readBoolean();
+		paint1 = ByteBufUtils.readUTF8String(buf);
+		paint2 = ByteBufUtils.readUTF8String(buf);
 	}
 
 }
