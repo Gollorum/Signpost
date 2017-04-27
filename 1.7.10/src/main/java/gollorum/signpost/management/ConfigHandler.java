@@ -19,6 +19,7 @@ public class ConfigHandler {
 	
 	public static boolean deactivateTeleportation;
 	public static boolean interdimensional;
+	public static int maxWaystones;
 	public static int maxDist;
 	public static Item cost;
 	public static String paymentItem;
@@ -75,6 +76,8 @@ public class ConfigHandler {
 		deactivateTeleportation = config.getBoolean("deactivateTeleportation", category, false, "Deactivates teleportation and the waystone recipe, since it isn't needed");
 		
 		interdimensional = config.getBoolean("interdimensional", category, true, "Enables interdimensional teleportation (e.g. overworld-nether)");
+
+		maxWaystones = config.getInt("maxWaystones", category, 1, -1, Integer.MAX_VALUE, "The amount of waystones a player is allowed to place (-1 = unlimited)");
 		
 		maxDist = config.getInt("maxDistance", category, -1, -1, (int)Math.sqrt(Integer.MAX_VALUE), "The allowed distance between signpost an waystone (-1 = unlimited)");
 		

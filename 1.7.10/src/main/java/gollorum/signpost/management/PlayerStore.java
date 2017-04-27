@@ -14,7 +14,7 @@ public class PlayerStore implements IExtendedEntityProperties {
 	@Override
 	public void saveNBTData(NBTTagCompound compound) {
 		System.out.println("s NBT d");
-		StringSet known = PostHandler.playerKnownWaystones.get(player.getUniqueID());
+		StringSet known = PostHandler.playerKnownWaystones.get(player.getUniqueID()).a;
 		if (known != null) {
 			System.out.println(known.size());
 			compound.setInteger("knownCount", known.size());

@@ -1,4 +1,5 @@
 -max waystones
+-save player datat global
 -not forget waystones on crash
 -expensive recipes?
 -BUG: github rotation reset?

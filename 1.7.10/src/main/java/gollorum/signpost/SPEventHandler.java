@@ -6,13 +6,12 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import gollorum.signpost.blocks.BasePost;
-import gollorum.signpost.blocks.BigPostPost;
-import gollorum.signpost.blocks.PostPost;
 import gollorum.signpost.blocks.PostPostTile;
 import gollorum.signpost.blocks.SuperPostPost;
 import gollorum.signpost.items.PostWrench;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PlayerStore;
+import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.management.WorldSigns;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.InitPlayerResponseMessage;
@@ -22,8 +21,10 @@ import gollorum.signpost.util.BlockPos;
 import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.collections.Lurchpaerchensauna;
 import gollorum.signpost.util.collections.Lurchsauna;
+import gollorum.signpost.util.collections.Pair;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ChatComponentText;
 import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 import net.minecraftforge.event.world.BlockEvent.PlaceEvent;
@@ -123,7 +124,7 @@ public class SPEventHandler {
 		}
 		EntityPlayerMP player = (EntityPlayerMP)event.player;
 		if(event.block instanceof BasePost){
-			if(!ConfigHandler.securityLevelWaystone.canUse(player)){
+			if(!(ConfigHandler.securityLevelWaystone.canUse(player) && checkCount(player))){
 				BasePost.getWaystoneRootTile(event.world, event.x, event.y, event.z).onBlockDestroy(new BlockPos(event.world, event.x, event.y, event.z, player.dimension));
 				event.setCanceled(true);
 			}else{
@@ -136,6 +137,19 @@ public class SPEventHandler {
 			}else{
 				SuperPostPost.placeServer(event.world, new BlockPos(event.world.getWorldInfo().getWorldName(), event.x, event.y, event.z, event.player.dimension), (EntityPlayerMP) event.player);
 			}
+		}
+	}
+	
+	private boolean checkCount(EntityPlayerMP player){
+		Pair<Integer, Integer> pair = PostHandler.playerKnownWaystones.get(player.getUniqueID()).b;
+		int hasWays = pair.a;
+		int maxWays = pair.b;
+		if(pair.a>=pair.b && pair.b>0){
+			player.addChatMessage(new ChatComponentText("You are not allowed to place more than "+pair.b+" waystones"));
+			return false;
+		}else{
+			pair.a++;
+			return true;
 		}
 	}
 
