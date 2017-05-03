@@ -35,7 +35,7 @@ public class PostPostTile extends SuperPostPostTile {
 	public DoubleBaseInfo getBases(){
 		DoubleBaseInfo bases = PostHandler.posts.get(toPos());
 		if(bases==null){
-			bases = new DoubleBaseInfo();
+			bases = new DoubleBaseInfo(type.texture);
 			PostHandler.posts.put(toPos(), bases);
 		}
 		this.bases = bases;

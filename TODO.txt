@@ -2,6 +2,4 @@
 -rotation GUI?
 -BUG: github rotation reset?
 -cauldron/thermos permissions support?
--dye signs?
--log/additional metals/carpenters signposts?
 -not forget waystones on crash - not reproducable

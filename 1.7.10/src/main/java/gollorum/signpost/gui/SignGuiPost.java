@@ -2,6 +2,8 @@ package gollorum.signpost.gui;
 
 import java.awt.Color;
 
+import org.lwjgl.opengl.GL11;
+
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.registry.LanguageRegistry;
 import gollorum.signpost.blocks.PostPostTile;
@@ -14,11 +16,12 @@ import gollorum.signpost.util.BlockPos.Connection;
 import gollorum.signpost.util.DoubleBaseInfo;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.util.ResourceLocation;
 
 public class SignGuiPost extends GuiScreen {
 
-	private GuiTextField base1InputBox;
-	private GuiTextField base2InputBox;
+	private SignInputBox base1InputBox;
+	private SignInputBox base2InputBox;
 	
 	private String std1 = "";
 	private int col1 = 0;
@@ -34,21 +37,24 @@ public class SignGuiPost extends GuiScreen {
 	
 	public SignGuiPost(PostPostTile tile) {
 		this.tile = tile;
-		base1InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137, 20);
-		base2InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, this.height / 2 + 40, 137, 20);
+//		base1InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137, 20);
+//		base1InputBox.setEnableBackgroundDrawing(false);
+//		base2InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, this.height / 2 + 40, 137, 20);
+//		base2InputBox.setEnableBackgroundDrawing(false);
 	}
 
 	@Override
 	public void initGui() {
 		DoubleBaseInfo tilebases = tile.getBases();
-		base1InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137, 20);
-		base1InputBox.setMaxStringLength(23);
+		base1InputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137/*, 20*/);
+		base1InputBox.setEnableBackgroundDrawing(false);
+		base1InputBox.setMaxStringLength(50);
 		base1InputBox.setText(tilebases.sign1.base==null?"":tilebases.sign1.base.toString());
 		go1 = true;
 		base1InputBox.setFocused(true);
-		
-		base2InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, this.height / 2 + 40, 137, 20);
-		base2InputBox.setMaxStringLength(23);
+		base2InputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 + 40, 137/*, 20*/);
+		base2InputBox.setEnableBackgroundDrawing(false);
+		base2InputBox.setMaxStringLength(50);
 		base2InputBox.setText(tilebases.sign2.base==null?"":tilebases.sign2.base.toString());
 		go2 = true;
 		resetMouse = true;
@@ -68,14 +74,30 @@ public class SignGuiPost extends GuiScreen {
 			mc = FMLClientHandler.instance().getClient();
 		}
 		drawDefaultBackground();
+
+		drawTexure(base1InputBox);
 		base1InputBox.drawTextBox();
 		this.drawCenteredString(fontRendererObj, std2, this.width/2, base1InputBox.yPosition+25, col2);
+
+		drawTexure(base1InputBox);
+		base1InputBox.drawBackground();
 		base2InputBox.drawTextBox();
 		this.drawCenteredString(fontRendererObj, std1, this.width/2, base2InputBox.yPosition+25, col1);
+		
 		if(resetMouse){
 			resetMouse = false;
 			org.lwjgl.input.Mouse.setGrabbed(false);
 		}
+	}
+	
+	private void drawTexure(SignInputBox field){
+		FMLClientHandler.instance().getClient().renderEngine.bindTexture(new ResourceLocation("signpost:textures/gui/sign_gui.png"));
+		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+		int x = field.xPosition;
+		int y = field.yPosition;
+		int width = field.width;
+		int height = field.height;
+		field.drawBackground();
 	}
 
 	@Override

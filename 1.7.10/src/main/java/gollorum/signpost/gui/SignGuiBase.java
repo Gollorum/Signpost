@@ -44,7 +44,7 @@ public class SignGuiBase extends GuiScreen {
 	@Override
 	public void initGui() {
 		nameInputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137, 20);
-		nameInputBox.setMaxStringLength(23);
+		nameInputBox.setMaxStringLength(50);
 		String name = tile.getName();
 		if(name==null){
 			name = "null";

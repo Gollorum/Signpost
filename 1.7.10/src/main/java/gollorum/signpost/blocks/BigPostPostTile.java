@@ -36,7 +36,7 @@ public class BigPostPostTile extends SuperPostPostTile {
 	public BigBaseInfo getBases(){
 		BigBaseInfo bases = PostHandler.bigPosts.get(toPos());
 		if(bases==null){
-			bases = new BigBaseInfo();
+			bases = new BigBaseInfo(type.texture);
 			PostHandler.bigPosts.put(toPos(), bases);
 		}
 		this.bases = bases;

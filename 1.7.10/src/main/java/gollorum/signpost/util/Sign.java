@@ -16,13 +16,13 @@ public class Sign {
 	public boolean point;
 	public ResourceLocation paint;
 	
-	public Sign(){
+	public Sign(ResourceLocation texture){
 		base = null;
 		rotation = 0;
 		flip = false;
 		overlay = null;
 		point = false;
-		paint = null;
+		paint = texture;
 	}
 
 	public Sign(BaseInfo base, int rotation, boolean flip, OverlayType overlay, boolean point, ResourceLocation paint) {

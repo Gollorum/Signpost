@@ -35,7 +35,7 @@ public abstract class SuperPostPostTile extends TileEntity{
 	}
 	
 	public static final String LocToString(ResourceLocation loc){
-		return loc==null?"null":loc.getResourcePath();
+		return loc==null?"null":loc.getResourceDomain()+":"+loc.getResourcePath();
 	}
 
 	public abstract void onBlockDestroy(BlockPos pos);

@@ -1,15 +1,14 @@
 package gollorum.signpost.util;
 
-import net.minecraft.init.Items;
-import net.minecraft.item.Item;
+import net.minecraft.util.ResourceLocation;
 
 public class BigBaseInfo {
 
 	public Sign sign;
 	public String[] description;
 	
-	public BigBaseInfo(){
-		this(new Sign());
+	public BigBaseInfo(ResourceLocation texture){
+		this(new Sign(texture));
 	}
 
 	public BigBaseInfo(Sign sign){
