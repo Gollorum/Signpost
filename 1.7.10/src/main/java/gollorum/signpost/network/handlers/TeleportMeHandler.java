@@ -4,14 +4,13 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
-import cpw.mods.fml.common.registry.LanguageRegistry;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.messages.ChatMessage;
 import gollorum.signpost.network.messages.TeleportMeMessage;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.ServerConfigurationManager;
-import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 
@@ -33,7 +32,10 @@ public class TeleportMeHandler implements IMessageHandler<TeleportMeMessage, IMe
 					manager.transferEntityToWorld(player, 1, (WorldServer)player.worldObj, (WorldServer)world);
 				}
 				if(!(player.dimension==message.base.pos.dim)){
-					manager.transferPlayerToDimension(ctx.getServerHandler().playerEntity, message.base.pos.dim);
+		            WorldServer minecraftserver = MinecraftServer.getServer().worldServerForDimension(message.base.pos.dim);
+					manager.transferEntityToWorld(player, 1, (WorldServer)player.worldObj, minecraftserver);
+//					ctx.getServerHandler().playerEntity.travelToDimension(message.base.pos.dim);
+//					manager.transferPlayerToDimension(ctx.getServerHandler().playerEntity, message.base.pos.dim);
 				}
 				ctx.getServerHandler().playerEntity.setPositionAndUpdate(message.base.pos.x+0.5, message.base.pos.y+1, message.base.pos.z+0.5);
 			}
