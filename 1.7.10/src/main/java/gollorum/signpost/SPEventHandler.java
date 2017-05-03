@@ -1,13 +1,16 @@
 package gollorum.signpost;
 
 import java.util.Map.Entry;
+import java.util.UUID;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import gollorum.signpost.blocks.BasePost;
+import gollorum.signpost.blocks.BasePostTile;
 import gollorum.signpost.blocks.PostPostTile;
 import gollorum.signpost.blocks.SuperPostPost;
+import gollorum.signpost.blocks.SuperPostPostTile;
 import gollorum.signpost.items.PostWrench;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PlayerStore;
@@ -19,6 +22,7 @@ import gollorum.signpost.network.messages.SendAllBigPostBasesMessage;
 import gollorum.signpost.network.messages.SendAllPostBasesMessage;
 import gollorum.signpost.util.BlockPos;
 import gollorum.signpost.util.BoolRun;
+import gollorum.signpost.util.StringSet;
 import gollorum.signpost.util.collections.Lurchpaerchensauna;
 import gollorum.signpost.util.collections.Lurchsauna;
 import gollorum.signpost.util.collections.Pair;
@@ -124,33 +128,72 @@ public class SPEventHandler {
 		}
 		EntityPlayerMP player = (EntityPlayerMP)event.player;
 		if(event.block instanceof BasePost){
-			if(!(ConfigHandler.securityLevelWaystone.canUse(player) && checkCount(player))){
-				BasePost.getWaystoneRootTile(event.world, event.x, event.y, event.z).onBlockDestroy(new BlockPos(event.world, event.x, event.y, event.z, player.dimension));
+			BasePostTile tile = BasePost.getWaystoneRootTile(event.world, event.x, event.y, event.z);
+			if(!(ConfigHandler.securityLevelWaystone.canPlace(player) && checkWaystoneCount(player))){
+				tile.onBlockDestroy(new BlockPos(event.world, event.x, event.y, event.z, player.dimension));
 				event.setCanceled(true);
 			}else{
 				BasePost.placeServer(event.world, new BlockPos(event.world.getWorldInfo().getWorldName(), event.x, event.y, event.z, event.player.dimension), (EntityPlayerMP) event.player);
 			}
 		}else if(event.block instanceof SuperPostPost){
-			if(!ConfigHandler.securityLevelSignpost.canUse(player)){
-				SuperPostPost.getSuperTile(event.world, event.x, event.y, event.z).onBlockDestroy(new BlockPos(event.world, event.x, event.y, event.z, player.dimension));
+			SuperPostPostTile tile = SuperPostPost.getSuperTile(event.world, event.x, event.y, event.z);
+			if(!(ConfigHandler.securityLevelSignpost.canPlace(player) && checkSignpostCount(player))){
+				tile.onBlockDestroy(new BlockPos(event.world, event.x, event.y, event.z, player.dimension));
 				event.setCanceled(true);
 			}else{
 				SuperPostPost.placeServer(event.world, new BlockPos(event.world.getWorldInfo().getWorldName(), event.x, event.y, event.z, event.player.dimension), (EntityPlayerMP) event.player);
 			}
 		}
 	}
-	
-	private boolean checkCount(EntityPlayerMP player){
-		Pair<Integer, Integer> pair = PostHandler.playerKnownWaystones.get(player.getUniqueID()).b;
-		int hasWays = pair.a;
-		int maxWays = pair.b;
-		if(pair.a>=pair.b && pair.b>0){
-			player.addChatMessage(new ChatComponentText("You are not allowed to place more than "+pair.b+" waystones"));
+
+	private boolean checkWaystoneCount(EntityPlayerMP player){
+		Pair<StringSet, Pair<Integer, Integer>> pair = PostHandler.playerKnownWaystones.get(player.getUniqueID());
+		int remaining = pair.b.a;
+		if(remaining == 0){
+			player.addChatMessage(new ChatComponentText("You are not allowed to place more waystones"));
 			return false;
 		}else{
-			pair.a++;
+			if(remaining > 0){
+				pair.b.a--;
+			}
 			return true;
 		}
+	}
+	
+	private void updateWaystoneCount(BasePostTile tile){
+		if(tile == null || tile.getBaseInfo() == null){
+			return;
+		}
+		UUID owner = tile.getBaseInfo().owner;
+		if(owner == null){
+			return;
+		}
+		Pair<StringSet, Pair<Integer, Integer>> pair = PostHandler.playerKnownWaystones.get(owner);
+		if(pair!=null){
+			pair.b.a++;
+		}
+	}
+
+	private boolean checkSignpostCount(EntityPlayerMP player){
+		Pair<StringSet, Pair<Integer, Integer>> pair = PostHandler.playerKnownWaystones.get(player.getUniqueID());
+		int remaining = pair.b.b;
+		if(remaining == 0){
+			player.addChatMessage(new ChatComponentText("You are not allowed to place more signposts"));
+			return false;
+		}else{
+			if(remaining > 0){
+				pair.b.b--;
+			}
+			return true;
+		}
+	}
+	
+	private void updateSignpostCount(SuperPostPostTile tile){
+		if(tile == null || tile.owner == null){
+			return;
+		}
+		Pair<StringSet, Pair<Integer, Integer>> pair = PostHandler.playerKnownWaystones.get(tile.owner);
+		pair.b.b++;
 	}
 
 	@SubscribeEvent
@@ -165,16 +208,20 @@ public class SPEventHandler {
 		}
 		EntityPlayerMP player = (EntityPlayerMP)event.getPlayer();
 		if(event.block instanceof BasePost){
-			if(!ConfigHandler.securityLevelWaystone.canUse(player)){
+			BasePostTile t = BasePost.getWaystoneRootTile(event.world, event.x, event.y, event.z);
+			if(!ConfigHandler.securityLevelWaystone.canUse(player, t.getBaseInfo().owner)){
 				event.setCanceled(true);
 			}else{
-				BasePost.getWaystoneRootTile(event.world, event.x, event.y, event.z).onBlockDestroy(new BlockPos(event.world, event.x, event.y, event.z, player.dimension));
+				updateWaystoneCount(t);
+				t.onBlockDestroy(new BlockPos(event.world, event.x, event.y, event.z, player.dimension));
 			}
 		}else if(event.block instanceof SuperPostPost){
-			if(!ConfigHandler.securityLevelSignpost.canUse(player)){
+			SuperPostPostTile t = SuperPostPost.getSuperTile(event.world, event.x, event.y, event.z);
+			if(!ConfigHandler.securityLevelSignpost.canUse(player, t.owner)){
 				event.setCanceled(true);
 			}else{
-				SuperPostPost.getSuperTile(event.world, event.x, event.y, event.z).onBlockDestroy(new BlockPos(event.world, event.x, event.y, event.z, player.dimension));
+				updateSignpostCount(t);
+				t.onBlockDestroy(new BlockPos(event.world, event.x, event.y, event.z, player.dimension));
 			}
 		}
 	}

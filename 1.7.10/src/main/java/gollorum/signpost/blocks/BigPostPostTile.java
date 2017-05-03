@@ -1,22 +1,22 @@
 package gollorum.signpost.blocks;
 
 import gollorum.signpost.SPEventHandler;
+import gollorum.signpost.blocks.BigPostPost.BigHit;
+import gollorum.signpost.blocks.BigPostPost.BigHitTarget;
 import gollorum.signpost.blocks.BigPostPost.BigPostType;
-import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.SendAllBigPostBasesMessage;
 import gollorum.signpost.network.messages.SendBigPostBasesMessage;
 import gollorum.signpost.util.BigBaseInfo;
-import gollorum.signpost.util.BigBaseInfo.OverlayType;
 import gollorum.signpost.util.BlockPos;
 import gollorum.signpost.util.BoolRun;
-import gollorum.signpost.util.math.tracking.DDDVector;
+import gollorum.signpost.util.Sign;
+import gollorum.signpost.util.Sign.OverlayType;
 import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ResourceLocation;
 
 public class BigPostPostTile extends SuperPostPostTile {
 
@@ -36,7 +36,7 @@ public class BigPostPostTile extends SuperPostPostTile {
 	public BigBaseInfo getBases(){
 		BigBaseInfo bases = PostHandler.bigPosts.get(toPos());
 		if(bases==null){
-			bases = new BigBaseInfo(null, 0, false, null, false, null);
+			bases = new BigBaseInfo();
 			PostHandler.bigPosts.put(toPos(), bases);
 		}
 		this.bases = bases;
@@ -47,8 +47,8 @@ public class BigPostPostTile extends SuperPostPostTile {
 	public void onBlockDestroy(BlockPos pos) {
 		isCanceled = true;
 		BigBaseInfo bases = getBases();
-		if(bases.overlay!=null){
-			EntityItem item = new EntityItem(worldObj, pos.x, pos.y, pos.z, new ItemStack(bases.overlay.item, 1));
+		if(bases.sign.overlay!=null){
+			EntityItem item = new EntityItem(worldObj, pos.x, pos.y, pos.z, new ItemStack(bases.sign.overlay.item, 1));
 			worldObj.spawnEntityInWorld(item);
 		}
 		if(PostHandler.bigPosts.remove(pos)!=null){
@@ -57,24 +57,21 @@ public class BigPostPostTile extends SuperPostPostTile {
 	}
 
 	@Override
-	public void writeToNBT(NBTTagCompound tagCompound) {
-		super.writeToNBT(tagCompound);
+	public void save(NBTTagCompound tagCompound) {
 		BigBaseInfo bases = getBases();
-		tagCompound.setString("base", ""+bases.base);
-		tagCompound.setInteger("rot", bases.rotation);
-		tagCompound.setBoolean("flip", bases.flip);
-		tagCompound.setString("overlay", ""+bases.overlay);
-		tagCompound.setBoolean("point", bases.point);
-		tagCompound.setString("paint", SuperPostPostTile.LocToString(bases.signPaint));
+		tagCompound.setString("base", ""+bases.sign.base);
+		tagCompound.setInteger("rot", bases.sign.rotation);
+		tagCompound.setBoolean("flip", bases.sign.flip);
+		tagCompound.setString("overlay", ""+bases.sign.overlay);
+		tagCompound.setBoolean("point", bases.sign.point);
+		tagCompound.setString("paint", SuperPostPostTile.LocToString(bases.sign.paint));
 		for(int i=0; i<bases.description.length; i++){
 			tagCompound.setString("description"+i, bases.description[i]);
 		}
 	}
 
 	@Override
-	public void readFromNBT(NBTTagCompound tagCompound) {
-		super.readFromNBT(tagCompound);
-		
+	public void load(NBTTagCompound tagCompound) {
 		final String base = tagCompound.getString("base");
 		final int rotation = tagCompound.getInteger("rot");
 		final boolean flip = tagCompound.getBoolean("flip");
@@ -97,13 +94,13 @@ public class BigPostPostTile extends SuperPostPostTile {
 						return true;
 					}
 					BigBaseInfo bases = getBases();
-					bases.base = PostHandler.getWSbyName(base);
-					bases.rotation = rotation;
-					bases.flip = flip;
-					bases.overlay = overlay;
-					bases.point = point;
+					bases.sign.base = PostHandler.getWSbyName(base);
+					bases.sign.rotation = rotation;
+					bases.sign.flip = flip;
+					bases.sign.overlay = overlay;
+					bases.sign.point = point;
 					bases.description = description;
-					bases.signPaint = stringToLoc(paint);
+					bases.sign.paint = stringToLoc(paint);
 					NetworkHandler.netWrap.sendToAll(new SendBigPostBasesMessage((BigPostPostTile) worldObj.getTileEntity(xCoord, yCoord, zCoord), bases));
 					return true;
 				}
@@ -111,13 +108,14 @@ public class BigPostPostTile extends SuperPostPostTile {
 		});
 	}
 
-	public static double calcRot(BigBaseInfo tilebases, int x, int z) {
- 		if(tilebases.point&&!(tilebases.base==null||tilebases.base.pos==null||ConfigHandler.deactivateTeleportation)){
-			int dx = x-tilebases.base.pos.x;
-			int dz = z-tilebases.base.pos.z;
-			return DDDVector.genAngle(dx, dz)+Math.toRadians(-90+(tilebases.flip?0:180)+(dx<0&&dz>0?180:0));
+	@Override
+	public Sign getSign(EntityPlayer player) {
+		BigBaseInfo bases = getBases();
+		BigHit hit = (BigHit) ((BigPostPost)blockType).getHitTarget(worldObj, xCoord, yCoord, zCoord, player);
+		if(hit.target.equals(BigHitTarget.BASE)){
+			return bases.sign;
 		}else{
-			return Math.toRadians(tilebases.rotation);
+			return null;
 		}
 	}
 }

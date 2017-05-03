@@ -47,7 +47,7 @@ public class BasePost extends BlockContainer {
 				PostHandler.addDiscovered(player.getUniqueID(), ws);
 			} else {
 				if (!ConfigHandler.deactivateTeleportation
-						&& ConfigHandler.securityLevelWaystone.canUse((EntityPlayerMP) player)) {
+						&& ConfigHandler.securityLevelWaystone.canUse((EntityPlayerMP) player, ws.owner)) {
 					NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiBaseID, x, y, z), (EntityPlayerMP) player);
 				}
 			}

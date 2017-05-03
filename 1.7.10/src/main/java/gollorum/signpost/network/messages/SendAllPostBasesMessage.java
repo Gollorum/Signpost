@@ -10,7 +10,8 @@ import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.BlockPos;
 import gollorum.signpost.util.DoubleBaseInfo;
-import gollorum.signpost.util.DoubleBaseInfo.OverlayType;
+import gollorum.signpost.util.Sign;
+import gollorum.signpost.util.Sign.OverlayType;
 import gollorum.signpost.util.collections.Lurchpaerchensauna;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.util.ResourceLocation;
@@ -66,12 +67,20 @@ public class SendAllPostBasesMessage implements IMessage{
 			BaseInfo base2 = PostHandler.getWSbyName(now.getValue().string2);
 			ResourceLocation paint1 = SuperPostPostTile.stringToLoc(now.getValue().paint1);
 			ResourceLocation paint2 = SuperPostPostTile.stringToLoc(now.getValue().paint2);
-			postMap.put(now.getKey(), new DoubleBaseInfo(base1, base2,
-														 now.getValue().int1, now.getValue().int2,
-														 now.getValue().bool1, now.getValue().bool2,
-														 now.getValue().overlay1, now.getValue().overlay2,
-														 now.getValue().bool3, now.getValue().bool4,
-														 paint1, paint2));
+			postMap.put(now.getKey(), new DoubleBaseInfo(new Sign(base1,
+																  now.getValue().int1,
+																  now.getValue().bool1,
+																  now.getValue().overlay1,
+																  now.getValue().bool3,
+																  paint1
+														 ),
+														 new Sign(base2,
+																  now.getValue().int2,
+																  now.getValue().bool2,
+																  now.getValue().overlay2,
+																  now.getValue().bool4,
+																  paint2))
+														 );
 		}
 		return postMap;
 	}
@@ -83,18 +92,18 @@ public class SendAllPostBasesMessage implements IMessage{
 		buf.writeInt(PostHandler.posts.size());
 		for(Entry<BlockPos, DoubleBaseInfo> now: PostHandler.posts.entrySet()){
 				now.getKey().toBytes(buf);
-				ByteBufUtils.writeUTF8String(buf, ""+now.getValue().base1);
-				ByteBufUtils.writeUTF8String(buf, ""+now.getValue().base2);
-				buf.writeInt(now.getValue().rotation1);
-				buf.writeInt(now.getValue().rotation2);
-				buf.writeBoolean(now.getValue().flip1);
-				buf.writeBoolean(now.getValue().flip2);
-				ByteBufUtils.writeUTF8String(buf, ""+now.getValue().overlay1);
-				ByteBufUtils.writeUTF8String(buf, ""+now.getValue().overlay2);
-				buf.writeBoolean(now.getValue().point1);
-				buf.writeBoolean(now.getValue().point2);
-				ByteBufUtils.writeUTF8String(buf, SuperPostPostTile.LocToString(now.getValue().sign1Paint));
-				ByteBufUtils.writeUTF8String(buf, SuperPostPostTile.LocToString(now.getValue().sign2Paint));
+				ByteBufUtils.writeUTF8String(buf, ""+now.getValue().sign1.base);
+				ByteBufUtils.writeUTF8String(buf, ""+now.getValue().sign2.base);
+				buf.writeInt(now.getValue().sign1.rotation);
+				buf.writeInt(now.getValue().sign2.rotation);
+				buf.writeBoolean(now.getValue().sign1.flip);
+				buf.writeBoolean(now.getValue().sign2.flip);
+				ByteBufUtils.writeUTF8String(buf, ""+now.getValue().sign1.overlay);
+				ByteBufUtils.writeUTF8String(buf, ""+now.getValue().sign2.overlay);
+				buf.writeBoolean(now.getValue().sign1.point);
+				buf.writeBoolean(now.getValue().sign2.point);
+				ByteBufUtils.writeUTF8String(buf, SuperPostPostTile.LocToString(now.getValue().sign1.paint));
+				ByteBufUtils.writeUTF8String(buf, SuperPostPostTile.LocToString(now.getValue().sign2.paint));
 		}
 	}
 	

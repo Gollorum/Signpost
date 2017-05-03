@@ -1,22 +1,23 @@
 package gollorum.signpost.gui;
 
-import java.awt.Color;
-
 import cpw.mods.fml.client.FMLClientHandler;
-import gollorum.signpost.blocks.BasePostTile;
-import gollorum.signpost.management.PostHandler;
+import gollorum.signpost.blocks.SuperPostPost;
+import gollorum.signpost.blocks.SuperPostPostTile;
+import gollorum.signpost.util.Sign;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.util.ResourceLocation;
 
-public class SignGuiBase extends GuiScreen {
+public class SignGuiPaint extends GuiScreen {
 
 	private GuiTextField nameInputBox;
-	private BasePostTile tile;
-	private boolean textChanged = false;
+	private Sign sign;
+	private SuperPostPostTile tile;
 
-	public SignGuiBase(BasePostTile tile) {
+	public SignGuiPaint(Sign sign, SuperPostPostTile tile) {
+		this.sign = sign;
 		this.tile = tile;
-		nameInputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137, 20);
+		nameInputBox = new GuiTextField(this.fontRendererObj, this.width/4, this.height/2 - 46, this.width/2, 20);
 	}
 
 	@Override
@@ -24,11 +25,18 @@ public class SignGuiBase extends GuiScreen {
 		if(mc==null){
 			mc = FMLClientHandler.instance().getClient();
 		}
+		if(sign==null){
+			this.mc.displayGuiScreen(null);
+			return;
+		}
 		drawDefaultBackground();
 		if(nameInputBox.getText() == null || nameInputBox.getText().equals("null")){
-			String name = tile.getName();
-			if(name==null){
-				name = "null";
+			ResourceLocation loc = sign.paint;
+			String name;
+			if(loc==null){
+				name = "";
+			}else{
+				name = loc.getResourcePath();
 			}
 			nameInputBox.setText(name);
 		}
@@ -43,11 +51,21 @@ public class SignGuiBase extends GuiScreen {
 
 	@Override
 	public void initGui() {
-		nameInputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137, 20);
-		nameInputBox.setMaxStringLength(23);
-		String name = tile.getName();
-		if(name==null){
-			name = "null";
+		nameInputBox = new GuiTextField(this.fontRendererObj, this.width/4, this.height/2 - 46, this.width/2, 20);
+		nameInputBox.setMaxStringLength(100);
+		if(mc==null){
+			mc = FMLClientHandler.instance().getClient();
+		}
+		if(sign==null){
+			this.mc.displayGuiScreen(null);
+			return;
+		}
+		ResourceLocation loc = sign.paint;
+		String name;
+		if(loc==null){
+			name = "";
+		}else{
+			name = loc.getResourcePath();
 		}
 		nameInputBox.setText(name);
 		nameInputBox.setFocused(true);
@@ -59,21 +77,8 @@ public class SignGuiBase extends GuiScreen {
 			this.mc.displayGuiScreen(null);
 			return;
 		}
-		String before = nameInputBox.getText();
 		super.keyTyped(par1, par2);
 		this.nameInputBox.textboxKeyTyped(par1, par2);
-		if(nameInputBox.getText().equals(tile.getBaseInfo().name)){
-			nameInputBox.setTextColor(Color.white.getRGB());
-			textChanged = false;
-		}else if (!before.equals(nameInputBox.getText())) {
-			if (PostHandler.allWaystones.nameTaken(nameInputBox.getText())) {
-				nameInputBox.setTextColor(Color.red.getRGB());
-				textChanged = false;
-			} else {
-				nameInputBox.setTextColor(Color.white.getRGB());
-				textChanged = true;
-			}
-		}
 	}
 
 	@Override
@@ -97,9 +102,9 @@ public class SignGuiBase extends GuiScreen {
 	@Override
 	public void onGuiClosed() {
 		super.onGuiClosed();
-		if (textChanged) {
-			tile.setName(nameInputBox.getText());
-			textChanged = false;
+		if(sign!=null){
+			sign.paint = new ResourceLocation(nameInputBox.getText());
+			((SuperPostPost)tile.blockType).sendPostBasesToAll(tile);
 		}
 	}
 }

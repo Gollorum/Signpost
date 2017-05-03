@@ -27,7 +27,7 @@ public class BigPostRenderer extends TileEntitySpecialRenderer{
 		if(tilebases==null){
 			tilebases = tile.getBases();
 		}
-		double rotation = BigPostPostTile.calcRot(tilebases, tile.xCoord, tile.zCoord);
+		double rotation = tilebases.sign.calcRot(tile.xCoord, tile.zCoord);
 		GL11.glPushMatrix();
 		GL11.glTranslated(x+0.5, y, z+0.5);
 		this.bindTexture(tile.type.texture);
@@ -35,8 +35,8 @@ public class BigPostRenderer extends TileEntitySpecialRenderer{
 
 		//Overlays
 		if(!tile.isItem){
-			if(tilebases.base!=null && tilebases.overlay!=null){
-				bindTexture(new ResourceLocation(Signpost.MODID + ":textures/blocks/bigsign_overlay_"+tilebases.overlay.texture+".png"));
+			if(tilebases.sign.base!=null && tilebases.sign.overlay!=null){
+				bindTexture(new ResourceLocation(Signpost.MODID + ":textures/blocks/bigsign_overlay_"+tilebases.sign.overlay.texture+".png"));
 				model.renderOverlay(tilebases, 0.0625f, rotation);
 			}
 		}
@@ -47,12 +47,11 @@ public class BigPostRenderer extends TileEntitySpecialRenderer{
 		GL11.glRotated(180, 0, 0, 1);
 		GL11.glRotated(180, 0, 1, 0);
 		double sc = 0.013d;
-//		double ys = sc;
         
 		int color = 0;
 		
         if(!tile.isItem){
-        	if(tilebases.base!=null&&!tilebases.base.name.equals("null")&&!tilebases.base.name.equals("")){
+        	if(tilebases.sign.base!=null&&!tilebases.sign.base.name.equals("null")&&!tilebases.sign.base.name.equals("")){
         		for(String s: tilebases.description){
 	        		GL11.glTranslated(0, 0.2, 0);
 	        		if(s==null){
@@ -62,7 +61,7 @@ public class BigPostRenderer extends TileEntitySpecialRenderer{
 	        		if(sc2>=1){
 	        			sc2 = 1;
 	        		}
-	        		double lurch = (tilebases.flip?-0.1:0.1)-fontrenderer.getStringWidth(s)*sc*sc2/2;
+	        		double lurch = (tilebases.sign.flip?-0.1:0.1)-fontrenderer.getStringWidth(s)*sc*sc2/2;
 	            	double alpha = Math.atan(lurch*16/3.001);
 	            	double d = Math.sqrt(Math.pow(3.001/16, 2)+Math.pow(lurch, 2));
 	            	double beta = alpha + rotation;

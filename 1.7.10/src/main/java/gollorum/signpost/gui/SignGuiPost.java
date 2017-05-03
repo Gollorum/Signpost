@@ -43,13 +43,13 @@ public class SignGuiPost extends GuiScreen {
 		DoubleBaseInfo tilebases = tile.getBases();
 		base1InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137, 20);
 		base1InputBox.setMaxStringLength(23);
-		base1InputBox.setText(tilebases.base1==null?"":tilebases.base1.toString());
+		base1InputBox.setText(tilebases.sign1.base==null?"":tilebases.sign1.base.toString());
 		go1 = true;
 		base1InputBox.setFocused(true);
 		
 		base2InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, this.height / 2 + 40, 137, 20);
 		base2InputBox.setMaxStringLength(23);
-		base2InputBox.setText(tilebases.base2==null?"":tilebases.base2.toString());
+		base2InputBox.setText(tilebases.sign2.base==null?"":tilebases.sign2.base.toString());
 		go2 = true;
 		resetMouse = true;
 	}
@@ -198,14 +198,14 @@ public class SignGuiPost extends GuiScreen {
 	public void onGuiClosed() {
 		DoubleBaseInfo tilebases = tile.getBases();
 		if(ConfigHandler.deactivateTeleportation||go2){
-			tilebases.base1 = PostHandler.getWSbyName(base1InputBox.getText());
+			tilebases.sign1.base = PostHandler.getWSbyName(base1InputBox.getText());
 		}else{
-			tilebases.base1 = null;
+			tilebases.sign1.base = null;
 		}
 		if(ConfigHandler.deactivateTeleportation||go1){
-			tilebases.base2 = PostHandler.getWSbyName(base2InputBox.getText());
+			tilebases.sign2.base = PostHandler.getWSbyName(base2InputBox.getText());
 		}else{
-			tilebases.base2 = null;
+			tilebases.sign2.base = null;
 		}
 		NetworkHandler.netWrap.sendToServer(new SendPostBasesMessage(tile, tilebases));
 	}

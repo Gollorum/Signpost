@@ -9,7 +9,7 @@ import gollorum.signpost.network.messages.OpenGuiMessage;
 import gollorum.signpost.network.messages.SendPostBasesMessage;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.DoubleBaseInfo;
-import gollorum.signpost.util.DoubleBaseInfo.OverlayType;
+import gollorum.signpost.util.Sign.OverlayType;
 import gollorum.signpost.util.math.tracking.Cuboid;
 import gollorum.signpost.util.math.tracking.DDDVector;
 import gollorum.signpost.util.math.tracking.Intersect;
@@ -108,9 +108,9 @@ public class PostPost extends SuperPostPost {
 		Hit hit = (Hit)hitObj;
 		DoubleBaseInfo tilebases = ((PostPostTile)superTile).getBases();
 		if (hit.target == HitTarget.BASE1) {
-			tilebases.rotation1 = (tilebases.rotation1 - 15) % 360;
+			tilebases.sign1.rotation = (tilebases.sign1.rotation - 15) % 360;
 		} else if(hit.target == HitTarget.BASE2) {
-			tilebases.rotation2 = (tilebases.rotation2 - 15) % 360;
+			tilebases.sign2.rotation = (tilebases.sign2.rotation - 15) % 360;
 		}
 	}
 
@@ -119,9 +119,9 @@ public class PostPost extends SuperPostPost {
 		Hit hit = (Hit)hitObj;
 		DoubleBaseInfo tilebases = ((PostPostTile)superTile).getBases();
 		if (hit.target == HitTarget.BASE1) {
-			tilebases.rotation1 = (tilebases.rotation1 + 15) % 360;
+			tilebases.sign1.rotation = (tilebases.sign1.rotation + 15) % 360;
 		} else if (hit.target == HitTarget.BASE2) {
-			tilebases.rotation2 = (tilebases.rotation2 + 15) % 360;
+			tilebases.sign2.rotation = (tilebases.sign2.rotation + 15) % 360;
 //		} else if (hit.target == HitTarget.POST){
 //			NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiPostID, x, y, z), (EntityPlayerMP) player);
 		}
@@ -132,10 +132,15 @@ public class PostPost extends SuperPostPost {
 		Hit hit = (Hit)hitObj;
 		DoubleBaseInfo tilebases = ((PostPostTile)superTile).getBases();
 		if (hit.target == HitTarget.BASE1) {
-			tilebases.flip1 = !tilebases.flip1;
+			tilebases.sign1.flip = !tilebases.sign1.flip;
 		} else if(hit.target == HitTarget.BASE2) {
-			tilebases.flip2 = !tilebases.flip2;
+			tilebases.sign2.flip = !tilebases.sign2.flip;
 		}
+	}
+	
+	@Override
+	public void rightClickBrush(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z){
+		NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiPostBrushID, x, y, z), (EntityPlayerMP) player);
 	}
 
 	@Override
@@ -144,20 +149,20 @@ public class PostPost extends SuperPostPost {
 		PostPostTile tile = (PostPostTile)superTile;
 		DoubleBaseInfo tilebases = tile.getBases();
 		if (hit.target == HitTarget.BASE1) {
-			if(tilebases.overlay1 != null){
-				player.inventory.addItemStackToInventory(new ItemStack(tilebases.overlay1.item, 1));
+			if(tilebases.sign1.overlay != null){
+				player.inventory.addItemStackToInventory(new ItemStack(tilebases.sign1.overlay.item, 1));
 			}
 		} else if(hit.target == HitTarget.BASE2) {
-			if(tilebases.overlay2 != null){
-				player.inventory.addItemStackToInventory(new ItemStack(tilebases.overlay2.item, 1));
+			if(tilebases.sign2.overlay != null){
+				player.inventory.addItemStackToInventory(new ItemStack(tilebases.sign2.overlay.item, 1));
 			}
 		}
 		for(OverlayType now: OverlayType.values()){
 			if(player.getHeldItem().getItem().getClass() == now.item.getClass()){
 				if (hit.target == HitTarget.BASE1) {
-					tilebases.overlay1 = now;
+					tilebases.sign1.overlay = now;
 				} else if(hit.target == HitTarget.BASE2) {
-					tilebases.overlay2 = now;
+					tilebases.sign2.overlay = now;
 				}
 				player.inventory.consumeInventoryItem(now.item);
 				NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile, tilebases));
@@ -165,9 +170,9 @@ public class PostPost extends SuperPostPost {
 			}
 		}
 		if (hit.target == HitTarget.BASE1) {
-			tilebases.overlay1 = null;
+			tilebases.sign1.overlay = null;
 		} else if(hit.target == HitTarget.BASE2) {
-			tilebases.overlay2 = null;
+			tilebases.sign2.overlay = null;
 		}
 		NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile, tilebases));
 	}
@@ -180,7 +185,7 @@ public class PostPost extends SuperPostPost {
 			if (ConfigHandler.deactivateTeleportation) {
 				return;
 			}
-			BaseInfo destination = hit.target == HitTarget.BASE1 ? tile.getBases().base1 : tile.getBases().base2;
+			BaseInfo destination = hit.target == HitTarget.BASE1 ? tile.getBases().sign1.base : tile.getBases().sign2.base;
 			if (destination != null) {
 				int stackSize = PostHandler.getStackSize(destination.pos, tile.toPos());
 				if(PostHandler.canPay(player, destination.pos.x, destination.pos.y, destination.pos.z, x, y, z)){
@@ -201,9 +206,9 @@ public class PostPost extends SuperPostPost {
 		Hit hit = (Hit)hitObj;
 		DoubleBaseInfo tilebases = ((PostPostTile)superTile).getBases();
 		if (hit.target == HitTarget.BASE1) {
-			tilebases.point1 = !tilebases.point1;
+			tilebases.sign1.point = !tilebases.sign1.point;
 		} else if(hit.target == HitTarget.BASE2) {
-			tilebases.point2 = !tilebases.point2;
+			tilebases.sign2.point = !tilebases.sign2.point;
 		}
 	}
 
@@ -213,10 +218,10 @@ public class PostPost extends SuperPostPost {
 		PostPostTile tile = (PostPostTile)superTile;
 		DoubleBaseInfo tilebases = tile.getBases();
 		if (hit.target == HitTarget.BASE1) {
-			tilebases.point1 = !tilebases.point1;
+			tilebases.sign1.point = !tilebases.sign1.point;
 			NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile, tilebases));
 		} else if(hit.target == HitTarget.BASE2) {
-			tilebases.point2 = !tilebases.point2;
+			tilebases.sign2.point = !tilebases.sign2.point;
 			NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile, tilebases));
 		}
 	}
@@ -227,10 +232,17 @@ public class PostPost extends SuperPostPost {
 	}
 
 	@Override
-	public void sendPostBases(SuperPostPostTile superTile) {
+	public void sendPostBasesToAll(SuperPostPostTile superTile) {
 		PostPostTile tile = (PostPostTile)superTile;
 		DoubleBaseInfo tilebases = tile.getBases();
 		NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile, tilebases));
+	}
+
+	@Override
+	public void sendPostBasesToServer(SuperPostPostTile superTile) {
+		PostPostTile tile = (PostPostTile)superTile;
+		DoubleBaseInfo tilebases = tile.getBases();
+		NetworkHandler.netWrap.sendToServer(new SendPostBasesMessage(tile, tilebases));
 	}
 	
 	@Override
@@ -245,19 +257,19 @@ public class PostPost extends SuperPostPost {
 		DDDVector signPos;
 		DDDVector edges = new DDDVector(1.4375, 0.375, 0.0625);
 		
-		if(bases.flip1){
+		if(bases.sign1.flip){
 			signPos = new DDDVector(x-0.375, y+0.5625, z+0.625);
 		}else{
 			signPos = new DDDVector(x-0.0625, y+0.5625, z+0.625);
 		}
-		Cuboid sign1 = new Cuboid(signPos, edges, PostPostTile.calcRot1(bases, x, z), rotPos);
+		Cuboid sign1 = new Cuboid(signPos, edges, bases.sign1.calcRot(x, z), rotPos);
 		
-		if(bases.flip2){
+		if(bases.sign2.flip){
 			signPos = new DDDVector(x-0.375, y+0.0625, z+0.625);
 		}else{
 			signPos = new DDDVector(x-0.0625, y+0.0625, z+0.625);
 		}
-		Cuboid sign2 = new Cuboid(signPos, edges, PostPostTile.calcRot2(bases, x, z), rotPos);
+		Cuboid sign2 = new Cuboid(signPos, edges, bases.sign2.calcRot(x, z), rotPos);
 		Cuboid post = new Cuboid(new DDDVector(x+0.375, y, z+0.375), new DDDVector(0.25, 1, 0.25), 0);
 
 		DDDVector start = new DDDVector(head.xCoord, head.yCoord, head.zCoord);
@@ -265,8 +277,8 @@ public class PostPost extends SuperPostPost {
 		Intersect sign1Hit = sign1.traceLine(start, end, true);
 		Intersect sign2Hit = sign2.traceLine(start, end, true);
 		Intersect postHit = post.traceLine(start, end, true);
-		double sign1Dist = sign1Hit.exists&&bases.base1!=null?sign1Hit.pos.distance(start):Double.MAX_VALUE;
-		double sign2Dist = sign2Hit.exists&&bases.base2!=null?sign2Hit.pos.distance(start):Double.MAX_VALUE;
+		double sign1Dist = sign1Hit.exists&&bases.sign1.base!=null?sign1Hit.pos.distance(start):Double.MAX_VALUE;
+		double sign2Dist = sign2Hit.exists&&bases.sign2.base!=null?sign2Hit.pos.distance(start):Double.MAX_VALUE;
 		double postDist = postHit.exists?postHit.pos.distance(start):Double.MAX_VALUE/2;
 		double dist;
 		HitTarget target;

@@ -20,6 +20,7 @@ import gollorum.signpost.util.collections.Pair;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.ServerConfigurationManager;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -38,7 +39,9 @@ public class PostHandler {
 			if(pair == null){
 				Pair<StringSet, Pair<Integer, Integer>> p = new Pair<StringSet, Pair<Integer, Integer>>();
 				p.a  = new StringSet();
-				p.b = new Pair<Integer, Integer>(0, ConfigHandler.maxWaystones);
+				p.b = new Pair<Integer, Integer>();
+				p.b.a = ConfigHandler.maxWaystones;
+				p.b.b = ConfigHandler.maxSignposts;
 				return put((UUID) obj, p);
 			}else{
 				return pair;
@@ -55,7 +58,9 @@ public class PostHandler {
 				if(pair == null){
 					Pair<StringSet, Pair<Integer, Integer>> p = new Pair<StringSet, Pair<Integer, Integer>>();
 					p.a  = new StringSet();
-					p.b = new Pair<Integer, Integer>(0, ConfigHandler.maxWaystones);
+					p.b = new Pair<Integer, Integer>();
+					p.b.a = ConfigHandler.maxWaystones;
+					p.b.b = ConfigHandler.maxSignposts;
 					return put((UUID) obj, p);
 				}else{
 					return pair;
@@ -229,7 +234,9 @@ public class PostHandler {
 			boolean ret = newSet.addAll(ws);
 			Pair<StringSet, Pair<Integer, Integer>> pair = new Pair<StringSet, Pair<Integer, Integer>>();
 			pair.a  = newSet;
-			pair.b = new Pair<Integer, Integer>(0, ConfigHandler.maxWaystones);
+			pair.b = new Pair<Integer, Integer>();
+			pair.b.a = ConfigHandler.maxWaystones;
+			pair.b.b = ConfigHandler.maxSignposts;
 			playerKnownWaystones.put(player, pair);
 			return ret;
 		}
@@ -246,7 +253,9 @@ public class PostHandler {
 			newSet.add(""+ws);
 			Pair<StringSet, Pair<Integer, Integer>> pair = new Pair<StringSet, Pair<Integer, Integer>>();
 			pair.a  = newSet;
-			pair.b = new Pair<Integer, Integer>(0, ConfigHandler.maxWaystones);
+			pair.b = new Pair<Integer, Integer>();
+			pair.b.a = ConfigHandler.maxWaystones;
+			pair.b.b = ConfigHandler.maxSignposts;
 			playerKnownWaystones.put(player, pair);
 			return true;
 		}
@@ -274,5 +283,14 @@ public class PostHandler {
 		allWaystones.removeByPos(toDelete.pos);
 		allWaystones.add(ws);
 		return true;
+	}
+
+	public static EntityPlayer getPlayerByName(String name){
+		for(Object player : MinecraftServer.getServer().getConfigurationManager().playerEntityList){
+			if(player instanceof EntityPlayer && ((EntityPlayer)player).getCommandSenderName().equals(name)){
+				return (EntityPlayer) player;
+			}
+		}
+		return null;
 	}
 }

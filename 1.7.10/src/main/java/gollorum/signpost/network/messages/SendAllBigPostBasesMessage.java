@@ -9,8 +9,9 @@ import gollorum.signpost.blocks.SuperPostPostTile;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.BigBaseInfo;
-import gollorum.signpost.util.BigBaseInfo.OverlayType;
 import gollorum.signpost.util.BlockPos;
+import gollorum.signpost.util.Sign;
+import gollorum.signpost.util.Sign.OverlayType;
 import gollorum.signpost.util.collections.Lurchpaerchensauna;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.util.ResourceLocation;
@@ -43,13 +44,13 @@ public class SendAllBigPostBasesMessage implements IMessage{
 		Lurchpaerchensauna<BlockPos, BigBaseInfo> postMap = new Lurchpaerchensauna<BlockPos, BigBaseInfo>();
 		for(Entry<BlockPos, BigStringInt> now: bigPosts.entrySet()){
 			BaseInfo base = PostHandler.getWSbyName(now.getValue().string);
-			postMap.put(now.getKey(), new BigBaseInfo(base,
-													  now.getValue().datInt,
-													  now.getValue().bool,
-													  now.getValue().overlay,
-													  now.getValue().bool2,
-													  now.getValue().strings,
-													  now.getValue().paint));
+			postMap.put(now.getKey(), new BigBaseInfo(new Sign(base,
+															   now.getValue().datInt,
+															   now.getValue().bool,
+															   now.getValue().overlay,
+															   now.getValue().bool2,
+															   now.getValue().paint),
+														now.getValue().strings));
 		}
 		return postMap;
 	}
@@ -61,16 +62,16 @@ public class SendAllBigPostBasesMessage implements IMessage{
 		buf.writeInt(PostHandler.bigPosts.size());
 		for(Entry<BlockPos, BigBaseInfo> now: PostHandler.bigPosts.entrySet()){
 			now.getKey().toBytes(buf);
-			ByteBufUtils.writeUTF8String(buf, ""+now.getValue().base);
-			buf.writeInt(now.getValue().rotation);
-			buf.writeBoolean(now.getValue().flip);
-			ByteBufUtils.writeUTF8String(buf, ""+now.getValue().overlay);
-			buf.writeBoolean(now.getValue().point);
+			ByteBufUtils.writeUTF8String(buf, ""+now.getValue().sign.base);
+			buf.writeInt(now.getValue().sign.rotation);
+			buf.writeBoolean(now.getValue().sign.flip);
+			ByteBufUtils.writeUTF8String(buf, ""+now.getValue().sign.overlay);
+			buf.writeBoolean(now.getValue().sign.point);
 			buf.writeInt(now.getValue().description.length);
 			for(String now2: now.getValue().description){
 				ByteBufUtils.writeUTF8String(buf, now2);
 			}
-			ByteBufUtils.writeUTF8String(buf, SuperPostPostTile.LocToString(now.getValue().signPaint));
+			ByteBufUtils.writeUTF8String(buf, SuperPostPostTile.LocToString(now.getValue().sign.paint));
 		}
 	}
 	

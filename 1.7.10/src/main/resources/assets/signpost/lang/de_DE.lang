@@ -9,6 +9,7 @@ tile.SignpostPostSPRUCE.name=Wegweiser - Fichte
 tile.SignpostPostSTONE.name=Wegweiser - Stein
 
 item.SignpostTool.name=Wegweiser-Werkzeug
+item.SignpostBrush.name=Wegweiser-Pinsel
 
 signpost.discovered=Du hast '<Waystone>' entdeckt!
 signpost.notDiscovered=Du hast <Waystone> noch nicht entdeckt
@@ -22,3 +23,10 @@ signpost.guiTooFar=Der Wegstein ist zu weit entfernt (<distance> Blöcke). Die ma
 signpost.confirmTeleport=Gib '/signpostconfirm' ein, um für <amount>x<itemName> nach <Waystone> zu reisen.
 signpost.confirmTeleportNoCost=Gib '/signpostconfirm' ein, um nach <Waystone> zu reisen.
 signpost.noConfirm=Es existiert keine Teleportationsanfrage, die es zu bestätigen gilt. Anfragen halten für 30 Sekunden.
+
+signpost.getwaystonesleft=Du kannst noch <amount> Wegsteine platzieren.
+signpost.getsignpostsleft=Du kannst noch <amount> Wegweiser platzieren.
+signpost.getwaystonesleftop=<player> kann noch <amount> Wegsteine platzieren.
+signpost.getsignpostsleftop=<player> kann noch <amount> Wegweiser platzieren.
+
+signpost.playerNotFound=Der Spieler <player> ist nicht auf dem Server.

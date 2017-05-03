@@ -1,10 +1,9 @@
 package gollorum.signpost.management;
 
 import java.io.File;
+import java.util.UUID;
 
-import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.LanguageRegistry;
-import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
@@ -20,6 +19,7 @@ public class ConfigHandler {
 	public static boolean deactivateTeleportation;
 	public static boolean interdimensional;
 	public static int maxWaystones;
+	public static int maxSignposts;
 	public static int maxDist;
 	public static Item cost;
 	public static String paymentItem;
@@ -29,19 +29,26 @@ public class ConfigHandler {
 	public static SecurityLevel securityLevelSignpost;
 	
 	public enum SecurityLevel{
-		ALL, CREATIVEONLY, OPONLY;
+		ALL, OWNERS, CREATIVEONLY, OPONLY;
 		public static String[] allValues(){
 			String[] ret = {
 				ALL.toString(),
+				OWNERS.toString(),
 				CREATIVEONLY.toString(),
 				OPONLY.toString()
 			};
 			return ret;
 		}
-		public boolean canUse(EntityPlayerMP player){
+		public boolean canPlace(EntityPlayerMP player){
 			return this.equals(ConfigHandler.SecurityLevel.ALL)||
-					isOp(player)||
-					(isCreative(player)&&this.equals(ConfigHandler.SecurityLevel.CREATIVEONLY));
+				   isOp(player)||
+				   (isCreative(player)&&this.equals(ConfigHandler.SecurityLevel.CREATIVEONLY));
+		}
+		public boolean canUse(EntityPlayerMP player, UUID owner){
+			return this.equals(ConfigHandler.SecurityLevel.ALL)||
+				   isOp(player)||
+				   (owner.toString().equals(player.getUniqueID().toString())&&this.equals(ConfigHandler.SecurityLevel.OWNERS))||
+				   (isCreative(player)&&this.equals(ConfigHandler.SecurityLevel.CREATIVEONLY));
 		}
 	}
 	
@@ -77,7 +84,9 @@ public class ConfigHandler {
 		
 		interdimensional = config.getBoolean("interdimensional", category, true, "Enables interdimensional teleportation (e.g. overworld-nether)");
 
-		maxWaystones = config.getInt("maxWaystones", category, 1, -1, Integer.MAX_VALUE, "The amount of waystones a player is allowed to place (-1 = unlimited)");
+		maxWaystones = config.getInt("maxWaystones", category, -1, -1, Integer.MAX_VALUE, "The amount of waystones a player is allowed to place (-1 = unlimited)");
+
+		maxSignposts = config.getInt("maxSignposts", category, -1, -1, Integer.MAX_VALUE, "The amount of signposts a player is allowed to place (-1 = unlimited)");
 		
 		maxDist = config.getInt("maxDistance", category, -1, -1, (int)Math.sqrt(Integer.MAX_VALUE), "The allowed distance between signpost an waystone (-1 = unlimited)");
 		
@@ -91,14 +100,13 @@ public class ConfigHandler {
 		
 		config.addCustomCategoryComment(category, "Security settings");
 
-		securityLevelWaystone = SecurityLevel.valueOf(config.getString("waystonePermissionLevel", category, "ALL", "Defines which players can place and edit a waystone (ALL, CREATIVEONLY, OPONLY)", SecurityLevel.allValues()));
+		securityLevelWaystone = SecurityLevel.valueOf(config.getString("waystonePermissionLevel", category, "ALL", "Defines which players can place and edit a waystone (ALL, OWNERS, CREATIVEONLY, OPONLY). OPs are always included, 'OWNERS' = everyone can place, only the owner+OPs can edit.", SecurityLevel.allValues()));
 
-		securityLevelSignpost = SecurityLevel.valueOf(config.getString("signpostPermissionLevel", category, "ALL", "Defines which players can place and edit a signpost (ALL, CREATIVEONLY, OPONLY)", SecurityLevel.allValues()));
+		securityLevelSignpost = SecurityLevel.valueOf(config.getString("signpostPermissionLevel", category, "ALL", "Defines which players can place and edit a signpost (ALL, OWNERS, CREATIVEONLY, OPONLY). OPs are always included, 'OWNERS' = everyone can place, only the owner+OPs can edit.", SecurityLevel.allValues()));
 	}
 
 	public static boolean isOp(EntityPlayer player){
 		return MinecraftServer.getServer().getConfigurationManager().func_152596_g(player.getGameProfile());
-
 	}
 	
 	public static boolean isCreative(EntityPlayerMP player){

@@ -25,13 +25,13 @@ public class SendBigPostBasesMessage implements IMessage {
 	public SendBigPostBasesMessage(BigPostPostTile tile, BigBaseInfo base) {
 		tile.markDirty();
 		this.pos = tile.toPos();
-		this.base = ""+base.base;
-		baserot = base.rotation;
-		flip = base.flip;
-		overlay = ""+base.overlay;
-		point = base.point;
+		this.base = ""+base.sign.base;
+		baserot = base.sign.rotation;
+		flip = base.sign.flip;
+		overlay = ""+base.sign.overlay;
+		point = base.sign.point;
 		description = base.description;
-		paint = base.signPaint;
+		paint = base.sign.paint;
 	}
 
 	@Override

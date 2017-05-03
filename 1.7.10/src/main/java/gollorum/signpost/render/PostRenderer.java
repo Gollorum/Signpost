@@ -5,11 +5,8 @@ import org.lwjgl.opengl.GL11;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blocks.PostPostTile;
 import gollorum.signpost.util.DoubleBaseInfo;
-import gollorum.signpost.util.math.tracking.DDDVector;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
-import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 
@@ -20,7 +17,11 @@ public class PostRenderer extends TileEntitySpecialRenderer{
 	public PostRenderer(){}
 	
 	void setTexture(ResourceLocation loc){
-		bindTexture(loc);
+		try{
+			bindTexture(loc);
+		}catch(Exception e){
+//			bindTexture(new ResourceLocation("textures/blocks/planks_oak"));
+		}
 	}
 	
 	@Override
@@ -30,8 +31,8 @@ public class PostRenderer extends TileEntitySpecialRenderer{
 		if(tilebases==null){
 			tilebases = tile.getBases();
 		}
-		double rotation1 = PostPostTile.calcRot1(tilebases, tile.xCoord, tile.zCoord);
-		double rotation2 = PostPostTile.calcRot2(tilebases, tile.xCoord, tile.zCoord);
+		double rotation1 = tilebases.sign1.calcRot(tile.xCoord, tile.zCoord);
+		double rotation2 = tilebases.sign2.calcRot(tile.xCoord, tile.zCoord);
 		GL11.glPushMatrix();
 		GL11.glTranslated(x+0.5, y, z+0.5);
 		this.bindTexture(tile.type.texture);
@@ -39,12 +40,12 @@ public class PostRenderer extends TileEntitySpecialRenderer{
 
 		//Overlays
 		if(!tile.isItem){
-			if(tilebases.base1!=null && tilebases.overlay1!=null){
-				bindTexture(new ResourceLocation(Signpost.MODID + ":textures/blocks/sign_overlay_"+tilebases.overlay1.texture+".png"));
+			if(tilebases.sign1.base!=null && tilebases.sign1.overlay!=null){
+				bindTexture(new ResourceLocation(Signpost.MODID + ":textures/blocks/sign_overlay_"+tilebases.sign1.overlay.texture+".png"));
 				model.renderOverlay1(tilebases, 0.0625f, rotation1);
 			}
-			if(tilebases.base2!=null && tilebases.overlay2!=null){
-				bindTexture(new ResourceLocation(Signpost.MODID + ":textures/blocks/sign_overlay_"+tilebases.overlay2.texture+".png"));
+			if(tilebases.sign2.base!=null && tilebases.sign2.overlay!=null){
+				bindTexture(new ResourceLocation(Signpost.MODID + ":textures/blocks/sign_overlay_"+tilebases.sign2.overlay.texture+".png"));
 				model.renderOverlay2(tilebases, 0.0625f, rotation2);
 			}
 		}
@@ -61,13 +62,13 @@ public class PostRenderer extends TileEntitySpecialRenderer{
 //		int color = (1<<16) + (1<<8);
 		
         if(!tile.isItem){
-        	if(tilebases.base1!=null&&!tilebases.base1.name.equals("null")&&!tilebases.base1.name.equals("")){
-        		String s = tilebases.base1.name;
+        	if(tilebases.sign1.base!=null&&!tilebases.sign1.base.name.equals("null")&&!tilebases.sign1.base.name.equals("")){
+        		String s = tilebases.sign1.base.name;
         		double sc2 = 100d/fontrenderer.getStringWidth(s);
         		if(sc2>=1){
         			sc2 = 1;
         		}
-        		double lurch = (tilebases.flip1?-0.2:0.2)-fontrenderer.getStringWidth(s)*sc*sc2/2;
+        		double lurch = (tilebases.sign1.flip?-0.2:0.2)-fontrenderer.getStringWidth(s)*sc*sc2/2;
             	double alpha = Math.atan(lurch*16/3.001);
             	double d = Math.sqrt(Math.pow(3.001/16, 2)+Math.pow(lurch, 2));
             	double beta = alpha + rotation1;
@@ -82,14 +83,14 @@ public class PostRenderer extends TileEntitySpecialRenderer{
                 GL11.glPopMatrix();
         	}
 
-        	if(tilebases.base2!=null&&!tilebases.base2.name.equals("null")&&!tilebases.base2.name.equals("")){
+        	if(tilebases.sign2.base!=null&&!tilebases.sign2.base.name.equals("null")&&!tilebases.sign2.base.name.equals("")){
         		GL11.glTranslated(0, 0.5d, 0);
-        		String s = tilebases.base2.name;
+        		String s = tilebases.sign2.base.name;
         		double sc2 = 100d/fontrenderer.getStringWidth(s);
         		if(sc2>=1){
         			sc2 = 1;
         		}
-        		double lurch = (tilebases.flip2?-0.2:0.2)-fontrenderer.getStringWidth(s)*sc*sc2/2;
+        		double lurch = (tilebases.sign2.flip?-0.2:0.2)-fontrenderer.getStringWidth(s)*sc*sc2/2;
             	double alpha = Math.atan(lurch*16/3.001);
             	double d = Math.sqrt(Math.pow(3.001/16, 2)+Math.pow(lurch, 2));
             	double beta = alpha + rotation2;

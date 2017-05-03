@@ -9,6 +9,7 @@ tile.SignpostPostSPRUCE.name=Spruce Signpost
 tile.SignpostPostSTONE.name=Stone Signpost
 
 item.SignpostTool.name=Signpost wrench
+item.SignpostBrush.name=Signpost brush
 
 signpost.discovered=You have discovered the waystone '<Waystone>'
 signpost.notDiscovered=You have not yet discovered <Waystone>
@@ -22,3 +23,10 @@ signpost.guiTooFar=The waystone is too far away (<distance> blocks). The maximum
 signpost.confirmTeleport=Type '/signpostconfirm' to teleport to <Waystone> for <amount>x<itemName>.
 signpost.confirmTeleportNoCost=Type '/signpostconfirm' to teleport to <Waystone>.
 signpost.noConfirm=There is no signpost teleport to confirm. Teleportation requests expire after 30 seconds.
+
+signpost.getwaystonesleft=You may place <amount> more waystones.
+signpost.getsignpostsleft=You may place <amount> more signposts.
+signpost.getwaystonesleftop=<player> may place <amount> more waystones.
+signpost.getsignpostsleftop=<player> may place <amount> more signposts.
+
+signpost.playerNotFound=The player <player> is not on the server.

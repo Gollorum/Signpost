@@ -35,18 +35,18 @@ public class SendPostBasesMessage implements IMessage {
 	public SendPostBasesMessage(PostPostTile tile, DoubleBaseInfo base) {
 		tile.markDirty();
 		this.pos = tile.toPos();
-		this.base1 = ""+base.base1;
-		this.base2 = ""+base.base2;
-		base1rot = base.rotation1;
-		base2rot = base.rotation2;
-		flip1 = base.flip1;
-		flip2 = base.flip2;
-		overlay1 = ""+base.overlay1;
-		overlay2 = ""+base.overlay2;
-		point1 = base.point1;
-		point2 = base.point2;
-		paint1 = SuperPostPostTile.LocToString(base.sign1Paint);
-		paint2 = SuperPostPostTile.LocToString(base.sign2Paint);
+		this.base1 = ""+base.sign1.base;
+		this.base2 = ""+base.sign2.base;
+		base1rot = base.sign1.rotation;
+		base2rot = base.sign2.rotation;
+		flip1 = base.sign1.flip;
+		flip2 = base.sign2.flip;
+		overlay1 = ""+base.sign1.overlay;
+		overlay2 = ""+base.sign2.overlay;
+		point1 = base.sign1.point;
+		point2 = base.sign2.point;
+		paint1 = SuperPostPostTile.LocToString(base.sign1.paint);
+		paint2 = SuperPostPostTile.LocToString(base.sign2.paint);
 		
 	}
 

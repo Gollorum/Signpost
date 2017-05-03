@@ -5,7 +5,6 @@ import org.lwjgl.opengl.GL11;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import gollorum.signpost.blocks.PostPostTile;
-import gollorum.signpost.blocks.SuperPostPostTile;
 import gollorum.signpost.util.DoubleBaseInfo;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelRenderer;
@@ -34,31 +33,31 @@ public class ModelPost extends ModelBase {
 		super.render(null, 0, f1, 0, 0, 0, f5);
 		post.render(f5);
 		ResourceLocation mainLoc = tile.type.texture;
-		if ((tilebases.base1 != null&&!tilebases.base1.name.equals("null")&&!tilebases.base1.name.equals("")) || tile.isItem) {
+		if ((tilebases.sign1.base != null&&!tilebases.sign1.base.name.equals("null")&&!tilebases.sign1.base.name.equals("")) || tile.isItem) {
 			GL11.glPushMatrix();
 			GL11.glRotated(180, 0, 0, 1);
 			GL11.glTranslated(0, -1.5, 0);
 			GL11.glRotated(-Math.toDegrees(rotation1), 0, 1, 0);
-			if(tilebases.sign1Paint!=null){
-				postRenderer.setTexture(tilebases.sign1Paint);
-				board1.render(f5, tilebases.flip1);
+			if(tilebases.sign1.paint!=null){
+				postRenderer.setTexture(tilebases.sign1.paint);
+				board1.render(f5, tilebases.sign1.flip);
 				postRenderer.setTexture(mainLoc);
 			}else{
-				board1.render(f5, tilebases.flip1);
+				board1.render(f5, tilebases.sign1.flip);
 			}
 			GL11.glPopMatrix();
 		}
-		if ((tilebases.base2 != null&&!tilebases.base2.name.equals("null")&&!tilebases.base2.name.equals("")) || tile.isItem) {
+		if ((tilebases.sign2.base != null&&!tilebases.sign2.base.name.equals("null")&&!tilebases.sign2.base.name.equals("")) || tile.isItem) {
 			GL11.glPushMatrix();
 			GL11.glRotated(180, 0, 0, 1);
 			GL11.glTranslated(0, -0.5, 0);
 			GL11.glRotated(-Math.toDegrees(rotation2), 0, 1, 0);
-			if(tilebases.sign2Paint!=null){
-				postRenderer.setTexture(tilebases.sign2Paint);
-				board2.render(f5, tilebases.flip2);
+			if(tilebases.sign2.paint!=null){
+				postRenderer.setTexture(tilebases.sign2.paint);
+				board2.render(f5, tilebases.sign2.flip);
 				postRenderer.setTexture(mainLoc);
 			}else{
-				board2.render(f5, tilebases.flip2);
+				board2.render(f5, tilebases.sign2.flip);
 			}
 			GL11.glPopMatrix();
 		}
@@ -72,7 +71,7 @@ public class ModelPost extends ModelBase {
 		GL11.glTranslated(0, -0.75, -2.5/16.0);
 		GL11.glRotated(180, 0, 0, 1);
 		GL11.glTranslated(0, -1.5, 0);
-		board1.render(f5, tilebases.flip1);
+		board1.render(f5, tilebases.sign1.flip);
 		GL11.glPopMatrix();
 	}
 	
@@ -84,7 +83,7 @@ public class ModelPost extends ModelBase {
 		GL11.glTranslated(0, -0.25, -2.5/16.0);
 		GL11.glRotated(180, 0, 0, 1);
 		GL11.glTranslated(0, -0.5, 0);
-		board2.render(f5, tilebases.flip2);
+		board2.render(f5, tilebases.sign2.flip);
 		GL11.glPopMatrix();
 	}
 

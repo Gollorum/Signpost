@@ -5,6 +5,7 @@ import gollorum.signpost.Signpost;
 import gollorum.signpost.blocks.BasePostTile;
 import gollorum.signpost.blocks.BigPostPostTile;
 import gollorum.signpost.blocks.PostPostTile;
+import gollorum.signpost.blocks.SuperPostPostTile;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
 
@@ -24,6 +25,9 @@ public class SignGuiHandler implements IGuiHandler {
 			return new SignGuiPost((PostPostTile) world.getTileEntity(x, y, z));
 		case Signpost.GuiBigPostID:
 			return new SignGuiBigPost((BigPostPostTile) world.getTileEntity(x, y, z));
+		case Signpost.GuiPostBrushID:
+			SuperPostPostTile tile = (SuperPostPostTile) world.getTileEntity(x, y, z);
+			return new SignGuiPaint(tile.getSign(player), tile);
 		}
 		return null;
 	}

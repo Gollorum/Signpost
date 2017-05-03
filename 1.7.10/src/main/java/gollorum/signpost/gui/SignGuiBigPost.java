@@ -46,7 +46,7 @@ public class SignGuiBigPost extends GuiScreen {
 	public void initGui() {
 		BigBaseInfo tilebases = tile.getBases();
 		baseInputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, 46, 137, 20);
-		baseInputBox.setText(tilebases.base==null?"":tilebases.base.toString());
+		baseInputBox.setText(tilebases.sign.base==null?"":tilebases.sign.base.toString());
 		go = true;
 		baseInputBox.setFocused(true);
 
@@ -177,9 +177,9 @@ public class SignGuiBigPost extends GuiScreen {
 	public void onGuiClosed() {
 		BigBaseInfo tilebases = tile.getBases();
 		if(ConfigHandler.deactivateTeleportation||go){
-			tilebases.base = PostHandler.getWSbyName(baseInputBox.getText());
+			tilebases.sign.base = PostHandler.getWSbyName(baseInputBox.getText());
 		}else{
-			tilebases.base = null;
+			tilebases.sign.base = null;
 		}
 		tilebases.description[0] = desc1InputBox.getText();
 		tilebases.description[1] = desc2InputBox.getText();

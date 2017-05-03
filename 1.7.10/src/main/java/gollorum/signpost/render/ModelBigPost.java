@@ -5,7 +5,6 @@ import org.lwjgl.opengl.GL11;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import gollorum.signpost.blocks.BigPostPostTile;
-import gollorum.signpost.blocks.SuperPostPostTile;
 import gollorum.signpost.util.BigBaseInfo;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelRenderer;
@@ -31,15 +30,15 @@ public class ModelBigPost extends ModelBase {
 	public void render(BigPostRenderer postRenderer, float f1, float f5, BigBaseInfo tilebases, BigPostPostTile tile, double rotation) {
 		super.render(null, 0, f1, 0, 0, 0, f5);
 		post.render(f5);
-		if ((tilebases.base != null&&!tilebases.base.name.equals("null")&&!tilebases.base.name.equals("")) || tile.isItem) {
+		if ((tilebases.sign.base != null&&!tilebases.sign.base.name.equals("null")&&!tilebases.sign.base.name.equals("")) || tile.isItem) {
 			GL11.glPushMatrix();
 			GL11.glRotated(180, 0, 0, 1);
 			GL11.glTranslated(0, -1, 0);
 			GL11.glRotated(-Math.toDegrees(rotation), 0, 1, 0);
-			if(tilebases.signPaint!=null){
-				postRenderer.setTexture(tilebases.signPaint);
+			if(tilebases.sign.paint!=null){
+				postRenderer.setTexture(tilebases.sign.paint);
 			}
-			board.render(f5, tilebases.flip);
+			board.render(f5, tilebases.sign.flip);
 			GL11.glPopMatrix();
 		}
 	}
@@ -52,7 +51,7 @@ public class ModelBigPost extends ModelBase {
 		GL11.glTranslated(0, -0.75, -2.5/16.0);
 		GL11.glRotated(180, 0, 0, 1);
 		GL11.glTranslated(0, -1.5, 0);
-		board.render(f5, tilebases.flip);
+		board.render(f5, tilebases.sign.flip);
 		GL11.glPopMatrix();
 	}
 	

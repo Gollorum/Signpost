@@ -1,8 +1,9 @@
 package gollorum.signpost.blocks;
 
 import gollorum.signpost.SPEventHandler;
+import gollorum.signpost.blocks.PostPost.Hit;
+import gollorum.signpost.blocks.PostPost.HitTarget;
 import gollorum.signpost.blocks.PostPost.PostType;
-import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.SendAllPostBasesMessage;
@@ -10,13 +11,12 @@ import gollorum.signpost.network.messages.SendPostBasesMessage;
 import gollorum.signpost.util.BlockPos;
 import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.DoubleBaseInfo;
-import gollorum.signpost.util.DoubleBaseInfo.OverlayType;
-import gollorum.signpost.util.math.tracking.DDDVector;
+import gollorum.signpost.util.Sign;
+import gollorum.signpost.util.Sign.OverlayType;
 import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ResourceLocation;
 
 public class PostPostTile extends SuperPostPostTile {
 
@@ -35,7 +35,7 @@ public class PostPostTile extends SuperPostPostTile {
 	public DoubleBaseInfo getBases(){
 		DoubleBaseInfo bases = PostHandler.posts.get(toPos());
 		if(bases==null){
-			bases = new DoubleBaseInfo(null, null, 0, 0, false, false, null, null, false, false, null, null);
+			bases = new DoubleBaseInfo();
 			PostHandler.posts.put(toPos(), bases);
 		}
 		this.bases = bases;
@@ -46,12 +46,12 @@ public class PostPostTile extends SuperPostPostTile {
 	public void onBlockDestroy(BlockPos pos) {
 		isCanceled = true;
 		DoubleBaseInfo bases = getBases();
-		if(bases.overlay1!=null){
-			EntityItem item = new EntityItem(worldObj, pos.x, pos.y, pos.z, new ItemStack(bases.overlay1.item, 1));
+		if(bases.sign1.overlay!=null){
+			EntityItem item = new EntityItem(worldObj, pos.x, pos.y, pos.z, new ItemStack(bases.sign1.overlay.item, 1));
 			worldObj.spawnEntityInWorld(item);
 		}
-		if(bases.overlay2!=null){
-			EntityItem item = new EntityItem(worldObj, pos.x, pos.y, pos.z, new ItemStack(bases.overlay2.item, 1));
+		if(bases.sign2.overlay!=null){
+			EntityItem item = new EntityItem(worldObj, pos.x, pos.y, pos.z, new ItemStack(bases.sign2.overlay.item, 1));
 			worldObj.spawnEntityInWorld(item);
 		}
 		if(PostHandler.posts.remove(pos)!=null){
@@ -60,27 +60,24 @@ public class PostPostTile extends SuperPostPostTile {
 	}
 
 	@Override
-	public void writeToNBT(NBTTagCompound tagCompound) {
-		super.writeToNBT(tagCompound);
+	public void save(NBTTagCompound tagCompound) {
 		DoubleBaseInfo bases = getBases();
-		tagCompound.setString("base1", ""+bases.base1);
-		tagCompound.setString("base2", ""+bases.base2);
-		tagCompound.setInteger("rot1", bases.rotation1);
-		tagCompound.setInteger("rot2", bases.rotation2);
-		tagCompound.setBoolean("flip1", bases.flip1);
-		tagCompound.setBoolean("flip2", bases.flip2);
-		tagCompound.setString("overlay1", ""+bases.overlay1);
-		tagCompound.setString("overlay2", ""+bases.overlay2);
-		tagCompound.setBoolean("point1", bases.point1);
-		tagCompound.setBoolean("point2", bases.point2);
-		tagCompound.setString("paint1", SuperPostPostTile.LocToString(bases.sign1Paint));
-		tagCompound.setString("paint2", SuperPostPostTile.LocToString(bases.sign2Paint));
+		tagCompound.setString("base1", ""+bases.sign1.base);
+		tagCompound.setString("base2", ""+bases.sign2.base);
+		tagCompound.setInteger("rot1", bases.sign1.rotation);
+		tagCompound.setInteger("rot2", bases.sign2.rotation);
+		tagCompound.setBoolean("flip1", bases.sign1.flip);
+		tagCompound.setBoolean("flip2", bases.sign2.flip);
+		tagCompound.setString("overlay1", ""+bases.sign1.overlay);
+		tagCompound.setString("overlay2", ""+bases.sign2.overlay);
+		tagCompound.setBoolean("point1", bases.sign1.point);
+		tagCompound.setBoolean("point2", bases.sign2.point);
+		tagCompound.setString("paint1", SuperPostPostTile.LocToString(bases.sign1.paint));
+		tagCompound.setString("paint2", SuperPostPostTile.LocToString(bases.sign2.paint));
 	}
 
 	@Override
-	public void readFromNBT(NBTTagCompound tagCompound) {
-		super.readFromNBT(tagCompound);
-		
+	public void load(NBTTagCompound tagCompound) {
 		final String base1 = tagCompound.getString("base1");
 		final String base2 = tagCompound.getString("base2");
 
@@ -109,43 +106,35 @@ public class PostPostTile extends SuperPostPostTile {
 						return true;
 					}
 					DoubleBaseInfo bases = getBases();
-					bases.base1 = PostHandler.getWSbyName(base1);
-					bases.base2 = PostHandler.getWSbyName(base2);
-					bases.rotation1 = rotation1;
-					bases.rotation2 = rotation2;
-					bases.flip1 = flip1;
-					bases.flip2 = flip2;
-					bases.overlay1 = overlay1;
-					bases.overlay2 = overlay2;
-					bases.point1 = point1;
-					bases.point2 = point2;
-					bases.sign1Paint = stringToLoc(paint1);
-					bases.sign2Paint = stringToLoc(paint2);
+					bases.sign1.base = PostHandler.getWSbyName(base1);
+					bases.sign2.base = PostHandler.getWSbyName(base2);
+					bases.sign1.rotation = rotation1;
+					bases.sign2.rotation = rotation2;
+					bases.sign1.flip = flip1;
+					bases.sign2.flip = flip2;
+					bases.sign1.overlay = overlay1;
+					bases.sign2.overlay = overlay2;
+					bases.sign1.point = point1;
+					bases.sign2.point = point2;
+					bases.sign1.paint = stringToLoc(paint1);
+					bases.sign2.paint = stringToLoc(paint2);
 					NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage((PostPostTile) worldObj.getTileEntity(xCoord, yCoord, zCoord), bases));
 					return true;
 				}
 			}
 		});
 	}
-
-	public static final double calcRot1(DoubleBaseInfo tilebases, int x, int z) {
- 		if(tilebases.point1&&!(tilebases.base1==null||tilebases.base1.pos==null||ConfigHandler.deactivateTeleportation)){
-			int dx = x-tilebases.base1.pos.x;
-			int dz = z-tilebases.base1.pos.z;
-			return DDDVector.genAngle(dx, dz)+Math.toRadians(-90+(tilebases.flip1?0:180)+(dx<0&&dz>0?180:0));
+	
+	@Override
+	public Sign getSign(EntityPlayer player) {
+		DoubleBaseInfo bases = getBases();
+		Hit hit = (Hit) ((PostPost)blockType).getHitTarget(worldObj, xCoord, yCoord, zCoord, player);
+		if(hit.target.equals(HitTarget.BASE1)){
+			return bases.sign1;
+		}else if(hit.target.equals(HitTarget.BASE2)){
+			return bases.sign2;
 		}else{
-			return Math.toRadians(tilebases.rotation1);
+			return null;
 		}
 	}
-
-	public static final double calcRot2(DoubleBaseInfo tilebases, int x, int z) {
-		if(tilebases.point2&&!(tilebases.base2==null||tilebases.base2.pos==null||ConfigHandler.deactivateTeleportation)){
-			int dx = x-tilebases.base2.pos.x;
-			int dz = z-tilebases.base2.pos.z;
-			return DDDVector.genAngle(dx, dz)+Math.toRadians(-90+(tilebases.flip2?0:180)+(dx<0&&dz>0?180:0));
-		}else{
-			return Math.toRadians(tilebases.rotation2);
-		}
-	}
-
 }

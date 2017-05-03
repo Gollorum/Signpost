@@ -8,20 +8,20 @@ import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.SendBigPostBasesMessage;
 import gollorum.signpost.util.BigBaseInfo;
-import gollorum.signpost.util.BigBaseInfo.OverlayType;
+import gollorum.signpost.util.Sign.OverlayType;
 
 public class SendBigPostBasesHandler implements IMessageHandler<SendBigPostBasesMessage, IMessage>{
 
 	@Override
 	public IMessage onMessage(SendBigPostBasesMessage message, MessageContext ctx) {
 		BigBaseInfo bases = PostHandler.bigPosts.get(message.pos);
-		bases.rotation = message.baserot;
-		bases.flip = message.flip;
-		bases.base = PostHandler.getWSbyName(message.base);
-		bases.overlay = OverlayType.get(message.overlay);
-		bases.point = message.point;
+		bases.sign.rotation = message.baserot;
+		bases.sign.flip = message.flip;
+		bases.sign.base = PostHandler.getWSbyName(message.base);
+		bases.sign.overlay = OverlayType.get(message.overlay);
+		bases.sign.point = message.point;
 		bases.description = message.description;
-		bases.signPaint = message.paint;
+		bases.sign.paint = message.paint;
 		if(ctx.side.equals(Side.SERVER)){
 			ctx.getServerHandler().playerEntity.worldObj.getTileEntity(message.pos.x, message.pos.y, message.pos.z).markDirty();
 			NetworkHandler.netWrap.sendToAll(message);

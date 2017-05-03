@@ -65,8 +65,9 @@ public class BasePostTile extends TileEntity {
 	
 	public void onBlockDestroy(BlockPos pos) {
 		isCanceled = true;
-		MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.DESTROYED, this.worldObj, xCoord, yCoord, zCoord, PostHandler.allWaystones.getByPos(pos).name));
-		if(PostHandler.allWaystones.removeByPos(pos)){
+		BaseInfo base = PostHandler.allWaystones.getByPos(pos);
+		if(PostHandler.allWaystones.remove(base)){
+			MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.DESTROYED, worldObj, xCoord, yCoord, zCoord, base.name));
 			NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
 		}
 	}

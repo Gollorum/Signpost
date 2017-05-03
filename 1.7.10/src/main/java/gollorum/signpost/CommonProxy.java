@@ -11,11 +11,13 @@ import gollorum.signpost.blocks.BigPostPostTile;
 import gollorum.signpost.blocks.PostPost;
 import gollorum.signpost.blocks.PostPost.PostType;
 import gollorum.signpost.blocks.PostPostTile;
+import gollorum.signpost.items.PostBrush;
 import gollorum.signpost.items.PostWrench;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.network.NetworkHandler;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
@@ -43,8 +45,9 @@ public class CommonProxy {
 	public BigPostPost bigpost_iron = new BigPostPost(BigPostType.IRON);
 	public BigPostPost bigpost_stone = new BigPostPost(BigPostType.STONE);
 	public BigPostPost[] bigposts = {bigpost_oak, bigpost_spruce, bigpost_birch, bigpost_jungle, bigpost_acacia, bigpost_big_oak, bigpost_iron, bigpost_stone};
-	
+
 	public PostWrench tool = new PostWrench();
+	public PostBrush brush = new PostBrush();
 
 	public void init(){
 		registerBlocks();
@@ -76,6 +79,7 @@ public class CommonProxy {
 	
 	protected void registerItems(){
 		GameRegistry.registerItem(tool, "SignpostTool");
+		GameRegistry.registerItem(brush, "SignpostBrush");
 	}
 
 	protected void registerRecipes() {
@@ -108,6 +112,13 @@ public class CommonProxy {
 									"II",
 									"IS",
 									"S ",
+									'I', Items.iron_ingot,
+									'S', Items.stick);
+			GameRegistry.addRecipe(new ItemStack(brush),
+									"W",
+									"I",
+									"S",
+									'W', Item.getItemFromBlock(Blocks.wool),
 									'I', Items.iron_ingot,
 									'S', Items.stick);
 		}

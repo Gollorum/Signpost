@@ -1,9 +1,6 @@
 package gollorum.signpost.blocks;
 
 import gollorum.signpost.Signpost;
-import gollorum.signpost.blocks.PostPost.Hit;
-import gollorum.signpost.event.UseSignpostEvent;
-import gollorum.signpost.items.PostWrench;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
@@ -12,12 +9,10 @@ import gollorum.signpost.network.messages.OpenGuiMessage;
 import gollorum.signpost.network.messages.SendBigPostBasesMessage;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.BigBaseInfo;
-import gollorum.signpost.util.BigBaseInfo.OverlayType;
-import gollorum.signpost.util.BlockPos;
+import gollorum.signpost.util.Sign.OverlayType;
 import gollorum.signpost.util.math.tracking.Cuboid;
 import gollorum.signpost.util.math.tracking.DDDVector;
 import gollorum.signpost.util.math.tracking.Intersect;
-import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
@@ -25,13 +20,11 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
-import net.minecraftforge.common.MinecraftForge;
 
 public class BigPostPost extends SuperPostPost {
 
@@ -116,7 +109,7 @@ public class BigPostPost extends SuperPostPost {
 		BigHit hit = (BigHit)hitObj;
 		BigBaseInfo tilebases = ((BigPostPostTile)superTile).getBases();
 		if (hit.target == BigHitTarget.BASE) {
-			tilebases.rotation = (tilebases.rotation - 15) % 360;
+			tilebases.sign.rotation = (tilebases.sign.rotation - 15) % 360;
 		}
 	}
 
@@ -125,7 +118,7 @@ public class BigPostPost extends SuperPostPost {
 		BigHit hit = (BigHit)hitObj;
 		BigBaseInfo tilebases = ((BigPostPostTile)superTile).getBases();
 		if (hit.target == BigHitTarget.BASE) {
-			tilebases.rotation = (tilebases.rotation + 15) % 360;
+			tilebases.sign.rotation = (tilebases.sign.rotation + 15) % 360;
 //		} else if (hit.target == BigHitTarget.POST){
 //			NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiBigPostID, x, y, z), (EntityPlayerMP) player);
 		}
@@ -136,8 +129,13 @@ public class BigPostPost extends SuperPostPost {
 		BigHit hit = (BigHit)hitObj;
 		BigBaseInfo tilebases = ((BigPostPostTile)superTile).getBases();
 		if (hit.target == BigHitTarget.BASE) {
-			tilebases.flip = !tilebases.flip;
+			tilebases.sign.flip = !tilebases.sign.flip;
 		}
+	}
+
+	@Override
+	public void rightClickBrush(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z){
+		NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiPostBrushID, x, y, z), (EntityPlayerMP) player);
 	}
 
 	@Override
@@ -145,21 +143,21 @@ public class BigPostPost extends SuperPostPost {
 		BigHit hit = (BigHit)hitObj;
 		BigBaseInfo tilebases = ((BigPostPostTile)superTile).getBases();
 		if (hit.target == BigHitTarget.BASE) {
-			if(tilebases.overlay != null){
-				player.inventory.addItemStackToInventory(new ItemStack(tilebases.overlay.item, 1));
+			if(tilebases.sign.overlay != null){
+				player.inventory.addItemStackToInventory(new ItemStack(tilebases.sign.overlay.item, 1));
 			}
 		}
 		for(OverlayType now: OverlayType.values()){
 			if(player.getHeldItem().getItem().getClass() == now.item.getClass()){
 				if (hit.target == BigHitTarget.BASE) {
-					tilebases.overlay = now;
+					tilebases.sign.overlay = now;
 				}
 				player.inventory.consumeInventoryItem(now.item);
 				return;
 			}
 		}
 		if (hit.target == BigHitTarget.BASE) {
-			tilebases.overlay = null;
+			tilebases.sign.overlay = null;
 		}
 	}
 
@@ -171,7 +169,7 @@ public class BigPostPost extends SuperPostPost {
 				return;
 			}
 			BigPostPostTile tile = (BigPostPostTile)superTile;
-			BaseInfo destination = tile.getBases().base;
+			BaseInfo destination = tile.getBases().sign.base;
 			if (destination != null) {
 				if (ConfigHandler.cost == null) {
 					PostHandler.teleportMe(destination, (EntityPlayerMP) player, 0);
@@ -198,7 +196,7 @@ public class BigPostPost extends SuperPostPost {
 		BigHit hit = (BigHit)hitObj;
 		BigBaseInfo tilebases = ((BigPostPostTile)superTile).getBases();
 		if (hit.target == BigHitTarget.BASE) {
-			tilebases.point = !tilebases.point;
+			tilebases.sign.point = !tilebases.sign.point;
 		}
 	}
 
@@ -207,7 +205,7 @@ public class BigPostPost extends SuperPostPost {
 		BigHit hit = (BigHit)hitObj;
 		BigBaseInfo tilebases = ((BigPostPostTile)superTile).getBases();
 		if (hit.target == BigHitTarget.BASE) {
-			tilebases.point = !tilebases.point;
+			tilebases.sign.point = !tilebases.sign.point;
 		}
 	}
 
@@ -218,10 +216,17 @@ public class BigPostPost extends SuperPostPost {
 	}
 
 	@Override
-	public void sendPostBases(SuperPostPostTile superTile) {
+	public void sendPostBasesToAll(SuperPostPostTile superTile) {
 		BigPostPostTile tile = (BigPostPostTile)superTile;
 		BigBaseInfo tilebases = tile.getBases();
 		NetworkHandler.netWrap.sendToAll(new SendBigPostBasesMessage(tile, tilebases));
+	}
+
+	@Override
+	public void sendPostBasesToServer(SuperPostPostTile superTile) {
+		BigPostPostTile tile = (BigPostPostTile)superTile;
+		BigBaseInfo tilebases = tile.getBases();
+		NetworkHandler.netWrap.sendToServer(new SendBigPostBasesMessage(tile, tilebases));
 	}
 	
 	@Override
@@ -236,19 +241,19 @@ public class BigPostPost extends SuperPostPost {
 		DDDVector signPos;
 		DDDVector edges = new DDDVector(1.4375, 0.75, 0.0625);
 		
-		if(bases.flip){
+		if(bases.sign.flip){
 			signPos = new DDDVector(x-0.375, y+0.1875, z+0.625);
 		}else{
 			signPos = new DDDVector(x-0.0625, y+0.1875, z+0.625);
 		}
-		Cuboid sign = new Cuboid(signPos, edges, BigPostPostTile.calcRot(bases, x, z), rotPos);
+		Cuboid sign = new Cuboid(signPos, edges, bases.sign.calcRot(x, z), rotPos);
 		Cuboid post = new Cuboid(new DDDVector(x+0.375, y, z+0.375), new DDDVector(0.25, 1, 0.25), 0);
 
 		DDDVector start = new DDDVector(head.xCoord, head.yCoord, head.zCoord);
 		DDDVector end = start.add(new DDDVector(look.xCoord, look.yCoord, look.zCoord));
 		Intersect signHit = sign.traceLine(start, end, true);
 		Intersect postHit = post.traceLine(start, end, true);
-		double signDist = signHit.exists&&bases.base!=null?signHit.pos.distance(start):Double.MAX_VALUE;
+		double signDist = signHit.exists&&bases.sign.base!=null?signHit.pos.distance(start):Double.MAX_VALUE;
 		double postDist = postHit.exists?postHit.pos.distance(start):Double.MAX_VALUE/2;
 		double dist;
 		BigHitTarget target;
