@@ -11,6 +11,7 @@ import gollorum.signpost.blocks.BigPostPostTile;
 import gollorum.signpost.blocks.PostPost;
 import gollorum.signpost.blocks.PostPost.PostType;
 import gollorum.signpost.blocks.PostPostTile;
+import gollorum.signpost.items.CalibratedPostWrench;
 import gollorum.signpost.items.PostBrush;
 import gollorum.signpost.items.PostWrench;
 import gollorum.signpost.management.ConfigHandler;
@@ -47,6 +48,7 @@ public class CommonProxy {
 	public BigPostPost[] bigposts = {bigpost_oak, bigpost_spruce, bigpost_birch, bigpost_jungle, bigpost_acacia, bigpost_big_oak, bigpost_iron, bigpost_stone};
 
 	public PostWrench tool = new PostWrench();
+	public CalibratedPostWrench calibratedTool = new CalibratedPostWrench();
 	public PostBrush brush = new PostBrush();
 
 	public void init(){
@@ -79,6 +81,7 @@ public class CommonProxy {
 	
 	protected void registerItems(){
 		GameRegistry.registerItem(tool, "SignpostTool");
+		GameRegistry.registerItem(calibratedTool, "SignpostCalibratedTool");
 		GameRegistry.registerItem(brush, "SignpostBrush");
 	}
 
@@ -109,11 +112,15 @@ public class CommonProxy {
 										'B', new ItemStack(now.type.baseItem, 1, now.type.metadata));
 			}
 			GameRegistry.addRecipe(new ItemStack(tool),
-									"II",
-									"IS",
-									"S ",
-									'I', Items.iron_ingot,
-									'S', Items.stick);
+					"II",
+					"IS",
+					"S ",
+					'I', Items.iron_ingot,
+					'S', Items.stick);
+			GameRegistry.addShapelessRecipe(new ItemStack(calibratedTool),
+					/*"T","C",
+					'T',*/ tool,
+					/*'C',*/ Items.compass);
 			GameRegistry.addRecipe(new ItemStack(brush),
 									"W",
 									"I",

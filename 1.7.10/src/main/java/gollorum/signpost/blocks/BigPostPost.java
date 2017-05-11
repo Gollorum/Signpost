@@ -9,6 +9,7 @@ import gollorum.signpost.network.messages.OpenGuiMessage;
 import gollorum.signpost.network.messages.SendBigPostBasesMessage;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.BigBaseInfo;
+import gollorum.signpost.util.Sign;
 import gollorum.signpost.util.Sign.OverlayType;
 import gollorum.signpost.util.math.tracking.Cuboid;
 import gollorum.signpost.util.math.tracking.DDDVector;
@@ -42,14 +43,15 @@ public class BigPostPost extends SuperPostPost {
 		public Material material;
 		public ResourceLocation texture;
 		public String textureMain;
+		public ResourceLocation resLocMain;
 		public Item baseItem;
 		public int metadata;
 
 		private BigPostType(Material material, String texture, String textureMain, Item baseItem, int metadata) {
 			this.material = material;
-//			this.texture = new ResourceLocation(Signpost.MODID + ":textures/blocks/"+texture+".png");
-			this.texture = new ResourceLocation(Signpost.MODID + ":textures/blocks/basex4.png");
+			this.texture = new ResourceLocation(Signpost.MODID + ":textures/blocks/"+texture+".png");
 			this.textureMain = textureMain;
+			this.resLocMain = new ResourceLocation("minecraft:textures/blocks/"+textureMain+".png");
 			this.baseItem = baseItem;
 			this.metadata = metadata;
 		}
@@ -68,7 +70,7 @@ public class BigPostPost extends SuperPostPost {
 	@Deprecated
 	public BigPostPost() {
 		super(Material.wood);
-		setBlockName("SignBigPostPost");
+		setBlockName("SignpostBigPost");
 		setCreativeTab(CreativeTabs.tabTransport);
 		setBlockTextureName("minecraft:planks_oak");
 		this.setHardness(2);
@@ -80,7 +82,7 @@ public class BigPostPost extends SuperPostPost {
 	public BigPostPost(BigPostType type){
 		super(type.material);
 		this.type = type;
-		setBlockName("SignBigPostPost"+type.toString());
+		setBlockName("SignpostBigPost"+type.toString());
 		setCreativeTab(CreativeTabs.tabTransport);
 		setBlockTextureName("minecraft:"+type.textureMain);
 		this.setHardness(2);
@@ -138,27 +140,52 @@ public class BigPostPost extends SuperPostPost {
 		NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiPostBrushID, x, y, z), (EntityPlayerMP) player);
 	}
 
+	public void clickCalibratedWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z){
+		if(((BigHit)hitObj).target.equals(BigHitTarget.BASE)){
+			Sign sign = ((BigPostPostTile)superTile).getBases().sign;
+			if(sign != null){
+				sign.rotation = (sign.flip?90:270) - (int) (player.rotationYawHead);
+			}
+		}
+	}
+	
+	public void rightClickCalibratedWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z){
+		BigHit hit = (BigHit)hitObj;
+		if(hit.target.equals(BigHitTarget.BASE)){
+			NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiPostRotationID, x, y, z), (EntityPlayerMP) player);
+		}
+	}
+	
+	public void shiftClickCalibratedWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z){
+		if(((BigHit)hitObj).target.equals(BigHitTarget.BASE)){
+			Sign sign = ((BigPostPostTile)superTile).getBases().sign;
+			if(sign != null){
+				sign.rotation = (sign.flip?270:90) - (int) (player.rotationYawHead);
+			}
+		}
+	}
+	
 	@Override
 	public void click(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z) {
-//		BigHit hit = (BigHit)hitObj;
-//		BigBaseInfo tilebases = ((BigPostPostTile)superTile).getBases();
-//		if (hit.target == BigHitTarget.BASE) {
-//			if(tilebases.sign.overlay != null){
-//				player.inventory.addItemStackToInventory(new ItemStack(tilebases.sign.overlay.item, 1));
-//			}
-//		}
-//		for(OverlayType now: OverlayType.values()){
-//			if(player.getHeldItem().getItem().getClass() == now.item.getClass()){
-//				if (hit.target == BigHitTarget.BASE) {
-//					tilebases.sign.overlay = now;
-//				}
-//				player.inventory.consumeInventoryItem(now.item);
-//				return;
-//			}
-//		}
-//		if (hit.target == BigHitTarget.BASE) {
-//			tilebases.sign.overlay = null;
-//		}
+		BigHit hit = (BigHit)hitObj;
+		BigBaseInfo tilebases = ((BigPostPostTile)superTile).getBases();
+		if (hit.target == BigHitTarget.BASE) {
+			if(tilebases.sign.overlay != null){
+				player.inventory.addItemStackToInventory(new ItemStack(tilebases.sign.overlay.item, 1));
+			}
+		}
+		for(OverlayType now: OverlayType.values()){
+			if(player.getHeldItem().getItem().getClass() == now.item.getClass()){
+				if (hit.target == BigHitTarget.BASE) {
+					tilebases.sign.overlay = now;
+				}
+				player.inventory.consumeInventoryItem(now.item);
+				return;
+			}
+		}
+		if (hit.target == BigHitTarget.BASE) {
+			tilebases.sign.overlay = null;
+		}
 	}
 
 	@Override
@@ -171,18 +198,22 @@ public class BigPostPost extends SuperPostPost {
 			BigPostPostTile tile = (BigPostPostTile)superTile;
 			BaseInfo destination = tile.getBases().sign.base;
 			if (destination != null) {
-				if (ConfigHandler.cost == null) {
-					PostHandler.teleportMe(destination, (EntityPlayerMP) player, 0);
-				} else {
-					int stackSize = (int) destination.pos.distance(tile.toPos()) / ConfigHandler.costMult + 1;
-					if (player.getHeldItem() != null
-							&& player.getHeldItem().getItem().getClass() == ConfigHandler.cost.getClass()
-							&& player.getHeldItem().stackSize >= stackSize) {
-						PostHandler.teleportMe(destination, (EntityPlayerMP) player, stackSize);
+				if(destination.pos==null){
+					NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.noTeleport"), (EntityPlayerMP) player);
+				}else{
+					if (ConfigHandler.cost == null) {
+						PostHandler.teleportMe(destination, (EntityPlayerMP) player, 0);
 					} else {
-						String[] keyword = { "<itemName>", "<amount>" };
-						String[] replacement = { ConfigHandler.cost.getUnlocalizedName() + ".name",	"" + stackSize };
-						NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.payment", keyword, replacement), (EntityPlayerMP) player);
+						int stackSize = (int) destination.pos.distance(tile.toPos()) / ConfigHandler.costMult + 1;
+						if (player.getHeldItem() != null
+								&& player.getHeldItem().getItem().getClass() == ConfigHandler.cost.getClass()
+								&& player.getHeldItem().stackSize >= stackSize) {
+							PostHandler.teleportMe(destination, (EntityPlayerMP) player, stackSize);
+						} else {
+							String[] keyword = { "<itemName>", "<amount>" };
+							String[] replacement = { ConfigHandler.cost.getUnlocalizedName() + ".name",	"" + stackSize };
+							NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.payment", keyword, replacement), (EntityPlayerMP) player);
+						}
 					}
 				}
 			}

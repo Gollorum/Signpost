@@ -57,7 +57,12 @@ public abstract class SuperPostPostTile extends TileEntity{
 		super.readFromNBT(tagCompound);
 		if(tagCompound.getInteger("signpostNBTVersion")==1){
 			NBTTagCompound tagComp = (NBTTagCompound) tagCompound.getTag("signpostDataTag");
-			owner = UUID.fromString(tagComp.getString("PostOwner"));
+			String owner = tagComp.getString("PostOwner");
+			try{
+				this.owner = owner==null ?  null : UUID.fromString(owner);
+			}catch(Exception e){
+				this.owner = null;
+			}
 			load(tagComp);
 		}else{
 			load(tagCompound);

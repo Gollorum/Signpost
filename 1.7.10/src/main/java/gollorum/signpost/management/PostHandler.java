@@ -84,6 +84,18 @@ public class PostHandler {
 		}
 	}
 	
+	public static BaseInfo getForceWSbyName(String name){
+		if(name==null || name.equals("null")){
+			return null;
+		}
+		for(BaseInfo now:allWaystones){
+			if(name.equals(now.name)){
+				return now;
+			}
+		}
+		return new BaseInfo(name, null, null);
+	}
+	
 	public static class TeleportInformation{
 		public BaseInfo destination;
 		public int stackSize;

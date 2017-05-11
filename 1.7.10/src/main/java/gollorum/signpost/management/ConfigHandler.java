@@ -44,10 +44,10 @@ public class ConfigHandler {
 				   isOp(player)||
 				   (isCreative(player)&&this.equals(ConfigHandler.SecurityLevel.CREATIVEONLY));
 		}
-		public boolean canUse(EntityPlayerMP player, UUID owner){
+		public boolean canUse(EntityPlayerMP player, String owner){
 			return this.equals(ConfigHandler.SecurityLevel.ALL)||
 				   isOp(player)||
-				   (owner.toString().equals(player.getUniqueID().toString())&&this.equals(ConfigHandler.SecurityLevel.OWNERS))||
+				   (this.equals(ConfigHandler.SecurityLevel.OWNERS) && (owner.equals(player.getUniqueID().toString()) || owner.equals("null")))||
 				   (isCreative(player)&&this.equals(ConfigHandler.SecurityLevel.CREATIVEONLY));
 		}
 	}

@@ -9,6 +9,7 @@ import gollorum.signpost.network.messages.OpenGuiMessage;
 import gollorum.signpost.network.messages.SendPostBasesMessage;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.DoubleBaseInfo;
+import gollorum.signpost.util.Sign;
 import gollorum.signpost.util.Sign.OverlayType;
 import gollorum.signpost.util.math.tracking.Cuboid;
 import gollorum.signpost.util.math.tracking.DDDVector;
@@ -145,6 +146,27 @@ public class PostPost extends SuperPostPost {
 		NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiPostBrushID, x, y, z), (EntityPlayerMP) player);
 	}
 
+	public void clickCalibratedWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z){
+		Sign sign = getSignByHit((Hit)hitObj, (PostPostTile) superTile);
+		if(sign != null){
+			sign.rotation = (sign.flip?90:270) - (int) (player.rotationYawHead);
+		}
+	}
+	
+	public void rightClickCalibratedWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z){
+		Hit hit = (Hit)hitObj;
+		if(hit.target.equals(HitTarget.BASE1)||hit.target.equals(HitTarget.BASE2)){
+			NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiPostRotationID, x, y, z), (EntityPlayerMP) player);
+		}
+	}
+	
+	public void shiftClickCalibratedWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z){
+		Sign sign = getSignByHit((Hit)hitObj, (PostPostTile) superTile);
+		if(sign != null){
+			sign.rotation = (sign.flip?270:90) - (int) (player.rotationYawHead);
+		}
+	}
+	
 	@Override
 	public void click(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z) {
 		Hit hit = (Hit)hitObj;
@@ -189,13 +211,17 @@ public class PostPost extends SuperPostPost {
 			}
 			BaseInfo destination = hit.target == HitTarget.BASE1 ? tile.getBases().sign1.base : tile.getBases().sign2.base;
 			if (destination != null) {
-				int stackSize = PostHandler.getStackSize(destination.pos, tile.toPos());
-				if(PostHandler.canPay(player, destination.pos.x, destination.pos.y, destination.pos.z, x, y, z)){
-					PostHandler.teleportMe(destination, (EntityPlayerMP) player, stackSize);
+				if(destination.pos==null){
+					NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.noTeleport"), (EntityPlayerMP) player);
 				}else{
-					String[] keyword = { "<itemName>", "<amount>" };
-					String[] replacement = { ConfigHandler.cost.getUnlocalizedName() + ".name",	"" + stackSize };
-					NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.payment", keyword, replacement), (EntityPlayerMP) player);
+					int stackSize = PostHandler.getStackSize(destination.pos, tile.toPos());
+					if(PostHandler.canPay(player, destination.pos.x, destination.pos.y, destination.pos.z, x, y, z)){
+						PostHandler.teleportMe(destination, (EntityPlayerMP) player, stackSize);
+					}else{
+						String[] keyword = { "<itemName>", "<amount>" };
+						String[] replacement = { ConfigHandler.cost.getUnlocalizedName() + ".name",	"" + stackSize };
+						NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.payment", keyword, replacement), (EntityPlayerMP) player);
+					}
 				}
 			}
 		} else {
@@ -311,4 +337,13 @@ public class PostPost extends SuperPostPost {
 		}
 	}
 	
+	public Sign getSignByHit(Hit hit, PostPostTile tile){
+		if(hit.target.equals(HitTarget.BASE1)){
+			return tile.getBases().sign1;
+		}else if(hit.target.equals(HitTarget.BASE2)){
+			return tile.getBases().sign2;
+		}else{
+			return null;
+		}
+	}
 }

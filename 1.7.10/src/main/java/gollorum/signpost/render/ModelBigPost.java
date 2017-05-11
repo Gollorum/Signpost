@@ -14,7 +14,7 @@ public class ModelBigPost extends ModelBase {
 		textureWidth = 16;
 		textureHeight = 16;
 
-		post = new ModelRenderer(this, 0, 0);
+		post = new ModelRenderer(this, 0, -4);
 		post.addBox(-2F, 0F, -2F, 4, 16, 4, 0.0F);
 		
 	}

@@ -1,5 +1,7 @@
 package gollorum.signpost.gui;
 
+import java.awt.Color;
+
 import org.lwjgl.opengl.GL11;
 
 import cpw.mods.fml.client.FMLClientHandler;
@@ -23,10 +25,12 @@ public class SignInputBox extends Gui{
 	private boolean isFocused = false;
     private int cursorPosition;
     
-    public int color = 0;
+    public int textColor = 0;
     private int count = 0;
     public int drawXat;
     public double scc;
+
+    public float[] boxColor = {1f, 1f, 1f, 1f};
     
     private static final ResourceLocation texture = new ResourceLocation("signpost:textures/gui/sign_gui.png");
 	
@@ -53,6 +57,7 @@ public class SignInputBox extends Gui{
 	}
 	
 	public void drawSignBox(){
+		GL11.glColor4f(boxColor[0], boxColor[1], boxColor[2], boxColor[3]);
 		FMLClientHandler.instance().getClient().renderEngine.bindTexture(texture);
 		drawTexturedModalRect(this.x, this.y, 0, 0, width, height);
 		drawText();
@@ -100,7 +105,7 @@ public class SignInputBox extends Gui{
 			x = (x-50)/sc2;
 		}
 //		sc2*=2.0;
-		fontRend.drawString(txt, (int) x, (int) ((y-fontRend.FONT_HEIGHT/2.0*sc2)/sc2), color);
+		fontRend.drawString(txt, (int) x, (int) ((y-fontRend.FONT_HEIGHT/2.0*sc2)/sc2), textColor);
 		GL11.glPopMatrix();
 	}
 	
@@ -312,5 +317,9 @@ public class SignInputBox extends Gui{
     		return getText().substring(0, l+1);
     	}
     }
+
+	public void setTextColor(int rgb) {
+		textColor = rgb;
+	}
 
 }

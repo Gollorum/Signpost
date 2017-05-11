@@ -106,8 +106,8 @@ public class PostPostTile extends SuperPostPostTile {
 						return true;
 					}
 					DoubleBaseInfo bases = getBases();
-					bases.sign1.base = PostHandler.getWSbyName(base1);
-					bases.sign2.base = PostHandler.getWSbyName(base2);
+					bases.sign1.base = PostHandler.getForceWSbyName(base1);
+					bases.sign2.base = PostHandler.getForceWSbyName(base2);
 					bases.sign1.rotation = rotation1;
 					bases.sign2.rotation = rotation2;
 					bases.sign1.flip = flip1;

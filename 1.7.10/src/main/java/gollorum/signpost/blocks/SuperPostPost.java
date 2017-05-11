@@ -1,6 +1,7 @@
 package gollorum.signpost.blocks;
 
 import gollorum.signpost.event.UseSignpostEvent;
+import gollorum.signpost.items.CalibratedPostWrench;
 import gollorum.signpost.items.PostBrush;
 import gollorum.signpost.items.PostWrench;
 import gollorum.signpost.management.ConfigHandler;
@@ -20,7 +21,7 @@ public abstract class SuperPostPost extends BlockContainer {
 	@Override
 	public void onBlockClicked(World world, int x, int y, int z, EntityPlayer player) {
 		SuperPostPostTile superTile = getSuperTile(world, x, y, z);
-		if (world.isRemote || !ConfigHandler.securityLevelSignpost.canUse((EntityPlayerMP) player, superTile.owner)) {
+		if (world.isRemote || !ConfigHandler.securityLevelSignpost.canUse((EntityPlayerMP) player, ""+superTile.owner)) {
 			return;
 		}
 		Object hit = getHitTarget(world, x, y, z, player);
@@ -31,6 +32,12 @@ public abstract class SuperPostPost extends BlockContainer {
 					shiftClickWrench(hit, superTile, player, x, y, z);
 				} else {
 					clickWrench(hit, superTile, player, x, y, z);
+				}
+			}else if(item instanceof CalibratedPostWrench) {
+				if (player.isSneaking()) {
+					shiftClickCalibratedWrench(hit, superTile, player, x, y, z);
+				} else {
+					clickCalibratedWrench(hit, superTile, player, x, y, z);
 				}
 			}else{
 				if (player.isSneaking()) {
@@ -57,13 +64,18 @@ public abstract class SuperPostPost extends BlockContainer {
 		SuperPostPostTile superTile = getSuperTile(world, x, y, z);
 		if (player.getHeldItem() != null){
 			if(player.getHeldItem().getItem() instanceof PostWrench){
-				if(!ConfigHandler.securityLevelSignpost.canUse((EntityPlayerMP) player, superTile.owner)){
+				if(!ConfigHandler.securityLevelSignpost.canUse((EntityPlayerMP) player, ""+superTile.owner)){
 					return true;
 				}
 				rightClickWrench(hit, superTile, player, x, y, z);
 				sendPostBasesToAll(superTile);
+			}else if(player.getHeldItem().getItem() instanceof CalibratedPostWrench){
+				if(!ConfigHandler.securityLevelSignpost.canUse((EntityPlayerMP) player, ""+superTile.owner)){
+					return true;
+				}
+				rightClickCalibratedWrench(hit, superTile, player, x, y, z);
 			}else if(player.getHeldItem().getItem() instanceof PostBrush){
-				if(!ConfigHandler.securityLevelSignpost.canUse((EntityPlayerMP) player, superTile.owner)){
+				if(!ConfigHandler.securityLevelSignpost.canUse((EntityPlayerMP) player, ""+superTile.owner)){
 					return true;
 				}
 				rightClickBrush(hit, superTile, player, x, y, z);
@@ -80,6 +92,10 @@ public abstract class SuperPostPost extends BlockContainer {
 	public abstract void clickWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
 	public abstract void rightClickWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
 	public abstract void shiftClickWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
+
+	public abstract void clickCalibratedWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
+	public abstract void rightClickCalibratedWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
+	public abstract void shiftClickCalibratedWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
 	
 	public abstract void rightClickBrush(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
 	

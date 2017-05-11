@@ -17,7 +17,7 @@ public class SendBigPostBasesHandler implements IMessageHandler<SendBigPostBases
 		BigBaseInfo bases = PostHandler.bigPosts.get(message.pos);
 		bases.sign.rotation = message.baserot;
 		bases.sign.flip = message.flip;
-		bases.sign.base = PostHandler.getWSbyName(message.base);
+		bases.sign.base = PostHandler.getForceWSbyName(message.base);
 		bases.sign.overlay = OverlayType.get(message.overlay);
 		bases.sign.point = message.point;
 		bases.description = message.description;

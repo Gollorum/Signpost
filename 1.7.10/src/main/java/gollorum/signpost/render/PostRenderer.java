@@ -32,6 +32,8 @@ public class PostRenderer extends TileEntitySpecialRenderer{
 		double rotation2 = 0;
 		if(tilebases==null&&!tile.isItem){
 			tilebases = tile.getBases();
+		}
+		if(!tile.isItem){
 			rotation1 = tilebases.sign1.calcRot(tile.xCoord, tile.zCoord);
 			rotation2 = tilebases.sign2.calcRot(tile.xCoord, tile.zCoord);
 		}

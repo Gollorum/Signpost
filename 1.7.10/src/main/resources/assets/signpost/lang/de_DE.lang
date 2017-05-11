@@ -8,13 +8,24 @@ tile.SignpostPostJUNGLE.name=Wegweiser - Tropenholz
 tile.SignpostPostSPRUCE.name=Wegweiser - Fichte
 tile.SignpostPostSTONE.name=Wegweiser - Stein
 
+tile.SignpostBigPostOAK.name=Groﬂer Wegweiser - Eiche
+tile.SignpostBigPostACACIA.name=Groﬂer Wegweiser - Akazie
+tile.SignpostBigPostBIGOAK.name=Groﬂer Wegweiser - Schwarzeiche
+tile.SignpostBigPostBIRCH.name=Groﬂer Wegweiser - Birke
+tile.SignpostBigPostIRON.name=Groﬂer Wegweiser - Eisen
+tile.SignpostBigPostJUNGLE.name=Groﬂer Wegweiser - Tropenholz
+tile.SignpostBigPostSPRUCE.name=Groﬂer Wegweiser - Fichte
+tile.SignpostBigPostSTONE.name=Groﬂer Wegweiser - Stein
+
 item.SignpostTool.name=Wegweiser-Werkzeug
+item.SignpostCalibratedTool.name=Kalibriertes Wegweiser-Werkzeug
 item.SignpostBrush.name=Wegweiser-Pinsel
 
 signpost.discovered=Du hast '<Waystone>' entdeckt!
 signpost.notDiscovered=Du hast <Waystone> noch nicht entdeckt
 signpost.errorWorld=FEHLER: Die Welt '<world>' existiert nicht
 signpost.payment=Du musst <amount>x<itemName> bezahlen, um diesen Wegweiser verwenden zu kˆnnen
+signpost.noTeleport=Dieses Schild hat kein Ziel und ist rein dekorativ.
 
 signpost.guiPrev=Der Wegstein ist <distance> Blˆcke entfernt. Spieler werden <amount>x<itemName> bezahlen m¸ssen.
 signpost.guiWorldDim=Der Wegstein ist nicht in dieser Welt/Dimension. Interdimensionale Wegweiser sind deaktivert.

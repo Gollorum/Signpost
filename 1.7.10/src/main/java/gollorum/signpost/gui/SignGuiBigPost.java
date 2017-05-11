@@ -17,7 +17,7 @@ import net.minecraft.client.gui.GuiTextField;
 
 public class SignGuiBigPost extends GuiScreen {
 
-	private GuiTextField baseInputBox;
+	private SignInputBox baseInputBox;
 
 	private GuiTextField desc1InputBox;
 	private GuiTextField desc2InputBox;
@@ -34,7 +34,7 @@ public class SignGuiBigPost extends GuiScreen {
 	
 	public SignGuiBigPost(BigPostPostTile tile) {
 		this.tile = tile;
-		baseInputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, 46, 137, 20);
+		baseInputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, 46, 137);
 
 		desc1InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, 106, 137, 20);
 		desc2InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, 136, 137, 20);
@@ -45,7 +45,7 @@ public class SignGuiBigPost extends GuiScreen {
 	@Override
 	public void initGui() {
 		BigBaseInfo tilebases = tile.getBases();
-		baseInputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, 46, 137, 20);
+		baseInputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, 46, 137);
 		baseInputBox.setText(tilebases.sign.base==null?"":tilebases.sign.base.toString());
 		go = true;
 		baseInputBox.setFocused(true);
@@ -79,8 +79,8 @@ public class SignGuiBigPost extends GuiScreen {
 			mc = FMLClientHandler.instance().getClient();
 		}
 		drawDefaultBackground();
-		baseInputBox.drawTextBox();
-		this.drawCenteredString(fontRendererObj, std, this.width/2, baseInputBox.yPosition+25, col);
+		baseInputBox.drawSignBox();
+		this.drawCenteredString(fontRendererObj, std, this.width/2, baseInputBox.y+baseInputBox.height+10, col);
 		desc1InputBox.drawTextBox();
 		desc2InputBox.drawTextBox();
 		desc3InputBox.drawTextBox();
@@ -96,6 +96,10 @@ public class SignGuiBigPost extends GuiScreen {
 		super.keyTyped(par1, par2);
 		if(par1==13){
 			if(baseInputBox.isFocused()){
+				if(!go){
+					go=true;
+					baseInputBox.textColor = Color.orange.getRGB();
+				}
 				this.mc.displayGuiScreen(null);
 			}else{
 				baseInputBox.setFocused(true);
@@ -115,7 +119,7 @@ public class SignGuiBigPost extends GuiScreen {
 	}
 	
 	private void baseType(char par1, int par2){
-		GuiTextField tf = baseInputBox;
+		SignInputBox tf = baseInputBox;
 		String before = tf.getText();
 		if(tf.textboxKeyTyped(par1, par2)&&!tf.getText().equals(before)){
 			if(ConfigHandler.deactivateTeleportation){
@@ -153,7 +157,7 @@ public class SignGuiBigPost extends GuiScreen {
 					go = false;
 				}
 			}else{
-				tf.setTextColor(Color.white.getRGB());
+				tf.setTextColor(Color.black.getRGB());
 				col = Color.white.getRGB();
 				go = true;
 
@@ -177,7 +181,7 @@ public class SignGuiBigPost extends GuiScreen {
 	public void onGuiClosed() {
 		BigBaseInfo tilebases = tile.getBases();
 		if(ConfigHandler.deactivateTeleportation||go){
-			tilebases.sign.base = PostHandler.getWSbyName(baseInputBox.getText());
+			tilebases.sign.base = PostHandler.getForceWSbyName(baseInputBox.getText());
 		}else{
 			tilebases.sign.base = null;
 		}

@@ -63,8 +63,8 @@ public class SendAllPostBasesMessage implements IMessage{
 	public Lurchpaerchensauna<BlockPos, DoubleBaseInfo> toPostMap(){
 		Lurchpaerchensauna<BlockPos, DoubleBaseInfo> postMap = new Lurchpaerchensauna<BlockPos, DoubleBaseInfo>();
 		for(Entry<BlockPos, DoubleStringInt> now: posts.entrySet()){
-			BaseInfo base1 = PostHandler.getWSbyName(now.getValue().string1);
-			BaseInfo base2 = PostHandler.getWSbyName(now.getValue().string2);
+			BaseInfo base1 = PostHandler.getForceWSbyName(now.getValue().string1);
+			BaseInfo base2 = PostHandler.getForceWSbyName(now.getValue().string2);
 			ResourceLocation paint1 = SuperPostPostTile.stringToLoc(now.getValue().paint1);
 			ResourceLocation paint2 = SuperPostPostTile.stringToLoc(now.getValue().paint2);
 			postMap.put(now.getKey(), new DoubleBaseInfo(new Sign(base1,

@@ -21,7 +21,7 @@ public class ModelBigSign extends ModelBase {
 			textureWidth = 16;
 			textureHeight = 16;
 		}else{
-			textureWidth = 32;
+			textureWidth = 16;
 			textureHeight = 32;
 		}
 
@@ -58,7 +58,7 @@ public class ModelBigSign extends ModelBase {
 	public void renderOverlay(BigBaseInfo tilebases, float f5, double rotation) {
 		GL11.glPushMatrix();
 		GL11.glRotated(Math.toDegrees(rotation), 0, 1, 0);
-		GL11.glTranslated(0, 0.75, 2.5/16.0);
+		GL11.glTranslated(0, 0.25, 2.5/16.0);
 		GL11.glScaled(1.01, 1.01, 1.1);
 		GL11.glTranslated(0, -0.75, -2.5/16.0);
 		GL11.glRotated(180, 0, 0, 1);

@@ -12,14 +12,17 @@ import net.minecraft.util.ResourceLocation;
 
 public class BigPostRenderer extends TileEntitySpecialRenderer{
 
-	private final ModelBigSign model16 = new ModelBigSign(true);
-	private final ModelBigSign model32 = new ModelBigSign(false);
+	private static final ModelBigSign model16 = new ModelBigSign(true);
+	private static final ModelBigSign model32 = new ModelBigSign(false);
 	private static final ModelBigPost post = new ModelBigPost();
 	
 	public BigPostRenderer(){}
 	
 	void setTexture(ResourceLocation loc){
+		try{
 		bindTexture(loc);
+		}catch(Exception e){
+		}
 	}
 	
 	@Override
@@ -29,16 +32,23 @@ public class BigPostRenderer extends TileEntitySpecialRenderer{
 		double rotation = 0;
 		if(tilebases==null && !tile.isItem){
 			tilebases = tile.getBases();
+		}
+		if(!tile.isItem){
 			rotation = tilebases.sign.calcRot(tile.xCoord, tile.zCoord);
 		}
 		
 		GL11.glPushMatrix();
 		GL11.glTranslated(x+0.5, y, z+0.5);
-		this.bindTexture(tile.type.texture);
+		this.bindTexture(tile.type.resLocMain);
 		post.render(this, 0.1f, 0.0625f, tilebases, tile, rotation);
 		ResourceLocation resLoc = tile.isItem ? tile.type.texture : tilebases.sign.paint;
-		this.bindTexture(resLoc);
-		if(resLoc.getResourceDomain().equalsIgnoreCase("signpost:")){
+		try{
+			this.bindTexture(resLoc);
+		}catch(Exception e){
+			this.bindTexture(resLoc = tile.type.texture);
+			tilebases.sign.paint = resLoc;
+		}
+		if(resLoc.getResourceDomain().equals("signpost")){
 			model32.render(this, 0.1f, 0.0625f, tilebases, tile, rotation);
 		}else{
 			model16.render(this, 0.1f, 0.0625f, tilebases, tile, rotation);
@@ -63,8 +73,9 @@ public class BigPostRenderer extends TileEntitySpecialRenderer{
 		
         if(!tile.isItem){
         	if(tilebases.sign.base!=null&&!tilebases.sign.base.name.equals("null")&&!tilebases.sign.base.name.equals("")){
+        		GL11.glTranslated(0, 0.1, 0);
         		for(String s: tilebases.description){
-	        		GL11.glTranslated(0, 0.2, 0);
+	        		GL11.glTranslated(0, 0.165, 0);
 	        		if(s==null){
 	        			continue;
 	        		}

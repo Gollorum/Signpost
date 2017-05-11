@@ -8,9 +8,9 @@ import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import gollorum.signpost.blocks.BasePost;
 import gollorum.signpost.blocks.BasePostTile;
-import gollorum.signpost.blocks.PostPostTile;
 import gollorum.signpost.blocks.SuperPostPost;
 import gollorum.signpost.blocks.SuperPostPostTile;
+import gollorum.signpost.items.CalibratedPostWrench;
 import gollorum.signpost.items.PostWrench;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PlayerStore;
@@ -169,7 +169,7 @@ public class SPEventHandler {
 			return;
 		}
 		Pair<StringSet, Pair<Integer, Integer>> pair = PostHandler.playerKnownWaystones.get(owner);
-		if(pair!=null){
+		if(pair!=null && pair.b.a>=0){
 			pair.b.a++;
 		}
 	}
@@ -193,14 +193,17 @@ public class SPEventHandler {
 			return;
 		}
 		Pair<StringSet, Pair<Integer, Integer>> pair = PostHandler.playerKnownWaystones.get(tile.owner);
-		pair.b.b++;
+		if(pair.b.b>=0){
+			pair.b.b++;
+		}
 	}
 
 	@SubscribeEvent
 	public void onBlockBreak(BreakEvent event){
 		TileEntity tile = event.world.getTileEntity(event.x, event.y, event.z);
-		if(tile instanceof PostPostTile && event.getPlayer().getHeldItem()!=null && event.getPlayer().getHeldItem().getItem() instanceof PostWrench){
+		if(tile instanceof SuperPostPostTile && event.getPlayer().getHeldItem()!=null && (event.getPlayer().getHeldItem().getItem() instanceof PostWrench || event.getPlayer().getHeldItem().getItem() instanceof CalibratedPostWrench)){
 			event.setCanceled(true);
+			((SuperPostPost)tile.blockType).onBlockClicked(event.world, event.x, event.y, event.z, event.getPlayer());
 			return;
 		}
 		if(!(event.getPlayer() instanceof EntityPlayerMP)){
@@ -209,7 +212,7 @@ public class SPEventHandler {
 		EntityPlayerMP player = (EntityPlayerMP)event.getPlayer();
 		if(event.block instanceof BasePost){
 			BasePostTile t = BasePost.getWaystoneRootTile(event.world, event.x, event.y, event.z);
-			if(!ConfigHandler.securityLevelWaystone.canUse(player, t.getBaseInfo().owner)){
+			if(!ConfigHandler.securityLevelWaystone.canUse(player, ""+t.getBaseInfo().owner)){
 				event.setCanceled(true);
 			}else{
 				updateWaystoneCount(t);
@@ -217,7 +220,7 @@ public class SPEventHandler {
 			}
 		}else if(event.block instanceof SuperPostPost){
 			SuperPostPostTile t = SuperPostPost.getSuperTile(event.world, event.x, event.y, event.z);
-			if(!ConfigHandler.securityLevelSignpost.canUse(player, t.owner)){
+			if(!ConfigHandler.securityLevelSignpost.canUse(player, ""+t.owner)){
 				event.setCanceled(true);
 			}else{
 				updateSignpostCount(t);

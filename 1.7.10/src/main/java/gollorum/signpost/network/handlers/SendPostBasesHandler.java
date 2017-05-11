@@ -20,8 +20,8 @@ public class SendPostBasesHandler implements IMessageHandler<SendPostBasesMessag
 		bases.sign2.rotation = message.base2rot;
 		bases.sign1.flip = message.flip1;
 		bases.sign2.flip = message.flip2;
-		bases.sign1.base = PostHandler.getWSbyName(message.base1);
-		bases.sign2.base = PostHandler.getWSbyName(message.base2);
+		bases.sign1.base = PostHandler.getForceWSbyName(message.base1);
+		bases.sign2.base = PostHandler.getForceWSbyName(message.base2);
 		bases.sign1.overlay = OverlayType.get(message.overlay1);
 		bases.sign2.overlay = OverlayType.get(message.overlay2);
 		bases.sign1.point = message.point1;

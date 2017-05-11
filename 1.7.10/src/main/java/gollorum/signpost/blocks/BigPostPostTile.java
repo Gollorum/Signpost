@@ -94,7 +94,7 @@ public class BigPostPostTile extends SuperPostPostTile {
 						return true;
 					}
 					BigBaseInfo bases = getBases();
-					bases.sign.base = PostHandler.getWSbyName(base);
+					bases.sign.base = PostHandler.getForceWSbyName(base);
 					bases.sign.rotation = rotation;
 					bases.sign.flip = flip;
 					bases.sign.overlay = overlay;

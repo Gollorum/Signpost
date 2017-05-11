@@ -30,17 +30,6 @@ import gollorum.signpost.util.collections.Lurchpaerchensauna;
 import net.minecraft.command.ServerCommandManager;
 import net.minecraft.nbt.NBTTagCompound;
 
-
-/**
- * TODO: -BUG: GitHub rotation reset?
- * 		 -BUG: gui cusor visibility
- * 		 -big signs
- * 		 -server permission support
- * 		 -dye/texture signs
- * @author Gollorum
- */
-
-
 @Mod(modid = Signpost.MODID, version = Signpost.VERSION, name = "SignPost")
 public class Signpost{
 
@@ -53,6 +42,7 @@ public class Signpost{
 	public static final int GuiPostID = 1;
 	public static final int GuiBigPostID = 2;
 	public static final int GuiPostBrushID = 3;
+	public static final int GuiPostRotationID = 4;
 	
 	public static NBTTagCompound saveFile;
 	
