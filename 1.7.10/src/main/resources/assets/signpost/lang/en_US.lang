@@ -8,6 +8,15 @@ tile.SignpostPostJUNGLE.name=Jungle Signpost
 tile.SignpostPostSPRUCE.name=Spruce Signpost
 tile.SignpostPostSTONE.name=Stone Signpost
 
+tile.SignpostBigPostOAK.name=Large oak Signpost
+tile.SignpostBigPostACACIA.name=Large acacia Signpost
+tile.SignpostBigPostBIGOAK.name=Large dark oak Signpost
+tile.SignpostBigPostBIRCH.name=Large birch Signpost
+tile.SignpostBigPostIRON.name=Large iron Signpost
+tile.SignpostBigPostJUNGLE.name=Large jungle Signpost
+tile.SignpostBigPostSPRUCE.name=Large spruce Signpost
+tile.SignpostBigPostSTONE.name=Large stone Signpost
+
 item.SignpostTool.name=Signpost wrench
 item.SignpostCalibratedTool.name=Calibrated signpost wrench
 item.SignpostBrush.name=Signpost brush
