@@ -27,6 +27,7 @@ public class ClientProxy extends CommonProxy{
 		for(PostPost now: posts){
 			PostPostTile tile = new PostPostTile(now.type);
 			tile.isItem = true;
+			tile.blockType = now;
 			MinecraftForgeClient.registerItemRenderer(Item.getItemFromBlock(now), new BlockItemRenderer(tile, new PostRenderer()));
 		}
 
@@ -34,6 +35,7 @@ public class ClientProxy extends CommonProxy{
 		for(BigPostPost now: bigposts){
 			BigPostPostTile tile = new BigPostPostTile(now.type);
 			tile.isItem = true;
+			tile.blockType = now;
 			MinecraftForgeClient.registerItemRenderer(Item.getItemFromBlock(now), new BlockItemRenderer(tile, new PostRenderer()));
 		}
 	}

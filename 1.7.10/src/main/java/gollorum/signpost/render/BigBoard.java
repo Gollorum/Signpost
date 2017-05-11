@@ -7,7 +7,7 @@ public class BigBoard {
 	private ModelRenderer baseNotFlipped;
 	private ModelRenderer baseFlipped;
 
-	public BigBoard(ModelBigPost modelBigPost) {
+	public BigBoard(ModelBigSign modelBigPost) {
 		
 		//Not flipped
 		ModelRenderer ltnf = new ModelRenderer(modelBigPost, 15, 0);

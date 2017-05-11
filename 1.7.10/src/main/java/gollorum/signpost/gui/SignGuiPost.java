@@ -76,17 +76,13 @@ public class SignGuiPost extends GuiScreen {
 		drawDefaultBackground();
 
 //		drawTexure(base1InputBox);
-		FMLClientHandler.instance().getClient().renderEngine.bindTexture(new ResourceLocation("signpost:textures/gui/sign_gui.png"));
-		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 		base1InputBox.drawSignBox();
-		this.drawCenteredString(fontRendererObj, std2, this.width/2, base1InputBox.y+25, col2);
+		this.drawCenteredString(fontRendererObj, std2, this.width/2, base1InputBox.y+base1InputBox.height+10, col2);
 
 //		drawTexure(base1InputBox);
 //		base1InputBox.drawBackground();
-		FMLClientHandler.instance().getClient().renderEngine.bindTexture(new ResourceLocation("signpost:textures/gui/sign_gui.png"));
-		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 		base2InputBox.drawSignBox();
-		this.drawCenteredString(fontRendererObj, std1, this.width/2, base2InputBox.y+25, col1);
+		this.drawCenteredString(fontRendererObj, std1, this.width/2, base2InputBox.y+base2InputBox.height+10, col1);
 		
 		if(resetMouse){
 			resetMouse = false;
@@ -192,10 +188,10 @@ public class SignGuiPost extends GuiScreen {
 			}else{
 				tf.color = Color.black.getRGB();
 				if(base2){
-					col1 = Color.black.getRGB();
+					col1 = Color.white.getRGB();
 					go1 = true;
 				}else{
-					col2 = Color.black.getRGB();
+					col2 = Color.white.getRGB();
 					go2 = true;
 				}
 
@@ -209,10 +205,10 @@ public class SignGuiPost extends GuiScreen {
 					out = out.replaceAll("<amount>", Integer.toString(PostHandler.getStackSize(tile.toPos(), inf.pos)));
 					out = out.replaceAll("<itemName>", ConfigHandler.costName());
 					if(base2){
-						col1 = Color.black.getRGB();
+						col1 = Color.white.getRGB();
 						std1 = out;
 					}else{
-						col2 = Color.black.getRGB();
+						col2 = Color.white.getRGB();
 						std2 = out;
 					}
 				}

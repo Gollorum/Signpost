@@ -12,7 +12,9 @@ import net.minecraft.util.ResourceLocation;
 
 public class BigPostRenderer extends TileEntitySpecialRenderer{
 
-	private static final ModelBigPost model = new ModelBigPost();
+	private final ModelBigSign model16 = new ModelBigSign(true);
+	private final ModelBigSign model32 = new ModelBigSign(false);
+	private static final ModelBigPost post = new ModelBigPost();
 	
 	public BigPostRenderer(){}
 	
@@ -24,20 +26,29 @@ public class BigPostRenderer extends TileEntitySpecialRenderer{
 	public void renderTileEntityAt(TileEntity ti, double x, double y, double z, float scale) {
 		BigPostPostTile tile = (BigPostPostTile)ti;
 		BigBaseInfo tilebases = tile.bases;
-		if(tilebases==null){
+		double rotation = 0;
+		if(tilebases==null && !tile.isItem){
 			tilebases = tile.getBases();
+			rotation = tilebases.sign.calcRot(tile.xCoord, tile.zCoord);
 		}
-		double rotation = tilebases.sign.calcRot(tile.xCoord, tile.zCoord);
+		
 		GL11.glPushMatrix();
 		GL11.glTranslated(x+0.5, y, z+0.5);
 		this.bindTexture(tile.type.texture);
-		model.render(this, 0.1f, 0.0625f, tilebases, tile, rotation);
+		post.render(this, 0.1f, 0.0625f, tilebases, tile, rotation);
+		ResourceLocation resLoc = tile.isItem ? tile.type.texture : tilebases.sign.paint;
+		this.bindTexture(resLoc);
+		if(resLoc.getResourceDomain().equalsIgnoreCase("signpost:")){
+			model32.render(this, 0.1f, 0.0625f, tilebases, tile, rotation);
+		}else{
+			model16.render(this, 0.1f, 0.0625f, tilebases, tile, rotation);
+		}
 
 		//Overlays
 		if(!tile.isItem){
 			if(tilebases.sign.base!=null && tilebases.sign.overlay!=null){
 				bindTexture(new ResourceLocation(Signpost.MODID + ":textures/blocks/bigsign_overlay_"+tilebases.sign.overlay.texture+".png"));
-				model.renderOverlay(tilebases, 0.0625f, rotation);
+				model32.renderOverlay(tilebases, 0.0625f, rotation);
 			}
 		}
         

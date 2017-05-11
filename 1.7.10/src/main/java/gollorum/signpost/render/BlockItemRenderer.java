@@ -12,8 +12,8 @@ import net.minecraftforge.client.IItemRenderer.ItemRendererHelper;
 
 public class BlockItemRenderer implements IItemRenderer{
 	
-	private TileEntity tile;
-	private TileEntitySpecialRenderer renderer;
+	private final TileEntity tile;
+	private final TileEntitySpecialRenderer renderer;
 	
 	public BlockItemRenderer(TileEntity tile, TileEntitySpecialRenderer renderer) {
 		this.tile = tile;

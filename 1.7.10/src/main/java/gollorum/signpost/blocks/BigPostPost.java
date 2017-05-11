@@ -48,7 +48,7 @@ public class BigPostPost extends SuperPostPost {
 		private BigPostType(Material material, String texture, String textureMain, Item baseItem, int metadata) {
 			this.material = material;
 //			this.texture = new ResourceLocation(Signpost.MODID + ":textures/blocks/"+texture+".png");
-			this.texture = new ResourceLocation("minecraft:textures/blocks/"+textureMain+".png");
+			this.texture = new ResourceLocation(Signpost.MODID + ":textures/blocks/basex4.png");
 			this.textureMain = textureMain;
 			this.baseItem = baseItem;
 			this.metadata = metadata;
@@ -140,25 +140,25 @@ public class BigPostPost extends SuperPostPost {
 
 	@Override
 	public void click(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z) {
-		BigHit hit = (BigHit)hitObj;
-		BigBaseInfo tilebases = ((BigPostPostTile)superTile).getBases();
-		if (hit.target == BigHitTarget.BASE) {
-			if(tilebases.sign.overlay != null){
-				player.inventory.addItemStackToInventory(new ItemStack(tilebases.sign.overlay.item, 1));
-			}
-		}
-		for(OverlayType now: OverlayType.values()){
-			if(player.getHeldItem().getItem().getClass() == now.item.getClass()){
-				if (hit.target == BigHitTarget.BASE) {
-					tilebases.sign.overlay = now;
-				}
-				player.inventory.consumeInventoryItem(now.item);
-				return;
-			}
-		}
-		if (hit.target == BigHitTarget.BASE) {
-			tilebases.sign.overlay = null;
-		}
+//		BigHit hit = (BigHit)hitObj;
+//		BigBaseInfo tilebases = ((BigPostPostTile)superTile).getBases();
+//		if (hit.target == BigHitTarget.BASE) {
+//			if(tilebases.sign.overlay != null){
+//				player.inventory.addItemStackToInventory(new ItemStack(tilebases.sign.overlay.item, 1));
+//			}
+//		}
+//		for(OverlayType now: OverlayType.values()){
+//			if(player.getHeldItem().getItem().getClass() == now.item.getClass()){
+//				if (hit.target == BigHitTarget.BASE) {
+//					tilebases.sign.overlay = now;
+//				}
+//				player.inventory.consumeInventoryItem(now.item);
+//				return;
+//			}
+//		}
+//		if (hit.target == BigHitTarget.BASE) {
+//			tilebases.sign.overlay = null;
+//		}
 	}
 
 	@Override

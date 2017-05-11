@@ -28,11 +28,13 @@ public class PostRenderer extends TileEntitySpecialRenderer{
 	public void renderTileEntityAt(TileEntity ti, double x, double y, double z, float scale) {
 		PostPostTile tile = (PostPostTile)ti;
 		DoubleBaseInfo tilebases = tile.bases;
-		if(tilebases==null){
+		double rotation1 = 0;
+		double rotation2 = 0;
+		if(tilebases==null&&!tile.isItem){
 			tilebases = tile.getBases();
+			rotation1 = tilebases.sign1.calcRot(tile.xCoord, tile.zCoord);
+			rotation2 = tilebases.sign2.calcRot(tile.xCoord, tile.zCoord);
 		}
-		double rotation1 = tilebases.sign1.calcRot(tile.xCoord, tile.zCoord);
-		double rotation2 = tilebases.sign2.calcRot(tile.xCoord, tile.zCoord);
 		GL11.glPushMatrix();
 		GL11.glTranslated(x+0.5, y, z+0.5);
 		this.bindTexture(tile.type.texture);

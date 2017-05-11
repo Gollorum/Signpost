@@ -10,7 +10,7 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.util.ChatAllowedCharacters;
 import net.minecraft.util.ResourceLocation;
 
-public class SignInputBox extends Gui{
+public class BaseInputBox extends Gui{
 	
 	private static final double pWidth = 25.0;
 	private static final double pHeight = 6.0;
@@ -27,14 +27,14 @@ public class SignInputBox extends Gui{
     private int count = 0;
     public int drawXat;
     public double scc;
-    
-    private static final ResourceLocation texture = new ResourceLocation("signpost:textures/gui/sign_gui.png");
+
+    private static final ResourceLocation texture = new ResourceLocation("signpost:textures/gui/base_gui.png");
 	
 	private FontRenderer fontRend;
 	
 	public String text = "";
 	
-	public SignInputBox(FontRenderer p_i1032_1_, int x, int y, int width) {
+	public BaseInputBox(FontRenderer p_i1032_1_, int x, int y, int width) {
 		this.fontRend = p_i1032_1_;
 		this.x = x;
 		this.y = y;
@@ -79,9 +79,9 @@ public class SignInputBox extends Gui{
 		}else{
 			txt = getText();
 		}
-		double scale = this.width/pWidth;
-		double x = this.x+(this.width)/2.0-scale;
-		double y = this.y+(this.height)/2.0+scale/4;
+//		double scale = this.width/pWidth;
+		double x = this.x+(this.width)/2.0;
+		double y = this.y+(this.height)/2.0;
 		double sc2 = 100d/fontRend.getStringWidth(txt);
 		if(sc2>=1){
 			sc2 = 1;
@@ -94,7 +94,8 @@ public class SignInputBox extends Gui{
 //		GL11.glTranslated(-fontRend.getStringWidth(getText())/2.0, 0, -fontRend.FONT_HEIGHT/2.0);
 //		fontRend.drawString(getText(), 0, 0, color);
 		if(sc2==1.0){
-			drawXat = (int) (x = (x-fontRend.getStringWidth(txt)/2.0));
+			x = (int) (x = ((x-fontRend.getStringWidth(txt)/2.0))/sc2);
+			drawXat = (int) (x*sc2);
 		}else{
 			drawXat = (int) (x-50);
 			x = (x-50)/sc2;
@@ -312,5 +313,9 @@ public class SignInputBox extends Gui{
     		return getText().substring(0, l+1);
     	}
     }
+
+	public void setTextColor(int rgb) {
+		this.color = rgb;
+	}
 
 }

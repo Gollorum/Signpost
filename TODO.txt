@@ -1,3 +1,4 @@
+-different models for big signs
 -expensive recipes?
 -rotation GUI?
 -BUG: github rotation reset?

@@ -42,6 +42,7 @@ public class PostPost extends SuperPostPost {
 		public Material material;
 		public ResourceLocation texture;
 		public String textureMain;
+		public ResourceLocation resLocMain;
 		public Item baseItem;
 		public int metadata;
 
@@ -49,6 +50,7 @@ public class PostPost extends SuperPostPost {
 			this.material = material;
 			this.texture = new ResourceLocation(Signpost.MODID + ":textures/blocks/"+texture+".png");
 			this.textureMain = textureMain;
+			this.resLocMain = new ResourceLocation("minecraft:textures/blocks/"+textureMain+".png");
 			this.baseItem = baseItem;
 			this.metadata = metadata;
 		}
