@@ -35,9 +35,9 @@ signpost.confirmTeleport=输入“/signpostconfirm”传送到<Waystone>，需�
 signpost.confirmTeleportNoCost=输入“/signpostconfirm”传送到<Waystone>。
 signpost.noConfirm=没有确认的传送路标。传送请求将在30秒后失效。
 
-signpost.getwaystonesleft=你必须放置<amount>以上的地标石。
-signpost.getsignpostsleft=你必须放置<amount>以上的路标。
-signpost.getwaystonesleftop=<player>必须放置<amount>以上的地标石。
-signpost.getsignpostsleftop=player>必须放置<amount>以上的路标。
+signpost.getwaystonesleft=你必须放置<amount>个以上的地标石。
+signpost.getsignpostsleft=你必须放置<amount>个以上的路标。
+signpost.getwaystonesleftop=<player>必须放置<amount>个以上的地标石。
+signpost.getsignpostsleftop=player>必须放置<amount>个以上的路标。
 
 signpost.playerNotFound=玩家<player>不在服务器。
