@@ -8,24 +8,24 @@ tile.SignpostPostJUNGLE.name=丛林木路标
 tile.SignpostPostSPRUCE.name=云杉木路标
 tile.SignpostPostSTONE.name=石质路标
 
-tile.SignpostBigPostOAK.name=
-tile.SignpostBigPostACACIA.name=
-tile.SignpostBigPostBIGOAK.name=
-tile.SignpostBigPostBIRCH.name=
-tile.SignpostBigPostIRON.name=
-tile.SignpostBigPostJUNGLE.name=
-tile.SignpostBigPostSPRUCE.name=
-tile.SignpostBigPostSTONE.name=
+tile.SignpostBigPostOAK.name=大橡木路标
+tile.SignpostBigPostACACIA.name=大金合欢路标
+tile.SignpostBigPostBIGOAK.name=大深色橡木路标
+tile.SignpostBigPostBIRCH.name=大桦木路标
+tile.SignpostBigPostIRON.name=大铁质路标
+tile.SignpostBigPostJUNGLE.name=大丛林木路标
+tile.SignpostBigPostSPRUCE.name=大云杉木路标
+tile.SignpostBigPostSTONE.name=大石质路标
 
 item.SignpostTool.name=路标钳
-item.SignpostCalibratedTool.name=
-item.SignpostBrush.name=
+item.SignpostCalibratedTool.name=校准型路标钳
+item.SignpostBrush.name=路标刷
 
 signpost.discovered=你已经发现地标石'<Waystone>'
 signpost.notDiscovered=你没有发现<Waystone>
 signpost.errorWorld=错误：世界'<world>'不存在
 signpost.payment=你必须支付<amount>个<itemName>来使用这个路标
-signpost.noTeleport=
+signpost.noTeleport=这个路标没有目的地，仅用于装饰。
 
 signpost.guiPrev=地标石有<distance>个方块远。玩家将会支付<amount>个<itemName>来使用它。
 signpost.guiWorldDim=这个地标石不在同一个世界/维度。跨维度传送是禁止的。
@@ -35,9 +35,9 @@ signpost.confirmTeleport=输入“/signpostconfirm”传送到<Waystone>，需�
 signpost.confirmTeleportNoCost=输入“/signpostconfirm”传送到<Waystone>。
 signpost.noConfirm=没有确认的传送路标。传送请求将在30秒后失效。
 
-signpost.getwaystonesleft=
-signpost.getsignpostsleft=
-signpost.getwaystonesleftop=
-signpost.getsignpostsleftop=
+signpost.getwaystonesleft=你必须放置<amount>个以上的地标石。
+signpost.getsignpostsleft=你必须放置<amount>个以上的路标。
+signpost.getwaystonesleftop=<player>必须放置<amount>个以上的地标石。
+signpost.getsignpostsleftop=<player>必须放置<amount>个以上的路标。
 
-signpost.playerNotFound=
+signpost.playerNotFound=玩家<player>不在服务器。
