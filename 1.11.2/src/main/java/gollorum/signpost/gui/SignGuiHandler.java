@@ -2,7 +2,9 @@ package gollorum.signpost.gui;
 
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blocks.BasePostTile;
+import gollorum.signpost.blocks.BigPostPostTile;
 import gollorum.signpost.blocks.PostPostTile;
+import gollorum.signpost.blocks.SuperPostPostTile;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -22,6 +24,14 @@ public class SignGuiHandler implements IGuiHandler {
 			return new SignGuiBase((BasePostTile) world.getTileEntity(new BlockPos(x, y, z)));
 		case Signpost.GuiPostID:
 			return new SignGuiPost((PostPostTile) world.getTileEntity(new BlockPos(x, y, z)));
+		case Signpost.GuiBigPostID:
+			return new SignGuiBigPost((BigPostPostTile) world.getTileEntity(new BlockPos(x, y, z)));
+		case Signpost.GuiPostBrushID:
+			SuperPostPostTile tile = (SuperPostPostTile) world.getTileEntity(new BlockPos(x, y, z));
+			return new SignGuiPaint(tile.getSign(player), tile);
+		case Signpost.GuiPostRotationID:
+			tile = (SuperPostPostTile) world.getTileEntity(new BlockPos(x, y, z));
+			return new SignGuiRotation(tile.getSign(player), tile);
 		}
 		return null;
 	}

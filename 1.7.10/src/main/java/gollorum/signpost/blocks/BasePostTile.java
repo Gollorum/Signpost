@@ -7,7 +7,7 @@ import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.BaseUpdateClientMessage;
 import gollorum.signpost.network.messages.BaseUpdateServerMessage;
 import gollorum.signpost.util.BaseInfo;
-import gollorum.signpost.util.BlockPos;
+import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.util.BoolRun;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.MinecraftForge;
@@ -44,15 +44,14 @@ public class BasePostTile extends TileEntity {
 		if(getBaseInfo()!=null){
 			return;
 		}
-		BaseInfo ws = new BaseInfo(null, toPos(), null);
-		PostHandler.allWaystones.add(ws);
+		PostHandler.allWaystones.add(new BaseInfo(null, toPos(), null));
 	}
 
-	public BlockPos toPos(){
+	public MyBlockPos toPos(){
 		if(worldObj==null||worldObj.isRemote){
-			return new BlockPos("", xCoord, yCoord, zCoord, dim());
+			return new MyBlockPos("", xCoord, yCoord, zCoord, dim());
 		}else{
-			return new BlockPos(worldObj.getWorldInfo().getWorldName(), xCoord, yCoord, zCoord, dim());
+			return new MyBlockPos(worldObj.getWorldInfo().getWorldName(), xCoord, yCoord, zCoord, dim());
 		}
 	}
 
@@ -63,7 +62,7 @@ public class BasePostTile extends TileEntity {
 			return worldObj.provider.dimensionId;
 	}
 	
-	public void onBlockDestroy(BlockPos pos) {
+	public void onBlockDestroy(MyBlockPos pos) {
 		isCanceled = true;
 		BaseInfo base = PostHandler.allWaystones.getByPos(pos);
 		if(PostHandler.allWaystones.remove(base)){
@@ -79,7 +78,8 @@ public class BasePostTile extends TileEntity {
 	}
 
 	public String getName() {
-		return getBaseInfo() == null ? "null" : getBaseInfo().toString();
+		BaseInfo ws = getBaseInfo();
+		return ws == null ? "null" : getBaseInfo().toString();
 	}
 
 	@Override

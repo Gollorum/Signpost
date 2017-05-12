@@ -34,8 +34,6 @@ public class TeleportMeHandler implements IMessageHandler<TeleportMeMessage, IMe
 				if(!(player.dimension==message.base.pos.dim)){
 		            WorldServer minecraftserver = MinecraftServer.getServer().worldServerForDimension(message.base.pos.dim);
 					manager.transferEntityToWorld(player, 1, (WorldServer)player.worldObj, minecraftserver);
-//					ctx.getServerHandler().playerEntity.travelToDimension(message.base.pos.dim);
-//					manager.transferPlayerToDimension(ctx.getServerHandler().playerEntity, message.base.pos.dim);
 				}
 				ctx.getServerHandler().playerEntity.setPositionAndUpdate(message.base.pos.x+0.5, message.base.pos.y+1, message.base.pos.z+0.5);
 			}

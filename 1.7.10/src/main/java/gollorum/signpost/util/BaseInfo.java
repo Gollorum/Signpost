@@ -9,11 +9,11 @@ import net.minecraft.nbt.NBTTagCompound;
 public class BaseInfo {
 
 	public String name;
-	public BlockPos pos;
+	public MyBlockPos pos;
 	/** unused */
 	public UUID owner;
 
-	public BaseInfo(String name, BlockPos pos, UUID owner){
+	public BaseInfo(String name, MyBlockPos pos, UUID owner){
 		this.name = name;
 		this.pos = pos;
 		this.owner = owner;
@@ -27,7 +27,7 @@ public class BaseInfo {
 
 	public static BaseInfo readFromNBT(NBTTagCompound tC) {
 		String name = tC.getString("name");
-		BlockPos pos = BlockPos.readFromNBT(tC);
+		MyBlockPos pos = MyBlockPos.readFromNBT(tC);
 		UUID owner = UUID.fromString(tC.getString("UUID"));
 		return new BaseInfo(name, pos/*, adj*/, owner);		
 	}
@@ -40,7 +40,7 @@ public class BaseInfo {
 	
 	public static BaseInfo fromBytes(ByteBuf buf) {
 		String name = ByteBufUtils.readUTF8String(buf);
-		BlockPos pos = BlockPos.fromBytes(buf);
+		MyBlockPos pos = MyBlockPos.fromBytes(buf);
 		UUID owner = UUID.fromString(ByteBufUtils.readUTF8String(buf));
 		return new BaseInfo(name, pos/*, adj*/, owner);
 	}

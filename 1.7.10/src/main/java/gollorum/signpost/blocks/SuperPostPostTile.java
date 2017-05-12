@@ -2,7 +2,7 @@ package gollorum.signpost.blocks;
 
 import java.util.UUID;
 
-import gollorum.signpost.util.BlockPos;
+import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.util.Sign;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
@@ -15,11 +15,11 @@ public abstract class SuperPostPostTile extends TileEntity{
 	public boolean isCanceled = false;
 	public UUID owner;
 
-	public final BlockPos toPos(){
+	public final MyBlockPos toPos(){
 		if(worldObj==null||worldObj.isRemote){
-			return new BlockPos("", xCoord, yCoord, zCoord, dim());
+			return new MyBlockPos("", xCoord, yCoord, zCoord, dim());
 		}else{
-			return new BlockPos(worldObj.getWorldInfo().getWorldName(), xCoord, yCoord, zCoord, dim());
+			return new MyBlockPos(worldObj.getWorldInfo().getWorldName(), xCoord, yCoord, zCoord, dim());
 		}
 	}
 
@@ -38,7 +38,7 @@ public abstract class SuperPostPostTile extends TileEntity{
 		return loc==null?"null":loc.getResourceDomain()+":"+loc.getResourcePath();
 	}
 
-	public abstract void onBlockDestroy(BlockPos pos);
+	public abstract void onBlockDestroy(MyBlockPos pos);
 	
 	@Override
 	public void writeToNBT(NBTTagCompound tagCompound) {

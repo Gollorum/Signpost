@@ -1,33 +1,25 @@
 package gollorum.signpost.util;
 
-import java.util.Collection;
 import java.util.HashSet;
 
 import gollorum.signpost.management.PostHandler;
+import gollorum.signpost.util.collections.Lurchsauna;
 
-public class StonedHashSet extends HashSet<BaseInfo>{
+public class StonedHashSet extends Lurchsauna<BaseInfo>{
 
-	public void merge(StonedHashSet other){
-		StonedHashSet toDelete = new StonedHashSet();
-		toDelete.addAll(this);
-		for(BaseInfo otter: other){
-			boolean found  = false;
-			for(BaseInfo mai: this){
-				if(otter.pos.equals(mai.pos)){
-					mai.setAll(otter);
-					toDelete.remove(mai);
-					found = true;
-					break;
-				}
-			}
-			if(!found){
-				this.add(otter);
+	public BaseInfo getByPos(MyBlockPos pos){
+		for(BaseInfo now: this){
+			if(now.pos.equals(pos)){
+				return now;
 			}
 		}
-		this.removeAll(toDelete);
+		return null;
 	}
-
+	
 	public boolean nameTaken(String name){
+		if(name==null){
+			return false;
+		}
 		for(BaseInfo now:this){
 			if(name.equals(now.name)){
 				return true;
@@ -39,27 +31,16 @@ public class StonedHashSet extends HashSet<BaseInfo>{
 	@Override
 	public boolean add(BaseInfo now){
 		boolean nowFound = false;
-		boolean hasChanged = false;
 		for(BaseInfo org: this){
-			if(now.sameAs(org)){
-				hasChanged = hasChanged | org.update(now);
+			if(org.update(now)){
 				nowFound = true;
 				break;
 			}
 		}
 		if(!nowFound){
-			hasChanged = hasChanged | super.add(now);
+			nowFound = super.add(now);
 		}
-		return hasChanged;
-	}
-	
-	@Override
-	public boolean addAll(Collection<? extends BaseInfo> c){
-		boolean hasChanged = false;
-		for(BaseInfo now: c){
-			hasChanged = hasChanged | add(now);
-		}
-		return hasChanged;
+		return nowFound;
 	}
 	
 	public boolean addAll(HashSet<String> names){
@@ -75,19 +56,6 @@ public class StonedHashSet extends HashSet<BaseInfo>{
 		return ret;
 	}
 	
-	public boolean removeBaseInfo(MyBlockPos pos){
-		return remove(getByPos(pos));
-	}
-
-	public BaseInfo getByPos(MyBlockPos pos){
-		for(BaseInfo base: this){
-			if(base.pos.equals(pos)){
-				return base;
-			}
-		}
-		return null;
-	}
-
 	public boolean removeByPos(MyBlockPos pos){
 		BaseInfo toDelete = getByPos(pos);
 		if(toDelete==null){
@@ -104,7 +72,7 @@ public class StonedHashSet extends HashSet<BaseInfo>{
 		}
 		BaseInfo toDelete = (BaseInfo)obj;
 		for(BaseInfo now: this){
-			if(now.sameAs(toDelete)){
+			if(now.equals(toDelete)){
 				toDelete = now;
 				break;
 			}

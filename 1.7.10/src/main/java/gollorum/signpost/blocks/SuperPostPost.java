@@ -5,7 +5,7 @@ import gollorum.signpost.items.CalibratedPostWrench;
 import gollorum.signpost.items.PostBrush;
 import gollorum.signpost.items.PostWrench;
 import gollorum.signpost.management.ConfigHandler;
-import gollorum.signpost.util.BlockPos;
+import gollorum.signpost.util.MyBlockPos;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.EntityPlayer;
@@ -56,6 +56,7 @@ public abstract class SuperPostPost extends BlockContainer {
 		sendPostBasesToAll(superTile);
 	}
 
+	@Override
 	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitX, float hitY, float hitZ) {
 		if(MinecraftForge.EVENT_BUS.post(new UseSignpostEvent(player, world, x, y, z)) || world.isRemote){
 			return true;
@@ -127,11 +128,11 @@ public abstract class SuperPostPost extends BlockContainer {
 		return false;
 	}
 
-	public static void placeClient(World world, BlockPos blockPos, EntityPlayer player) {
+	public static void placeClient(World world, MyBlockPos blockPos, EntityPlayer player) {
 		getSuperTile(world, blockPos.x, blockPos.y, blockPos.z).owner = player.getUniqueID();
 	}
 
-	public static void placeServer(World world, BlockPos blockPos, EntityPlayerMP player) {
+	public static void placeServer(World world, MyBlockPos blockPos, EntityPlayerMP player) {
 		getSuperTile(world, blockPos.x, blockPos.y, blockPos.z).owner = player.getUniqueID();
 	}
 

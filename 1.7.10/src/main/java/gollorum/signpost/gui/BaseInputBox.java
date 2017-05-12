@@ -40,7 +40,6 @@ public class BaseInputBox extends Gui{
 		this.y = y;
 		this.width = width;
 		this.height = (int) (width/verh);
-//		super(p_i1032_1_, x, y, width, (int) (width/verh));
 	}
 	
 	public void setFocused(boolean bool){
@@ -79,7 +78,6 @@ public class BaseInputBox extends Gui{
 		}else{
 			txt = getText();
 		}
-//		double scale = this.width/pWidth;
 		double x = this.x+(this.width)/2.0;
 		double y = this.y+(this.height)/2.0;
 		double sc2 = 100d/fontRend.getStringWidth(txt);
@@ -89,10 +87,6 @@ public class BaseInputBox extends Gui{
 		scc = sc2;
 		GL11.glPushMatrix();
 		GL11.glScaled(sc2, sc2, 1);
-//		GL11.glTranslated(x+width/2.0, 0, y+height/2.0);
-//		GL11.glScaled(1, 1, 1);
-//		GL11.glTranslated(-fontRend.getStringWidth(getText())/2.0, 0, -fontRend.FONT_HEIGHT/2.0);
-//		fontRend.drawString(getText(), 0, 0, color);
 		if(sc2==1.0){
 			x = (int) (x = ((x-fontRend.getStringWidth(txt)/2.0))/sc2);
 			drawXat = (int) (x*sc2);
@@ -100,7 +94,6 @@ public class BaseInputBox extends Gui{
 			drawXat = (int) (x-50);
 			x = (x-50)/sc2;
 		}
-//		sc2*=2.0;
 		fontRend.drawString(txt, (int) x, (int) ((y-fontRend.FONT_HEIGHT/2.0*sc2)/sc2), color);
 		GL11.glPopMatrix();
 	}
@@ -174,24 +167,7 @@ public class BaseInputBox extends Gui{
     }
 
     public void writeText(String p_146191_1_){
-//        String s1 = "";
         String s2 = ChatAllowedCharacters.filerAllowedCharacters(p_146191_1_);
-//        int i = this.cursorPosition;
-//        int j = this.cursorPosition;
-//        boolean flag = false;
-
-//        if (this.text.length() > 0){
-//            s1 = this.text.substring(0, i);
-//        }
-//
-//        int l;
-//
-//        s1 = s1 + s2;
-//        l = s2.length();
-//
-//        if (this.text.length() > 0 && j < this.text.length()){
-//            s1 = s1 + this.text.substring(j);
-//        }
 
         this.text = text.substring(0, cursorPosition)+s2+text.substring(cursorPosition);
         this.moveCursorBy(s2.length());

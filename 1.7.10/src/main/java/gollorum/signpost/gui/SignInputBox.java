@@ -55,8 +55,9 @@ public class SignInputBox extends Gui{
 	public boolean isFocused(){
 		return isFocused;
 	}
-	
-	public void drawSignBox(){
+
+	public void drawSignBox(FontRenderer fontRend){
+		this.fontRend = fontRend;
 		GL11.glColor4f(boxColor[0], boxColor[1], boxColor[2], boxColor[3]);
 		FMLClientHandler.instance().getClient().renderEngine.bindTexture(texture);
 		drawTexturedModalRect(this.x, this.y, 0, 0, width, height);

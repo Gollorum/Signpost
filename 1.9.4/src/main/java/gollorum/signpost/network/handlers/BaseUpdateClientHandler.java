@@ -1,9 +1,12 @@
 package gollorum.signpost.network.handlers;
 
+import java.util.Map.Entry;
+
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.messages.BaseUpdateClientMessage;
 import gollorum.signpost.util.BaseInfo;
-import gollorum.signpost.util.StonedHashSet;
+import gollorum.signpost.util.DoubleBaseInfo;
+import gollorum.signpost.util.MyBlockPos;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -12,22 +15,17 @@ public class BaseUpdateClientHandler implements IMessageHandler<BaseUpdateClient
 
 	@Override
 	public IMessage onMessage(BaseUpdateClientMessage message, MessageContext ctx) {
-		StonedHashSet toDelete = new StonedHashSet();
-		toDelete.addAll(PostHandler.allWaystones);
-		for (BaseInfo now : message.waystones) {
-			boolean hasChanged = false;
-			for (BaseInfo now2 : PostHandler.allWaystones) {
-				if (now2.update(now)) {
-					hasChanged = true;
-					toDelete.remove(now2);
-					break;
-				}
+		PostHandler.allWaystones = message.waystones;
+		for(Entry<MyBlockPos, DoubleBaseInfo> now: PostHandler.posts.entrySet()){
+			BaseInfo base = now.getValue().sign1.base;
+			if(base!=null){
+				now.getValue().sign1.base = PostHandler.allWaystones.getByPos(base.pos);
 			}
-			if (!hasChanged) {
-				PostHandler.allWaystones.add(now);
+			base = now.getValue().sign2.base;
+			if(base!=null){
+				now.getValue().sign2.base = PostHandler.allWaystones.getByPos(base.pos);
 			}
 		}
-		PostHandler.allWaystones.removeAll(toDelete);
 		return null;
 	}
 

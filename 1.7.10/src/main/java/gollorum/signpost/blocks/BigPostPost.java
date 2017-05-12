@@ -32,7 +32,7 @@ public class BigPostPost extends SuperPostPost {
 	public BigPostType type;
 
 	public static enum BigPostType{
-						OAK(	Material.wood, 	"bigsign", 			"planks_oak",		Item.getItemFromBlock(Blocks.planks),		0),
+						OAK(	Material.wood, 	"bigsign_oak", 			"planks_oak",		Item.getItemFromBlock(Blocks.planks),		0),
 						SPRUCE(	Material.wood, 	"bigsign_spruce", 	"planks_spruce",	Item.getItemFromBlock(Blocks.planks),		1),
 						BIRCH(	Material.wood, 	"bigsign_birch", 	"planks_birch",		Item.getItemFromBlock(Blocks.planks),		2),
 						JUNGLE(	Material.wood,	"bigsign_jungle", 	"planks_jungle",	Item.getItemFromBlock(Blocks.planks),		3),

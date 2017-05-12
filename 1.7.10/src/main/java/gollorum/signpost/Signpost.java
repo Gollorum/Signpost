@@ -23,7 +23,7 @@ import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.management.PostHandler.TeleportInformation;
 import gollorum.signpost.util.BigBaseInfo;
-import gollorum.signpost.util.BlockPos;
+import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.util.DoubleBaseInfo;
 import gollorum.signpost.util.StonedHashSet;
 import gollorum.signpost.util.collections.Lurchpaerchensauna;
@@ -71,8 +71,8 @@ public class Signpost{
 	public void postInit(FMLPostInitializationEvent event){
 		ConfigHandler.postInit();
 		PostHandler.allWaystones = new StonedHashSet();
-		PostHandler.posts = new Lurchpaerchensauna<BlockPos, DoubleBaseInfo>();
-		PostHandler.bigPosts = new Lurchpaerchensauna<BlockPos, BigBaseInfo>();
+		PostHandler.posts = new Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo>();
+		PostHandler.bigPosts = new Lurchpaerchensauna<MyBlockPos, BigBaseInfo>();
 		PostHandler.awaiting = new Lurchpaerchensauna<UUID, TeleportInformation>();
 	}
 

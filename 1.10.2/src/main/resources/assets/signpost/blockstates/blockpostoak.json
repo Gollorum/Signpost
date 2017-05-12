@@ -1,5 +1,7 @@
 {
-    "variants": {
-        "normal": { "model": "signpost:postoak" }
-    }
+   "variants": {
+      "normal": { 
+         "model": "minecraft:oak_planks"
+      }
+   }
 }

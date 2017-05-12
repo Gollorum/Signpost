@@ -1,5 +1,5 @@
 {
     "variants": {
-        "normal": { "model": "signpost:postiron" }
+        "normal": { "model": "minecraft:iron_block" }
     }
 }

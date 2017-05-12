@@ -4,13 +4,13 @@ import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import gollorum.signpost.blocks.PostPostTile;
 import gollorum.signpost.blocks.SuperPostPostTile;
-import gollorum.signpost.util.BlockPos;
+import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.util.DoubleBaseInfo;
 import io.netty.buffer.ByteBuf;
 
 public class SendPostBasesMessage implements IMessage {
 
-	public BlockPos pos;
+	public MyBlockPos pos;
 	
 	public String base1;
 	public String base2;
@@ -69,7 +69,7 @@ public class SendPostBasesMessage implements IMessage {
 
 	@Override
 	public void fromBytes(ByteBuf buf) {
-		pos = BlockPos.fromBytes(buf);
+		pos = MyBlockPos.fromBytes(buf);
 		base1 = ByteBufUtils.readUTF8String(buf);
 		base2 = ByteBufUtils.readUTF8String(buf);
 		base1rot = buf.readInt();

@@ -8,7 +8,7 @@ import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import gollorum.signpost.blocks.SuperPostPostTile;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.util.BaseInfo;
-import gollorum.signpost.util.BlockPos;
+import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.util.DoubleBaseInfo;
 import gollorum.signpost.util.Sign;
 import gollorum.signpost.util.Sign.OverlayType;
@@ -58,11 +58,11 @@ public class SendAllPostBasesMessage implements IMessage{
 		}
 	}
 	
-	public HashMap<BlockPos, DoubleStringInt> posts = new HashMap<BlockPos, DoubleStringInt>();
+	public HashMap<MyBlockPos, DoubleStringInt> posts = new HashMap<MyBlockPos, DoubleStringInt>();
 
-	public Lurchpaerchensauna<BlockPos, DoubleBaseInfo> toPostMap(){
-		Lurchpaerchensauna<BlockPos, DoubleBaseInfo> postMap = new Lurchpaerchensauna<BlockPos, DoubleBaseInfo>();
-		for(Entry<BlockPos, DoubleStringInt> now: posts.entrySet()){
+	public Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo> toPostMap(){
+		Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo> postMap = new Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo>();
+		for(Entry<MyBlockPos, DoubleStringInt> now: posts.entrySet()){
 			BaseInfo base1 = PostHandler.getForceWSbyName(now.getValue().string1);
 			BaseInfo base2 = PostHandler.getForceWSbyName(now.getValue().string2);
 			ResourceLocation paint1 = SuperPostPostTile.stringToLoc(now.getValue().paint1);
@@ -90,7 +90,7 @@ public class SendAllPostBasesMessage implements IMessage{
 	@Override
 	public void toBytes(ByteBuf buf) {
 		buf.writeInt(PostHandler.posts.size());
-		for(Entry<BlockPos, DoubleBaseInfo> now: PostHandler.posts.entrySet()){
+		for(Entry<MyBlockPos, DoubleBaseInfo> now: PostHandler.posts.entrySet()){
 				now.getKey().toBytes(buf);
 				ByteBufUtils.writeUTF8String(buf, ""+now.getValue().sign1.base);
 				ByteBufUtils.writeUTF8String(buf, ""+now.getValue().sign2.base);
@@ -111,7 +111,7 @@ public class SendAllPostBasesMessage implements IMessage{
 	public void fromBytes(ByteBuf buf) {
 		int c = buf.readInt();
 		for(int i = 0; i<c; i++){
-			posts.put(BlockPos.fromBytes(buf), 
+			posts.put(MyBlockPos.fromBytes(buf), 
 					new DoubleStringInt(ByteBufUtils.readUTF8String(buf), 
 										ByteBufUtils.readUTF8String(buf),
 										buf.readInt(), buf.readInt(),

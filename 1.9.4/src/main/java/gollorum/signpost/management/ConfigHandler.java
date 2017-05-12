@@ -14,11 +14,13 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 public class ConfigHandler {
 
 	private static Configuration config;
-
+	
 	public static boolean skipTeleportConfirm;
 	
 	public static boolean deactivateTeleportation;
 	public static boolean interdimensional;
+	public static int maxWaystones;
+	public static int maxSignposts;
 	public static int maxDist;
 	public static Item cost;
 	public static String paymentItem;
@@ -28,19 +30,26 @@ public class ConfigHandler {
 	public static SecurityLevel securityLevelSignpost;
 	
 	public enum SecurityLevel{
-		ALL, CREATIVEONLY, OPONLY;
+		ALL, OWNERS, CREATIVEONLY, OPONLY;
 		public static String[] allValues(){
 			String[] ret = {
 				ALL.toString(),
+				OWNERS.toString(),
 				CREATIVEONLY.toString(),
 				OPONLY.toString()
 			};
 			return ret;
 		}
-		public boolean canUse(EntityPlayerMP player){
+		public boolean canPlace(EntityPlayerMP player){
 			return this.equals(ConfigHandler.SecurityLevel.ALL)||
-					isOp(player)||
-					(isCreative(player)&&this.equals(ConfigHandler.SecurityLevel.CREATIVEONLY));
+				   isOp(player)||
+				   (isCreative(player)&&this.equals(ConfigHandler.SecurityLevel.CREATIVEONLY));
+		}
+		public boolean canUse(EntityPlayerMP player, String owner){
+			return this.equals(ConfigHandler.SecurityLevel.ALL)||
+				   isOp(player)||
+				   (this.equals(ConfigHandler.SecurityLevel.OWNERS) && (owner.equals(player.getUniqueID().toString()) || owner.equals("null")))||
+				   (isCreative(player)&&this.equals(ConfigHandler.SecurityLevel.CREATIVEONLY));
 		}
 	}
 	
@@ -75,10 +84,14 @@ public class ConfigHandler {
 		deactivateTeleportation = config.getBoolean("deactivateTeleportation", category, false, "Deactivates teleportation and the waystone recipe, since it isn't needed");
 		
 		interdimensional = config.getBoolean("interdimensional", category, true, "Enables interdimensional teleportation (e.g. overworld-nether)");
+
+		maxWaystones = config.getInt("maxWaystones", category, -1, -1, Integer.MAX_VALUE, "The amount of waystones a player is allowed to place (-1 = unlimited)");
+
+		maxSignposts = config.getInt("maxSignposts", category, -1, -1, Integer.MAX_VALUE, "The amount of signposts a player is allowed to place (-1 = unlimited)");
 		
 		maxDist = config.getInt("maxDistance", category, -1, -1, (int)Math.sqrt(Integer.MAX_VALUE), "The allowed distance between signpost an waystone (-1 = unlimited)");
 		
-		paymentItem = config.getString("paymentItem", category, "", "The item players have to pay in order to use a signpost (e.g. Minecraft:enderPearl, '' = free)");
+		paymentItem = config.getString("paymentItem", category, "", "The item players have to pay in order to use a signpost (e.g. minecraft:enderPearl, '' = free)");
 		
 		costMult = config.getInt("distancePerPayment", category, 0, 0, Integer.MAX_VALUE, "The distance a Player can teleport with one item (the total cost of a teleportation is calculated using the total distance)(0 = unlimited)");
 	}
@@ -88,9 +101,9 @@ public class ConfigHandler {
 		
 		config.addCustomCategoryComment(category, "Security settings");
 
-		securityLevelWaystone = SecurityLevel.valueOf(config.getString("waystonePermissionLevel", category, "ALL", "Defines which players can place and edit a waystone (ALL, CREATIVEONLY, OPONLY)", SecurityLevel.allValues()));
+		securityLevelWaystone = SecurityLevel.valueOf(config.getString("waystonePermissionLevel", category, "ALL", "Defines which players can place and edit a waystone (ALL, OWNERS, CREATIVEONLY, OPONLY). OPs are always included, 'OWNERS' = everyone can place, only the owner+OPs can edit.", SecurityLevel.allValues()));
 
-		securityLevelSignpost = SecurityLevel.valueOf(config.getString("signpostPermissionLevel", category, "ALL", "Defines which players can place and edit a signpost (ALL, CREATIVEONLY, OPONLY)", SecurityLevel.allValues()));
+		securityLevelSignpost = SecurityLevel.valueOf(config.getString("signpostPermissionLevel", category, "ALL", "Defines which players can place and edit a signpost (ALL, OWNERS, CREATIVEONLY, OPONLY). OPs are always included, 'OWNERS' = everyone can place, only the owner+OPs can edit.", SecurityLevel.allValues()));
 	}
 
 	public static boolean isOp(EntityPlayerMP player){

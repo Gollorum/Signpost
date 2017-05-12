@@ -1,5 +1,6 @@
 package gollorum.signpost.management;
 
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
@@ -12,6 +13,13 @@ public class PlayerProvider implements ICapabilitySerializable<NBTBase>{
 	 public static final Capability<PlayerStore> STORE_CAP = null;
 
 	 private PlayerStore instance = STORE_CAP.getDefaultInstance();
+	 
+	 public EntityPlayerMP player;
+	 
+	 public PlayerProvider(EntityPlayerMP player){
+		 this.player = player;
+		 instance.player = player;
+	 }
 	
 	@Override
 	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {

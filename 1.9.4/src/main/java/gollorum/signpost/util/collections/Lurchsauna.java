@@ -73,7 +73,7 @@ public class Lurchsauna<L> implements Set<L>, Cloneable, Serializable {
 
 	@Override
 	public boolean isEmpty() {
-		return lurchmaechtigkeit!=0;
+		return lurchmaechtigkeit==0;
 	}
 
 	@Override

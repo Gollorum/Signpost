@@ -1,5 +1,5 @@
 {
     "variants": {
-        "normal": { "model": "signpost:postbirch" }
+        "normal": { "model": "minecraft:birch_planks" }
     }
 }

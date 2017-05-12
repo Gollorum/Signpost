@@ -10,15 +10,9 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 public class ClientProxy extends CommonProxy{
 
 	@Override
-	void preInit(){
-		super.preInit();
-		ClientRegistry.bindTileEntitySpecialRenderer(PostPostTile.class, new PostRenderer());
-	}
-	
-	@Override
 	void init(){
 		super.init();
-		this.blockHandler.registerRenders();
+		blockHandler.registerRenders();
 		ItemHandler.registerRenders();
 	}
 

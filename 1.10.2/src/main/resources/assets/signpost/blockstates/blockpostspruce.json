@@ -1,5 +1,5 @@
 {
     "variants": {
-        "normal": { "model": "signpost:postspruce" }
+        "normal": { "model": "minecraft:spruce_planks" }
     }
 }

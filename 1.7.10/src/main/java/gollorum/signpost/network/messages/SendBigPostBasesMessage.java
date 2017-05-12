@@ -5,13 +5,13 @@ import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import gollorum.signpost.blocks.BigPostPostTile;
 import gollorum.signpost.blocks.SuperPostPostTile;
 import gollorum.signpost.util.BigBaseInfo;
-import gollorum.signpost.util.BlockPos;
+import gollorum.signpost.util.MyBlockPos;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.util.ResourceLocation;
 
 public class SendBigPostBasesMessage implements IMessage {
 
-	public BlockPos pos;
+	public MyBlockPos pos;
 	public String base;
 	public int baserot;
 	public boolean flip;
@@ -51,7 +51,7 @@ public class SendBigPostBasesMessage implements IMessage {
 
 	@Override
 	public void fromBytes(ByteBuf buf) {
-		pos = BlockPos.fromBytes(buf);
+		pos = MyBlockPos.fromBytes(buf);
 		base = ByteBufUtils.readUTF8String(buf);
 		baserot = buf.readInt();
 		flip = buf.readBoolean();

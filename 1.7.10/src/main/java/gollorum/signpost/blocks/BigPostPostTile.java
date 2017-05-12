@@ -9,7 +9,7 @@ import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.SendAllBigPostBasesMessage;
 import gollorum.signpost.network.messages.SendBigPostBasesMessage;
 import gollorum.signpost.util.BigBaseInfo;
-import gollorum.signpost.util.BlockPos;
+import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.Sign;
 import gollorum.signpost.util.Sign.OverlayType;
@@ -44,7 +44,7 @@ public class BigPostPostTile extends SuperPostPostTile {
 	}
 
 	@Override
-	public void onBlockDestroy(BlockPos pos) {
+	public void onBlockDestroy(MyBlockPos pos) {
 		isCanceled = true;
 		BigBaseInfo bases = getBases();
 		if(bases.sign.overlay!=null){

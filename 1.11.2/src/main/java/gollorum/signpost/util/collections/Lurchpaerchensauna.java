@@ -53,7 +53,7 @@ public class Lurchpaerchensauna<L1, L2> implements Map<L1, L2>, Cloneable, Seria
 
 	@Override
 	public boolean isEmpty() {
-		return lurchmaechtigkeit!=0;
+		return lurchmaechtigkeit==0;
 	}
 
 	@Override

@@ -10,6 +10,7 @@ public class BaseInfo {
 
 	public String name;
 	public MyBlockPos pos;
+	/** unused */
 	public UUID owner;
 
 	public BaseInfo(String name, MyBlockPos pos, UUID owner){
@@ -44,18 +45,23 @@ public class BaseInfo {
 		return new BaseInfo(name, pos/*, adj*/, owner);
 	}
 
-	public boolean sameAs(BaseInfo other){
-		return other.pos.equals(this.pos);
+	@Override
+	public boolean equals(Object other){
+		if(!(other instanceof BaseInfo)){
+			return super.equals(other);
+		}else{
+			return ((BaseInfo)other).pos.equals(this.pos);
+		}
 	}
 	
 	public void setAll(BaseInfo newWS){
-		name = newWS.name;
-		pos.update(newWS.pos);
-		owner = newWS.owner;
+		this.name = newWS.name;
+		this.pos.update(newWS.pos);
+		this.owner = newWS.owner;
 	}
 	
 	public boolean update(BaseInfo newWS){
-		if(sameAs(newWS)){
+		if(equals(newWS)){
 			setAll(newWS);
 			return true;
 		}else{

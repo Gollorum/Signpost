@@ -18,15 +18,15 @@ import net.minecraftforge.fml.client.FMLClientHandler;
 
 public class SignGuiPost extends GuiScreen {
 
-	private GuiTextField base1InputBox;
-	private GuiTextField base2InputBox;
-
+	private SignInputBox base1InputBox;
+	private SignInputBox base2InputBox;
+	
 	private String std1 = "";
-	private int col1 = 0;
+	private int col1 = Color.black.getRGB();
 	private boolean go1;
 	
 	private String std2 = "";
-	private int col2 = 0;
+	private int col2 = Color.black.getRGB();
 	private boolean go2;
 	
 	private PostPostTile tile;
@@ -35,24 +35,17 @@ public class SignGuiPost extends GuiScreen {
 	
 	public SignGuiPost(PostPostTile tile) {
 		this.tile = tile;
-		base1InputBox = new GuiTextField(0, this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137, 20);
-		base2InputBox = new GuiTextField(1, this.fontRendererObj, this.width / 2 - 68, this.height / 2 + 40, 137, 20);
-		resetMouse = true;
 	}
 
 	@Override
 	public void initGui() {
-		super.initGui();
-		DoubleBaseInfo tilebases = tile.getBases();
-		base1InputBox = new GuiTextField(0, this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137, 20);
-		base1InputBox.setMaxStringLength(23);
-		base1InputBox.setText(tilebases.base1==null?"":tilebases.base1.toString());
+		DoubleBaseInfo tilebases = tile.getBases();GuiTextField g;
+		base1InputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137/*, 20*/);
+		base1InputBox.setText(tilebases.sign1.base==null?"":tilebases.sign1.base.toString());
 		go1 = true;
 		base1InputBox.setFocused(true);
-		
-		base2InputBox = new GuiTextField(1, this.fontRendererObj, this.width / 2 - 68, this.height / 2 + 40, 137, 20);
-		base2InputBox.setMaxStringLength(23);
-		base2InputBox.setText(tilebases.base2==null?"":tilebases.base2.toString());
+		base2InputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 + 40, 137/*, 20*/);
+		base2InputBox.setText(tilebases.sign2.base==null?"":tilebases.sign2.base.toString());
 		go2 = true;
 		resetMouse = true;
 	}
@@ -71,10 +64,13 @@ public class SignGuiPost extends GuiScreen {
 			mc = FMLClientHandler.instance().getClient();
 		}
 		drawDefaultBackground();
-		base1InputBox.drawTextBox();
-		this.drawCenteredString(fontRendererObj, std2, this.width/2, base1InputBox.yPosition+25, col2);
-		base2InputBox.drawTextBox();
-		this.drawCenteredString(fontRendererObj, std1, this.width/2, base2InputBox.yPosition+25, col1);
+
+		base1InputBox.drawSignBox(fontRendererObj);
+		this.drawCenteredString(fontRendererObj, std2, this.width/2, base1InputBox.y+base1InputBox.height+10, col2);
+
+		base2InputBox.drawSignBox(fontRendererObj);
+		this.drawCenteredString(fontRendererObj, std1, this.width/2, base2InputBox.y+base2InputBox.height+10, col1);
+		
 		if(resetMouse){
 			resetMouse = false;
 			org.lwjgl.input.Mouse.setGrabbed(false);
@@ -86,9 +82,17 @@ public class SignGuiPost extends GuiScreen {
 		super.keyTyped(par1, par2);
 		if(par1==13){
 			if(base1InputBox.isFocused()){
+				if(!go2){
+					go2=true;
+					base1InputBox.textColor = Color.orange.getRGB();
+				}
 				base1InputBox.setFocused(false);
 				base2InputBox.setFocused(true);
 			}else if(base2InputBox.isFocused()){
+				if(!go1){
+					go1=true;
+					base2InputBox.textColor = Color.orange.getRGB();
+				}
 				this.mc.displayGuiScreen(null);
 			}else{
 				base1InputBox.setFocused(true);
@@ -111,7 +115,7 @@ public class SignGuiPost extends GuiScreen {
 	}
 	
 	private void baseType(char par1, int par2, boolean base2){
-		GuiTextField tf = base2?base2InputBox:base1InputBox;
+		SignInputBox tf = base2?base2InputBox:base1InputBox;
 		String before = tf.getText();
 		if(tf.textboxKeyTyped(par1, par2)&&!tf.getText().equals(before)){
 			if(ConfigHandler.deactivateTeleportation){
@@ -120,8 +124,9 @@ public class SignGuiPost extends GuiScreen {
 			BaseInfo inf = PostHandler.getWSbyName(tf.getText());
 			Connection connect = tile.toPos().canConnectTo(inf);
 			if(inf==null||!connect.equals(Connection.VALID)){
-				tf.setTextColor(Color.red.getRGB());
+				tf.textColor = Color.red.getRGB();
 				if(connect.equals(Connection.DIST)){
+
 					String out = I18n.translateToLocal("signpost.guiTooFar");
 					out = out.replaceAll("<distance>", ""+(int)tile.toPos().distance(inf.pos)+1);
 					out = out.replaceAll("<maxDist>", ""+ConfigHandler.maxDist);
@@ -137,7 +142,7 @@ public class SignGuiPost extends GuiScreen {
 					
 				}else if(connect.equals(Connection.WORLD)){
 
-					String out = I18n.translateToLocal("signpost.guiWoldDim");
+					String out = I18n.translateToLocal("signpost.guiWorldDim");
 					if(base2){
 						std1 = out;
 						col1 = Color.red.getRGB();
@@ -160,7 +165,7 @@ public class SignGuiPost extends GuiScreen {
 					}
 				}
 			}else{
-				tf.setTextColor(Color.white.getRGB());
+				tf.textColor = Color.black.getRGB();
 				if(base2){
 					col1 = Color.white.getRGB();
 					go1 = true;
@@ -173,7 +178,7 @@ public class SignGuiPost extends GuiScreen {
 					String out = I18n.translateToLocal("signpost.guiPrev");
 					int distance = (int) tile.toPos().distance(inf.pos)+1;
 					out = out.replaceAll("<distance>", ""+distance);
-					out = out.replaceAll("<amount>", Integer.toString((int) (tile.toPos().distance(inf.pos)/ConfigHandler.costMult+1)));
+					out = out.replaceAll("<amount>", Integer.toString(PostHandler.getStackSize(tile.toPos(), inf.pos)));
 					out = out.replaceAll("<itemName>", ConfigHandler.costName());
 					if(base2){
 						col1 = Color.white.getRGB();
@@ -189,17 +194,16 @@ public class SignGuiPost extends GuiScreen {
 
 	@Override
 	public void onGuiClosed() {
-		super.onGuiClosed();
 		DoubleBaseInfo tilebases = tile.getBases();
 		if(ConfigHandler.deactivateTeleportation||go2){
-			tilebases.base1 = PostHandler.getWSbyName(base1InputBox.getText());
+			tilebases.sign1.base = PostHandler.getForceWSbyName(base1InputBox.getText());
 		}else{
-			tilebases.base1 = null;
+			tilebases.sign1.base = null;
 		}
 		if(ConfigHandler.deactivateTeleportation||go1){
-			tilebases.base2 = PostHandler.getWSbyName(base2InputBox.getText());
+			tilebases.sign2.base = PostHandler.getForceWSbyName(base2InputBox.getText());
 		}else{
-			tilebases.base2 = null;
+			tilebases.sign2.base = null;
 		}
 		NetworkHandler.netWrap.sendToServer(new SendPostBasesMessage(tile, tilebases));
 	}

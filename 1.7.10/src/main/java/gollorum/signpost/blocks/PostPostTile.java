@@ -8,7 +8,7 @@ import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.SendAllPostBasesMessage;
 import gollorum.signpost.network.messages.SendPostBasesMessage;
-import gollorum.signpost.util.BlockPos;
+import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.DoubleBaseInfo;
 import gollorum.signpost.util.Sign;
@@ -43,7 +43,7 @@ public class PostPostTile extends SuperPostPostTile {
 	}
 	
 	@Override
-	public void onBlockDestroy(BlockPos pos) {
+	public void onBlockDestroy(MyBlockPos pos) {
 		isCanceled = true;
 		DoubleBaseInfo bases = getBases();
 		if(bases.sign1.overlay!=null){

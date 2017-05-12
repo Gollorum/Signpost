@@ -20,7 +20,7 @@ import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.InitPlayerResponseMessage;
 import gollorum.signpost.network.messages.SendAllBigPostBasesMessage;
 import gollorum.signpost.network.messages.SendAllPostBasesMessage;
-import gollorum.signpost.util.BlockPos;
+import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.StringSet;
 import gollorum.signpost.util.collections.Lurchpaerchensauna;
@@ -120,9 +120,9 @@ public class SPEventHandler {
 	public void oBlockPlace(PlaceEvent event){
 		if(!(event.player instanceof EntityPlayerMP)){
 			if(event.block instanceof BasePost){
-				BasePost.placeClient(event.world, new BlockPos("", event.x, event.y, event.z, event.player.dimension), event.player);
+				BasePost.placeClient(event.world, new MyBlockPos("", event.x, event.y, event.z, event.player.dimension), event.player);
 			}else if(event.block instanceof SuperPostPost){
-				SuperPostPost.placeClient(event.world, new BlockPos("", event.x, event.y, event.z, event.player.dimension), event.player);
+				SuperPostPost.placeClient(event.world, new MyBlockPos("", event.x, event.y, event.z, event.player.dimension), event.player);
 			}
 			return;
 		}
@@ -130,18 +130,18 @@ public class SPEventHandler {
 		if(event.block instanceof BasePost){
 			BasePostTile tile = BasePost.getWaystoneRootTile(event.world, event.x, event.y, event.z);
 			if(!(ConfigHandler.securityLevelWaystone.canPlace(player) && checkWaystoneCount(player))){
-				tile.onBlockDestroy(new BlockPos(event.world, event.x, event.y, event.z, player.dimension));
+				tile.onBlockDestroy(new MyBlockPos(event.world, event.x, event.y, event.z, player.dimension));
 				event.setCanceled(true);
 			}else{
-				BasePost.placeServer(event.world, new BlockPos(event.world.getWorldInfo().getWorldName(), event.x, event.y, event.z, event.player.dimension), (EntityPlayerMP) event.player);
+				BasePost.placeServer(event.world, new MyBlockPos(event.world.getWorldInfo().getWorldName(), event.x, event.y, event.z, event.player.dimension), (EntityPlayerMP) event.player);
 			}
 		}else if(event.block instanceof SuperPostPost){
 			SuperPostPostTile tile = SuperPostPost.getSuperTile(event.world, event.x, event.y, event.z);
 			if(!(ConfigHandler.securityLevelSignpost.canPlace(player) && checkSignpostCount(player))){
-				tile.onBlockDestroy(new BlockPos(event.world, event.x, event.y, event.z, player.dimension));
+				tile.onBlockDestroy(new MyBlockPos(event.world, event.x, event.y, event.z, player.dimension));
 				event.setCanceled(true);
 			}else{
-				SuperPostPost.placeServer(event.world, new BlockPos(event.world.getWorldInfo().getWorldName(), event.x, event.y, event.z, event.player.dimension), (EntityPlayerMP) event.player);
+				SuperPostPost.placeServer(event.world, new MyBlockPos(event.world.getWorldInfo().getWorldName(), event.x, event.y, event.z, event.player.dimension), (EntityPlayerMP) event.player);
 			}
 		}
 	}
@@ -216,7 +216,7 @@ public class SPEventHandler {
 				event.setCanceled(true);
 			}else{
 				updateWaystoneCount(t);
-				t.onBlockDestroy(new BlockPos(event.world, event.x, event.y, event.z, player.dimension));
+				t.onBlockDestroy(new MyBlockPos(event.world, event.x, event.y, event.z, player.dimension));
 			}
 		}else if(event.block instanceof SuperPostPost){
 			SuperPostPostTile t = SuperPostPost.getSuperTile(event.world, event.x, event.y, event.z);
@@ -224,7 +224,7 @@ public class SPEventHandler {
 				event.setCanceled(true);
 			}else{
 				updateSignpostCount(t);
-				t.onBlockDestroy(new BlockPos(event.world, event.x, event.y, event.z, player.dimension));
+				t.onBlockDestroy(new MyBlockPos(event.world, event.x, event.y, event.z, player.dimension));
 			}
 		}
 	}

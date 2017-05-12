@@ -6,18 +6,17 @@ import java.io.IOException;
 import gollorum.signpost.blocks.BasePostTile;
 import gollorum.signpost.management.PostHandler;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.GuiTextField;
 import net.minecraftforge.fml.client.FMLClientHandler;
 
 public class SignGuiBase extends GuiScreen {
 
-	private GuiTextField nameInputBox;
+	private BaseInputBox nameInputBox;
 	private BasePostTile tile;
 	private boolean textChanged = false;
 
 	public SignGuiBase(BasePostTile tile) {
 		this.tile = tile;
-		nameInputBox = new GuiTextField(0, this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137, 20);
+		nameInputBox = new BaseInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137);
 	}
 
 	@Override
@@ -26,7 +25,14 @@ public class SignGuiBase extends GuiScreen {
 			mc = FMLClientHandler.instance().getClient();
 		}
 		drawDefaultBackground();
-		nameInputBox.drawTextBox();
+		if(nameInputBox.getText() == null || nameInputBox.getText().equals("null")){
+			String name = tile.getName();
+			if(name==null){
+				name = "null";
+			}
+			nameInputBox.setText(name);
+		}
+		nameInputBox.drawSignBox();
 		super.drawScreen(mouseX, mouseY, partialTicks);
 	}
 
@@ -37,9 +43,13 @@ public class SignGuiBase extends GuiScreen {
 
 	@Override
 	public void initGui() {
-		nameInputBox = new GuiTextField(0, this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137, 20);
-		nameInputBox.setMaxStringLength(23);
-		nameInputBox.setText(tile.getName());
+		nameInputBox = new BaseInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137);
+//		nameInputBox.setMaxStringLength(50);
+		String name = tile.getName();
+		if(name==null){
+			name = "null";
+		}
+		nameInputBox.setText(name);
 		nameInputBox.setFocused(true);
 	}
 
@@ -53,14 +63,14 @@ public class SignGuiBase extends GuiScreen {
 		super.keyTyped(par1, par2);
 		this.nameInputBox.textboxKeyTyped(par1, par2);
 		if(nameInputBox.getText().equals(tile.getBaseInfo().name)){
-			nameInputBox.setTextColor(Color.white.getRGB());
+			nameInputBox.setTextColor(Color.black.getRGB());
 			textChanged = false;
 		}else if (!before.equals(nameInputBox.getText())) {
 			if (PostHandler.allWaystones.nameTaken(nameInputBox.getText())) {
 				nameInputBox.setTextColor(Color.red.getRGB());
 				textChanged = false;
 			} else {
-				nameInputBox.setTextColor(Color.white.getRGB());
+				nameInputBox.setTextColor(Color.black.getRGB());
 				textChanged = true;
 			}
 		}
@@ -69,7 +79,7 @@ public class SignGuiBase extends GuiScreen {
 	@Override
 	public void updateScreen() {
 		super.updateScreen();
-		this.nameInputBox.updateCursorCounter();
+//		this.nameInputBox.updateCursorCounter();
 	}
 
 	public void updateName(String newName) {

@@ -10,7 +10,7 @@ import gollorum.signpost.network.messages.ChatMessage;
 import gollorum.signpost.network.messages.TeleportRequestMessage;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.BigBaseInfo;
-import gollorum.signpost.util.BlockPos;
+import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.DoubleBaseInfo;
 import gollorum.signpost.util.StonedHashSet;
@@ -28,8 +28,8 @@ import net.minecraft.world.WorldServer;
 public class PostHandler {
 
 	public static StonedHashSet allWaystones = new StonedHashSet();
-	public static Lurchpaerchensauna<BlockPos, DoubleBaseInfo> posts = new Lurchpaerchensauna<BlockPos, DoubleBaseInfo>();
-	public static Lurchpaerchensauna<BlockPos, BigBaseInfo> bigPosts = new Lurchpaerchensauna<BlockPos, BigBaseInfo>();
+	public static Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo> posts = new Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo>();
+	public static Lurchpaerchensauna<MyBlockPos, BigBaseInfo> bigPosts = new Lurchpaerchensauna<MyBlockPos, BigBaseInfo>();
 	//ServerSide
 	public static Lurchpaerchensauna<UUID, TeleportInformation> awaiting =  new Lurchpaerchensauna<UUID, TeleportInformation>(); 
 	public static Lurchpaerchensauna<UUID, Pair<StringSet, Pair<Integer, Integer>>> playerKnownWaystones = new Lurchpaerchensauna<UUID, Pair<StringSet, Pair<Integer, Integer>>>(){
@@ -67,8 +67,8 @@ public class PostHandler {
 				}
 			}
 		};
-		posts = new Lurchpaerchensauna<BlockPos, DoubleBaseInfo>();
-		bigPosts = new Lurchpaerchensauna<BlockPos, BigBaseInfo>();
+		posts = new Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo>();
+		bigPosts = new Lurchpaerchensauna<MyBlockPos, BigBaseInfo>();
 	}
 	
 	public static BaseInfo getWSbyName(String name){
@@ -155,7 +155,7 @@ public class PostHandler {
 		}
 	}
 	
-	public static int getStackSize(BlockPos pos1, BlockPos pos2){
+	public static int getStackSize(MyBlockPos pos1, MyBlockPos pos2){
 		return getStackSize(pos1.x, pos1.y, pos1.z, pos2.x, pos2.y, pos2.z);
 	}
 	
@@ -167,11 +167,6 @@ public class PostHandler {
 		}else{
 			SPEventHandler.cancelTask(awaiting.remove(player.getUniqueID()).boolRun);
 			doPay(player, 0, 0, 0, 0, 0, (info.stackSize-1)*ConfigHandler.costMult);
-//			if(ConfigHandler.cost!=null){
-//				for(int i=0; i<info.stackSize; i++){
-//					player.inventory.consumeInventoryItem(ConfigHandler.cost);
-//				}
-//			}
 			ServerConfigurationManager manager = FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager();
 			if(!player.worldObj.equals(info.world)){
 				manager.transferEntityToWorld(player, 1, (WorldServer)player.worldObj, (WorldServer)info.world);

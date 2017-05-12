@@ -11,7 +11,7 @@ import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.SendBigPostBasesMessage;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.BigBaseInfo;
-import gollorum.signpost.util.BlockPos.Connection;
+import gollorum.signpost.util.MyBlockPos.Connection;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 
@@ -79,7 +79,7 @@ public class SignGuiBigPost extends GuiScreen {
 			mc = FMLClientHandler.instance().getClient();
 		}
 		drawDefaultBackground();
-		baseInputBox.drawSignBox();
+		baseInputBox.drawSignBox(fontRendererObj);
 		this.drawCenteredString(fontRendererObj, std, this.width/2, baseInputBox.y+baseInputBox.height+10, col);
 		desc1InputBox.drawTextBox();
 		desc2InputBox.drawTextBox();

@@ -1,6 +1,7 @@
 package gollorum.signpost;
 
 import gollorum.signpost.blocks.BasePostTile;
+import gollorum.signpost.blocks.BigPostPostTile;
 import gollorum.signpost.blocks.PostPostTile;
 import gollorum.signpost.management.PlayerStorage;
 import gollorum.signpost.management.PlayerStore;
@@ -15,7 +16,7 @@ public class CommonProxy {
 
 	public static BlockHandler blockHandler = new BlockHandler();
 	
-	void preInit(){
+	void init(){
 		blockHandler.init();
 		blockHandler.register();
 
@@ -30,13 +31,10 @@ public class CommonProxy {
 		MinecraftForge.EVENT_BUS.register(handler);
 	}
 
-	void init() {}
-
-	void postInit() {}
-
 	protected void registerTiles(){
 		GameRegistry.registerTileEntity(BasePostTile.class, "SignpostBaseTile");
 		GameRegistry.registerTileEntity(PostPostTile.class, "SignpostPostTile");
+		GameRegistry.registerTileEntity(BigPostPostTile.class, "SignpostBigPostTile");
 	}
 	
 	protected void registerCapabilities() {

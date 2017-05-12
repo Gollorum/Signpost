@@ -1,5 +1,5 @@
 {
     "variants": {
-        "normal": { "model": "signpost:poststone" }
+        "normal": { "model": "stone" }
     }
 }

@@ -32,7 +32,7 @@ public class PostPost extends SuperPostPost {
 	public PostType type;
 
 	public static enum PostType{
-						OAK(	Material.wood, 	"sign", 		"planks_oak",		Item.getItemFromBlock(Blocks.planks),		0),
+						OAK(	Material.wood, 	"sign_oak", 		"planks_oak",		Item.getItemFromBlock(Blocks.planks),		0),
 						SPRUCE(	Material.wood, 	"sign_spruce", 	"planks_spruce",	Item.getItemFromBlock(Blocks.planks),		1),
 						BIRCH(	Material.wood, 	"sign_birch", 	"planks_birch",		Item.getItemFromBlock(Blocks.planks),		2),
 						JUNGLE(	Material.wood,	"sign_jungle", 	"planks_jungle",	Item.getItemFromBlock(Blocks.planks),		3),
@@ -125,8 +125,6 @@ public class PostPost extends SuperPostPost {
 			tilebases.sign1.rotation = (tilebases.sign1.rotation + 15) % 360;
 		} else if (hit.target == HitTarget.BASE2) {
 			tilebases.sign2.rotation = (tilebases.sign2.rotation + 15) % 360;
-//		} else if (hit.target == HitTarget.POST){
-//			NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiPostID, x, y, z), (EntityPlayerMP) player);
 		}
 	}
 

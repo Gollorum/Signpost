@@ -11,7 +11,7 @@ import gollorum.signpost.network.messages.BaseUpdateClientMessage;
 import gollorum.signpost.network.messages.ChatMessage;
 import gollorum.signpost.network.messages.OpenGuiMessage;
 import gollorum.signpost.util.BaseInfo;
-import gollorum.signpost.util.BlockPos;
+import gollorum.signpost.util.MyBlockPos;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
@@ -38,8 +38,7 @@ public class BasePost extends BlockContainer {
 			return false;
 		}
 		if (!world.isRemote) {
-			BasePostTile tile = getWaystoneRootTile(world, x, y, z);
-			BaseInfo ws = tile.getBaseInfo();
+			BaseInfo ws = getWaystoneRootTile(world, x, y, z).getBaseInfo();
 			if (!player.isSneaking()) {
 				if (!ConfigHandler.deactivateTeleportation) {
 					NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.name), (EntityPlayerMP) player);
@@ -78,7 +77,7 @@ public class BasePost extends BlockContainer {
 		return ret;
 	}
 
-	public static void placeServer(World world, BlockPos pos, EntityPlayerMP player) {
+	public static void placeServer(World world, MyBlockPos pos, EntityPlayerMP player) {
 		BasePostTile tile = getWaystoneRootTile(world, pos.x, pos.y, pos.z);
 		String name = generateName();
 		UUID owner = player.getUniqueID();
@@ -94,24 +93,10 @@ public class BasePost extends BlockContainer {
 		MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.PLACED, world, pos.x, pos.y, pos.z, name));
 	}
 
-	public static void placeClient(final World world, final BlockPos pos, final EntityPlayer player) {
+	public static void placeClient(final World world, final MyBlockPos pos, final EntityPlayer player) {
 		BasePostTile tile = getWaystoneRootTile(world, pos.x, pos.y, pos.z);
 		if (tile != null && tile.getBaseInfo() == null) {
 			PostHandler.allWaystones.add(new BaseInfo("", pos, player.getUniqueID()));
 		}
 	}
-
-//	@Override
-//    public void onPostBlockPlaced(World worldObj, int x, int y, int z, int p_149714_5_) {
-//		BasePostTile tile = BasePost.getWaystoneRootTile(worldObj, x, y, z);
-//		BaseInfo ws;
-//		String name;
-//		if(tile == null || (ws = tile.getBaseInfo())==null || ws.name==null){
-//			name = generateName();
-//		}else{
-//			name = ws.name;
-//		}
-//	MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.PLACED, worldObj, x, y, z, name));
-//    }
-	
 }

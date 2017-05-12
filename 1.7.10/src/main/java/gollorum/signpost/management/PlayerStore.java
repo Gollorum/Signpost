@@ -13,6 +13,11 @@ public class PlayerStore implements IExtendedEntityProperties {
 	public EntityPlayerMP player;
 
 	@Override
+	public void init(Entity entity, World world) {
+		player = (EntityPlayerMP) entity;
+	}
+
+	@Override
 	public void saveNBTData(NBTTagCompound compound) {
 		Pair<StringSet, Pair<Integer, Integer>> known = PostHandler.playerKnownWaystones.get(player.getUniqueID());
 		compound.setInteger("knownCount", known.a.size());
@@ -37,11 +42,6 @@ public class PlayerStore implements IExtendedEntityProperties {
 		Pair<Integer, Integer> pair = PostHandler.playerKnownWaystones.get(player.getUniqueID()).b;
 		pair.a = compound.getInteger("leftWaystones");
 		pair.b = compound.getInteger("leftSignposts");
-	}
-
-	@Override
-	public void init(Entity entity, World world) {
-		player = (EntityPlayerMP) entity;
 	}
 
 }

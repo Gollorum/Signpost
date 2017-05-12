@@ -8,7 +8,7 @@ import gollorum.signpost.util.collections.Lurchsauna;
 
 public class StonedHashSet extends Lurchsauna<BaseInfo>{
 
-	public BaseInfo getByPos(BlockPos pos){
+	public BaseInfo getByPos(MyBlockPos pos){
 		for(BaseInfo now: this){
 			if(now.pos.equals(pos)){
 				return now;
@@ -44,15 +44,6 @@ public class StonedHashSet extends Lurchsauna<BaseInfo>{
 		return nowFound;
 	}
 	
-	/*@Override
-	public boolean addAll(Collection<? extends BaseInfo> c){
-		boolean hasChanged = false;
-		for(BaseInfo now: c){
-			hasChanged = hasChanged | add(now);
-		}
-		return hasChanged;
-	}*/
-	
 	public boolean addAll(HashSet<String> names){
 		boolean ret = false;
 		for(String nown: names){
@@ -66,7 +57,7 @@ public class StonedHashSet extends Lurchsauna<BaseInfo>{
 		return ret;
 	}
 	
-	public boolean removeByPos(BlockPos pos){
+	public boolean removeByPos(MyBlockPos pos){
 		BaseInfo toDelete = getByPos(pos);
 		if(toDelete==null){
 			return true;

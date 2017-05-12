@@ -3,6 +3,7 @@ package gollorum.signpost.blocks;
 import java.util.UUID;
 
 import gollorum.signpost.Signpost;
+import gollorum.signpost.event.UpdateWaystoneEvent;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
@@ -11,6 +12,7 @@ import gollorum.signpost.network.messages.ChatMessage;
 import gollorum.signpost.network.messages.OpenGuiMessage;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.MyBlockPos;
+import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
@@ -23,15 +25,18 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.common.MinecraftForge;
 
-public class BasePost extends GolloBlock {
+public class BasePost extends BlockContainer {
 
 	public BasePost() {
-		super(Material.ROCK, "base");
+		super(Material.ROCK);
 		this.setHarvestLevel("pickaxe", 1);
 		this.setHardness(2);
 		this.setResistance(100000);
 		setCreativeTab(CreativeTabs.TRANSPORTATION);
+		this.setUnlocalizedName("SignpostBase");
+		this.setRegistryName(Signpost.MODID+":blockbase");
 	}
 
 	@Override
@@ -48,7 +53,7 @@ public class BasePost extends GolloBlock {
 				PostHandler.addDiscovered(player.getUniqueID(), ws);
 			} else {
 				if (!ConfigHandler.deactivateTeleportation
-						&& ConfigHandler.securityLevelWaystone.canUse((EntityPlayerMP) player)) {
+						&& ConfigHandler.securityLevelWaystone.canUse((EntityPlayerMP) player, ""+ws.owner)) {
 					NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiBaseID, pos.getX(), pos.getY(), pos.getZ()), (EntityPlayerMP) player);
 				}
 			}
@@ -71,10 +76,10 @@ public class BasePost extends GolloBlock {
 	}
 
 	public static String generateName() {
-		int i = 0;
+		int i = 1;
 		String ret;
 		do {
-			ret = "Waystone " + (PostHandler.allWaystones.size() + (i++));
+			ret = "Waystone " + (i++);
 		} while (PostHandler.allWaystones.nameTaken(ret));
 		return ret;
 	}
@@ -83,12 +88,16 @@ public class BasePost extends GolloBlock {
 		BasePostTile tile = getWaystoneRootTile(world, pos.toBlockPos());
 		String name = generateName();
 		UUID owner = player.getUniqueID();
-		if (PostHandler.updateWS(new BaseInfo(name, pos, owner), false)) {
-			PostHandler.addDiscovered(player.getUniqueID(), tile.getBaseInfo());
-			NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
-		} else {
-			System.out.println("Dies ist ein Fehler und wird deshalb niemals auftreten. Ich bin also nur Einbildung :D");
+		BaseInfo ws;
+		if((ws = tile.getBaseInfo())==null){
+			ws = new BaseInfo(name, pos, owner);
+			PostHandler.allWaystones.add(ws);
+		}else{
+			ws.setAll(new BaseInfo(name, pos, owner));
 		}
+		PostHandler.addDiscovered(player.getUniqueID(), ws);
+		NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
+		MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.PLACED, world, pos.x, pos.y, pos.z, name));
 	}
 
 	public static void placeClient(final World world, final MyBlockPos pos, final EntityPlayer player) {

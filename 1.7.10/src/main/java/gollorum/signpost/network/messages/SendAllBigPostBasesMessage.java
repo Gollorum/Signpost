@@ -9,7 +9,7 @@ import gollorum.signpost.blocks.SuperPostPostTile;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.BigBaseInfo;
-import gollorum.signpost.util.BlockPos;
+import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.util.Sign;
 import gollorum.signpost.util.Sign.OverlayType;
 import gollorum.signpost.util.collections.Lurchpaerchensauna;
@@ -38,12 +38,12 @@ public class SendAllBigPostBasesMessage implements IMessage{
 		}
 	}
 	
-	public HashMap<BlockPos, BigStringInt> bigPosts = new HashMap<BlockPos, BigStringInt>();
+	public HashMap<MyBlockPos, BigStringInt> bigPosts = new HashMap<MyBlockPos, BigStringInt>();
 
-	public Lurchpaerchensauna<BlockPos, BigBaseInfo> toPostMap(){
-		Lurchpaerchensauna<BlockPos, BigBaseInfo> postMap = new Lurchpaerchensauna<BlockPos, BigBaseInfo>();
-		for(Entry<BlockPos, BigStringInt> now: bigPosts.entrySet()){
-			BaseInfo base = PostHandler.getWSbyName(now.getValue().string);
+	public Lurchpaerchensauna<MyBlockPos, BigBaseInfo> toPostMap(){
+		Lurchpaerchensauna<MyBlockPos, BigBaseInfo> postMap = new Lurchpaerchensauna<MyBlockPos, BigBaseInfo>();
+		for(Entry<MyBlockPos, BigStringInt> now: bigPosts.entrySet()){
+			BaseInfo base = PostHandler.getForceWSbyName(now.getValue().string);
 			postMap.put(now.getKey(), new BigBaseInfo(new Sign(base,
 															   now.getValue().datInt,
 															   now.getValue().bool,
@@ -60,7 +60,7 @@ public class SendAllBigPostBasesMessage implements IMessage{
 	@Override
 	public void toBytes(ByteBuf buf) {
 		buf.writeInt(PostHandler.bigPosts.size());
-		for(Entry<BlockPos, BigBaseInfo> now: PostHandler.bigPosts.entrySet()){
+		for(Entry<MyBlockPos, BigBaseInfo> now: PostHandler.bigPosts.entrySet()){
 			now.getKey().toBytes(buf);
 			ByteBufUtils.writeUTF8String(buf, ""+now.getValue().sign.base);
 			buf.writeInt(now.getValue().sign.rotation);
@@ -79,7 +79,7 @@ public class SendAllBigPostBasesMessage implements IMessage{
 	public void fromBytes(ByteBuf buf) {
 		int c = buf.readInt();
 		for(int i = 0; i<c; i++){
-			bigPosts.put(BlockPos.fromBytes(buf), 
+			bigPosts.put(MyBlockPos.fromBytes(buf), 
 					new BigStringInt(ByteBufUtils.readUTF8String(buf),
 										buf.readInt(),
 										buf.readBoolean(),

@@ -37,6 +37,8 @@ public class MyBlockPos{
 		this.dim = dim;
 	}
 
+	public static enum Connection{VALID, WORLD, DIST}
+	
 	public Connection canConnectTo(BaseInfo inf){
 		if(inf==null){
 			return Connection.VALID;
@@ -53,8 +55,6 @@ public class MyBlockPos{
 		return Connection.VALID;
 	}
 
-	public static enum Connection{VALID, WORLD, DIST}
-	
 	public void writeToNBT(NBTTagCompound tC){
 		int[] arr = {x, y, z, dim};
 		tC.setIntArray("Position", arr);

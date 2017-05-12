@@ -1,6 +1,7 @@
 package gollorum.signpost.blocks;
 
 import gollorum.signpost.SPEventHandler;
+import gollorum.signpost.event.UpdateWaystoneEvent;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.BaseUpdateClientMessage;
@@ -9,6 +10,7 @@ import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.MyBlockPos;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraftforge.common.MinecraftForge;
 
 public class BasePostTile extends TileEntity {
 
@@ -62,7 +64,9 @@ public class BasePostTile extends TileEntity {
 	
 	public void onBlockDestroy(MyBlockPos pos) {
 		isCanceled = true;
+		BaseInfo base = PostHandler.allWaystones.getByPos(pos);
 		if(PostHandler.allWaystones.removeByPos(pos)){
+			MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.DESTROYED, worldObj, this.pos.getX(), this.pos.getY(), this.pos.getZ(), base.name));
 			NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
 		}
 	}
@@ -75,12 +79,12 @@ public class BasePostTile extends TileEntity {
 
 	public String getName() {
 		BaseInfo ws = getBaseInfo();
-		return ws == null ? "null" : ws.toString();
+		return ws == null ? "null" : getBaseInfo().toString();
 	}
 
 	@Override
 	public String toString() {
-		return "wsn:" + getName();
+		return getName();
 	}
 
 }

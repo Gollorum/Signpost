@@ -12,7 +12,7 @@ import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.SendPostBasesMessage;
 import gollorum.signpost.util.BaseInfo;
-import gollorum.signpost.util.BlockPos.Connection;
+import gollorum.signpost.util.MyBlockPos.Connection;
 import gollorum.signpost.util.DoubleBaseInfo;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
@@ -67,10 +67,10 @@ public class SignGuiPost extends GuiScreen {
 		}
 		drawDefaultBackground();
 
-		base1InputBox.drawSignBox();
+		base1InputBox.drawSignBox(fontRendererObj);
 		this.drawCenteredString(fontRendererObj, std2, this.width/2, base1InputBox.y+base1InputBox.height+10, col2);
 
-		base2InputBox.drawSignBox();
+		base2InputBox.drawSignBox(fontRendererObj);
 		this.drawCenteredString(fontRendererObj, std1, this.width/2, base2InputBox.y+base2InputBox.height+10, col1);
 		
 		if(resetMouse){
@@ -206,8 +206,6 @@ public class SignGuiPost extends GuiScreen {
 	@Override
 	public void onGuiClosed() {
 		DoubleBaseInfo tilebases = tile.getBases();
-		System.out.println(go1);
-		System.out.println(go2);
 		if(ConfigHandler.deactivateTeleportation||go2){
 			tilebases.sign1.base = PostHandler.getForceWSbyName(base1InputBox.getText());
 		}else{
