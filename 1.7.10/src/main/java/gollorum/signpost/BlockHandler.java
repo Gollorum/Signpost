@@ -56,24 +56,6 @@ public class BlockHandler {
 		}
 	}
 	
-	public void registerRenders(){
-		ClientRegistry.bindTileEntitySpecialRenderer(PostPostTile.class, new PostRenderer());
-		for(PostPost now: posts){
-			PostPostTile tile = new PostPostTile(now.type);
-			tile.isItem = true;
-			tile.blockType = now;
-			MinecraftForgeClient.registerItemRenderer(Item.getItemFromBlock(now), new BlockItemRenderer(tile, new PostRenderer()));
-		}
-
-		ClientRegistry.bindTileEntitySpecialRenderer(BigPostPostTile.class, new BigPostRenderer());
-		for(BigPostPost now: bigposts){
-			BigPostPostTile tile = new BigPostPostTile(now.type);
-			tile.isItem = true;
-			tile.blockType = now;
-			MinecraftForgeClient.registerItemRenderer(Item.getItemFromBlock(now), new BlockItemRenderer(tile, new PostRenderer()));
-		}
-	}
-	
 	protected void registerRecipes() {
 		if(ConfigHandler.securityLevelWaystone.equals(ConfigHandler.SecurityLevel.ALL)&&!ConfigHandler.deactivateTeleportation){
 			GameRegistry.addRecipe(new ItemStack(base, 1), 

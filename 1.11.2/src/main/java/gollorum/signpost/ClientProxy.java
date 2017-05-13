@@ -9,10 +9,14 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 public class ClientProxy extends CommonProxy{
 
+	public ClientProxy(){
+		blockHandler = new BlockHandlerClient();
+	}
+	
 	@Override
 	void init(){
 		super.init();
-		blockHandler.registerRenders();
+		((BlockHandlerClient)blockHandler).registerRenders();
 		ItemHandler.registerRenders();
 	}
 

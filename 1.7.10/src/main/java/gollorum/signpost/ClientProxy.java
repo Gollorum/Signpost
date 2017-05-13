@@ -16,6 +16,10 @@ import net.minecraftforge.client.MinecraftForgeClient;
 
 public class ClientProxy extends CommonProxy{
 
+	public ClientProxy(){
+		blockHandler = new BlockHandlerClient();
+	}
+	
 	@Override
 	public void init(){
 		super.init();
@@ -23,7 +27,7 @@ public class ClientProxy extends CommonProxy{
 	}
 	
 	private void registerRenderers(){
-		blockHandler.registerRenders();
+		((BlockHandlerClient)blockHandler).registerRenders();
 	}
 
 	@Override

@@ -14,7 +14,11 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 
 public class CommonProxy {
 
-	public static BlockHandler blockHandler = new BlockHandler();
+	public BlockHandler blockHandler;
+	
+	public CommonProxy(){
+		blockHandler = new BlockHandler();
+	}
 	
 	void init(){
 		blockHandler.init();

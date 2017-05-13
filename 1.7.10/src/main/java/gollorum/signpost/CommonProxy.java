@@ -25,8 +25,12 @@ import net.minecraftforge.common.MinecraftForge;
 
 public class CommonProxy {
 	
-	BlockHandler blockHandler = new BlockHandler();
+	BlockHandler blockHandler;
 	ItemHandler itemHandler = new ItemHandler();
+	
+	public CommonProxy(){
+		blockHandler = new BlockHandler();
+	}
 
 	public void init(){
 		blockHandler.register();

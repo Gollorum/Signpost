@@ -3,22 +3,14 @@ package gollorum.signpost;
 import gollorum.signpost.blocks.BasePost;
 import gollorum.signpost.blocks.BigPostPost;
 import gollorum.signpost.blocks.BigPostPost.BigPostType;
-import gollorum.signpost.blocks.BigPostPostTile;
 import gollorum.signpost.blocks.PostPost;
 import gollorum.signpost.blocks.PostPost.PostType;
-import gollorum.signpost.blocks.PostPostTile;
 import gollorum.signpost.management.ConfigHandler;
-import gollorum.signpost.render.BigPostRenderer;
-import gollorum.signpost.render.PostRenderer;
 import net.minecraft.block.Block;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 
 public class BlockHandler {
@@ -66,22 +58,6 @@ public class BlockHandler {
 		GameRegistry.register(item);
 	}
 	
-	public void registerRenders(){
-		registerRender(base);
-		ClientRegistry.bindTileEntitySpecialRenderer(PostPostTile.class, new PostRenderer());
-		for(PostPost post: posts){
-			registerRender(post);
-		}
-		ClientRegistry.bindTileEntitySpecialRenderer(BigPostPostTile.class, new BigPostRenderer());
-		for(BigPostPost post: bigposts){
-			registerRender(post);
-		}
-	}
-
-	public void registerRender(Block block){
-		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(Item.getItemFromBlock(block), 0, new ModelResourceLocation(block.getRegistryName(), "inventory"));
-	}
-
 	protected void registerRecipes() {
 		if(ConfigHandler.securityLevelWaystone.equals(ConfigHandler.SecurityLevel.ALL)&&!ConfigHandler.deactivateTeleportation){
 			GameRegistry.addRecipe(new ItemStack(base, 1), 
