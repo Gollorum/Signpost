@@ -40,8 +40,16 @@ public class PlayerStore implements IExtendedEntityProperties {
 		}
 		PostHandler.addAllDiscoveredByName(player.getUniqueID(), toBeAdded);
 		Pair<Integer, Integer> pair = PostHandler.playerKnownWaystones.get(player.getUniqueID()).b;
-		pair.a = compound.getInteger("leftWaystones");
-		pair.b = compound.getInteger("leftSignposts");
+		if(compound.hasKey("leftWaystones")){
+			pair.a = compound.getInteger("leftWaystones");
+		}else{
+			pair.a = ConfigHandler.maxWaystones;
+		}
+		if(compound.hasKey("leftSignposts")){
+			pair.b = compound.getInteger("leftSignposts");
+		}else{
+			pair.b = ConfigHandler.maxSignposts;
+		}
 	}
 
 }
