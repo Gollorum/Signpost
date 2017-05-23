@@ -55,7 +55,8 @@ public class BaseInputBox extends Gui{
 	
 	public void drawSignBox(){
 		FMLClientHandler.instance().getClient().renderEngine.bindTexture(texture);
-		drawTexturedModalRect(this.x, this.y, 0, 0, width, height);
+		drawModalRectWithCustomSizedTexture(x, y, 0f, 0f, width, height, (float)pWidth*5.5f, (float)pHeight*5.5f);
+//		drawTexturedModalRect(this.x, this.y, 0, 0, width, height);
 		drawText();
 	}
 	

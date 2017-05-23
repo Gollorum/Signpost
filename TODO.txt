@@ -1,5 +1,4 @@
 -sign destination display possibilities
--1.9, 1.10, 1.11: waystone gui bug
 -expensive recipes?
 -cauldron/thermos permissions support?
 -BUG: github rotation reset - not reproducable
