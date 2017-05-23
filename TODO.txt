@@ -1,4 +1,4 @@
 -expensive recipes?
--BUG: github rotation reset?
 -cauldron/thermos permissions support?
--not forget waystones on crash - not reproducable
+-BUG: github rotation reset - not reproducable
+-BUG: not forget waystones on crash - not reproducable
