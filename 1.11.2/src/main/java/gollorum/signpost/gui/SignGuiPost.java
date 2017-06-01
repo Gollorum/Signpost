@@ -35,11 +35,20 @@ public class SignGuiPost extends GuiScreen {
 	
 	public SignGuiPost(PostPostTile tile) {
 		this.tile = tile;
+		DoubleBaseInfo tilebases = tile.getBases();
+		base1InputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137/*, 20*/);
+		base1InputBox.setText(tilebases.sign1.base==null?"":tilebases.sign1.base.toString());
+		go1 = true;
+		base1InputBox.setFocused(true);
+		base2InputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 + 40, 137/*, 20*/);
+		base2InputBox.setText(tilebases.sign2.base==null?"":tilebases.sign2.base.toString());
+		go2 = true;
+		resetMouse = true;
 	}
 
 	@Override
 	public void initGui() {
-		DoubleBaseInfo tilebases = tile.getBases();GuiTextField g;
+		DoubleBaseInfo tilebases = tile.getBases();
 		base1InputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137/*, 20*/);
 		base1InputBox.setText(tilebases.sign1.base==null?"":tilebases.sign1.base.toString());
 		go1 = true;
@@ -62,6 +71,16 @@ public class SignGuiPost extends GuiScreen {
 		super.drawScreen(mouseX, mouseY, partialTicks);
 		if(mc==null){
 			mc = FMLClientHandler.instance().getClient();
+		}
+		if(base1InputBox==null){
+			DoubleBaseInfo tilebases = tile.getBases();
+			base1InputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137);
+			base1InputBox.setText(tilebases.sign1.base==null?"":tilebases.sign1.base.toString());
+		}
+		if(base2InputBox==null){
+			DoubleBaseInfo tilebases = tile.getBases();
+			base2InputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 + 40, 137);
+			base2InputBox.setText(tilebases.sign2.base==null?"":tilebases.sign2.base.toString());
 		}
 		drawDefaultBackground();
 
