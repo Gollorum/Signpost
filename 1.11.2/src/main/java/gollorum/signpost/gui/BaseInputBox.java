@@ -56,23 +56,8 @@ public class BaseInputBox extends Gui{
 	public void drawSignBox(){
 		FMLClientHandler.instance().getClient().renderEngine.bindTexture(texture);
 		drawModalRectWithCustomSizedTexture(x, y, 0f, 0f, width, height, (float)pWidth*5.5f, (float)pHeight*5.5f);
-//		drawTexturedModalRect(this.x, this.y, 0, 0, width, height);
 		drawText();
 	}
-	
-	/*@Override  
-	public void drawTexturedModalRect(int x, int y, int u, int v, int width, int height){
-        float f = 0.00390625F;
-        float f1 = 0.00390625F;
-        Tessellator tessellator = Tessellator.getInstance();
-        VertexBuffer vertexbuffer = tessellator.getBuffer();
-        vertexbuffer.begin(7, DefaultVertexFormats.POSITION_TEX);
-        vertexbuffer.pos((double)(x), 		(double)(y+height), (double)this.zLevel);
-        vertexbuffer.pos((double)(x+width), 	(double)(y+height), (double)this.zLevel);
-        vertexbuffer.pos((double)(x+width), 	(double)(y), 		(double)this.zLevel);
-        vertexbuffer.pos((double)(x),		(double)(y), 		(double)this.zLevel);
-        tessellator.draw();
-    }*/
 	
 	public void drawText(){
 		String txt;
