@@ -99,6 +99,7 @@ public class BasePost extends BlockContainer {
 		PostHandler.addDiscovered(player.getUniqueID(), ws);
 		NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
 		MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.PLACED, world, pos.x, pos.y, pos.z, name));
+		NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiBaseID, pos.x, pos.y, pos.z), player);
 	}
 
 	public static void placeClient(final World world, final MyBlockPos pos, final EntityPlayer player) {
