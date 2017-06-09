@@ -18,11 +18,11 @@ public class BaseUpdateClientHandler implements IMessageHandler<BaseUpdateClient
 		PostHandler.allWaystones = message.waystones;
 		for(Entry<MyBlockPos, DoubleBaseInfo> now: PostHandler.posts.entrySet()){
 			BaseInfo base = now.getValue().sign1.base;
-			if(base!=null){
+			if(base!=null &&!(base.pos==null && base.owner==null)){
 				now.getValue().sign1.base = PostHandler.allWaystones.getByPos(base.pos);
 			}
 			base = now.getValue().sign2.base;
-			if(base!=null){
+			if(base!=null &&!(base.pos==null && base.owner==null)){
 				now.getValue().sign2.base = PostHandler.allWaystones.getByPos(base.pos);
 			}
 		}

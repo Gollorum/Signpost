@@ -42,11 +42,11 @@ public class PostRenderer extends TileEntitySpecialRenderer<PostPostTile>{
 
 		//Overlays
 		if(!tile.isItem){
-			if(tilebases.sign1.base!=null && tilebases.sign1.overlay!=null){
+			if(tilebases.sign1.isValid()&& tilebases.sign1.overlay!=null){
 				bindTexture(new ResourceLocation(Signpost.MODID + ":textures/blocks/sign_overlay_"+tilebases.sign1.overlay.texture+".png"));
 				model.renderOverlay1(tilebases, 0.0625f, rotation1);
 			}
-			if(tilebases.sign2.base!=null && tilebases.sign2.overlay!=null){
+			if(tilebases.sign2.isValid() && tilebases.sign2.overlay!=null){
 				bindTexture(new ResourceLocation(Signpost.MODID + ":textures/blocks/sign_overlay_"+tilebases.sign2.overlay.texture+".png"));
 				model.renderOverlay2(tilebases, 0.0625f, rotation2);
 			}

@@ -26,6 +26,7 @@ import gollorum.signpost.util.collections.Lurchsauna;
 import gollorum.signpost.util.collections.Pair;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
@@ -216,7 +217,13 @@ public class SPEventHandler {
 	@SubscribeEvent
 	public void onBlockBreak(BreakEvent event){
 		TileEntity tile = event.getWorld().getTileEntity(event.getPos());
-		if(tile instanceof SuperPostPostTile && !PostHandler.isHandEmpty(event.getPlayer()) && (event.getPlayer().getHeldItemMainhand().getItem() instanceof PostWrench || event.getPlayer().getHeldItemMainhand().getItem() instanceof CalibratedPostWrench)){
+		if(tile instanceof SuperPostPostTile 
+				&& !PostHandler.isHandEmpty(event.getPlayer()) 
+				&& (event.getPlayer().getHeldItemMainhand().getItem() instanceof PostWrench 
+						|| event.getPlayer().getHeldItemMainhand().getItem() instanceof CalibratedPostWrench
+						|| event.getPlayer().getHeldItemMainhand().getItem().equals(Items.WHEAT_SEEDS)
+						|| event.getPlayer().getHeldItemMainhand().getItem().equals(Items.SNOWBALL)
+						|| event.getPlayer().getHeldItemMainhand().getItem().equals(Item.getItemFromBlock(Blocks.VINE)))){
 			event.setCanceled(true);
 			((SuperPostPost)tile.getBlockType()).onBlockClicked(event.getWorld(), event.getPos(), event.getPlayer());
 			return;

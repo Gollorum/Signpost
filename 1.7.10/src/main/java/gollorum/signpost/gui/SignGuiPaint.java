@@ -17,7 +17,7 @@ public class SignGuiPaint extends GuiScreen {
 	public SignGuiPaint(Sign sign, SuperPostPostTile tile) {
 		this.sign = sign;
 		this.tile = tile;
-		nameInputBox = new GuiTextField(this.fontRendererObj, this.width/4, this.height/2 - 46, this.width/2, 20);
+		initGui();
 	}
 
 	@Override
@@ -28,6 +28,9 @@ public class SignGuiPaint extends GuiScreen {
 		if(sign==null){
 			this.mc.displayGuiScreen(null);
 			return;
+		}
+		if(nameInputBox==null){
+			initGui();
 		}
 		drawDefaultBackground();
 		if(nameInputBox.getText() == null || nameInputBox.getText().equals("null")){

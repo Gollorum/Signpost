@@ -20,13 +20,16 @@ import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.InitPlayerResponseMessage;
 import gollorum.signpost.network.messages.SendAllBigPostBasesMessage;
 import gollorum.signpost.network.messages.SendAllPostBasesMessage;
-import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.util.BoolRun;
+import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.util.StringSet;
 import gollorum.signpost.util.collections.Lurchpaerchensauna;
 import gollorum.signpost.util.collections.Lurchsauna;
 import gollorum.signpost.util.collections.Pair;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
+import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ChatComponentText;
 import net.minecraftforge.event.entity.EntityEvent;
@@ -201,7 +204,13 @@ public class SPEventHandler {
 	@SubscribeEvent
 	public void onBlockBreak(BreakEvent event){
 		TileEntity tile = event.world.getTileEntity(event.x, event.y, event.z);
-		if(tile instanceof SuperPostPostTile && event.getPlayer().getHeldItem()!=null && (event.getPlayer().getHeldItem().getItem() instanceof PostWrench || event.getPlayer().getHeldItem().getItem() instanceof CalibratedPostWrench)){
+		if(tile instanceof SuperPostPostTile 
+				&& event.getPlayer().getHeldItem()!=null 
+				&& (event.getPlayer().getHeldItem().getItem() instanceof PostWrench 
+						|| event.getPlayer().getHeldItem().getItem() instanceof CalibratedPostWrench
+						|| event.getPlayer().getHeldItem().getItem().equals(Items.wheat_seeds)
+						|| event.getPlayer().getHeldItem().getItem().equals(Items.snowball)
+						|| event.getPlayer().getHeldItem().getItem().equals(Item.getItemFromBlock(Blocks.vine)))){
 			event.setCanceled(true);
 			((SuperPostPost)tile.blockType).onBlockClicked(event.world, event.x, event.y, event.z, event.getPlayer());
 			return;

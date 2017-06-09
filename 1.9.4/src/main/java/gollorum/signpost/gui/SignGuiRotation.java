@@ -24,6 +24,7 @@ public class SignGuiRotation extends GuiScreen {
 	public SignGuiRotation(Sign sign, SuperPostPostTile tile){
 		this.sign = sign;
 		this.tile = tile;
+		initGui();
 	}
 
 	@Override
@@ -34,6 +35,9 @@ public class SignGuiRotation extends GuiScreen {
 		if(sign==null){
 			this.mc.displayGuiScreen(null);
 			return;
+		}
+		if(degreesInputBox==null || xInputBox==null || zInputBox==null){
+			initGui();
 		}
 		drawDefaultBackground();
 		if(degreesInputBox.getText() == null || degreesInputBox.getText().equals("null")){

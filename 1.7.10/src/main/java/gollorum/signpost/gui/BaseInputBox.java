@@ -51,10 +51,12 @@ public class BaseInputBox extends Gui{
 		return isFocused;
 	}
 	
-	public void drawSignBox(){
+	public void drawSignBox(FontRenderer fontRend){
 		FMLClientHandler.instance().getClient().renderEngine.bindTexture(texture);
 		drawTexturedModalRect(this.x, this.y, 0, 0, width, height);
-		drawText();
+		if((this.fontRend = fontRend)!=null){
+			drawText();
+		}
 	}
 	
 	@Override  

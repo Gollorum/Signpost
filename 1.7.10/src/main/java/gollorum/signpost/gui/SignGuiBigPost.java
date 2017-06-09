@@ -34,12 +34,7 @@ public class SignGuiBigPost extends GuiScreen {
 	
 	public SignGuiBigPost(BigPostPostTile tile) {
 		this.tile = tile;
-		baseInputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, 46, 137);
-
-		desc1InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, 106, 137, 20);
-		desc2InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, 136, 137, 20);
-		desc3InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, 166, 137, 20);
-		desc4InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, 196, 137, 20);
+		initGui();
 	}
 
 	@Override
@@ -77,6 +72,9 @@ public class SignGuiBigPost extends GuiScreen {
 		super.drawScreen(mouseX, mouseY, partialTicks);
 		if(mc==null){
 			mc = FMLClientHandler.instance().getClient();
+		}
+		if(baseInputBox==null || desc1InputBox==null || desc2InputBox==null || desc3InputBox==null || desc4InputBox==null){
+			initGui();
 		}
 		drawDefaultBackground();
 		baseInputBox.drawSignBox(fontRendererObj);

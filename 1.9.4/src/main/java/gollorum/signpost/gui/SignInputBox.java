@@ -57,7 +57,9 @@ public class SignInputBox extends Gui{
 		GL11.glColor4f(boxColor[0], boxColor[1], boxColor[2], boxColor[3]);
 		FMLClientHandler.instance().getClient().renderEngine.bindTexture(texture);
 		drawModalRectWithCustomSizedTexture(x, y, 0f, 0f, width, height, (float)pWidth*5.5f, (float)pHeight*5.5f);
-		drawText();
+		if(fontRend!=null){
+			drawText();
+		}
 	}
 	
 	public void drawText(){

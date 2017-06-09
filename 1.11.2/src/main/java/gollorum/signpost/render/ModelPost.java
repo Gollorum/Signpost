@@ -34,7 +34,7 @@ public class ModelPost extends ModelBase {
 		postRenderer.setTexture(tile.type.resLocMain);
 		post.render(f5);
 		ResourceLocation mainLoc = tile.type.texture;
-		if (tile.isItem || (tilebases.sign1.base != null&&!tilebases.sign1.base.name.equals("null")&&!tilebases.sign1.base.name.equals(""))) {
+		if (tile.isItem || tilebases.sign1.isValid()) {
 			GL11.glPushMatrix();
 			GL11.glRotated(180, 0, 0, 1);
 			GL11.glTranslated(0, -1.5, 0);
@@ -51,7 +51,7 @@ public class ModelPost extends ModelBase {
 			}
 			GL11.glPopMatrix();
 		}
-		if (tile.isItem || (tilebases.sign2.base != null&&!tilebases.sign2.base.name.equals("null")&&!tilebases.sign2.base.name.equals(""))) {
+		if (tile.isItem || tilebases.sign2.isValid()) {
 			GL11.glPushMatrix();
 			GL11.glRotated(180, 0, 0, 1);
 			GL11.glTranslated(0, -0.5, 0);

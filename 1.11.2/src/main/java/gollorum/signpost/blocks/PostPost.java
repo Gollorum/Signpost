@@ -322,9 +322,9 @@ public class PostPost extends SuperPostPost {
 		Intersect sign1Hit = sign1.traceLine(start, end, true);
 		Intersect sign2Hit = sign2.traceLine(start, end, true);
 		Intersect postHit = post.traceLine(start, end, true);
-		double sign1Dist = sign1Hit.exists&&bases.sign1.base!=null?sign1Hit.pos.distance(start):Double.MAX_VALUE;
-		double sign2Dist = sign2Hit.exists&&bases.sign2.base!=null?sign2Hit.pos.distance(start):Double.MAX_VALUE;
-		double postDist = postHit.exists?postHit.pos.distance(start):Double.MAX_VALUE/2;
+		double sign1Dist = sign1Hit.exists&&bases.sign1.base!=null&&bases.sign1.base.hasName()?sign1Hit.pos.distance(start):Double.MAX_VALUE;
+		double sign2Dist = sign2Hit.exists&&bases.sign2.base!=null&&bases.sign2.base.hasName()?sign2Hit.pos.distance(start):Double.MAX_VALUE;
+		double postDist = postHit.exists?postHit.pos.distance(start):Double.MAX_VALUE;
 		double dist;
 		HitTarget target;
 		DDDVector pos;
@@ -337,7 +337,7 @@ public class PostPost extends SuperPostPost {
 			pos = sign2Hit.pos;
 			target = HitTarget.BASE2;
 		}
-		if(postDist<dist){
+		if(postDist<=dist){
 			dist = postDist;
 			pos = postHit.pos;
 			target = HitTarget.POST;

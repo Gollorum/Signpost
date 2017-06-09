@@ -53,10 +53,12 @@ public class BaseInputBox extends Gui{
 		return isFocused;
 	}
 	
-	public void drawSignBox(){
+	public void drawSignBox(FontRenderer fontRend){
 		FMLClientHandler.instance().getClient().renderEngine.bindTexture(texture);
 		drawModalRectWithCustomSizedTexture(x, y, 0f, 0f, width, height, (float)pWidth*5.5f, (float)pHeight*5.5f);
-		drawText();
+		if((this.fontRend = fontRend)!=null){
+			drawText();
+		}
 	}
 	
 	public void drawText(){

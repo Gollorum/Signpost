@@ -15,13 +15,16 @@ public class SignGuiBase extends GuiScreen {
 
 	public SignGuiBase(BasePostTile tile) {
 		this.tile = tile;
-		nameInputBox = new BaseInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137);
+		initGui();
 	}
 
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 		if(mc==null){
 			mc = FMLClientHandler.instance().getClient();
+		}
+		if(nameInputBox==null){
+			initGui();
 		}
 		drawDefaultBackground();
 		if(nameInputBox.getText() == null || nameInputBox.getText().equals("null")){
@@ -31,7 +34,7 @@ public class SignGuiBase extends GuiScreen {
 			}
 			nameInputBox.setText(name);
 		}
-		nameInputBox.drawSignBox();
+		nameInputBox.drawSignBox(fontRendererObj);
 		super.drawScreen(mouseX, mouseY, partialTicks);
 	}
 
@@ -43,7 +46,6 @@ public class SignGuiBase extends GuiScreen {
 	@Override
 	public void initGui() {
 		nameInputBox = new BaseInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137);
-//		nameInputBox.setMaxStringLength(50);
 		String name = tile.getName();
 		if(name==null){
 			name = "null";

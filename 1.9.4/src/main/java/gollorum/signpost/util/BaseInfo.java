@@ -74,4 +74,8 @@ public class BaseInfo {
 		return name;
 	}
 	
+	public boolean hasName(){
+		return !(name==null || name.equals("null") || name.equals(""));
+	}
+	
 }

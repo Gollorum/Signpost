@@ -62,5 +62,9 @@ public class Sign {
 			return Math.toRadians(rotation);
 		}
 	}
+	
+	public boolean isValid(){
+		return base!=null && base.hasName();
+	}
 
 }
