@@ -58,6 +58,7 @@ public class SignInputBox extends Gui{
 		FMLClientHandler.instance().getClient().renderEngine.bindTexture(texture);
 		drawModalRectWithCustomSizedTexture(x, y, 0f, 0f, width, height, (float)pWidth*5.5f, (float)pHeight*5.5f);
 		if(fontRend!=null){
+			drawText();
 		}
 	}
 	
