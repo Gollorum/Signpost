@@ -92,19 +92,53 @@ public class SignGuiBigPost extends GuiScreen {
 	@Override
 	protected void keyTyped(char par1, int par2) {
 		super.keyTyped(par1, par2);
-		if(par1==13){
+		if((par1==13&&par2==28) || (par1==9&&par2==15) || (par1==0&&par2==208)){
 			if(baseInputBox.isFocused()){
-				if(!go){
-					go=true;
-					baseInputBox.textColor = Color.orange.getRGB();
+				if(par1==13&&par2==28){
+					if(!go){
+						go=true;
+						baseInputBox.textColor = Color.orange.getRGB();
+					}
 				}
-				this.mc.displayGuiScreen(null);
+				baseInputBox.setFocused(false);
+				desc1InputBox.setFocused(true);
+			}else if(desc1InputBox.isFocused()){
+				desc1InputBox.setFocused(false);
+				desc2InputBox.setFocused(true);
+			}else if(desc2InputBox.isFocused()){
+				desc2InputBox.setFocused(false);
+				desc3InputBox.setFocused(true);
+			}else if(desc3InputBox.isFocused()){
+				desc3InputBox.setFocused(false);
+				desc4InputBox.setFocused(true);
+			}else if(desc4InputBox.isFocused()){
+				if(par1==13&&par2==28){
+					this.mc.displayGuiScreen(null);
+				}else{
+					desc4InputBox.setFocused(false);
+					baseInputBox.setFocused(true);
+				}
 			}else{
 				baseInputBox.setFocused(true);
 			}
 			return;
-		}else if(par1==9){
-			if(!baseInputBox.isFocused()){
+		}else if(par1==0&&par2==200){
+			if(baseInputBox.isFocused()){
+				baseInputBox.setFocused(false);
+				desc4InputBox.setFocused(true);
+			}else if(desc1InputBox.isFocused()){
+				desc1InputBox.setFocused(false);
+				baseInputBox.setFocused(true);
+			}else if(desc2InputBox.isFocused()){
+				desc2InputBox.setFocused(false);
+				desc1InputBox.setFocused(true);
+			}else if(desc3InputBox.isFocused()){
+				desc3InputBox.setFocused(false);
+				desc2InputBox.setFocused(true);
+			}else if(desc4InputBox.isFocused()){
+				desc4InputBox.setFocused(false);
+				desc3InputBox.setFocused(true);
+			}else{
 				baseInputBox.setFocused(true);
 			}
 			return;

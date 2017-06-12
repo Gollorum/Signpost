@@ -60,7 +60,6 @@ public class BigPostPostTile extends SuperPostPostTile {
 	public void save(NBTTagCompound tagCompound) {
 		BigBaseInfo bases = getBases();
 		tagCompound.setString("base", ""+bases.sign.base);
-		System.out.println("Save: "+bases.sign.base);
 		tagCompound.setInteger("rot", bases.sign.rotation);
 		tagCompound.setBoolean("flip", bases.sign.flip);
 		tagCompound.setString("overlay", ""+bases.sign.overlay);
@@ -74,7 +73,6 @@ public class BigPostPostTile extends SuperPostPostTile {
 	@Override
 	public void load(NBTTagCompound tagCompound) {
 		final String base = tagCompound.getString("base");
-		System.out.println("Load: "+base);
 		final int rotation = tagCompound.getInteger("rot");
 		final boolean flip = tagCompound.getBoolean("flip");
 		final OverlayType overlay = OverlayType.get(tagCompound.getString("overlay"));
@@ -99,7 +97,6 @@ public class BigPostPostTile extends SuperPostPostTile {
 					}
 					BigBaseInfo bases = getBases();
 					bases.sign.base = PostHandler.getForceWSbyName(base);
-					System.out.println("base is: "+base);
 					bases.sign.rotation = rotation;
 					bases.sign.flip = flip;
 					bases.sign.overlay = overlay;

@@ -15,6 +15,9 @@ public class SendBigPostBasesHandler implements IMessageHandler<SendBigPostBases
 	@Override
 	public IMessage onMessage(SendBigPostBasesMessage message, MessageContext ctx) {
 		BigBaseInfo bases = PostHandler.bigPosts.get(message.pos);
+		if(bases==null){
+			return null;
+		}
 		bases.sign.rotation = message.baserot;
 		bases.sign.flip = message.flip;
 		bases.sign.base = PostHandler.getForceWSbyName(message.base);

@@ -16,6 +16,9 @@ public class SendPostBasesHandler implements IMessageHandler<SendPostBasesMessag
 	@Override
 	public IMessage onMessage(SendPostBasesMessage message, MessageContext ctx) {
 		DoubleBaseInfo bases = PostHandler.posts.get(message.pos);
+		if(bases==null){
+			return null;
+		}
 		bases.sign1.rotation = message.base1rot;
 		bases.sign2.rotation = message.base2rot;
 		bases.sign1.flip = message.flip1;
