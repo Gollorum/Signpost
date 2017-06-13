@@ -37,7 +37,7 @@ public class BigPostRenderer extends TileEntitySpecialRenderer<BigPostPostTile>{
 		
 		GL11.glPushMatrix();
 		GL11.glTranslated(x+0.5, y, z+0.5);
-		this.bindTexture(tile.type.resLocMain);
+		this.bindTexture(tilebases.postPaint);
 		post.render(this, 0.1f, 0.0625f, tilebases, tile, rotation);
 		ResourceLocation resLoc = tile.isItem ? tile.type.texture : tilebases.sign.paint;
 		try{

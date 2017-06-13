@@ -33,6 +33,8 @@ public class SendPostBasesHandler implements IMessageHandler<SendPostBasesMessag
 		bases.sign2.point = message.point2;
 		bases.sign1.paint = SuperPostPostTile.stringToLoc(message.paint1);
 		bases.sign2.paint = SuperPostPostTile.stringToLoc(message.paint2);
+		
+		bases.postPaint = SuperPostPostTile.stringToLoc(message.postPaint);
 		if(ctx.side.equals(Side.SERVER)){
 			ctx.getServerHandler().playerEntity.world.getTileEntity(message.pos.toBlockPos()).markDirty();
 			NetworkHandler.netWrap.sendToAll(message);

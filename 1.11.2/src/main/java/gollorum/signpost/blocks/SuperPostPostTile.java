@@ -14,7 +14,7 @@ public abstract class SuperPostPostTile extends TileEntity {
 	public boolean isItem = false;
 	public boolean isCanceled = false;
 	public UUID owner;
-
+	
 	public final MyBlockPos toPos(){
 		if(world==null||world.isRemote){
 			return new MyBlockPos("", pos.getX(), pos.getY(), pos.getZ(), dim());
@@ -34,7 +34,7 @@ public abstract class SuperPostPostTile extends TileEntity {
 		return str==null||str.equals("null")||str.equals("")?null:new ResourceLocation(str);
 	}
 	
-	public static final String LocToString(ResourceLocation loc){
+	public static final String locToString(ResourceLocation loc){
 		return loc==null?"null":loc.getResourceDomain()+":"+loc.getResourcePath();
 	}
 

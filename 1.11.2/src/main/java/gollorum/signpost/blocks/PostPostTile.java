@@ -72,8 +72,8 @@ public class PostPostTile extends SuperPostPostTile {
 		tagCompound.setString("overlay2", ""+bases.sign2.overlay);
 		tagCompound.setBoolean("point1", bases.sign1.point);
 		tagCompound.setBoolean("point2", bases.sign2.point);
-		tagCompound.setString("paint1", SuperPostPostTile.LocToString(bases.sign1.paint));
-		tagCompound.setString("paint2", SuperPostPostTile.LocToString(bases.sign2.paint));
+		tagCompound.setString("paint1", SuperPostPostTile.locToString(bases.sign1.paint));
+		tagCompound.setString("paint2", SuperPostPostTile.locToString(bases.sign2.paint));
 	}
 
 	@Override

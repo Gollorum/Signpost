@@ -25,6 +25,7 @@ public class SendBigPostBasesHandler implements IMessageHandler<SendBigPostBases
 		bases.sign.point = message.point;
 		bases.description = message.description;
 		bases.sign.paint = message.paint;
+		bases.postPaint = message.postPaint;
 		if(ctx.side.equals(Side.SERVER)){
 			ctx.getServerHandler().playerEntity.world.getTileEntity(message.pos.toBlockPos()).markDirty();
 			NetworkHandler.netWrap.sendToAll(message);

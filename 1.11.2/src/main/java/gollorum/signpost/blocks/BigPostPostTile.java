@@ -64,7 +64,7 @@ public class BigPostPostTile extends SuperPostPostTile {
 		tagCompound.setBoolean("flip", bases.sign.flip);
 		tagCompound.setString("overlay", ""+bases.sign.overlay);
 		tagCompound.setBoolean("point", bases.sign.point);
-		tagCompound.setString("paint", SuperPostPostTile.LocToString(bases.sign.paint));
+		tagCompound.setString("paint", SuperPostPostTile.locToString(bases.sign.paint));
 		for(int i=0; i<bases.description.length; i++){
 			tagCompound.setString("description"+i, bases.description[i]);
 		}

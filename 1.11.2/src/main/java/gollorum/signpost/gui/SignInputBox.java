@@ -1,7 +1,13 @@
 package gollorum.signpost.gui;
 
+import java.awt.Color;
+import java.util.ArrayList;
+
 import org.lwjgl.opengl.GL11;
 
+import gollorum.signpost.management.PostHandler;
+import gollorum.signpost.util.BaseInfo;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiScreen;
@@ -22,8 +28,12 @@ public class SignInputBox extends Gui{
 	private boolean isFocused = false;
     private int cursorPosition;
     
+    private ArrayList<String> possible = new ArrayList<String>();
+    private int possibleCount = 0;
+    private int possibleIndex = 0;
+    
     public int textColor = 0;
-    private int count = 0;
+    private int cursorCount = 0;
     public int drawXat;
     public double scc;
 
@@ -64,8 +74,8 @@ public class SignInputBox extends Gui{
 	
 	public void drawText(){
 		String txt;
-		count = (count+1)%60;
-		if(count<30&&isFocused){
+		cursorCount = (cursorCount+1)%60;
+		if(cursorCount<30&&isFocused){
 			txt = getText().substring(0, cursorPosition)+"|"+getText().substring(cursorPosition);
 		}else{
 			txt = getText();
@@ -88,10 +98,25 @@ public class SignInputBox extends Gui{
 		}
 		fontRend.drawString(txt, (int) x, (int) ((y-fontRend.FONT_HEIGHT/2.0*sc2)/sc2), textColor);
 		GL11.glPopMatrix();
+		
+		if(isFocused && possible.size()>0){
+			possibleCount = (possibleCount+1)%50;
+			if(possibleCount == 49){
+				possibleIndex = possibleIndex+1;
+			}
+			possibleIndex = possibleIndex%possible.size();
+			fontRend.drawString(possible.get(possibleIndex), (int)(this.x+width+5), (int)(this.y+(scale*pHeight-fontRend.FONT_HEIGHT)/2.0), Color.WHITE.getRGB());
+		}
 	}
 	
 	public void setText(String text){
 		this.text = text;
+		possible = new ArrayList<String>();
+		for(BaseInfo now: PostHandler.allWaystones){
+			if(now.name!=null && now.name.contains(getText())){
+				possible.add(now.name);
+			}
+		}
 	}
 	
 	public String getText(){
@@ -104,7 +129,7 @@ public class SignInputBox extends Gui{
         }else{
         	switch (p_146201_1_){
                 case 1:
-                    cursorPosition = text.length();
+                    cursorPosition = getText().length();
                     return true;
                 case 22:
                     this.writeText(GuiScreen.getClipboardString());
@@ -136,7 +161,7 @@ public class SignInputBox extends Gui{
                             }
                             return true;
                         case 207:
-                            cursorPosition = text.length();
+                            cursorPosition = getText().length();
                             return true;
                         case 211:
                             if (GuiScreen.isCtrlKeyDown()){
@@ -161,7 +186,7 @@ public class SignInputBox extends Gui{
     public void writeText(String p_146191_1_){
         String s2 = ChatAllowedCharacters.filterAllowedCharacters(p_146191_1_);
 
-        this.text = text.substring(0, cursorPosition)+s2+text.substring(cursorPosition);
+        this.setText(getText().substring(0, cursorPosition)+s2+getText().substring(cursorPosition));
         this.moveCursorBy(s2.length());
     }
 
@@ -170,9 +195,9 @@ public class SignInputBox extends Gui{
     }
 
     public void setCursorPosition(int p_146190_1_){
-    	count = 0;
+    	cursorCount = 0;
         this.cursorPosition = p_146190_1_;
-        int j = this.text.length();
+        int j = this.getText().length();
 
         if (this.cursorPosition < 0){
             this.cursorPosition = 0;
@@ -182,21 +207,21 @@ public class SignInputBox extends Gui{
     }
 
     public void deleteFromCursor(int p_146175_1_){
-        if (this.text.length() != 0){
+        if (this.getText().length() != 0){
 			boolean flag = p_146175_1_ < 0;
 			int j = flag ? this.cursorPosition + p_146175_1_ : this.cursorPosition;
 			int k = flag ? this.cursorPosition : this.cursorPosition + p_146175_1_;
 			String s = "";
 			
 			if (j >= 0){
-			    s = this.text.substring(0, j);
+			    s = this.getText().substring(0, j);
 			}
 			
-			if (k < this.text.length()){
-			    s = s + this.text.substring(k);
+			if (k < this.getText().length()){
+			    s = s + this.getText().substring(k);
 			}
 			
-			this.text = s;
+			this.setText(s);
 			
 			if (flag){
 			    this.moveCursorBy(p_146175_1_);
@@ -205,7 +230,7 @@ public class SignInputBox extends Gui{
     }
 
     public void deleteWords(int p_146177_1_){
-        if (this.text.length() != 0){
+        if (this.getText().length() != 0){
             this.deleteFromCursor(this.getNthWordFromCursor(p_146177_1_) - this.cursorPosition);
         }
     }
@@ -227,20 +252,20 @@ public class SignInputBox extends Gui{
         {
             if (flag1)
             {
-                while (p_146197_3_ && k > 0 && this.text.charAt(k - 1) == 32)
+                while (p_146197_3_ && k > 0 && this.getText().charAt(k - 1) == 32)
                 {
                     --k;
                 }
 
-                while (k > 0 && this.text.charAt(k - 1) != 32)
+                while (k > 0 && this.getText().charAt(k - 1) != 32)
                 {
                     --k;
                 }
             }
             else
             {
-                int j1 = this.text.length();
-                k = this.text.indexOf(32, k);
+                int j1 = this.getText().length();
+                k = this.getText().indexOf(32, k);
 
                 if (k == -1)
                 {
@@ -248,7 +273,7 @@ public class SignInputBox extends Gui{
                 }
                 else
                 {
-                    while (p_146197_3_ && k < j1 && this.text.charAt(k) == 32)
+                    while (p_146197_3_ && k < j1 && this.getText().charAt(k) == 32)
                     {
                         ++k;
                     }

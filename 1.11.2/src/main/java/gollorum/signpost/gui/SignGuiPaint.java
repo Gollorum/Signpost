@@ -41,7 +41,7 @@ public class SignGuiPaint extends GuiScreen {
 			if(loc==null){
 				name = "";
 			}else{
-				name = SuperPostPostTile.LocToString(loc);
+				name = SuperPostPostTile.locToString(loc);
 			}
 			nameInputBox.setText(name);
 		}
@@ -70,7 +70,7 @@ public class SignGuiPaint extends GuiScreen {
 		if(loc==null){
 			name = "";
 		}else{
-			name = SuperPostPostTile.LocToString(loc);
+			name = SuperPostPostTile.locToString(loc);
 		}
 		nameInputBox.setText(name);
 		nameInputBox.setFocused(true);

@@ -31,7 +31,7 @@ public class ModelPost extends ModelBase {
 
 	public void render(PostRenderer postRenderer, float f1, float f5, DoubleBaseInfo tilebases, PostPostTile tile, double rotation1, double rotation2) {
 		super.render(null, 0, f1, 0, 0, 0, f5);
-		postRenderer.setTexture(tile.type.resLocMain);
+		postRenderer.setTexture(tilebases.postPaint);
 		post.render(f5);
 		ResourceLocation mainLoc = tile.type.texture;
 		if (tile.isItem || tilebases.sign1.isValid()) {

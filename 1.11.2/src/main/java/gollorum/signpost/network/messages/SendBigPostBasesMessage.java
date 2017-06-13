@@ -19,6 +19,7 @@ public class SendBigPostBasesMessage implements IMessage {
 	public boolean point;
 	public String[] description;
 	public ResourceLocation paint;
+	public ResourceLocation postPaint;
 
 	public SendBigPostBasesMessage(){}
 	
@@ -32,6 +33,7 @@ public class SendBigPostBasesMessage implements IMessage {
 		point = base.sign.point;
 		description = base.description;
 		paint = base.sign.paint;
+		postPaint = base.postPaint;
 	}
 
 	@Override
@@ -46,7 +48,8 @@ public class SendBigPostBasesMessage implements IMessage {
 		for(String now: description){
 			ByteBufUtils.writeUTF8String(buf, now);
 		}
-		ByteBufUtils.writeUTF8String(buf, SuperPostPostTile.LocToString(paint));
+		ByteBufUtils.writeUTF8String(buf, SuperPostPostTile.locToString(paint));
+		ByteBufUtils.writeUTF8String(buf, SuperPostPostTile.locToString(postPaint));
 	}
 
 	@Override
@@ -62,6 +65,7 @@ public class SendBigPostBasesMessage implements IMessage {
 			description[i] = ByteBufUtils.readUTF8String(buf);
 		}
 		paint = SuperPostPostTile.stringToLoc(ByteBufUtils.readUTF8String(buf));
+		postPaint = SuperPostPostTile.stringToLoc(ByteBufUtils.readUTF8String(buf));
 	}
 
 }

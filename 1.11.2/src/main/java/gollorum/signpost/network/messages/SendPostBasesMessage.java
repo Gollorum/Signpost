@@ -30,6 +30,8 @@ public class SendPostBasesMessage implements IMessage {
 	public String paint1;
 	public String paint2;
 
+	public String postPaint;
+
 	public SendPostBasesMessage(){}
 	
 	public SendPostBasesMessage(PostPostTile tile, DoubleBaseInfo base) {
@@ -45,9 +47,9 @@ public class SendPostBasesMessage implements IMessage {
 		overlay2 = ""+base.sign2.overlay;
 		point1 = base.sign1.point;
 		point2 = base.sign2.point;
-		paint1 = SuperPostPostTile.LocToString(base.sign1.paint);
-		paint2 = SuperPostPostTile.LocToString(base.sign2.paint);
-		
+		paint1 = SuperPostPostTile.locToString(base.sign1.paint);
+		paint2 = SuperPostPostTile.locToString(base.sign2.paint);
+		postPaint = SuperPostPostTile.locToString(base.postPaint);
 	}
 
 	@Override
@@ -65,6 +67,7 @@ public class SendPostBasesMessage implements IMessage {
 		buf.writeBoolean(point2);
 		ByteBufUtils.writeUTF8String(buf, ""+paint1);
 		ByteBufUtils.writeUTF8String(buf, ""+paint2);
+		ByteBufUtils.writeUTF8String(buf, ""+postPaint);
 	}
 
 	@Override
@@ -82,6 +85,7 @@ public class SendPostBasesMessage implements IMessage {
 		point2 = buf.readBoolean();
 		paint1 = ByteBufUtils.readUTF8String(buf);
 		paint2 = ByteBufUtils.readUTF8String(buf);
+		postPaint = ByteBufUtils.readUTF8String(buf);
 	}
 
 }
