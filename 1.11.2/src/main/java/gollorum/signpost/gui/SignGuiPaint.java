@@ -5,8 +5,11 @@ import java.io.IOException;
 import gollorum.signpost.blocks.SuperPostPost;
 import gollorum.signpost.blocks.SuperPostPostTile;
 import gollorum.signpost.util.Sign;
+import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.client.resources.IResource;
+import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.client.FMLClientHandler;
 
@@ -27,16 +30,16 @@ public class SignGuiPaint extends GuiScreen {
 		if(mc==null){
 			mc = FMLClientHandler.instance().getClient();
 		}
-		if(sign==null){
-			this.mc.displayGuiScreen(null);
-			return;
-		}
+//		if(sign==null){
+//			this.mc.displayGuiScreen(null);
+//			return;
+//		}
 		if(nameInputBox==null){
 			initGui();
 		}
 		drawDefaultBackground();
 		if(nameInputBox.getText() == null || nameInputBox.getText().equals("null")){
-			ResourceLocation loc = sign.paint;
+			ResourceLocation loc = sign==null ? tile.getPostPaint() : sign.paint;
 			String name;
 			if(loc==null){
 				name = "";
@@ -61,11 +64,14 @@ public class SignGuiPaint extends GuiScreen {
 		if(mc==null){
 			mc = FMLClientHandler.instance().getClient();
 		}
-		if(sign==null){
-			this.mc.displayGuiScreen(null);
-			return;
+		for(ResourceLocation now: Block.REGISTRY.getKeys()){
+			System.out.println(now);
 		}
-		ResourceLocation loc = sign.paint;
+//		if(sign==null){
+//			this.mc.displayGuiScreen(null);
+//			return;
+//		}
+		ResourceLocation loc = sign==null ? tile.getPostPaint() : sign.paint;
 		String name;
 		if(loc==null){
 			name = "";
@@ -109,7 +115,9 @@ public class SignGuiPaint extends GuiScreen {
 		super.onGuiClosed();
 		if(sign!=null){
 			sign.paint = new ResourceLocation(nameInputBox.getText());
-			((SuperPostPost)tile.getBlockType()).sendPostBasesToAll(tile);
+		}else{
+			tile.setPostPaint(new ResourceLocation(nameInputBox.getText()));
 		}
+		((SuperPostPost)tile.getBlockType()).sendPostBasesToAll(tile);
 	}
 }

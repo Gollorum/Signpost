@@ -17,6 +17,7 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 
 public class BigPostPostTile extends SuperPostPostTile {
 
@@ -36,7 +37,7 @@ public class BigPostPostTile extends SuperPostPostTile {
 	public BigBaseInfo getBases(){
 		BigBaseInfo bases = PostHandler.bigPosts.get(toPos());
 		if(bases==null){
-			bases = new BigBaseInfo(type.texture);
+			bases = new BigBaseInfo(type.texture, type.resLocMain);
 			PostHandler.bigPosts.put(toPos(), bases);
 		}
 		this.bases = bases;
@@ -119,5 +120,14 @@ public class BigPostPostTile extends SuperPostPostTile {
 		}else{
 			return null;
 		}
+	}
+	
+	@Override
+	public ResourceLocation getPostPaint(){
+		return getBases().postPaint;
+	}
+	
+	public void setPostPaint(ResourceLocation loc){
+		getBases().postPaint = loc;
 	}
 }

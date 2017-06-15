@@ -8,8 +8,8 @@ public class BigBaseInfo {
 	public String[] description;
 	public ResourceLocation postPaint;
 	
-	public BigBaseInfo(ResourceLocation texture){
-		this(new Sign(texture), texture);
+	public BigBaseInfo(ResourceLocation signTexture, ResourceLocation postTexture){
+		this(new Sign(signTexture), postTexture);
 	}
 
 	public BigBaseInfo(Sign sign, ResourceLocation texture){

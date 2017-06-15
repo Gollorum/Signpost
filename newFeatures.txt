@@ -1,1 +1,2 @@
 Display possible destinations in signpost GUI
+paintable posts

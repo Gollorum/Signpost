@@ -74,4 +74,6 @@ public abstract class SuperPostPostTile extends TileEntity {
 	public abstract void load(NBTTagCompound tagCompound);
 	
 	public abstract Sign getSign(EntityPlayer player);
+	public abstract ResourceLocation getPostPaint();
+	public abstract void setPostPaint(ResourceLocation loc);
 }
