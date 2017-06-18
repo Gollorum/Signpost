@@ -122,7 +122,7 @@ public class PostHandler {
 	}
 	
 	public static boolean canPay(EntityPlayer player, int x1, int y1, int z1, int x2, int y2, int z2){
-		if(ConfigHandler.cost == null){
+		if(ConfigHandler.cost == null || ConfigHandler.isCreative(player)){
 			return true;
 		}else{
 			int playerItemCount = 0;

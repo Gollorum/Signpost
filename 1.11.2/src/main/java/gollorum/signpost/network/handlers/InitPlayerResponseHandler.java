@@ -19,6 +19,8 @@ public class InitPlayerResponseHandler implements IMessageHandler<InitPlayerResp
 		ConfigHandler.maxDist = message.maxDist;
 		ConfigHandler.paymentItem = message.paymentItem;
 		ConfigHandler.costMult = message.costMult;
+		ConfigHandler.signRec = message.signRec;
+		ConfigHandler.waysRec = message.waysRec;
 		ConfigHandler.securityLevelWaystone = message.securityLevelWaystone;
 		ConfigHandler.securityLevelSignpost = message.securityLevelSignpost;
 		ConfigHandler.postInit();

@@ -25,6 +25,9 @@ public class ConfigHandler {
 	public static Item cost;
 	public static String paymentItem;
 	public static int costMult;
+	
+	public static RecipeCost signRec;
+	public static RecipeCost waysRec;
 
 	public static SecurityLevel securityLevelWaystone;
 	public static SecurityLevel securityLevelSignpost;
@@ -50,6 +53,18 @@ public class ConfigHandler {
 					   isOp(player)||
 					   (this.equals(ConfigHandler.SecurityLevel.OWNERS) && (owner.equals(player.getUniqueID().toString()) || owner.equals("null")))||
 					   (isCreative(player)&&this.equals(ConfigHandler.SecurityLevel.CREATIVEONLY));
+		}
+	}
+
+	public enum RecipeCost{
+		NORMAL, EXPENSIVE, VERY_EXPENSIVE;
+		public static String[] allValues(){
+			String[] ret = {
+				NORMAL.toString(),
+				EXPENSIVE.toString(),
+				VERY_EXPENSIVE.toString(),
+			};
+			return ret;
 		}
 	}
 	
@@ -94,6 +109,10 @@ public class ConfigHandler {
 		paymentItem = config.getString("paymentItem", category, "", "The item players have to pay in order to use a signpost (e.g. minecraft:enderPearl, '' = free)");
 		
 		costMult = config.getInt("distancePerPayment", category, 0, 0, Integer.MAX_VALUE, "The distance a Player can teleport with one item (the total cost of a teleportation is calculated using the total distance)(0 = unlimited)");
+	
+		signRec = RecipeCost.valueOf(config.getString("signpostRecipeCost", category, "NORMAL", "Changes the recipe for signposts", RecipeCost.allValues()));
+
+		waysRec = RecipeCost.valueOf(config.getString("waystoneRecipeCost", category, "NORMAL", "Changes the recipe for waystones", RecipeCost.allValues()));
 	}
 	
 	public static void loadSecurity(){
@@ -110,7 +129,7 @@ public class ConfigHandler {
 		return player.canUseCommand(2, "");
 	}
 	
-	public static boolean isCreative(EntityPlayerMP player){
+	public static boolean isCreative(EntityPlayer player){
 		return player.capabilities.isCreativeMode;
 	}
 	

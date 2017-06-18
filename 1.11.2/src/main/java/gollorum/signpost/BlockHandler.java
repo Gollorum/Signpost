@@ -60,12 +60,7 @@ public class BlockHandler {
 	
 	protected void registerRecipes() {
 		if(ConfigHandler.securityLevelWaystone.equals(ConfigHandler.SecurityLevel.ALL)&&!ConfigHandler.deactivateTeleportation){
-			GameRegistry.addRecipe(new ItemStack(base, 1), 
-									"SSS",
-									" P ",
-									"SSS",
-									'S', Blocks.COBBLESTONE,
-									'P', Items.ENDER_PEARL);
+			waystoneRecipe();
 		}
 		if(ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.ALL) || ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.OWNERS)){
 			for(PostPost now: posts){
@@ -84,6 +79,35 @@ public class BlockHandler {
 										'A', Items.SIGN,
 										'B', new ItemStack(now.type.baseItem, 1, now.type.metadata));
 			}
+		}
+	}
+	
+	private void waystoneRecipe(){
+		switch(ConfigHandler.waysRec){
+			case EXPENSIVE:
+				GameRegistry.addRecipe(new ItemStack(base, 1), 
+						"SSS",
+						" P ",
+						"SSS",
+						'S', Blocks.STONE,
+						'P', new ItemStack(Items.ENDER_PEARL, 5));
+				break;
+			case VERY_EXPENSIVE:
+				GameRegistry.addRecipe(new ItemStack(base, 1), 
+						"SSS",
+						" P ",
+						"SSS",
+						'S', Blocks.COBBLESTONE,
+						'P', Items.NETHER_STAR);
+				break;
+			default:
+				GameRegistry.addRecipe(new ItemStack(base, 1), 
+						"SSS",
+						" P ",
+						"SSS",
+						'S', Blocks.COBBLESTONE,
+						'P', Items.ENDER_PEARL);
+				break;
 		}
 	}
 }

@@ -1,5 +1,3 @@
--paint tips
--not consume items in creative mode?
 -expensive recipes?
 -BUG: github rotation reset?
 -cauldron/thermos permissions support?

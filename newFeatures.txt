@@ -1,2 +1,4 @@
 Display possible destinations in signpost GUI
 paintable posts
+display possible textures in paint gui
+allow teleport without payment item in creative mode

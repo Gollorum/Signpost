@@ -1,15 +1,16 @@
 package gollorum.signpost.gui;
 
+import java.awt.Color;
 import java.io.IOException;
+import java.util.Collection;
 
 import gollorum.signpost.blocks.SuperPostPost;
 import gollorum.signpost.blocks.SuperPostPostTile;
+import gollorum.signpost.util.ResourceBrowser;
 import gollorum.signpost.util.Sign;
-import net.minecraft.block.Block;
+import gollorum.signpost.util.collections.Lurchsauna;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
-import net.minecraft.client.resources.IResource;
-import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.client.FMLClientHandler;
 
@@ -18,6 +19,12 @@ public class SignGuiPaint extends GuiScreen {
 	private GuiTextField nameInputBox;
 	private Sign sign;
 	private SuperPostPostTile tile;
+	
+	private Lurchsauna<String> possibilities = new Lurchsauna<String>();
+    private int possibleCount = 0;
+    private int possibleIndex = 0;
+
+	private boolean resetMouse;
 
 	public SignGuiPaint(Sign sign, SuperPostPostTile tile) {
 		this.sign = sign;
@@ -30,10 +37,6 @@ public class SignGuiPaint extends GuiScreen {
 		if(mc==null){
 			mc = FMLClientHandler.instance().getClient();
 		}
-//		if(sign==null){
-//			this.mc.displayGuiScreen(null);
-//			return;
-//		}
 		if(nameInputBox==null){
 			initGui();
 		}
@@ -49,6 +52,25 @@ public class SignGuiPaint extends GuiScreen {
 			nameInputBox.setText(name);
 		}
 		nameInputBox.drawTextBox();
+
+		if(possibilities.size()>0){
+			possibleCount = (possibleCount+1)%150;
+			if(possibleCount == 149){
+				possibleIndex = possibleIndex+1;
+			}
+			possibleIndex = possibleIndex%possibilities.size();
+			String str = possibilities.get(possibleIndex);
+			fontRendererObj.drawString(str, 
+					(int)(nameInputBox.xPosition+(nameInputBox.width-fontRendererObj.getStringWidth(str))/2.0), 
+					(int)(nameInputBox.yPosition+nameInputBox.height+5), 
+					Color.WHITE.getRGB());
+		}
+
+		if(resetMouse){
+			resetMouse = false;
+			org.lwjgl.input.Mouse.setGrabbed(false);
+		}
+		
 		super.drawScreen(mouseX, mouseY, partialTicks);
 	}
 
@@ -64,13 +86,6 @@ public class SignGuiPaint extends GuiScreen {
 		if(mc==null){
 			mc = FMLClientHandler.instance().getClient();
 		}
-		for(ResourceLocation now: Block.REGISTRY.getKeys()){
-			System.out.println(now);
-		}
-//		if(sign==null){
-//			this.mc.displayGuiScreen(null);
-//			return;
-//		}
 		ResourceLocation loc = sign==null ? tile.getPostPaint() : sign.paint;
 		String name;
 		if(loc==null){
@@ -80,6 +95,14 @@ public class SignGuiPaint extends GuiScreen {
 		}
 		nameInputBox.setText(name);
 		nameInputBox.setFocused(true);
+		Lurchsauna<String> neuPossibels = new Lurchsauna<String>();
+		for(String now: ResourceBrowser.getAllPNGs(mc)){
+			if(now.contains(nameInputBox.getText())){
+				neuPossibels.add(now);
+			}
+		}
+		possibilities = neuPossibels;
+		resetMouse = true;
 	}
 
 	@Override
@@ -90,6 +113,13 @@ public class SignGuiPaint extends GuiScreen {
 		}
 		super.keyTyped(par1, par2);
 		this.nameInputBox.textboxKeyTyped(par1, par2);
+		Lurchsauna<String> neuPossibels = new Lurchsauna<String>();
+		for(String now: ResourceBrowser.getAllPNGs(mc)){
+			if(now.contains(nameInputBox.getText())){
+				neuPossibels.add(now);
+			}
+		}
+		possibilities = neuPossibels;
 	}
 
 	@Override
@@ -108,6 +138,14 @@ public class SignGuiPaint extends GuiScreen {
 	protected void mouseClicked(int x, int y, int btn) throws IOException {
 		super.mouseClicked(x, y, btn);
 		this.nameInputBox.mouseClicked(x, y, btn);
+		String str = possibilities.get(possibleIndex);
+		if(x>=nameInputBox.xPosition+(nameInputBox.width-fontRendererObj.getStringWidth(str))/2.0
+				&& x<=nameInputBox.xPosition+(nameInputBox.width+fontRendererObj.getStringWidth(str))/2.0
+				&& y>=nameInputBox.yPosition+nameInputBox.height+5
+				&& y<=nameInputBox.yPosition+nameInputBox.height*2+5){
+			nameInputBox.setText(str);
+		}
+		possibilities = new Lurchsauna<String>(new String[]{str});
 	}
 
 	@Override
