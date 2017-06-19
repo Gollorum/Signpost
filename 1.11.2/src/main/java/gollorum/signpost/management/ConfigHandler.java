@@ -2,6 +2,8 @@ package gollorum.signpost.management;
 
 import java.io.File;
 
+import gollorum.signpost.BlockHandler;
+import gollorum.signpost.Signpost;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
@@ -57,9 +59,10 @@ public class ConfigHandler {
 	}
 
 	public enum RecipeCost{
-		NORMAL, EXPENSIVE, VERY_EXPENSIVE;
+		DEACTIVATED, NORMAL, EXPENSIVE, VERY_EXPENSIVE;
 		public static String[] allValues(){
 			String[] ret = {
+				DEACTIVATED.toString(),
 				NORMAL.toString(),
 				EXPENSIVE.toString(),
 				VERY_EXPENSIVE.toString(),
@@ -81,6 +84,7 @@ public class ConfigHandler {
 		if(cost==null){
 			cost = (Item) Item.REGISTRY.getObject(new ResourceLocation("minecraft:"+paymentItem));
 		}
+		Signpost.proxy.blockHandler.registerRecipes();
 	}
 
 	public static void loadClientSettings(){
@@ -110,9 +114,9 @@ public class ConfigHandler {
 		
 		costMult = config.getInt("distancePerPayment", category, 0, 0, Integer.MAX_VALUE, "The distance a Player can teleport with one item (the total cost of a teleportation is calculated using the total distance)(0 = unlimited)");
 	
-		signRec = RecipeCost.valueOf(config.getString("signpostRecipeCost", category, "NORMAL", "Changes the recipe for signposts", RecipeCost.allValues()));
+		signRec = RecipeCost.valueOf(config.getString("signpostRecipeCost", category, "NORMAL", "Changes the recipe for signposts (NORMAL/EXPENSIVE/VERY_EXPENSIVE/DEACTIVATED)", RecipeCost.allValues()));
 
-		waysRec = RecipeCost.valueOf(config.getString("waystoneRecipeCost", category, "NORMAL", "Changes the recipe for waystones", RecipeCost.allValues()));
+		waysRec = RecipeCost.valueOf(config.getString("waystoneRecipeCost", category, "NORMAL", "Changes the recipe for waystones (NORMAL/EXPENSIVE/VERY_EXPENSIVE/DEACTIVATED)", RecipeCost.allValues()));
 	}
 	
 	public static void loadSecurity(){

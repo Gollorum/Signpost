@@ -9,8 +9,11 @@ import gollorum.signpost.management.ConfigHandler;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.CraftingManager;
+import net.minecraft.item.crafting.IRecipe;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 
 public class BlockHandler {
@@ -58,108 +61,134 @@ public class BlockHandler {
 		GameRegistry.register(item);
 	}
 	
-	protected void registerRecipes() {
-		if(ConfigHandler.securityLevelWaystone.equals(ConfigHandler.SecurityLevel.ALL)&&!ConfigHandler.deactivateTeleportation){
-			waystoneRecipe();
+	public void registerRecipes() {
+		waystoneRecipe();
+		for(PostPost now: posts){
+			postRecipe(now);
 		}
-		if(ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.ALL) || ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.OWNERS)){
-			for(PostPost now: posts){
-				postRecipe(now);
-			}
-			for(BigPostPost now: bigposts){
-				bigPostRecipe(now);
-			}
+		for(BigPostPost now: bigposts){
+			bigPostRecipe(now);
 		}
 	}
 	
 	private void waystoneRecipe(){
-		switch(ConfigHandler.waysRec){
-			case EXPENSIVE:
-				GameRegistry.addRecipe(new ItemStack(base, 1), 
-						"SSS",
-						"PPP",
-						"SSS",
-						'S', Blocks.STONE,
-						'P', Items.ENDER_PEARL);
+		for(IRecipe now: CraftingManager.getInstance().getRecipeList()){
+			if(now.getRecipeOutput().getItem().equals(Item.getItemFromBlock(base))){
+				CraftingManager.getInstance().getRecipeList().remove(now);
 				break;
-			case VERY_EXPENSIVE:
-				GameRegistry.addRecipe(new ItemStack(base, 1), 
-						"SSS",
-						" P ",
-						"SSS",
-						'S', Blocks.COBBLESTONE,
-						'P', Items.NETHER_STAR);
-				break;
-			default:
-				GameRegistry.addRecipe(new ItemStack(base, 1), 
-						"SSS",
-						" P ",
-						"SSS",
-						'S', Blocks.COBBLESTONE,
-						'P', Items.ENDER_PEARL);
-				break;
+			}
+		}
+		if(ConfigHandler.securityLevelWaystone.equals(ConfigHandler.SecurityLevel.ALL)&&!ConfigHandler.deactivateTeleportation){
+			switch(ConfigHandler.waysRec){
+				case EXPENSIVE:
+					GameRegistry.addRecipe(new ItemStack(base, 1), 
+							"SSS",
+							"PPP",
+							"SSS",
+							'S', Blocks.STONE,
+							'P', Items.ENDER_PEARL);
+					break;
+				case VERY_EXPENSIVE:
+					GameRegistry.addRecipe(new ItemStack(base, 1), 
+							"SSS",
+							" P ",
+							"SSS",
+							'S', Blocks.STONE,
+							'P', Items.NETHER_STAR);
+					break;
+				case DEACTIVATED:
+					break;
+				default:
+					GameRegistry.addRecipe(new ItemStack(base, 1), 
+							"SSS",
+							" P ",
+							"SSS",
+							'S', Blocks.COBBLESTONE,
+							'P', Items.ENDER_PEARL);
+					break;
+			}
 		}
 	}
 	
 	private void postRecipe(PostPost post){
-		switch(ConfigHandler.signRec){
-			case EXPENSIVE:
-				GameRegistry.addRecipe(new ItemStack(post, 1),
-						"A",
-						"P",
-						"B",
-						'A', Items.SIGN,
-						'B', new ItemStack(post.type.baseItem, 1, post.type.metadata),
-						'P', Items.ENDER_PEARL);
+		for(IRecipe now: CraftingManager.getInstance().getRecipeList()){
+			if(now.getRecipeOutput().getItem().equals(Item.getItemFromBlock(post))){
+				CraftingManager.getInstance().getRecipeList().remove(now);
 				break;
-			case VERY_EXPENSIVE:
-				GameRegistry.addRecipe(new ItemStack(post, 1),
-						"A",
-						"P",
-						"B",
-						'A', Items.SIGN,
-						'B', new ItemStack(post.type.baseItem, 1, post.type.metadata),
-						'P', Items.NETHER_STAR);
-				break;
-			default:
-				GameRegistry.addRecipe(new ItemStack(post, 4),
-						"A",
-						"A",
-						"B",
-						'A', Items.SIGN,
-						'B', new ItemStack(post.type.baseItem, 1, post.type.metadata));
-				break;
+			}
+		}
+		if(ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.ALL) || ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.OWNERS)){
+			switch(ConfigHandler.signRec){
+				case EXPENSIVE:
+					GameRegistry.addRecipe(new ItemStack(post, 1),
+							"A",
+							"P",
+							"B",
+							'A', Items.SIGN,
+							'B', new ItemStack(post.type.baseItem, 1, post.type.metadata),
+							'P', Items.ENDER_PEARL);
+					break;
+				case VERY_EXPENSIVE:
+					GameRegistry.addRecipe(new ItemStack(post, 1),
+							"A",
+							"P",
+							"B",
+							'A', Items.SIGN,
+							'B', new ItemStack(post.type.baseItem, 1, post.type.metadata),
+							'P', Items.NETHER_STAR);
+					break;
+				case DEACTIVATED:
+					break;
+				default:
+					GameRegistry.addRecipe(new ItemStack(post, 4),
+							"A",
+							"A",
+							"B",
+							'A', Items.SIGN,
+							'B', new ItemStack(post.type.baseItem, 1, post.type.metadata));
+					break;
+			}
 		}
 	}
 	
 	private void bigPostRecipe(BigPostPost post){
-		switch(ConfigHandler.signRec){
-			case EXPENSIVE:
-				GameRegistry.addRecipe(new ItemStack(post, 1),
-						"AAA",
-						"APA",
-						" B ",
-						'A', Items.SIGN,
-						'B', new ItemStack(post.type.baseItem, 1, post.type.metadata),
-						'P', Items.ENDER_PEARL);
+		for(IRecipe now: CraftingManager.getInstance().getRecipeList()){
+			if(now.getRecipeOutput().getItem().equals(Item.getItemFromBlock(post))){
+				CraftingManager.getInstance().getRecipeList().remove(now);
 				break;
-			case VERY_EXPENSIVE:
-				GameRegistry.addRecipe(new ItemStack(post, 1),
-						"AAA",
-						"APA",
-						" B ",
-						'A', Items.SIGN,
-						'B', new ItemStack(post.type.baseItem, 1, post.type.metadata),
-						'P', Items.NETHER_STAR);
-				break;
-			default:
-				GameRegistry.addRecipe(new ItemStack(post, 4),
-						"AAA",
-						"AAA",
-						" B ",
-						'A', Items.SIGN,
-						'B', new ItemStack(post.type.baseItem, 1, post.type.metadata));
-				break;
+			}
+		}
+		if(ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.ALL) || ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.OWNERS)){
+			switch(ConfigHandler.signRec){
+				case EXPENSIVE:
+					GameRegistry.addRecipe(new ItemStack(post, 1),
+							"AAA",
+							"APA",
+							" B ",
+							'A', Items.SIGN,
+							'B', new ItemStack(post.type.baseItem, 1, post.type.metadata),
+							'P', Items.ENDER_PEARL);
+					break;
+				case VERY_EXPENSIVE:
+					GameRegistry.addRecipe(new ItemStack(post, 1),
+							"AAA",
+							"APA",
+							" B ",
+							'A', Items.SIGN,
+							'B', new ItemStack(post.type.baseItem, 1, post.type.metadata),
+							'P', Items.NETHER_STAR);
+					break;
+				case DEACTIVATED:
+					break;
+				default:
+					GameRegistry.addRecipe(new ItemStack(post, 4),
+							"AAA",
+							"AAA",
+							" B ",
+							'A', Items.SIGN,
+							'B', new ItemStack(post.type.baseItem, 1, post.type.metadata));
+					break;
+			}
 		}
 	}
 }
