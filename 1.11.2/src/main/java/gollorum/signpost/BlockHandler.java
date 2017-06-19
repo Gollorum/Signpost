@@ -64,20 +64,10 @@ public class BlockHandler {
 		}
 		if(ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.ALL) || ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.OWNERS)){
 			for(PostPost now: posts){
-				GameRegistry.addRecipe(new ItemStack(now, 4),
-										"A",
-										"A",
-										"B",
-										'A', Items.SIGN,
-										'B', new ItemStack(now.type.baseItem, 1, now.type.metadata));
+				postRecipe(now);
 			}
 			for(BigPostPost now: bigposts){
-				GameRegistry.addRecipe(new ItemStack(now, 4),
-										"AAA",
-										"AAA",
-										" B ",
-										'A', Items.SIGN,
-										'B', new ItemStack(now.type.baseItem, 1, now.type.metadata));
+				bigPostRecipe(now);
 			}
 		}
 	}
@@ -87,10 +77,10 @@ public class BlockHandler {
 			case EXPENSIVE:
 				GameRegistry.addRecipe(new ItemStack(base, 1), 
 						"SSS",
-						" P ",
+						"PPP",
 						"SSS",
 						'S', Blocks.STONE,
-						'P', new ItemStack(Items.ENDER_PEARL, 5));
+						'P', Items.ENDER_PEARL);
 				break;
 			case VERY_EXPENSIVE:
 				GameRegistry.addRecipe(new ItemStack(base, 1), 
@@ -107,6 +97,68 @@ public class BlockHandler {
 						"SSS",
 						'S', Blocks.COBBLESTONE,
 						'P', Items.ENDER_PEARL);
+				break;
+		}
+	}
+	
+	private void postRecipe(PostPost post){
+		switch(ConfigHandler.signRec){
+			case EXPENSIVE:
+				GameRegistry.addRecipe(new ItemStack(post, 1),
+						"A",
+						"P",
+						"B",
+						'A', Items.SIGN,
+						'B', new ItemStack(post.type.baseItem, 1, post.type.metadata),
+						'P', Items.ENDER_PEARL);
+				break;
+			case VERY_EXPENSIVE:
+				GameRegistry.addRecipe(new ItemStack(post, 1),
+						"A",
+						"P",
+						"B",
+						'A', Items.SIGN,
+						'B', new ItemStack(post.type.baseItem, 1, post.type.metadata),
+						'P', Items.NETHER_STAR);
+				break;
+			default:
+				GameRegistry.addRecipe(new ItemStack(post, 4),
+						"A",
+						"A",
+						"B",
+						'A', Items.SIGN,
+						'B', new ItemStack(post.type.baseItem, 1, post.type.metadata));
+				break;
+		}
+	}
+	
+	private void bigPostRecipe(BigPostPost post){
+		switch(ConfigHandler.signRec){
+			case EXPENSIVE:
+				GameRegistry.addRecipe(new ItemStack(post, 1),
+						"AAA",
+						"APA",
+						" B ",
+						'A', Items.SIGN,
+						'B', new ItemStack(post.type.baseItem, 1, post.type.metadata),
+						'P', Items.ENDER_PEARL);
+				break;
+			case VERY_EXPENSIVE:
+				GameRegistry.addRecipe(new ItemStack(post, 1),
+						"AAA",
+						"APA",
+						" B ",
+						'A', Items.SIGN,
+						'B', new ItemStack(post.type.baseItem, 1, post.type.metadata),
+						'P', Items.NETHER_STAR);
+				break;
+			default:
+				GameRegistry.addRecipe(new ItemStack(post, 4),
+						"AAA",
+						"AAA",
+						" B ",
+						'A', Items.SIGN,
+						'B', new ItemStack(post.type.baseItem, 1, post.type.metadata));
 				break;
 		}
 	}
