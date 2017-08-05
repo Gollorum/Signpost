@@ -59,7 +59,7 @@ public class PostPost extends SuperPostPost {
 		}
 	}
 
-	public static enum HitTarget{BASE1, BASE2, POST;}
+	public static enum HitTarget{BASE1, BASE2, POST, STONE;}
 	
 	public static class Hit{
 		public HitTarget target;
@@ -297,7 +297,8 @@ public class PostPost extends SuperPostPost {
 		if(player.isSneaking())
 			head.y-=0.08;
 		Vec3d look = player.getLookVec();
-		DoubleBaseInfo bases = getWaystonePostTile(world, new BlockPos(x, y, z)).getBases();
+		PostPostTile tile = getWaystonePostTile(world, new BlockPos(x, y, z));
+		DoubleBaseInfo bases = tile.getBases();
 		DDDVector rotPos = new DDDVector(x+0.5,y+0.5,z+0.5);
 		DDDVector signPos;
 		DDDVector edges = new DDDVector(1.4375, 0.375, 0.0625);
@@ -316,15 +317,18 @@ public class PostPost extends SuperPostPost {
 		}
 		Cuboid sign2 = new Cuboid(signPos, edges, bases.sign2.calcRot(x, z), rotPos);
 		Cuboid post = new Cuboid(new DDDVector(x+0.375, y, z+0.375), new DDDVector(0.25, 1, 0.25), 0);
+		Cuboid waystone = new Cuboid(new DDDVector(x+0.25, y, z+0.25), new DDDVector(0.5, 0.5, 0.5), 0);
 
 		DDDVector start = new DDDVector(head);
 		DDDVector end = start.add(new DDDVector(look.xCoord, look.yCoord, look.zCoord));
 		Intersect sign1Hit = sign1.traceLine(start, end, true);
 		Intersect sign2Hit = sign2.traceLine(start, end, true);
 		Intersect postHit = post.traceLine(start, end, true);
+		Intersect waystoneHit = waystone.traceLine(start, end, true);
 		double sign1Dist = sign1Hit.exists&&bases.sign1.base!=null&&bases.sign1.base.hasName()?sign1Hit.pos.distance(start):Double.MAX_VALUE;
 		double sign2Dist = sign2Hit.exists&&bases.sign2.base!=null&&bases.sign2.base.hasName()?sign2Hit.pos.distance(start):Double.MAX_VALUE;
 		double postDist = postHit.exists?postHit.pos.distance(start):Double.MAX_VALUE;
+		double waystoneDist = waystoneHit.exists&&tile.isWaystone()?waystoneHit.pos.distance(start):Double.MAX_VALUE;
 		double dist;
 		HitTarget target;
 		DDDVector pos;
@@ -336,6 +340,11 @@ public class PostPost extends SuperPostPost {
 			dist = sign2Dist;
 			pos = sign2Hit.pos;
 			target = HitTarget.BASE2;
+		}
+		if(waystoneDist<=dist){
+			dist = waystoneDist;
+			pos = waystoneHit.pos;
+			target = HitTarget.STONE;
 		}
 		if(postDist<=dist){
 			dist = postDist;
@@ -357,5 +366,10 @@ public class PostPost extends SuperPostPost {
 		}else{
 			return null;
 		}
+	}
+
+	@Override
+	protected boolean isHitWaystone(Object hitObj) {
+		return ((Hit)hitObj).target.equals(HitTarget.STONE);
 	}
 }

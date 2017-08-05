@@ -45,6 +45,7 @@ public class PostPostTile extends SuperPostPostTile {
 	
 	@Override
 	public void onBlockDestroy(MyBlockPos pos) {
+		super.onBlockDestroy(pos);
 		isCanceled = true;
 		DoubleBaseInfo bases = getBases();
 		if(bases.sign1.overlay!=null){

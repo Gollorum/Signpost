@@ -12,7 +12,7 @@ import gollorum.signpost.util.MyBlockPos;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.MinecraftForge;
 
-public class BasePostTile extends TileEntity {
+public class BasePostTile extends TileEntity implements WaystoneContainer {
 
 	public boolean isCanceled = false;
 
@@ -44,7 +44,7 @@ public class BasePostTile extends TileEntity {
 		if(getBaseInfo()!=null){
 			return;
 		}
-		PostHandler.allWaystones.add(new BaseInfo(null, toPos(), null));
+		PostHandler.allWaystones.add(new BaseInfo(BasePost.generateName(), toPos(), null));
 	}
 
 	public MyBlockPos toPos(){
@@ -71,12 +71,14 @@ public class BasePostTile extends TileEntity {
 		}
 	}
 
+	@Override
 	public void setName(String name) {
 		BaseInfo ws = getBaseInfo();
 		ws.name = name;
 		NetworkHandler.netWrap.sendToServer(new BaseUpdateServerMessage(ws, false));
 	}
 
+	@Override
 	public String getName() {
 		BaseInfo ws = getBaseInfo();
 		return ws == null ? "null" : getBaseInfo().toString();

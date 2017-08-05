@@ -58,7 +58,7 @@ public class BigPostPost extends SuperPostPost {
 		}
 	}
 	
-	public static enum BigHitTarget{BASE, POST;}
+	public static enum BigHitTarget{BASE, POST, STONE;}
 	
 	public static class BigHit{
 		public BigHitTarget target;
@@ -278,7 +278,8 @@ public class BigPostPost extends SuperPostPost {
 		if(player.isSneaking())
 			head.y-=0.08;
 		Vec3d look = player.getLookVec();
-		BigBaseInfo bases = getWaystonePostTile(world, x, y, z).getBases();
+		BigPostPostTile tile = getWaystonePostTile(world, x, y, z);
+		BigBaseInfo bases = tile.getBases();
 		DDDVector rotPos = new DDDVector(x+0.5,y+0.5,z+0.5);
 		DDDVector signPos;
 		DDDVector edges = new DDDVector(1.4375, 0.75, 0.0625);
@@ -290,19 +291,27 @@ public class BigPostPost extends SuperPostPost {
 		}
 		Cuboid sign = new Cuboid(signPos, edges, bases.sign.calcRot(x, z), rotPos);
 		Cuboid post = new Cuboid(new DDDVector(x+0.375, y, z+0.375), new DDDVector(0.25, 1, 0.25), 0);
+		Cuboid waystone = new Cuboid(new DDDVector(x+0.25, y, z+0.25), new DDDVector(0.5, 0.5, 0.5), 0);
 
 		DDDVector start = new DDDVector(head.x, head.y, head.z);
 		DDDVector end = start.add(new DDDVector(look.xCoord, look.yCoord, look.zCoord));
 		Intersect signHit = sign.traceLine(start, end, true);
 		Intersect postHit = post.traceLine(start, end, true);
+		Intersect waystoneHit = waystone.traceLine(start, end, true);
 		double signDist = signHit.exists&&bases.sign.base!=null?signHit.pos.distance(start):Double.MAX_VALUE;
 		double postDist = postHit.exists?postHit.pos.distance(start):Double.MAX_VALUE/2;
+		double waystoneDist = waystoneHit.exists&&tile.isWaystone()?waystoneHit.pos.distance(start):Double.MAX_VALUE;
 		double dist;
 		BigHitTarget target;
 		DDDVector pos;
 		dist = signDist;
 		pos = signHit.pos;
 		target = BigHitTarget.BASE;
+		if(waystoneDist<dist){
+			dist = waystoneDist;
+			pos = waystoneHit.pos;
+			target = BigHitTarget.STONE;
+		}
 		if(postDist<dist){
 			dist = postDist;
 			pos = postHit.pos;
@@ -318,6 +327,12 @@ public class BigPostPost extends SuperPostPost {
 		} else {
 			return null;
 		}
+	}
+
+	@Override
+	protected boolean isHitWaystone(Object hitObj) {
+		BigHit hit = (BigHit)hitObj;
+		return hit.target == BigHitTarget.STONE;
 	}
 	
 }

@@ -1,10 +1,12 @@
 package gollorum.signpost.network.handlers;
 
+import gollorum.signpost.blocks.BigPostPostTile;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.SendBigPostBasesMessage;
 import gollorum.signpost.util.BigBaseInfo;
 import gollorum.signpost.util.Sign.OverlayType;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -26,6 +28,10 @@ public class SendBigPostBasesHandler implements IMessageHandler<SendBigPostBases
 		bases.description = message.description;
 		bases.sign.paint = message.paint;
 		bases.postPaint = message.postPaint;
+		TileEntity tile = message.pos.getTile();
+		if(tile instanceof BigPostPostTile){
+			((BigPostPostTile)tile).isWaystone();
+		}
 		if(ctx.side.equals(Side.SERVER)){
 			ctx.getServerHandler().playerEntity.world.getTileEntity(message.pos.toBlockPos()).markDirty();
 			NetworkHandler.netWrap.sendToAll(message);

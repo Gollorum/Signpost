@@ -2,25 +2,34 @@ package gollorum.signpost.blocks;
 
 import java.util.UUID;
 
+import gollorum.signpost.BlockHandler;
+import gollorum.signpost.event.UpdateWaystoneEvent;
+import gollorum.signpost.management.PostHandler;
+import gollorum.signpost.network.NetworkHandler;
+import gollorum.signpost.network.messages.BaseUpdateClientMessage;
+import gollorum.signpost.network.messages.BaseUpdateServerMessage;
+import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.util.Sign;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.MinecraftForge;
 
-public abstract class SuperPostPostTile extends TileEntity {
+public abstract class SuperPostPostTile extends TileEntity implements WaystoneContainer{
 
 	public boolean isItem = false;
 	public boolean isCanceled = false;
 	public UUID owner;
 	
+	@Deprecated
+	public boolean isWaystone = false;
+	
 	public final MyBlockPos toPos(){
-		if(world==null||world.isRemote){
-			return new MyBlockPos("", pos.getX(), pos.getY(), pos.getZ(), dim());
-		}else{
-			return new MyBlockPos(world.getWorldInfo().getWorldName(), pos.getX(), pos.getY(), pos.getZ(), dim());
-		}
+		return new MyBlockPos(world, pos.getX(), pos.getY(), pos.getZ(), dim());
 	}
 
 	public final int dim(){
@@ -38,7 +47,23 @@ public abstract class SuperPostPostTile extends TileEntity {
 		return loc==null?"null":loc.getResourceDomain()+":"+loc.getResourcePath();
 	}
 
-	public abstract void onBlockDestroy(MyBlockPos pos);
+	public void onBlockDestroy(MyBlockPos pos){
+		if(isWaystone()){
+			destroyWaystone();
+		}
+	}
+	
+	public void destroyWaystone(){
+		MyBlockPos pos = toPos();
+		isWaystone = false;
+		EntityItem item = new EntityItem(world, pos.x, pos.y, pos.z, new ItemStack(BlockHandler.base, 1));
+		world.spawnEntity(item);
+		BaseInfo base = PostHandler.allWaystones.getByPos(pos);
+		if(PostHandler.allWaystones.removeByPos(pos)){
+			MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.DESTROYED, world, base.pos.x, base.pos.y, base.pos.z, base==null?"":base.name));
+			NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
+		}
+	}
 	
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound tagCompound) {
@@ -76,4 +101,29 @@ public abstract class SuperPostPostTile extends TileEntity {
 	public abstract Sign getSign(EntityPlayer player);
 	public abstract ResourceLocation getPostPaint();
 	public abstract void setPostPaint(ResourceLocation loc);
+	
+	public boolean isWaystone(){
+		return isWaystone = (getBaseInfo()!=null);
+	}
+
+	public BaseInfo getBaseInfo(){
+		return PostHandler.allWaystones.getByPos(toPos());
+	}
+
+	@Override
+	public void setName(String name) {
+		BaseInfo ws = getBaseInfo();
+		ws.name = name;
+		NetworkHandler.netWrap.sendToServer(new BaseUpdateServerMessage(ws, false));
+	}
+
+	@Override
+	public String getName() {
+		BaseInfo ws = getBaseInfo();
+		if(ws==null){
+			System.out.println("ws is null!");
+		}
+		return ws == null ? "null" : getBaseInfo().toString();
+	}
+	
 }

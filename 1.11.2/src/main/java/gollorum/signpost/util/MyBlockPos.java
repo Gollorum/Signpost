@@ -1,12 +1,17 @@
 package gollorum.signpost.util;
 
 import gollorum.signpost.management.ConfigHandler;
+import gollorum.signpost.management.PostHandler;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.client.FMLClientHandler;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
+import net.minecraftforge.fml.relauncher.Side;
 
 public class MyBlockPos{
 	
@@ -19,7 +24,11 @@ public class MyBlockPos{
 	}
 	
 	public MyBlockPos(World world, int x, int y, int z, int dim){
-		this(world.getWorldInfo().getWorldName(), x, y, z, dim);
+		this((world==null||world.isRemote)?"":world.getWorldInfo().getWorldName(), x, y, z, dim);
+	}
+	
+	public MyBlockPos(String world, double x, double y, double z, int dim){
+		this(world, (int)x, (int)y, (int)z, dim);
 	}
 
 	public MyBlockPos(String world, BlockPos pos, int dim){
@@ -35,6 +44,10 @@ public class MyBlockPos{
 		this.z = z;
 		this.world = world;
 		this.dim = dim;
+	}
+
+	public MyBlockPos(MyBlockPos pos) {
+		this(pos.world, pos.x, pos.y, pos.z, pos.dim);
 	}
 
 	public static enum Connection{VALID, WORLD, DIST}
@@ -180,4 +193,17 @@ public class MyBlockPos{
 		return world+": "+x+"|"+y+"|"+z+" in "+dim;
 	}
 	
+	public TileEntity getTile(){
+		World world;
+		if(FMLCommonHandler.instance().getSide().equals(Side.SERVER)){
+			world = PostHandler.getWorldByName(this.world);
+		}else{
+			world = FMLClientHandler.instance().getWorldClient();
+		}
+		if(world!=null){
+			return world.getTileEntity(this.toBlockPos());
+		}else{
+			return null;
+		}
+	}
 }

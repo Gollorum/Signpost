@@ -29,7 +29,7 @@ public class TeleportMeHandler implements IMessageHandler<TeleportMeMessage, IMe
 				if(!(player.dimension==message.base.pos.dim)){
 					player.changeDimension(message.base.pos.dim);
 				}
-				ctx.getServerHandler().playerEntity.setPositionAndUpdate(message.base.pos.x+0.5, message.base.pos.y+1, message.base.pos.z+0.5);
+				ctx.getServerHandler().playerEntity.setPositionAndUpdate(message.base.pos.x, message.base.pos.y, message.base.pos.z);
 			}
 		}else{
 			return new ChatMessage("signpost.notDiscovered", "<Waystone>", message.base.name);

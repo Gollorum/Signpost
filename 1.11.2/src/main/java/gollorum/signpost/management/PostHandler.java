@@ -1,9 +1,12 @@
 package gollorum.signpost.management;
 
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import gollorum.signpost.SPEventHandler;
+import gollorum.signpost.blocks.BigPostPostTile;
+import gollorum.signpost.blocks.PostPostTile;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.ChatMessage;
 import gollorum.signpost.network.messages.TeleportRequestMessage;
@@ -32,6 +35,12 @@ public class PostHandler {
 	//ServerSide
 	public static Lurchpaerchensauna<UUID, TeleportInformation> awaiting =  new Lurchpaerchensauna<UUID, TeleportInformation>(); 
 
+	/**
+	 * UUID = the player;
+	 * Pair.StringSet = the discovered waystones;
+	 * Pair.b.a = the waystones left to place;
+	 * Pair.b.b = the signposts left to place;
+	 */
 	public static Lurchpaerchensauna<UUID, Pair<StringSet, Pair<Integer, Integer>>> playerKnownWaystones = new Lurchpaerchensauna<UUID, Pair<StringSet, Pair<Integer, Integer>>>(){
 		@Override
 		public Pair<StringSet, Pair<Integer, Integer>> get(Object obj){
@@ -48,6 +57,10 @@ public class PostHandler {
 			}
 		}
 	};
+	
+	public static boolean doesPlayerKnowWaystone(EntityPlayerMP player, BaseInfo waystone){
+		return playerKnownWaystones.get(player.getUniqueID()).a.contains(waystone.name);
+	}
 	
 	public static void init(){
 		allWaystones = new StonedHashSet();
@@ -69,6 +82,29 @@ public class PostHandler {
 		};
 		posts = new Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo>();
 		bigPosts = new Lurchpaerchensauna<MyBlockPos, BigBaseInfo>();
+	}
+	
+	public static void refreshPostWaystones(){
+		refreshDoublePostWaystones();
+		refreshBigPostWaystones();
+	}
+	
+	public static void refreshDoublePostWaystones(){
+		for(Entry<MyBlockPos, DoubleBaseInfo> now: posts.entrySet()){
+			PostPostTile tile = (PostPostTile) now.getKey().getTile();
+			if(tile!=null){
+				tile.isWaystone();
+			}
+		}
+	}
+	
+	public static void refreshBigPostWaystones(){
+		for(Entry<MyBlockPos, BigBaseInfo> now: bigPosts.entrySet()){
+			BigPostPostTile tile = (BigPostPostTile) now.getKey().getTile();
+			if(tile!=null){
+				tile.isWaystone();
+			}
+		}
 	}
 	
 	public static BaseInfo getWSbyName(String name){
@@ -282,8 +318,8 @@ public class PostHandler {
 	}
 
 	public static boolean addRep(BaseInfo ws) {
-		BaseInfo toDelete = allWaystones.getByPos(ws.pos);
-		allWaystones.removeByPos(toDelete.pos);
+		BaseInfo toDelete = allWaystones.getByPos(ws.blockPos);
+		allWaystones.removeByPos(toDelete.blockPos);
 		allWaystones.add(ws);
 		return true;
 	}

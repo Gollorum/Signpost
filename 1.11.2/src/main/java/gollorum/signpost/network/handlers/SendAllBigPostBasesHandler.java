@@ -11,6 +11,7 @@ public class SendAllBigPostBasesHandler implements IMessageHandler<SendAllBigPos
 	@Override
 	public IMessage onMessage(SendAllBigPostBasesMessage message, MessageContext ctx) {
 		PostHandler.bigPosts = message.toPostMap();
+		PostHandler.refreshBigPostWaystones();
 		return null;
 	}
 	

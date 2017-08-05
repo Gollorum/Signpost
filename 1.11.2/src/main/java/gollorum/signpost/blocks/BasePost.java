@@ -47,10 +47,12 @@ public class BasePost extends BlockContainer {
 		if (!world.isRemote) {
 			BaseInfo ws = getWaystoneRootTile(world, pos).getBaseInfo();
 			if (!player.isSneaking()) {
-				if (!ConfigHandler.deactivateTeleportation) {
-					NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.name), (EntityPlayerMP) player);
+				if(!PostHandler.doesPlayerKnowWaystone((EntityPlayerMP) player, ws)){
+					if (!ConfigHandler.deactivateTeleportation) {
+						NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.name), (EntityPlayerMP) player);
+					}
+					PostHandler.addDiscovered(player.getUniqueID(), ws);
 				}
-				PostHandler.addDiscovered(player.getUniqueID(), ws);
 			} else {
 				if (!ConfigHandler.deactivateTeleportation
 						&& ConfigHandler.securityLevelWaystone.canUse((EntityPlayerMP) player, ""+ws.owner)) {
