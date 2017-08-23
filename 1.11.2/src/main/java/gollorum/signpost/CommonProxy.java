@@ -1,8 +1,8 @@
 package gollorum.signpost;
 
-import gollorum.signpost.blocks.BasePostTile;
-import gollorum.signpost.blocks.BigPostPostTile;
-import gollorum.signpost.blocks.PostPostTile;
+import gollorum.signpost.blocks.tiles.BasePostTile;
+import gollorum.signpost.blocks.tiles.BigPostPostTile;
+import gollorum.signpost.blocks.tiles.PostPostTile;
 import gollorum.signpost.management.PlayerStorage;
 import gollorum.signpost.management.PlayerStore;
 import gollorum.signpost.network.NetworkHandler;
@@ -19,6 +19,8 @@ public class CommonProxy {
 	public CommonProxy(){
 		blockHandler = new BlockHandler();
 	}
+	
+	void preInit(){}
 	
 	void init(){
 		blockHandler.init();

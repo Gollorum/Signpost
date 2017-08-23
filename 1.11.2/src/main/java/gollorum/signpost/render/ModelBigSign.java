@@ -2,7 +2,7 @@ package gollorum.signpost.render;
 
 import org.lwjgl.opengl.GL11;
 
-import gollorum.signpost.blocks.BigPostPostTile;
+import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.util.BigBaseInfo;
 import net.minecraft.client.model.ModelBase;
 import net.minecraftforge.fml.relauncher.Side;

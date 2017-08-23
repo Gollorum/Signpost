@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.Collection;
 
 import gollorum.signpost.blocks.SuperPostPost;
-import gollorum.signpost.blocks.SuperPostPostTile;
+import gollorum.signpost.blocks.tiles.SuperPostPostTile;
 import gollorum.signpost.util.ResourceBrowser;
 import gollorum.signpost.util.Sign;
 import gollorum.signpost.util.collections.Lurchsauna;

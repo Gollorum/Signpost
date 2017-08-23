@@ -5,6 +5,7 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 
 import gollorum.signpost.Signpost;
+import gollorum.signpost.blocks.tiles.SuperPostPostTile;
 import gollorum.signpost.event.UpdateWaystoneEvent;
 import gollorum.signpost.event.UseSignpostEvent;
 import gollorum.signpost.items.CalibratedPostWrench;

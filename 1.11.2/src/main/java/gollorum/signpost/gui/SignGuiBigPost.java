@@ -3,7 +3,7 @@ package gollorum.signpost.gui;
 import java.awt.Color;
 import java.io.IOException;
 
-import gollorum.signpost.blocks.BigPostPostTile;
+import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;

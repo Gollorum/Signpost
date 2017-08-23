@@ -1,7 +1,7 @@
 package gollorum.signpost.network.messages;
 
-import gollorum.signpost.blocks.PostPostTile;
-import gollorum.signpost.blocks.SuperPostPostTile;
+import gollorum.signpost.blocks.tiles.PostPostTile;
+import gollorum.signpost.blocks.tiles.SuperPostPostTile;
 import gollorum.signpost.util.DoubleBaseInfo;
 import gollorum.signpost.util.MyBlockPos;
 import io.netty.buffer.ByteBuf;

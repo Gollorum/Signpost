@@ -57,6 +57,7 @@ public class Signpost{
 		configFolder.mkdirs();
 		configFile = new File(configFolder.getPath(), MODID + ".cfg");
 		ConfigHandler.init(configFile);
+		proxy.preInit();
         
 	}
 

@@ -1,8 +1,12 @@
 package gollorum.signpost;
 
+import java.util.ArrayList;
+
+import gollorum.signpost.blocks.BaseModelPost;
 import gollorum.signpost.blocks.BasePost;
 import gollorum.signpost.blocks.BigPostPost;
 import gollorum.signpost.blocks.BigPostPost.BigPostType;
+import gollorum.signpost.blocks.ItemBlockWithMeta;
 import gollorum.signpost.blocks.PostPost;
 import gollorum.signpost.blocks.PostPost.PostType;
 import gollorum.signpost.management.ConfigHandler;
@@ -19,6 +23,7 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 public class BlockHandler {
 
 	public static BasePost base = new BasePost();
+	public static BaseModelPost basemodel = new BaseModelPost();
 	
 	public static final PostPost post_oak = new PostPost(PostType.OAK);
 	public static final PostPost post_spruce = new PostPost(PostType.SPRUCE);
@@ -28,7 +33,7 @@ public class BlockHandler {
 	public static final PostPost post_big_oak = new PostPost(PostType.BIGOAK);
 	public static final PostPost post_iron = new PostPost(PostType.IRON);
 	public static final PostPost post_stone = new PostPost(PostType.STONE);
-	public static final PostPost[] posts = {post_oak, post_spruce, post_birch, post_jungle, post_acacia, post_big_oak, post_iron, post_stone};
+	public static  final PostPost[] posts = {post_oak, post_spruce, post_birch, post_jungle, post_acacia, post_big_oak, post_iron, post_stone};
 
 	public static final BigPostPost bigpost_oak = new BigPostPost(BigPostType.OAK);
 	public static final BigPostPost bigpost_spruce = new BigPostPost(BigPostType.SPRUCE);
@@ -40,11 +45,14 @@ public class BlockHandler {
 	public static final BigPostPost bigpost_stone = new BigPostPost(BigPostType.STONE);
 	public static final BigPostPost[] bigposts = {bigpost_oak, bigpost_spruce, bigpost_birch, bigpost_jungle, bigpost_acacia, bigpost_big_oak, bigpost_iron, bigpost_stone};
 	
+	protected ArrayList<ItemBlockWithMeta>  baseModelItems = new ArrayList<ItemBlockWithMeta>();
+	
 	public static void init(){
 	}
 	
 	public void register(){
 		registerBlock(base);
+		registerBlock(basemodel);
 		for(PostPost now: posts){
 			registerBlock(now);
 		}
@@ -56,7 +64,13 @@ public class BlockHandler {
 	
 	public void registerBlock(Block block){
 		GameRegistry.register(block);
-		ItemBlock item = new ItemBlock(block);
+		ItemBlock item;
+		if(block instanceof BaseModelPost){
+			item = new ItemBlockWithMeta(block);
+			
+		}else{
+			item = new ItemBlock(block);
+		}
 		item.setRegistryName(block.getRegistryName());
 		GameRegistry.register(item);
 	}

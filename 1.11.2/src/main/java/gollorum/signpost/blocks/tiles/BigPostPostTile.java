@@ -1,6 +1,7 @@
-package gollorum.signpost.blocks;
+package gollorum.signpost.blocks.tiles;
 
 import gollorum.signpost.SPEventHandler;
+import gollorum.signpost.blocks.BigPostPost;
 import gollorum.signpost.blocks.BigPostPost.BigHit;
 import gollorum.signpost.blocks.BigPostPost.BigHitTarget;
 import gollorum.signpost.blocks.BigPostPost.BigPostType;

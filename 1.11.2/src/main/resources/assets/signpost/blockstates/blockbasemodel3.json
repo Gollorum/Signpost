@@ -1,0 +1,6 @@
+{
+  "parent": "blockbasemodel",
+  "defaults": {
+      "model": "signpost:ws4tri.obj"
+  }
+}

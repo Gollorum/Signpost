@@ -1,10 +1,10 @@
 package gollorum.signpost.gui;
 
 import gollorum.signpost.Signpost;
-import gollorum.signpost.blocks.BigPostPostTile;
-import gollorum.signpost.blocks.PostPostTile;
-import gollorum.signpost.blocks.SuperPostPostTile;
 import gollorum.signpost.blocks.WaystoneContainer;
+import gollorum.signpost.blocks.tiles.BigPostPostTile;
+import gollorum.signpost.blocks.tiles.PostPostTile;
+import gollorum.signpost.blocks.tiles.SuperPostPostTile;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;

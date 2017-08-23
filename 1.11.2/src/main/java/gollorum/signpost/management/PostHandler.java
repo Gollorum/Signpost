@@ -5,8 +5,8 @@ import java.util.Map.Entry;
 import java.util.UUID;
 
 import gollorum.signpost.SPEventHandler;
-import gollorum.signpost.blocks.BigPostPostTile;
-import gollorum.signpost.blocks.PostPostTile;
+import gollorum.signpost.blocks.tiles.BigPostPostTile;
+import gollorum.signpost.blocks.tiles.PostPostTile;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.ChatMessage;
 import gollorum.signpost.network.messages.TeleportRequestMessage;

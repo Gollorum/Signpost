@@ -1,8 +1,9 @@
-package gollorum.signpost.blocks;
+package gollorum.signpost.blocks.tiles;
 
 import java.util.UUID;
 
 import gollorum.signpost.BlockHandler;
+import gollorum.signpost.blocks.WaystoneContainer;
 import gollorum.signpost.event.UpdateWaystoneEvent;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;

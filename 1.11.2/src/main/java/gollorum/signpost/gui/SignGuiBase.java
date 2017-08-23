@@ -3,12 +3,9 @@ package gollorum.signpost.gui;
 import java.awt.Color;
 import java.io.IOException;
 
-import gollorum.signpost.blocks.BasePostTile;
-import gollorum.signpost.blocks.SuperPostPostTile;
 import gollorum.signpost.blocks.WaystoneContainer;
 import gollorum.signpost.management.PostHandler;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.fml.client.FMLClientHandler;
 
 public class SignGuiBase extends GuiScreen {

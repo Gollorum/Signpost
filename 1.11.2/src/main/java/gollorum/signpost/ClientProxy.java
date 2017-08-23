@@ -1,9 +1,10 @@
 package gollorum.signpost;
 
-import gollorum.signpost.blocks.PostPostTile;
+import gollorum.signpost.blocks.tiles.PostPostTile;
 import gollorum.signpost.render.PostRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.World;
+import net.minecraftforge.client.model.obj.OBJLoader;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
@@ -11,6 +12,12 @@ public class ClientProxy extends CommonProxy{
 
 	public ClientProxy(){
 		blockHandler = new BlockHandlerClient();
+	}
+	
+	@Override
+	void preInit(){
+		super.preInit();
+		OBJLoader.INSTANCE.addDomain("signpost");
 	}
 	
 	@Override

@@ -4,9 +4,9 @@ import java.util.Map.Entry;
 import java.util.UUID;
 
 import gollorum.signpost.blocks.BasePost;
-import gollorum.signpost.blocks.BasePostTile;
 import gollorum.signpost.blocks.SuperPostPost;
-import gollorum.signpost.blocks.SuperPostPostTile;
+import gollorum.signpost.blocks.tiles.BasePostTile;
+import gollorum.signpost.blocks.tiles.SuperPostPostTile;
 import gollorum.signpost.items.CalibratedPostWrench;
 import gollorum.signpost.items.PostWrench;
 import gollorum.signpost.management.ConfigHandler;

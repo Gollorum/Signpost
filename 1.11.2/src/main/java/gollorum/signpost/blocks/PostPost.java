@@ -1,6 +1,8 @@
 package gollorum.signpost.blocks;
 
 import gollorum.signpost.Signpost;
+import gollorum.signpost.blocks.tiles.PostPostTile;
+import gollorum.signpost.blocks.tiles.SuperPostPostTile;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;

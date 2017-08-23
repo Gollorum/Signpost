@@ -2,7 +2,7 @@ package gollorum.signpost.network.handlers;
 
 import java.util.Map.Entry;
 
-import gollorum.signpost.blocks.SuperPostPostTile;
+import gollorum.signpost.blocks.tiles.SuperPostPostTile;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.messages.BaseUpdateClientMessage;
 import gollorum.signpost.util.BaseInfo;

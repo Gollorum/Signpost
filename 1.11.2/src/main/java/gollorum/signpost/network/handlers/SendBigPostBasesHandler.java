@@ -1,6 +1,6 @@
 package gollorum.signpost.network.handlers;
 
-import gollorum.signpost.blocks.BigPostPostTile;
+import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.SendBigPostBasesMessage;

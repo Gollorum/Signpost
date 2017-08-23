@@ -3,7 +3,7 @@ package gollorum.signpost.network.messages;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-import gollorum.signpost.blocks.SuperPostPostTile;
+import gollorum.signpost.blocks.tiles.SuperPostPostTile;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.DoubleBaseInfo;
