@@ -1,0 +1,48 @@
+{
+   "parent": "block/block",
+   "textures": {
+      "type": "minecraft:blocks/planks_oak",
+      "all": "#type"
+   },
+   "elements": [
+      {   "from": [ 6, 0, 6 ],
+          "to": [ 10, 16, 10 ],
+          "faces": {
+              "down":  { "texture": "#type", "cullface": "down" },
+              "up":    { "texture": "#type", "cullface": "up" },
+              "north": { "texture": "#type", "cullface": "north" },
+              "south": { "texture": "#type", "cullface": "south" },
+              "west":  { "texture": "#type", "cullface": "west" },
+              "east":  { "texture": "#type", "cullface": "east" }
+          }
+      },
+      {   "from": [ 0, 1, 10 ],
+          "to": [ 16, 15, 11 ],
+          "faces": {
+              "down":  { "texture": "#type", "cullface": "down" },
+              "up":    { "texture": "#type", "cullface": "up" },
+              "north": { "texture": "#type", "cullface": "north" },
+              "south": { "texture": "#type", "cullface": "south" },
+              "west":  { "texture": "#type", "cullface": "west" },
+              "east":  { "texture": "#type", "cullface": "east" }
+          }
+      }
+   ],
+   "display": {
+      "gui": {
+         "rotation": [ 30, 315, 0 ],
+         "translation": [ 0, 0, 0],
+         "scale":[ 0.625, 0.625, 0.625 ]
+      },
+      "firstperson_righthand": {
+         "rotation": [ 0, 315, 0 ],
+         "translation": [ 0, 0, 0 ],
+         "scale": [ 0.40, 0.40, 0.40 ]
+      },
+      "firstperson_lefthand": {
+         "rotation": [ 0, 315, 0 ],
+         "translation": [ 0, 0, 0 ],
+         "scale": [ 0.40, 0.40, 0.40 ]
+      }
+   }
+}

@@ -1,0 +1,43 @@
+tile.SignpostBase.name=Дорожный камень
+tile.SignpostPostOAK.name=Указатель из дуба
+tile.SignpostPostACACIA.name=Указатель из акации
+tile.SignpostPostBIGOAK.name=Указатель из тёмного дуба
+tile.SignpostPostBIRCH.name=Указатель из берёзы
+tile.SignpostPostIRON.name=Указатель из железа
+tile.SignpostPostJUNGLE.name=Указатель из тропического дерева
+tile.SignpostPostSPRUCE.name=Указатель из ели
+tile.SignpostPostSTONE.name=Указатель из камня
+
+tile.SignpostBigPostOAK.name=Большой указатель из дуба
+tile.SignpostBigPostACACIA.name=Большой указатель из акации
+tile.SignpostBigPostBIGOAK.name=Большой указатель из тёмного дуба
+tile.SignpostBigPostBIRCH.name=Большой указатель из берёзы
+tile.SignpostBigPostIRON.name=Большой указатель из железа
+tile.SignpostBigPostJUNGLE.name=Большой указатель из тропического дерева
+tile.SignpostBigPostSPRUCE.name=Большой указатель из ели
+tile.SignpostBigPostSTONE.name=Большой указатель из камня
+
+item.SignpostTool.name=Указательный ключ
+item.SignpostCalibratedTool.name=Калиброванный указательный ключ
+item.SignpostBrush.name=Щиток указателей
+
+signpost.discovered=Вы обнаружили путевой камень '<Waystone>'
+signpost.notDiscovered=Вы еще не обнаружили <Waystone>
+signpost.errorWorld=ОШИБКА: мир '<world>' не существует
+signpost.payment=Вы должны заплатить <amount>x<itemName>, чтобы использовать этот указатель
+signpost.noTeleport=Этот знак не имеет назначения и предназначен только для декорации.
+
+signpost.guiPrev=Дорожный камень находится на расстоянии <distance> блоков. Игроки должны будут заплатить <amount>x<itemName>, чтобы использовать его.
+signpost.guiWorldDim=Дорожный камень в другом мире/измерении. Межпространственное путешествие отключено.
+signpost.guiTooFar=Дорожный камень находится слишком далеко(<distance> блоков). Максимальное расстояние <maxDist> блоков.
+
+signpost.confirmTeleport=Введите '/signpostconfirm', чтобы телепортироваться в <Waystone> для <amount>x<itemName>.
+signpost.confirmTeleportNoCost=Введите '/signpostconfirm' что бы телепортироваться в <Waystone>.
+signpost.noConfirm=Там нет указателя телепорта для подтверждения. Запросы телепортации истекают через 30 секунд.
+
+signpost.getwaystonesleft=Вы можете разместить больше <amount> дорожных камей.
+signpost.getsignpostsleft=Вы можете разместить больше <amount> указателей.
+signpost.getwaystonesleftop=<player> может разместить больше <amount> дорожных камей.
+signpost.getsignpostsleftop=<player> Может разместить больше <amount> указателей.
+
+signpost.playerNotFound=Игрок <player> не на сервере.
