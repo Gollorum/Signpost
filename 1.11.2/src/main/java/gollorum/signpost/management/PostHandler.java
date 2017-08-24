@@ -302,6 +302,12 @@ public class PostHandler {
 	
 	public static boolean canTeleport(EntityPlayerMP player, BaseInfo target){
 		StringSet playerKnows = PostHandler.playerKnownWaystones.get(player.getUniqueID()).a;
+		if(ConfigHandler.disableDiscovery){
+			if(!(playerKnows==null||playerKnows.contains(target.name))){
+				playerKnows.add(target.name);
+			}
+			return true;
+		}
 		if(playerKnows==null){
 			return false;
 		}

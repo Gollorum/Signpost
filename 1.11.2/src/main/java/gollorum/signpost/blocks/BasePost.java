@@ -49,7 +49,7 @@ public class BasePost extends BlockContainer {
 			BaseInfo ws = getWaystoneRootTile(world, pos).getBaseInfo();
 			if (!player.isSneaking()) {
 				if(!PostHandler.doesPlayerKnowWaystone((EntityPlayerMP) player, ws)){
-					if (!ConfigHandler.deactivateTeleportation) {
+					if (!ConfigHandler.deactivateTeleportation||ConfigHandler.disableDiscovery) {
 						NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.name), (EntityPlayerMP) player);
 					}
 					PostHandler.addDiscovered(player.getUniqueID(), ws);
