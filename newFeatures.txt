@@ -3,3 +3,5 @@ Display possible destinations in signpost GUI
 Display possible textures in paint gui
 Allow teleport without payment item in creative mode
 Choose whether recipes are expensive, very expensive, disabled or normal (server side)
+Disable needed discovery in config file
+Signposts as waystones
