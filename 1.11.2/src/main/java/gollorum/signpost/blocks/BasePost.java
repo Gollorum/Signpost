@@ -93,9 +93,15 @@ public class BasePost extends BlockContainer {
 		UUID owner = player.getUniqueID();
 		BaseInfo ws;
 		if((ws = tile.getBaseInfo())==null){
+			if(owner==null){
+				System.out.println("bp ps t null");
+			}
 			ws = new BaseInfo(name, pos, owner);
 			PostHandler.allWaystones.add(ws);
 		}else{
+			if(owner==null){
+				System.out.println("bp ps f null");
+			}
 			ws.setAll(new BaseInfo(name, pos, owner));
 		}
 		PostHandler.addDiscovered(player.getUniqueID(), ws);
@@ -109,7 +115,11 @@ public class BasePost extends BlockContainer {
 		if (tile != null && tile.getBaseInfo() == null) {
 			BaseInfo ws = PostHandler.allWaystones.getByPos(pos);
 			if (ws == null) {
-				PostHandler.allWaystones.add(new BaseInfo("", pos, player.getUniqueID()));
+				UUID owner = player.getUniqueID();
+				if(owner==null){
+					System.out.println("bp pc null");
+				}
+				PostHandler.allWaystones.add(new BaseInfo("", pos, owner));
 			}
 		}
 	}

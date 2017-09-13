@@ -28,7 +28,7 @@ public class BigPostPostTile extends SuperPostPostTile {
 	@Deprecated
 	public BigBaseInfo bases = null;
 
-	public BigPostPostTile(){}
+	public BigPostPostTile(){super();}
 
 	public BigPostPostTile(BigPostType type){
 		this();

@@ -3,6 +3,7 @@ package gollorum.signpost;
 import java.util.Map.Entry;
 import java.util.UUID;
 
+import gollorum.signpost.blocks.BaseModelPost;
 import gollorum.signpost.blocks.BasePost;
 import gollorum.signpost.blocks.SuperPostPost;
 import gollorum.signpost.blocks.tiles.BasePostTile;
@@ -35,9 +36,11 @@ import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 import net.minecraftforge.event.world.BlockEvent.PlaceEvent;
 import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 
 public class SPEventHandler {
 
@@ -138,6 +141,8 @@ public class SPEventHandler {
 		if(!(event.getPlayer() instanceof EntityPlayerMP)){
 			if(event.getState().getBlock() instanceof BasePost){
 				BasePost.placeClient(event.getWorld(), new MyBlockPos("", event.getPos(), event.getPlayer().dimension), event.getPlayer());
+			}else if(event.getState().getBlock() instanceof BaseModelPost){
+				BaseModelPost.placeClient(event.getWorld(), new MyBlockPos("", event.getPos(), event.getPlayer().dimension), event.getPlayer());
 			}else if(event.getState().getBlock() instanceof SuperPostPost){
 				SuperPostPost.placeClient(event.getWorld(), new MyBlockPos("", event.getPos(), event.getPlayer().dimension), event.getPlayer());
 			}
@@ -151,6 +156,14 @@ public class SPEventHandler {
 				event.setCanceled(true);
 			}else{
 				BasePost.placeServer(event.getWorld(), new MyBlockPos(event.getWorld().getWorldInfo().getWorldName(), event.getPos(), event.getPlayer().dimension), (EntityPlayerMP) event.getPlayer());
+			}
+		}else if(event.getState().getBlock() instanceof BaseModelPost){
+			BasePostTile tile = BaseModelPost.getWaystoneRootTile(event.getWorld(), event.getPos());
+			if(!(ConfigHandler.securityLevelWaystone.canPlace(player) && checkWaystoneCount(player))){
+				tile.onBlockDestroy(new MyBlockPos(event.getWorld(), event.getPos(), player.dimension));
+				event.setCanceled(true);
+			}else{
+				BaseModelPost.placeServer(event.getWorld(), new MyBlockPos(event.getWorld().getWorldInfo().getWorldName(), event.getPos(), event.getPlayer().dimension), (EntityPlayerMP) event.getPlayer());
 			}
 		}else if(event.getState().getBlock() instanceof SuperPostPost){
 			SuperPostPostTile tile = SuperPostPost.getSuperTile(event.getWorld(), event.getPos());
@@ -235,6 +248,14 @@ public class SPEventHandler {
 		EntityPlayerMP player = (EntityPlayerMP)event.getPlayer();
 		if(event.getState().getBlock() instanceof BasePost){
 			BasePostTile t = BasePost.getWaystoneRootTile(event.getWorld(), event.getPos());
+			if(!ConfigHandler.securityLevelWaystone.canUse(player, ""+t.getBaseInfo().owner)){
+				event.setCanceled(true);
+			}else{
+				updateWaystoneCount(t);
+				t.onBlockDestroy(new MyBlockPos(event.getWorld(), event.getPos(), player.dimension));
+			}
+		}else if(event.getState().getBlock() instanceof BaseModelPost){
+			BasePostTile t = BaseModelPost.getWaystoneRootTile(event.getWorld(), event.getPos());
 			if(!ConfigHandler.securityLevelWaystone.canUse(player, ""+t.getBaseInfo().owner)){
 				event.setCanceled(true);
 			}else{

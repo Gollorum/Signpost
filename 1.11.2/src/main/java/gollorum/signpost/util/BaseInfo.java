@@ -32,12 +32,18 @@ public class BaseInfo {
 	}
 
 	public BaseInfo(String name, MyBlockPos blockPos, MyBlockPos telePos, UUID owner){
+		telePos.y--;
 		this.name = name;
 		this.blockPos = blockPos;
 		this.pos = telePos;
 		this.owner = owner;
 	}
-	
+
+	public static BaseInfo loadBaseInfo(String name, MyBlockPos blockPos, MyBlockPos telePos, UUID owner){
+		telePos.y++;
+		return new BaseInfo(name, blockPos, telePos, owner);
+	}
+
 	public void writeToNBT(NBTTagCompound tC){
 		tC.setString("name", name);
 		NBTTagCompound posComp = new NBTTagCompound();
@@ -56,7 +62,7 @@ public class BaseInfo {
 			MyBlockPos pos = MyBlockPos.readFromNBT(tC.getCompoundTag("pos"));
 			MyBlockPos blockPos = MyBlockPos.readFromNBT(tC.getCompoundTag("blockPos"));
 			UUID owner = UUID.fromString(tC.getString("UUID"));
-			return new BaseInfo(name, blockPos, pos, owner);	
+			return loadBaseInfo(name, blockPos, pos, owner);	
 		}else{
 			MyBlockPos pos = MyBlockPos.readFromNBT(tC);
 			UUID owner = UUID.fromString(tC.getString("UUID"));
@@ -79,7 +85,7 @@ public class BaseInfo {
 			o = o.replaceFirst(VERSION, "");
 			UUID owner = UUID.fromString(o);
 			MyBlockPos blockPos = MyBlockPos.fromBytes(buf);
-			return new BaseInfo(name, blockPos, pos, owner);//Ich bin sehr dumm.
+			return loadBaseInfo(name, blockPos, pos, owner);//Ich bin sehr dumm.
 		}else{
 			UUID owner = UUID.fromString(o);
 			return new BaseInfo(name, pos, owner);

@@ -1,5 +1,5 @@
--finish waystones with models
 -waystones with rendered name?
+-auto generate signposts in villages
 -BUG: github rotation reset?
 -cauldron/thermos permissions support?
 -not forget waystones on crash - not reproducable

@@ -1,5 +1,6 @@
 package gollorum.signpost;
 
+import gollorum.signpost.blocks.BaseModelPost;
 import gollorum.signpost.blocks.BigPostPost;
 import gollorum.signpost.blocks.PostPost;
 import gollorum.signpost.blocks.tiles.BigPostPostTile;
@@ -18,10 +19,9 @@ public class BlockHandlerClient extends BlockHandler {
 
 	public void registerRenders(){
 		registerRender(base, 0);
-		registerRender(basemodel, 0);
-		registerRender(basemodel, 1);
-		registerRender(basemodel, 2);
-		registerRender(basemodel, 3);
+		for(BaseModelPost basemodel: basemodels){
+			registerRender(basemodel, 0);
+		}
 		ClientRegistry.bindTileEntitySpecialRenderer(PostPostTile.class, new PostRenderer());
 		for(PostPost post: posts){
 			registerRender(post, 0);
@@ -31,12 +31,12 @@ public class BlockHandlerClient extends BlockHandler {
 			registerRender(post, 0);
 		}
 	}
-	
+
 	public void registerRender(Block block, int meta){
 		if(meta==0){
 			Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(Item.getItemFromBlock(block), meta, new ModelResourceLocation(block.getRegistryName(), "inventory"));
 		}else{
-			Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(Item.getItemFromBlock(block), meta, new ModelResourceLocation(block.getRegistryName().toString()+meta, "inventory"));
+			Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(Item.getItemFromBlock(block), meta, new ModelResourceLocation(block.getRegistryName(), "facing=south,type=model"+(meta/4)));
 		}
 	}
 

@@ -214,19 +214,13 @@ public class BigPostPost extends SuperPostPost {
 				if(destination.pos==null){
 					NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.noTeleport"), (EntityPlayerMP) player);
 				}else{
-					if (ConfigHandler.cost == null) {
-						PostHandler.teleportMe(destination, (EntityPlayerMP) player, 0);
-					} else {
-						int stackSize = (int) destination.pos.distance(tile.toPos()) / ConfigHandler.costMult + 1;
-						if (!PostHandler.isHandEmpty(player)
-								&& player.getHeldItemMainhand().getItem().getClass() == ConfigHandler.cost.getClass()
-								&& player.getHeldItemMainhand().getCount() >= stackSize) {
-							PostHandler.teleportMe(destination, (EntityPlayerMP) player, stackSize);
-						} else {
-							String[] keyword = { "<itemName>", "<amount>" };
-							String[] replacement = { ConfigHandler.cost.getUnlocalizedName() + ".name",	"" + stackSize };
-							NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.payment", keyword, replacement), (EntityPlayerMP) player);
-						}
+					int stackSize = PostHandler.getStackSize(destination.pos, tile.toPos());
+					if(PostHandler.canPay(player, destination.pos.x, destination.pos.y, destination.pos.z, x, y, z)){
+						PostHandler.teleportMe(destination, (EntityPlayerMP) player, stackSize);
+					}else{
+						String[] keyword = { "<itemName>", "<amount>" };
+						String[] replacement = { ConfigHandler.cost.getUnlocalizedName() + ".name",	"" + stackSize };
+						NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.payment", keyword, replacement), (EntityPlayerMP) player);
 					}
 				}
 			}

@@ -46,7 +46,7 @@ public class BasePostTile extends TileEntity implements WaystoneContainer {
 		if(getBaseInfo()!=null){
 			return;
 		}
-		PostHandler.allWaystones.add(new BaseInfo(BasePost.generateName(), toPos(), null));
+//		PostHandler.allWaystones.add(new BaseInfo(BasePost.generateName(), toPos(), null));
 	}
 
 	public MyBlockPos toPos(){

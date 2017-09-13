@@ -27,7 +27,7 @@ public class PostPostTile extends SuperPostPostTile {
 	@Deprecated
 	public DoubleBaseInfo bases = null;
 	
-	public PostPostTile(){}
+	public PostPostTile(){super();}
 
 	public PostPostTile(PostType type){
 		this();

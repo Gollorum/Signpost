@@ -3,6 +3,7 @@ package gollorum.signpost.blocks.tiles;
 import java.util.UUID;
 
 import gollorum.signpost.BlockHandler;
+import gollorum.signpost.SPEventHandler;
 import gollorum.signpost.blocks.WaystoneContainer;
 import gollorum.signpost.event.UpdateWaystoneEvent;
 import gollorum.signpost.management.PostHandler;
@@ -10,6 +11,7 @@ import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.BaseUpdateClientMessage;
 import gollorum.signpost.network.messages.BaseUpdateServerMessage;
 import gollorum.signpost.util.BaseInfo;
+import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.util.Sign;
 import net.minecraft.entity.item.EntityItem;
@@ -28,6 +30,20 @@ public abstract class SuperPostPostTile extends TileEntity implements WaystoneCo
 	
 	@Deprecated
 	public boolean isWaystone = false;
+	
+	public SuperPostPostTile(){
+		SPEventHandler.scheduleTask(new BoolRun(){
+			@Override
+			public boolean run() {
+				if(world==null){
+					return false;
+				}else{
+					isWaystone();
+					return true;
+				}
+			}
+		});
+	}
 	
 	public final MyBlockPos toPos(){
 		return new MyBlockPos(world, pos.getX(), pos.getY(), pos.getZ(), dim());

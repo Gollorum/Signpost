@@ -146,13 +146,6 @@ public abstract class SuperPostPost extends BlockContainer {
 		}
 	}
 
-	public int dim(World world){
-		if(world==null||world.provider==null){
-			return Integer.MIN_VALUE;
-		}else
-			return world.provider.getDimension();
-	}
-
 	/**
 	 * @return whether the signpost already is a waystone
 	 */
@@ -161,9 +154,12 @@ public abstract class SuperPostPost extends BlockContainer {
 			return true;
 		}
 		MyBlockPos blockPos = superTile.toPos();
-		MyBlockPos telePos = new MyBlockPos(player.world.getWorldInfo().getWorldName(), player.posX, player.posY-1, player.posZ, dim(player.world));
+		MyBlockPos telePos = new MyBlockPos(player);
 		String name = BasePost.generateName();
 		UUID owner = player.getUniqueID();
+		if(owner==null){
+			System.out.println("spp rcb null");
+		}
 		BaseInfo ws = new BaseInfo(name, blockPos, telePos, owner);
 		PostHandler.allWaystones.add(ws);
 		PostHandler.addDiscovered(owner, ws);

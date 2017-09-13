@@ -6,40 +6,29 @@
     "model": "signpost:ws1tri.obj"
   },
   "variants": {
-    "facing=east": { "y": 0 },
-    "facing=south": { "y": 90 },
-    "facing=west": { "y": 180 },
-    "facing=north": { "y": 270 },
-    "type=model1": {
-      "model": "signpost:ws1tri.obj"
-    },
-    "type=model2": {
-      "model": "signpost:ws2tri.obj"
-    },
-    "type=model3": {
-      "model": "signpost:ws3tri.obj"
-    },
-    "type=model4": {
-      "model": "signpost:ws4tri.obj"
-    },
+    "facing=east,type=model0": { "model": "signpost:ws1tri.obj",  "y": 0 },
+    "facing=south,type=model0": { "model": "signpost:ws1tri.obj",  "y": 90 },
+    "facing=west,type=model0": { "model": "signpost:ws1tri.obj",  "y": 180 },
+    "facing=north,type=model0": { "model": "signpost:ws1tri.obj",  "y": 270 },
+    "facing=east,type=model1": { "model": "signpost:ws2tri.obj",  "y": 0 },
+    "facing=south,type=model1": { "model": "signpost:ws2tri.obj",  "y": 90 },
+    "facing=west,type=model1": { "model": "signpost:ws2tri.obj",  "y": 180 },
+    "facing=north,type=model1": { "model": "signpost:ws2tri.obj",  "y": 270 },
+    "facing=east,type=model2": { "model": "signpost:ws3tri.obj",  "y": 0 },
+    "facing=south,type=model2": { "model": "signpost:ws3tri.obj",  "y": 90 },
+    "facing=west,type=model2": { "model": "signpost:ws3tri.obj",  "y": 180 },
+    "facing=north,type=model2": { "model": "signpost:ws3tri.obj",  "y": 270 },
+    "facing=east,type=model3": { "model": "signpost:ws4tri.obj",  "y": 0 },
+    "facing=south,type=model3": { "model": "signpost:ws4tri.obj",  "y": 90 },
+    "facing=west,type=model3": { "model": "signpost:ws4tri.obj",  "y": 180 },
+    "facing=north,type=model3": { "model": "signpost:ws4tri.obj",  "y": 270 },
+    "facing=east,type=model4": { "model": "signpost:ws5tri.obj",  "y": 0 },
+    "facing=south,type=model4": { "model": "signpost:ws5tri.obj",  "y": 90 },
+    "facing=west,type=model4": { "model": "signpost:ws5tri.obj",  "y": 180 },
+    "facing=north,type=model4": { "model": "signpost:ws5tri.obj",  "y": 270 },
     "normal": [{}],
     "inventory": [{
-      "transform": {
-        "firstperson": {
-          "translation": [0.1, 0, -0.3],
-          "rotation": [{"y":130}, {"x":0}, {"z":0}],
-          "scale": 1.0
-        },
-        "thirdperson": {
-          "translation": [0.02, 0.05, -0.05],
-          "rotation": [{"y":0}, {"x":-92}, {"z":0}],
-          "scale": 1.0
-        },
-        "gui": {
-          "translation": [0, 0.1, 0],
-          "scale": 1.0
-        }
-      }
+      "model": "signpost:ws1tri.obj"
     }]
   }
 }

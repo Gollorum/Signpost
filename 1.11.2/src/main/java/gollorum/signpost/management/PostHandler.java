@@ -19,12 +19,15 @@ import gollorum.signpost.util.StonedHashSet;
 import gollorum.signpost.util.StringSet;
 import gollorum.signpost.util.collections.Lurchpaerchensauna;
 import gollorum.signpost.util.collections.Pair;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.world.Teleporter;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
 public class PostHandler {
@@ -135,9 +138,9 @@ public class PostHandler {
 	public static class TeleportInformation{
 		public BaseInfo destination;
 		public int stackSize;
-		public World world;
+		public WorldServer world;
 		public BoolRun boolRun;
-		public TeleportInformation(BaseInfo destination, int stackSize, World world, BoolRun boolRun) {
+		public TeleportInformation(BaseInfo destination, int stackSize, WorldServer world, BoolRun boolRun) {
 			this.destination = destination;
 			this.stackSize = stackSize;
 			this.world = world;
@@ -172,7 +175,7 @@ public class PostHandler {
 	}
 
 	public static void doPay(EntityPlayer player, int x1, int y1, int z1, int x2, int y2, int z2){
-		if(ConfigHandler.cost == null){
+		if(ConfigHandler.cost == null || ConfigHandler.isCreative(player)){
 			return;
 		}else{
 			int stackSize = getStackSize(x1, y1, z1, x2, y2, z2);
@@ -193,21 +196,29 @@ public class PostHandler {
 		return getStackSize(pos1.x, pos1.y, pos1.z, pos2.x, pos2.y, pos2.z);
 	}
 	
-	public static void confirm(EntityPlayerMP player){
+	public static void confirm(final EntityPlayerMP player){
+		SPEventHandler.scheduleTask(new Runnable(){
 		TeleportInformation info = awaiting.get(player.getUniqueID());
-		if(info==null){
-			NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.noConfirm"), player);
-			return;
-		}else{
-			SPEventHandler.cancelTask(awaiting.remove(player.getUniqueID()).boolRun);
-			if(!player.world.equals(info.world)){
-				player.setWorld(info.world);
+
+			@Override
+			public void run() {
+				if(info==null){
+					NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.noConfirm"), player);
+					return;
+				}else{
+					doPay(player, (int)player.posX, (int)player.posY, (int)player.posZ, info.destination.pos.x, info.destination.pos.y+1, info.destination.pos.z);
+					SPEventHandler.cancelTask(info.boolRun);
+					if(!(player.getServerWorld().getWorldInfo().getWorldName().equals(info.world.getWorldInfo().getWorldName()))){
+						player.mcServer.getPlayerList().transferEntityToWorld(player, player.dimension, player.getServerWorld(), info.world, new SignTeleporter(info.world));
+					}
+					if(!(player.dimension==info.destination.pos.dim)){
+						player.mcServer.getPlayerList().transferPlayerToDimension(player, info.destination.pos.dim, new SignTeleporter(info.world));
+//						player.changeDimension(info.destination.pos.dim);
+					}
+					player.setPositionAndUpdate(info.destination.pos.x+0.5, info.destination.pos.y+1, info.destination.pos.z+0.5);
+				}
 			}
-			if(!(player.dimension==info.destination.pos.dim)){
-				player.changeDimension(info.destination.pos.dim);
-			}
-			player.setPositionAndUpdate(info.destination.pos.x+0.5, info.destination.pos.y+1, info.destination.pos.z+0.5);
-		}
+		}, 1);
 	}
 
 	public static void teleportMe(BaseInfo destination, final EntityPlayerMP player, int stackSize){
@@ -215,7 +226,7 @@ public class PostHandler {
 			return;
 		}
 		if(canTeleport(player, destination)){
-			World world = PostHandler.getWorldByName(destination.pos.world);
+			WorldServer world = PostHandler.getWorldByName(destination.pos.world);
 			if(world == null){
 				NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.errorWorld", "<world>", destination.pos.world), player);
 			}else{
@@ -314,8 +325,8 @@ public class PostHandler {
 		return playerKnows.contains(target.name);
 	}
 	
-	public static World getWorldByName(String world){
-		for(World now: FMLCommonHandler.instance().getMinecraftServerInstance().worlds){
+	public static WorldServer getWorldByName(String world){
+		for(WorldServer now: FMLCommonHandler.instance().getMinecraftServerInstance().worlds){
 			if(now.getWorldInfo().getWorldName().equals(world)){
 				return now;
 			}
@@ -336,5 +347,22 @@ public class PostHandler {
 	
 	public static boolean isHandEmpty(EntityPlayer player){
 		return player.getHeldItemMainhand()==null || player.getHeldItemMainhand().getItem()==null || player.getHeldItemMainhand().getItem().equals(Item.getItemFromBlock(Blocks.AIR));
+	}
+
+	private static class SignTeleporter extends Teleporter{
+
+		public SignTeleporter(WorldServer worldIn) {super(worldIn);}
+		
+		@Override
+		public void placeInPortal(Entity entityIn, float rotationYaw){}
+		
+		@Override
+		public boolean placeInExistingPortal(Entity entityIn, float rotationYaw){return true;}
+		
+		@Override
+		public boolean makePortal(Entity entityIn){return true;}
+		
+		@Override
+		public void removeStalePortalLocations(long worldTime){}
 	}
 }

@@ -3,6 +3,7 @@ package gollorum.signpost.util;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
@@ -48,6 +49,17 @@ public class MyBlockPos{
 
 	public MyBlockPos(MyBlockPos pos) {
 		this(pos.world, pos.x, pos.y, pos.z, pos.dim);
+	}
+	
+	public MyBlockPos(Entity entity){
+		this(entity.world, (int)entity.posX, (int)entity.posY, (int)entity.posZ, dim(entity.world));
+	}
+
+	public static int dim(World world){
+		if(world==null||world.provider==null){
+			return Integer.MIN_VALUE;
+		}else
+			return world.provider.getDimension();
 	}
 
 	public static enum Connection{VALID, WORLD, DIST}

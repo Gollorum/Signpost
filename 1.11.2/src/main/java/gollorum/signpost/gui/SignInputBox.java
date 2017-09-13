@@ -45,12 +45,15 @@ public class SignInputBox extends Gui{
 	
 	public String text = "";
 	
-	public SignInputBox(FontRenderer p_i1032_1_, int x, int y, int width) {
+	private final SignInput PARENT;
+	
+	public SignInputBox(FontRenderer p_i1032_1_, int x, int y, int width, SignInput parent) {
 		this.fontRend = p_i1032_1_;
 		this.x = x;
 		this.y = y;
 		this.width = width;
 		this.height = (int) (width/verh);
+		PARENT = parent;
 	}
 	
 	public void setFocused(boolean bool){
@@ -284,11 +287,26 @@ public class SignInputBox extends Gui{
         return k;
     }
 
-    public void mouseClicked(int p_146192_1_, int p_146192_2_, int p_146192_3_){
-        isFocused = (p_146192_1_ >= this.x && p_146192_1_ < this.x + this.width && p_146192_2_ >= this.y && p_146192_2_ < this.y + this.height);
+    public void mouseClicked(int x, int y, int p_146192_3_){
+        isFocused = (x >= this.x &&
+        			 x < this.x + this.width &&
+        			 y >= this.y &&
+        			 y < this.y + this.height);
 
+		double scale = this.width/pWidth;
+		try{
+	        if(x >= (this.x+width+5) &&
+	           x < (this.x+width+5+fontRend.getStringWidth(possible.get(possibleIndex))) &&
+	           y >= (this.y+(scale*pHeight-fontRend.FONT_HEIGHT)/2.0) &&
+	           y < (this.y+(scale*pHeight-fontRend.FONT_HEIGHT)/2.0)+fontRend.FONT_HEIGHT){
+	        	this.setText(possible.get(possibleIndex));
+	        	PARENT.onTextChange(this);
+	        	isFocused = true;
+	        }
+		}catch(Exception e){}
+		
         if (this.isFocused && p_146192_3_ == 0){
-            int l = p_146192_1_ - drawXat;
+            int l = x - drawXat;
             this.setCursorPosition(correctTrim((int) (l/scc)).length());
         }
     }

@@ -23,7 +23,7 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 public class BlockHandler {
 
 	public static BasePost base = new BasePost();
-	public static BaseModelPost basemodel = new BaseModelPost();
+	public static BaseModelPost[] basemodels = BaseModelPost.createAll();
 	
 	public static final PostPost post_oak = new PostPost(PostType.OAK);
 	public static final PostPost post_spruce = new PostPost(PostType.SPRUCE);
@@ -52,7 +52,9 @@ public class BlockHandler {
 	
 	public void register(){
 		registerBlock(base);
-		registerBlock(basemodel);
+		for(BaseModelPost basemodel: basemodels){
+			registerBlock(basemodel);
+		}
 		for(PostPost now: posts){
 			registerBlock(now);
 		}
@@ -121,6 +123,11 @@ public class BlockHandler {
 							'P', Items.ENDER_PEARL);
 					break;
 			}
+			GameRegistry.addShapelessRecipe(new ItemStack(basemodels[0], 1), base);
+			for(int i=1; i<basemodels.length; i++){
+				GameRegistry.addShapelessRecipe(new ItemStack(basemodels[i], 1), basemodels[i-1]);
+			}
+			GameRegistry.addShapelessRecipe(new ItemStack(base, 1), basemodels[basemodels.length-1]);
 		}
 	}
 	
