@@ -5,6 +5,7 @@ import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.blocks.tiles.PostPostTile;
 import gollorum.signpost.management.PlayerStorage;
 import gollorum.signpost.management.PlayerStore;
+import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
@@ -49,6 +50,10 @@ public class CommonProxy {
 
 	public World getWorld(MessageContext ctx){
 		return ctx.getServerHandler().playerEntity.world;
+	}
+	
+	public World getWorld(String worldName){
+		return PostHandler.getWorldByName(worldName);
 	}
 	
 }

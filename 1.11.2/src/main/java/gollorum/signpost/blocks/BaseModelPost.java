@@ -168,15 +168,9 @@ public class BaseModelPost extends BlockContainer {
 		UUID owner = player.getUniqueID();
 		BaseInfo ws;
 		if((ws = tile.getBaseInfo())==null){
-			if(owner==null){
-				System.out.println("bmp ps t null");
-			}
 			ws = new BaseInfo(name, blockPos, telePos, owner);
 			PostHandler.allWaystones.add(ws);
 		}else{
-			if(owner==null){
-				System.out.println("bmp ps f null");
-			}
 			ws.setAll(new BaseInfo(name, blockPos, telePos, owner));
 		}
 		PostHandler.addDiscovered(player.getUniqueID(), ws);
@@ -186,22 +180,23 @@ public class BaseModelPost extends BlockContainer {
 	}
 
 	public static void placeClient(final World world, final MyBlockPos pos, final EntityPlayer player) {
-		BasePostTile tile = getWaystoneRootTile(world, pos.toBlockPos());
-		if (tile != null && tile.getBaseInfo() == null) {
-			BaseInfo ws = PostHandler.allWaystones.getByPos(pos);
-			if (ws == null) {
-				UUID owner = player.getUniqueID();
-				if(owner==null){
-					System.out.println("bmp pc null");
-				}
-				PostHandler.allWaystones.add(new BaseInfo("", pos, owner));
-			}
-		}
+//		BasePostTile tile = getWaystoneRootTile(world, pos.toBlockPos());
+//		if (tile != null && tile.getBaseInfo() == null) {
+//			BaseInfo ws = PostHandler.allWaystones.getByPos(pos);
+//			if (ws == null) {
+//				UUID owner = player.getUniqueID();
+//				PostHandler.allWaystones.add(new BaseInfo("", pos, owner));
+//			}
+//		}
 	}
 
 	@Override
 	public TileEntity createNewTileEntity(World worldIn, int meta) {
-		return new BasePostTile().setup();
+		BasePostTile ret = new BasePostTile();
+//		if(!worldIn.isRemote){
+//			ret.setup();
+//		}
+		return ret;
 	}
 
 	@Override

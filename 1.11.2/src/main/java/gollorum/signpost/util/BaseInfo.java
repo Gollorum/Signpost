@@ -97,7 +97,7 @@ public class BaseInfo {
 		if(!(other instanceof BaseInfo)){
 			return super.equals(other);
 		}else{
-			return ((BaseInfo)other).pos.equals(this.pos);
+			return ((BaseInfo)other).blockPos.equals(this.blockPos);//Wirklich sehr dumm.
 		}
 	}
 	

@@ -14,6 +14,4 @@ public class SendAllPostBasesHandler implements IMessageHandler<SendAllPostBases
 		PostHandler.refreshDoublePostWaystones();
 		return null;
 	}
-	
 }
-		

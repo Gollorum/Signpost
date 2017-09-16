@@ -6,10 +6,10 @@
     "model": "signpost:ws5tri.obj"
   },
   "variants": {
-    "facing=east": { "y": 0 },
-    "facing=south": { "y": 90 },
-    "facing=west": { "y": 180 },
-    "facing=north": { "y": 270 },
+    "facing=east": { "y": 0, "uvlock": true },
+    "facing=south": { "y": 90, "uvlock": true },
+    "facing=west": { "y": 180, "uvlock": true },
+    "facing=north": { "y": 270, "uvlock": true },
     "normal": [{}],
     "inventory": [{}]
   }

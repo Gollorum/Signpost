@@ -1,5 +1,6 @@
 package gollorum.signpost.util;
 
+import gollorum.signpost.Signpost;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import io.netty.buffer.ByteBuf;
@@ -52,7 +53,7 @@ public class MyBlockPos{
 	}
 	
 	public MyBlockPos(Entity entity){
-		this(entity.world, (int)entity.posX, (int)entity.posY, (int)entity.posZ, dim(entity.world));
+		this(entity.world, (int)Math.floor(entity.posX), (int)Math.floor(entity.posY), (int)Math.floor(entity.posZ), dim(entity.world));
 	}
 
 	public static int dim(World world){
@@ -206,12 +207,7 @@ public class MyBlockPos{
 	}
 	
 	public TileEntity getTile(){
-		World world;
-		if(FMLCommonHandler.instance().getSide().equals(Side.SERVER)){
-			world = PostHandler.getWorldByName(this.world);
-		}else{
-			world = FMLClientHandler.instance().getWorldClient();
-		}
+		World world = Signpost.proxy.getWorld(this.world);
 		if(world!=null){
 			return world.getTileEntity(this.toBlockPos());
 		}else{

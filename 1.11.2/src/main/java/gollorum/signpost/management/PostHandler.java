@@ -7,6 +7,7 @@ import java.util.UUID;
 import gollorum.signpost.SPEventHandler;
 import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.blocks.tiles.PostPostTile;
+import gollorum.signpost.management.PostHandler.TeleportInformation;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.ChatMessage;
 import gollorum.signpost.network.messages.TeleportRequestMessage;
@@ -85,6 +86,7 @@ public class PostHandler {
 		};
 		posts = new Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo>();
 		bigPosts = new Lurchpaerchensauna<MyBlockPos, BigBaseInfo>();
+		awaiting = new Lurchpaerchensauna<UUID, TeleportInformation>();
 	}
 	
 	public static void refreshPostWaystones(){
@@ -197,9 +199,8 @@ public class PostHandler {
 	}
 	
 	public static void confirm(final EntityPlayerMP player){
+		final TeleportInformation info = awaiting.get(player.getUniqueID());
 		SPEventHandler.scheduleTask(new Runnable(){
-		TeleportInformation info = awaiting.get(player.getUniqueID());
-
 			@Override
 			public void run() {
 				if(info==null){

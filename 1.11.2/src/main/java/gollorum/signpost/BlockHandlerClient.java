@@ -18,26 +18,22 @@ import net.minecraftforge.fml.client.registry.ClientRegistry;
 public class BlockHandlerClient extends BlockHandler {
 
 	public void registerRenders(){
-		registerRender(base, 0);
+		registerRender(base);
 		for(BaseModelPost basemodel: basemodels){
-			registerRender(basemodel, 0);
+			registerRender(basemodel);
 		}
 		ClientRegistry.bindTileEntitySpecialRenderer(PostPostTile.class, new PostRenderer());
 		for(PostPost post: posts){
-			registerRender(post, 0);
+			registerRender(post);
 		}
 		ClientRegistry.bindTileEntitySpecialRenderer(BigPostPostTile.class, new BigPostRenderer());
 		for(BigPostPost post: bigposts){
-			registerRender(post, 0);
+			registerRender(post);
 		}
 	}
 
-	public void registerRender(Block block, int meta){
-		if(meta==0){
-			Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(Item.getItemFromBlock(block), meta, new ModelResourceLocation(block.getRegistryName(), "inventory"));
-		}else{
-			Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(Item.getItemFromBlock(block), meta, new ModelResourceLocation(block.getRegistryName(), "facing=south,type=model"+(meta/4)));
-		}
+	public void registerRender(Block block){
+		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(Item.getItemFromBlock(block), 0, new ModelResourceLocation(block.getRegistryName(), "inventory"));
 	}
 
 }

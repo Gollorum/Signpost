@@ -103,12 +103,6 @@ public class SPEventHandler {
 			NetworkHandler.netWrap.sendTo(new SendAllBigPostBasesMessage(), (EntityPlayerMP) event.player);
 			PlayerStore store = event.player.getCapability(PlayerProvider.STORE_CAP, null);
 			store.init((EntityPlayerMP) event.player);
-//			if(store.player==null){
-//				store.init((EntityPlayerMP) event.player);
-//			}else{
-//				PostHandler.addAllDiscoveredByName(event.player.getUniqueID(), store.);
-//				store.init((EntityPlayerMP) event.player);
-//			}
 		}
 	}
 
