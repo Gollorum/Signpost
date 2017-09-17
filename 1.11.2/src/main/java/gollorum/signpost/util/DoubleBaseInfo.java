@@ -20,4 +20,8 @@ public class DoubleBaseInfo {
 		postPaint = texture;
 	}
 	
+	@Override
+	public String toString(){
+		return sign1+" and "+sign2;
+	}
 }

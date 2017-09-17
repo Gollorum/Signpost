@@ -1,7 +1,6 @@
 package gollorum.signpost.blocks.tiles;
 
 import gollorum.signpost.SPEventHandler;
-import gollorum.signpost.blocks.BasePost;
 import gollorum.signpost.blocks.WaystoneContainer;
 import gollorum.signpost.event.UpdateWaystoneEvent;
 import gollorum.signpost.management.PostHandler;

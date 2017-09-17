@@ -7,7 +7,6 @@ import java.util.UUID;
 import gollorum.signpost.SPEventHandler;
 import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.blocks.tiles.PostPostTile;
-import gollorum.signpost.management.PostHandler.TeleportInformation;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.ChatMessage;
 import gollorum.signpost.network.messages.TeleportRequestMessage;
@@ -27,7 +26,6 @@ import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.Teleporter;
-import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
@@ -227,7 +225,7 @@ public class PostHandler {
 			return;
 		}
 		if(canTeleport(player, destination)){
-			WorldServer world = PostHandler.getWorldByName(destination.pos.world);
+			WorldServer world = (WorldServer) destination.pos.getWorld();
 			if(world == null){
 				NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.errorWorld", "<world>", destination.pos.world), player);
 			}else{
@@ -326,13 +324,19 @@ public class PostHandler {
 		return playerKnows.contains(target.name);
 	}
 	
-	public static WorldServer getWorldByName(String world){
+	public static WorldServer getWorldByName(String world, int dim){
+		WorldServer ret = null;
+		forLoop:
 		for(WorldServer now: FMLCommonHandler.instance().getMinecraftServerInstance().worlds){
 			if(now.getWorldInfo().getWorldName().equals(world)){
-				return now;
+				ret = now;
+				continue forLoop;
 			}
 		}
-		return null;
+		if(dim!=0){
+			ret = FMLCommonHandler.instance().getMinecraftServerInstance().worldServerForDimension(dim);
+		}
+		return ret;
 	}
 
 	public static boolean addRep(BaseInfo ws) {

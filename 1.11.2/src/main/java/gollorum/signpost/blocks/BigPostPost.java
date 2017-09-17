@@ -124,7 +124,7 @@ public class BigPostPost extends SuperPostPost {
 		BigHit hit = (BigHit)hitObj;
 		BigBaseInfo tilebases = ((BigPostPostTile)superTile).getBases();
 		if (hit.target == BigHitTarget.BASE) {
-			tilebases.sign.rotation = (tilebases.sign.rotation - 15) % 360;
+			tilebases.sign.rot(-15, x, z);
 		}
 	}
 
@@ -133,9 +133,7 @@ public class BigPostPost extends SuperPostPost {
 		BigHit hit = (BigHit)hitObj;
 		BigBaseInfo tilebases = ((BigPostPostTile)superTile).getBases();
 		if (hit.target == BigHitTarget.BASE) {
-			tilebases.sign.rotation = (tilebases.sign.rotation + 15) % 360;
-//		} else if (hit.target == BigHitTarget.POST){
-//			NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiBigPostID, x, y, z), (EntityPlayerMP) player);
+			tilebases.sign.rot(15, x, z);
 		}
 	}
 

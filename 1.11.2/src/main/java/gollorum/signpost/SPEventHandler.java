@@ -40,12 +40,15 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.common.network.FMLNetworkEvent;
+import net.minecraftforge.fml.relauncher.Side;
 
 public class SPEventHandler {
 
-	private static Lurchpaerchensauna<Runnable, Integer> tasks = new Lurchpaerchensauna<Runnable, Integer>();
-	private static Lurchsauna<BoolRun> predicatedTasks = new Lurchsauna<BoolRun>();
+	private static Lurchpaerchensauna<Runnable, Integer> serverTasks = new Lurchpaerchensauna<Runnable, Integer>();
+	private static Lurchsauna<BoolRun> serverPredicatedTasks = new Lurchsauna<BoolRun>();
+	
+	private static Lurchpaerchensauna<Runnable, Integer> clientTasks = new Lurchpaerchensauna<Runnable, Integer>();
+	private static Lurchsauna<BoolRun> clientPredicatedTasks = new Lurchsauna<BoolRun>();
 
 	/**
 	 * Schedules a task
@@ -56,42 +59,81 @@ public class SPEventHandler {
 	 *            The delay in ticks (1s/20)
 	 */
 	public static void scheduleTask(Runnable task, int delay) {
-		tasks.put(task, delay);
+		if(FMLCommonHandler.instance().getEffectiveSide().equals(Side.SERVER)){
+			serverTasks.put(task, delay);
+		}else{
+			clientTasks.put(task, delay);
+		}
 	}
 
 	public static void scheduleTask(BoolRun task){
-		predicatedTasks.add(task);
+		if(FMLCommonHandler.instance().getEffectiveSide().equals(Side.SERVER)){
+			serverPredicatedTasks.add(task);
+		}else{
+			clientPredicatedTasks.add(task);
+		}
 	}
 
 	public static boolean cancelTask(BoolRun task){
-		return predicatedTasks.remove(task);
+		if(FMLCommonHandler.instance().getEffectiveSide().equals(Side.SERVER)){
+			return serverPredicatedTasks.remove(task);
+		}else{
+			return clientPredicatedTasks.remove(task);
+		}
 	}
-	
+
 	@SubscribeEvent
-	public void onTick(TickEvent event) {
-		if (!(event instanceof TickEvent.ServerTickEvent || event instanceof TickEvent.ClientTickEvent)) {
+	public void onServerTick(TickEvent event) {
+		if (!(event instanceof TickEvent.ServerTickEvent)) {
 			return;
 		}
+		Lurchpaerchensauna<Runnable, Integer> serverTasksTEMP = serverTasks;
+		Lurchsauna<BoolRun> serverPredicatedTasksTEMP = serverPredicatedTasks;
+		serverTasks = new Lurchpaerchensauna<Runnable, Integer>();
+		serverPredicatedTasks = new Lurchsauna<BoolRun>();
+		
 		// time++;
-
-		Lurchpaerchensauna<Runnable, Integer> remainingTasks = new Lurchpaerchensauna<Runnable, Integer>();
-		for (Entry<Runnable, Integer> now : tasks.entrySet()) {
+		for (Entry<Runnable, Integer> now : serverTasksTEMP.entrySet()) {
 			int val = now.getValue()-1;
 			if (val < 2) {
 				now.getKey().run();
 			}else{
-				remainingTasks.put(now.getKey(), val);
+				serverTasks.put(now.getKey(), val);
 			}
 		}
-		tasks = remainingTasks;
 
-		Lurchsauna<BoolRun> remainingPreds = new Lurchsauna<BoolRun>();
-		for(BoolRun now: predicatedTasks){
+		for(BoolRun now: serverPredicatedTasksTEMP){
 			if(!now.run()){
-				remainingPreds.add(now);
+				serverPredicatedTasks.add(now);
 			}
 		}
-		predicatedTasks = remainingPreds;
+	}
+
+	@SubscribeEvent
+	public void onClientTick(TickEvent event) {
+		if (!(event instanceof TickEvent.ClientTickEvent)) {
+			return;
+		}
+		Lurchpaerchensauna<Runnable, Integer> clientTasksTEMP = clientTasks;
+		Lurchsauna<BoolRun> clientPredicatedTasksTEMP = clientPredicatedTasks;
+		clientTasks = new Lurchpaerchensauna<Runnable, Integer>();
+		clientPredicatedTasks = new Lurchsauna<BoolRun>();
+		
+		// time++;
+		for (Entry<Runnable, Integer> now : clientTasksTEMP.entrySet()) {
+			int val = now.getValue()-1;
+			if (val < 2) {
+				now.getKey().run();
+			}else{
+				clientTasks.put(now.getKey(), val);
+			}
+		}
+
+		for(BoolRun now: clientPredicatedTasksTEMP){
+			if(!now.run()){
+				clientPredicatedTasks.add(now);
+			}
+		}
 	}
 	
 	// ServerSide

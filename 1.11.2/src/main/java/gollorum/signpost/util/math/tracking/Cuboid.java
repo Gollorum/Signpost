@@ -1,7 +1,5 @@
 package gollorum.signpost.util.math.tracking;
 
-import net.minecraft.world.World;
-
 public class Cuboid extends Body {
 	
 	public Cuboid(DDDVector pos, DDDVector edges, DDDVector rotation){

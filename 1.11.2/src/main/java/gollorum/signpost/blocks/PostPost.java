@@ -132,9 +132,9 @@ public class PostPost extends SuperPostPost {
 		Hit hit = (Hit)hitObj;
 		DoubleBaseInfo tilebases = ((PostPostTile)superTile).getBases();
 		if (hit.target == HitTarget.BASE1) {
-			tilebases.sign1.rotation = (tilebases.sign1.rotation - 15) % 360;
+			tilebases.sign1.rot(-15, x, z);
 		} else if(hit.target == HitTarget.BASE2) {
-			tilebases.sign2.rotation = (tilebases.sign2.rotation - 15) % 360;
+			tilebases.sign2.rot(-15, x, z);
 		}
 	}
 
@@ -143,9 +143,9 @@ public class PostPost extends SuperPostPost {
 		Hit hit = (Hit)hitObj;
 		DoubleBaseInfo tilebases = ((PostPostTile)superTile).getBases();
 		if (hit.target == HitTarget.BASE1) {
-			tilebases.sign1.rotation = (tilebases.sign1.rotation + 15) % 360;
+			tilebases.sign1.rot(15, x, z);
 		} else if (hit.target == HitTarget.BASE2) {
-			tilebases.sign2.rotation = (tilebases.sign2.rotation + 15) % 360;
+			tilebases.sign2.rot(15, x, z);
 		}
 	}
 

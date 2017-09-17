@@ -41,3 +41,4 @@ signpost.getwaystonesleftop=<player> kann noch <amount> Wegsteine platzieren.
 signpost.getsignpostsleftop=<player> kann noch <amount> Wegweiser platzieren.
 
 signpost.playerNotFound=Der Spieler <player> ist nicht auf dem Server.
+signpost.waystoneNotFound=Der Wegstein '<Waystone>' wurde nicht gefunden.

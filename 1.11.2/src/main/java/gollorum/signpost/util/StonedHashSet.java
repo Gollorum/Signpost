@@ -15,6 +15,15 @@ public class StonedHashSet extends Lurchsauna<BaseInfo>{
 		}
 		return null;
 	}
+
+	public BaseInfo getByName(String waystoneName) {
+		for(BaseInfo now: this){
+			if(now.name.equals(waystoneName)){
+				return now;
+			}
+		}
+		return null;
+	}
 	
 	public boolean nameTaken(String name){
 		if(name==null){

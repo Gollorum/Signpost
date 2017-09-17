@@ -17,10 +17,20 @@ public class SendPostBasesHandler implements IMessageHandler<SendPostBasesMessag
 
 	@Override
 	public IMessage onMessage(SendPostBasesMessage message, MessageContext ctx) {
-		DoubleBaseInfo bases = PostHandler.posts.get(message.pos);
-		if(bases==null){
-			return null;
+		TileEntity tile = message.pos.getTile();
+		DoubleBaseInfo bases;
+		if(tile instanceof PostPostTile){
+			((PostPostTile)tile).isWaystone();
+			bases = ((PostPostTile)tile).getBases();
+		}else{
+			bases = new DoubleBaseInfo(null, null);
+			PostHandler.posts.put(message.pos, bases);
 		}
+		
+//		DoubleBaseInfo bases = PostHandler.posts.get(message.pos);
+//		if(bases==null){
+//			return null;
+//		}
 		bases.sign1.rotation = message.base1rot;
 		bases.sign2.rotation = message.base2rot;
 		bases.sign1.flip = message.flip1;
@@ -37,10 +47,6 @@ public class SendPostBasesHandler implements IMessageHandler<SendPostBasesMessag
 		bases.sign2.paint = SuperPostPostTile.stringToLoc(message.paint2);
 		
 		bases.postPaint = SuperPostPostTile.stringToLoc(message.postPaint);
-		TileEntity tile = message.pos.getTile();
-		if(tile instanceof PostPostTile){
-			((PostPostTile)tile).isWaystone();
-		}
 		if(ctx.side.equals(Side.SERVER)){
 			ctx.getServerHandler().playerEntity.world.getTileEntity(message.pos.toBlockPos()).markDirty();
 			NetworkHandler.netWrap.sendToAll(message);

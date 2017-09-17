@@ -7,7 +7,6 @@ import org.lwjgl.opengl.GL11;
 
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.util.BaseInfo;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiScreen;

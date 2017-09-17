@@ -2,7 +2,6 @@ package gollorum.signpost.gui;
 
 import java.awt.Color;
 import java.io.IOException;
-import java.util.Collection;
 
 import gollorum.signpost.blocks.SuperPostPost;
 import gollorum.signpost.blocks.tiles.SuperPostPostTile;

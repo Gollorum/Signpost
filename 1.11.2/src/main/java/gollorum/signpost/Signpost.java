@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.UUID;
 
 import gollorum.signpost.commands.ConfirmTeleportCommand;
+import gollorum.signpost.commands.DiscoverWaystone;
 import gollorum.signpost.commands.GetSignpostCount;
 import gollorum.signpost.commands.GetWaystoneCount;
 import gollorum.signpost.commands.SetSignpostCount;
@@ -90,6 +91,7 @@ public class Signpost{
 		manager.registerCommand(new GetSignpostCount());
 		manager.registerCommand(new SetWaystoneCount());
 		manager.registerCommand(new SetSignpostCount());
+		manager.registerCommand(new DiscoverWaystone());
 		ConfigHandler.init(configFile);
 	}
 }

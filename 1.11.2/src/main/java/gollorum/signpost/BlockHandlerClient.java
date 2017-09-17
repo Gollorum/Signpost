@@ -9,10 +9,8 @@ import gollorum.signpost.render.BigPostRenderer;
 import gollorum.signpost.render.PostRenderer;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
-import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 
 public class BlockHandlerClient extends BlockHandler {

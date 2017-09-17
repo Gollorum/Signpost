@@ -2,16 +2,13 @@ package gollorum.signpost.management;
 
 import java.io.File;
 
-import gollorum.signpost.BlockHandler;
 import gollorum.signpost.Signpost;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.translation.I18n;
 import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 
 public class ConfigHandler {
 

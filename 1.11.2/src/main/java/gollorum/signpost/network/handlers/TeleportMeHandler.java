@@ -18,7 +18,7 @@ public class TeleportMeHandler implements IMessageHandler<TeleportMeMessage, IMe
 			return null;
 		}
 		if(PostHandler.canTeleport(ctx.getServerHandler().playerEntity, message.base)){
-			World world = PostHandler.getWorldByName(message.base.pos.world);
+			World world = message.base.pos.getWorld();
 			if(world == null){
 				return new ChatMessage("signpost.errorWorld", "<world>", message.base.pos.world);
 			}else{

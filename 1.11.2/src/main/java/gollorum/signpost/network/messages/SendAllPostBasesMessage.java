@@ -72,7 +72,7 @@ public class SendAllPostBasesMessage implements IMessage{
 			ResourceLocation paint1 = SuperPostPostTile.stringToLoc(now.getValue().paint1);
 			ResourceLocation paint2 = SuperPostPostTile.stringToLoc(now.getValue().paint2);
 			ResourceLocation postPaint = SuperPostPostTile.stringToLoc(now.getValue().postPaint);
-			postMap.put(now.getKey(), new DoubleBaseInfo(new Sign(base1,
+			DoubleBaseInfo neu = postMap.put(now.getKey(), new DoubleBaseInfo(new Sign(base1,
 																  now.getValue().int1,
 																  now.getValue().bool1,
 																  now.getValue().overlay1,
@@ -97,20 +97,20 @@ public class SendAllPostBasesMessage implements IMessage{
 	public void toBytes(ByteBuf buf) {
 		buf.writeInt(PostHandler.posts.size());
 		for(Entry<MyBlockPos, DoubleBaseInfo> now: PostHandler.posts.entrySet()){
-				now.getKey().toBytes(buf);
-				ByteBufUtils.writeUTF8String(buf, ""+now.getValue().sign1.base);
-				ByteBufUtils.writeUTF8String(buf, ""+now.getValue().sign2.base);
-				buf.writeInt(now.getValue().sign1.rotation);
-				buf.writeInt(now.getValue().sign2.rotation);
-				buf.writeBoolean(now.getValue().sign1.flip);
-				buf.writeBoolean(now.getValue().sign2.flip);
-				ByteBufUtils.writeUTF8String(buf, ""+now.getValue().sign1.overlay);
-				ByteBufUtils.writeUTF8String(buf, ""+now.getValue().sign2.overlay);
-				buf.writeBoolean(now.getValue().sign1.point);
-				buf.writeBoolean(now.getValue().sign2.point);
-				ByteBufUtils.writeUTF8String(buf, SuperPostPostTile.locToString(now.getValue().sign1.paint));
-				ByteBufUtils.writeUTF8String(buf, SuperPostPostTile.locToString(now.getValue().sign2.paint));
-				ByteBufUtils.writeUTF8String(buf, SuperPostPostTile.locToString(now.getValue().postPaint));
+			now.getKey().toBytes(buf);
+			ByteBufUtils.writeUTF8String(buf, ""+now.getValue().sign1.base);
+			ByteBufUtils.writeUTF8String(buf, ""+now.getValue().sign2.base);
+			buf.writeInt(now.getValue().sign1.rotation);
+			buf.writeInt(now.getValue().sign2.rotation);
+			buf.writeBoolean(now.getValue().sign1.flip);
+			buf.writeBoolean(now.getValue().sign2.flip);
+			ByteBufUtils.writeUTF8String(buf, ""+now.getValue().sign1.overlay);
+			ByteBufUtils.writeUTF8String(buf, ""+now.getValue().sign2.overlay);
+			buf.writeBoolean(now.getValue().sign1.point);
+			buf.writeBoolean(now.getValue().sign2.point);
+			ByteBufUtils.writeUTF8String(buf, SuperPostPostTile.locToString(now.getValue().sign1.paint));
+			ByteBufUtils.writeUTF8String(buf, SuperPostPostTile.locToString(now.getValue().sign2.paint));
+			ByteBufUtils.writeUTF8String(buf, SuperPostPostTile.locToString(now.getValue().postPaint));
 		}
 	}
 	

@@ -52,8 +52,8 @@ public class CommonProxy {
 		return ctx.getServerHandler().playerEntity.world;
 	}
 	
-	public World getWorld(String worldName){
-		return PostHandler.getWorldByName(worldName);
+	public World getWorld(String worldName, int dim){
+		return PostHandler.getWorldByName(worldName, dim);
 	}
 	
 }

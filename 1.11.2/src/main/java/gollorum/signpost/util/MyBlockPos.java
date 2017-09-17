@@ -2,7 +2,6 @@ package gollorum.signpost.util;
 
 import gollorum.signpost.Signpost;
 import gollorum.signpost.management.ConfigHandler;
-import gollorum.signpost.management.PostHandler;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
@@ -10,10 +9,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.client.FMLClientHandler;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
-import net.minecraftforge.fml.relauncher.Side;
 
 public class MyBlockPos{
 	
@@ -206,8 +202,12 @@ public class MyBlockPos{
 		return world+": "+x+"|"+y+"|"+z+" in "+dim;
 	}
 	
+	public World getWorld(){
+		return Signpost.proxy.getWorld(this.world, this.dim);
+	}
+	
 	public TileEntity getTile(){
-		World world = Signpost.proxy.getWorld(this.world);
+		World world = getWorld();
 		if(world!=null){
 			return world.getTileEntity(this.toBlockPos());
 		}else{
