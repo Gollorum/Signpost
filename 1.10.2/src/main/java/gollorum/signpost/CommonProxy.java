@@ -1,10 +1,11 @@
 package gollorum.signpost;
 
-import gollorum.signpost.blocks.BasePostTile;
-import gollorum.signpost.blocks.BigPostPostTile;
-import gollorum.signpost.blocks.PostPostTile;
+import gollorum.signpost.blocks.tiles.BasePostTile;
+import gollorum.signpost.blocks.tiles.BigPostPostTile;
+import gollorum.signpost.blocks.tiles.PostPostTile;
 import gollorum.signpost.management.PlayerStorage;
 import gollorum.signpost.management.PlayerStore;
+import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
@@ -14,11 +15,13 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 
 public class CommonProxy {
 
-	public static BlockHandler blockHandler;
+	public BlockHandler blockHandler;
 	
 	public CommonProxy(){
 		blockHandler = new BlockHandler();
 	}
+	
+	void preInit(){}
 	
 	void init(){
 		blockHandler.init();
@@ -47,6 +50,10 @@ public class CommonProxy {
 
 	public World getWorld(MessageContext ctx){
 		return ctx.getServerHandler().playerEntity.worldObj;
+	}
+	
+	public World getWorld(String worldName, int dim){
+		return PostHandler.getWorldByName(worldName, dim);
 	}
 	
 }

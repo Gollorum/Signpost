@@ -2,19 +2,18 @@ package gollorum.signpost.management;
 
 import java.io.File;
 
+import gollorum.signpost.Signpost;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.translation.I18n;
 import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 
 public class ConfigHandler {
 
 	private static Configuration config;
-	
+
 	public static boolean skipTeleportConfirm;
 	
 	public static boolean deactivateTeleportation;
@@ -25,9 +24,13 @@ public class ConfigHandler {
 	public static Item cost;
 	public static String paymentItem;
 	public static int costMult;
+	
+	public static RecipeCost signRec;
+	public static RecipeCost waysRec;
 
 	public static SecurityLevel securityLevelWaystone;
 	public static SecurityLevel securityLevelSignpost;
+	public static boolean disableDiscovery;
 	
 	public enum SecurityLevel{
 		ALL, OWNERS, CREATIVEONLY, OPONLY;
@@ -47,9 +50,22 @@ public class ConfigHandler {
 		}
 		public boolean canUse(EntityPlayerMP player, String owner){
 			return this.equals(ConfigHandler.SecurityLevel.ALL)||
-				   isOp(player)||
-				   (this.equals(ConfigHandler.SecurityLevel.OWNERS) && (owner.equals(player.getUniqueID().toString()) || owner.equals("null")))||
-				   (isCreative(player)&&this.equals(ConfigHandler.SecurityLevel.CREATIVEONLY));
+					   isOp(player)||
+					   (this.equals(ConfigHandler.SecurityLevel.OWNERS) && (owner.equals(player.getUniqueID().toString()) || owner.equals("null")))||
+					   (isCreative(player)&&this.equals(ConfigHandler.SecurityLevel.CREATIVEONLY));
+		}
+	}
+
+	public enum RecipeCost{
+		DEACTIVATED, NORMAL, EXPENSIVE, VERY_EXPENSIVE;
+		public static String[] allValues(){
+			String[] ret = {
+				DEACTIVATED.toString(),
+				NORMAL.toString(),
+				EXPENSIVE.toString(),
+				VERY_EXPENSIVE.toString(),
+			};
+			return ret;
 		}
 	}
 	
@@ -66,6 +82,7 @@ public class ConfigHandler {
 		if(cost==null){
 			cost = (Item) Item.REGISTRY.getObject(new ResourceLocation("minecraft:"+paymentItem));
 		}
+		Signpost.proxy.blockHandler.registerRecipes();
 	}
 
 	public static void loadClientSettings(){
@@ -94,6 +111,10 @@ public class ConfigHandler {
 		paymentItem = config.getString("paymentItem", category, "", "The item players have to pay in order to use a signpost (e.g. minecraft:enderPearl, '' = free)");
 		
 		costMult = config.getInt("distancePerPayment", category, 0, 0, Integer.MAX_VALUE, "The distance a Player can teleport with one item (the total cost of a teleportation is calculated using the total distance)(0 = unlimited)");
+	
+		signRec = RecipeCost.valueOf(config.getString("signpostRecipeCost", category, "NORMAL", "Changes the recipe for signposts (NORMAL/EXPENSIVE/VERY_EXPENSIVE/DEACTIVATED)", RecipeCost.allValues()));
+
+		waysRec = RecipeCost.valueOf(config.getString("waystoneRecipeCost", category, "NORMAL", "Changes the recipe for waystones (NORMAL/EXPENSIVE/VERY_EXPENSIVE/DEACTIVATED)", RecipeCost.allValues()));
 	}
 	
 	public static void loadSecurity(){
@@ -104,13 +125,15 @@ public class ConfigHandler {
 		securityLevelWaystone = SecurityLevel.valueOf(config.getString("waystonePermissionLevel", category, "ALL", "Defines which players can place and edit a waystone (ALL, OWNERS, CREATIVEONLY, OPONLY). OPs are always included, 'OWNERS' = everyone can place, only the owner+OPs can edit.", SecurityLevel.allValues()));
 
 		securityLevelSignpost = SecurityLevel.valueOf(config.getString("signpostPermissionLevel", category, "ALL", "Defines which players can place and edit a signpost (ALL, OWNERS, CREATIVEONLY, OPONLY). OPs are always included, 'OWNERS' = everyone can place, only the owner+OPs can edit.", SecurityLevel.allValues()));
+	
+		disableDiscovery = config.getBoolean("disableDiscovery", category, false, "Allows players to travel to waystones without the need to discover them");
 	}
 
 	public static boolean isOp(EntityPlayerMP player){
 		return player.canCommandSenderUseCommand(2, "");
 	}
 	
-	public static boolean isCreative(EntityPlayerMP player){
+	public static boolean isCreative(EntityPlayer player){
 		return player.capabilities.isCreativeMode;
 	}
 	

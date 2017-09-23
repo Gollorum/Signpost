@@ -26,11 +26,6 @@ public class SendPostBasesHandler implements IMessageHandler<SendPostBasesMessag
 			bases = new DoubleBaseInfo(null, null);
 			PostHandler.posts.put(message.pos, bases);
 		}
-		
-//		DoubleBaseInfo bases = PostHandler.posts.get(message.pos);
-//		if(bases==null){
-//			return null;
-//		}
 		bases.sign1.rotation = message.base1rot;
 		bases.sign2.rotation = message.base2rot;
 		bases.sign1.flip = message.flip1;

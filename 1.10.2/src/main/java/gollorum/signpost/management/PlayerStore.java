@@ -10,9 +10,9 @@ public class PlayerStore{
 //	public StringSet known;
 //	
 //	public static ResourceLocation loc = new ResourceLocation(Signpost.MODID+":Playerstore");
-	
-	public EntityPlayerMP player;
 
+	public EntityPlayerMP player;
+	
 	public void init(EntityPlayerMP player){
 		this.player = player;
 	}
@@ -35,7 +35,6 @@ public class PlayerStore{
 		for (int i = 0; i < c; i++) {
 			String getString = compound.getString("ws" + i);
 			toBeAdded.add(getString);
-			System.out.println(getString);
 		}
 		PostHandler.addAllDiscoveredByName(player.getUniqueID(), toBeAdded);
 		Pair<Integer, Integer> pair = PostHandler.playerKnownWaystones.get(player.getUniqueID()).b;

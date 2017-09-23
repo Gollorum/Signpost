@@ -28,7 +28,7 @@ public class Board {
     	}
 		
 		//flipped
-		ModelRenderer ltf = new ModelRenderer(modelPost, 12, 9);
+    	ModelRenderer ltf = new ModelRenderer(modelPost, 12, 9);
 		ltf.addBox(8, heightOffset+2f, 2, 1, 4, 1, 0f);
 		baseFlipped = new ModelRenderer(modelPost, -1, 0);
 		baseFlipped.addBox(-12, heightOffset+1, 2, 20, 6, 1, 0.0F);

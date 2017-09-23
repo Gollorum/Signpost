@@ -13,7 +13,7 @@ public class PlayerProvider implements ICapabilitySerializable<NBTBase>{
 	 public static final Capability<PlayerStore> STORE_CAP = null;
 
 	 private PlayerStore instance = STORE_CAP.getDefaultInstance();
-	 
+
 	 public EntityPlayerMP player;
 	 
 	 public PlayerProvider(EntityPlayerMP player){

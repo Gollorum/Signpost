@@ -3,8 +3,10 @@ package gollorum.signpost.render;
 import org.lwjgl.opengl.GL11;
 
 import gollorum.signpost.Signpost;
-import gollorum.signpost.blocks.PostPostTile;
+import gollorum.signpost.blocks.tiles.PostPostTile;
+import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.util.DoubleBaseInfo;
+import gollorum.signpost.util.MyBlockPos;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.util.ResourceLocation;
@@ -42,7 +44,7 @@ public class PostRenderer extends TileEntitySpecialRenderer<PostPostTile>{
 
 		//Overlays
 		if(!tile.isItem){
-			if(tilebases.sign1.isValid()&& tilebases.sign1.overlay!=null){
+			if(tilebases.sign1.isValid() && tilebases.sign1.overlay!=null){
 				bindTexture(new ResourceLocation(Signpost.MODID + ":textures/blocks/sign_overlay_"+tilebases.sign1.overlay.texture+".png"));
 				model.renderOverlay1(tilebases, 0.0625f, rotation1);
 			}

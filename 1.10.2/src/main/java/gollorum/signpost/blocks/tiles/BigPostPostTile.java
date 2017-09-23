@@ -1,6 +1,7 @@
-package gollorum.signpost.blocks;
+package gollorum.signpost.blocks.tiles;
 
 import gollorum.signpost.SPEventHandler;
+import gollorum.signpost.blocks.BigPostPost;
 import gollorum.signpost.blocks.BigPostPost.BigHit;
 import gollorum.signpost.blocks.BigPostPost.BigHitTarget;
 import gollorum.signpost.blocks.BigPostPost.BigPostType;
@@ -17,6 +18,7 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 
 public class BigPostPostTile extends SuperPostPostTile {
 
@@ -26,7 +28,7 @@ public class BigPostPostTile extends SuperPostPostTile {
 	@Deprecated
 	public BigBaseInfo bases = null;
 
-	public BigPostPostTile(){}
+	public BigPostPostTile(){super();}
 
 	public BigPostPostTile(BigPostType type){
 		this();
@@ -34,10 +36,10 @@ public class BigPostPostTile extends SuperPostPostTile {
 	}
 	
 	public BigBaseInfo getBases(){
-		BigBaseInfo bases = PostHandler.bigPosts.get(toPos());
+		BigBaseInfo bases = PostHandler.getBigPosts().get(toPos());
 		if(bases==null){
-			bases = new BigBaseInfo(type.texture);
-			PostHandler.bigPosts.put(toPos(), bases);
+			bases = new BigBaseInfo(type.texture, type.resLocMain);
+			PostHandler.getBigPosts().put(toPos(), bases);
 		}
 		this.bases = bases;
 		return bases;
@@ -45,13 +47,14 @@ public class BigPostPostTile extends SuperPostPostTile {
 
 	@Override
 	public void onBlockDestroy(MyBlockPos pos) {
+		super.onBlockDestroy(pos);
 		isCanceled = true;
 		BigBaseInfo bases = getBases();
 		if(bases.sign.overlay!=null){
 			EntityItem item = new EntityItem(worldObj, pos.x, pos.y, pos.z, new ItemStack(bases.sign.overlay.item, 1));
 			worldObj.spawnEntityInWorld(item);
 		}
-		if(PostHandler.bigPosts.remove(pos)!=null){
+		if(PostHandler.getBigPosts().remove(pos)!=null){
 			NetworkHandler.netWrap.sendToAll(new SendAllBigPostBasesMessage());
 		}
 	}
@@ -64,7 +67,8 @@ public class BigPostPostTile extends SuperPostPostTile {
 		tagCompound.setBoolean("flip", bases.sign.flip);
 		tagCompound.setString("overlay", ""+bases.sign.overlay);
 		tagCompound.setBoolean("point", bases.sign.point);
-		tagCompound.setString("paint", SuperPostPostTile.LocToString(bases.sign.paint));
+		tagCompound.setString("paint", locToString(bases.sign.paint));
+		tagCompound.setString("postPaint", locToString(bases.postPaint));
 		for(int i=0; i<bases.description.length; i++){
 			tagCompound.setString("description"+i, bases.description[i]);
 		}
@@ -79,6 +83,7 @@ public class BigPostPostTile extends SuperPostPostTile {
 		final boolean point = tagCompound.getBoolean("point");
 		final String[] description = new String[DESCRIPTIONLENGTH];
 		final String paint = tagCompound.getString("paint");
+		final String postPaint = tagCompound.getString("postPaint");
 		
 		final BigPostPostTile self = this;
 
@@ -103,6 +108,7 @@ public class BigPostPostTile extends SuperPostPostTile {
 					bases.sign.point = point;
 					bases.description = description;
 					bases.sign.paint = stringToLoc(paint);
+					bases.postPaint = postPaint==null || postPaint.equals("") || postPaint.equals("null") || postPaint.equals("minecraft:") ? type.resLocMain : stringToLoc(postPaint);
 					NetworkHandler.netWrap.sendToAll(new SendBigPostBasesMessage(self, bases));
 					return true;
 				}
@@ -119,5 +125,14 @@ public class BigPostPostTile extends SuperPostPostTile {
 		}else{
 			return null;
 		}
+	}
+	
+	@Override
+	public ResourceLocation getPostPaint(){
+		return getBases().postPaint;
+	}
+	
+	public void setPostPaint(ResourceLocation loc){
+		getBases().postPaint = loc;
 	}
 }

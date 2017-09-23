@@ -1,4 +1,4 @@
-tile.SignpostBase.name=Wegstein
+Ôªøtile.SignpostBase.name=Wegstein
 tile.SignpostPostOAK.name=Wegweiser - Eiche
 tile.SignpostPostACACIA.name=Wegweiser - Akazie
 tile.SignpostPostBIGOAK.name=Wegweiser - Schwarzeiche
@@ -8,14 +8,14 @@ tile.SignpostPostJUNGLE.name=Wegweiser - Tropenholz
 tile.SignpostPostSPRUCE.name=Wegweiser - Fichte
 tile.SignpostPostSTONE.name=Wegweiser - Stein
 
-tile.SignpostBigPostOAK.name=Groﬂer Wegweiser - Eiche
-tile.SignpostBigPostACACIA.name=Groﬂer Wegweiser - Akazie
-tile.SignpostBigPostBIGOAK.name=Groﬂer Wegweiser - Schwarzeiche
-tile.SignpostBigPostBIRCH.name=Groﬂer Wegweiser - Birke
-tile.SignpostBigPostIRON.name=Groﬂer Wegweiser - Eisen
-tile.SignpostBigPostJUNGLE.name=Groﬂer Wegweiser - Tropenholz
-tile.SignpostBigPostSPRUCE.name=Groﬂer Wegweiser - Fichte
-tile.SignpostBigPostSTONE.name=Groﬂer Wegweiser - Stein
+tile.SignpostBigPostOAK.name=Gro√üer Wegweiser - Eiche
+tile.SignpostBigPostACACIA.name=Gro√üer Wegweiser - Akazie
+tile.SignpostBigPostBIGOAK.name=Gro√üer Wegweiser - Schwarzeiche
+tile.SignpostBigPostBIRCH.name=Gro√üer Wegweiser - Birke
+tile.SignpostBigPostIRON.name=Gro√üer Wegweiser - Eisen
+tile.SignpostBigPostJUNGLE.name=Gro√üer Wegweiser - Tropenholz
+tile.SignpostBigPostSPRUCE.name=Gro√üer Wegweiser - Fichte
+tile.SignpostBigPostSTONE.name=Gro√üer Wegweiser - Stein
 
 item.SignpostTool.name=Wegweiser-Werkzeug
 item.SignpostCalibratedTool.name=Kalibriertes Wegweiser-Werkzeug
@@ -24,16 +24,16 @@ item.SignpostBrush.name=Wegweiser-Pinsel
 signpost.discovered=Du hast '<Waystone>' entdeckt!
 signpost.notDiscovered=Du hast <Waystone> noch nicht entdeckt
 signpost.errorWorld=FEHLER: Die Welt '<world>' existiert nicht
-signpost.payment=Du musst <amount>x<itemName> bezahlen, um diesen Wegweiser verwenden zu kˆnnen
+signpost.payment=Du musst <amount>x<itemName> bezahlen, um diesen Wegweiser verwenden zu k√∂nnen
 signpost.noTeleport=Dieses Schild hat kein Ziel und ist rein dekorativ.
 
-signpost.guiPrev=Der Wegstein ist <distance> Blˆcke entfernt. Spieler werden <amount>x<itemName> bezahlen m¸ssen.
+signpost.guiPrev=Der Wegstein ist <distance> Bl√∂cke entfernt. Spieler werden <amount>x<itemName> bezahlen m√ºssen.
 signpost.guiWorldDim=Der Wegstein ist nicht in dieser Welt/Dimension. Interdimensionale Wegweiser sind deaktivert.
-signpost.guiTooFar=Der Wegstein ist zu weit entfernt (<distance> Blˆcke). Die maximale Distanz betr‰gt <maxDist> Blˆcke.
+signpost.guiTooFar=Der Wegstein ist zu weit entfernt (<distance> Bl√∂cke). Die maximale Distanz betr√§gt <maxDist> Bl√∂cke.
 
-signpost.confirmTeleport=Gib '/signpostconfirm' ein, um f¸r <amount>x<itemName> nach <Waystone> zu reisen.
+signpost.confirmTeleport=Gib '/signpostconfirm' ein, um f√ºr <amount>x<itemName> nach <Waystone> zu reisen.
 signpost.confirmTeleportNoCost=Gib '/signpostconfirm' ein, um nach <Waystone> zu reisen.
-signpost.noConfirm=Es existiert keine Teleportationsanfrage, die es zu best‰tigen gilt. Anfragen halten f¸r 30 Sekunden.
+signpost.noConfirm=Es existiert keine Teleportationsanfrage, die es zu best√§tigen gilt. Anfragen halten f√ºr 30 Sekunden.
 
 signpost.getwaystonesleft=Du kannst noch <amount> Wegsteine platzieren.
 signpost.getsignpostsleft=Du kannst noch <amount> Wegweiser platzieren.
@@ -41,3 +41,4 @@ signpost.getwaystonesleftop=<player> kann noch <amount> Wegsteine platzieren.
 signpost.getsignpostsleftop=<player> kann noch <amount> Wegweiser platzieren.
 
 signpost.playerNotFound=Der Spieler <player> ist nicht auf dem Server.
+signpost.waystoneNotFound=Der Wegstein '<Waystone>' wurde nicht gefunden.

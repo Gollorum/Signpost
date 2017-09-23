@@ -5,9 +5,6 @@ import org.lwjgl.opengl.GL11;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.VertexBuffer;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ChatAllowedCharacters;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.client.FMLClientHandler;
@@ -42,6 +39,7 @@ public class BaseInputBox extends Gui{
 		this.y = y;
 		this.width = width;
 		this.height = (int) (width/verh);
+		setText(null);
 	}
 	
 	public void setFocused(boolean bool){
@@ -90,7 +88,7 @@ public class BaseInputBox extends Gui{
 	}
 	
 	public void setText(String text){
-		this.text = text;
+		this.text = text==null?"null":text;
 	}
 	
 	public String getText(){

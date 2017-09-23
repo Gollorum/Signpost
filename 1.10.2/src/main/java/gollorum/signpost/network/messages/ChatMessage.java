@@ -24,7 +24,7 @@ public class ChatMessage implements IMessage {
 		this.keyword = keyword;
 		this.replacement = replacement;
 	}
-
+	
 	public ChatMessage(String message) {
 		this(message, new String[0], new String[0]);
 	}

@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.UUID;
 
 import gollorum.signpost.commands.ConfirmTeleportCommand;
+import gollorum.signpost.commands.DiscoverWaystone;
 import gollorum.signpost.commands.GetSignpostCount;
 import gollorum.signpost.commands.GetWaystoneCount;
 import gollorum.signpost.commands.SetSignpostCount;
@@ -36,7 +37,7 @@ public class Signpost{
 	@Instance
 	public static Signpost instance;
 	public static final String MODID = "signpost";
-	public static final String VERSION = "1.05.5";
+	public static final String VERSION = "1.06";
 
 	public static final int GuiBaseID = 0;
 	public static final int GuiPostID = 1;
@@ -44,9 +45,9 @@ public class Signpost{
 	public static final int GuiPostBrushID = 3;
 	public static final int GuiPostRotationID = 4;
 
-	public static NBTTagCompound saveFile;
-	
 	public static File configFile;
+	
+	public static NBTTagCompound saveFile;
 	
 	@SidedProxy(clientSide = "gollorum.signpost.ClientProxy", serverSide = "gollorum.signpost.CommonProxy")
 	public static CommonProxy proxy;
@@ -56,8 +57,10 @@ public class Signpost{
 
 		File configFolder = new File(event.getModConfigurationDirectory() + "/" + MODID);
 		configFolder.mkdirs();
-		ConfigHandler.init(new File(configFolder.getPath(), MODID + ".cfg"));
-
+		configFile = new File(configFolder.getPath(), MODID + ".cfg");
+		ConfigHandler.init(configFile);
+		proxy.preInit();
+        
 	}
 
 	@EventHandler
@@ -70,24 +73,25 @@ public class Signpost{
 	public void postInit(FMLPostInitializationEvent event){
 		ConfigHandler.postInit();
 		PostHandler.allWaystones = new StonedHashSet();
-		PostHandler.posts = new Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo>();
-		PostHandler.bigPosts = new Lurchpaerchensauna<MyBlockPos, BigBaseInfo>();
+		PostHandler.setPosts(new Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo>());
+		PostHandler.setBigPosts(new Lurchpaerchensauna<MyBlockPos, BigBaseInfo>());
 		PostHandler.awaiting = new Lurchpaerchensauna<UUID, TeleportInformation>();
 	}
-
-    @EventHandler
-    public void preServerStart(FMLServerAboutToStartEvent event) {
-        PostHandler.init();
-    }
+	
+	@EventHandler
+	public void serverAboutToStart(FMLServerAboutToStartEvent e){
+		PostHandler.init();
+	}
     
 	@EventHandler
-	public void registerCommands(FMLServerStartingEvent e) {
+	public void serverStarting(FMLServerStartingEvent e) {
 		ServerCommandManager manager = (ServerCommandManager) e.getServer().getCommandManager();
 		manager.registerCommand(new ConfirmTeleportCommand());
 		manager.registerCommand(new GetWaystoneCount());
 		manager.registerCommand(new GetSignpostCount());
 		manager.registerCommand(new SetWaystoneCount());
 		manager.registerCommand(new SetSignpostCount());
+		manager.registerCommand(new DiscoverWaystone());
+		ConfigHandler.init(configFile);
 	}
-	
 }

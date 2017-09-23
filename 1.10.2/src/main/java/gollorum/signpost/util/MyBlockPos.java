@@ -1,8 +1,14 @@
 package gollorum.signpost.util;
 
+import gollorum.signpost.Signpost;
+import gollorum.signpost.blocks.tiles.BigPostPostTile;
+import gollorum.signpost.blocks.tiles.PostPostTile;
 import gollorum.signpost.management.ConfigHandler;
+import gollorum.signpost.management.PostHandler;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
@@ -19,7 +25,11 @@ public class MyBlockPos{
 	}
 	
 	public MyBlockPos(World world, int x, int y, int z, int dim){
-		this(world.getWorldInfo().getWorldName(), x, y, z, dim);
+		this((world==null||world.isRemote)?"":world.getWorldInfo().getWorldName(), x, y, z, dim);
+	}
+	
+	public MyBlockPos(String world, double x, double y, double z, int dim){
+		this(world, (int)x, (int)y, (int)z, dim);
 	}
 
 	public MyBlockPos(String world, BlockPos pos, int dim){
@@ -35,6 +45,21 @@ public class MyBlockPos{
 		this.z = z;
 		this.world = world;
 		this.dim = dim;
+	}
+
+	public MyBlockPos(MyBlockPos pos) {
+		this(pos.world, pos.x, pos.y, pos.z, pos.dim);
+	}
+	
+	public MyBlockPos(Entity entity){
+		this(entity.worldObj, (int)Math.floor(entity.posX), (int)Math.floor(entity.posY), (int)Math.floor(entity.posZ), dim(entity.worldObj));
+	}
+
+	public static int dim(World world){
+		if(world==null||world.provider==null){
+			return Integer.MIN_VALUE;
+		}else
+			return world.provider.getDimension();
 	}
 
 	public static enum Connection{VALID, WORLD, DIST}
@@ -180,4 +205,22 @@ public class MyBlockPos{
 		return world+": "+x+"|"+y+"|"+z+" in "+dim;
 	}
 	
+	public World getWorld(){
+		return Signpost.proxy.getWorld(this.world, this.dim);
+	}
+	
+	public TileEntity getTile(){
+		World world = getWorld();
+		if(world!=null){
+			TileEntity tile = world.getTileEntity(this.toBlockPos());
+			if(tile instanceof PostPostTile){
+				((PostPostTile) tile).getBases();
+			}else if(tile instanceof PostPostTile){
+				((BigPostPostTile) tile).getBases();
+			}
+			return tile;
+		}else{
+			return null;
+		}
+	}
 }

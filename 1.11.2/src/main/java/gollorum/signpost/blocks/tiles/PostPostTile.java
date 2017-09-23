@@ -77,6 +77,7 @@ public class PostPostTile extends SuperPostPostTile {
 		tagCompound.setBoolean("point2", bases.sign2.point);
 		tagCompound.setString("paint1", SuperPostPostTile.locToString(bases.sign1.paint));
 		tagCompound.setString("paint2", SuperPostPostTile.locToString(bases.sign2.paint));
+		tagCompound.setString("postPaint", SuperPostPostTile.locToString(bases.postPaint));
 	}
 
 	@Override
@@ -98,6 +99,8 @@ public class PostPostTile extends SuperPostPostTile {
 
 		final String paint1 = tagCompound.getString("paint1");
 		final String paint2 = tagCompound.getString("paint2");
+		
+		final String postPaint = tagCompound.getString("postPaint");
 		
 		final PostPostTile self = this;
 
@@ -123,6 +126,7 @@ public class PostPostTile extends SuperPostPostTile {
 					bases.sign2.point = point2;
 					bases.sign1.paint = stringToLoc(paint1);
 					bases.sign2.paint = stringToLoc(paint2);
+					bases.postPaint = postPaint==null || postPaint.equals("") || postPaint.equals("null") || postPaint.equals("minecraft:") ? type.resLocMain : stringToLoc(postPaint);
 					NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(self, bases));
 					return true;
 				}

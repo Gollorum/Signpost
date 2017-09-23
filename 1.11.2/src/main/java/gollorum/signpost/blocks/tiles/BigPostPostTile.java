@@ -67,7 +67,8 @@ public class BigPostPostTile extends SuperPostPostTile {
 		tagCompound.setBoolean("flip", bases.sign.flip);
 		tagCompound.setString("overlay", ""+bases.sign.overlay);
 		tagCompound.setBoolean("point", bases.sign.point);
-		tagCompound.setString("paint", SuperPostPostTile.locToString(bases.sign.paint));
+		tagCompound.setString("paint", locToString(bases.sign.paint));
+		tagCompound.setString("postPaint", locToString(bases.postPaint));
 		for(int i=0; i<bases.description.length; i++){
 			tagCompound.setString("description"+i, bases.description[i]);
 		}
@@ -82,6 +83,7 @@ public class BigPostPostTile extends SuperPostPostTile {
 		final boolean point = tagCompound.getBoolean("point");
 		final String[] description = new String[DESCRIPTIONLENGTH];
 		final String paint = tagCompound.getString("paint");
+		final String postPaint = tagCompound.getString("postPaint");
 		
 		final BigPostPostTile self = this;
 
@@ -106,6 +108,7 @@ public class BigPostPostTile extends SuperPostPostTile {
 					bases.sign.point = point;
 					bases.description = description;
 					bases.sign.paint = stringToLoc(paint);
+					bases.postPaint = postPaint==null || postPaint.equals("") || postPaint.equals("null") || postPaint.equals("minecraft:") ? type.resLocMain : stringToLoc(postPaint);
 					NetworkHandler.netWrap.sendToAll(new SendBigPostBasesMessage(self, bases));
 					return true;
 				}

@@ -1,6 +1,7 @@
 package gollorum.signpost.network.messages;
 
 import gollorum.signpost.management.ConfigHandler;
+import gollorum.signpost.management.ConfigHandler.RecipeCost;
 import gollorum.signpost.management.ConfigHandler.SecurityLevel;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.util.BaseInfo;
@@ -19,6 +20,9 @@ public class InitPlayerResponseMessage implements IMessage{
 	public static String paymentItem;
 	public static int costMult;
 
+	public static RecipeCost signRec;
+	public static RecipeCost waysRec;
+
 	public static SecurityLevel securityLevelWaystone;
 	public static SecurityLevel securityLevelSignpost;
 	
@@ -31,6 +35,8 @@ public class InitPlayerResponseMessage implements IMessage{
 		maxDist = ConfigHandler.maxDist;
 		paymentItem = ConfigHandler.paymentItem;
 		costMult = ConfigHandler.costMult;
+		signRec = ConfigHandler.signRec;
+		waysRec = ConfigHandler.waysRec;
 		securityLevelWaystone = ConfigHandler.securityLevelWaystone;
 		securityLevelSignpost = ConfigHandler.securityLevelSignpost;
 	}
@@ -48,6 +54,8 @@ public class InitPlayerResponseMessage implements IMessage{
 		buf.writeInt(maxDist);
 		ByteBufUtils.writeUTF8String(buf, paymentItem);
 		buf.writeInt(costMult);
+		ByteBufUtils.writeUTF8String(buf, signRec.name());
+		ByteBufUtils.writeUTF8String(buf, waysRec.name());
 		ByteBufUtils.writeUTF8String(buf, securityLevelWaystone.name());
 		ByteBufUtils.writeUTF8String(buf, securityLevelSignpost.name());
 	}
@@ -66,8 +74,10 @@ public class InitPlayerResponseMessage implements IMessage{
 		maxDist = buf.readInt();
 		paymentItem = ByteBufUtils.readUTF8String(buf);
 		costMult = buf.readInt();
-		securityLevelWaystone = ConfigHandler.SecurityLevel.valueOf(ByteBufUtils.readUTF8String(buf));
-		securityLevelSignpost = ConfigHandler.SecurityLevel.valueOf(ByteBufUtils.readUTF8String(buf));
+		signRec = RecipeCost.valueOf(ByteBufUtils.readUTF8String(buf));
+		waysRec = RecipeCost.valueOf(ByteBufUtils.readUTF8String(buf));
+		securityLevelWaystone = SecurityLevel.valueOf(ByteBufUtils.readUTF8String(buf));
+		securityLevelSignpost = SecurityLevel.valueOf(ByteBufUtils.readUTF8String(buf));
 	}
 
 }

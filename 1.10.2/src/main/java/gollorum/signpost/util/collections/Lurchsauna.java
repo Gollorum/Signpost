@@ -59,13 +59,31 @@ public class Lurchsauna<L> implements Set<L>, Cloneable, Serializable {
 	private int lurchmaechtigkeit = 0;
 	
 	public Lurchsauna(){}
-	
+
+	public Lurchsauna(L[] lurchbande) {
+		for(L now: lurchbande){
+			add(now);
+		}
+	}
+
 	public Lurchsauna(Collection<? extends L> lurchbande) {
 		for(L now: lurchbande){
 			add(now);
 		}
 	}
 
+	public L get(int index){
+		if(index<0 || index>=lurchmaechtigkeit){
+			return null;
+		}
+		Lurch jetztLurch = alphalurch;
+		while(index>0){
+			jetztLurch = jetztLurch.nachlurch;
+			index--;
+		}
+		return jetztLurch.nachlurch.derLurch;
+	}
+	
 	@Override
 	public int size() {
 		return lurchmaechtigkeit;

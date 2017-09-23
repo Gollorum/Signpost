@@ -35,12 +35,12 @@ public class BigPostPost extends SuperPostPost {
 	public BigPostType type;
 
 	public static enum BigPostType{
-						OAK(	Material.WOOD, 	"bigsign_oak", 		"planks_oak",		Item.getItemFromBlock(Blocks.PLANKS),		0),
-						SPRUCE(	Material.WOOD, 	"bigsign_spruce", 	"planks_spruce",	Item.getItemFromBlock(Blocks.PLANKS),		1),
-						BIRCH(	Material.WOOD, 	"bigsign_birch", 	"planks_birch",		Item.getItemFromBlock(Blocks.PLANKS),		2),
-						JUNGLE(	Material.WOOD,	"bigsign_jungle", 	"planks_jungle",	Item.getItemFromBlock(Blocks.PLANKS),		3),
-						ACACIA(	Material.WOOD, 	"bigsign_acacia", 	"planks_acacia",	Item.getItemFromBlock(Blocks.PLANKS),		4),
-						BIGOAK(	Material.WOOD, 	"bigsign_big_oak", 	"planks_big_oak",	Item.getItemFromBlock(Blocks.PLANKS),		5),
+						OAK(	Material.WOOD, 	"bigsign_oak", 		"log_oak",		Item.getItemFromBlock(Blocks.PLANKS),		0),
+						SPRUCE(	Material.WOOD, 	"bigsign_spruce", 	"log_spruce",	Item.getItemFromBlock(Blocks.PLANKS),		1),
+						BIRCH(	Material.WOOD, 	"bigsign_birch", 	"log_birch",		Item.getItemFromBlock(Blocks.PLANKS),		2),
+						JUNGLE(	Material.WOOD,	"bigsign_jungle", 	"log_jungle",	Item.getItemFromBlock(Blocks.PLANKS),		3),
+						ACACIA(	Material.WOOD, 	"bigsign_acacia", 	"log_acacia",	Item.getItemFromBlock(Blocks.PLANKS),		4),
+						BIGOAK(	Material.WOOD, 	"bigsign_big_oak", 	"log_big_oak",	Item.getItemFromBlock(Blocks.PLANKS),		5),
 						IRON(	Material.IRON, 	"bigsign_iron", 	"iron_block",		Items.IRON_INGOT,							0),
 						STONE(	Material.ROCK, 	"bigsign_stone", 	"stone",			Item.getItemFromBlock(Blocks.STONE),		0);
 		public Material material;

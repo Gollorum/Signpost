@@ -3,7 +3,7 @@ package gollorum.signpost.network.messages;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-import gollorum.signpost.blocks.SuperPostPostTile;
+import gollorum.signpost.blocks.tiles.SuperPostPostTile;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.BigBaseInfo;
@@ -26,8 +26,9 @@ public class SendAllBigPostBasesMessage implements IMessage{
 		public boolean bool2;
 		public String[] strings;
 		public ResourceLocation paint;
+		public ResourceLocation postPaint;
 		
-		public BigStringInt(String string, int datInt, boolean bool, OverlayType overlay, boolean bool2, String[] strings, ResourceLocation paint) {
+		public BigStringInt(String string, int datInt, boolean bool, OverlayType overlay, boolean bool2, String[] strings, ResourceLocation paint, ResourceLocation postPaint) {
 			this.string = string;
 			this.datInt = datInt;
 			this.bool = bool;
@@ -35,6 +36,7 @@ public class SendAllBigPostBasesMessage implements IMessage{
 			this.bool2 = bool2;
 			this.strings = strings;
 			this.paint = paint;
+			this.postPaint = postPaint;
 		}
 	}
 	
@@ -50,7 +52,8 @@ public class SendAllBigPostBasesMessage implements IMessage{
 															   now.getValue().overlay,
 															   now.getValue().bool2,
 															   now.getValue().paint),
-														now.getValue().strings));
+														now.getValue().strings,
+														now.getValue().postPaint));
 		}
 		return postMap;
 	}
@@ -59,8 +62,8 @@ public class SendAllBigPostBasesMessage implements IMessage{
 
 	@Override
 	public void toBytes(ByteBuf buf) {
-		buf.writeInt(PostHandler.bigPosts.size());
-		for(Entry<MyBlockPos, BigBaseInfo> now: PostHandler.bigPosts.entrySet()){
+		buf.writeInt(PostHandler.getBigPosts().size());
+		for(Entry<MyBlockPos, BigBaseInfo> now: PostHandler.getBigPosts().entrySet()){
 			now.getKey().toBytes(buf);
 			ByteBufUtils.writeUTF8String(buf, ""+now.getValue().sign.base);
 			buf.writeInt(now.getValue().sign.rotation);
@@ -71,7 +74,8 @@ public class SendAllBigPostBasesMessage implements IMessage{
 			for(String now2: now.getValue().description){
 				ByteBufUtils.writeUTF8String(buf, now2);
 			}
-			ByteBufUtils.writeUTF8String(buf, SuperPostPostTile.LocToString(now.getValue().sign.paint));
+			ByteBufUtils.writeUTF8String(buf, SuperPostPostTile.locToString(now.getValue().sign.paint));
+			ByteBufUtils.writeUTF8String(buf, SuperPostPostTile.locToString(now.getValue().postPaint));
 		}
 	}
 	
@@ -86,6 +90,7 @@ public class SendAllBigPostBasesMessage implements IMessage{
 										OverlayType.get(ByteBufUtils.readUTF8String(buf)),
 										buf.readBoolean(),
 										readDescription(buf),
+										SuperPostPostTile.stringToLoc(ByteBufUtils.readUTF8String(buf)),
 										SuperPostPostTile.stringToLoc(ByteBufUtils.readUTF8String(buf))));
 		}
 	}

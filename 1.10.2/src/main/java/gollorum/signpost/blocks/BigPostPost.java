@@ -1,6 +1,8 @@
 package gollorum.signpost.blocks;
 
 import gollorum.signpost.Signpost;
+import gollorum.signpost.blocks.tiles.BigPostPostTile;
+import gollorum.signpost.blocks.tiles.SuperPostPostTile;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
@@ -33,12 +35,12 @@ public class BigPostPost extends SuperPostPost {
 	public BigPostType type;
 
 	public static enum BigPostType{
-						OAK(	Material.WOOD, 	"bigsign_oak", 		"planks_oak",		Item.getItemFromBlock(Blocks.PLANKS),		0),
-						SPRUCE(	Material.WOOD, 	"bigsign_spruce", 	"planks_spruce",	Item.getItemFromBlock(Blocks.PLANKS),		1),
-						BIRCH(	Material.WOOD, 	"bigsign_birch", 	"planks_birch",		Item.getItemFromBlock(Blocks.PLANKS),		2),
-						JUNGLE(	Material.WOOD,	"bigsign_jungle", 	"planks_jungle",	Item.getItemFromBlock(Blocks.PLANKS),		3),
-						ACACIA(	Material.WOOD, 	"bigsign_acacia", 	"planks_acacia",	Item.getItemFromBlock(Blocks.PLANKS),		4),
-						BIGOAK(	Material.WOOD, 	"bigsign_big_oak", 	"planks_big_oak",	Item.getItemFromBlock(Blocks.PLANKS),		5),
+						OAK(	Material.WOOD, 	"bigsign_oak", 		"log_oak",		Item.getItemFromBlock(Blocks.PLANKS),		0),
+						SPRUCE(	Material.WOOD, 	"bigsign_spruce", 	"log_spruce",	Item.getItemFromBlock(Blocks.PLANKS),		1),
+						BIRCH(	Material.WOOD, 	"bigsign_birch", 	"log_birch",		Item.getItemFromBlock(Blocks.PLANKS),		2),
+						JUNGLE(	Material.WOOD,	"bigsign_jungle", 	"log_jungle",	Item.getItemFromBlock(Blocks.PLANKS),		3),
+						ACACIA(	Material.WOOD, 	"bigsign_acacia", 	"log_acacia",	Item.getItemFromBlock(Blocks.PLANKS),		4),
+						BIGOAK(	Material.WOOD, 	"bigsign_big_oak", 	"log_big_oak",	Item.getItemFromBlock(Blocks.PLANKS),		5),
 						IRON(	Material.IRON, 	"bigsign_iron", 	"iron_block",		Items.IRON_INGOT,							0),
 						STONE(	Material.ROCK, 	"bigsign_stone", 	"stone",			Item.getItemFromBlock(Blocks.STONE),		0);
 		public Material material;
@@ -58,7 +60,7 @@ public class BigPostPost extends SuperPostPost {
 		}
 	}
 	
-	public static enum BigHitTarget{BASE, POST;}
+	public static enum BigHitTarget{BASE, POST, STONE;}
 	
 	public static class BigHit{
 		public BigHitTarget target;
@@ -122,7 +124,7 @@ public class BigPostPost extends SuperPostPost {
 		BigHit hit = (BigHit)hitObj;
 		BigBaseInfo tilebases = ((BigPostPostTile)superTile).getBases();
 		if (hit.target == BigHitTarget.BASE) {
-			tilebases.sign.rotation = (tilebases.sign.rotation - 15) % 360;
+			tilebases.sign.rot(-15, x, z);
 		}
 	}
 
@@ -131,9 +133,7 @@ public class BigPostPost extends SuperPostPost {
 		BigHit hit = (BigHit)hitObj;
 		BigBaseInfo tilebases = ((BigPostPostTile)superTile).getBases();
 		if (hit.target == BigHitTarget.BASE) {
-			tilebases.sign.rotation = (tilebases.sign.rotation + 15) % 360;
-//		} else if (hit.target == BigHitTarget.POST){
-//			NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiBigPostID, x, y, z), (EntityPlayerMP) player);
+			tilebases.sign.rot(15, x, z);
 		}
 	}
 
@@ -212,19 +212,13 @@ public class BigPostPost extends SuperPostPost {
 				if(destination.pos==null){
 					NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.noTeleport"), (EntityPlayerMP) player);
 				}else{
-					if (ConfigHandler.cost == null) {
-						PostHandler.teleportMe(destination, (EntityPlayerMP) player, 0);
-					} else {
-						int stackSize = (int) destination.pos.distance(tile.toPos()) / ConfigHandler.costMult + 1;
-						if (!PostHandler.isHandEmpty(player)
-								&& player.getHeldItemMainhand().getItem().getClass() == ConfigHandler.cost.getClass()
-								&& player.getHeldItemMainhand().stackSize >= stackSize) {
-							PostHandler.teleportMe(destination, (EntityPlayerMP) player, stackSize);
-						} else {
-							String[] keyword = { "<itemName>", "<amount>" };
-							String[] replacement = { ConfigHandler.cost.getUnlocalizedName() + ".name",	"" + stackSize };
-							NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.payment", keyword, replacement), (EntityPlayerMP) player);
-						}
+					int stackSize = PostHandler.getStackSize(destination.pos, tile.toPos());
+					if(PostHandler.canPay(player, destination.pos.x, destination.pos.y, destination.pos.z, x, y, z)){
+						PostHandler.teleportMe(destination, (EntityPlayerMP) player, stackSize);
+					}else{
+						String[] keyword = { "<itemName>", "<amount>" };
+						String[] replacement = { ConfigHandler.cost.getUnlocalizedName() + ".name",	"" + stackSize };
+						NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.payment", keyword, replacement), (EntityPlayerMP) player);
 					}
 				}
 			}
@@ -278,7 +272,8 @@ public class BigPostPost extends SuperPostPost {
 		if(player.isSneaking())
 			head.y-=0.08;
 		Vec3d look = player.getLookVec();
-		BigBaseInfo bases = getWaystonePostTile(world, x, y, z).getBases();
+		BigPostPostTile tile = getWaystonePostTile(world, x, y, z);
+		BigBaseInfo bases = tile.getBases();
 		DDDVector rotPos = new DDDVector(x+0.5,y+0.5,z+0.5);
 		DDDVector signPos;
 		DDDVector edges = new DDDVector(1.4375, 0.75, 0.0625);
@@ -290,19 +285,27 @@ public class BigPostPost extends SuperPostPost {
 		}
 		Cuboid sign = new Cuboid(signPos, edges, bases.sign.calcRot(x, z), rotPos);
 		Cuboid post = new Cuboid(new DDDVector(x+0.375, y, z+0.375), new DDDVector(0.25, 1, 0.25), 0);
+		Cuboid waystone = new Cuboid(new DDDVector(x+0.25, y, z+0.25), new DDDVector(0.5, 0.5, 0.5), 0);
 
 		DDDVector start = new DDDVector(head.x, head.y, head.z);
 		DDDVector end = start.add(new DDDVector(look.xCoord, look.yCoord, look.zCoord));
 		Intersect signHit = sign.traceLine(start, end, true);
 		Intersect postHit = post.traceLine(start, end, true);
+		Intersect waystoneHit = waystone.traceLine(start, end, true);
 		double signDist = signHit.exists&&bases.sign.base!=null?signHit.pos.distance(start):Double.MAX_VALUE;
 		double postDist = postHit.exists?postHit.pos.distance(start):Double.MAX_VALUE/2;
+		double waystoneDist = waystoneHit.exists&&tile.isWaystone()?waystoneHit.pos.distance(start):Double.MAX_VALUE;
 		double dist;
 		BigHitTarget target;
 		DDDVector pos;
 		dist = signDist;
 		pos = signHit.pos;
 		target = BigHitTarget.BASE;
+		if(waystoneDist<dist){
+			dist = waystoneDist;
+			pos = waystoneHit.pos;
+			target = BigHitTarget.STONE;
+		}
 		if(postDist<dist){
 			dist = postDist;
 			pos = postHit.pos;
@@ -318,6 +321,12 @@ public class BigPostPost extends SuperPostPost {
 		} else {
 			return null;
 		}
+	}
+
+	@Override
+	protected boolean isHitWaystone(Object hitObj) {
+		BigHit hit = (BigHit)hitObj;
+		return hit.target == BigHitTarget.STONE;
 	}
 	
 }
