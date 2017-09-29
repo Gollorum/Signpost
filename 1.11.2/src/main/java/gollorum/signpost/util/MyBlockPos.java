@@ -1,7 +1,10 @@
 package gollorum.signpost.util;
 
 import gollorum.signpost.Signpost;
+import gollorum.signpost.blocks.tiles.BigPostPostTile;
+import gollorum.signpost.blocks.tiles.PostPostTile;
 import gollorum.signpost.management.ConfigHandler;
+import gollorum.signpost.management.PostHandler;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
@@ -209,7 +212,13 @@ public class MyBlockPos{
 	public TileEntity getTile(){
 		World world = getWorld();
 		if(world!=null){
-			return world.getTileEntity(this.toBlockPos());
+			TileEntity tile = world.getTileEntity(this.toBlockPos());
+			if(tile instanceof PostPostTile){
+				((PostPostTile) tile).getBases();
+			}else if(tile instanceof PostPostTile){
+				((BigPostPostTile) tile).getBases();
+			}
+			return tile;
 		}else{
 			return null;
 		}

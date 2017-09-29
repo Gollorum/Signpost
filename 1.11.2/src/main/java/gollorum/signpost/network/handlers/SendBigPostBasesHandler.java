@@ -23,8 +23,11 @@ public class SendBigPostBasesHandler implements IMessageHandler<SendBigPostBases
 			((BigPostPostTile)tile).isWaystone();
 			bases = ((BigPostPostTile)tile).getBases();
 		}else{
-			bases = new BigBaseInfo(new Sign(null), null);
-			PostHandler.bigPosts.put(message.pos, bases);
+			bases = PostHandler.getBigPosts().get(message.pos);
+			if(bases==null){
+				bases = new BigBaseInfo(new Sign(null), null);
+				PostHandler.getBigPosts().put(message.pos, bases);
+			}
 		}
 		bases.sign.rotation = message.baserot;
 		bases.sign.flip = message.flip;

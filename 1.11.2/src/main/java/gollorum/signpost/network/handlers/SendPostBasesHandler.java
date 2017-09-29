@@ -23,8 +23,11 @@ public class SendPostBasesHandler implements IMessageHandler<SendPostBasesMessag
 			((PostPostTile)tile).isWaystone();
 			bases = ((PostPostTile)tile).getBases();
 		}else{
-			bases = new DoubleBaseInfo(null, null);
-			PostHandler.posts.put(message.pos, bases);
+			bases = PostHandler.getPosts().get(message.pos);
+			if(bases==null){
+				bases = new DoubleBaseInfo(null, null);
+				PostHandler.getPosts().put(message.pos, bases);
+			}
 		}
 		bases.sign1.rotation = message.base1rot;
 		bases.sign2.rotation = message.base2rot;

@@ -89,6 +89,9 @@ public class BlockHandler {
 	
 	private void waystoneRecipe(){
 		for(IRecipe now: CraftingManager.getInstance().getRecipeList()){
+			if(now==null || now.getRecipeOutput()==null || now.getRecipeOutput().getItem()==null){
+				continue;
+			}
 			if(now.getRecipeOutput().getItem().equals(Item.getItemFromBlock(base))){
 				CraftingManager.getInstance().getRecipeList().remove(now);
 				break;
@@ -133,6 +136,9 @@ public class BlockHandler {
 	
 	private void postRecipe(PostPost post){
 		for(IRecipe now: CraftingManager.getInstance().getRecipeList()){
+			if(now==null || now.getRecipeOutput()==null || now.getRecipeOutput().getItem()==null){
+				continue;
+			}
 			if(now.getRecipeOutput().getItem().equals(Item.getItemFromBlock(post))){
 				CraftingManager.getInstance().getRecipeList().remove(now);
 				break;
@@ -174,6 +180,9 @@ public class BlockHandler {
 	
 	private void bigPostRecipe(BigPostPost post){
 		for(IRecipe now: CraftingManager.getInstance().getRecipeList()){
+			if(now==null || now.getRecipeOutput()==null || now.getRecipeOutput().getItem()==null){
+				continue;
+			}
 			if(now.getRecipeOutput().getItem().equals(Item.getItemFromBlock(post))){
 				CraftingManager.getInstance().getRecipeList().remove(now);
 				break;

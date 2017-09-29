@@ -62,8 +62,8 @@ public class SendAllBigPostBasesMessage implements IMessage{
 
 	@Override
 	public void toBytes(ByteBuf buf) {
-		buf.writeInt(PostHandler.bigPosts.size());
-		for(Entry<MyBlockPos, BigBaseInfo> now: PostHandler.bigPosts.entrySet()){
+		buf.writeInt(PostHandler.getBigPosts().size());
+		for(Entry<MyBlockPos, BigBaseInfo> now: PostHandler.getBigPosts().entrySet()){
 			now.getKey().toBytes(buf);
 			ByteBufUtils.writeUTF8String(buf, ""+now.getValue().sign.base);
 			buf.writeInt(now.getValue().sign.rotation);

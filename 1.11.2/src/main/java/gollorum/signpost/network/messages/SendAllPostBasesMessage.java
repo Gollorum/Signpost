@@ -95,8 +95,8 @@ public class SendAllPostBasesMessage implements IMessage{
 
 	@Override
 	public void toBytes(ByteBuf buf) {
-		buf.writeInt(PostHandler.posts.size());
-		for(Entry<MyBlockPos, DoubleBaseInfo> now: PostHandler.posts.entrySet()){
+		buf.writeInt(PostHandler.getPosts().size());
+		for(Entry<MyBlockPos, DoubleBaseInfo> now: PostHandler.getPosts().entrySet()){
 			now.getKey().toBytes(buf);
 			ByteBufUtils.writeUTF8String(buf, ""+now.getValue().sign1.base);
 			ByteBufUtils.writeUTF8String(buf, ""+now.getValue().sign2.base);

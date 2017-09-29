@@ -36,10 +36,10 @@ public class BigPostPostTile extends SuperPostPostTile {
 	}
 	
 	public BigBaseInfo getBases(){
-		BigBaseInfo bases = PostHandler.bigPosts.get(toPos());
+		BigBaseInfo bases = PostHandler.getBigPosts().get(toPos());
 		if(bases==null){
 			bases = new BigBaseInfo(type.texture, type.resLocMain);
-			PostHandler.bigPosts.put(toPos(), bases);
+			PostHandler.getBigPosts().put(toPos(), bases);
 		}
 		this.bases = bases;
 		return bases;
@@ -54,7 +54,7 @@ public class BigPostPostTile extends SuperPostPostTile {
 			EntityItem item = new EntityItem(world, pos.x, pos.y, pos.z, new ItemStack(bases.sign.overlay.item, 1));
 			world.spawnEntity(item);
 		}
-		if(PostHandler.bigPosts.remove(pos)!=null){
+		if(PostHandler.getBigPosts().remove(pos)!=null){
 			NetworkHandler.netWrap.sendToAll(new SendAllBigPostBasesMessage());
 		}
 	}

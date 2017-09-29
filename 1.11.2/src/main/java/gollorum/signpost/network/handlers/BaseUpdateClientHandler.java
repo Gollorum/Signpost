@@ -26,7 +26,7 @@ public class BaseUpdateClientHandler implements IMessageHandler<BaseUpdateClient
 				((SuperPostPostTile)tile).isWaystone=true;
 			}
 		}
-		for(Entry<MyBlockPos, DoubleBaseInfo> now: PostHandler.posts.entrySet()){
+		for(Entry<MyBlockPos, DoubleBaseInfo> now: PostHandler.getPosts().entrySet()){
 			BaseInfo base = now.getValue().sign1.base;
 			if(base!=null &&!(base.pos==null && base.owner==null)){
 				now.getValue().sign1.base = PostHandler.allWaystones.getByPos(base.blockPos);
@@ -36,7 +36,7 @@ public class BaseUpdateClientHandler implements IMessageHandler<BaseUpdateClient
 				now.getValue().sign2.base = PostHandler.allWaystones.getByPos(base.blockPos);
 			}
 		}
-		for(Entry<MyBlockPos, BigBaseInfo> now: PostHandler.bigPosts.entrySet()){
+		for(Entry<MyBlockPos, BigBaseInfo> now: PostHandler.getBigPosts().entrySet()){
 			BaseInfo base = now.getValue().sign.base;
 			if(base!=null &&!(base.pos==null && base.owner==null)){
 				now.getValue().sign.base = PostHandler.allWaystones.getByPos(base.blockPos);

@@ -2,6 +2,8 @@ package gollorum.signpost.blocks;
 
 import java.util.UUID;
 
+import javax.annotation.Nullable;
+
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blocks.tiles.SuperPostPostTile;
 import gollorum.signpost.event.UpdateWaystoneEvent;
@@ -24,6 +26,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
@@ -154,9 +157,6 @@ public abstract class SuperPostPost extends BlockContainer {
 		MyBlockPos telePos = new MyBlockPos(player);
 		String name = BasePost.generateName();
 		UUID owner = player.getUniqueID();
-		if(owner==null){
-			System.out.println("spp rcb null");
-		}
 		BaseInfo ws = new BaseInfo(name, blockPos, telePos, owner);
 		PostHandler.allWaystones.add(ws);
 		PostHandler.addDiscovered(owner, ws);

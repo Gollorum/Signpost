@@ -4,7 +4,9 @@ import org.lwjgl.opengl.GL11;
 
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blocks.tiles.PostPostTile;
+import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.util.DoubleBaseInfo;
+import gollorum.signpost.util.MyBlockPos;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.util.ResourceLocation;

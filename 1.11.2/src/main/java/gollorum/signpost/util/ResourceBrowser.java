@@ -14,7 +14,7 @@ import gollorum.signpost.util.collections.Lurchsauna;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.AbstractResourcePack;
 import net.minecraft.client.resources.IResourcePack;
-import net.minecraft.client.resources.LegacyV2Adapter;
+import net.minecraft.client.resources.ResourcePackRepository;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 
@@ -41,6 +41,10 @@ public class ResourceBrowser {
 			for(IResourcePack pack: resourcePackList){
 				files.addAll(handleResourcePack(pack));
 			}
+			for(ResourcePackRepository.Entry now: FMLClientHandler.instance().getClient().getResourcePackRepository().getRepositoryEntries()){
+				System.out.println(now.getResourcePackName()+": "+now.getTexturePackDescription());
+				files.addAll(handleResourcePack(now.getResourcePack()));
+			}
 			for(File now: files){
 				ret.addAll(handleFile(now, postFixes));
 			}
@@ -56,8 +60,6 @@ public class ResourceBrowser {
 			HashSet<File> files = new HashSet<File>();
 			files.add((File) ObfuscationReflectionHelper.getPrivateValue(AbstractResourcePack.class, (AbstractResourcePack)pack, 1));
 			return files;
-		}else if(pack instanceof LegacyV2Adapter){
-			return handleResourcePack((IResourcePack) ObfuscationReflectionHelper.getPrivateValue(LegacyV2Adapter.class, (LegacyV2Adapter)(pack), 0));
 		}
 		return new HashSet<File>();
 	}
@@ -69,14 +71,14 @@ public class ResourceBrowser {
 				ret.addAll(handleFile(now, postFixes));
 			}
 		}else{
-			if(file.getName().endsWith(".jar") || file.getName().endsWith(".zip")){
+			if(endsWithIgnoreCase(file.getName(), ".jar") || endsWithIgnoreCase(file.getName(), ".zip")){
 				try {
 					ZipFile zipFile = new ZipFile(file);
 					Enumeration<? extends ZipEntry> zipEnum = zipFile.entries();
 					while(zipEnum.hasMoreElements()){
 						ZipEntry zipEntry = zipEnum.nextElement();
 						for(String nowPostFix: postFixes){
-							if(zipEntry.getName().endsWith(nowPostFix)){
+							if(endsWithIgnoreCase(zipEntry.getName(), nowPostFix)){
 								ret.add(fixResource(zipEntry.getName()));
 								break;
 							}
@@ -88,7 +90,7 @@ public class ResourceBrowser {
 				}
 			}else{
 				for(String nowPostFix: postFixes){
-					if(file.getName().endsWith(nowPostFix)){
+					if(endsWithIgnoreCase(file.getName(), nowPostFix)){
 						ret.add(fixResource(file.getPath()));
 						break;
 					}
@@ -110,4 +112,7 @@ public class ResourceBrowser {
 		}
 	}
 	
+	private static boolean endsWithIgnoreCase(String str1, String str2){
+		return str1.length()<str2.length() || str1.substring(str1.length()-str2.length()).equalsIgnoreCase(str2);
+	}
 }

@@ -35,13 +35,12 @@ public class PostPostTile extends SuperPostPostTile {
 	}
 
 	public DoubleBaseInfo getBases(){
-		DoubleBaseInfo bases = PostHandler.posts.get(toPos());
+		DoubleBaseInfo bases = PostHandler.getPosts().get(toPos());
 		if(bases==null){
 			bases = new DoubleBaseInfo(type.texture, type.resLocMain);
-			PostHandler.posts.put(toPos(), bases);
+			PostHandler.getPosts().put(toPos(), bases);
 		}
-		this.bases = bases;
-		return bases;
+		return this.bases = bases;
 	}
 	
 	@Override
@@ -57,7 +56,7 @@ public class PostPostTile extends SuperPostPostTile {
 			EntityItem item = new EntityItem(world, pos.x, pos.y, pos.z, new ItemStack(bases.sign2.overlay.item, 1));
 			world.spawnEntity(item);
 		}
-		if(PostHandler.posts.remove(pos)!=null){
+		if(PostHandler.getPosts().remove(pos)!=null){
 			NetworkHandler.netWrap.sendToAll(new SendAllPostBasesMessage());
 		}
 	}

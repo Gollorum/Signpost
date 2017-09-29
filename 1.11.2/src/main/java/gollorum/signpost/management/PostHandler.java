@@ -32,8 +32,8 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 public class PostHandler {
 
 	public static StonedHashSet allWaystones = new StonedHashSet();	
-	public static Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo> posts = new Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo>();
-	public static Lurchpaerchensauna<MyBlockPos, BigBaseInfo> bigPosts = new Lurchpaerchensauna<MyBlockPos, BigBaseInfo>();
+	private static Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo> posts = new Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo>();
+	private static Lurchpaerchensauna<MyBlockPos, BigBaseInfo> bigPosts = new Lurchpaerchensauna<MyBlockPos, BigBaseInfo>();
 	//ServerSide
 	public static Lurchpaerchensauna<UUID, TeleportInformation> awaiting =  new Lurchpaerchensauna<UUID, TeleportInformation>(); 
 
@@ -86,26 +86,46 @@ public class PostHandler {
 		bigPosts = new Lurchpaerchensauna<MyBlockPos, BigBaseInfo>();
 		awaiting = new Lurchpaerchensauna<UUID, TeleportInformation>();
 	}
-	
-	public static void refreshPostWaystones(){
-		refreshDoublePostWaystones();
-		refreshBigPostWaystones();
+
+	public static Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo> getPosts() {
+		return posts;
+	}
+
+	public static void setPosts(Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo> posts) {
+		PostHandler.posts = posts;
+		refreshDoublePosts();
+	}
+
+	public static Lurchpaerchensauna<MyBlockPos, BigBaseInfo> getBigPosts() {
+		return bigPosts;
+	}
+
+	public static void setBigPosts(Lurchpaerchensauna<MyBlockPos, BigBaseInfo> bigPosts) {
+		PostHandler.bigPosts = bigPosts;
+		refreshBigPosts();
+	}
+
+	private static void refreshPosts(){
+		refreshDoublePosts();
+		refreshBigPosts();
 	}
 	
-	public static void refreshDoublePostWaystones(){
+	public static void refreshDoublePosts(){
 		for(Entry<MyBlockPos, DoubleBaseInfo> now: posts.entrySet()){
 			PostPostTile tile = (PostPostTile) now.getKey().getTile();
 			if(tile!=null){
 				tile.isWaystone();
+				tile.getBases();
 			}
 		}
 	}
 	
-	public static void refreshBigPostWaystones(){
+	public static void refreshBigPosts(){
 		for(Entry<MyBlockPos, BigBaseInfo> now: bigPosts.entrySet()){
 			BigPostPostTile tile = (BigPostPostTile) now.getKey().getTile();
 			if(tile!=null){
 				tile.isWaystone();
+				tile.getBases();
 			}
 		}
 	}
