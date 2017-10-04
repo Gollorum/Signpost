@@ -1,13 +1,16 @@
 package gollorum.signpost;
 
 import cpw.mods.fml.client.registry.ClientRegistry;
+import gollorum.signpost.blocks.BaseModelPost;
 import gollorum.signpost.blocks.BigPostPost;
-import gollorum.signpost.blocks.BigPostPostTile;
 import gollorum.signpost.blocks.PostPost;
-import gollorum.signpost.blocks.PostPostTile;
+import gollorum.signpost.blocks.tiles.BaseModelPostTile;
+import gollorum.signpost.blocks.tiles.BigPostPostTile;
+import gollorum.signpost.blocks.tiles.PostPostTile;
 import gollorum.signpost.render.BigPostRenderer;
 import gollorum.signpost.render.BlockItemRenderer;
 import gollorum.signpost.render.PostRenderer;
+import gollorum.signpost.util.render.ModelRenderer;
 import net.minecraft.item.Item;
 import net.minecraftforge.client.MinecraftForgeClient;
 
@@ -29,6 +32,11 @@ public class BlockHandlerClient extends BlockHandler {
 			tile.blockType = now;
 			MinecraftForgeClient.registerItemRenderer(Item.getItemFromBlock(now), new BlockItemRenderer(tile, new PostRenderer()));
 		}
+		
+		ClientRegistry.bindTileEntitySpecialRenderer(BaseModelPostTile.class, new ModelRenderer());
+		for(BaseModelPost now: basemodels){
+			BaseModelPostTile tile = new BaseModelPostTile(now.type);
+			MinecraftForgeClient.registerItemRenderer(Item.getItemFromBlock(now), new BlockItemRenderer(tile, new ModelRenderer()));
+		}
 	}
-	
 }

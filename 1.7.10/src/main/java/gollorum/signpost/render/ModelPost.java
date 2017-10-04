@@ -4,7 +4,8 @@ import org.lwjgl.opengl.GL11;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import gollorum.signpost.blocks.PostPostTile;
+import gollorum.signpost.blocks.PostPost;
+import gollorum.signpost.blocks.tiles.PostPostTile;
 import gollorum.signpost.util.DoubleBaseInfo;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelRenderer;
@@ -15,6 +16,9 @@ public class ModelPost extends ModelBase {
 	public Board board1;
 	public Board board2;
 	public ModelRenderer post;
+	public ModelRenderer waystone;
+	public static final ResourceLocation BASETEXTURE = new ResourceLocation("minecraft:textures/blocks/stone.png");
+//	public static final ResourceLocation BASETEXTURE = new ResourceLocation("signpost:textures/blocks/base.png");
 	private static final String __OBFID = "CL_00000854";
 
 	public ModelPost() {
@@ -27,12 +31,34 @@ public class ModelPost extends ModelBase {
 
 		post = new ModelRenderer(this, 0, 0);
 		post.addBox(-2F, 0F, -2F, 4, 16, 4, 0.0F);
+		
+		waystone = new ModelRenderer(this, 4, 4);
+		waystone.addBox(-4f, 0f, -4f, 8, 8, 8);
 	}
 
 	public void render(PostRenderer postRenderer, float f1, float f5, DoubleBaseInfo tilebases, PostPostTile tile, double rotation1, double rotation2) {
 		super.render(null, 0, f1, 0, 0, 0, f5);
-		postRenderer.setTexture(tile.type.resLocMain);
-		post.render(f5);
+		
+		//Post
+		
+		if(tile.isItem){
+			postRenderer.setTexture(((PostPost)tile.blockType).type.resLocMain);
+		}else{
+			postRenderer.setTexture(tilebases.postPaint);
+		}
+        post.render(f5);
+        
+        //Waystone
+        
+		if(!tile.isItem){
+	        if(tile.isWaystone){
+	        	postRenderer.setTexture(BASETEXTURE);
+	        	waystone.render(f5);
+	        }
+		}
+		
+		//Signs
+		
 		ResourceLocation mainLoc = tile.type.texture;
 		if (tile.isItem || tilebases.sign1.isValid()) {
 			GL11.glPushMatrix();

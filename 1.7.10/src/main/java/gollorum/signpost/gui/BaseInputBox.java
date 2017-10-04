@@ -40,6 +40,7 @@ public class BaseInputBox extends Gui{
 		this.y = y;
 		this.width = width;
 		this.height = (int) (width/verh);
+		setText(null);
 	}
 	
 	public void setFocused(boolean bool){
@@ -101,7 +102,7 @@ public class BaseInputBox extends Gui{
 	}
 	
 	public void setText(String text){
-		this.text = text;
+		this.text = text==null?"null":text;
 	}
 	
 	public String getText(){

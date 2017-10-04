@@ -2,23 +2,19 @@ package gollorum.signpost.gui;
 
 import java.awt.Color;
 
-import org.lwjgl.opengl.GL11;
-
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.registry.LanguageRegistry;
-import gollorum.signpost.blocks.PostPostTile;
+import gollorum.signpost.blocks.tiles.PostPostTile;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.SendPostBasesMessage;
 import gollorum.signpost.util.BaseInfo;
-import gollorum.signpost.util.MyBlockPos.Connection;
 import gollorum.signpost.util.DoubleBaseInfo;
+import gollorum.signpost.util.MyBlockPos.Connection;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.GuiTextField;
-import net.minecraft.util.ResourceLocation;
 
-public class SignGuiPost extends GuiScreen {
+public class SignGuiPost extends GuiScreen implements SignInput {
 
 	private SignInputBox base1InputBox;
 	private SignInputBox base2InputBox;
@@ -43,11 +39,11 @@ public class SignGuiPost extends GuiScreen {
 	@Override
 	public void initGui() {
 		DoubleBaseInfo tilebases = tile.getBases();
-		base1InputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137);
+		base1InputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137, this);
 		base1InputBox.setText(tilebases.sign1.base==null?"":tilebases.sign1.base.toString());
 		go1 = true;
 		base1InputBox.setFocused(true);
-		base2InputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 + 40, 137);
+		base2InputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 + 40, 137, this);
 		base2InputBox.setText(tilebases.sign2.base==null?"":tilebases.sign2.base.toString());
 		go2 = true;
 		resetMouse = true;
@@ -68,12 +64,12 @@ public class SignGuiPost extends GuiScreen {
 		}
 		if (base1InputBox == null) {
 			DoubleBaseInfo tilebases = tile.getBases();
-			base1InputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137);
+			base1InputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137, this);
 			base1InputBox.setText(tilebases.sign1.base == null ? "" : tilebases.sign1.base.toString());
 		}
 		if (base2InputBox == null) {
 			DoubleBaseInfo tilebases = tile.getBases();
-			base2InputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 + 40, 137);
+			base2InputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 + 40, 137, this);
 			base2InputBox.setText(tilebases.sign2.base == null ? "" : tilebases.sign2.base.toString());
 		}
 		drawDefaultBackground();
@@ -134,83 +130,7 @@ public class SignGuiPost extends GuiScreen {
 			if(ConfigHandler.deactivateTeleportation){
 				return;
 			}
-			BaseInfo inf = PostHandler.getWSbyName(tf.getText());
-			Connection connect = tile.toPos().canConnectTo(inf);
-			if(inf==null||!connect.equals(Connection.VALID)){
-				tf.textColor = Color.red.getRGB();
-				if(connect.equals(Connection.DIST)){
-					
-					String out = LanguageRegistry.instance().getStringLocalization("signpost.guiTooFar");
-					if(out.equals("")){
-						out = LanguageRegistry.instance().getStringLocalization("signpost.guiTooFar", "en_US");
-					}
-					out = out.replaceAll("<distance>", ""+(int)tile.toPos().distance(inf.pos)+1);
-					out = out.replaceAll("<maxDist>", ""+ConfigHandler.maxDist);
-					if(base2){
-						std1 = out;
-						col1 = Color.red.getRGB();
-						go1 = false;
-					}else{
-						std2 = out;
-						col2 = Color.red.getRGB();
-						go2 = false;
-					}
-					
-				}else if(connect.equals(Connection.WORLD)){
-
-					String out = LanguageRegistry.instance().getStringLocalization("signpost.guiWorldDim");
-					if(out.equals("")){
-						out = LanguageRegistry.instance().getStringLocalization("signpost.guiWorldDim", "en_US");
-					}
-					if(base2){
-						std1 = out;
-						col1 = Color.red.getRGB();
-						go1 = false;
-					}else{
-						std2 = out;
-						col2 = Color.red.getRGB();
-						go2 = false;
-					}
-					
-				}else{
-					if(base2){
-						std1 = "";
-						col1 = Color.red.getRGB();
-						go1 = false;
-					}else{
-						std2 = "";
-						col2 = Color.red.getRGB();
-						go2 = false;
-					}
-				}
-			}else{
-				tf.textColor = Color.black.getRGB();
-				if(base2){
-					col1 = Color.white.getRGB();
-					go1 = true;
-				}else{
-					col2 = Color.white.getRGB();
-					go2 = true;
-				}
-
-				if(!(ConfigHandler.deactivateTeleportation||ConfigHandler.cost==null)){
-					String out = LanguageRegistry.instance().getStringLocalization("signpost.guiPrev");
-					if(out.equals("")){
-						out = LanguageRegistry.instance().getStringLocalization("signpost.guiPrev", "en_US");
-					}
-					int distance = (int) tile.toPos().distance(inf.pos)+1;
-					out = out.replaceAll("<distance>", ""+distance);
-					out = out.replaceAll("<amount>", Integer.toString(PostHandler.getStackSize(tile.toPos(), inf.pos)));
-					out = out.replaceAll("<itemName>", ConfigHandler.costName());
-					if(base2){
-						col1 = Color.white.getRGB();
-						std1 = out;
-					}else{
-						col2 = Color.white.getRGB();
-						std2 = out;
-					}
-				}
-			}
+			onTextChange(tf);
 		}
 	}
 
@@ -228,5 +148,87 @@ public class SignGuiPost extends GuiScreen {
 			tilebases.sign2.base = null;
 		}
 		NetworkHandler.netWrap.sendToServer(new SendPostBasesMessage(tile, tilebases));
+	}
+	
+	@Override
+	public void onTextChange(SignInputBox box){
+		boolean base2 = box==base2InputBox;
+		BaseInfo inf = PostHandler.getWSbyName(box.getText());
+		Connection connect = tile.toPos().canConnectTo(inf);
+		if(inf==null||!connect.equals(Connection.VALID)){
+			box.textColor = Color.red.getRGB();
+			if(connect.equals(Connection.DIST)){
+				
+				String out = LanguageRegistry.instance().getStringLocalization("signpost.guiTooFar");
+				if(out.equals("")){
+					out = LanguageRegistry.instance().getStringLocalization("signpost.guiTooFar", "en_US");
+				}
+				out = out.replaceAll("<distance>", ""+(int)tile.toPos().distance(inf.pos)+1);
+				out = out.replaceAll("<maxDist>", ""+ConfigHandler.maxDist);
+				if(base2){
+					std1 = out;
+					col1 = Color.red.getRGB();
+					go1 = false;
+				}else{
+					std2 = out;
+					col2 = Color.red.getRGB();
+					go2 = false;
+				}
+				
+			}else if(connect.equals(Connection.WORLD)){
+
+				String out = LanguageRegistry.instance().getStringLocalization("signpost.guiWorldDim");
+				if(out.equals("")){
+					out = LanguageRegistry.instance().getStringLocalization("signpost.guiWorldDim", "en_US");
+				}
+				if(base2){
+					std1 = out;
+					col1 = Color.red.getRGB();
+					go1 = false;
+				}else{
+					std2 = out;
+					col2 = Color.red.getRGB();
+					go2 = false;
+				}
+				
+			}else{
+				if(base2){
+					std1 = "";
+					col1 = Color.red.getRGB();
+					go1 = false;
+				}else{
+					std2 = "";
+					col2 = Color.red.getRGB();
+					go2 = false;
+				}
+			}
+		}else{
+			box.textColor = Color.black.getRGB();
+			if(base2){
+				col1 = Color.white.getRGB();
+				go1 = true;
+			}else{
+				col2 = Color.white.getRGB();
+				go2 = true;
+			}
+
+			if(!(ConfigHandler.deactivateTeleportation||ConfigHandler.cost==null)){
+				String out = LanguageRegistry.instance().getStringLocalization("signpost.guiPrev");
+				if(out.equals("")){
+					out = LanguageRegistry.instance().getStringLocalization("signpost.guiPrev", "en_US");
+				}
+				int distance = (int) tile.toPos().distance(inf.pos)+1;
+				out = out.replaceAll("<distance>", ""+distance);
+				out = out.replaceAll("<amount>", Integer.toString(PostHandler.getStackSize(tile.toPos(), inf.pos)));
+				out = out.replaceAll("<itemName>", ConfigHandler.costName());
+				if(base2){
+					col1 = Color.white.getRGB();
+					std1 = out;
+				}else{
+					col2 = Color.white.getRGB();
+					std2 = out;
+				}
+			}
+		}
 	}
 }

@@ -1,11 +1,23 @@
 package gollorum.signpost.blocks;
 
+import java.util.UUID;
+
+import gollorum.signpost.Signpost;
+import gollorum.signpost.blocks.tiles.SuperPostPostTile;
+import gollorum.signpost.event.UpdateWaystoneEvent;
 import gollorum.signpost.event.UseSignpostEvent;
 import gollorum.signpost.items.CalibratedPostWrench;
 import gollorum.signpost.items.PostBrush;
 import gollorum.signpost.items.PostWrench;
 import gollorum.signpost.management.ConfigHandler;
+import gollorum.signpost.management.PostHandler;
+import gollorum.signpost.network.NetworkHandler;
+import gollorum.signpost.network.messages.BaseUpdateClientMessage;
+import gollorum.signpost.network.messages.ChatMessage;
+import gollorum.signpost.network.messages.OpenGuiMessage;
+import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.MyBlockPos;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.EntityPlayer;
@@ -25,30 +37,41 @@ public abstract class SuperPostPost extends BlockContainer {
 			return;
 		}
 		Object hit = getHitTarget(world, x, y, z, player);
-		if (player.getHeldItem() != null){
+		if(isHitWaystone(hit)&&player.isSneaking()){
+			superTile.destroyWaystone();
+			
+		}else if (player.getHeldItem() != null){
 			Item item = player.getHeldItem().getItem();
 			if(item instanceof PostWrench) {
 				if (player.isSneaking()) {
-					shiftClickWrench(hit, superTile, player, x, y, z);
+					if(preShiftClick(hit, superTile, player, x, y, z)){
+						shiftClickWrench(hit, superTile, player, x, y, z);
+					}
 				} else {
 					clickWrench(hit, superTile, player, x, y, z);
 				}
 			}else if(item instanceof CalibratedPostWrench) {
 				if (player.isSneaking()) {
-					shiftClickCalibratedWrench(hit, superTile, player, x, y, z);
+					if(preShiftClick(hit, superTile, player, x, y, z)){
+						shiftClickCalibratedWrench(hit, superTile, player, x, y, z);
+					}
 				} else {
 					clickCalibratedWrench(hit, superTile, player, x, y, z);
 				}
 			}else{
 				if (player.isSneaking()) {
-					shiftClick(hit, superTile, player, x, y, z);
+					if(preShiftClick(hit, superTile, player, x, y, z)){
+						shiftClick(hit, superTile, player, x, y, z);
+					}
 				}else{
 					click(hit, superTile, player, x, y, z);
 				}
 			}
 		}else{
 			if (player.isSneaking()) {
-				shiftClickBare(hit, superTile, player, x, y, z);
+				if(preShiftClick(hit, superTile, player, x, y, z)){
+					shiftClickBare(hit, superTile, player, x, y, z);
+				}
 			}else{
 				clickBare(hit, superTile, player, x, y, z);
 			}
@@ -63,7 +86,9 @@ public abstract class SuperPostPost extends BlockContainer {
 		}
 		Object hit = getHitTarget(world, x, y, z, player);
 		SuperPostPostTile superTile = getSuperTile(world, x, y, z);
-		if (player.getHeldItem() != null){
+		if(isHitWaystone(hit)){
+			rightClickWaystone(superTile, player, x, y, z);
+		}else if (player.getHeldItem() != null){
 			if(player.getHeldItem().getItem() instanceof PostWrench){
 				if(!ConfigHandler.securityLevelSignpost.canUse((EntityPlayerMP) player, ""+superTile.owner)){
 					return true;
@@ -81,14 +106,81 @@ public abstract class SuperPostPost extends BlockContainer {
 				}
 				rightClickBrush(hit, superTile, player, x, y, z);
 				sendPostBasesToAll(superTile);
+			}else if(Block.getBlockFromItem(player.getHeldItem().getItem()) instanceof BasePost){
+				if(rightClickBase(superTile, (EntityPlayerMP) player, x, y, z)){
+					preRightClick(hit, superTile, player, x, y, z);
+				}
 			}else{
-				rightClick(hit, superTile, player, x, y, z);
+				preRightClick(hit, superTile, player, x, y, z);
 			}
 		} else {
-			rightClick(hit, superTile, player, x, y, z);
+			preRightClick(hit, superTile, player, x, y, z);
 		}
 		return true;
 	}
+
+	private void rightClickWaystone(SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z) {
+		BaseInfo ws = superTile.getBaseInfo();
+		if(!player.isSneaking()){
+			if(!PostHandler.doesPlayerKnowWaystone((EntityPlayerMP) player, ws)){
+				if (!ConfigHandler.deactivateTeleportation) {
+					NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.name), (EntityPlayerMP) player);
+				}
+				PostHandler.addDiscovered(player.getUniqueID(), ws);
+			}
+		}else{
+			if (!ConfigHandler.deactivateTeleportation
+					&& ConfigHandler.securityLevelWaystone.canUse((EntityPlayerMP) player, ""+ws.owner)) {
+				NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiBaseID, x, y, z), (EntityPlayerMP) player);
+			}
+		}
+	}
+
+	/**
+	 * @return whether the signpost already is a waystone
+	 */
+	private boolean rightClickBase(SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z) {
+		if(superTile.isWaystone()){
+			return true;
+		}
+		MyBlockPos blockPos = superTile.toPos();
+		MyBlockPos telePos = new MyBlockPos(player);
+		String name = BasePost.generateName();
+		UUID owner = player.getUniqueID();
+		BaseInfo ws = new BaseInfo(name, blockPos, telePos, owner);
+		PostHandler.allWaystones.add(ws);
+		PostHandler.addDiscovered(owner, ws);
+		NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
+		MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.PLACED,superTile.getWorldObj(), telePos.x, telePos.y, telePos.z, name));
+		NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiBaseID, x, y, z), player);
+		superTile.isWaystone = true;
+		return false;
+	}
+
+	private void preRightClick(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z){
+		if(isHitWaystone(hitObj)){
+			BaseInfo ws = superTile.getBaseInfo();
+			if(!PostHandler.doesPlayerKnowWaystone((EntityPlayerMP) player, ws)){
+				if (!ConfigHandler.deactivateTeleportation) {
+	NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.name), (EntityPlayerMP) player);
+				}
+				PostHandler.addDiscovered(player.getUniqueID(), ws);
+			}
+		}else{
+			rightClick(hitObj, superTile, player, x, y, z);
+		}
+	}
+
+	private boolean preShiftClick(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z) {
+		if(isHitWaystone(hitObj)){
+			superTile.destroyWaystone();
+			return false;
+		}else{
+			return true;
+		}
+	}
+
+	protected abstract boolean isHitWaystone(Object hitObj);
 
 	public abstract void clickWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
 	public abstract void rightClickWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);

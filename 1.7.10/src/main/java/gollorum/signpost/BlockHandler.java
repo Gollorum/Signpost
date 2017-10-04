@@ -1,30 +1,28 @@
 package gollorum.signpost;
 
-import cpw.mods.fml.client.registry.ClientRegistry;
+import java.util.ArrayList;
+
 import cpw.mods.fml.common.registry.GameRegistry;
+import gollorum.signpost.blocks.BaseModelPost;
 import gollorum.signpost.blocks.BasePost;
 import gollorum.signpost.blocks.BigPostPost;
-import gollorum.signpost.blocks.BigPostPostTile;
 import gollorum.signpost.blocks.BigPostPost.BigPostType;
+import gollorum.signpost.blocks.ItemBlockWithMeta;
+import gollorum.signpost.blocks.ItemBlockWithMetaFacing;
 import gollorum.signpost.blocks.PostPost;
-import gollorum.signpost.blocks.PostPostTile;
 import gollorum.signpost.blocks.PostPost.PostType;
 import gollorum.signpost.management.ConfigHandler;
-import gollorum.signpost.render.BigPostRenderer;
-import gollorum.signpost.render.BlockItemRenderer;
-import gollorum.signpost.render.PostRenderer;
-import net.minecraft.block.Block;
-import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.client.MinecraftForgeClient;
+import net.minecraft.item.crafting.CraftingManager;
+import net.minecraft.item.crafting.IRecipe;
 
 public class BlockHandler {
 
-	public BasePost base = new BasePost();
+	public static BasePost base = new BasePost();
+	public static BaseModelPost[] basemodels = BaseModelPost.createAll();
 
 	public PostPost post_oak = new PostPost(PostType.OAK);
 	public PostPost post_spruce = new PostPost(PostType.SPRUCE);
@@ -46,8 +44,13 @@ public class BlockHandler {
 	public BigPostPost bigpost_stone = new BigPostPost(BigPostType.STONE);
 	public BigPostPost[] bigposts = {bigpost_oak, bigpost_spruce, bigpost_birch, bigpost_jungle, bigpost_acacia, bigpost_big_oak, bigpost_iron, bigpost_stone};
 
+	protected ArrayList<ItemBlockWithMeta>  baseModelItems = new ArrayList<ItemBlockWithMeta>();
+
 	public void register(){
 		GameRegistry.registerBlock(base, "SignpostBase");
+		for(BaseModelPost basemodel: basemodels){
+			GameRegistry.registerBlock(basemodel, ItemBlockWithMetaFacing.class, "blockbasemodel"+basemodel.type.getID());
+		}
 		for(PostPost now: posts){
 			GameRegistry.registerBlock(now, "SignpostPost"+now.type.name());
 		}
@@ -56,31 +59,151 @@ public class BlockHandler {
 		}
 	}
 	
-	protected void registerRecipes() {
+	public void registerRecipes() {
+		waystoneRecipe();
+		for(PostPost now: posts){
+			postRecipe(now);
+		}
+		for(BigPostPost now: bigposts){
+			bigPostRecipe(now);
+		}
+	}
+
+	private void waystoneRecipe(){
+		for(Object now: CraftingManager.getInstance().getRecipeList()){
+			if(now==null ||! (now instanceof IRecipe) || ((IRecipe)now).getRecipeOutput()==null || ((IRecipe)now).getRecipeOutput().getItem()==null){
+				continue;
+			}
+			if(((IRecipe)now).getRecipeOutput().getItem().equals(Item.getItemFromBlock(base))){
+				CraftingManager.getInstance().getRecipeList().remove(now);
+				break;
+			}
+		}
 		if(ConfigHandler.securityLevelWaystone.equals(ConfigHandler.SecurityLevel.ALL)&&!ConfigHandler.deactivateTeleportation){
-			GameRegistry.addRecipe(new ItemStack(base, 1), 
-									"SSS",
-									" P ",
-									"SSS",
-									'S', Blocks.cobblestone,
-									'P', Items.ender_pearl);
+			switch(ConfigHandler.waysRec){
+				case EXPENSIVE:
+					GameRegistry.addRecipe(new ItemStack(base, 1),
+								"SSS",
+								"PPP",
+								"SSS",
+								'S', Blocks.stone,
+								'P', Items.ender_pearl);
+					break;
+				case VERY_EXPENSIVE:
+					GameRegistry.addRecipe(new ItemStack(base, 1),
+							"SSS",
+							" P ",
+							"SSS",
+							'S', Blocks.stone,
+							'P', Items.nether_star);
+					break;
+				case DEACTIVATED:
+					break;
+				default:
+					GameRegistry.addRecipe(new ItemStack(base, 1),
+							"SSS",
+							" P ",
+							"SSS",
+							'S', Blocks.cobblestone,
+							'P', Items.ender_pearl);
+					break;
+				}
+				GameRegistry.addShapelessRecipe(new ItemStack(basemodels[0], 1), base);
+				for(int i=1; i<basemodels.length; i++){
+					GameRegistry.addShapelessRecipe(new ItemStack(basemodels[i], 1), basemodels[i-1]);
+				}
+				GameRegistry.addShapelessRecipe(new ItemStack(base, 1), basemodels[basemodels.length-1]);
+		}
+	}
+	private void postRecipe(PostPost post){
+		for(Object now: CraftingManager.getInstance().getRecipeList()){
+			if(now==null ||! (now instanceof IRecipe) || ((IRecipe)now).getRecipeOutput()==null || ((IRecipe)now).getRecipeOutput().getItem()==null){
+				continue;
+			}
+			if(((IRecipe)now).getRecipeOutput().getItem().equals(Item.getItemFromBlock(post))){
+				CraftingManager.getInstance().getRecipeList().remove(now);
+				break;
+			}
 		}
 		if(ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.ALL) || ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.OWNERS)){
-			for(PostPost now: posts){
-				GameRegistry.addRecipe(new ItemStack(now, 4),
-										"A",
-										"A",
-										"B",
-										'A', Items.sign,
-										'B', new ItemStack(now.type.baseItem, 1, now.type.metadata));
+			switch(ConfigHandler.signRec){
+				case EXPENSIVE:
+					GameRegistry.addRecipe(new ItemStack(post, 1),
+							"A",
+							"P",
+							"B",
+							'A', Items.sign,
+							'B', new ItemStack(post.type.baseItem, 1, post.type.metadata),
+							'P', Items.ender_pearl);
+					break;
+				case VERY_EXPENSIVE:
+					GameRegistry.addRecipe(new ItemStack(post, 1),
+							"A",
+							"P",
+							"B",
+							'A', Items.sign,
+							'B', new ItemStack(post.type.baseItem, 1, post.type.metadata),
+							'P', Items.nether_star);
+					break;
+				case DEACTIVATED:
+					break;
+				default:
+					GameRegistry.addRecipe(new ItemStack(post, 4),
+							"A",
+							"A",
+							"B",
+							'A', Items.sign,
+							'B', new ItemStack(post.type.baseItem, 1, post.type.metadata));
+					break;
 			}
-			for(BigPostPost now: bigposts){
-				GameRegistry.addRecipe(new ItemStack(now, 4),
-										"AAA",
-										"AAA",
-										" B ",
-										'A', Items.sign,
-										'B', new ItemStack(now.type.baseItem, 1, now.type.metadata));
+		}
+	}
+
+	private void bigPostRecipe(BigPostPost post){
+		for(Object now: CraftingManager.getInstance().getRecipeList()){
+			if(now==null ||! (now instanceof IRecipe) || ((IRecipe)now).getRecipeOutput()==null || ((IRecipe)now).getRecipeOutput().getItem()==null){
+				continue;
+			}
+			if(((IRecipe)now).getRecipeOutput().getItem().equals(Item.getItemFromBlock(post))){
+				CraftingManager.getInstance().getRecipeList().remove(now);
+				break;
+			}
+		}
+		if(ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.ALL) || ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.OWNERS)){
+			switch(ConfigHandler.signRec){
+			case EXPENSIVE:
+				GameRegistry.addRecipe(new ItemStack(post, 1),
+						"AAA",
+						"APA",
+						" B ",
+						'A', Items.sign,
+						'B', new ItemStack(post.type.baseItem, 1, post.type.metadata),
+						'P', Items.ender_pearl);
+				break;
+			case VERY_EXPENSIVE:
+				GameRegistry.addRecipe(new ItemStack(post, 1),
+						"AAA",
+						"APA",
+						" B ",
+						'A', Items.sign,
+						'B', new ItemStack(post.type.baseItem, 1, post.type.metadata),
+						'P', Items.nether_star);
+				break;
+			case DEACTIVATED:
+				break;
+			default:
+				GameRegistry.addRecipe(new ItemStack(post, 4),
+						"AAA",
+						"AAA",
+						" B ",
+						'A', Items.sign,
+						'B', new ItemStack(post.type.baseItem, 1, post.type.metadata));
+				
+				
+				
+				
+				
+				break;
 			}
 		}
 	}

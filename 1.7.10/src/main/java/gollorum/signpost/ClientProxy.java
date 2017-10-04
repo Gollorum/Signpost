@@ -2,11 +2,12 @@ package gollorum.signpost;
 
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.client.registry.ClientRegistry;
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 import gollorum.signpost.blocks.BigPostPost;
-import gollorum.signpost.blocks.BigPostPostTile;
 import gollorum.signpost.blocks.PostPost;
-import gollorum.signpost.blocks.PostPostTile;
+import gollorum.signpost.blocks.tiles.BigPostPostTile;
+import gollorum.signpost.blocks.tiles.PostPostTile;
 import gollorum.signpost.render.BigPostRenderer;
 import gollorum.signpost.render.BlockItemRenderer;
 import gollorum.signpost.render.PostRenderer;
@@ -33,6 +34,15 @@ public class ClientProxy extends CommonProxy{
 	@Override
 	public World getWorld(MessageContext ctx){
 		return FMLClientHandler.instance().getWorldClient();
+	}
+	
+	@Override
+	public World getWorld(String worldName, int dim){
+		if(FMLCommonHandler.instance().getMinecraftServerInstance().isSinglePlayer()){
+			return super.getWorld(worldName, dim);
+		}else{
+			return FMLClientHandler.instance().getWorldClient();
+		}
 	}
 	
 }

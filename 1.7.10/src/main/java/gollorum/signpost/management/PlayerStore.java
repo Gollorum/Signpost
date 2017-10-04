@@ -36,7 +36,6 @@ public class PlayerStore implements IExtendedEntityProperties {
 		for (int i = 0; i < c; i++) {
 			String getString = compound.getString("ws" + i);
 			toBeAdded.add(getString);
-			System.out.println(getString);
 		}
 		PostHandler.addAllDiscoveredByName(player.getUniqueID(), toBeAdded);
 		Pair<Integer, Integer> pair = PostHandler.playerKnownWaystones.get(player.getUniqueID()).b;

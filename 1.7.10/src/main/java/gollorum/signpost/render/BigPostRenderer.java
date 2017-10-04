@@ -3,7 +3,8 @@ package gollorum.signpost.render;
 import org.lwjgl.opengl.GL11;
 
 import gollorum.signpost.Signpost;
-import gollorum.signpost.blocks.BigPostPostTile;
+import gollorum.signpost.blocks.BigPostPost;
+import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.util.BigBaseInfo;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
@@ -17,11 +18,17 @@ public class BigPostRenderer extends TileEntitySpecialRenderer{
 	private static final ModelBigPost post = new ModelBigPost();
 	
 	public BigPostRenderer(){}
-	
+
 	void setTexture(ResourceLocation loc){
 		try{
-		bindTexture(loc);
+			bindTexture(loc);
 		}catch(Exception e){
+			if(loc==null){
+			}else if(loc.equals(new ResourceLocation("signpost:textures/blocks/sign.png"))){
+				bindTexture(new ResourceLocation("signpost:textures/blocks/sign_oak.png"));
+			}else if(loc.equals(new ResourceLocation("signpost:textures/blocks/bigsign.png"))){
+				bindTexture(new ResourceLocation("signpost:textures/blocks/bigsign_oak.png"));
+			}
 		}
 	}
 	
@@ -39,13 +46,20 @@ public class BigPostRenderer extends TileEntitySpecialRenderer{
 		
 		GL11.glPushMatrix();
 		GL11.glTranslated(x+0.5, y, z+0.5);
-		this.bindTexture(tile.type.resLocMain);
+		if(tile.isItem){
+			setTexture(((BigPostPost)tile.blockType).type.resLocMain);
+		}else{
+			setTexture(tilebases.postPaint);
+		}
 		post.render(this, 0.1f, 0.0625f, tilebases, tile, rotation);
+		
+		//Sign
+		
 		ResourceLocation resLoc = tile.isItem ? tile.type.texture : tilebases.sign.paint;
 		try{
-			this.bindTexture(resLoc);
+			bindTexture(resLoc);
 		}catch(Exception e){
-			this.bindTexture(resLoc = tile.type.texture);
+			setTexture(resLoc = tile.type.texture);
 			tilebases.sign.paint = resLoc;
 		}
 		if(resLoc.getResourceDomain().equals("signpost")){
@@ -57,7 +71,7 @@ public class BigPostRenderer extends TileEntitySpecialRenderer{
 		//Overlays
 		if(!tile.isItem){
 			if(tilebases.sign.base!=null && tilebases.sign.overlay!=null){
-				bindTexture(new ResourceLocation(Signpost.MODID + ":textures/blocks/bigsign_overlay_"+tilebases.sign.overlay.texture+".png"));
+				setTexture(new ResourceLocation(Signpost.MODID + ":textures/blocks/bigsign_overlay_"+tilebases.sign.overlay.texture+".png"));
 				model32.renderOverlay(tilebases, 0.0625f, rotation);
 			}
 		}

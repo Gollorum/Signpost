@@ -14,13 +14,15 @@ public class InitPlayerResponseHandler implements IMessageHandler<InitPlayerResp
 	@Override
 	public IMessage onMessage(InitPlayerResponseMessage message, MessageContext ctx) {
 		if(!message.deactivateTeleportation){
-			PostHandler.allWaystones.addAll(message.allWaystones);
+			PostHandler.allWaystones = message.allWaystones;
 		}
 		ConfigHandler.deactivateTeleportation = message.deactivateTeleportation;
 		ConfigHandler.interdimensional = message.interdimensional;
 		ConfigHandler.maxDist = message.maxDist;
 		ConfigHandler.paymentItem = message.paymentItem;
 		ConfigHandler.costMult = message.costMult;
+		ConfigHandler.signRec = message.signRec;
+		ConfigHandler.waysRec = message.waysRec;
 		ConfigHandler.securityLevelWaystone = message.securityLevelWaystone;
 		ConfigHandler.securityLevelSignpost = message.securityLevelSignpost;
 		ConfigHandler.postInit();

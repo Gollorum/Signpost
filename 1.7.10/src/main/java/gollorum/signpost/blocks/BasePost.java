@@ -3,6 +3,7 @@ package gollorum.signpost.blocks;
 import java.util.UUID;
 
 import gollorum.signpost.Signpost;
+import gollorum.signpost.blocks.tiles.BasePostTile;
 import gollorum.signpost.event.UpdateWaystoneEvent;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
@@ -33,21 +34,23 @@ public class BasePost extends BlockContainer {
 	}
 
 	@Override
-	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitX, float hitY, float hitZ) {
+	public boolean onBlockActivated(World worldIn, int x, int y, int z, EntityPlayer playerIn, int side, float hitX, float hitY, float hitZ) {
 		if (ConfigHandler.deactivateTeleportation) {
 			return false;
 		}
-		if (!world.isRemote) {
-			BaseInfo ws = getWaystoneRootTile(world, x, y, z).getBaseInfo();
-			if (!player.isSneaking()) {
-				if (!ConfigHandler.deactivateTeleportation) {
-					NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.name), (EntityPlayerMP) player);
+		if (!worldIn.isRemote) {
+			BaseInfo ws = getWaystoneRootTile(worldIn, x, y, z).getBaseInfo();
+			if (!playerIn.isSneaking()) {
+				if(!PostHandler.doesPlayerKnowWaystone((EntityPlayerMP) playerIn, ws)){
+					if (!ConfigHandler.deactivateTeleportation||ConfigHandler.disableDiscovery) {
+						NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.name), (EntityPlayerMP) playerIn);
+					}
+					PostHandler.addDiscovered(playerIn.getUniqueID(), ws);
 				}
-				PostHandler.addDiscovered(player.getUniqueID(), ws);
 			} else {
 				if (!ConfigHandler.deactivateTeleportation
-						&& ConfigHandler.securityLevelWaystone.canUse((EntityPlayerMP) player, ""+ws.owner)) {
-					NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiBaseID, x, y, z), (EntityPlayerMP) player);
+						&& ConfigHandler.securityLevelWaystone.canUse((EntityPlayerMP) playerIn, ""+ws.owner)) {
+					NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiBaseID, x, y, z), (EntityPlayerMP) playerIn);
 				}
 			}
 		}
@@ -97,7 +100,11 @@ public class BasePost extends BlockContainer {
 	public static void placeClient(final World world, final MyBlockPos pos, final EntityPlayer player) {
 		BasePostTile tile = getWaystoneRootTile(world, pos.x, pos.y, pos.z);
 		if (tile != null && tile.getBaseInfo() == null) {
-			PostHandler.allWaystones.add(new BaseInfo("", pos, player.getUniqueID()));
+            BaseInfo ws = PostHandler.allWaystones.getByPos(pos);
+            if (ws == null) {
+            	UUID owner = player.getUniqueID();
+            	PostHandler.allWaystones.add(new BaseInfo("", pos, owner));
+            }
 		}
 	}
 }

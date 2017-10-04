@@ -3,13 +3,16 @@ package gollorum.signpost;
 import java.util.Map.Entry;
 import java.util.UUID;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
+import cpw.mods.fml.relauncher.Side;
+import gollorum.signpost.blocks.BaseModelPost;
 import gollorum.signpost.blocks.BasePost;
-import gollorum.signpost.blocks.BasePostTile;
 import gollorum.signpost.blocks.SuperPostPost;
-import gollorum.signpost.blocks.SuperPostPostTile;
+import gollorum.signpost.blocks.tiles.BasePostTile;
+import gollorum.signpost.blocks.tiles.SuperPostPostTile;
 import gollorum.signpost.items.CalibratedPostWrench;
 import gollorum.signpost.items.PostWrench;
 import gollorum.signpost.management.ConfigHandler;
@@ -39,8 +42,11 @@ import net.minecraftforge.event.world.WorldEvent;
 
 public class SPEventHandler {
 
-	private static Lurchpaerchensauna<Runnable, Integer> tasks = new Lurchpaerchensauna<Runnable, Integer>();
-	private static Lurchsauna<BoolRun> predicatedTasks = new Lurchsauna<BoolRun>();
+	private static Lurchpaerchensauna<Runnable, Integer> serverTasks = new Lurchpaerchensauna<Runnable, Integer>();
+	private static Lurchsauna<BoolRun> serverPredicatedTasks = new Lurchsauna<BoolRun>();
+
+	private static Lurchpaerchensauna<Runnable, Integer> clientTasks = new Lurchpaerchensauna<Runnable, Integer>();
+	private static Lurchsauna<BoolRun> clientPredicatedTasks = new Lurchsauna<BoolRun>();
 
 	/**
 	 * Schedules a task
@@ -51,41 +57,84 @@ public class SPEventHandler {
 	 *            The delay in ticks (1s/20)
 	 */
 	public static void scheduleTask(Runnable task, int delay) {
-		tasks.put(task, delay);
+		if(FMLCommonHandler.instance().getEffectiveSide().equals(Side.SERVER)){
+			serverTasks.put(task, delay);
+		}else{
+			clientTasks.put(task, delay);
+		}
 	}
 
+	/**
+	 * return true when done
+	 */
 	public static void scheduleTask(BoolRun task){
-		predicatedTasks.add(task);
+		if(FMLCommonHandler.instance().getEffectiveSide().equals(Side.SERVER)){
+			serverPredicatedTasks.add(task);
+		}else{
+			clientPredicatedTasks.add(task);
+		}
 	}
 	
 	public static boolean cancelTask(BoolRun task){
-		return predicatedTasks.remove(task);
+		if(FMLCommonHandler.instance().getEffectiveSide().equals(Side.SERVER)){
+			return serverPredicatedTasks.remove(task);
+		}else{
+			return clientPredicatedTasks.remove(task);
+		}
 	}
 	
 	@SubscribeEvent
-	public void onTick(TickEvent event) {
-		if (!(event instanceof TickEvent.ServerTickEvent || event instanceof TickEvent.ClientTickEvent)) {
+	public void onServerTick(TickEvent event) {
+		if (!(event instanceof TickEvent.ServerTickEvent)) {
 			return;
 		}
+		Lurchpaerchensauna<Runnable, Integer> serverTasksTEMP = serverTasks;
+		Lurchsauna<BoolRun> serverPredicatedTasksTEMP = serverPredicatedTasks;
+		serverTasks = new Lurchpaerchensauna<Runnable, Integer>();
+		serverPredicatedTasks = new Lurchsauna<BoolRun>();
+
 		// time++;
 		Lurchpaerchensauna<Runnable, Integer> remainingTasks = new Lurchpaerchensauna<Runnable, Integer>();
-		for (Entry<Runnable, Integer> now : tasks.entrySet()) {
+		for (Entry<Runnable, Integer> now : serverTasksTEMP.entrySet()) {
 			int val = now.getValue()-1;
 			if (val < 2) {
 				now.getKey().run();
 			}else{
-				remainingTasks.put(now.getKey(), val);
+				serverTasks.put(now.getKey(), val);
 			}
 		}
-		tasks = remainingTasks;
-		
-		Lurchsauna<BoolRun> remainingPreds = new Lurchsauna<BoolRun>();
-		for(BoolRun now: predicatedTasks){int a = 0;
+		for(BoolRun now: serverPredicatedTasksTEMP){
 			if(!now.run()){
-				remainingPreds.add(now);
+				serverPredicatedTasks.add(now);
 			}
 		}
-		predicatedTasks = remainingPreds;
+	}
+
+	@SubscribeEvent
+	public void onClientTick(TickEvent event) {
+		if (!(event instanceof TickEvent.ClientTickEvent)) {
+			return;
+		}
+		Lurchpaerchensauna<Runnable, Integer> clientTasksTEMP = clientTasks;
+		Lurchsauna<BoolRun> clientPredicatedTasksTEMP = clientPredicatedTasks;
+		clientTasks = new Lurchpaerchensauna<Runnable, Integer>();
+		clientPredicatedTasks = new Lurchsauna<BoolRun>();
+
+		// time++;
+		for (Entry<Runnable, Integer> now : clientTasksTEMP.entrySet()) {
+			int val = now.getValue()-1;
+			if (val < 2) {
+				now.getKey().run();
+			}else{
+				clientTasks.put(now.getKey(), val);
+			}
+		}
+
+		for(BoolRun now: clientPredicatedTasksTEMP){
+			if(!now.run()){
+				clientPredicatedTasks.add(now);
+			}
+		}
 	}
 
 	// ServerSide
@@ -124,6 +173,8 @@ public class SPEventHandler {
 		if(!(event.player instanceof EntityPlayerMP)){
 			if(event.block instanceof BasePost){
 				BasePost.placeClient(event.world, new MyBlockPos("", event.x, event.y, event.z, event.player.dimension), event.player);
+			}else if(event.block instanceof BaseModelPost){
+				BaseModelPost.placeClient(event.world, new MyBlockPos("", event.x, event.y, event.z, event.player.dimension), event.player);
 			}else if(event.block instanceof SuperPostPost){
 				SuperPostPost.placeClient(event.world, new MyBlockPos("", event.x, event.y, event.z, event.player.dimension), event.player);
 			}
@@ -137,6 +188,14 @@ public class SPEventHandler {
 				event.setCanceled(true);
 			}else{
 				BasePost.placeServer(event.world, new MyBlockPos(event.world.getWorldInfo().getWorldName(), event.x, event.y, event.z, event.player.dimension), (EntityPlayerMP) event.player);
+			}
+		}else if(event.block instanceof BaseModelPost){
+			BasePostTile tile = BaseModelPost.getWaystoneRootTile(event.world, event.x, event.y, event.z);
+			if(!(ConfigHandler.securityLevelWaystone.canPlace(player) && checkWaystoneCount(player))){
+				tile.onBlockDestroy(new MyBlockPos(event.world, event.x, event.y, event.z, player.dimension));
+				event.setCanceled(true);
+			}else{
+				BaseModelPost.placeServer(event.world, new MyBlockPos(event.world.getWorldInfo().getWorldName(), event.x, event.y, event.z, event.player.dimension), (EntityPlayerMP) event.player);
 			}
 		}else if(event.block instanceof SuperPostPost){
 			SuperPostPostTile tile = SuperPostPost.getSuperTile(event.world, event.x, event.y, event.z);
@@ -221,6 +280,14 @@ public class SPEventHandler {
 		EntityPlayerMP player = (EntityPlayerMP)event.getPlayer();
 		if(event.block instanceof BasePost){
 			BasePostTile t = BasePost.getWaystoneRootTile(event.world, event.x, event.y, event.z);
+			if(!ConfigHandler.securityLevelWaystone.canUse(player, ""+t.getBaseInfo().owner)){
+				event.setCanceled(true);
+			}else{
+				updateWaystoneCount(t);
+				t.onBlockDestroy(new MyBlockPos(event.world, event.x, event.y, event.z, player.dimension));
+			}
+		}else if(event.block instanceof BaseModelPost){
+			BasePostTile t = BaseModelPost.getWaystoneRootTile(event.world, event.x, event.y, event.z);
 			if(!ConfigHandler.securityLevelWaystone.canUse(player, ""+t.getBaseInfo().owner)){
 				event.setCanceled(true);
 			}else{

@@ -39,7 +39,10 @@ public class WorldSigns extends WorldSavedData{
 		StonedHashSet bases = new StonedHashSet();
 		for(int i = 0; i<infoSize; i++){
 			NBTTagCompound nowInfo = (NBTTagCompound) info.getTag("Base"+i);
-			bases.add(BaseInfo.readFromNBT(nowInfo));
+			BaseInfo neu = BaseInfo.readFromNBT(nowInfo);
+			if(neu.name!=null){
+				bases.add(neu);
+			}
 		}
 		PostHandler.allWaystones.addAll(bases);
 	}

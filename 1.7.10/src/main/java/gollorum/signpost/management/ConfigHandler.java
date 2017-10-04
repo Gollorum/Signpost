@@ -1,9 +1,9 @@
 package gollorum.signpost.management;
 
 import java.io.File;
-import java.util.UUID;
 
 import cpw.mods.fml.common.registry.LanguageRegistry;
+import gollorum.signpost.Signpost;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
@@ -25,8 +25,12 @@ public class ConfigHandler {
 	public static String paymentItem;
 	public static int costMult;
 
+	public static RecipeCost signRec;
+	public static RecipeCost waysRec;
+
 	public static SecurityLevel securityLevelWaystone;
 	public static SecurityLevel securityLevelSignpost;
+	public static boolean disableDiscovery;
 	
 	public enum SecurityLevel{
 		ALL, OWNERS, CREATIVEONLY, OPONLY;
@@ -51,6 +55,19 @@ public class ConfigHandler {
 				   (isCreative(player)&&this.equals(ConfigHandler.SecurityLevel.CREATIVEONLY));
 		}
 	}
+
+	public enum RecipeCost{
+		DEACTIVATED, NORMAL, EXPENSIVE, VERY_EXPENSIVE;
+		public static String[] allValues(){
+			String[] ret = {
+					DEACTIVATED.toString(),
+					NORMAL.toString(),
+					EXPENSIVE.toString(),
+					VERY_EXPENSIVE.toString(),
+			};
+			return ret;
+		}
+	}
 	
 	public static void init(File file) {
 		config = new Configuration(file);
@@ -65,6 +82,7 @@ public class ConfigHandler {
 		if(cost==null){
 			cost = (Item) Item.itemRegistry.getObject("minecraft:"+paymentItem);
 		}
+		Signpost.proxy.blockHandler.registerRecipes();
 	}
 	
 	public static void loadClientSettings(){
@@ -93,6 +111,10 @@ public class ConfigHandler {
 		paymentItem = config.getString("paymentItem", category, "", "The item players have to pay in order to use a signpost (e.g. minecraft:enderPearl, '' = free)");
 		
 		costMult = config.getInt("distancePerPayment", category, 0, 0, Integer.MAX_VALUE, "The distance a Player can teleport with one item (the total cost of a teleportation is calculated using the total distance)(0 = unlimited)");
+	
+		signRec = RecipeCost.valueOf(config.getString("signpostRecipeCost", category, "NORMAL", "Changes the recipe for signposts (NORMAL/EXPENSIVE/VERY_EXPENSIVE/DEACTIVATED)", RecipeCost.allValues()));
+
+		waysRec = RecipeCost.valueOf(config.getString("waystoneRecipeCost", category, "NORMAL", "Changes the recipe for waystones (NORMAL/EXPENSIVE/VERY_EXPENSIVE/DEACTIVATED)", RecipeCost.allValues()));
 	}
 	
 	public static void loadSecurity(){
@@ -103,14 +125,16 @@ public class ConfigHandler {
 		securityLevelWaystone = SecurityLevel.valueOf(config.getString("waystonePermissionLevel", category, "ALL", "Defines which players can place and edit a waystone (ALL, OWNERS, CREATIVEONLY, OPONLY). OPs are always included, 'OWNERS' = everyone can place, only the owner+OPs can edit.", SecurityLevel.allValues()));
 
 		securityLevelSignpost = SecurityLevel.valueOf(config.getString("signpostPermissionLevel", category, "ALL", "Defines which players can place and edit a signpost (ALL, OWNERS, CREATIVEONLY, OPONLY). OPs are always included, 'OWNERS' = everyone can place, only the owner+OPs can edit.", SecurityLevel.allValues()));
+	
+		disableDiscovery = config.getBoolean("disableDiscovery", category, false, "Allows players to travel to waystones without the need to discover them");
 	}
 
 	public static boolean isOp(EntityPlayer player){
 		return MinecraftServer.getServer().getConfigurationManager().func_152596_g(player.getGameProfile());
 	}
 	
-	public static boolean isCreative(EntityPlayerMP player){
-		return player.theItemInWorldManager.isCreative();
+	public static boolean isCreative(EntityPlayer player){
+		return player.capabilities.isCreativeMode;
 	}
 	
 	public static String costName(){

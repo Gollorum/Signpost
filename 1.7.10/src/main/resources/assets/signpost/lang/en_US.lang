@@ -41,3 +41,4 @@ signpost.getwaystonesleftop=<player> may place <amount> more waystones.
 signpost.getsignpostsleftop=<player> may place <amount> more signposts.
 
 signpost.playerNotFound=The player <player> is not on the server.
+signpost.waystoneNotFound=The waystone '<Waystone>' was not found.

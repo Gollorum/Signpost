@@ -3,7 +3,7 @@ package gollorum.signpost.render;
 import org.lwjgl.opengl.GL11;
 
 import gollorum.signpost.Signpost;
-import gollorum.signpost.blocks.PostPostTile;
+import gollorum.signpost.blocks.tiles.PostPostTile;
 import gollorum.signpost.util.DoubleBaseInfo;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
@@ -15,12 +15,17 @@ public class PostRenderer extends TileEntitySpecialRenderer{
 	private static final ModelPost model = new ModelPost();
 	
 	public PostRenderer(){}
-	
+
 	void setTexture(ResourceLocation loc){
 		try{
 			bindTexture(loc);
 		}catch(Exception e){
-//			bindTexture(new ResourceLocation("textures/blocks/planks_oak"));
+			if(loc==null){
+			}else if(loc.equals(new ResourceLocation("signpost:textures/blocks/sign.png"))){
+				bindTexture(new ResourceLocation("signpost:textures/blocks/sign_oak.png"));
+			}else if(loc.equals(new ResourceLocation("signpost:textures/blocks/bigsign.png"))){
+				bindTexture(new ResourceLocation("signpost:textures/blocks/bigsign_oak.png"));
+			}
 		}
 	}
 	
@@ -39,17 +44,17 @@ public class PostRenderer extends TileEntitySpecialRenderer{
 		}
 		GL11.glPushMatrix();
 		GL11.glTranslated(x+0.5, y, z+0.5);
-		this.bindTexture(tile.type.texture);
+		setTexture(tile.type.texture);
 		model.render(this, 0.1f, 0.0625f, tilebases, tile, rotation1, rotation2);
 
 		//Overlays
 		if(!tile.isItem){
 			if(tilebases.sign1.isValid() && tilebases.sign1.overlay!=null){
-				bindTexture(new ResourceLocation(Signpost.MODID + ":textures/blocks/sign_overlay_"+tilebases.sign1.overlay.texture+".png"));
+				setTexture(new ResourceLocation(Signpost.MODID + ":textures/blocks/sign_overlay_"+tilebases.sign1.overlay.texture+".png"));
 				model.renderOverlay1(tilebases, 0.0625f, rotation1);
 			}
 			if(tilebases.sign2.isValid() && tilebases.sign2.overlay!=null){
-				bindTexture(new ResourceLocation(Signpost.MODID + ":textures/blocks/sign_overlay_"+tilebases.sign2.overlay.texture+".png"));
+				setTexture(new ResourceLocation(Signpost.MODID + ":textures/blocks/sign_overlay_"+tilebases.sign2.overlay.texture+".png"));
 				model.renderOverlay2(tilebases, 0.0625f, rotation2);
 			}
 		}

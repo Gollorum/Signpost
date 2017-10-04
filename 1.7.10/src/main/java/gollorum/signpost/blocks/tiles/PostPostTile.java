@@ -1,6 +1,7 @@
-package gollorum.signpost.blocks;
+package gollorum.signpost.blocks.tiles;
 
 import gollorum.signpost.SPEventHandler;
+import gollorum.signpost.blocks.PostPost;
 import gollorum.signpost.blocks.PostPost.Hit;
 import gollorum.signpost.blocks.PostPost.HitTarget;
 import gollorum.signpost.blocks.PostPost.PostType;
@@ -8,15 +9,16 @@ import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.SendAllPostBasesMessage;
 import gollorum.signpost.network.messages.SendPostBasesMessage;
-import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.DoubleBaseInfo;
+import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.util.Sign;
 import gollorum.signpost.util.Sign.OverlayType;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 
 public class PostPostTile extends SuperPostPostTile {
 
@@ -25,7 +27,7 @@ public class PostPostTile extends SuperPostPostTile {
 	@Deprecated
 	public DoubleBaseInfo bases = null;
 
-	public PostPostTile(){}
+	public PostPostTile(){super();}
 
 	public PostPostTile(PostType type){
 		this();
@@ -33,17 +35,17 @@ public class PostPostTile extends SuperPostPostTile {
 	}
 	
 	public DoubleBaseInfo getBases(){
-		DoubleBaseInfo bases = PostHandler.posts.get(toPos());
+		DoubleBaseInfo bases = PostHandler.getPosts().get(toPos());
 		if(bases==null){
-			bases = new DoubleBaseInfo(type.texture);
-			PostHandler.posts.put(toPos(), bases);
+			bases = new DoubleBaseInfo(type.texture, type.resLocMain);
+			PostHandler.getPosts().put(toPos(), bases);
 		}
-		this.bases = bases;
-		return bases;
+		return this.bases =  bases;
 	}
 	
 	@Override
 	public void onBlockDestroy(MyBlockPos pos) {
+		super.onBlockDestroy(pos);
 		isCanceled = true;
 		DoubleBaseInfo bases = getBases();
 		if(bases.sign1.overlay!=null){
@@ -54,7 +56,7 @@ public class PostPostTile extends SuperPostPostTile {
 			EntityItem item = new EntityItem(worldObj, pos.x, pos.y, pos.z, new ItemStack(bases.sign2.overlay.item, 1));
 			worldObj.spawnEntityInWorld(item);
 		}
-		if(PostHandler.posts.remove(pos)!=null){
+		if(PostHandler.getPosts().remove(pos)!=null){
 			NetworkHandler.netWrap.sendToAll(new SendAllPostBasesMessage());
 		}
 	}
@@ -72,8 +74,9 @@ public class PostPostTile extends SuperPostPostTile {
 		tagCompound.setString("overlay2", ""+bases.sign2.overlay);
 		tagCompound.setBoolean("point1", bases.sign1.point);
 		tagCompound.setBoolean("point2", bases.sign2.point);
-		tagCompound.setString("paint1", SuperPostPostTile.LocToString(bases.sign1.paint));
-		tagCompound.setString("paint2", SuperPostPostTile.LocToString(bases.sign2.paint));
+		tagCompound.setString("paint1", SuperPostPostTile.locToString(bases.sign1.paint));
+		tagCompound.setString("paint2", SuperPostPostTile.locToString(bases.sign2.paint));
+		tagCompound.setString("postPaint", SuperPostPostTile.locToString(bases.postPaint));
 	}
 
 	@Override
@@ -95,6 +98,8 @@ public class PostPostTile extends SuperPostPostTile {
 
 		final String paint1 = tagCompound.getString("paint1");
 		final String paint2 = tagCompound.getString("paint2");
+		
+		final String postPaint = tagCompound.getString("postPaint");
 
 		SPEventHandler.scheduleTask(new BoolRun(){
 			@Override
@@ -118,6 +123,7 @@ public class PostPostTile extends SuperPostPostTile {
 					bases.sign2.point = point2;
 					bases.sign1.paint = stringToLoc(paint1);
 					bases.sign2.paint = stringToLoc(paint2);
+					bases.postPaint = postPaint==null || postPaint.equals("") || postPaint.equals("null") || postPaint.equals("minecraft:") ? type.resLocMain : stringToLoc(postPaint);
 					NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage((PostPostTile) worldObj.getTileEntity(xCoord, yCoord, zCoord), bases));
 					return true;
 				}
@@ -136,5 +142,14 @@ public class PostPostTile extends SuperPostPostTile {
 		}else{
 			return null;
 		}
+	}
+
+	@Override
+	public ResourceLocation getPostPaint(){
+		return getBases().postPaint;
+	}
+
+	public void setPostPaint(ResourceLocation loc){
+		getBases().postPaint = loc;
 	}
 }

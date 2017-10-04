@@ -10,7 +10,7 @@ public class SendAllBigPostBasesHandler implements IMessageHandler<SendAllBigPos
 
 	@Override
 	public IMessage onMessage(SendAllBigPostBasesMessage message, MessageContext ctx) {
-		PostHandler.bigPosts = message.toPostMap();
+		PostHandler.setBigPosts(message.toPostMap());
 		return null;
 	}
 	
