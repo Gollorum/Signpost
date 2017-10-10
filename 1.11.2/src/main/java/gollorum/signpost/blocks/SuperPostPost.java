@@ -2,8 +2,7 @@ package gollorum.signpost.blocks;
 
 import java.util.UUID;
 
-import javax.annotation.Nullable;
-
+import gollorum.signpost.BlockHandler;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blocks.tiles.SuperPostPostTile;
 import gollorum.signpost.event.UpdateWaystoneEvent;
@@ -26,7 +25,6 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
@@ -164,6 +162,7 @@ public abstract class SuperPostPost extends BlockContainer {
 		MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.PLACED,superTile.getWorld(), telePos.x, telePos.y, telePos.z, name));
 		NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiBaseID, pos.getX(), pos.getY(), pos.getZ()), player);
 		superTile.isWaystone = true;
+		player.inventory.clearMatchingItems(Item.getItemFromBlock(BlockHandler.base), -1, 1, null);
 		return false;
 	}
 	

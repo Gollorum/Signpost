@@ -21,6 +21,7 @@ import gollorum.signpost.network.messages.SendAllBigPostBasesMessage;
 import gollorum.signpost.network.messages.SendAllPostBasesMessage;
 import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.MyBlockPos;
+import gollorum.signpost.util.MyBlockPosSet;
 import gollorum.signpost.util.StringSet;
 import gollorum.signpost.util.collections.Lurchpaerchensauna;
 import gollorum.signpost.util.collections.Lurchsauna;
@@ -213,7 +214,7 @@ public class SPEventHandler {
 	}
 
 	private boolean checkWaystoneCount(EntityPlayerMP player){
-		Pair<StringSet, Pair<Integer, Integer>> pair = PostHandler.playerKnownWaystones.get(player.getUniqueID());
+		Pair<MyBlockPosSet, Pair<Integer, Integer>> pair = PostHandler.playerKnownWaystonePositions.get(player.getUniqueID());
 		int remaining = pair.b.a;
 		if(remaining == 0){
 			player.addChatMessage(new TextComponentString("You are not allowed to place more waystones"));
@@ -234,14 +235,14 @@ public class SPEventHandler {
 		if(owner == null){
 			return;
 		}
-		Pair<StringSet, Pair<Integer, Integer>> pair = PostHandler.playerKnownWaystones.get(owner);
+		Pair<MyBlockPosSet, Pair<Integer, Integer>> pair = PostHandler.playerKnownWaystonePositions.get(owner);
 		if(pair!=null && pair.b.a>=0){
 			pair.b.a++;
 		}
 	}
 
 	private boolean checkSignpostCount(EntityPlayerMP player){
-		Pair<StringSet, Pair<Integer, Integer>> pair = PostHandler.playerKnownWaystones.get(player.getUniqueID());
+		Pair<MyBlockPosSet, Pair<Integer, Integer>> pair = PostHandler.playerKnownWaystonePositions.get(player.getUniqueID());
 		int remaining = pair.b.b;
 		if(remaining == 0){
 			player.addChatMessage(new TextComponentString("You are not allowed to place more signposts"));
@@ -258,7 +259,7 @@ public class SPEventHandler {
 		if(tile == null || tile.owner == null){
 			return;
 		}
-		Pair<StringSet, Pair<Integer, Integer>> pair = PostHandler.playerKnownWaystones.get(tile.owner);
+		Pair<MyBlockPosSet, Pair<Integer, Integer>> pair = PostHandler.playerKnownWaystonePositions.get(tile.owner);
 		if(pair.b.b>=0){
 			pair.b.b++;
 		}

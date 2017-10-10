@@ -26,7 +26,7 @@ public class GetWaystoneCount extends CommandBase {
 		if(sender instanceof EntityPlayerMP){
 			EntityPlayerMP player = (EntityPlayerMP) sender;
 			if(args.length==0 || !ConfigHandler.isOp(player)){
-				String amount = ""+PostHandler.playerKnownWaystones.get(player.getUniqueID()).b.a;
+				String amount = ""+PostHandler.playerKnownWaystonePositions.get(player.getUniqueID()).b.a;
 				if(amount.equals("-1")){
 					amount = "unlimited";
 				}
@@ -37,7 +37,7 @@ public class GetWaystoneCount extends CommandBase {
 					NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.playerNotFound", "<player>", args[0]), player);
 					return;
 				}
-				String amount = ""+PostHandler.playerKnownWaystones.get(p.getUniqueID()).b.a;
+				String amount = ""+PostHandler.playerKnownWaystonePositions.get(p.getUniqueID()).b.a;
 				if(amount.equals("-1")){
 					amount = "unlimited";
 				}

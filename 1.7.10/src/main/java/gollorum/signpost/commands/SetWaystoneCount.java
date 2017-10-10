@@ -28,7 +28,7 @@ public class SetWaystoneCount extends CommandBase {
 			EntityPlayerMP player = (EntityPlayerMP) sender;
 			if(args.length==1){
 				try{
-					PostHandler.playerKnownWaystones.get(player.getUniqueID()).b.a = Integer.parseInt(args[0]);
+					PostHandler.playerKnownWaystonePositions.get(player.getUniqueID()).b.a = Integer.parseInt(args[0]);
 				}catch(Exception e){
 					sender.addChatMessage(new ChatComponentText("Error: '"+args[0]+"' is not a numer"));
 				}
@@ -39,7 +39,7 @@ public class SetWaystoneCount extends CommandBase {
 					return;
 				}else{
 					try{
-						PostHandler.playerKnownWaystones.get(p.getUniqueID()).b.a = Integer.parseInt(args[0]);
+						PostHandler.playerKnownWaystonePositions.get(p.getUniqueID()).b.a = Integer.parseInt(args[0]);
 					}catch(Exception e){
 						sender.addChatMessage(new ChatComponentText("Error: '"+args[0]+"' is not a numer"));
 					}

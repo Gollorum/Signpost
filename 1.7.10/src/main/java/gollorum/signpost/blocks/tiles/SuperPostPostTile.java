@@ -136,9 +136,6 @@ public abstract class SuperPostPostTile extends TileEntity implements WaystoneCo
 	@Override
 	public String getName() {
 		BaseInfo ws = getBaseInfo();
-		if(ws==null){
-			System.out.println("ws is null!");
-		}
 		return ws == null ? "null" : getBaseInfo().toString();
 	}
 	

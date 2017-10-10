@@ -44,23 +44,27 @@ public class BasePost extends BlockContainer {
 	}
 
 	@Override
-	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, @Nullable ItemStack heldItem, EnumFacing side, float hitX, float hitY, float hitZ){
+	public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, @Nullable ItemStack heldItem, EnumFacing side, float hitX, float hitY, float hitZ){
 		if (ConfigHandler.deactivateTeleportation) {
 			return false;
 		}
-		if (!world.isRemote) {
-			BaseInfo ws = getWaystoneRootTile(world, pos).getBaseInfo();
-			if (!player.isSneaking()) {
-				if(!PostHandler.doesPlayerKnowWaystone((EntityPlayerMP) player, ws)){
+		if (!worldIn.isRemote) {
+			BaseInfo ws = getWaystoneRootTile(worldIn, pos).getBaseInfo();
+			if(ws==null){
+				ws = new BaseInfo(BasePost.generateName(), new MyBlockPos(worldIn, pos, playerIn.dimension), playerIn.getUniqueID());
+				PostHandler.allWaystones.add(ws);
+			}
+			if (!playerIn.isSneaking()) {
+				if(!PostHandler.doesPlayerKnowWaystone((EntityPlayerMP) playerIn, ws)){
 					if (!ConfigHandler.deactivateTeleportation||ConfigHandler.disableDiscovery) {
-						NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.name), (EntityPlayerMP) player);
+						NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.name), (EntityPlayerMP) playerIn);
 					}
-					PostHandler.addDiscovered(player.getUniqueID(), ws);
+					PostHandler.addDiscovered(playerIn.getUniqueID(), ws);
 				}
 			} else {
 				if (!ConfigHandler.deactivateTeleportation
-						&& ConfigHandler.securityLevelWaystone.canUse((EntityPlayerMP) player, ""+ws.owner)) {
-					NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiBaseID, pos.getX(), pos.getY(), pos.getZ()), (EntityPlayerMP) player);
+						&& ConfigHandler.securityLevelWaystone.canUse((EntityPlayerMP) playerIn, ""+ws.owner)) {
+					NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiBaseID, pos.getX(), pos.getY(), pos.getZ()), (EntityPlayerMP) playerIn);
 				}
 			}
 		}

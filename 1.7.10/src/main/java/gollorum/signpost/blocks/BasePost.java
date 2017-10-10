@@ -40,6 +40,10 @@ public class BasePost extends BlockContainer {
 		}
 		if (!worldIn.isRemote) {
 			BaseInfo ws = getWaystoneRootTile(worldIn, x, y, z).getBaseInfo();
+			if(ws==null){
+				ws = new BaseInfo(generateName(), new MyBlockPos(worldIn, x, y, z, playerIn.dimension), playerIn.getUniqueID());
+				PostHandler.allWaystones.add(ws);
+			}
 			if (!playerIn.isSneaking()) {
 				if(!PostHandler.doesPlayerKnowWaystone((EntityPlayerMP) playerIn, ws)){
 					if (!ConfigHandler.deactivateTeleportation||ConfigHandler.disableDiscovery) {

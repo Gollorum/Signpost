@@ -64,8 +64,8 @@ public class SendBigPostBasesMessage implements IMessage {
 		for(int i=0; i<description.length; i++){
 			description[i] = ByteBufUtils.readUTF8String(buf);
 		}
+		paint = SuperPostPostTile.stringToLoc(ByteBufUtils.readUTF8String(buf)); //Kann mich bitte jemand verprügeln? Solch Dummheit muss bestraft werden. AARGH
 		postPaint = SuperPostPostTile.stringToLoc(ByteBufUtils.readUTF8String(buf));
-		System.out.println("FROM STRING: "+postPaint);
 	}
 
 }

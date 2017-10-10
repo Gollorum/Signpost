@@ -38,7 +38,9 @@ public class ClientProxy extends CommonProxy{
 	
 	@Override
 	public World getWorld(String worldName, int dim){
-		if(FMLCommonHandler.instance().getMinecraftServerInstance().isSinglePlayer()){
+		if(FMLCommonHandler.instance()!=null && 
+			FMLCommonHandler.instance().getMinecraftServerInstance()!=null && 
+			FMLCommonHandler.instance().getMinecraftServerInstance().isSinglePlayer()){
 			return super.getWorld(worldName, dim);
 		}else{
 			return FMLClientHandler.instance().getWorldClient();

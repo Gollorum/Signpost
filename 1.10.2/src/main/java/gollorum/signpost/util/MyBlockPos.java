@@ -7,6 +7,7 @@ import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
@@ -80,10 +81,11 @@ public class MyBlockPos{
 		return Connection.VALID;
 	}
 
-	public void writeToNBT(NBTTagCompound tC){
+	public NBTTagCompound writeToNBT(NBTTagCompound tC){
 		int[] arr = {x, y, z, dim};
 		tC.setIntArray("Position", arr);
 		tC.setString("WorldName", world);
+		return tC;
 	}
 	
 	public static MyBlockPos readFromNBT(NBTTagCompound tC){

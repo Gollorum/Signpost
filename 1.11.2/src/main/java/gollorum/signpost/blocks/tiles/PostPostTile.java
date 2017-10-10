@@ -154,4 +154,9 @@ public class PostPostTile extends SuperPostPostTile {
 	public void setPostPaint(ResourceLocation loc){
 		getBases().postPaint = loc;
 	}
+	
+	@Override
+	public String toString(){
+		return getBases()+" at "+toPos();
+	}
 }

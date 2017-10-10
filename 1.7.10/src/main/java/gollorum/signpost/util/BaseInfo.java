@@ -43,6 +43,7 @@ public class BaseInfo {
 	}
 
 	public void writeToNBT(NBTTagCompound tC){
+		tC.setString("name", name);	//Warum bin ich nur so unglaublich gehörnamputiert? *kotz*
 		NBTTagCompound posComp = new NBTTagCompound();
 		pos.writeToNBT(posComp);
 		tC.setTag("pos", posComp);
@@ -71,7 +72,7 @@ public class BaseInfo {
 	public void toBytes(ByteBuf buf) {
 		ByteBufUtils.writeUTF8String(buf, name);
 		pos.toBytes(buf);
-		ByteBufUtils.writeUTF8String(buf, VERSION+owner.toString());
+		ByteBufUtils.writeUTF8String(buf, VERSION+owner);
 		blockPos.toBytes(buf);
 	}
 	

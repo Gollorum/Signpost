@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
+import gollorum.signpost.BlockHandler;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blocks.tiles.SuperPostPostTile;
 import gollorum.signpost.event.UpdateWaystoneEvent;
@@ -164,6 +165,7 @@ public abstract class SuperPostPost extends BlockContainer {
 		MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.PLACED,superTile.getWorld(), telePos.x, telePos.y, telePos.z, name));
 		NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiBaseID, pos.getX(), pos.getY(), pos.getZ()), player);
 		superTile.isWaystone = true;
+		player.inventory.clearMatchingItems(Item.getItemFromBlock(BlockHandler.base), -1, 1, null);
 		return false;
 	}
 	

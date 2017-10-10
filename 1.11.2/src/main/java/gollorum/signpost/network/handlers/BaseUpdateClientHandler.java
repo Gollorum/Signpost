@@ -19,6 +19,18 @@ public class BaseUpdateClientHandler implements IMessageHandler<BaseUpdateClient
 
 	@Override
 	public IMessage onMessage(BaseUpdateClientMessage message, MessageContext ctx) {
+		for(Entry<MyBlockPos, DoubleBaseInfo> now: PostHandler.getPosts().entrySet()){
+			TileEntity tile = FMLClientHandler.instance().getWorldClient().getTileEntity(now.getKey().toBlockPos());
+			if(tile instanceof SuperPostPostTile){
+				((SuperPostPostTile)tile).isWaystone=false;
+			}
+		}
+		for(Entry<MyBlockPos, BigBaseInfo> now: PostHandler.getBigPosts().entrySet()){
+			TileEntity tile = FMLClientHandler.instance().getWorldClient().getTileEntity(now.getKey().toBlockPos());
+			if(tile instanceof SuperPostPostTile){
+				((SuperPostPostTile)tile).isWaystone=false;
+			}
+		}
 		PostHandler.allWaystones = message.waystones;
 		for(BaseInfo now: PostHandler.allWaystones){
 			TileEntity tile = FMLClientHandler.instance().getWorldClient().getTileEntity(now.blockPos.toBlockPos());
@@ -41,6 +53,7 @@ public class BaseUpdateClientHandler implements IMessageHandler<BaseUpdateClient
 			if(base!=null &&!(base.pos==null && base.owner==null)){
 				now.getValue().sign.base = PostHandler.allWaystones.getByPos(base.blockPos);
 			}
+			TileEntity tile = now.getKey().getTile();
 		}
 		return null;
 	}

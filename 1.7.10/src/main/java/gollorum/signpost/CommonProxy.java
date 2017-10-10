@@ -65,7 +65,6 @@ public class CommonProxy {
 	}
 
 	public World getWorld(String worldName, int dim){
-		System.out.println("GET WORLDDD");
 		return PostHandler.getWorldByName(worldName, dim);
 	}
 	

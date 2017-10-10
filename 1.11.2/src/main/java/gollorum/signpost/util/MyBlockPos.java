@@ -80,10 +80,11 @@ public class MyBlockPos{
 		return Connection.VALID;
 	}
 
-	public void writeToNBT(NBTTagCompound tC){
+	public NBTTagCompound writeToNBT(NBTTagCompound tC){
 		int[] arr = {x, y, z, dim};
 		tC.setIntArray("Position", arr);
 		tC.setString("WorldName", world);
+		return tC;
 	}
 	
 	public static MyBlockPos readFromNBT(NBTTagCompound tC){

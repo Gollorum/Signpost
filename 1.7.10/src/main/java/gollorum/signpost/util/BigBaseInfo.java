@@ -14,7 +14,7 @@ public class BigBaseInfo {
 
 	public BigBaseInfo(Sign sign, ResourceLocation texture){
 		this.sign = sign;
-		String[] description = {"Line 1", "Line 2", "Line 3", "Line 4"};
+		String[] description = {"", "", "", ""};
 		this.description = description;
 		this.postPaint = texture;
 	}

@@ -283,7 +283,7 @@ public class BigPostPost extends SuperPostPost {
 		Intersect signHit = sign.traceLine(start, end, true);
 		Intersect postHit = post.traceLine(start, end, true);
 		Intersect waystoneHit = waystone.traceLine(start, end, true);
-		double signDist = signHit.exists&&bases.sign.base!=null?signHit.pos.distance(start):Double.MAX_VALUE;
+		double signDist = signHit.exists&&bases.sign.base!=null&&bases.sign.base.hasName()?signHit.pos.distance(start):Double.MAX_VALUE;
 		double postDist = postHit.exists?postHit.pos.distance(start):Double.MAX_VALUE/2;
 		double waystoneDist = waystoneHit.exists&&tile.isWaystone()?waystoneHit.pos.distance(start):Double.MAX_VALUE;
 		double dist;

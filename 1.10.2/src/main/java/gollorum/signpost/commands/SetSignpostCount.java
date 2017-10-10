@@ -28,7 +28,7 @@ public class SetSignpostCount extends CommandBase {
 			EntityPlayerMP player = (EntityPlayerMP) sender;
 			if(args.length==1){
 				try{
-					PostHandler.playerKnownWaystones.get(player.getUniqueID()).b.b = Integer.parseInt(args[0]);
+					PostHandler.playerKnownWaystonePositions.get(player.getUniqueID()).b.b = Integer.parseInt(args[0]);
 				}catch(Exception e){
 					sender.addChatMessage(new TextComponentString("Error: '"+args[0]+"' is not a numer"));
 				}
@@ -39,7 +39,7 @@ public class SetSignpostCount extends CommandBase {
 					return;
 				}else{
 					try{
-						PostHandler.playerKnownWaystones.get(p.getUniqueID()).b.b = Integer.parseInt(args[0]);
+						PostHandler.playerKnownWaystonePositions.get(p.getUniqueID()).b.b = Integer.parseInt(args[0]);
 					}catch(Exception e){
 						sender.addChatMessage(new TextComponentString("Error: '"+args[0]+"' is not a numer"));
 					}
