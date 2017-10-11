@@ -1,4 +1,4 @@
-﻿tile.SignpostBase.name=地标石
+tile.SignpostBase.name=地标石
 tile.SignpostPostOAK.name=橡木路标
 tile.SignpostPostACACIA.name=金合欢路标
 tile.SignpostPostBIGOAK.name=深色橡木路标
@@ -41,3 +41,4 @@ signpost.getwaystonesleftop=<player>必须放置<amount>个以上的地标石。
 signpost.getsignpostsleftop=<player>必须放置<amount>个以上的路标。
 
 signpost.playerNotFound=玩家<player>不在服务器。
+signpost.waystoneNotFound=地标石“<Waystone>”未找到。
