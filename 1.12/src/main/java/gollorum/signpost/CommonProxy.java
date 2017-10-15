@@ -1,10 +1,11 @@
 package gollorum.signpost;
 
-import gollorum.signpost.blocks.BasePostTile;
-import gollorum.signpost.blocks.BigPostPostTile;
-import gollorum.signpost.blocks.PostPostTile;
+import gollorum.signpost.blocks.tiles.BasePostTile;
+import gollorum.signpost.blocks.tiles.BigPostPostTile;
+import gollorum.signpost.blocks.tiles.PostPostTile;
 import gollorum.signpost.management.PlayerStorage;
 import gollorum.signpost.management.PlayerStore;
+import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
@@ -17,18 +18,17 @@ public class CommonProxy {
 	public BlockHandler blockHandler;
 	
 	public CommonProxy(){
-		blockHandler = BlockHandler.INSTANCE;
+		blockHandler = new BlockHandler();
 	}
 	
-	void preInit(){
-		MinecraftForge.EVENT_BUS.register(BlockHandler.INSTANCE);
-		MinecraftForge.EVENT_BUS.register(ItemHandler.INSTANCE);
-	}
+	void preInit(){}
 	
 	void init(){
 		blockHandler.init();
+		blockHandler.register();
 
 		ItemHandler.init();
+		ItemHandler.register();
 		
 		registerCapabilities();
 		registerTiles();
@@ -36,6 +36,8 @@ public class CommonProxy {
 		NetworkHandler.register();
 		SPEventHandler handler = new SPEventHandler();
 		MinecraftForge.EVENT_BUS.register(handler);
+		MinecraftForge.EVENT_BUS.register(blockHandler);
+		MinecraftForge.EVENT_BUS.register(ItemHandler.INSTANCE);
 	}
 
 	protected void registerTiles(){
@@ -50,6 +52,10 @@ public class CommonProxy {
 
 	public World getWorld(MessageContext ctx){
 		return ctx.getServerHandler().player.world;
+	}
+	
+	public World getWorld(String worldName, int dim){
+		return PostHandler.getWorldByName(worldName, dim);
 	}
 	
 }

@@ -13,24 +13,22 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.registries.IForgeRegistry;
 
-@Mod.EventBusSubscriber
 public class ItemHandler {
+
+	public static final ItemHandler INSTANCE = new ItemHandler();
 	
 	public static PostWrench tool = new PostWrench();
 	public static CalibratedPostWrench calibratedTool = new CalibratedPostWrench();
 	public static PostBrush brush = new PostBrush();
 
-	public static final ItemHandler INSTANCE = new ItemHandler();
-	
 	private ItemHandler(){}
 	
 	public static void init(){}
-	
+
 	@SubscribeEvent
 	public void registerItems(RegistryEvent.Register<Item> event) {
 		register(event.getRegistry());
@@ -78,4 +76,5 @@ public class ItemHandler {
 		}
 	}
 
+	public static void register() {}
 }

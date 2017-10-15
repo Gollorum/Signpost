@@ -55,8 +55,8 @@ public class Sign {
 
 	public final double calcRot(int x, int z) {
  		if(point&&!(base==null||base.pos==null||ConfigHandler.deactivateTeleportation)){
-			int dx = x-base.pos.x;
-			int dz = z-base.pos.z;
+			int dx = x-base.blockPos.x;
+			int dz = z-base.blockPos.z;
 			return DDDVector.genAngle(dx, dz)+Math.toRadians(-90+(flip?0:180)+(dx<0&&dz>0?180:0));
 		}else{
 			return Math.toRadians(rotation);
@@ -67,4 +67,16 @@ public class Sign {
 		return base!=null && base.hasName();
 	}
 
+	public void rot(int i, int x, int z) {
+		if(point){
+			rotation = (int) Math.round(Math.toDegrees(calcRot(x, z))/15)*15;
+			point = false;
+		}
+		rotation = (rotation+i)%360;
+	}
+
+	@Override
+	public String toString(){
+		return ""+base;
+	}
 }

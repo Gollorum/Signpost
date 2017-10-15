@@ -2,7 +2,10 @@ package gollorum.signpost.blocks;
 
 import java.util.UUID;
 
+import javax.annotation.Nullable;
+
 import gollorum.signpost.Signpost;
+import gollorum.signpost.blocks.tiles.BasePostTile;
 import gollorum.signpost.event.UpdateWaystoneEvent;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
@@ -18,6 +21,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
@@ -40,21 +44,27 @@ public class BasePost extends BlockContainer {
 	}
 
 	@Override
-	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+	public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ){
 		if (ConfigHandler.deactivateTeleportation) {
 			return false;
 		}
-		if (!world.isRemote) {
-			BaseInfo ws = getWaystoneRootTile(world, pos).getBaseInfo();
-			if (!player.isSneaking()) {
-				if (!ConfigHandler.deactivateTeleportation) {
-					NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.name), (EntityPlayerMP) player);
+		if (!worldIn.isRemote) {
+			BaseInfo ws = getWaystoneRootTile(worldIn, pos).getBaseInfo();
+			if(ws==null){
+				ws = new BaseInfo(BasePost.generateName(), new MyBlockPos(worldIn, pos, playerIn.dimension), playerIn.getUniqueID());
+				PostHandler.allWaystones.add(ws);
+			}
+			if (!playerIn.isSneaking()) {
+				if(!PostHandler.doesPlayerKnowWaystone((EntityPlayerMP) playerIn, ws)){
+					if (!ConfigHandler.deactivateTeleportation||ConfigHandler.disableDiscovery) {
+						NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.name), (EntityPlayerMP) playerIn);
+					}
+					PostHandler.addDiscovered(playerIn.getUniqueID(), ws);
 				}
-				PostHandler.addDiscovered(player.getUniqueID(), ws);
 			} else {
 				if (!ConfigHandler.deactivateTeleportation
-						&& ConfigHandler.securityLevelWaystone.canUse((EntityPlayerMP) player, ""+ws.owner)) {
-					NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiBaseID, pos.getX(), pos.getY(), pos.getZ()), (EntityPlayerMP) player);
+						&& ConfigHandler.securityLevelWaystone.canUse((EntityPlayerMP) playerIn, ""+ws.owner)) {
+					NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiBaseID, pos.getX(), pos.getY(), pos.getZ()), (EntityPlayerMP) playerIn);
 				}
 			}
 		}
@@ -90,9 +100,15 @@ public class BasePost extends BlockContainer {
 		UUID owner = player.getUniqueID();
 		BaseInfo ws;
 		if((ws = tile.getBaseInfo())==null){
+			if(owner==null){
+				System.out.println("bp ps t null");
+			}
 			ws = new BaseInfo(name, pos, owner);
 			PostHandler.allWaystones.add(ws);
 		}else{
+			if(owner==null){
+				System.out.println("bp ps f null");
+			}
 			ws.setAll(new BaseInfo(name, pos, owner));
 		}
 		PostHandler.addDiscovered(player.getUniqueID(), ws);
@@ -106,7 +122,11 @@ public class BasePost extends BlockContainer {
 		if (tile != null && tile.getBaseInfo() == null) {
 			BaseInfo ws = PostHandler.allWaystones.getByPos(pos);
 			if (ws == null) {
-				PostHandler.allWaystones.add(new BaseInfo("", pos, player.getUniqueID()));
+				UUID owner = player.getUniqueID();
+				if(owner==null){
+					System.out.println("bp pc null");
+				}
+				PostHandler.allWaystones.add(new BaseInfo("", pos, owner));
 			}
 		}
 	}

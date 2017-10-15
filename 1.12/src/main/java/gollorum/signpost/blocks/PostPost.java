@@ -1,6 +1,8 @@
 package gollorum.signpost.blocks;
 
 import gollorum.signpost.Signpost;
+import gollorum.signpost.blocks.tiles.PostPostTile;
+import gollorum.signpost.blocks.tiles.SuperPostPostTile;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
@@ -34,14 +36,14 @@ public class PostPost extends SuperPostPost {
 	public PostType type;
 
 	public static enum PostType{
-						OAK(	Material.WOOD, 	"sign_oak", 	"planks_oak",		Item.getItemFromBlock(Blocks.PLANKS),		0),
-						SPRUCE(	Material.WOOD, 	"sign_spruce", 	"planks_spruce",	Item.getItemFromBlock(Blocks.PLANKS),		1),
-						BIRCH(	Material.WOOD, 	"sign_birch", 	"planks_birch",		Item.getItemFromBlock(Blocks.PLANKS),		2),
-						JUNGLE(	Material.WOOD,	"sign_jungle", 	"planks_jungle",	Item.getItemFromBlock(Blocks.PLANKS),		3),
-						ACACIA(	Material.WOOD, 	"sign_acacia", 	"planks_acacia",	Item.getItemFromBlock(Blocks.PLANKS),		4),
-						BIGOAK(	Material.WOOD, 	"sign_big_oak", "planks_big_oak",	Item.getItemFromBlock(Blocks.PLANKS),		5),
-						IRON(	Material.IRON, 	"sign_iron", 	"iron_block",		Items.IRON_INGOT,							0),
-						STONE(	Material.ROCK, 	"sign_stone", 	"stone",			Item.getItemFromBlock(Blocks.STONE),		0);
+						OAK(	Material.WOOD, 	"sign_oak", 	"log_oak",		Item.getItemFromBlock(Blocks.PLANKS),	0),
+						SPRUCE(	Material.WOOD, 	"sign_spruce", 	"log_spruce",	Item.getItemFromBlock(Blocks.PLANKS),	1),
+						BIRCH(	Material.WOOD, 	"sign_birch", 	"log_birch",	Item.getItemFromBlock(Blocks.PLANKS),	2),
+						JUNGLE(	Material.WOOD,	"sign_jungle", 	"log_jungle",	Item.getItemFromBlock(Blocks.PLANKS),	3),
+						ACACIA(	Material.WOOD, 	"sign_acacia", 	"log_acacia",	Item.getItemFromBlock(Blocks.PLANKS),	4),
+						BIGOAK(	Material.WOOD, 	"sign_big_oak", "log_big_oak",	Item.getItemFromBlock(Blocks.PLANKS),	5),
+						IRON(	Material.IRON, 	"sign_iron", 	"iron_block",	Items.IRON_INGOT,						0),
+						STONE(	Material.ROCK, 	"sign_stone", 	"stone",		Item.getItemFromBlock(Blocks.STONE),	0);
 		public Material material;
 		public ResourceLocation texture;
 		public String textureMain;
@@ -59,7 +61,7 @@ public class PostPost extends SuperPostPost {
 		}
 	}
 
-	public static enum HitTarget{BASE1, BASE2, POST;}
+	public static enum HitTarget{BASE1, BASE2, POST, STONE;}
 	
 	public static class Hit{
 		public HitTarget target;
@@ -130,9 +132,9 @@ public class PostPost extends SuperPostPost {
 		Hit hit = (Hit)hitObj;
 		DoubleBaseInfo tilebases = ((PostPostTile)superTile).getBases();
 		if (hit.target == HitTarget.BASE1) {
-			tilebases.sign1.rotation = (tilebases.sign1.rotation - 15) % 360;
+			tilebases.sign1.rot(-15, x, z);
 		} else if(hit.target == HitTarget.BASE2) {
-			tilebases.sign2.rotation = (tilebases.sign2.rotation - 15) % 360;
+			tilebases.sign2.rot(-15, x, z);
 		}
 	}
 
@@ -141,9 +143,9 @@ public class PostPost extends SuperPostPost {
 		Hit hit = (Hit)hitObj;
 		DoubleBaseInfo tilebases = ((PostPostTile)superTile).getBases();
 		if (hit.target == HitTarget.BASE1) {
-			tilebases.sign1.rotation = (tilebases.sign1.rotation + 15) % 360;
+			tilebases.sign1.rot(15, x, z);
 		} else if (hit.target == HitTarget.BASE2) {
-			tilebases.sign2.rotation = (tilebases.sign2.rotation + 15) % 360;
+			tilebases.sign2.rot(15, x, z);
 		}
 	}
 
@@ -297,7 +299,8 @@ public class PostPost extends SuperPostPost {
 		if(player.isSneaking())
 			head.y-=0.08;
 		Vec3d look = player.getLookVec();
-		DoubleBaseInfo bases = getWaystonePostTile(world, new BlockPos(x, y, z)).getBases();
+		PostPostTile tile = getWaystonePostTile(world, new BlockPos(x, y, z));
+		DoubleBaseInfo bases = tile.getBases();
 		DDDVector rotPos = new DDDVector(x+0.5,y+0.5,z+0.5);
 		DDDVector signPos;
 		DDDVector edges = new DDDVector(1.4375, 0.375, 0.0625);
@@ -316,15 +319,18 @@ public class PostPost extends SuperPostPost {
 		}
 		Cuboid sign2 = new Cuboid(signPos, edges, bases.sign2.calcRot(x, z), rotPos);
 		Cuboid post = new Cuboid(new DDDVector(x+0.375, y, z+0.375), new DDDVector(0.25, 1, 0.25), 0);
+		Cuboid waystone = new Cuboid(new DDDVector(x+0.25, y, z+0.25), new DDDVector(0.5, 0.5, 0.5), 0);
 
 		DDDVector start = new DDDVector(head);
 		DDDVector end = start.add(new DDDVector(look.x, look.y, look.z));
 		Intersect sign1Hit = sign1.traceLine(start, end, true);
 		Intersect sign2Hit = sign2.traceLine(start, end, true);
 		Intersect postHit = post.traceLine(start, end, true);
+		Intersect waystoneHit = waystone.traceLine(start, end, true);
 		double sign1Dist = sign1Hit.exists&&bases.sign1.base!=null&&bases.sign1.base.hasName()?sign1Hit.pos.distance(start):Double.MAX_VALUE;
 		double sign2Dist = sign2Hit.exists&&bases.sign2.base!=null&&bases.sign2.base.hasName()?sign2Hit.pos.distance(start):Double.MAX_VALUE;
 		double postDist = postHit.exists?postHit.pos.distance(start):Double.MAX_VALUE;
+		double waystoneDist = waystoneHit.exists&&tile.isWaystone()?waystoneHit.pos.distance(start):Double.MAX_VALUE;
 		double dist;
 		HitTarget target;
 		DDDVector pos;
@@ -336,6 +342,11 @@ public class PostPost extends SuperPostPost {
 			dist = sign2Dist;
 			pos = sign2Hit.pos;
 			target = HitTarget.BASE2;
+		}
+		if(waystoneDist<=dist){
+			dist = waystoneDist;
+			pos = waystoneHit.pos;
+			target = HitTarget.STONE;
 		}
 		if(postDist<=dist){
 			dist = postDist;
@@ -357,5 +368,10 @@ public class PostPost extends SuperPostPost {
 		}else{
 			return null;
 		}
+	}
+
+	@Override
+	protected boolean isHitWaystone(Object hitObj) {
+		return ((Hit)hitObj).target.equals(HitTarget.STONE);
 	}
 }

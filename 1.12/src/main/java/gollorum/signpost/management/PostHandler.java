@@ -1,9 +1,13 @@
 package gollorum.signpost.management;
 
-import java.util.Map;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import gollorum.signpost.SPEventHandler;
+import gollorum.signpost.blocks.tiles.BigPostPostTile;
+import gollorum.signpost.blocks.tiles.PostPostTile;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.ChatMessage;
 import gollorum.signpost.network.messages.TeleportRequestMessage;
@@ -12,33 +16,58 @@ import gollorum.signpost.util.BigBaseInfo;
 import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.DoubleBaseInfo;
 import gollorum.signpost.util.MyBlockPos;
+import gollorum.signpost.util.MyBlockPosSet;
 import gollorum.signpost.util.StonedHashSet;
 import gollorum.signpost.util.StringSet;
 import gollorum.signpost.util.collections.Lurchpaerchensauna;
 import gollorum.signpost.util.collections.Pair;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.world.World;
+import net.minecraft.world.Teleporter;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
 public class PostHandler {
 
 	public static StonedHashSet allWaystones = new StonedHashSet();	
-	public static Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo> posts = new Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo>();
-	public static Lurchpaerchensauna<MyBlockPos, BigBaseInfo> bigPosts = new Lurchpaerchensauna<MyBlockPos, BigBaseInfo>();
+	private static Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo> posts = new Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo>();
+	private static Lurchpaerchensauna<MyBlockPos, BigBaseInfo> bigPosts = new Lurchpaerchensauna<MyBlockPos, BigBaseInfo>();
 	//ServerSide
 	public static Lurchpaerchensauna<UUID, TeleportInformation> awaiting =  new Lurchpaerchensauna<UUID, TeleportInformation>(); 
 
-	public static Lurchpaerchensauna<UUID, Pair<StringSet, Pair<Integer, Integer>>> playerKnownWaystones = new Lurchpaerchensauna<UUID, Pair<StringSet, Pair<Integer, Integer>>>(){
+	/**
+	 * UUID = the player;
+	 * StringSet = the discovered waystones;
+	 */
+	public static Lurchpaerchensauna<UUID, StringSet> playerKnownWaystones = new Lurchpaerchensauna<UUID, StringSet>(){
 		@Override
-		public Pair<StringSet, Pair<Integer, Integer>> get(Object obj){
-			Pair<StringSet, Pair<Integer, Integer>> pair = super.get(obj);
+		public StringSet get(Object obj){
+			StringSet pair = super.get(obj);
 			if(pair == null){
-				Pair<StringSet, Pair<Integer, Integer>> p = new Pair<StringSet, Pair<Integer, Integer>>();
-				p.a  = new StringSet();
+				return put((UUID) obj, new StringSet());
+			}else{
+				return pair;
+			}
+		}
+	};
+
+	/**
+	 * UUID = the player;
+	 * Pair.MyBlockPosSet = the discovered waystones;
+	 * Pair.b.a = the waystones left to place;
+	 * Pair.b.b = the signposts left to place;
+	 */
+	public static Lurchpaerchensauna<UUID, Pair<MyBlockPosSet, Pair<Integer, Integer>>> playerKnownWaystonePositions = new Lurchpaerchensauna<UUID, Pair<MyBlockPosSet, Pair<Integer, Integer>>>(){
+		@Override
+		public Pair<MyBlockPosSet, Pair<Integer, Integer>> get(Object obj){
+			Pair<MyBlockPosSet, Pair<Integer, Integer>> pair = super.get(obj);
+			if(pair == null){
+				Pair<MyBlockPosSet, Pair<Integer, Integer>> p = new Pair<MyBlockPosSet, Pair<Integer, Integer>>();
+				p.a  = new MyBlockPosSet();
 				p.b = new Pair<Integer, Integer>();
 				p.b.a = ConfigHandler.maxWaystones;
 				p.b.b = ConfigHandler.maxSignposts;
@@ -49,15 +78,37 @@ public class PostHandler {
 		}
 	};
 	
+	public static boolean doesPlayerKnowWaystone(EntityPlayerMP player, BaseInfo waystone){
+		if(playerKnownWaystonePositions.get(player.getUniqueID()).a.contains(waystone.blockPos)){
+			if(playerKnownWaystones.containsKey(player)){
+				playerKnownWaystones.get(player.getUniqueID()).remove(waystone.name);
+			}
+			return true;
+		}else{
+			return playerKnownWaystones.get(player.getUniqueID()).contains(waystone.name);
+		}
+	}
+	
 	public static void init(){
 		allWaystones = new StonedHashSet();
-		playerKnownWaystones = new Lurchpaerchensauna<UUID, Pair<StringSet, Pair<Integer, Integer>>>(){
+		playerKnownWaystones = new Lurchpaerchensauna<UUID, StringSet>(){
 			@Override
-			public Pair<StringSet, Pair<Integer, Integer>> get(Object obj){
-				Pair<StringSet, Pair<Integer, Integer>> pair = super.get(obj);
+			public StringSet get(Object obj){
+				StringSet pair = super.get(obj);
 				if(pair == null){
-					Pair<StringSet, Pair<Integer, Integer>> p = new Pair<StringSet, Pair<Integer, Integer>>();
-					p.a  = new StringSet();
+					return put((UUID) obj, new StringSet());
+				}else{
+					return pair;
+				}
+			}
+		};
+		playerKnownWaystonePositions = new Lurchpaerchensauna<UUID, Pair<MyBlockPosSet, Pair<Integer, Integer>>>(){
+			@Override
+			public Pair<MyBlockPosSet, Pair<Integer, Integer>> get(Object obj){
+				Pair<MyBlockPosSet, Pair<Integer, Integer>> pair = super.get(obj);
+				if(pair == null){
+					Pair<MyBlockPosSet, Pair<Integer, Integer>> p = new Pair<MyBlockPosSet, Pair<Integer, Integer>>();
+					p.a  = new MyBlockPosSet();
 					p.b = new Pair<Integer, Integer>();
 					p.b.a = ConfigHandler.maxWaystones;
 					p.b.b = ConfigHandler.maxSignposts;
@@ -69,6 +120,50 @@ public class PostHandler {
 		};
 		posts = new Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo>();
 		bigPosts = new Lurchpaerchensauna<MyBlockPos, BigBaseInfo>();
+		awaiting = new Lurchpaerchensauna<UUID, TeleportInformation>();
+	}
+
+	public static Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo> getPosts() {
+		return posts;
+	}
+
+	public static void setPosts(Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo> posts) {
+		PostHandler.posts = posts;
+		refreshDoublePosts();
+	}
+
+	public static Lurchpaerchensauna<MyBlockPos, BigBaseInfo> getBigPosts() {
+		return bigPosts;
+	}
+
+	public static void setBigPosts(Lurchpaerchensauna<MyBlockPos, BigBaseInfo> bigPosts) {
+		PostHandler.bigPosts = bigPosts;
+		refreshBigPosts();
+	}
+
+	private static void refreshPosts(){
+		refreshDoublePosts();
+		refreshBigPosts();
+	}
+	
+	public static void refreshDoublePosts(){
+		for(Entry<MyBlockPos, DoubleBaseInfo> now: posts.entrySet()){
+			PostPostTile tile = (PostPostTile) now.getKey().getTile();
+			if(tile!=null){
+				tile.isWaystone();
+				tile.getBases();
+			}
+		}
+	}
+	
+	public static void refreshBigPosts(){
+		for(Entry<MyBlockPos, BigBaseInfo> now: bigPosts.entrySet()){
+			BigPostPostTile tile = (BigPostPostTile) now.getKey().getTile();
+			if(tile!=null){
+				tile.isWaystone();
+				tile.getBases();
+			}
+		}
 	}
 	
 	public static BaseInfo getWSbyName(String name){
@@ -99,9 +194,9 @@ public class PostHandler {
 	public static class TeleportInformation{
 		public BaseInfo destination;
 		public int stackSize;
-		public World world;
+		public WorldServer world;
 		public BoolRun boolRun;
-		public TeleportInformation(BaseInfo destination, int stackSize, World world, BoolRun boolRun) {
+		public TeleportInformation(BaseInfo destination, int stackSize, WorldServer world, BoolRun boolRun) {
 			this.destination = destination;
 			this.stackSize = stackSize;
 			this.world = world;
@@ -122,7 +217,7 @@ public class PostHandler {
 	}
 	
 	public static boolean canPay(EntityPlayer player, int x1, int y1, int z1, int x2, int y2, int z2){
-		if(ConfigHandler.cost == null){
+		if(ConfigHandler.cost == null || ConfigHandler.isCreative(player)){
 			return true;
 		}else{
 			int playerItemCount = 0;
@@ -136,7 +231,7 @@ public class PostHandler {
 	}
 
 	public static void doPay(EntityPlayer player, int x1, int y1, int z1, int x2, int y2, int z2){
-		if(ConfigHandler.cost == null){
+		if(ConfigHandler.cost == null || ConfigHandler.isCreative(player)){
 			return;
 		}else{
 			int stackSize = getStackSize(x1, y1, z1, x2, y2, z2);
@@ -157,21 +252,28 @@ public class PostHandler {
 		return getStackSize(pos1.x, pos1.y, pos1.z, pos2.x, pos2.y, pos2.z);
 	}
 	
-	public static void confirm(EntityPlayerMP player){
-		TeleportInformation info = awaiting.get(player.getUniqueID());
-		if(info==null){
-			NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.noConfirm"), player);
-			return;
-		}else{
-			SPEventHandler.cancelTask(awaiting.remove(player.getUniqueID()).boolRun);
-			if(!player.world.equals(info.world)){
-				player.setWorld(info.world);
+	public static void confirm(final EntityPlayerMP player){
+		final TeleportInformation info = awaiting.get(player.getUniqueID());
+		SPEventHandler.scheduleTask(new Runnable(){
+			@Override
+			public void run() {
+				if(info==null){
+					NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.noConfirm"), player);
+					return;
+				}else{
+					doPay(player, (int)player.posX, (int)player.posY, (int)player.posZ, info.destination.pos.x, info.destination.pos.y+1, info.destination.pos.z);
+					SPEventHandler.cancelTask(info.boolRun);
+					if(!(player.getServerWorld().getWorldInfo().getWorldName().equals(info.world.getWorldInfo().getWorldName()))){
+						player.mcServer.getPlayerList().transferEntityToWorld(player, player.dimension, player.getServerWorld(), info.world, new SignTeleporter(info.world));
+					}
+					if(!(player.dimension==info.destination.pos.dim)){
+						player.mcServer.getPlayerList().transferPlayerToDimension(player, info.destination.pos.dim, new SignTeleporter(info.world));
+//						player.changeDimension(info.destination.pos.dim);
+					}
+					player.setPositionAndUpdate(info.destination.pos.x+0.5, info.destination.pos.y+1, info.destination.pos.z+0.5);
+				}
 			}
-			if(!(player.dimension==info.destination.pos.dim)){
-				player.changeDimension(info.destination.pos.dim);
-			}
-			player.setPositionAndUpdate(info.destination.pos.x+0.5, info.destination.pos.y+1, info.destination.pos.z+0.5);
-		}
+		}, 1);
 	}
 
 	public static void teleportMe(BaseInfo destination, final EntityPlayerMP player, int stackSize){
@@ -179,7 +281,7 @@ public class PostHandler {
 			return;
 		}
 		if(canTeleport(player, destination)){
-			World world = PostHandler.getWorldByName(destination.pos.world);
+			WorldServer world = (WorldServer) destination.pos.getWorld();
 			if(world == null){
 				NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.errorWorld", "<world>", destination.pos.world), player);
 			}else{
@@ -214,8 +316,7 @@ public class PostHandler {
 	public static boolean updateWS(BaseInfo newWS, boolean destroyed){
 		if(destroyed){
 			if(allWaystones.remove(getWSbyName(newWS.name))){
-				for(Map.Entry<UUID, Pair<StringSet, Pair<Integer, Integer>>> now: playerKnownWaystones.entrySet()){
-					now.getValue().a.remove(newWS);
+				for(Entry<UUID, Pair<MyBlockPosSet, Pair<Integer, Integer>>> now: playerKnownWaystonePositions.entrySet()){
 				}
 				return true;
 			}
@@ -230,17 +331,53 @@ public class PostHandler {
 	}
 	
 	public static boolean addAllDiscoveredByName(UUID player, StringSet ws){
-		if(playerKnownWaystones.containsKey(player)){
-			return playerKnownWaystones.get(player).a.addAll(ws);
+		MyBlockPosSet set = new MyBlockPosSet();
+		StringSet newStrs = new StringSet();
+		newStrs.addAll(ws);
+		for(String now: ws){
+			for(BaseInfo base: allWaystones){
+				if(base.name.equals(now)){
+					set.add(base.blockPos);
+					newStrs.remove(now);
+				}
+			}
+		}
+		ws = newStrs;
+		boolean ret = false;
+		if(!ws.isEmpty()) if(playerKnownWaystones.containsKey(player)){
+			ret = playerKnownWaystones.get(player).addAll(ws);
 		}else{
-			StringSet newSet = new StringSet();
-			boolean ret = newSet.addAll(ws);
-			Pair<StringSet, Pair<Integer, Integer>> pair = new Pair<StringSet, Pair<Integer, Integer>>();
+			StringSet strSet = new StringSet();
+			ret = strSet.addAll(ws);
+			playerKnownWaystones.put(player, strSet);
+		}
+		if(playerKnownWaystonePositions.containsKey(player)){
+			return ret | playerKnownWaystonePositions.get(player).a.addAll(set);
+		}else{
+			MyBlockPosSet newSet = new MyBlockPosSet();
+			ret = ret | newSet.addAll(set);
+			Pair<MyBlockPosSet, Pair<Integer, Integer>> pair = new Pair<MyBlockPosSet, Pair<Integer, Integer>>();
 			pair.a  = newSet;
 			pair.b = new Pair<Integer, Integer>();
 			pair.b.a = ConfigHandler.maxWaystones;
 			pair.b.b = ConfigHandler.maxSignposts;
-			playerKnownWaystones.put(player, pair);
+			playerKnownWaystonePositions.put(player, pair);
+			return ret;
+		}
+	}
+	
+	public static boolean addAllDiscoveredByPos(UUID player, MyBlockPosSet ws){
+		if(playerKnownWaystonePositions.containsKey(player)){
+			return playerKnownWaystonePositions.get(player).a.addAll(ws);
+		}else{
+			MyBlockPosSet newSet = new MyBlockPosSet();
+			boolean ret = newSet.addAll(ws);
+			Pair<MyBlockPosSet, Pair<Integer, Integer>> pair = new Pair<MyBlockPosSet, Pair<Integer, Integer>>();
+			pair.a  = newSet;
+			pair.b = new Pair<Integer, Integer>();
+			pair.b.a = ConfigHandler.maxWaystones;
+			pair.b.b = ConfigHandler.maxSignposts;
+			playerKnownWaystonePositions.put(player, pair);
 			return ret;
 		}
 	}
@@ -249,41 +386,75 @@ public class PostHandler {
 		if(ws==null){
 			return false;
 		}
-		if(playerKnownWaystones.containsKey(player)){
-			return playerKnownWaystones.get(player).a.add(ws+"");
+		if(playerKnownWaystonePositions.containsKey(player)){
+			boolean ret = playerKnownWaystonePositions.get(player).a.add(ws.blockPos);
+			ret = ret |! (playerKnownWaystonePositions.containsKey(player) && playerKnownWaystones.get(player).remove(ws.name));
+			return ret;
 		}else{
-			StringSet newSet = new StringSet();
-			newSet.add(""+ws);
-			Pair<StringSet, Pair<Integer, Integer>> pair = new Pair<StringSet, Pair<Integer, Integer>>();
+			MyBlockPosSet newSet = new MyBlockPosSet();
+			newSet.add(ws.blockPos);
+			Pair<MyBlockPosSet, Pair<Integer, Integer>> pair = new Pair<MyBlockPosSet, Pair<Integer, Integer>>();
 			pair.a  = newSet;
 			pair.b = new Pair<Integer, Integer>();
 			pair.b.a = ConfigHandler.maxWaystones;
 			pair.b.b = ConfigHandler.maxSignposts;
-			playerKnownWaystones.put(player, pair);
-			return true;
+			playerKnownWaystonePositions.put(player, pair);
+			return !(playerKnownWaystonePositions.containsKey(player) && playerKnownWaystones.get(player).remove(ws.name));
+		}
+	}
+	
+	public static void refreshDiscovered(){
+		HashSet<UUID> toDelete = new HashSet<UUID>();
+		HashMap<UUID, MyBlockPosSet> toAdd = new HashMap<UUID, MyBlockPosSet>();
+		for(Entry<UUID, StringSet> now: playerKnownWaystones.entrySet()){
+			StringSet newSet = new StringSet();
+			MyBlockPosSet newPosSet = new MyBlockPosSet();
+			for(String str: now.getValue()){
+				for(BaseInfo base: allWaystones){
+					if(base.hasName() && base.name.equals(str)){
+						newPosSet.add(base.blockPos);
+						newSet.add(str);
+					}
+				}
+			}
+			toAdd.put(now.getKey(), newPosSet);
+			now.getValue().removeAll(newSet);
+			if(now.getValue().isEmpty()){
+				toDelete.add(now.getKey());
+			}
+		}
+		
+		for(UUID now: toDelete){
+			playerKnownWaystones.remove(now);
+		}
+		
+		for(Entry<UUID, MyBlockPosSet> now: toAdd.entrySet()){
+			addAllDiscoveredByPos(now.getKey(), now.getValue());
 		}
 	}
 	
 	public static boolean canTeleport(EntityPlayerMP player, BaseInfo target){
-		StringSet playerKnows = PostHandler.playerKnownWaystones.get(player.getUniqueID()).a;
-		if(playerKnows==null){
-			return false;
-		}
-		return playerKnows.contains(target.name);
+		return doesPlayerKnowWaystone(player, target);
 	}
 	
-	public static World getWorldByName(String world){
-		for(World now: FMLCommonHandler.instance().getMinecraftServerInstance().worlds){
+	public static WorldServer getWorldByName(String world, int dim){
+		WorldServer ret = null;
+		forLoop:
+		for(WorldServer now: FMLCommonHandler.instance().getMinecraftServerInstance().worlds){
 			if(now.getWorldInfo().getWorldName().equals(world)){
-				return now;
+				ret = now;
+				continue forLoop;
 			}
 		}
-		return null;
+		if(dim!=0){
+			ret = FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(dim);
+		}
+		return ret;
 	}
 
 	public static boolean addRep(BaseInfo ws) {
-		BaseInfo toDelete = allWaystones.getByPos(ws.pos);
-		allWaystones.removeByPos(toDelete.pos);
+		BaseInfo toDelete = allWaystones.getByPos(ws.blockPos);
+		allWaystones.removeByPos(toDelete.blockPos);
 		allWaystones.add(ws);
 		return true;
 	}
@@ -294,5 +465,22 @@ public class PostHandler {
 	
 	public static boolean isHandEmpty(EntityPlayer player){
 		return player.getHeldItemMainhand()==null || player.getHeldItemMainhand().getItem()==null || player.getHeldItemMainhand().getItem().equals(Item.getItemFromBlock(Blocks.AIR));
+	}
+
+	private static class SignTeleporter extends Teleporter{
+
+		public SignTeleporter(WorldServer worldIn) {super(worldIn);}
+		
+		@Override
+		public void placeInPortal(Entity entityIn, float rotationYaw){}
+		
+		@Override
+		public boolean placeInExistingPortal(Entity entityIn, float rotationYaw){return true;}
+		
+		@Override
+		public boolean makePortal(Entity entityIn){return true;}
+		
+		@Override
+		public void removeStalePortalLocations(long worldTime){}
 	}
 }

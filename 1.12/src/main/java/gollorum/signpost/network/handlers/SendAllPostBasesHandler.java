@@ -10,9 +10,7 @@ public class SendAllPostBasesHandler implements IMessageHandler<SendAllPostBases
 
 	@Override
 	public IMessage onMessage(SendAllPostBasesMessage message, MessageContext ctx) {
-		PostHandler.posts = message.toPostMap();
+		PostHandler.setPosts(message.toPostMap());
 		return null;
 	}
-	
 }
-		

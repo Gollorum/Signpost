@@ -3,7 +3,7 @@ package gollorum.signpost.render;
 import org.lwjgl.opengl.GL11;
 
 import gollorum.signpost.Signpost;
-import gollorum.signpost.blocks.BigPostPostTile;
+import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.util.BigBaseInfo;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
@@ -25,7 +25,7 @@ public class BigPostRenderer extends TileEntitySpecialRenderer<BigPostPostTile>{
 	}
 	
 	@Override
-    public void render(BigPostPostTile tile, double x, double y, double z, float partialTicks, int destroyStage, float alfa){
+	public void render(BigPostPostTile tile, double x, double y, double z, float partialTicks, int destroyStage, float alfa){
 		BigBaseInfo tilebases = tile.bases;
 		double rotation = 0;
 		if(tilebases==null && !tile.isItem){
@@ -37,7 +37,7 @@ public class BigPostRenderer extends TileEntitySpecialRenderer<BigPostPostTile>{
 		
 		GL11.glPushMatrix();
 		GL11.glTranslated(x+0.5, y, z+0.5);
-		this.bindTexture(tile.type.resLocMain);
+		this.bindTexture(tilebases.postPaint);
 		post.render(this, 0.1f, 0.0625f, tilebases, tile, rotation);
 		ResourceLocation resLoc = tile.isItem ? tile.type.texture : tilebases.sign.paint;
 		try{

@@ -6,11 +6,12 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraft.world.storage.MapStorage;
 import net.minecraft.world.storage.WorldSavedData;
+import net.minecraftforge.common.DimensionManager;
 
 public class WorldSigns extends WorldSavedData{
 
 	final static String key = "Signpost.WorldSigns";
-	private String world;
+	private World world;
 	
 	public WorldSigns(String tagName) {
 		super(tagName);
@@ -27,7 +28,7 @@ public class WorldSigns extends WorldSavedData{
 			ret = new WorldSigns();
 			storage.setData(key, ret);
 		}
-		ret.world = world.getWorldInfo().getWorldName();
+		ret.world = world;
 		ret.markDirty();
 		return ret;
 	}
@@ -35,28 +36,38 @@ public class WorldSigns extends WorldSavedData{
 	@Override
 	public void readFromNBT(NBTTagCompound tC) {
 		NBTTagCompound info = (NBTTagCompound) tC.getTag("SignInfo");
-		int infoSize = info.getInteger("infoSize");
-		StonedHashSet bases = new StonedHashSet();
-		for(int i = 0; i<infoSize; i++){
-			NBTTagCompound nowInfo = (NBTTagCompound) info.getTag("Base"+i);
-			bases.add(BaseInfo.readFromNBT(nowInfo));
+		if(info!=null){
+			int infoSize = info.getInteger("infoSize");
+			StonedHashSet bases = new StonedHashSet();
+			for(int i = 0; i<infoSize; i++){
+				NBTTagCompound nowInfo = (NBTTagCompound) info.getTag("Base"+i);
+				BaseInfo neu = BaseInfo.readFromNBT(nowInfo);
+				if(neu.name!=null){
+					bases.add(neu);
+				}
+			}
+			PostHandler.allWaystones.addAll(bases);
+			PostHandler.refreshDiscovered();
 		}
-		PostHandler.allWaystones.addAll(bases);
 	}
 
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound tC) {
-		NBTTagCompound info = new NBTTagCompound();
-		StonedHashSet worldBases = PostHandler.getByWorld(world);
-		info.setInteger("infoSize", worldBases.size());
-		int i = 0;
-		for(BaseInfo now: worldBases){
-			NBTTagCompound nowInfo = new NBTTagCompound();
-			now.writeToNBT(nowInfo);
-			info.setTag("Base"+i, nowInfo);
-			i++;
+		if(world.equals(DimensionManager.getWorld(0))){
+			NBTTagCompound info = new NBTTagCompound();
+			StonedHashSet worldBases = PostHandler.allWaystones;
+//			StonedHashSet worldBases = PostHandler.getByWorld(world);
+			info.setInteger("infoSize", worldBases.size());
+			int i = 0;
+			for(BaseInfo now: worldBases){
+				System.out.println(now);
+				NBTTagCompound nowInfo = new NBTTagCompound();
+				now.writeToNBT(nowInfo);
+				info.setTag("Base"+i, nowInfo);
+				i++;
+			}
+			tC.setTag("SignInfo", info);
 		}
-		tC.setTag("SignInfo", info);
 		return tC;
 	}
 

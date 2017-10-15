@@ -18,7 +18,7 @@ public class TeleportMeHandler implements IMessageHandler<TeleportMeMessage, IMe
 			return null;
 		}
 		if(PostHandler.canTeleport(ctx.getServerHandler().player, message.base)){
-			World world = PostHandler.getWorldByName(message.base.pos.world);
+			World world = message.base.pos.getWorld();
 			if(world == null){
 				return new ChatMessage("signpost.errorWorld", "<world>", message.base.pos.world);
 			}else{
@@ -29,7 +29,7 @@ public class TeleportMeHandler implements IMessageHandler<TeleportMeMessage, IMe
 				if(!(player.dimension==message.base.pos.dim)){
 					player.changeDimension(message.base.pos.dim);
 				}
-				ctx.getServerHandler().player.setPositionAndUpdate(message.base.pos.x+0.5, message.base.pos.y+1, message.base.pos.z+0.5);
+				ctx.getServerHandler().player.setPositionAndUpdate(message.base.pos.x, message.base.pos.y, message.base.pos.z);
 			}
 		}else{
 			return new ChatMessage("signpost.notDiscovered", "<Waystone>", message.base.name);

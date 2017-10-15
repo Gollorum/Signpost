@@ -3,7 +3,7 @@ package gollorum.signpost.gui;
 import java.awt.Color;
 import java.io.IOException;
 
-import gollorum.signpost.blocks.BasePostTile;
+import gollorum.signpost.blocks.WaystoneContainer;
 import gollorum.signpost.management.PostHandler;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraftforge.fml.client.FMLClientHandler;
@@ -11,10 +11,10 @@ import net.minecraftforge.fml.client.FMLClientHandler;
 public class SignGuiBase extends GuiScreen {
 
 	private BaseInputBox nameInputBox;
-	private BasePostTile tile;
+	private WaystoneContainer tile;
 	private boolean textChanged = false;
 
-	public SignGuiBase(BasePostTile tile) {
+	public SignGuiBase(WaystoneContainer tile) {
 		this.tile = tile;
 		initGui();
 	}
@@ -29,11 +29,7 @@ public class SignGuiBase extends GuiScreen {
 		}
 		drawDefaultBackground();
 		if(nameInputBox.getText() == null || nameInputBox.getText().equals("null")){
-			String name = tile.getName();
-			if(name==null){
-				name = "null";
-			}
-			nameInputBox.setText(name);
+			nameInputBox.setText(tile.getName());
 		}
 		nameInputBox.drawSignBox(fontRenderer);
 		super.drawScreen(mouseX, mouseY, partialTicks);
@@ -47,11 +43,7 @@ public class SignGuiBase extends GuiScreen {
 	@Override
 	public void initGui() {
 		nameInputBox = new BaseInputBox(this.fontRenderer, this.width / 2 - 68, this.height / 2 - 46, 137);
-		String name = tile.getName();
-		if(name==null){
-			name = "null";
-		}
-		nameInputBox.setText(name);
+		nameInputBox.setText(tile.getName());
 		nameInputBox.setFocused(true);
 	}
 

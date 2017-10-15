@@ -9,7 +9,16 @@ public class StonedHashSet extends Lurchsauna<BaseInfo>{
 
 	public BaseInfo getByPos(MyBlockPos pos){
 		for(BaseInfo now: this){
-			if(now.pos.equals(pos)){
+			if(now.blockPos.equals(pos)){
+				return now;
+			}
+		}
+		return null;
+	}
+
+	public BaseInfo getByName(String waystoneName) {
+		for(BaseInfo now: this){
+			if(now.name.equals(waystoneName)){
 				return now;
 			}
 		}

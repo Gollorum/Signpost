@@ -1,5 +1,6 @@
 package gollorum.signpost.commands;
 
+import gollorum.signpost.SPEventHandler;
 import gollorum.signpost.management.PostHandler;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
@@ -20,9 +21,14 @@ public class ConfirmTeleportCommand extends CommandBase {
 	}
 
 	@Override
-	public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
+	public void execute(MinecraftServer server, final ICommandSender sender, String[] args) {
 		if(sender instanceof EntityPlayerMP){
-			PostHandler.confirm((EntityPlayerMP) sender);
+			SPEventHandler.scheduleTask(new Runnable(){
+				@Override
+				public void run() {
+					PostHandler.confirm((EntityPlayerMP) sender);
+				}
+			}, 0);
 		}
 	}
 
