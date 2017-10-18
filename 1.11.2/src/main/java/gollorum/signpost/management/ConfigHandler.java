@@ -44,15 +44,16 @@ public class ConfigHandler {
 			return ret;
 		}
 		public boolean canPlace(EntityPlayerMP player){
-			return this.equals(ConfigHandler.SecurityLevel.ALL)||
+			return this.equals(ALL)||
+				   this.equals(OWNERS)||
 				   isOp(player)||
-				   (isCreative(player)&&this.equals(ConfigHandler.SecurityLevel.CREATIVEONLY));
+				   (isCreative(player)&&this.equals(CREATIVEONLY));
 		}
 		public boolean canUse(EntityPlayerMP player, String owner){
-			return this.equals(ConfigHandler.SecurityLevel.ALL)||
+			return this.equals(ALL)||
 					   isOp(player)||
-					   (this.equals(ConfigHandler.SecurityLevel.OWNERS) && (owner.equals(player.getUniqueID().toString()) || owner.equals("null")))||
-					   (isCreative(player)&&this.equals(ConfigHandler.SecurityLevel.CREATIVEONLY));
+					   (this.equals(OWNERS) && (owner.equals(player.getUniqueID().toString()) || owner.equals("null")))||
+					   (isCreative(player)&&this.equals(CREATIVEONLY));
 		}
 	}
 

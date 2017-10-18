@@ -45,6 +45,7 @@ public class ConfigHandler {
 		}
 		public boolean canPlace(EntityPlayerMP player){
 			return this.equals(ConfigHandler.SecurityLevel.ALL)||
+				   this.equals(OWNERS)||
 				   isOp(player)||
 				   (isCreative(player)&&this.equals(ConfigHandler.SecurityLevel.CREATIVEONLY));
 		}
