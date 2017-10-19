@@ -88,15 +88,20 @@ public class BlockHandler {
 	}
 	
 	private void waystoneRecipe(){
+		IRecipe toDelete = null;
 		for(IRecipe now: CraftingManager.getInstance().getRecipeList()){
 			if(now==null || now.getRecipeOutput()==null || now.getRecipeOutput().getItem()==null){
 				continue;
 			}
 			if(now.getRecipeOutput().getItem().equals(Item.getItemFromBlock(base))){
-				CraftingManager.getInstance().getRecipeList().remove(now);
+				toDelete = now;
 				break;
 			}
 		}
+		if(toDelete!=null){
+			CraftingManager.getInstance().getRecipeList().remove(toDelete);
+		}
+
 		if(ConfigHandler.securityLevelWaystone.equals(ConfigHandler.SecurityLevel.ALL)&&!ConfigHandler.deactivateTeleportation){
 			switch(ConfigHandler.waysRec){
 				case EXPENSIVE:
@@ -135,15 +140,20 @@ public class BlockHandler {
 	}
 	
 	private void postRecipe(PostPost post){
+		IRecipe toDelete = null;
 		for(IRecipe now: CraftingManager.getInstance().getRecipeList()){
 			if(now==null || now.getRecipeOutput()==null || now.getRecipeOutput().getItem()==null){
 				continue;
 			}
 			if(now.getRecipeOutput().getItem().equals(Item.getItemFromBlock(post))){
-				CraftingManager.getInstance().getRecipeList().remove(now);
+				toDelete = now;
 				break;
 			}
 		}
+		if(toDelete!=null){
+			CraftingManager.getInstance().getRecipeList().remove(toDelete);
+		}
+		
 		if(ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.ALL) || ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.OWNERS)){
 			switch(ConfigHandler.signRec){
 				case EXPENSIVE:
@@ -179,15 +189,20 @@ public class BlockHandler {
 	}
 	
 	private void bigPostRecipe(BigPostPost post){
+		IRecipe toDelete = null;
 		for(IRecipe now: CraftingManager.getInstance().getRecipeList()){
 			if(now==null || now.getRecipeOutput()==null || now.getRecipeOutput().getItem()==null){
 				continue;
 			}
 			if(now.getRecipeOutput().getItem().equals(Item.getItemFromBlock(post))){
-				CraftingManager.getInstance().getRecipeList().remove(now);
+				toDelete = now;
 				break;
 			}
 		}
+		if(toDelete!=null){
+			CraftingManager.getInstance().getRecipeList().remove(toDelete);
+		}
+		
 		if(ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.ALL) || ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.OWNERS)){
 			switch(ConfigHandler.signRec){
 				case EXPENSIVE:

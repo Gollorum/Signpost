@@ -70,15 +70,18 @@ public class BlockHandler {
 	}
 
 	private void waystoneRecipe(){
+		Object toDelete = null;
 		for(Object now: CraftingManager.getInstance().getRecipeList()){
 			if(now==null ||! (now instanceof IRecipe) || ((IRecipe)now).getRecipeOutput()==null || ((IRecipe)now).getRecipeOutput().getItem()==null){
 				continue;
 			}
 			if(((IRecipe)now).getRecipeOutput().getItem().equals(Item.getItemFromBlock(base))){
-				CraftingManager.getInstance().getRecipeList().remove(now);
+				toDelete = now;
 				break;
 			}
 		}
+		CraftingManager.getInstance().getRecipeList().remove(toDelete);
+		
 		if(ConfigHandler.securityLevelWaystone.equals(ConfigHandler.SecurityLevel.ALL)&&!ConfigHandler.deactivateTeleportation){
 			switch(ConfigHandler.waysRec){
 				case EXPENSIVE:
@@ -115,16 +118,20 @@ public class BlockHandler {
 				GameRegistry.addShapelessRecipe(new ItemStack(base, 1), basemodels[basemodels.length-1]);
 		}
 	}
+	
 	private void postRecipe(PostPost post){
+		Object toDelete = null;
 		for(Object now: CraftingManager.getInstance().getRecipeList()){
 			if(now==null ||! (now instanceof IRecipe) || ((IRecipe)now).getRecipeOutput()==null || ((IRecipe)now).getRecipeOutput().getItem()==null){
 				continue;
 			}
 			if(((IRecipe)now).getRecipeOutput().getItem().equals(Item.getItemFromBlock(post))){
-				CraftingManager.getInstance().getRecipeList().remove(now);
+				toDelete = now;
 				break;
 			}
 		}
+		CraftingManager.getInstance().getRecipeList().remove(toDelete);
+		
 		if(ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.ALL) || ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.OWNERS)){
 			switch(ConfigHandler.signRec){
 				case EXPENSIVE:
@@ -160,15 +167,18 @@ public class BlockHandler {
 	}
 
 	private void bigPostRecipe(BigPostPost post){
+		Object toDelete = null;
 		for(Object now: CraftingManager.getInstance().getRecipeList()){
 			if(now==null ||! (now instanceof IRecipe) || ((IRecipe)now).getRecipeOutput()==null || ((IRecipe)now).getRecipeOutput().getItem()==null){
 				continue;
 			}
 			if(((IRecipe)now).getRecipeOutput().getItem().equals(Item.getItemFromBlock(post))){
-				CraftingManager.getInstance().getRecipeList().remove(now);
+				toDelete = now;
 				break;
 			}
 		}
+		CraftingManager.getInstance().getRecipeList().remove(toDelete);
+		
 		if(ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.ALL) || ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.OWNERS)){
 			switch(ConfigHandler.signRec){
 			case EXPENSIVE:
