@@ -83,7 +83,6 @@ public class ConfigHandler {
 		if(cost==null){
 			cost = (Item) Item.REGISTRY.getObject(new ResourceLocation("minecraft:"+paymentItem));
 		}
-		Signpost.proxy.blockHandler.registerRecipes();
 	}
 
 	public static void loadClientSettings(){

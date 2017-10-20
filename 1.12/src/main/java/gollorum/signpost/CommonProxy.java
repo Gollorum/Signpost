@@ -18,10 +18,13 @@ public class CommonProxy {
 	public BlockHandler blockHandler;
 	
 	public CommonProxy(){
-		blockHandler = new BlockHandler();
+		blockHandler = BlockHandler.INSTANCE;
 	}
 	
-	void preInit(){}
+	void preInit(){
+		MinecraftForge.EVENT_BUS.register(BlockHandler.INSTANCE);
+		MinecraftForge.EVENT_BUS.register(ItemHandler.INSTANCE);
+	}
 	
 	void init(){
 		blockHandler.init();

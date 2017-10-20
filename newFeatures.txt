@@ -1,9 +1,9 @@
 Paintable posts
-Display possible destinations in signpost GUI
+Display possible destinations in signpost GUI			-1.12
 Display possible textures in paint gui
 Allow teleport without payment item in creative mode
 Choose whether recipes are expensive, very expensive, disabled or normal (server side)
 Disable needed discovery in config file
 Signposts as waystones
-waystones with .obj models
+waystones with .obj models			-1.12
 interdimensional teleport fix

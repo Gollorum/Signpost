@@ -53,9 +53,12 @@ public class BlockHandler {
 	public static final BigPostPost[] bigposts = {bigpost_oak, bigpost_spruce, bigpost_birch, bigpost_jungle, bigpost_acacia, bigpost_big_oak, bigpost_iron, bigpost_stone};
 	
 	protected ArrayList<ItemBlockWithMeta>  baseModelItems = new ArrayList<ItemBlockWithMeta>();
+
+	public static final BlockHandler INSTANCE = new BlockHandler();
 	
-	public static void init(){
-	}
+	protected BlockHandler(){}
+	
+	public static void init(){}
 
 	@SubscribeEvent
 	public void registerBlocks(RegistryEvent.Register<Block> event) {
@@ -88,17 +91,17 @@ public class BlockHandler {
 		registerRecipes();
 	}
 	
-	public void registerBlock(Block block, IForgeRegistry<Block> registry){
+	private void registerBlock(Block block, IForgeRegistry<Block> registry){
 		registry.register(block);
 	}
 
-	public void registerItem(Block block, IForgeRegistry<Item> registry){
+	private void registerItem(Block block, IForgeRegistry<Item> registry){
 		ItemBlock item = new ItemBlock(block);
 		item.setRegistryName(block.getRegistryName());
 		registry.register(item);
 	}
 	
-	public void registerRecipes() {
+	private void registerRecipes() {
 		waystoneRecipe();
 		for(PostPost now: posts){
 			postRecipe(now);
@@ -110,7 +113,15 @@ public class BlockHandler {
 	
 	private void waystoneRecipe(){
 		ForgeRegistry<IRecipe> registry = ((ForgeRegistry<IRecipe>)ForgeRegistries.RECIPES);
+//		boolean unfreezed = false;
+//		if(registry.isLocked()){
+//			registry.unfreeze();
+//			unfreezed = true;
+//		}
 		registry.remove(new ResourceLocation("signpost:blockbaserecipe"));
+//		if(unfreezed){
+//			registry.freeze();
+//		}
 		if(ConfigHandler.securityLevelWaystone.equals(ConfigHandler.SecurityLevel.ALL)&&!ConfigHandler.deactivateTeleportation){
 			switch(ConfigHandler.waysRec){
 				case EXPENSIVE:

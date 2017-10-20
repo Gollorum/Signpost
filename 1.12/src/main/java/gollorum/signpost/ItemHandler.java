@@ -34,14 +34,14 @@ public class ItemHandler {
 		register(event.getRegistry());
 	}
 
-	public static void register(IForgeRegistry<Item> registry){
+	private static void register(IForgeRegistry<Item> registry){
 		registerItem(tool, registry);
 		registerItem(calibratedTool, registry);
 		registerItem(brush, registry);
 		registerRecipes();
 	}
 	
-	public static void registerItem(Item item, IForgeRegistry<Item> registry){
+	private static void registerItem(Item item, IForgeRegistry<Item> registry){
 		registry.register(item);
 	}
 	
@@ -51,11 +51,11 @@ public class ItemHandler {
 		registerRender(brush);
 	}
 
-	public static void registerRender(Item item){
+	private static void registerRender(Item item){
 		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(item, 0, new ModelResourceLocation(item.getRegistryName(), "inventory"));
 	}
 
-	protected static void registerRecipes() {
+	private static void registerRecipes() {
 		if(ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.ALL) || ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.OWNERS)){
 			GameRegistry.addShapedRecipe(new ResourceLocation("signpost:itemwrenchrecipe"), null, new ItemStack(tool),
 					"II",
