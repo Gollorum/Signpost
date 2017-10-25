@@ -83,6 +83,7 @@ public class ConfigHandler {
 		if(cost==null){
 			cost = (Item) Item.itemRegistry.getObject("minecraft:"+paymentItem);
 		}
+		ClientConfigStorage.INSTANCE.setCost(cost);
 		Signpost.proxy.blockHandler.registerRecipes();
 	}
 	
@@ -92,6 +93,8 @@ public class ConfigHandler {
 		config.addCustomCategoryComment(category, "Client-Side settings");
 		
 		skipTeleportConfirm = config.getBoolean("skipTeleportConfirm", category, true, "Directly teleports the player on waystone right-click");
+		
+		ClientConfigStorage.INSTANCE.setSkipTeleportConfirm(skipTeleportConfirm);
 	}
 	
 	public static void loadLimitation(){
@@ -116,6 +119,16 @@ public class ConfigHandler {
 		signRec = RecipeCost.valueOf(config.getString("signpostRecipeCost", category, "NORMAL", "Changes the recipe for signposts (NORMAL/EXPENSIVE/VERY_EXPENSIVE/DEACTIVATED)", RecipeCost.allValues()));
 
 		waysRec = RecipeCost.valueOf(config.getString("waystoneRecipeCost", category, "NORMAL", "Changes the recipe for waystones (NORMAL/EXPENSIVE/VERY_EXPENSIVE/DEACTIVATED)", RecipeCost.allValues()));
+	
+		ClientConfigStorage.INSTANCE.setDeactivateTeleportation(deactivateTeleportation);
+		ClientConfigStorage.INSTANCE.setInterdimensional(interdimensional);
+		ClientConfigStorage.INSTANCE.setMaxWaystones(maxWaystones);
+		ClientConfigStorage.INSTANCE.setMaxSignposts(maxSignposts);
+		ClientConfigStorage.INSTANCE.setMaxDist(maxDist);
+		ClientConfigStorage.INSTANCE.setPaymentItem(paymentItem);
+		ClientConfigStorage.INSTANCE.setCostMult(costMult);
+		ClientConfigStorage.INSTANCE.setSignRec(signRec);
+		ClientConfigStorage.INSTANCE.setWaysRec(waysRec);
 	}
 	
 	public static void loadSecurity(){
@@ -128,6 +141,10 @@ public class ConfigHandler {
 		securityLevelSignpost = SecurityLevel.valueOf(config.getString("signpostPermissionLevel", category, "ALL", "Defines which players can place and edit a signpost (ALL, OWNERS, CREATIVEONLY, OPONLY). OPs are always included, 'OWNERS' = everyone can place, only the owner+OPs can edit.", SecurityLevel.allValues()));
 	
 		disableDiscovery = config.getBoolean("disableDiscovery", category, false, "Allows players to travel to waystones without the need to discover them");
+	
+		ClientConfigStorage.INSTANCE.setSecurityLevelWaystone(securityLevelWaystone);
+		ClientConfigStorage.INSTANCE.setSecurityLevelSignpost(securityLevelSignpost);
+		ClientConfigStorage.INSTANCE.setDisableDiscovery(disableDiscovery);
 	}
 
 	public static boolean isOp(EntityPlayer player){
@@ -139,9 +156,9 @@ public class ConfigHandler {
 	}
 	
 	public static String costName(){
-		String out = LanguageRegistry.instance().getStringLocalization(cost.getUnlocalizedName()+".name");
+		String out = LanguageRegistry.instance().getStringLocalization(ClientConfigStorage.INSTANCE.getCost().getUnlocalizedName()+".name");
 		if(out.equals("")){
-			out = LanguageRegistry.instance().getStringLocalization(cost.getUnlocalizedName()+".name", "en_US");
+			out = LanguageRegistry.instance().getStringLocalization(ClientConfigStorage.INSTANCE.getCost().getUnlocalizedName()+".name", "en_US");
 		}
 		return out;
 	}

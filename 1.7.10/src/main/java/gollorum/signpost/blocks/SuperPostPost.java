@@ -10,6 +10,7 @@ import gollorum.signpost.event.UseSignpostEvent;
 import gollorum.signpost.items.CalibratedPostWrench;
 import gollorum.signpost.items.PostBrush;
 import gollorum.signpost.items.PostWrench;
+import gollorum.signpost.management.ClientConfigStorage;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
@@ -34,7 +35,7 @@ public abstract class SuperPostPost extends BlockContainer {
 	@Override
 	public void onBlockClicked(World world, int x, int y, int z, EntityPlayer player) {
 		SuperPostPostTile superTile = getSuperTile(world, x, y, z);
-		if (world.isRemote || !ConfigHandler.securityLevelSignpost.canUse((EntityPlayerMP) player, ""+superTile.owner)) {
+		if (world.isRemote || !ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canUse((EntityPlayerMP) player, ""+superTile.owner)) {
 			return;
 		}
 		Object hit = getHitTarget(world, x, y, z, player);
@@ -91,18 +92,18 @@ public abstract class SuperPostPost extends BlockContainer {
 			rightClickWaystone(superTile, player, x, y, z);
 		}else if (player.getHeldItem() != null){
 			if(player.getHeldItem().getItem() instanceof PostWrench){
-				if(!ConfigHandler.securityLevelSignpost.canUse((EntityPlayerMP) player, ""+superTile.owner)){
+				if(ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canUse((EntityPlayerMP) player, ""+superTile.owner)){
 					return true;
 				}
 				rightClickWrench(hit, superTile, player, x, y, z);
 				sendPostBasesToAll(superTile);
 			}else if(player.getHeldItem().getItem() instanceof CalibratedPostWrench){
-				if(!ConfigHandler.securityLevelSignpost.canUse((EntityPlayerMP) player, ""+superTile.owner)){
+				if(!ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canUse((EntityPlayerMP) player, ""+superTile.owner)){
 					return true;
 				}
 				rightClickCalibratedWrench(hit, superTile, player, x, y, z);
 			}else if(player.getHeldItem().getItem() instanceof PostBrush){
-				if(!ConfigHandler.securityLevelSignpost.canUse((EntityPlayerMP) player, ""+superTile.owner)){
+				if(!ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canUse((EntityPlayerMP) player, ""+superTile.owner)){
 					return true;
 				}
 				rightClickBrush(hit, superTile, player, x, y, z);
@@ -124,14 +125,14 @@ public abstract class SuperPostPost extends BlockContainer {
 		BaseInfo ws = superTile.getBaseInfo();
 		if(!player.isSneaking()){
 			if(!PostHandler.doesPlayerKnowWaystone((EntityPlayerMP) player, ws)){
-				if (!ConfigHandler.deactivateTeleportation) {
+				if (!ClientConfigStorage.INSTANCE.deactivateTeleportation()) {
 					NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.name), (EntityPlayerMP) player);
 				}
 				PostHandler.addDiscovered(player.getUniqueID(), ws);
 			}
 		}else{
-			if (!ConfigHandler.deactivateTeleportation
-					&& ConfigHandler.securityLevelWaystone.canUse((EntityPlayerMP) player, ""+ws.owner)) {
+			if (!ClientConfigStorage.INSTANCE.deactivateTeleportation()
+					&& ClientConfigStorage.INSTANCE.getSecurityLevelWaystone().canUse((EntityPlayerMP) player, ""+ws.owner)) {
 				NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiBaseID, x, y, z), (EntityPlayerMP) player);
 			}
 		}
@@ -163,7 +164,7 @@ public abstract class SuperPostPost extends BlockContainer {
 		if(isHitWaystone(hitObj)){
 			BaseInfo ws = superTile.getBaseInfo();
 			if(!PostHandler.doesPlayerKnowWaystone((EntityPlayerMP) player, ws)){
-				if (!ConfigHandler.deactivateTeleportation) {
+				if (!ClientConfigStorage.INSTANCE.deactivateTeleportation()) {
 	NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.name), (EntityPlayerMP) player);
 				}
 				PostHandler.addDiscovered(player.getUniqueID(), ws);

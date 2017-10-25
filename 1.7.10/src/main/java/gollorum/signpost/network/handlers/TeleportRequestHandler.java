@@ -6,6 +6,7 @@ import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 import cpw.mods.fml.common.registry.LanguageRegistry;
 import cpw.mods.fml.relauncher.Side;
+import gollorum.signpost.management.ClientConfigStorage;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.messages.TeleportRequestMessage;
@@ -18,11 +19,11 @@ public class TeleportRequestHandler implements IMessageHandler<TeleportRequestMe
 		if(ctx.side.equals(Side.SERVER)){
 			PostHandler.confirm(ctx.getServerHandler().playerEntity);
 		}else{
-			if(ConfigHandler.skipTeleportConfirm){
+			if(ClientConfigStorage.INSTANCE.skipTeleportConfirm()){
 				return message;
 			}else{
 				String out;
-				if(ConfigHandler.cost!=null){
+				if(ClientConfigStorage.INSTANCE.getCost()!=null){
 					out = LanguageRegistry.instance().getStringLocalization("signpost.confirmTeleport");
 					if(out.equals("")){
 						out = LanguageRegistry.instance().getStringLocalization("signpost.confirmTeleport", "en_US");
