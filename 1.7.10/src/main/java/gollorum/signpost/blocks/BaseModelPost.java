@@ -8,6 +8,7 @@ import gollorum.signpost.SPEventHandler;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blocks.tiles.BaseModelPostTile;
 import gollorum.signpost.event.UpdateWaystoneEvent;
+import gollorum.signpost.management.ClientConfigStorage;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
@@ -107,7 +108,7 @@ public class BaseModelPost extends BlockContainer {
 
 	@Override
 	public boolean onBlockActivated(World worldIn, int x, int y, int z, EntityPlayer playerIn, int side, float hitX, float hitY, float hitZ) {
-		if (ConfigHandler.deactivateTeleportation) {
+		if (ClientConfigStorage.INSTANCE.deactivateTeleportation()) {
 			return false;
 		}
 		if (!worldIn.isRemote) {
@@ -118,14 +119,14 @@ public class BaseModelPost extends BlockContainer {
 			}
 			if (!playerIn.isSneaking()) {
 				if(!PostHandler.doesPlayerKnowWaystone((EntityPlayerMP) playerIn, ws)){
-					if (!ConfigHandler.deactivateTeleportation) {
+					if (!ClientConfigStorage.INSTANCE.deactivateTeleportation()) {
 						NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.name), (EntityPlayerMP) playerIn);
 					}
 					PostHandler.addDiscovered(playerIn.getUniqueID(), ws);
 				}
 			} else {
-				if (!ConfigHandler.deactivateTeleportation
-						&& ConfigHandler.securityLevelWaystone.canUse((EntityPlayerMP) playerIn, ""+ws.owner)) {
+				if (!ClientConfigStorage.INSTANCE.deactivateTeleportation()
+						&& ClientConfigStorage.INSTANCE.getSecurityLevelWaystone().canUse((EntityPlayerMP) playerIn, ""+ws.owner)) {
 					NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiBaseID, x, y, z), (EntityPlayerMP) playerIn);
 				}
 			}
