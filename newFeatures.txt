@@ -1,26 +1,14 @@
-<<<<<<< HEAD
-Paintable posts
-Display possible destinations in signpost GUI			-1.12
-Display possible textures in paint gui
-Allow teleport without payment item in creative mode
-Choose whether recipes are expensive, very expensive, disabled or normal (server side)
-Disable needed discovery in config file
-Signposts as waystones
-waystones with .obj models			-1.12
-interdimensional teleport fix
-=======
 Paintable posts			+1.7.10
-Display possible destinations in signpost GUI			-1.7.10
+Display possible destinations in signpost GUI			-1.7.10	-1.12
 Display possible textures in paint gui					+1.7.10
 Allow teleport without payment item in creative mode
 Choose whether recipes are expensive, very expensive, disabled or normal (server side)
 Disable needed discovery in config file			+1.7.10 (HAT ERST NICHT GEKLAPPT)
 Signposts as waystones			+1.7.10
-waystones with .obj models			+1.7.10
+waystones with .obj models			+1.7.10	-1.12
 interdimensional teleport fix			+1.7.10
 test: old map
 test: server
 
 waystone rec: both
 signpost rec: change but not back
->>>>>>> origin/master
