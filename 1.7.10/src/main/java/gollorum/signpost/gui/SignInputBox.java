@@ -54,6 +54,7 @@ public class SignInputBox extends Gui{
 		this.width = width;
 		this.height = (int) (width/verh);
 		PARENT = parent;
+		setText("");
 	}
 	
 	public void setFocused(boolean bool){
@@ -221,7 +222,7 @@ public class SignInputBox extends Gui{
     public void setCursorPosition(int p_146190_1_){
     	cursorCount = 0;
         this.cursorPosition = p_146190_1_;
-        int j = this.text.length();
+        int j = this.getText().length();
 
         if (this.cursorPosition < 0){
             this.cursorPosition = 0;
@@ -245,7 +246,7 @@ public class SignInputBox extends Gui{
 			    s = s + this.getText().substring(k);
 			}
 			
-			this.text = s;
+			this.setText(s);
 			
 			if (flag){
 			    this.moveCursorBy(p_146175_1_);

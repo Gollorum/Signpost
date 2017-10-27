@@ -1,6 +1,7 @@
 package gollorum.signpost;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import cpw.mods.fml.common.registry.GameRegistry;
 import gollorum.signpost.blocks.BaseModelPost;
@@ -71,17 +72,16 @@ public class BlockHandler {
 	}
 
 	private void waystoneRecipe(){
-		Object toDelete = null;
+		HashSet<Object> toDelete = new HashSet<Object>();
 		for(Object now: CraftingManager.getInstance().getRecipeList()){
 			if(now==null ||! (now instanceof IRecipe) || ((IRecipe)now).getRecipeOutput()==null || ((IRecipe)now).getRecipeOutput().getItem()==null){
 				continue;
 			}
 			if(((IRecipe)now).getRecipeOutput().getItem().equals(Item.getItemFromBlock(base))){
-				toDelete = now;
-				break;
+				toDelete.add(now);
 			}
 		}
-		CraftingManager.getInstance().getRecipeList().remove(toDelete);
+		CraftingManager.getInstance().getRecipeList().removeAll(toDelete);
 		
 		if(ClientConfigStorage.INSTANCE.getSecurityLevelWaystone().equals(ConfigHandler.SecurityLevel.ALL)&&!ClientConfigStorage.INSTANCE.deactivateTeleportation()){
 			switch(ClientConfigStorage.INSTANCE.getWaysRec()){
@@ -134,7 +134,6 @@ public class BlockHandler {
 		CraftingManager.getInstance().getRecipeList().remove(toDelete);
 		
 		if(ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().equals(ConfigHandler.SecurityLevel.ALL) || ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().equals(ConfigHandler.SecurityLevel.OWNERS)){
-			System.out.println("Register signpost recipe with "+ClientConfigStorage.INSTANCE.getSignRec());
 			switch(ClientConfigStorage.INSTANCE.getSignRec()){
 				case EXPENSIVE:
 					GameRegistry.addRecipe(new ItemStack(post, 1),
@@ -146,7 +145,6 @@ public class BlockHandler {
 							'P', Items.ender_pearl);
 					break;
 				case VERY_EXPENSIVE:
-					System.out.println(post.type.baseItem+":"+post.type.metadata);
 					GameRegistry.addRecipe(new ItemStack(post, 1),
 							"A",
 							"P",
