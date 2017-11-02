@@ -10,11 +10,13 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import cpw.mods.fml.client.FMLClientHandler;
+import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ObfuscationReflectionHelper;
 import gollorum.signpost.util.collections.Lurchpaerchensauna;
 import gollorum.signpost.util.collections.Lurchsauna;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.AbstractResourcePack;
+import net.minecraft.client.resources.FileStealer;
 import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.resources.ResourcePackRepository;
 
@@ -47,7 +49,16 @@ public class ResourceBrowser {
 				}
 				ResourcePackRepository.Entry now = (ResourcePackRepository.Entry) nw;
 				files.addAll(handleResourcePack(now.getResourcePack()));
+//				for(ModContainer container: Loader.instance().getModList()){
+//					if(container.getSource().exists()){
+//						files.add(container.getSource());
+//					}
+//				}
 			}
+
+//			System.out.println(Loader.instance().getConfigDir().getParentFile()+"\\\\versions\\\\"+Loader.MC_VERSION+"\\\\");
+			files.add(new File(Loader.instance().getConfigDir().getParentFile()+"\\versions\\"+Loader.MC_VERSION+"\\"));
+			
 			for(File now: files){
 				ret.addAll(handleFile(now, postFixes));
 			}
@@ -61,7 +72,8 @@ public class ResourceBrowser {
 	private static Collection<? extends File> handleResourcePack(IResourcePack pack) throws Exception{
 		if(pack instanceof AbstractResourcePack){
 			HashSet<File> files = new HashSet<File>();
-			files.add((File) ObfuscationReflectionHelper.getPrivateValue(AbstractResourcePack.class, (AbstractResourcePack)pack, 1));
+//			files.add((File) ObfuscationReflectionHelper.getPrivateValue(AbstractResourcePack.class, (AbstractResourcePack)pack, 1));
+			files.add(FileStealer.INSTANCE.getAbstractFile((AbstractResourcePack) pack));
 			return files;
 		}
 		return new HashSet<File>();
