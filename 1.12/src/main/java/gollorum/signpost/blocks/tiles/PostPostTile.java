@@ -2,6 +2,7 @@ package gollorum.signpost.blocks.tiles;
 
 import gollorum.signpost.SPEventHandler;
 import gollorum.signpost.blocks.PostPost;
+import gollorum.signpost.blocks.BigPostPost.BigPostType;
 import gollorum.signpost.blocks.PostPost.Hit;
 import gollorum.signpost.blocks.PostPost.HitTarget;
 import gollorum.signpost.blocks.PostPost.PostType;
@@ -9,6 +10,7 @@ import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.SendAllPostBasesMessage;
 import gollorum.signpost.network.messages.SendPostBasesMessage;
+import gollorum.signpost.util.BigBaseInfo;
 import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.DoubleBaseInfo;
 import gollorum.signpost.util.MyBlockPos;
@@ -22,22 +24,41 @@ import net.minecraft.util.ResourceLocation;
 
 public class PostPostTile extends SuperPostPostTile {
 
-	public PostType type = PostType.OAK;
+	public PostType type = null;
 
 	@Deprecated
 	public DoubleBaseInfo bases = null;
 	
-	public PostPostTile(){super();}
+	public PostPostTile(){
+		super();
+		SPEventHandler.scheduleTask(new BoolRun(){
+			@Override
+			public boolean run() {
+				if(getBlockType()==null){
+					return false;
+				}else{
+					if(getBlockType() instanceof PostPost){
+						type = ((PostPost)getBlockType()).type;
+					}
+					return true;
+				}
+			}
+		});
+	}
 
 	public PostPostTile(PostType type){
-		this();
+		super();
 		this.type = type;
 	}
 
 	public DoubleBaseInfo getBases(){
 		DoubleBaseInfo bases = PostHandler.getPosts().get(toPos());
 		if(bases==null){
-			bases = new DoubleBaseInfo(type.texture, type.resLocMain);
+			if(type ==null){
+				bases = new DoubleBaseInfo(PostType.OAK.texture, PostType.OAK.resLocMain);
+			}else{
+				bases = new DoubleBaseInfo(type.texture, type.resLocMain);
+			}
 			PostHandler.getPosts().put(toPos(), bases);
 		}
 		return this.bases = bases;
@@ -106,7 +127,7 @@ public class PostPostTile extends SuperPostPostTile {
 		SPEventHandler.scheduleTask(new BoolRun(){
 			@Override
 			public boolean run() {
-				if(world==null){
+				if(world==null || type==null){
 					return false;
 				}else{
 					if(world.isRemote){
@@ -136,7 +157,7 @@ public class PostPostTile extends SuperPostPostTile {
 	@Override
 	public Sign getSign(EntityPlayer player) {
 		DoubleBaseInfo bases = getBases();
-		Hit hit = (Hit) ((PostPost)blockType).getHitTarget(world, pos.getX(), pos.getY(), pos.getZ(), player);
+		Hit hit = (Hit) ((PostPost)getBlockType()).getHitTarget(world, pos.getX(), pos.getY(), pos.getZ(), player);
 		if(hit.target.equals(HitTarget.BASE1)){
 			return bases.sign1;
 		}else if(hit.target.equals(HitTarget.BASE2)){

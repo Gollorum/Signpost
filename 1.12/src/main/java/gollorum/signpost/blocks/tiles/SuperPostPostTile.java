@@ -32,6 +32,7 @@ public abstract class SuperPostPostTile extends TileEntity implements WaystoneCo
 	public boolean isWaystone = false;
 	
 	public SuperPostPostTile(){
+		super();
 		SPEventHandler.scheduleTask(new BoolRun(){
 			@Override
 			public boolean run() {

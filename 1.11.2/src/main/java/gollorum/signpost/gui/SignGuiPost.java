@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.io.IOException;
 
 import gollorum.signpost.blocks.tiles.PostPostTile;
+import gollorum.signpost.management.ClientConfigStorage;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
@@ -128,7 +129,7 @@ public class SignGuiPost extends GuiScreen implements SignInput {
 		SignInputBox tf = base2?base2InputBox:base1InputBox;
 		String before = tf.getText();
 		if(tf.textboxKeyTyped(par1, par2)&&!tf.getText().equals(before)){
-			if(ConfigHandler.deactivateTeleportation){
+			if(ClientConfigStorage.INSTANCE.deactivateTeleportation()){
 				return;
 			}
 			onTextChange(tf);
@@ -138,12 +139,12 @@ public class SignGuiPost extends GuiScreen implements SignInput {
 	@Override
 	public void onGuiClosed() {
 		DoubleBaseInfo tilebases = tile.getBases();
-		if(ConfigHandler.deactivateTeleportation||go2){
+		if(ClientConfigStorage.INSTANCE.deactivateTeleportation()||go2){
 			tilebases.sign1.base = PostHandler.getForceWSbyName(base1InputBox.getText());
 		}else{
 			tilebases.sign1.base = null;
 		}
-		if(ConfigHandler.deactivateTeleportation||go1){
+		if(ClientConfigStorage.INSTANCE.deactivateTeleportation()||go1){
 			tilebases.sign2.base = PostHandler.getForceWSbyName(base2InputBox.getText());
 		}else{
 			tilebases.sign2.base = null;
@@ -162,7 +163,7 @@ public class SignGuiPost extends GuiScreen implements SignInput {
 
 				String out = I18n.translateToLocal("signpost.guiTooFar");
 				out = out.replaceAll("<distance>", ""+(int)tile.toPos().distance(inf.pos)+1);
-				out = out.replaceAll("<maxDist>", ""+ConfigHandler.maxDist);
+				out = out.replaceAll("<maxDist>", ""+ClientConfigStorage.INSTANCE.getMaxDist());
 				if(base2){
 					std1 = out;
 					col1 = Color.red.getRGB();
@@ -207,7 +208,7 @@ public class SignGuiPost extends GuiScreen implements SignInput {
 				go2 = true;
 			}
 
-			if(!(ConfigHandler.deactivateTeleportation||ConfigHandler.cost==null)){
+			if(!(ClientConfigStorage.INSTANCE.deactivateTeleportation()||ClientConfigStorage.INSTANCE.getCost()==null)){
 				String out = I18n.translateToLocal("signpost.guiPrev");
 				int distance = (int) tile.toPos().distance(inf.pos)+1;
 				out = out.replaceAll("<distance>", ""+distance);

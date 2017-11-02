@@ -3,8 +3,7 @@ package gollorum.signpost.util;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.blocks.tiles.PostPostTile;
-import gollorum.signpost.management.ConfigHandler;
-import gollorum.signpost.management.PostHandler;
+import gollorum.signpost.management.ClientConfigStorage;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
@@ -68,13 +67,13 @@ public class MyBlockPos{
 		if(inf==null){
 			return Connection.VALID;
 		}
-		if(ConfigHandler.deactivateTeleportation){
+		if(ClientConfigStorage.INSTANCE.deactivateTeleportation()){
 			return Connection.VALID;
 		}
-		if(!(ConfigHandler.interdimensional||(sameWorld(inf.pos) && sameDim(inf.pos)))){
+		if(!(ClientConfigStorage.INSTANCE.interdimensional()||(sameWorld(inf.pos) && sameDim(inf.pos)))){
 			return Connection.WORLD;
 		}
-		if(ConfigHandler.maxDist>-1&&distance(inf.pos)>ConfigHandler.maxDist){
+		if(ClientConfigStorage.INSTANCE.getMaxDist()>-1&&distance(inf.pos)>ClientConfigStorage.INSTANCE.getMaxDist()){
 			return Connection.DIST;
 		}
 		return Connection.VALID;

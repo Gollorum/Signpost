@@ -2,15 +2,21 @@ package gollorum.signpost.gui;
 
 import java.awt.Color;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import gollorum.signpost.SPEventHandler;
+import gollorum.signpost.Signpost;
 import gollorum.signpost.blocks.SuperPostPost;
 import gollorum.signpost.blocks.tiles.SuperPostPostTile;
+import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.ResourceBrowser;
 import gollorum.signpost.util.Sign;
 import gollorum.signpost.util.collections.Lurchsauna;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.fml.client.FMLClientHandler;
 
 public class SignGuiPaint extends GuiScreen {
@@ -28,6 +34,7 @@ public class SignGuiPaint extends GuiScreen {
 	public SignGuiPaint(Sign sign, SuperPostPostTile tile) {
 		this.sign = sign;
 		this.tile = tile;
+		System.out.println("Construct SignGuiPaint");
 		initGui();
 	}
 
@@ -50,7 +57,9 @@ public class SignGuiPaint extends GuiScreen {
 			}
 			nameInputBox.setText(name);
 		}
-		nameInputBox.drawTextBox();
+		try{
+			nameInputBox.drawTextBox();
+		}catch(Exception e){}
 
 		if(possibilities.size()>0){
 			possibleCount = (possibleCount+1)%150;
@@ -80,6 +89,25 @@ public class SignGuiPaint extends GuiScreen {
 
 	@Override
 	public void initGui() {
+		SPEventHandler.scheduleTask(new BoolRun(){
+			@Override
+			public boolean run(){
+				if(fontRenderer==null){
+					return false;
+				}
+				nameInputBox = new GuiTextField(0, fontRenderer, width/4, height/2 - 46, width/2, 20);
+				nameInputBox.setMaxStringLength(100);
+				ResourceLocation loc = sign==null ? tile.getPostPaint() : sign.paint;
+				String name;
+				if(loc==null){
+					name = "";
+				}else{
+					name = SuperPostPostTile.locToString(loc);
+				}
+				nameInputBox.setText(name);
+				return true;
+			}
+		});
 		nameInputBox = new GuiTextField(0, this.fontRenderer, this.width/4, this.height/2 - 46, this.width/2, 20);
 		nameInputBox.setMaxStringLength(100);
 		if(mc==null){
@@ -95,8 +123,18 @@ public class SignGuiPaint extends GuiScreen {
 		nameInputBox.setText(name);
 		nameInputBox.setFocused(true);
 		Lurchsauna<String> neuPossibels = new Lurchsauna<String>();
-		for(String now: ResourceBrowser.getAllPNGs(mc)){
-			if(now.contains(nameInputBox.getText())){
+		System.out.println("GANZ NEU POSIBELSSS");
+		Logger.getLogger(Signpost.MODID).log(Level.ALL, "1Get Files?");
+		Logger.getLogger(Signpost.MODID).log(Level.SEVERE, "2Get Files?");
+		Logger.getLogger(Signpost.MODID).log(Level.CONFIG, "3Get Files?");
+		Logger.getLogger(Signpost.MODID).log(Level.FINE, "4Get Files?");
+		Logger.getLogger(Signpost.MODID).log(Level.FINER, "5Get Files?");
+		Logger.getLogger(Signpost.MODID).log(Level.INFO, "6Get Files?");
+		Logger.getLogger(Signpost.MODID).log(Level.OFF, "7Get Files?");
+		Logger.getLogger(Signpost.MODID).log(Level.WARNING, "8Get Files?");
+		mc.player.sendMessage(new TextComponentString("INIT DU PENIAS"));
+		for(String now: ResourceBrowser.reloadAllPNGs(mc)){
+			if(nameInputBox.getText()==null || nameInputBox.getText().equals("") || now.contains(nameInputBox.getText())){
 				neuPossibels.add(now);
 			}
 		}
@@ -113,8 +151,9 @@ public class SignGuiPaint extends GuiScreen {
 		super.keyTyped(par1, par2);
 		this.nameInputBox.textboxKeyTyped(par1, par2);
 		Lurchsauna<String> neuPossibels = new Lurchsauna<String>();
+		System.out.println("NE-U POSIBELSSS");
 		for(String now: ResourceBrowser.getAllPNGs(mc)){
-			if(now.contains(nameInputBox.getText())){
+			if(nameInputBox.getText()==null || nameInputBox.getText().equals("") || now.contains(nameInputBox.getText())){
 				neuPossibels.add(now);
 			}
 		}

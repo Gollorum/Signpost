@@ -1,5 +1,6 @@
 package gollorum.signpost.network.handlers;
 
+import gollorum.signpost.management.ClientConfigStorage;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.messages.TeleportRequestMessage;
@@ -18,11 +19,11 @@ public class TeleportRequestHandler implements IMessageHandler<TeleportRequestMe
 		if(ctx.side.equals(Side.SERVER)){
 			PostHandler.confirm(ctx.getServerHandler().playerEntity);
 		}else{
-			if(ConfigHandler.skipTeleportConfirm){
+			if(ClientConfigStorage.INSTANCE.skipTeleportConfirm()){
 				return message;
 			}else{
 				String out;
-				if(ConfigHandler.cost!=null){
+				if(ClientConfigStorage.INSTANCE.getCost()!=null){
 					out = I18n.translateToLocal("signpost.confirmTeleport");
 					out = out.replaceAll("<Waystone>", message.waystoneName);
 					out = out.replaceAll("<amount>", Integer.toString(message.stackSize));

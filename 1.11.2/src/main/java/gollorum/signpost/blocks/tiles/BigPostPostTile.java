@@ -22,23 +22,42 @@ import net.minecraft.util.ResourceLocation;
 
 public class BigPostPostTile extends SuperPostPostTile {
 
-	public BigPostType type = BigPostType.OAK;
+	public BigPostType type = null;
 	public static final int DESCRIPTIONLENGTH = 4;
 
 	@Deprecated
 	public BigBaseInfo bases = null;
 
-	public BigPostPostTile(){super();}
+	public BigPostPostTile(){
+		super();
+		SPEventHandler.scheduleTask(new BoolRun(){
+			@Override
+			public boolean run() {
+				if(getBlockType()==null){
+					return false;
+				}else{
+					if(getBlockType() instanceof BigPostPost){
+						type = ((BigPostPost)getBlockType()).type;
+					}
+					return true;
+				}
+			}
+		});
+	}
 
 	public BigPostPostTile(BigPostType type){
-		this();
+		super();
 		this.type = type;
 	}
 	
 	public BigBaseInfo getBases(){
 		BigBaseInfo bases = PostHandler.getBigPosts().get(toPos());
 		if(bases==null){
-			bases = new BigBaseInfo(type.texture, type.resLocMain);
+			if(type ==null){
+				bases = new BigBaseInfo(BigPostType.OAK.texture, BigPostType.OAK.resLocMain);
+			}else{
+				bases = new BigBaseInfo(type.texture, type.resLocMain);
+			}
 			PostHandler.getBigPosts().put(toPos(), bases);
 		}
 		this.bases = bases;
@@ -94,7 +113,7 @@ public class BigPostPostTile extends SuperPostPostTile {
 		SPEventHandler.scheduleTask(new BoolRun(){
 			@Override
 			public boolean run() {
-				if(world==null){
+				if(world==null || type==null){
 					return false;
 				}else{
 					if(world.isRemote){
@@ -119,7 +138,7 @@ public class BigPostPostTile extends SuperPostPostTile {
 	@Override
 	public Sign getSign(EntityPlayer player) {
 		BigBaseInfo bases = getBases();
-		BigHit hit = (BigHit) ((BigPostPost)blockType).getHitTarget(world, getPos().getX(), pos.getY(), pos.getZ(), player);
+		BigHit hit = (BigHit) ((BigPostPost)getBlockType()).getHitTarget(world, getPos().getX(), pos.getY(), pos.getZ(), player);
 		if(hit.target.equals(BigHitTarget.BASE)){
 			return bases.sign;
 		}else{

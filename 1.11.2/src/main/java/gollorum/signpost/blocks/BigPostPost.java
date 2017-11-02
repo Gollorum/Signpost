@@ -3,7 +3,7 @@ package gollorum.signpost.blocks;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.blocks.tiles.SuperPostPostTile;
-import gollorum.signpost.management.ConfigHandler;
+import gollorum.signpost.management.ClientConfigStorage;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.ChatMessage;
@@ -203,7 +203,7 @@ public class BigPostPost extends SuperPostPost {
 	public void rightClick(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z) {
 		BigHit hit = (BigHit)hitObj;
 		if (hit.target != BigHitTarget.POST) {
-			if (ConfigHandler.deactivateTeleportation) {
+			if (ClientConfigStorage.INSTANCE.deactivateTeleportation()) {
 				return;
 			}
 			BigPostPostTile tile = (BigPostPostTile)superTile;
@@ -217,7 +217,7 @@ public class BigPostPost extends SuperPostPost {
 						PostHandler.teleportMe(destination, (EntityPlayerMP) player, stackSize);
 					}else{
 						String[] keyword = { "<itemName>", "<amount>" };
-						String[] replacement = { ConfigHandler.cost.getUnlocalizedName() + ".name",	"" + stackSize };
+						String[] replacement = { ClientConfigStorage.INSTANCE.getCost().getUnlocalizedName() + ".name",	"" + stackSize };
 						NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.payment", keyword, replacement), (EntityPlayerMP) player);
 					}
 				}

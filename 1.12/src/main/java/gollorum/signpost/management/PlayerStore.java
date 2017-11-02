@@ -57,12 +57,12 @@ public class PlayerStore{
 		if(compound.hasKey("leftWaystones")){
 			pair.a = compound.getInteger("leftWaystones");
 		}else{
-			pair.a = ConfigHandler.maxWaystones;
+			pair.a = ClientConfigStorage.INSTANCE.getMaxWaystones();
 		}
 		if(compound.hasKey("leftSignposts")){
 			pair.b = compound.getInteger("leftSignposts");
 		}else{
-			pair.b = ConfigHandler.maxSignposts;
+			pair.b = ClientConfigStorage.INSTANCE.getMaxSignposts();
 		}
 	}
 

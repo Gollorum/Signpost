@@ -13,7 +13,9 @@ import gollorum.signpost.util.collections.Lurchpaerchensauna;
 import gollorum.signpost.util.collections.Lurchsauna;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.AbstractResourcePack;
+import net.minecraft.client.resources.DefaultResourcePack;
 import net.minecraft.client.resources.IResourcePack;
+import net.minecraft.client.resources.ResourceIndex;
 import net.minecraft.client.resources.ResourcePackRepository;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
@@ -26,7 +28,7 @@ public class ResourceBrowser {
 	
 	public static Lurchsauna<String> getAllPNGs(Minecraft minecraft){
 		Lurchsauna<String> ret = saved.get(png);
-		if(ret==null){
+		if(ret==null || ret.size()==0){
 			return getAllFiles(png, minecraft);
 		}else{
 			return ret;
@@ -42,7 +44,6 @@ public class ResourceBrowser {
 				files.addAll(handleResourcePack(pack));
 			}
 			for(ResourcePackRepository.Entry now: FMLClientHandler.instance().getClient().getResourcePackRepository().getRepositoryEntries()){
-				System.out.println(now.getResourcePackName()+": "+now.getTexturePackDescription());
 				files.addAll(handleResourcePack(now.getResourcePack()));
 			}
 			for(File now: files){
@@ -60,6 +61,13 @@ public class ResourceBrowser {
 			HashSet<File> files = new HashSet<File>();
 			files.add((File) ObfuscationReflectionHelper.getPrivateValue(AbstractResourcePack.class, (AbstractResourcePack)pack, 1));
 			return files;
+//		}else if(pack instanceof LegacyV2Adapter){
+//			IResourcePack newPack = ObfuscationReflectionHelper.getPrivateValue(LegacyV2Adapter.class, (LegacyV2Adapter)pack, "pack");
+//			return handleResourcePack(newPack);	
+		}else if(pack instanceof DefaultResourcePack){
+			ResourceIndex resourceIndex = ObfuscationReflectionHelper.getPrivateValue(DefaultResourcePack.class, (DefaultResourcePack)pack, "resourceIndex");
+			Map<String, File> resourceMap = ObfuscationReflectionHelper.getPrivateValue(ResourceIndex.class, resourceIndex, "resourceMap");
+			return resourceMap.values();
 		}
 		return new HashSet<File>();
 	}

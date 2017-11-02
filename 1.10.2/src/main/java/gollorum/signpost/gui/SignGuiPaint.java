@@ -96,7 +96,7 @@ public class SignGuiPaint extends GuiScreen {
 		nameInputBox.setFocused(true);
 		Lurchsauna<String> neuPossibels = new Lurchsauna<String>();
 		for(String now: ResourceBrowser.getAllPNGs(mc)){
-			if(now.contains(nameInputBox.getText())){
+			if(nameInputBox.getText()==null || nameInputBox.getText().equals("") || now.contains(nameInputBox.getText())){
 				neuPossibels.add(now);
 			}
 		}
@@ -114,7 +114,7 @@ public class SignGuiPaint extends GuiScreen {
 		this.nameInputBox.textboxKeyTyped(par1, par2);
 		Lurchsauna<String> neuPossibels = new Lurchsauna<String>();
 		for(String now: ResourceBrowser.getAllPNGs(mc)){
-			if(now.contains(nameInputBox.getText())){
+			if(nameInputBox.getText()==null || nameInputBox.getText().equals("") || now.contains(nameInputBox.getText())){
 				neuPossibels.add(now);
 			}
 		}

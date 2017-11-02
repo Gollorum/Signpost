@@ -47,7 +47,6 @@ public class BaseUpdateClientHandler implements IMessageHandler<BaseUpdateClient
 			if(base!=null &&!(base.pos==null && base.owner==null)){
 				now.getValue().sign2.base = PostHandler.allWaystones.getByPos(base.blockPos);
 			}
-			
 		}
 		for(Entry<MyBlockPos, BigBaseInfo> now: PostHandler.getBigPosts().entrySet()){
 			BaseInfo base = now.getValue().sign.base;

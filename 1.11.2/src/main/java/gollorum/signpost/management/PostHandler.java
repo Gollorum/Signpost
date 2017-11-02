@@ -69,8 +69,8 @@ public class PostHandler {
 				Pair<MyBlockPosSet, Pair<Integer, Integer>> p = new Pair<MyBlockPosSet, Pair<Integer, Integer>>();
 				p.a  = new MyBlockPosSet();
 				p.b = new Pair<Integer, Integer>();
-				p.b.a = ConfigHandler.maxWaystones;
-				p.b.b = ConfigHandler.maxSignposts;
+				p.b.a = ClientConfigStorage.INSTANCE.getMaxWaystones();
+				p.b.b = ClientConfigStorage.INSTANCE.getMaxSignposts();
 				return put((UUID) obj, p);
 			}else{
 				return pair;
@@ -79,7 +79,9 @@ public class PostHandler {
 	};
 	
 	public static boolean doesPlayerKnowWaystone(EntityPlayerMP player, BaseInfo waystone){
-		if(playerKnownWaystonePositions.get(player.getUniqueID()).a.contains(waystone.blockPos)){
+		if(ClientConfigStorage.INSTANCE.isDisableDiscovery()){
+			return true;
+		}else if(playerKnownWaystonePositions.get(player.getUniqueID()).a.contains(waystone.blockPos)){
 			if(playerKnownWaystones.containsKey(player)){
 				playerKnownWaystones.get(player.getUniqueID()).remove(waystone.name);
 			}
@@ -110,8 +112,8 @@ public class PostHandler {
 					Pair<MyBlockPosSet, Pair<Integer, Integer>> p = new Pair<MyBlockPosSet, Pair<Integer, Integer>>();
 					p.a  = new MyBlockPosSet();
 					p.b = new Pair<Integer, Integer>();
-					p.b.a = ConfigHandler.maxWaystones;
-					p.b.b = ConfigHandler.maxSignposts;
+					p.b.a = ClientConfigStorage.INSTANCE.getMaxWaystones();
+					p.b.b = ClientConfigStorage.INSTANCE.getMaxSignposts();
 					return put((UUID) obj, p);
 				}else{
 					return pair;
@@ -167,7 +169,7 @@ public class PostHandler {
 	}
 	
 	public static BaseInfo getWSbyName(String name){
-		if(ConfigHandler.deactivateTeleportation){
+		if(ClientConfigStorage.INSTANCE.deactivateTeleportation()){
 			return new BaseInfo(name, null, null);
 		}else{
 			for(BaseInfo now:allWaystones){
@@ -217,12 +219,12 @@ public class PostHandler {
 	}
 	
 	public static boolean canPay(EntityPlayer player, int x1, int y1, int z1, int x2, int y2, int z2){
-		if(ConfigHandler.cost == null || ConfigHandler.isCreative(player)){
+		if(ClientConfigStorage.INSTANCE.getCost() == null || ConfigHandler.isCreative(player)){
 			return true;
 		}else{
 			int playerItemCount = 0;
 			for(ItemStack now: player.inventory.mainInventory){
-				if(now != null && now.getItem() !=null && now.getItem().getClass() == ConfigHandler.cost.getClass()){
+				if(now != null && now.getItem() !=null && now.getItem().getClass() == ClientConfigStorage.INSTANCE.getCost().getClass()){
 					playerItemCount += now.getCount();
 				}
 			}
@@ -231,20 +233,20 @@ public class PostHandler {
 	}
 
 	public static void doPay(EntityPlayer player, int x1, int y1, int z1, int x2, int y2, int z2){
-		if(ConfigHandler.cost == null || ConfigHandler.isCreative(player)){
+		if(ClientConfigStorage.INSTANCE.getCost() == null || ConfigHandler.isCreative(player)){
 			return;
 		}else{
 			int stackSize = getStackSize(x1, y1, z1, x2, y2, z2);
-			player.inventory.clearMatchingItems(ConfigHandler.cost, 0, stackSize, null);
+			player.inventory.clearMatchingItems(ClientConfigStorage.INSTANCE.getCost(), 0, stackSize, null);
 		}
 	}
 	
 	public static int getStackSize(int x1, int y1, int z1, int x2, int y2, int z2){
-		if(ConfigHandler.costMult==0){
+		if(ClientConfigStorage.INSTANCE.getCostMult()==0){
 			return 1;
 		}else{
 			int dx = x1-x2; int dy = y1-y2; int dz = z1-z2;
-			return (int) Math.sqrt(dx*dx+dy*dy+dz*dz) / ConfigHandler.costMult + 1;
+			return (int) Math.sqrt(dx*dx+dy*dy+dz*dz) / ClientConfigStorage.INSTANCE.getCostMult() + 1;
 		}
 	}
 	
@@ -277,7 +279,7 @@ public class PostHandler {
 	}
 
 	public static void teleportMe(BaseInfo destination, final EntityPlayerMP player, int stackSize){
-		if(ConfigHandler.deactivateTeleportation){
+		if(ClientConfigStorage.INSTANCE.deactivateTeleportation()){
 			return;
 		}
 		if(canTeleport(player, destination)){
@@ -359,8 +361,8 @@ public class PostHandler {
 			Pair<MyBlockPosSet, Pair<Integer, Integer>> pair = new Pair<MyBlockPosSet, Pair<Integer, Integer>>();
 			pair.a  = newSet;
 			pair.b = new Pair<Integer, Integer>();
-			pair.b.a = ConfigHandler.maxWaystones;
-			pair.b.b = ConfigHandler.maxSignposts;
+			pair.b.a = ClientConfigStorage.INSTANCE.getMaxWaystones();
+			pair.b.b = ClientConfigStorage.INSTANCE.getMaxSignposts();
 			playerKnownWaystonePositions.put(player, pair);
 			return ret;
 		}
@@ -375,8 +377,8 @@ public class PostHandler {
 			Pair<MyBlockPosSet, Pair<Integer, Integer>> pair = new Pair<MyBlockPosSet, Pair<Integer, Integer>>();
 			pair.a  = newSet;
 			pair.b = new Pair<Integer, Integer>();
-			pair.b.a = ConfigHandler.maxWaystones;
-			pair.b.b = ConfigHandler.maxSignposts;
+			pair.b.a = ClientConfigStorage.INSTANCE.getMaxWaystones();
+			pair.b.b = ClientConfigStorage.INSTANCE.getMaxSignposts();
 			playerKnownWaystonePositions.put(player, pair);
 			return ret;
 		}
@@ -396,8 +398,8 @@ public class PostHandler {
 			Pair<MyBlockPosSet, Pair<Integer, Integer>> pair = new Pair<MyBlockPosSet, Pair<Integer, Integer>>();
 			pair.a  = newSet;
 			pair.b = new Pair<Integer, Integer>();
-			pair.b.a = ConfigHandler.maxWaystones;
-			pair.b.b = ConfigHandler.maxSignposts;
+			pair.b.a = ClientConfigStorage.INSTANCE.getMaxWaystones();
+			pair.b.b = ClientConfigStorage.INSTANCE.getMaxSignposts();
 			playerKnownWaystonePositions.put(player, pair);
 			return !(playerKnownWaystonePositions.containsKey(player) && playerKnownWaystones.get(player).remove(ws.name));
 		}

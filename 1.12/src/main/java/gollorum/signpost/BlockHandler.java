@@ -161,11 +161,11 @@ public class BlockHandler {
 	
 	private void postRecipe(PostPost post){
 		ForgeRegistry<IRecipe> registry = ((ForgeRegistry<IRecipe>)ForgeRegistries.RECIPES);
-		registry.remove(new ResourceLocation("signpost:blockpostpostrecipe"));
+		registry.remove(new ResourceLocation("signpost:blockpostpostrecipe"+post.type));
 		if(ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.ALL) || ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.OWNERS)){
 			switch(ConfigHandler.signRec){
 				case EXPENSIVE:
-					GameRegistry.addShapedRecipe(new ResourceLocation("signpost:blockpostpostrecipe"), null, new ItemStack(post, 1),
+					GameRegistry.addShapedRecipe(new ResourceLocation("signpost:blockpostpostrecipe"+post.type), null, new ItemStack(post, 1),
 							"A",
 							"P",
 							"B",
@@ -174,7 +174,7 @@ public class BlockHandler {
 							'P', Items.ENDER_PEARL);
 					break;
 				case VERY_EXPENSIVE:
-					GameRegistry.addShapedRecipe(new ResourceLocation("signpost:blockpostpostrecipe"), null, new ItemStack(post, 1),
+					GameRegistry.addShapedRecipe(new ResourceLocation("signpost:blockpostpostrecipe"+post.type), null, new ItemStack(post, 1),
 							"A",
 							"P",
 							"B",
@@ -185,7 +185,7 @@ public class BlockHandler {
 				case DEACTIVATED:
 					break;
 				default:
-					GameRegistry.addShapedRecipe(new ResourceLocation("signpost:blockpostpostrecipe"), null, new ItemStack(post, 4),
+					GameRegistry.addShapedRecipe(new ResourceLocation("signpost:blockpostpostrecipe"+post.type), null, new ItemStack(post, 4),
 							"A",
 							"A",
 							"B",
@@ -198,11 +198,11 @@ public class BlockHandler {
 	
 	private void bigPostRecipe(BigPostPost post){
 		ForgeRegistry<IRecipe> registry = ((ForgeRegistry<IRecipe>)ForgeRegistries.RECIPES);
-		registry.remove(new ResourceLocation("signpost:blockbigpostrecipe"));
+		registry.remove(new ResourceLocation("signpost:blockbigpostrecipe"+post.type));
 		if(ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.ALL) || ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.OWNERS)){
 			switch(ConfigHandler.signRec){
 				case EXPENSIVE:
-					GameRegistry.addShapedRecipe(new ResourceLocation("signpost:blockbigpostrecipe"), null, new ItemStack(post, 1),
+					GameRegistry.addShapedRecipe(new ResourceLocation("signpost:blockbigpostrecipe"+post.type), null, new ItemStack(post, 1),
 							"AAA",
 							"APA",
 							" B ",
@@ -211,7 +211,7 @@ public class BlockHandler {
 							'P', Items.ENDER_PEARL);
 					break;
 				case VERY_EXPENSIVE:
-					GameRegistry.addShapedRecipe(new ResourceLocation("signpost:blockbigpostrecipe"), null, new ItemStack(post, 1),
+					GameRegistry.addShapedRecipe(new ResourceLocation("signpost:blockbigpostrecipe"+post.type), null, new ItemStack(post, 1),
 							"AAA",
 							"APA",
 							" B ",
@@ -222,7 +222,7 @@ public class BlockHandler {
 				case DEACTIVATED:
 					break;
 				default:
-					GameRegistry.addShapedRecipe(new ResourceLocation("signpost:blockbigpostrecipe"), null, new ItemStack(post, 4),
+					GameRegistry.addShapedRecipe(new ResourceLocation("signpost:blockbigpostrecipe"+post.type), null, new ItemStack(post, 4),
 							"AAA",
 							"AAA",
 							" B ",

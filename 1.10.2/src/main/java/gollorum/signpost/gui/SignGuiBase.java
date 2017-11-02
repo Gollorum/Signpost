@@ -16,6 +16,9 @@ public class SignGuiBase extends GuiScreen {
 
 	public SignGuiBase(WaystoneContainer tile) {
 		this.tile = tile;
+		if(tile==null){
+			System.out.println("ACHTUNG; DAT TEIL IST FETT NULL!!!!!");
+		}
 		initGui();
 	}
 

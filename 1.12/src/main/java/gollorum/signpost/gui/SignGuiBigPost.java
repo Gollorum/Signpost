@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.io.IOException;
 
 import gollorum.signpost.blocks.tiles.BigPostPostTile;
+import gollorum.signpost.management.ClientConfigStorage;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
@@ -155,7 +156,7 @@ public class SignGuiBigPost extends GuiScreen implements SignInput {
 		SignInputBox tf = baseInputBox;
 		String before = tf.getText();
 		if(tf.textboxKeyTyped(par1, par2)&&!tf.getText().equals(before)){
-			if(ConfigHandler.deactivateTeleportation){
+			if(ClientConfigStorage.INSTANCE.deactivateTeleportation()){
 				return;
 			}
 			onTextChange(tf);
@@ -165,7 +166,7 @@ public class SignGuiBigPost extends GuiScreen implements SignInput {
 	@Override
 	public void onGuiClosed() {
 		BigBaseInfo tilebases = tile.getBases();
-		if(ConfigHandler.deactivateTeleportation||go){
+		if(ClientConfigStorage.INSTANCE.deactivateTeleportation()||go){
 			tilebases.sign.base = PostHandler.getForceWSbyName(baseInputBox.getText());
 		}else{
 			tilebases.sign.base = null;
@@ -187,7 +188,7 @@ public class SignGuiBigPost extends GuiScreen implements SignInput {
 				
 				String out = I18n.translateToLocal("signpost.guiTooFar");
 				out = out.replaceAll("<distance>", ""+(int)tile.toPos().distance(inf.pos)+1);
-				out = out.replaceAll("<maxDist>", ""+ConfigHandler.maxDist);
+				out = out.replaceAll("<maxDist>", ""+ClientConfigStorage.INSTANCE.getMaxDist());
 				std = out;
 				col = Color.red.getRGB();
 				go = false;
@@ -209,11 +210,11 @@ public class SignGuiBigPost extends GuiScreen implements SignInput {
 			col = Color.white.getRGB();
 			go = true;
 
-			if(!(ConfigHandler.deactivateTeleportation||ConfigHandler.cost==null)){
+			if(!(ClientConfigStorage.INSTANCE.deactivateTeleportation()||ClientConfigStorage.INSTANCE.getCost()==null)){
 				String out = I18n.translateToLocal("signpost.guiPrev");
 				int distance = (int) tile.toPos().distance(inf.pos)+1;
 				out = out.replaceAll("<distance>", ""+distance);
-				out = out.replaceAll("<amount>", Integer.toString((int) (tile.toPos().distance(inf.pos)/ConfigHandler.costMult+1)));
+				out = out.replaceAll("<amount>", Integer.toString((int) (tile.toPos().distance(inf.pos)/ClientConfigStorage.INSTANCE.getCostMult()+1)));
 				out = out.replaceAll("<itemName>", ConfigHandler.costName());
 				col = Color.white.getRGB();
 				std = out;

@@ -26,7 +26,7 @@ public class BasePostTile extends TileEntity implements WaystoneContainer {
 				if(isCanceled){
 					return true;
 				}
-				if(worldObj==null){
+				if(getWorld()==null){
 					return false;
 				}
 				init();
@@ -49,18 +49,18 @@ public class BasePostTile extends TileEntity implements WaystoneContainer {
 	}
 
 	public MyBlockPos toPos(){
-		if(worldObj==null||worldObj.isRemote){
+		if(getWorld()==null||getWorld().isRemote){
 			return new MyBlockPos("", pos.getX(), pos.getY(), pos.getZ(), dim());
 		}else{
-			return new MyBlockPos(worldObj.getWorldInfo().getWorldName(), pos.getX(), pos.getY(), pos.getZ(), dim());
+			return new MyBlockPos(getWorld().getWorldInfo().getWorldName(), pos.getX(), pos.getY(), pos.getZ(), dim());
 		}
 	}
 
 	public int dim(){
-		if(worldObj==null||worldObj.provider==null){
+		if(getWorld()==null||getWorld().provider==null){
 			return Integer.MIN_VALUE;
 		}else
-			return worldObj.provider.getDimension();
+			return getWorld().provider.getDimension();
 	}
 	
 	public void onBlockDestroy(MyBlockPos pos) {
@@ -68,7 +68,7 @@ public class BasePostTile extends TileEntity implements WaystoneContainer {
 //		BaseInfo base = PostHandler.allWaystones.getByPos(pos);
 		BaseInfo base = getBaseInfo();
 		if(PostHandler.allWaystones.removeByPos(pos)){
-			MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.DESTROYED, worldObj, this.pos.getX(), this.pos.getY(), this.pos.getZ(), base==null?"":base.name));
+			MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.DESTROYED, getWorld(), this.pos.getX(), this.pos.getY(), this.pos.getZ(), base==null?"":base.name));
 			NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
 		}
 	}

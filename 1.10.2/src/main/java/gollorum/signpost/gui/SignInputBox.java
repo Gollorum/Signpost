@@ -53,6 +53,7 @@ public class SignInputBox extends Gui{
 		this.width = width;
 		this.height = (int) (width/verh);
 		PARENT = parent;
+		setText("");
 	}
 	
 	public void setFocused(boolean bool){

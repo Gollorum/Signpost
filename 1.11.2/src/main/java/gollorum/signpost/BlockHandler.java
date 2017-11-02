@@ -1,6 +1,7 @@
 package gollorum.signpost;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import gollorum.signpost.blocks.BaseModelPost;
 import gollorum.signpost.blocks.BasePost;
@@ -9,6 +10,7 @@ import gollorum.signpost.blocks.BigPostPost.BigPostType;
 import gollorum.signpost.blocks.ItemBlockWithMeta;
 import gollorum.signpost.blocks.PostPost;
 import gollorum.signpost.blocks.PostPost.PostType;
+import gollorum.signpost.management.ClientConfigStorage;
 import gollorum.signpost.management.ConfigHandler;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
@@ -88,22 +90,21 @@ public class BlockHandler {
 	}
 	
 	private void waystoneRecipe(){
-		IRecipe toDelete = null;
+		HashSet<Object> toDelete = new HashSet<Object>();
 		for(IRecipe now: CraftingManager.getInstance().getRecipeList()){
 			if(now==null || now.getRecipeOutput()==null || now.getRecipeOutput().getItem()==null){
 				continue;
 			}
 			if(now.getRecipeOutput().getItem().equals(Item.getItemFromBlock(base))){
-				toDelete = now;
-				break;
+				toDelete.add(now);
 			}
 		}
 		if(toDelete!=null){
-			CraftingManager.getInstance().getRecipeList().remove(toDelete);
+			CraftingManager.getInstance().getRecipeList().removeAll(toDelete);
 		}
 
-		if(ConfigHandler.securityLevelWaystone.equals(ConfigHandler.SecurityLevel.ALL)&&!ConfigHandler.deactivateTeleportation){
-			switch(ConfigHandler.waysRec){
+		if(ClientConfigStorage.INSTANCE.getSecurityLevelWaystone().equals(ConfigHandler.SecurityLevel.ALL)&&!ClientConfigStorage.INSTANCE.deactivateTeleportation()){
+			switch(ClientConfigStorage.INSTANCE.getWaysRec()){
 				case EXPENSIVE:
 					GameRegistry.addRecipe(new ItemStack(base, 1), 
 							"SSS",
@@ -154,8 +155,8 @@ public class BlockHandler {
 			CraftingManager.getInstance().getRecipeList().remove(toDelete);
 		}
 		
-		if(ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.ALL) || ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.OWNERS)){
-			switch(ConfigHandler.signRec){
+		if(ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().equals(ConfigHandler.SecurityLevel.ALL) || ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().equals(ConfigHandler.SecurityLevel.OWNERS)){
+			switch(ClientConfigStorage.INSTANCE.getSignRec()){
 				case EXPENSIVE:
 					GameRegistry.addRecipe(new ItemStack(post, 1),
 							"A",
@@ -203,8 +204,8 @@ public class BlockHandler {
 			CraftingManager.getInstance().getRecipeList().remove(toDelete);
 		}
 		
-		if(ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.ALL) || ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.OWNERS)){
-			switch(ConfigHandler.signRec){
+		if(ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().equals(ConfigHandler.SecurityLevel.ALL) || ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().equals(ConfigHandler.SecurityLevel.OWNERS)){
+			switch(ClientConfigStorage.INSTANCE.getSignRec()){
 				case EXPENSIVE:
 					GameRegistry.addRecipe(new ItemStack(post, 1),
 							"AAA",

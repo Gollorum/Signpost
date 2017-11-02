@@ -60,7 +60,6 @@ public class WorldSigns extends WorldSavedData{
 			info.setInteger("infoSize", worldBases.size());
 			int i = 0;
 			for(BaseInfo now: worldBases){
-				System.out.println(now);
 				NBTTagCompound nowInfo = new NBTTagCompound();
 				now.writeToNBT(nowInfo);
 				info.setTag("Base"+i, nowInfo);
