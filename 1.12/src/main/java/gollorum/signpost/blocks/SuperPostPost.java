@@ -152,6 +152,9 @@ public abstract class SuperPostPost extends BlockContainer {
 		if(superTile.isWaystone()){
 			return true;
 		}
+		if(!ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canUse((EntityPlayerMP) player, ""+superTile.owner)){
+			return true;
+		}
 		MyBlockPos blockPos = superTile.toPos();
 		MyBlockPos telePos = new MyBlockPos(player);
 		String name = BasePost.generateName();

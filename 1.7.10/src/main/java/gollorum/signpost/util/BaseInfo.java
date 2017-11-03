@@ -19,7 +19,7 @@ public class BaseInfo {
 	public UUID owner;
 
 	public BaseInfo(String name, MyBlockPos pos, UUID owner){
-		this.name = name;
+		this.name = ""+name;
 		this.blockPos = pos;
 		if(pos==null){
 			this.pos = null;
@@ -31,7 +31,7 @@ public class BaseInfo {
 	
 	public BaseInfo(String name, MyBlockPos blockPos, MyBlockPos telePos, UUID owner){
 		telePos.y--;
-		this.name = name;
+		this.name = ""+name;
 		this.blockPos = blockPos;
 		this.pos = telePos;
 		this.owner = owner;
@@ -43,7 +43,7 @@ public class BaseInfo {
 	}
 
 	public void writeToNBT(NBTTagCompound tC){
-		tC.setString("name", name);	//Warum bin ich nur so unglaublich gehörnamputiert? *kotz*
+		tC.setString("name", ""+name);	//Warum bin ich nur so unglaublich gehörnamputiert? *kotz*
 		NBTTagCompound posComp = new NBTTagCompound();
 		pos.writeToNBT(posComp);
 		tC.setTag("pos", posComp);
@@ -70,7 +70,7 @@ public class BaseInfo {
 	}
 
 	public void toBytes(ByteBuf buf) {
-		ByteBufUtils.writeUTF8String(buf, name);
+		ByteBufUtils.writeUTF8String(buf, ""+name);
 		pos.toBytes(buf);
 		ByteBufUtils.writeUTF8String(buf, VERSION+owner);
 		blockPos.toBytes(buf);
@@ -101,7 +101,7 @@ public class BaseInfo {
 	}
 	
 	public void setAll(BaseInfo newWS){
-		this.name = newWS.name;
+		this.name = ""+newWS.name;
 		this.pos.update(newWS.pos);
 		this.blockPos.update(newWS.blockPos);
 		this.owner = newWS.owner;

@@ -92,7 +92,7 @@ public abstract class SuperPostPost extends BlockContainer {
 			rightClickWaystone(superTile, player, x, y, z);
 		}else if (player.getHeldItem() != null){
 			if(player.getHeldItem().getItem() instanceof PostWrench){
-				if(ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canUse((EntityPlayerMP) player, ""+superTile.owner)){
+				if(!ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canUse((EntityPlayerMP) player, ""+superTile.owner)){
 					return true;
 				}
 				rightClickWrench(hit, superTile, player, x, y, z);
@@ -143,6 +143,9 @@ public abstract class SuperPostPost extends BlockContainer {
 	 */
 	private boolean rightClickBase(SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z) {
 		if(superTile.isWaystone()){
+			return true;
+		}
+		if(!ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canUse((EntityPlayerMP) player, ""+superTile.owner)){
 			return true;
 		}
 		MyBlockPos blockPos = superTile.toPos();

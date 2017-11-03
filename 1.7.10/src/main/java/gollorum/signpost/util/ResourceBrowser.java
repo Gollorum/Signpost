@@ -5,15 +5,16 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ObfuscationReflectionHelper;
-import gollorum.signpost.util.collections.Lurchpaerchensauna;
 import gollorum.signpost.util.collections.Lurchsauna;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockTextureStealer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.AbstractResourcePack;
 import net.minecraft.client.resources.FileStealer;
@@ -22,18 +23,63 @@ import net.minecraft.client.resources.ResourcePackRepository;
 
 public class ResourceBrowser {
 
-	private static Map<String[], Lurchsauna<String>> saved = new Lurchpaerchensauna<String[], Lurchsauna<String>>();
+//	private static Map<String[], Lurchsauna<String>> saved = new Lurchpaerchensauna<String[], Lurchsauna<String>>();
     
-	private static final String[] png = {".png"};
+	private static final String[] PNG = {".png"};
 	
 	public static Lurchsauna<String> getAllPNGs(Minecraft minecraft){
-		Lurchsauna<String> ret = saved.get(png);
-		if(ret==null){
-			return getAllFiles(png, minecraft);
-		}else{
-			return ret;
+//		Lurchsauna<String> ret = saved.get(png);
+//		if(ret==null){
+//		Lurchsauna<String> ret = new Lurchsauna<String>();
+		Lurchsauna<String> ret = getAllFiles(PNG, minecraft);
+		for(Object object: Block.blockRegistry){
+			if(object instanceof Block){
+				Set<String> textureNames = BlockTextureStealer.INSTANCE.getTextureNames((Block) object);
+				for(String textureName: textureNames){
+					String add = fixBlockTextureName(textureName);
+					ret.add(add);
+				}
+			}
 		}
+		return ret;
+//		}else{
+//			return ret;
+//		}
 	}
+	
+	private static String fixBlockTextureName(String textureName) {
+		String domain;
+		String location;
+		if(textureName.startsWith("MISSING_ICON_BLOCK")){
+			return null;
+		}
+		if(textureName.contains(":")){
+			String[] split = textureName.split(":");
+			domain = split[0];
+			location = split[1];
+		}else{
+			domain = "minecraft";
+			location = textureName;
+		}
+		if(!location.startsWith("textures")){
+			location = "textures/blocks/"+location;
+		}
+		if(!location.endsWith("png")){
+			location = location+".png";
+		}
+		return domain+":"+location;
+	}
+
+//	public static Lurchsauna<String> getAllFiles(String[] postFixes, Minecraft minecraft){
+//		Lurchsauna<String> ret = new Lurchsauna<String>();
+//		Map mapTextureObjects = (Map) ObfuscationReflectionHelper.getPrivateValue(TextureManager.class, minecraft.getTextureManager(), 1);
+//		for(Object object: mapTextureObjects.keySet()){
+//			if(object instanceof ResourceLocation){
+//				ret.add(object.toString());
+//			}
+//		}
+//		return ret;
+//	}
 	
 	public static Lurchsauna<String> getAllFiles(String[] postFixes, Minecraft minecraft){
 		Lurchsauna<String> ret = new Lurchsauna<String>();
@@ -65,7 +111,7 @@ public class ResourceBrowser {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		saved.put(postFixes, ret);
+//		saved.put(postFixes, ret);
 		return ret;
 	}
 	
