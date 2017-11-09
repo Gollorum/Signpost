@@ -21,6 +21,8 @@ public class SendBigPostBasesMessage implements IMessage {
 	public ResourceLocation paint;
 	public ResourceLocation postPaint;
 
+	public byte paintObjectIndex;
+
 	public SendBigPostBasesMessage(){}
 	
 	public SendBigPostBasesMessage(BigPostPostTile tile, BigBaseInfo base) {
@@ -34,6 +36,14 @@ public class SendBigPostBasesMessage implements IMessage {
 		description = base.description;
 		paint = base.sign.paint;
 		postPaint = base.postPaint;
+		
+		if(base.equals(tile.getPaintObject())){
+			paintObjectIndex = 1;
+		}else if(base.sign.equals(tile.getPaintObject())){
+			paintObjectIndex = 2;
+		}else{
+			paintObjectIndex = 0;
+		}
 	}
 
 	@Override
@@ -50,6 +60,7 @@ public class SendBigPostBasesMessage implements IMessage {
 		}
 		ByteBufUtils.writeUTF8String(buf, SuperPostPostTile.locToString(paint));
 		ByteBufUtils.writeUTF8String(buf, SuperPostPostTile.locToString(postPaint));
+		buf.writeByte(paintObjectIndex);
 	}
 
 	@Override
@@ -66,6 +77,7 @@ public class SendBigPostBasesMessage implements IMessage {
 		}
 		paint = SuperPostPostTile.stringToLoc(ByteBufUtils.readUTF8String(buf));
 		postPaint = SuperPostPostTile.stringToLoc(ByteBufUtils.readUTF8String(buf));
+		paintObjectIndex = buf.readByte();
 	}
 
 }

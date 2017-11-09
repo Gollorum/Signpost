@@ -13,6 +13,7 @@ import gollorum.signpost.network.messages.BaseUpdateServerMessage;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.MyBlockPos;
+import gollorum.signpost.util.Paintable;
 import gollorum.signpost.util.Sign;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
@@ -117,8 +118,14 @@ public abstract class SuperPostPostTile extends TileEntity implements WaystoneCo
 	public abstract void load(NBTTagCompound tagCompound);
 	
 	public abstract Sign getSign(EntityPlayer player);
+	public abstract Paintable getPaintable(EntityPlayer player);
 	public abstract ResourceLocation getPostPaint();
 	public abstract void setPostPaint(ResourceLocation loc);
+	
+	public abstract boolean isAwaitingPaint();
+	public abstract Paintable getPaintObject();
+	public abstract void setAwaitingPaint(boolean awaitingPaint);
+	public abstract void setPaintObject(Paintable paintObject);
 	
 	public boolean isWaystone(){
 		return isWaystone = (getBaseInfo()!=null);

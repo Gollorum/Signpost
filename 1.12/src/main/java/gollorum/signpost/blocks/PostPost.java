@@ -11,6 +11,7 @@ import gollorum.signpost.network.messages.OpenGuiMessage;
 import gollorum.signpost.network.messages.SendPostBasesMessage;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.DoubleBaseInfo;
+import gollorum.signpost.util.Paintable;
 import gollorum.signpost.util.Sign;
 import gollorum.signpost.util.Sign.OverlayType;
 import gollorum.signpost.util.math.tracking.Cuboid;
@@ -161,8 +162,31 @@ public class PostPost extends SuperPostPost {
 	}
 	
 	@Override
-	public void rightClickBrush(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z){
+	public void clickBrush(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z){
 		NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiPostBrushID, x, y, z), (EntityPlayerMP) player);
+	}
+
+	@Override
+	public void rightClickBrush(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z){
+		DoubleBaseInfo tilebases = ((PostPostTile)superTile).getBases();
+		if(tilebases.awaitingPaint && tilebases.paintObject!=null){
+			tilebases.paintObject = null;
+			tilebases.awaitingPaint = false;
+		}else{
+			Hit hit = (Hit)hitObj;
+			tilebases.awaitingPaint = true;
+			if(hit.target == HitTarget.POST){
+				tilebases.paintObject = tilebases;
+			} else if (hit.target == HitTarget.BASE1) {
+				tilebases.paintObject = tilebases.sign1;
+			} else if (hit.target == HitTarget.BASE2) {
+				tilebases.paintObject = tilebases.sign2;
+			} else{
+				tilebases.paintObject = null;
+				tilebases.awaitingPaint = false;
+			}
+		}
+//		NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiPostBrushID, x, y, z), (EntityPlayerMP) player);
 	}
 
 	public void clickCalibratedWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z){
@@ -370,6 +394,20 @@ public class PostPost extends SuperPostPost {
 		}
 	}
 
+	@Override
+	public Paintable getPaintableByHit(SuperPostPostTile tile, Object hit){
+		switch((HitTarget)hit){
+		case BASE1:
+			return ((PostPostTile)tile).getBases().sign1;
+		case BASE2:
+			return ((PostPostTile)tile).getBases().sign2;
+		case POST:
+			return ((PostPostTile)tile).getBases();
+		default:
+			return null;
+		}
+	}
+	
 	@Override
 	protected boolean isHitWaystone(Object hitObj) {
 		return ((Hit)hitObj).target.equals(HitTarget.STONE);

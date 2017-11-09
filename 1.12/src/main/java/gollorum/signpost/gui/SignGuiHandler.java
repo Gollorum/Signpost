@@ -19,7 +19,6 @@ public class SignGuiHandler implements IGuiHandler {
 
 	@Override
 	public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
-		System.out.println("Make GUI "+ID);
 		switch (ID) {
 		case Signpost.GuiBaseID:
 			return new SignGuiBase((WaystoneContainer)world.getTileEntity(new BlockPos(x, y, z)));
@@ -28,9 +27,8 @@ public class SignGuiHandler implements IGuiHandler {
 		case Signpost.GuiBigPostID:
 			return new SignGuiBigPost((BigPostPostTile) world.getTileEntity(new BlockPos(x, y, z)));
 		case Signpost.GuiPostBrushID:
-			System.out.println("Make Paint");
 			SuperPostPostTile tile = (SuperPostPostTile) world.getTileEntity(new BlockPos(x, y, z));
-			return new SignGuiPaint(tile.getSign(player), tile);
+			return new SignGuiPaint(tile.getPaintable(player), tile);
 		case Signpost.GuiPostRotationID:
 			tile = (SuperPostPostTile) world.getTileEntity(new BlockPos(x, y, z));
 			return new SignGuiRotation(tile.getSign(player), tile);

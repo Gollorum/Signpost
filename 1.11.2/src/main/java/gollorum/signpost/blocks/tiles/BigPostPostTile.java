@@ -12,6 +12,7 @@ import gollorum.signpost.network.messages.SendBigPostBasesMessage;
 import gollorum.signpost.util.BigBaseInfo;
 import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.MyBlockPos;
+import gollorum.signpost.util.Paintable;
 import gollorum.signpost.util.Sign;
 import gollorum.signpost.util.Sign.OverlayType;
 import net.minecraft.entity.item.EntityItem;
@@ -91,6 +92,13 @@ public class BigPostPostTile extends SuperPostPostTile {
 		for(int i=0; i<bases.description.length; i++){
 			tagCompound.setString("description"+i, bases.description[i]);
 		}
+		if(bases.equals(getPaintObject())){
+			tagCompound.setByte("paintObjectIndex", (byte)1);
+		}else if(bases.sign.equals(getPaintObject())){
+			tagCompound.setByte("paintObjectIndex", (byte)2);
+		}else{
+			tagCompound.setByte("paintObjectIndex", (byte)0);
+		}
 	}
 
 	@Override
@@ -109,6 +117,7 @@ public class BigPostPostTile extends SuperPostPostTile {
 		for(int i=0; i<DESCRIPTIONLENGTH; i++){
 			description[i] = tagCompound.getString("description"+i);
 		}
+		final byte paintObjectIndex = tagCompound.getByte("paintObjectIndex");
 		
 		SPEventHandler.scheduleTask(new BoolRun(){
 			@Override
@@ -128,7 +137,21 @@ public class BigPostPostTile extends SuperPostPostTile {
 					bases.description = description;
 					bases.sign.paint = stringToLoc(paint);
 					bases.postPaint = postPaint==null || postPaint.equals("") || postPaint.equals("null") || postPaint.equals("minecraft:") ? type.resLocMain : stringToLoc(postPaint);
-					NetworkHandler.netWrap.sendToAll(new SendBigPostBasesMessage(self, bases));
+					switch(paintObjectIndex){
+					case 1:
+						bases.paintObject = bases;
+						bases.awaitingPaint = true;
+						break;
+					case 2:
+						bases.paintObject = bases.sign;
+						bases.awaitingPaint = true;
+						break;
+					default:
+						bases.paintObject = null;
+						bases.awaitingPaint = false;
+						break;
+				}
+				NetworkHandler.netWrap.sendToAll(new SendBigPostBasesMessage(self, bases));
 					return true;
 				}
 			}
@@ -145,6 +168,17 @@ public class BigPostPostTile extends SuperPostPostTile {
 			return null;
 		}
 	}
+
+	@Override
+	public Paintable getPaintable(EntityPlayer player) {
+		BigBaseInfo bases = getBases();
+		BigHit hit = (BigHit) ((BigPostPost)getBlockType()).getHitTarget(world, pos.getX(), pos.getY(), pos.getZ(), player);
+		if(hit.target.equals(BigHitTarget.BASE)){
+			return bases.sign;
+		}else{
+			return bases;
+		}
+	}
 	
 	@Override
 	public ResourceLocation getPostPaint(){
@@ -153,6 +187,26 @@ public class BigPostPostTile extends SuperPostPostTile {
 	
 	public void setPostPaint(ResourceLocation loc){
 		getBases().postPaint = loc;
+	}
+	
+	@Override
+	public boolean isAwaitingPaint() {
+		return getBases().awaitingPaint;
+	}
+	
+	@Override
+	public Paintable getPaintObject() {
+		return getBases().paintObject;
+	}
+	
+	@Override
+	public void setAwaitingPaint(boolean awaitingPaint){
+		getBases().awaitingPaint = awaitingPaint;
+	}
+	
+	@Override
+	public void setPaintObject(Paintable paintObject){
+		getBases().paintObject = paintObject;
 	}
 
 	@Override

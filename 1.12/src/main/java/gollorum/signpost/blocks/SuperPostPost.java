@@ -17,8 +17,11 @@ import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.BaseUpdateClientMessage;
 import gollorum.signpost.network.messages.ChatMessage;
 import gollorum.signpost.network.messages.OpenGuiMessage;
+import gollorum.signpost.network.messages.RequestTextureMessage;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.MyBlockPos;
+import gollorum.signpost.util.Paintable;
+import gollorum.signpost.util.TextureHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
@@ -30,6 +33,7 @@ import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
@@ -66,6 +70,8 @@ public abstract class SuperPostPost extends BlockContainer {
 				} else {
 					clickCalibratedWrench(hit, superTile, player, pos.getX(), pos.getY(), pos.getZ());
 				}
+			}else if(item instanceof PostBrush) {
+				clickBrush(hit, superTile, player, pos.getX(), pos.getY(), pos.getZ());
 			}else{
 				if (player.isSneaking()) {
 					if(preShiftClick(hit, superTile, player, pos.getX(), pos.getY(), pos.getZ())){
@@ -86,12 +92,13 @@ public abstract class SuperPostPost extends BlockContainer {
 		}
 		sendPostBasesToAll(superTile);
 	}
-
+	
 	@Override
 	public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ){
 		if(MinecraftForge.EVENT_BUS.post(new UseSignpostEvent(playerIn, worldIn, pos.getX(), pos.getY(), pos.getZ())) || worldIn.isRemote){
 			return true;
 		}
+		
 		Object hit = getHitTarget(worldIn, pos.getX(), pos.getY(), pos.getZ(), playerIn);
 		SuperPostPostTile superTile = getSuperTile(worldIn, pos);
 		if(isHitWaystone(hit)){
@@ -115,6 +122,15 @@ public abstract class SuperPostPost extends BlockContainer {
 				}
 				rightClickBrush(hit, superTile, playerIn, pos.getX(), pos.getY(), pos.getZ());
 				sendPostBasesToAll(superTile);
+			}else if(superTile.isAwaitingPaint()){
+				if(superTile.getPaintObject()==null){
+					superTile.setAwaitingPaint(false);
+				}else{
+					if(!ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canUse((EntityPlayerMP) playerIn, ""+superTile.owner)){
+						return true;
+					}
+					NetworkHandler.netWrap.sendTo(new RequestTextureMessage(pos.getX(), pos.getY(), pos.getZ(), hand, facing, hitX, hitY, hitZ), (EntityPlayerMP)playerIn);
+				}
 			}else if(Block.getBlockFromItem(playerIn.getHeldItemMainhand().getItem()) instanceof BasePost){
 				if(rightClickBase(superTile, (EntityPlayerMP) playerIn, pos)){
 					preRightClick(hit, superTile, playerIn, pos.getX(), pos.getY(), pos.getZ());
@@ -204,7 +220,8 @@ public abstract class SuperPostPost extends BlockContainer {
 	public abstract void clickCalibratedWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
 	public abstract void rightClickCalibratedWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
 	public abstract void shiftClickCalibratedWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
-	
+
+	public abstract void clickBrush(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
 	public abstract void rightClickBrush(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
 	
 	public abstract void click(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
@@ -223,6 +240,8 @@ public abstract class SuperPostPost extends BlockContainer {
 
 	public abstract Object getHitTarget(World world, int x, int y, int z, EntityPlayer/*MP*/ player);
 
+	public abstract Paintable getPaintableByHit(SuperPostPostTile tile, Object hit);
+	
 	@Override
 	public EnumBlockRenderType getRenderType(IBlockState state){
 		return EnumBlockRenderType.INVISIBLE;

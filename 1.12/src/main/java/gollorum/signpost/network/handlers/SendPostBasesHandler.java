@@ -20,8 +20,9 @@ public class SendPostBasesHandler implements IMessageHandler<SendPostBasesMessag
 		TileEntity tile = message.pos.getTile();
 		DoubleBaseInfo bases;
 		if(tile instanceof PostPostTile){
-			((PostPostTile)tile).isWaystone();
-			bases = ((PostPostTile)tile).getBases();
+			PostPostTile postTile = (PostPostTile) tile;
+			postTile.isWaystone();
+			bases = postTile.getBases();
 		}else{
 			bases = PostHandler.getPosts().get(message.pos);
 			if(bases==null){
@@ -45,6 +46,26 @@ public class SendPostBasesHandler implements IMessageHandler<SendPostBasesMessag
 		bases.sign2.paint = SuperPostPostTile.stringToLoc(message.paint2);
 		
 		bases.postPaint = SuperPostPostTile.stringToLoc(message.postPaint);
+
+		switch(message.paintObjectIndex){
+		case 1:
+			bases.paintObject = bases;
+			bases.awaitingPaint = true;
+			break;
+		case 2:
+			bases.paintObject = bases.sign1;
+			bases.awaitingPaint = true;
+			break;
+		case 3:
+			bases.paintObject = bases.sign2;
+			bases.awaitingPaint = true;
+			break;
+		default:
+			bases.paintObject = null;
+			bases.awaitingPaint = false;
+			break;
+		}
+		
 		if(ctx.side.equals(Side.SERVER)){
 			ctx.getServerHandler().player.world.getTileEntity(message.pos.toBlockPos()).markDirty();
 			NetworkHandler.netWrap.sendToAll(message);

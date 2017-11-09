@@ -31,7 +31,7 @@ public class SignGuiHandler implements IGuiHandler {
 			return new SignGuiPaint(tile.getSign(player), tile);
 		case Signpost.GuiPostRotationID:
 			tile = (SuperPostPostTile) world.getTileEntity(new BlockPos(x, y, z));
-			return new SignGuiRotation(tile.getSign(player), tile);
+			return new SignGuiPaint(tile.getPaintable(player), tile);
 		}
 		return null;
 	}
