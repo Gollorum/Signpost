@@ -7,7 +7,7 @@ import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
 
-public class Sign {
+public class Sign implements Paintable {
 
 	public BaseInfo base;
 	public int rotation;
@@ -80,4 +80,13 @@ public class Sign {
 		return ""+base;
 	}
 
+	@Override
+	public ResourceLocation getTexture() {
+		return paint;
+	}
+
+	@Override
+	public void setTexture(ResourceLocation texture) {
+		paint = texture;
+	}
 }

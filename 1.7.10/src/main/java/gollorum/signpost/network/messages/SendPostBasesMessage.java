@@ -31,6 +31,8 @@ public class SendPostBasesMessage implements IMessage {
 	public String paint2;
 	
 	public String postPaint;
+	
+	public byte paintObjectIndex;
 
 	public SendPostBasesMessage(){}
 	
@@ -51,6 +53,16 @@ public class SendPostBasesMessage implements IMessage {
 		paint2 = SuperPostPostTile.locToString(base.sign2.paint);
 		postPaint = SuperPostPostTile.locToString(base.postPaint);
 		
+		if(base.equals(tile.getPaintObject())){
+			paintObjectIndex = 1;
+		}else if(base.sign1.equals(tile.getPaintObject())){
+			paintObjectIndex = 2;
+		}else if(base.sign2.equals(tile.getPaintObject())){
+			paintObjectIndex = 3;
+		}else{
+			paintObjectIndex = 0;
+		}
+		
 	}
 
 	@Override
@@ -69,6 +81,7 @@ public class SendPostBasesMessage implements IMessage {
 		ByteBufUtils.writeUTF8String(buf, ""+paint1);
 		ByteBufUtils.writeUTF8String(buf, ""+paint2);
 		ByteBufUtils.writeUTF8String(buf, ""+postPaint);
+		buf.writeByte(paintObjectIndex);
 	}
 
 	@Override
@@ -87,6 +100,7 @@ public class SendPostBasesMessage implements IMessage {
 		paint1 = ByteBufUtils.readUTF8String(buf);
 		paint2 = ByteBufUtils.readUTF8String(buf);
 		postPaint = ByteBufUtils.readUTF8String(buf);
+		paintObjectIndex = buf.readByte();
 	}
 
 }

@@ -5,6 +5,7 @@ import java.util.Map.Entry;
 
 import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
+import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.blocks.tiles.SuperPostPostTile;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.util.BaseInfo;
@@ -27,8 +28,10 @@ public class SendAllBigPostBasesMessage implements IMessage{
 		public String[] strings;
 		public ResourceLocation paint;
 		public ResourceLocation postPaint;
+
+		public byte paintObjectIndex;
 		
-		public BigStringInt(String string, int datInt, boolean bool, OverlayType overlay, boolean bool2, String[] strings, ResourceLocation paint, ResourceLocation postPaint) {
+		public BigStringInt(String string, int datInt, boolean bool, OverlayType overlay, boolean bool2, String[] strings, ResourceLocation paint, ResourceLocation postPaint,  byte paintObjectIndex) {
 			this.string = string;
 			this.datInt = datInt;
 			this.bool = bool;
@@ -37,6 +40,7 @@ public class SendAllBigPostBasesMessage implements IMessage{
 			this.strings = strings;
 			this.paint = paint;
 			this.postPaint = postPaint;
+			this.paintObjectIndex = paintObjectIndex;
 		}
 	}
 	
@@ -76,6 +80,18 @@ public class SendAllBigPostBasesMessage implements IMessage{
 			}
 			ByteBufUtils.writeUTF8String(buf, SuperPostPostTile.locToString(now.getValue().sign.paint));
 			ByteBufUtils.writeUTF8String(buf, SuperPostPostTile.locToString(now.getValue().postPaint));
+			BigPostPostTile tile = (BigPostPostTile) now.getKey().getTile();
+			if(tile!=null){
+				if(now.getValue().equals(tile.getPaintObject())){
+					buf.writeByte(1);
+				}else if(now.getValue().sign.equals(tile.getPaintObject())){
+					buf.writeByte(2);
+				}else{
+					buf.writeByte(0);
+				}
+			}else{
+				buf.writeByte(0);
+			}
 		}
 	}
 	
@@ -91,7 +107,8 @@ public class SendAllBigPostBasesMessage implements IMessage{
 										buf.readBoolean(),
 										readDescription(buf),
 										SuperPostPostTile.stringToLoc(ByteBufUtils.readUTF8String(buf)),
-										SuperPostPostTile.stringToLoc(ByteBufUtils.readUTF8String(buf))));
+										SuperPostPostTile.stringToLoc(ByteBufUtils.readUTF8String(buf)),
+										buf.readByte()));
 		}
 	}
 

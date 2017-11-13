@@ -11,14 +11,15 @@ import gollorum.signpost.items.CalibratedPostWrench;
 import gollorum.signpost.items.PostBrush;
 import gollorum.signpost.items.PostWrench;
 import gollorum.signpost.management.ClientConfigStorage;
-import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.BaseUpdateClientMessage;
 import gollorum.signpost.network.messages.ChatMessage;
 import gollorum.signpost.network.messages.OpenGuiMessage;
+import gollorum.signpost.network.messages.RequestTextureMessage;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.MyBlockPos;
+import gollorum.signpost.util.Paintable;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
@@ -60,6 +61,8 @@ public abstract class SuperPostPost extends BlockContainer {
 				} else {
 					clickCalibratedWrench(hit, superTile, player, x, y, z);
 				}
+			}else if(item instanceof PostBrush) {
+				clickBrush(hit, superTile, player, x, y, z);
 			}else{
 				if (player.isSneaking()) {
 					if(preShiftClick(hit, superTile, player, x, y, z)){
@@ -82,7 +85,7 @@ public abstract class SuperPostPost extends BlockContainer {
 	}
 
 	@Override
-	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitX, float hitY, float hitZ) {
+	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int facing, float hitX, float hitY, float hitZ) {
 		if(MinecraftForge.EVENT_BUS.post(new UseSignpostEvent(player, world, x, y, z)) || world.isRemote){
 			return true;
 		}
@@ -108,6 +111,15 @@ public abstract class SuperPostPost extends BlockContainer {
 				}
 				rightClickBrush(hit, superTile, player, x, y, z);
 				sendPostBasesToAll(superTile);
+			}else if(superTile.isAwaitingPaint()){
+				if(superTile.getPaintObject()==null){
+					superTile.setAwaitingPaint(false);
+				}else{
+					if(!ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canUse((EntityPlayerMP) player, ""+superTile.owner)){
+						return true;
+					}
+					NetworkHandler.netWrap.sendTo(new RequestTextureMessage(x, y, z), (EntityPlayerMP)player);
+				}
 			}else if(Block.getBlockFromItem(player.getHeldItem().getItem()) instanceof BasePost){
 				if(rightClickBase(superTile, (EntityPlayerMP) player, x, y, z)){
 					preRightClick(hit, superTile, player, x, y, z);
@@ -195,7 +207,8 @@ public abstract class SuperPostPost extends BlockContainer {
 	public abstract void clickCalibratedWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
 	public abstract void rightClickCalibratedWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
 	public abstract void shiftClickCalibratedWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
-	
+
+	public abstract void clickBrush(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
 	public abstract void rightClickBrush(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
 	
 	public abstract void click(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
@@ -213,6 +226,8 @@ public abstract class SuperPostPost extends BlockContainer {
 	}
 
 	public abstract Object getHitTarget(World world, int x, int y, int z, EntityPlayer/*MP*/ player);
+
+	public abstract Paintable getPaintableByHit(SuperPostPostTile tile, Object hit);
 
 	public int getRenderType() {
 		return -1;

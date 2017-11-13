@@ -1,12 +1,11 @@
 package gollorum.signpost.gui;
 
-import java.awt.Color;
-
 import cpw.mods.fml.client.FMLClientHandler;
+import gollorum.signpost.SPEventHandler;
 import gollorum.signpost.blocks.SuperPostPost;
 import gollorum.signpost.blocks.tiles.SuperPostPostTile;
-import gollorum.signpost.util.ResourceBrowser;
-import gollorum.signpost.util.Sign;
+import gollorum.signpost.util.BoolRun;
+import gollorum.signpost.util.Paintable;
 import gollorum.signpost.util.collections.Lurchsauna;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
@@ -15,7 +14,7 @@ import net.minecraft.util.ResourceLocation;
 public class SignGuiPaint extends GuiScreen {
 
 	private GuiTextField nameInputBox;
-	private Sign sign;
+	private Paintable paintable;
 	private SuperPostPostTile tile;
 	
 	private Lurchsauna<String> possibilities = new Lurchsauna<String>();
@@ -24,8 +23,8 @@ public class SignGuiPaint extends GuiScreen {
 
 	private boolean resetMouse;
 
-	public SignGuiPaint(Sign sign, SuperPostPostTile tile) {
-		this.sign = sign;
+	public SignGuiPaint(Paintable paintable, SuperPostPostTile tile) {
+		this.paintable = paintable;
 		this.tile = tile;
 		initGui();
 	}
@@ -40,7 +39,7 @@ public class SignGuiPaint extends GuiScreen {
 		}
 		drawDefaultBackground();
 		if(nameInputBox.getText() == null || nameInputBox.getText().equals("null")){
-			ResourceLocation loc = sign==null ? tile.getPostPaint() : sign.paint;
+			ResourceLocation loc = paintable==null ? tile.getPostPaint() : paintable.getTexture();
 			String name;
 			if(loc==null){
 				name = "";
@@ -49,20 +48,10 @@ public class SignGuiPaint extends GuiScreen {
 			}
 			nameInputBox.setText(name);
 		}
-		nameInputBox.drawTextBox();
 
-		if(possibilities.size()>0){
-			possibleCount = (possibleCount+1)%150;
-			if(possibleCount == 149){
-				possibleIndex = possibleIndex+1;
-			}
-			possibleIndex = possibleIndex%possibilities.size();
-			String str = possibilities.get(possibleIndex);
-			fontRendererObj.drawString(str,
-					(int)(nameInputBox.xPosition+(nameInputBox.width-fontRendererObj.getStringWidth(str))/2.0),
-					(int)(nameInputBox.yPosition+nameInputBox.height+5),
-					Color.WHITE.getRGB());
-		}
+		try{
+			nameInputBox.drawTextBox();
+		}catch(Exception e){}
 
 		if(resetMouse){
 			resetMouse = false;
@@ -78,12 +67,31 @@ public class SignGuiPaint extends GuiScreen {
 
 	@Override
 	public void initGui() {
+		SPEventHandler.scheduleTask(new BoolRun(){
+			@Override
+			public boolean run(){
+				if(fontRendererObj==null){
+					return false;
+				}
+				nameInputBox = new GuiTextField(fontRendererObj, width/4, height/2 - 46, width/2, 20);
+				nameInputBox.setMaxStringLength(100);
+				ResourceLocation loc = paintable==null ? tile.getPostPaint() : paintable.getTexture();
+				String name;
+				if(loc==null){
+					name = "";
+				}else{
+					name = SuperPostPostTile.locToString(loc);
+				}
+				nameInputBox.setText(name);
+				return true;
+			}
+		});
 		nameInputBox = new GuiTextField(this.fontRendererObj, this.width/4, this.height/2 - 46, this.width/2, 20);
 		nameInputBox.setMaxStringLength(100);
 		if(mc==null){
 			mc = FMLClientHandler.instance().getClient();
 		}
-		ResourceLocation loc = sign==null ? tile.getPostPaint() : sign.paint;
+		ResourceLocation loc = paintable==null ? tile.getPostPaint() : paintable.getTexture();
 		String name;
 		if(loc==null){
 			name = "";
@@ -92,13 +100,7 @@ public class SignGuiPaint extends GuiScreen {
 		}
 		nameInputBox.setText(name);
 		nameInputBox.setFocused(true);
-		Lurchsauna<String> neuPossibels = new Lurchsauna<String>();
-		for(String now: ResourceBrowser.getAllPNGs(mc)){
-			if(now.contains(nameInputBox.getText())){
-				neuPossibels.add(now);
-			}
-		}
-		possibilities = neuPossibels;
+		
 		resetMouse = true;
 	}
 
@@ -110,13 +112,6 @@ public class SignGuiPaint extends GuiScreen {
 		}
 		super.keyTyped(par1, par2);
 		this.nameInputBox.textboxKeyTyped(par1, par2);
-		Lurchsauna<String> neuPossibels = new Lurchsauna<String>();
-		for(String now: ResourceBrowser.getAllPNGs(mc)){
-			if(now.contains(nameInputBox.getText())){
-				neuPossibels.add(now);
-			}
-		}
-		possibilities = neuPossibels;
 	}
 
 	@Override
@@ -135,21 +130,13 @@ public class SignGuiPaint extends GuiScreen {
 	protected void mouseClicked(int x, int y, int btn) {
 		super.mouseClicked(x, y, btn);
 		this.nameInputBox.mouseClicked(x, y, btn);
-		String str = possibilities.get(possibleIndex);
-		if(x>=nameInputBox.xPosition+(nameInputBox.width-fontRendererObj.getStringWidth(str))/2.0
-				&& x<=nameInputBox.xPosition+(nameInputBox.width+fontRendererObj.getStringWidth(str))/2.0
-				&& y>=nameInputBox.yPosition+nameInputBox.height+5
-				&& y<=nameInputBox.yPosition+nameInputBox.height*2+5){
-			nameInputBox.setText(str);
-		}
-		possibilities = new Lurchsauna<String>(new String[]{str});
 	}
 
 	@Override
 	public void onGuiClosed() {
 		super.onGuiClosed();
-		if(sign!=null){
-			sign.paint = new ResourceLocation(nameInputBox.getText());
+		if(paintable!=null){
+			paintable.setTexture(new ResourceLocation(nameInputBox.getText()));
 		}else{
 			tile.setPostPaint(new ResourceLocation(nameInputBox.getText()));
 		}

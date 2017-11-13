@@ -3,9 +3,9 @@ package gollorum.signpost.render;
 import org.lwjgl.opengl.GL11;
 
 import gollorum.signpost.Signpost;
-import gollorum.signpost.blocks.BigPostPost;
 import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.util.BigBaseInfo;
+import gollorum.signpost.util.Sign;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
@@ -18,18 +18,11 @@ public class BigPostRenderer extends TileEntitySpecialRenderer{
 	private static final ModelBigPost post = new ModelBigPost();
 	
 	public BigPostRenderer(){}
-
+	
 	void setTexture(ResourceLocation loc){
 		try{
-			bindTexture(loc);
-		}catch(Exception e){
-			if(loc==null){
-			}else if(loc.equals(new ResourceLocation("signpost:textures/blocks/sign.png"))){
-				bindTexture(new ResourceLocation("signpost:textures/blocks/sign_oak.png"));
-			}else if(loc.equals(new ResourceLocation("signpost:textures/blocks/bigsign.png"))){
-				bindTexture(new ResourceLocation("signpost:textures/blocks/bigsign_oak.png"));
-			}
-		}
+		bindTexture(loc);
+		}catch(Exception e){}
 	}
 	
 	@Override
@@ -46,20 +39,17 @@ public class BigPostRenderer extends TileEntitySpecialRenderer{
 		
 		GL11.glPushMatrix();
 		GL11.glTranslated(x+0.5, y, z+0.5);
-		if(tile.isItem){
-			setTexture(((BigPostPost)tile.blockType).type.resLocMain);
-		}else{
-			setTexture(tilebases.postPaint);
-		}
 		post.render(this, 0.1f, 0.0625f, tilebases, tile, rotation);
-		
-		//Sign
-		
-		ResourceLocation resLoc = tile.isItem ? tile.type.texture : tilebases.sign.paint;
+		ResourceLocation resLoc;
+		if(!tile.isItem && tile.isAwaitingPaint() && tile.getPaintObject() instanceof Sign){
+			resLoc = tilebases.sign.BIGSIGN_PAINT;
+		}else{
+			resLoc = tile.isItem ? tile.type.texture : tilebases.sign.paint;
+		}
 		try{
-			bindTexture(resLoc);
+			this.bindTexture(resLoc);
 		}catch(Exception e){
-			setTexture(resLoc = tile.type.texture);
+			this.setTexture(resLoc = tile.type.texture);
 			tilebases.sign.paint = resLoc;
 		}
 		if(resLoc.getResourceDomain().equals("signpost")){

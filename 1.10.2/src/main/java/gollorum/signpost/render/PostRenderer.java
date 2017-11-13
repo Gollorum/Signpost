@@ -39,17 +39,17 @@ public class PostRenderer extends TileEntitySpecialRenderer<PostPostTile>{
 		}
 		GL11.glPushMatrix();
 		GL11.glTranslated(x+0.5, y, z+0.5);
-		this.bindTexture(tile.type.texture);
+		this.setTexture(tile.type.texture);
 		model.render(this, 0.1f, 0.0625f, tilebases, tile, rotation1, rotation2);
 
 		//Overlays
 		if(!tile.isItem){
 			if(tilebases.sign1.isValid() && tilebases.sign1.overlay!=null){
-				bindTexture(new ResourceLocation(Signpost.MODID + ":textures/blocks/sign_overlay_"+tilebases.sign1.overlay.texture+".png"));
+				setTexture(new ResourceLocation(Signpost.MODID + ":textures/blocks/sign_overlay_"+tilebases.sign1.overlay.texture+".png"));
 				model.renderOverlay1(tilebases, 0.0625f, rotation1);
 			}
 			if(tilebases.sign2.isValid() && tilebases.sign2.overlay!=null){
-				bindTexture(new ResourceLocation(Signpost.MODID + ":textures/blocks/sign_overlay_"+tilebases.sign2.overlay.texture+".png"));
+				setTexture(new ResourceLocation(Signpost.MODID + ":textures/blocks/sign_overlay_"+tilebases.sign2.overlay.texture+".png"));
 				model.renderOverlay2(tilebases, 0.0625f, rotation2);
 			}
 		}

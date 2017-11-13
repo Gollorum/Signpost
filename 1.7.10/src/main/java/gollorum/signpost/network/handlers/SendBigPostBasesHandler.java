@@ -20,8 +20,9 @@ public class SendBigPostBasesHandler implements IMessageHandler<SendBigPostBases
 		TileEntity tile = message.pos.getTile();
 		BigBaseInfo bases;
 		if(tile instanceof BigPostPostTile){
-			((BigPostPostTile)tile).isWaystone();
-			bases = ((BigPostPostTile)tile).getBases();
+			BigPostPostTile postTile = (BigPostPostTile) tile;
+			postTile.isWaystone();
+			bases = postTile.getBases();
 		}else{
 			bases = PostHandler.getBigPosts().get(message.pos);
 			if(bases==null){
@@ -37,6 +38,21 @@ public class SendBigPostBasesHandler implements IMessageHandler<SendBigPostBases
 		bases.description = message.description;
 		bases.sign.paint = message.paint;
 		bases.postPaint = message.postPaint;
+		
+		switch(message.paintObjectIndex){
+		case 1:
+			bases.paintObject = bases;
+			bases.awaitingPaint = true;
+			break;
+		case 2:
+			bases.paintObject = bases.sign;
+			bases.awaitingPaint = true;
+			break;
+		default:
+			bases.paintObject = null;
+			bases.awaitingPaint = false;
+			break;
+		}
 		if(ctx.side.equals(Side.SERVER)){
 			ctx.getServerHandler().playerEntity.worldObj.getTileEntity(message.pos.x, message.pos.y, message.pos.z).markDirty();
 			NetworkHandler.netWrap.sendToAll(message);

@@ -5,6 +5,7 @@ import org.lwjgl.opengl.GL11;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.util.BigBaseInfo;
+import gollorum.signpost.util.Sign;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.util.ResourceLocation;
@@ -20,8 +21,7 @@ public class BigPostRenderer extends TileEntitySpecialRenderer<BigPostPostTile>{
 	void setTexture(ResourceLocation loc){
 		try{
 		bindTexture(loc);
-		}catch(Exception e){
-		}
+		}catch(Exception e){}
 	}
 	
 	@Override
@@ -37,13 +37,17 @@ public class BigPostRenderer extends TileEntitySpecialRenderer<BigPostPostTile>{
 		
 		GL11.glPushMatrix();
 		GL11.glTranslated(x+0.5, y, z+0.5);
-		this.bindTexture(tilebases.postPaint);
 		post.render(this, 0.1f, 0.0625f, tilebases, tile, rotation);
-		ResourceLocation resLoc = tile.isItem ? tile.type.texture : tilebases.sign.paint;
+		ResourceLocation resLoc;
+		if(!tile.isItem && tile.isAwaitingPaint() && tile.getPaintObject() instanceof Sign){
+			resLoc = tilebases.sign.BIGSIGN_PAINT;
+		}else{
+			resLoc = tile.isItem ? tile.type.texture : tilebases.sign.paint;
+		}
 		try{
 			this.bindTexture(resLoc);
 		}catch(Exception e){
-			this.bindTexture(resLoc = tile.type.texture);
+			this.setTexture(resLoc = tile.type.texture);
 			tilebases.sign.paint = resLoc;
 		}
 		if(resLoc.getResourceDomain().equals("signpost")){
@@ -55,7 +59,7 @@ public class BigPostRenderer extends TileEntitySpecialRenderer<BigPostPostTile>{
 		//Overlays
 		if(!tile.isItem){
 			if(tilebases.sign.base!=null && tilebases.sign.overlay!=null){
-				bindTexture(new ResourceLocation(Signpost.MODID + ":textures/blocks/bigsign_overlay_"+tilebases.sign.overlay.texture+".png"));
+				setTexture(new ResourceLocation(Signpost.MODID + ":textures/blocks/bigsign_overlay_"+tilebases.sign.overlay.texture+".png"));
 				model32.renderOverlay(tilebases, 0.0625f, rotation);
 			}
 		}

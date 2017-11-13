@@ -11,6 +11,7 @@ import gollorum.signpost.network.messages.OpenGuiMessage;
 import gollorum.signpost.network.messages.SendBigPostBasesMessage;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.BigBaseInfo;
+import gollorum.signpost.util.Paintable;
 import gollorum.signpost.util.Sign;
 import gollorum.signpost.util.Sign.OverlayType;
 import gollorum.signpost.util.math.tracking.Cuboid;
@@ -147,8 +148,29 @@ public class BigPostPost extends SuperPostPost {
 	}
 
 	@Override
-	public void rightClickBrush(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z){
+	public void clickBrush(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z){
 		NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiPostBrushID, x, y, z), (EntityPlayerMP) player);
+	}
+
+	@Override
+	public void rightClickBrush(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z){
+		BigBaseInfo tilebases = ((BigPostPostTile)superTile).getBases();
+		if(tilebases.awaitingPaint && tilebases.paintObject!=null){
+			tilebases.paintObject = null;
+			tilebases.awaitingPaint = false;
+		}else{
+			BigHit hit = (BigHit)hitObj;
+			tilebases.awaitingPaint = true;
+			if(hit.target == BigHitTarget.POST){
+				tilebases.paintObject = tilebases;
+			} else if (hit.target == BigHitTarget.BASE) {
+				tilebases.paintObject = tilebases.sign;
+			} else{
+				tilebases.paintObject = null;
+				tilebases.awaitingPaint = false;
+			}
+		}
+//		NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiPostBrushID, x, y, z), (EntityPlayerMP) player);
 	}
 
 	public void clickCalibratedWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z){
@@ -312,6 +334,18 @@ public class BigPostPost extends SuperPostPost {
 			target = BigHitTarget.POST;
 		}
 		return new BigHit(target, pos);
+	}
+
+	@Override
+	public Paintable getPaintableByHit(SuperPostPostTile tile, Object hit){
+		switch((BigHitTarget)hit){
+		case BASE:
+			return ((BigPostPostTile)tile).getBases().sign;
+		case POST:
+			return ((BigPostPostTile)tile).getBases();
+		default:
+			return null;
+		}
 	}
 
 	public static BigPostPostTile getTile(World world, BlockPos pos) {

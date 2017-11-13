@@ -5,6 +5,7 @@ import java.util.Map.Entry;
 
 import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
+import gollorum.signpost.blocks.tiles.PostPostTile;
 import gollorum.signpost.blocks.tiles.SuperPostPostTile;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.util.BaseInfo;
@@ -38,6 +39,8 @@ public class SendAllPostBasesMessage implements IMessage{
 		public String paint2;
 		
 		public String postPaint;
+
+		public byte paintObjectIndex;
 		
 		public DoubleStringInt(String string1, String string2, 
 							   int int1, int int2, 
@@ -45,7 +48,8 @@ public class SendAllPostBasesMessage implements IMessage{
 							   OverlayType overlay1, OverlayType overlay2, 
 							   boolean bool3, boolean bool4,
 							   String paint1, String paint2,
-							   String postPaint) {
+							   String postPaint,
+							   byte paintObjectIndex) {
 			this.string1 = string1;
 			this.string2 = string2;
 			this.int1 = int1;
@@ -59,6 +63,7 @@ public class SendAllPostBasesMessage implements IMessage{
 			this.paint1 = paint1;
 			this.paint2 = paint2;
 			this.postPaint = postPaint;
+			this.paintObjectIndex = paintObjectIndex;
 		}
 	}
 	
@@ -111,6 +116,20 @@ public class SendAllPostBasesMessage implements IMessage{
 			ByteBufUtils.writeUTF8String(buf, SuperPostPostTile.locToString(now.getValue().sign1.paint));
 			ByteBufUtils.writeUTF8String(buf, SuperPostPostTile.locToString(now.getValue().sign2.paint));
 			ByteBufUtils.writeUTF8String(buf, SuperPostPostTile.locToString(now.getValue().postPaint));
+			PostPostTile tile = (PostPostTile) now.getKey().getTile();
+			if(tile!=null){
+				if(now.getValue().equals(tile.getPaintObject())){
+					buf.writeByte(1);
+				}else if(now.getValue().sign1.equals(tile.getPaintObject())){
+					buf.writeByte(2);
+				}else if(now.getValue().sign2.equals(tile.getPaintObject())){
+					buf.writeByte(3);
+				}else{
+					buf.writeByte(0);
+				}
+			}else{
+				buf.writeByte(0);
+			}
 		}
 	}
 	
@@ -128,7 +147,8 @@ public class SendAllPostBasesMessage implements IMessage{
 										buf.readBoolean(), buf.readBoolean(),
 										ByteBufUtils.readUTF8String(buf),
 										ByteBufUtils.readUTF8String(buf),
-										ByteBufUtils.readUTF8String(buf)));
+										ByteBufUtils.readUTF8String(buf),
+										buf.readByte()));
 		}
 	}
 

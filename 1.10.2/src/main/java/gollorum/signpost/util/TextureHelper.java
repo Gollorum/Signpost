@@ -35,7 +35,7 @@ public class TextureHelper {
 			IBakedModel model = FMLClientHandler.instance().getClient().getRenderItem().getItemModelMesher().getItemModel(stack);
 	
 			Vec3d look = player.getLookVec();
-			EnumFacing side = EnumFacing.getFacingFromVector((float)-look.x, (float)-look.y, (float)-look.z);
+			EnumFacing side = EnumFacing.getFacingFromVector((float)-look.xCoord, (float)-look.yCoord, (float)-look.zCoord);
 			
 			BakedQuad quad = model.getQuads(blockState, side, 0).get(0);
 			
@@ -53,7 +53,7 @@ public class TextureHelper {
 		try{
 			ItemStack itemStack = player.inventory.getCurrentItem();
 			Block block = Block.getBlockFromItem(itemStack.getItem());
-			return block.getStateForPlacement(worldIn, pos, facing, hitX, hitY, hitZ, itemStack.getMetadata(), player, hand);
+			return block.getStateForPlacement(worldIn, pos, facing, hitX, hitY, hitZ, itemStack.getMetadata(), player, itemStack);
 		}catch(Exception e){
 			return null;
 		}
@@ -71,8 +71,8 @@ public class TextureHelper {
 	}
 
 	public boolean setTexture(BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ){
-		EntityPlayer player = FMLClientHandler.instance().getClient().player;
-		World world = FMLClientHandler.instance().getClient().world;
+		EntityPlayer player = FMLClientHandler.instance().getClient().thePlayer;
+		World world = FMLClientHandler.instance().getClient().theWorld;
 		ResourceLocation texture = getHeldBlockTexture(player, world, pos, hand, facing, hitX, hitY, hitZ);
 		TileEntity tileEntity = world.getTileEntity(pos);
 		if(texture==null ||! (tileEntity instanceof SuperPostPostTile)){

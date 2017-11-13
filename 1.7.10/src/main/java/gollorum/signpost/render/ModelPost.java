@@ -29,8 +29,8 @@ public class ModelPost extends ModelBase {
 		board1 = new Board(this, 8);
 		board2 = new Board(this, 0);
 
-		post = new ModelRenderer(this, 0, 0);
-		post.addBox(-2F, 0F, -2F, 4, 16, 4, 0.0F);
+		post = new ModelRenderer(this, 0, -4);
+		post.addBox(-2F, 0F, -2F, 4, 16, 4, 0F);
 		
 		waystone = new ModelRenderer(this, 4, 4);
 		waystone.addBox(-4f, 0f, -4f, 8, 8, 8);
@@ -40,13 +40,22 @@ public class ModelPost extends ModelBase {
 		super.render(null, 0, f1, 0, 0, 0, f5);
 		
 		//Post
-		
-		if(tile.isItem){
-			postRenderer.setTexture(((PostPost)tile.blockType).type.resLocMain);
+
+		if(tile.isAwaitingPaint() && tile.getPaintObject() instanceof DoubleBaseInfo){
+			postRenderer.setTexture(tilebases.POST_PAINT);
 		}else{
-			postRenderer.setTexture(tilebases.postPaint);
+			if(tile.isItem){
+				postRenderer.setTexture(((PostPost)tile.blockType).type.resLocMain);
+			}else{
+				postRenderer.setTexture(tilebases.postPaint);
+			}
 		}
-        post.render(f5);
+
+		GL11.glPushMatrix();
+		GL11.glTranslated(0, 1, 0);
+		GL11.glRotated(180, 1, 0, 0);
+		post.render(f5);
+		GL11.glPopMatrix();
         
         //Waystone
         
@@ -68,6 +77,9 @@ public class ModelPost extends ModelBase {
 			if(tile.isItem){
 				postRenderer.setTexture(tile.type.texture);
 				board1.render(f5, false);
+			}else if(tile.isAwaitingPaint() && tilebases.sign1.equals(tile.getPaintObject())){
+				postRenderer.setTexture(tilebases.sign1.SIGN_PAINT);
+				board1.render(f5, tilebases.sign1.flip);
 			}else if(tilebases.sign1.paint!=null){
 				postRenderer.setTexture(tilebases.sign1.paint);
 				board1.render(f5, tilebases.sign1.flip);
@@ -85,6 +97,9 @@ public class ModelPost extends ModelBase {
 			if(tile.isItem){
 				postRenderer.setTexture(tile.type.texture);
 				board2.render(f5, false);
+			}else if(tile.isAwaitingPaint() && tilebases.sign2.equals(tile.getPaintObject())){
+				postRenderer.setTexture(tilebases.sign2.SIGN_PAINT);
+				board2.render(f5, tilebases.sign2.flip);
 			}else if(tilebases.sign2.paint!=null){
 				postRenderer.setTexture(tilebases.sign2.paint);
 				board2.render(f5, tilebases.sign2.flip);
