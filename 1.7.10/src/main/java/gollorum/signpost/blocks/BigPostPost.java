@@ -39,8 +39,8 @@ public class BigPostPost extends SuperPostPost {
 						SPRUCE(	Material.wood, 	"bigsign_spruce", 	"log_spruce",		Item.getItemFromBlock(Blocks.log),		1),
 						BIRCH(	Material.wood, 	"bigsign_birch", 	"log_birch",		Item.getItemFromBlock(Blocks.log),		2),
 						JUNGLE(	Material.wood,	"bigsign_jungle", 	"log_jungle",		Item.getItemFromBlock(Blocks.log),		3),
-						ACACIA(	Material.wood, 	"bigsign_acacia", 	"log_acacia",		Item.getItemFromBlock(Blocks.log),		4),
-						BIGOAK(	Material.wood, 	"bigsign_big_oak", 	"log_big_oak",		Item.getItemFromBlock(Blocks.log),		5),
+						ACACIA(	Material.wood, 	"bigsign_acacia", 	"log_acacia",		Item.getItemFromBlock(Blocks.log2),		0),
+						BIGOAK(	Material.wood, 	"bigsign_big_oak", 	"log_big_oak",		Item.getItemFromBlock(Blocks.log2),		1),
 						IRON(	Material.iron, 	"bigsign_iron", 	"iron_block",		Items.iron_ingot,							0),
 						STONE(	Material.rock, 	"bigsign_stone", 	"stone",			Item.getItemFromBlock(Blocks.stone),		0);
 		public Material material;

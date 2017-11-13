@@ -37,12 +37,12 @@ public class PostPost extends SuperPostPost {
 	public PostType type;
 
 	public static enum PostType{
-						OAK(	Material.WOOD, 	"sign_oak", 	"log_oak",		Item.getItemFromBlock(Blocks.PLANKS),	0),
-						SPRUCE(	Material.WOOD, 	"sign_spruce", 	"log_spruce",	Item.getItemFromBlock(Blocks.PLANKS),	1),
-						BIRCH(	Material.WOOD, 	"sign_birch", 	"log_birch",	Item.getItemFromBlock(Blocks.PLANKS),	2),
-						JUNGLE(	Material.WOOD,	"sign_jungle", 	"log_jungle",	Item.getItemFromBlock(Blocks.PLANKS),	3),
-						ACACIA(	Material.WOOD, 	"sign_acacia", 	"log_acacia",	Item.getItemFromBlock(Blocks.PLANKS),	4),
-						BIGOAK(	Material.WOOD, 	"sign_big_oak", "log_big_oak",	Item.getItemFromBlock(Blocks.PLANKS),	5),
+						OAK(	Material.WOOD, 	"sign_oak", 	"log_oak",		Item.getItemFromBlock(Blocks.LOG),	0),
+						SPRUCE(	Material.WOOD, 	"sign_spruce", 	"log_spruce",	Item.getItemFromBlock(Blocks.LOG),	1),
+						BIRCH(	Material.WOOD, 	"sign_birch", 	"log_birch",	Item.getItemFromBlock(Blocks.LOG),	2),
+						JUNGLE(	Material.WOOD,	"sign_jungle", 	"log_jungle",	Item.getItemFromBlock(Blocks.LOG),	3),
+						ACACIA(	Material.WOOD, 	"sign_acacia", 	"log_acacia",	Item.getItemFromBlock(Blocks.LOG2),	0),
+						BIGOAK(	Material.WOOD, 	"sign_big_oak", "log_big_oak",	Item.getItemFromBlock(Blocks.LOG2),	1),
 						IRON(	Material.IRON, 	"sign_iron", 	"iron_block",	Items.IRON_INGOT,						0),
 						STONE(	Material.ROCK, 	"sign_stone", 	"stone",		Item.getItemFromBlock(Blocks.STONE),	0);
 		public Material material;
