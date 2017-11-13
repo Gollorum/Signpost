@@ -70,7 +70,7 @@ public class MyBlockPos{
 		if(ClientConfigStorage.INSTANCE.deactivateTeleportation()){
 			return Connection.VALID;
 		}
-		if(!testInterdimensional(inf.pos)){
+		if(!checkInterdimensional(inf.pos)){
 			return Connection.WORLD;
 		}
 		if(ClientConfigStorage.INSTANCE.getMaxDist()>-1&&distance(inf.pos)>ClientConfigStorage.INSTANCE.getMaxDist()){
@@ -79,8 +79,12 @@ public class MyBlockPos{
 		return Connection.VALID;
 	}
 	
-	public boolean testInterdimensional(MyBlockPos other){
-		return ClientConfigStorage.INSTANCE.interdimensional()||(sameWorld(other) && sameDim(other));
+	public boolean checkInterdimensional(MyBlockPos pos){
+		if(pos==null){
+			return true;
+		}
+		boolean config = ClientConfigStorage.INSTANCE.interdimensional();
+		return config || (sameWorld(pos) && sameDim(pos));
 	}
 
 	public NBTTagCompound writeToNBT(NBTTagCompound tC){

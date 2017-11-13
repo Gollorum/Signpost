@@ -31,8 +31,6 @@ public class TeleportMeHandler implements IMessageHandler<TeleportMeMessage, IMe
 				}
 				ctx.getServerHandler().playerEntity.setPositionAndUpdate(message.base.pos.x, message.base.pos.y, message.base.pos.z);
 			}
-		}else{
-			return new ChatMessage("signpost.notDiscovered", "<Waystone>", message.base.name);
 		}
 		return null;
 	}

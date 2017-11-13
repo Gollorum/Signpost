@@ -26,6 +26,7 @@ import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
@@ -45,6 +46,7 @@ public class PostPost extends SuperPostPost {
 						STONE(	Material.rock, 	"sign_stone", 	"stone",			Item.getItemFromBlock(Blocks.stone),		0);
 		public Material material;
 		public ResourceLocation texture;
+		public String blockTexture;
 		public String textureMain;
 		public ResourceLocation resLocMain;
 		public Item baseItem;
@@ -53,6 +55,7 @@ public class PostPost extends SuperPostPost {
 		private PostType(Material material, String texture, String textureMain, Item baseItem, int metadata) {
 			this.material = material;
 			this.texture = new ResourceLocation(Signpost.MODID + ":textures/blocks/"+texture+".png");
+			this.blockTexture = texture;
 			this.textureMain = textureMain;
 			this.resLocMain = new ResourceLocation("minecraft:textures/blocks/"+textureMain+".png");
 			this.baseItem = baseItem;
@@ -87,7 +90,7 @@ public class PostPost extends SuperPostPost {
 		this.type = type;
 		setBlockName("SignpostPost"+type.toString());
 		setCreativeTab(CreativeTabs.tabTransport);
-		setBlockTextureName("minecraft:"+type.textureMain);
+		setBlockTextureName(Signpost.MODID+":"+type.blockTexture);
 		this.setHardness(2);
 		this.setResistance(100000);
 		float f = 15F / 32;

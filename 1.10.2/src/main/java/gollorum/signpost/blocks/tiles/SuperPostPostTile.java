@@ -78,6 +78,7 @@ public abstract class SuperPostPostTile extends TileEntity implements WaystoneCo
 		EntityItem item = new EntityItem(getWorld(), pos.x, pos.y, pos.z, new ItemStack(BlockHandler.base, 1));
 		getWorld().spawnEntityInWorld(item);
 		BaseInfo base = PostHandler.allWaystones.getByPos(pos);
+		SPEventHandler.INSTANCE.updateWaystoneCount(this);
 		if(PostHandler.allWaystones.removeByPos(pos)){
 			MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.DESTROYED, getWorld(), base.pos.x, base.pos.y, base.pos.z, base==null?"":base.name));
 			NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());

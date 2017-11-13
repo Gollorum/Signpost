@@ -304,8 +304,6 @@ public class PostHandler {
 				})).boolRun);
 				NetworkHandler.netWrap.sendTo(new TeleportRequestMessage(stackSize, destination.name), player);
 			}
-		}else{
-			NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.notDiscovered", "<Waystone>", destination.name), player);
 		}
 	}
 	
@@ -441,7 +439,16 @@ public class PostHandler {
 	}
 	
 	public static boolean canTeleport(EntityPlayerMP player, BaseInfo target){
-		return doesPlayerKnowWaystone(player, target);
+		if(doesPlayerKnowWaystone(player, target)){
+			if(new MyBlockPos(player).checkInterdimensional(target.blockPos)){
+				return true;
+			}else{
+				NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.guiWorldDim"), player);
+			}
+		}else{
+			NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.notDiscovered", "<Waystone>", target.name), player);
+		}
+		return false;
 	}
 	
 	public static WorldServer getWorldByName(String world, int dim){

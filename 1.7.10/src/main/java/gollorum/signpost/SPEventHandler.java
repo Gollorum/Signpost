@@ -11,6 +11,7 @@ import cpw.mods.fml.relauncher.Side;
 import gollorum.signpost.blocks.BaseModelPost;
 import gollorum.signpost.blocks.BasePost;
 import gollorum.signpost.blocks.SuperPostPost;
+import gollorum.signpost.blocks.WaystoneContainer;
 import gollorum.signpost.blocks.tiles.BasePostTile;
 import gollorum.signpost.blocks.tiles.SuperPostPostTile;
 import gollorum.signpost.items.CalibratedPostWrench;
@@ -47,6 +48,9 @@ public class SPEventHandler {
 
 	private static Lurchpaerchensauna<Runnable, Integer> clientTasks = new Lurchpaerchensauna<Runnable, Integer>();
 	private static Lurchsauna<BoolRun> clientPredicatedTasks = new Lurchsauna<BoolRun>();
+	
+	public static final SPEventHandler INSTANCE = new SPEventHandler();
+	private SPEventHandler(){}
 
 	/**
 	 * Schedules a task
@@ -208,7 +212,7 @@ public class SPEventHandler {
 		}
 	}
 
-	private boolean checkWaystoneCount(EntityPlayerMP player){
+	public boolean checkWaystoneCount(EntityPlayerMP player){
 		Pair<MyBlockPosSet, Pair<Integer, Integer>> pair = PostHandler.playerKnownWaystonePositions.get(player.getUniqueID());
 		int remaining = pair.b.a;
 		if(remaining == 0){
@@ -222,7 +226,7 @@ public class SPEventHandler {
 		}
 	}
 	
-	private void updateWaystoneCount(BasePostTile tile){
+	public void updateWaystoneCount(WaystoneContainer tile){
 		if(tile == null || tile.getBaseInfo() == null){
 			return;
 		}
@@ -262,46 +266,48 @@ public class SPEventHandler {
 
 	@SubscribeEvent
 	public void onBlockBreak(BreakEvent event){
-		TileEntity tile = event.world.getTileEntity(event.x, event.y, event.z);
-		if(tile instanceof SuperPostPostTile 
-				&& event.getPlayer().getHeldItem()!=null 
-				&& (event.getPlayer().getHeldItem().getItem() instanceof PostWrench 
-						|| event.getPlayer().getHeldItem().getItem() instanceof CalibratedPostWrench
-						|| event.getPlayer().getHeldItem().getItem().equals(Items.wheat_seeds)
-						|| event.getPlayer().getHeldItem().getItem().equals(Items.snowball)
-						|| event.getPlayer().getHeldItem().getItem().equals(Item.getItemFromBlock(Blocks.vine)))){
-			event.setCanceled(true);
-			((SuperPostPost)tile.blockType).onBlockClicked(event.world, event.x, event.y, event.z, event.getPlayer());
-			return;
-		}
-		if(!(event.getPlayer() instanceof EntityPlayerMP)){
-			return;
-		}
-		EntityPlayerMP player = (EntityPlayerMP)event.getPlayer();
-		if(event.block instanceof BasePost){
-			BasePostTile t = BasePost.getWaystoneRootTile(event.world, event.x, event.y, event.z);
-			if(!ClientConfigStorage.INSTANCE.getSecurityLevelWaystone().canUse(player, ""+t.getBaseInfo().owner)){
+		try{
+			TileEntity tile = event.world.getTileEntity(event.x, event.y, event.z);
+			if(tile instanceof SuperPostPostTile 
+					&& event.getPlayer().getHeldItem()!=null 
+					&& (event.getPlayer().getHeldItem().getItem() instanceof PostWrench 
+							|| event.getPlayer().getHeldItem().getItem() instanceof CalibratedPostWrench
+							|| event.getPlayer().getHeldItem().getItem().equals(Items.wheat_seeds)
+							|| event.getPlayer().getHeldItem().getItem().equals(Items.snowball)
+							|| event.getPlayer().getHeldItem().getItem().equals(Item.getItemFromBlock(Blocks.vine)))){
 				event.setCanceled(true);
-			}else{
-				updateWaystoneCount(t);
-				t.onBlockDestroy(new MyBlockPos(event.world, event.x, event.y, event.z, player.dimension));
+				((SuperPostPost)tile.blockType).onBlockClicked(event.world, event.x, event.y, event.z, event.getPlayer());
+				return;
 			}
-		}else if(event.block instanceof BaseModelPost){
-			BasePostTile t = BaseModelPost.getWaystoneRootTile(event.world, event.x, event.y, event.z);
-			if(!ClientConfigStorage.INSTANCE.getSecurityLevelWaystone().canUse(player, ""+t.getBaseInfo().owner)){
-				event.setCanceled(true);
-			}else{
-				updateWaystoneCount(t);
-				t.onBlockDestroy(new MyBlockPos(event.world, event.x, event.y, event.z, player.dimension));
+			if(!(event.getPlayer() instanceof EntityPlayerMP)){
+				return;
 			}
-		}else if(event.block instanceof SuperPostPost){
-			SuperPostPostTile t = SuperPostPost.getSuperTile(event.world, event.x, event.y, event.z);
-			if(!ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canUse(player, ""+t.owner)){
-				event.setCanceled(true);
-			}else{
-				updateSignpostCount(t);
-				t.onBlockDestroy(new MyBlockPos(event.world, event.x, event.y, event.z, player.dimension));
+			EntityPlayerMP player = (EntityPlayerMP)event.getPlayer();
+			if(event.block instanceof BasePost){
+				BasePostTile t = BasePost.getWaystoneRootTile(event.world, event.x, event.y, event.z);
+				if(!ClientConfigStorage.INSTANCE.getSecurityLevelWaystone().canUse(player, ""+t.getBaseInfo().owner)){
+					event.setCanceled(true);
+				}else{
+					updateWaystoneCount(t);
+					t.onBlockDestroy(new MyBlockPos(event.world, event.x, event.y, event.z, player.dimension));
+				}
+			}else if(event.block instanceof BaseModelPost){
+				BasePostTile t = BaseModelPost.getWaystoneRootTile(event.world, event.x, event.y, event.z);
+				if(!ClientConfigStorage.INSTANCE.getSecurityLevelWaystone().canUse(player, ""+t.getBaseInfo().owner)){
+					event.setCanceled(true);
+				}else{
+					updateWaystoneCount(t);
+					t.onBlockDestroy(new MyBlockPos(event.world, event.x, event.y, event.z, player.dimension));
+				}
+			}else if(event.block instanceof SuperPostPost){
+				SuperPostPostTile t = SuperPostPost.getSuperTile(event.world, event.x, event.y, event.z);
+				if(!ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canUse(player, ""+t.owner)){
+					event.setCanceled(true);
+				}else{
+					updateSignpostCount(t);
+					t.onBlockDestroy(new MyBlockPos(event.world, event.x, event.y, event.z, player.dimension));
+				}
 			}
-		}
+		}catch(Exception e){}
 	}
 }

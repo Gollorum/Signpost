@@ -1,5 +1,3 @@
--check waystone count
-
 -waystones with rendered name?
 -auto generate signposts in villages
 -integration of the waystones mod

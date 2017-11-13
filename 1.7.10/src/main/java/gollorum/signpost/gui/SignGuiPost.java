@@ -60,31 +60,33 @@ public class SignGuiPost extends GuiScreen implements SignInput {
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 		super.drawScreen(mouseX, mouseY, partialTicks);
-		if(mc==null){
-			mc = FMLClientHandler.instance().getClient();
-		}
-		if (base1InputBox == null) {
-			DoubleBaseInfo tilebases = tile.getBases();
-			base1InputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137, this);
-			base1InputBox.setText(tilebases.sign1.base == null ? "" : tilebases.sign1.base.toString());
-		}
-		if (base2InputBox == null) {
-			DoubleBaseInfo tilebases = tile.getBases();
-			base2InputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 + 40, 137, this);
-			base2InputBox.setText(tilebases.sign2.base == null ? "" : tilebases.sign2.base.toString());
-		}
-		drawDefaultBackground();
-
-		base1InputBox.drawSignBox(fontRendererObj);
-		this.drawCenteredString(fontRendererObj, std2, this.width/2, base1InputBox.y+base1InputBox.height+10, col2);
-
-		base2InputBox.drawSignBox(fontRendererObj);
-		this.drawCenteredString(fontRendererObj, std1, this.width/2, base2InputBox.y+base2InputBox.height+10, col1);
-		
-		if(resetMouse){
-			resetMouse = false;
-			org.lwjgl.input.Mouse.setGrabbed(false);
-		}
+		try{
+			if(mc==null){
+				mc = FMLClientHandler.instance().getClient();
+			}
+			if (base1InputBox == null) {
+				DoubleBaseInfo tilebases = tile.getBases();
+				base1InputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137, this);
+				base1InputBox.setText(tilebases.sign1.base == null ? "" : tilebases.sign1.base.toString());
+			}
+			if (base2InputBox == null) {
+				DoubleBaseInfo tilebases = tile.getBases();
+				base2InputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 + 40, 137, this);
+				base2InputBox.setText(tilebases.sign2.base == null ? "" : tilebases.sign2.base.toString());
+			}
+			drawDefaultBackground();
+	
+			base1InputBox.drawSignBox(fontRendererObj);
+			this.drawCenteredString(fontRendererObj, std2, this.width/2, base1InputBox.y+base1InputBox.height+10, col2);
+	
+			base2InputBox.drawSignBox(fontRendererObj);
+			this.drawCenteredString(fontRendererObj, std1, this.width/2, base2InputBox.y+base2InputBox.height+10, col1);
+			
+			if(resetMouse){
+				resetMouse = false;
+				org.lwjgl.input.Mouse.setGrabbed(false);
+			}
+		}catch(Exception e){}
 	}
 
 	@Override

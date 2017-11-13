@@ -1,5 +1,7 @@
 package gollorum.signpost.util;
 
+import gollorum.signpost.blocks.BigPostPost;
+import gollorum.signpost.blocks.PostPost;
 import gollorum.signpost.blocks.SuperPostPost;
 import gollorum.signpost.blocks.tiles.SuperPostPostTile;
 import net.minecraft.block.Block;
@@ -30,19 +32,28 @@ public class TextureHelper {
 	public ResourceLocation getHeldBlockTexture(EntityPlayer player, World worldIn, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ){
 		try{
 			ItemStack stack = player.inventory.getCurrentItem();
-			IBlockState blockState = blockStateFromPlayer(player, worldIn, pos, hand, facing, hitX, hitY, hitZ);
-			
-			IBakedModel model = FMLClientHandler.instance().getClient().getRenderItem().getItemModelMesher().getItemModel(stack);
-	
-			Vec3d look = player.getLookVec();
-			EnumFacing side = EnumFacing.getFacingFromVector((float)-look.x, (float)-look.y, (float)-look.z);
-			
-			BakedQuad quad = model.getQuads(blockState, side, 0).get(0);
-			
-			String textureName = quad.getSprite().getIconName();
-			String resourceName = textureNameToResourceName(textureName);
+			ResourceLocation ret;
 
-			ResourceLocation ret = new ResourceLocation(resourceName);
+			Block block = Block.getBlockFromItem(stack.getItem());
+			if(block instanceof PostPost){
+				ret = ((PostPost)block).type.texture;
+			}else if(block instanceof BigPostPost){
+				ret = ((BigPostPost)block).type.texture;
+			}else{
+				IBlockState blockState = blockStateFromPlayer(player, worldIn, pos, hand, facing, hitX, hitY, hitZ);
+				
+				IBakedModel model = FMLClientHandler.instance().getClient().getRenderItem().getItemModelMesher().getItemModel(stack);
+		
+				Vec3d look = player.getLookVec();
+				EnumFacing side = EnumFacing.getFacingFromVector((float)-look.x, (float)-look.y, (float)-look.z);
+				
+				BakedQuad quad = model.getQuads(blockState, side, 0).get(0);
+				
+				String textureName = quad.getSprite().getIconName();
+				String resourceName = textureNameToResourceName(textureName);
+
+				ret = new ResourceLocation(resourceName);
+			}
 			
 			FMLClientHandler.instance().getClient().getResourceManager().getResource(ret);
 			return ret;
@@ -67,7 +78,16 @@ public class TextureHelper {
 		if(split.length!=2){
 			return null;
 		}
-		return split[0]+":textures/"+split[1]+".png";
+		if(!split[1].startsWith("textures/blocks/")){
+			if(!split[1].startsWith("blocks/")){
+				split[1] = "blocks/"+split[1];
+			}
+			split[1] = "textures/"+split[1];
+		}
+		if(!endsWithIgnoreCase(split[1], ".png")){
+			split[1] += ".png";
+		}
+		return split[0]+":"+split[1];
 	}
 
 	public boolean setTexture(BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ){
@@ -85,5 +105,9 @@ public class TextureHelper {
 			((SuperPostPost)superTile.getBlockType()).sendPostBasesToServer(superTile);
 			return true;
 		}
+	}
+	
+	private static boolean endsWithIgnoreCase(String str1, String str2){
+		return str1.length()<str2.length() || str1.substring(str1.length()-str2.length()).equalsIgnoreCase(str2);
 	}
 }

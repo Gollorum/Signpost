@@ -3,6 +3,7 @@ package gollorum.signpost.blocks;
 import java.util.UUID;
 
 import gollorum.signpost.BlockHandler;
+import gollorum.signpost.SPEventHandler;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blocks.tiles.SuperPostPostTile;
 import gollorum.signpost.event.UpdateWaystoneEvent;
@@ -157,7 +158,7 @@ public abstract class SuperPostPost extends BlockContainer {
 		if(superTile.isWaystone()){
 			return true;
 		}
-		if(!ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canUse((EntityPlayerMP) player, ""+superTile.owner)){
+		if(!(ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canUse((EntityPlayerMP) player, ""+superTile.owner) && SPEventHandler.INSTANCE.checkWaystoneCount(player))){
 			return true;
 		}
 		MyBlockPos blockPos = superTile.toPos();

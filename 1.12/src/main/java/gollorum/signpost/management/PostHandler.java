@@ -434,7 +434,7 @@ public class PostHandler {
 	}
 	
 	public static boolean canTeleport(EntityPlayerMP player, BaseInfo target){
-		if(!target.pos.testInterdimensional(new MyBlockPos(player))){
+		if(!target.pos.checkInterdimensional(new MyBlockPos(player))){
 			NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.guiWorldDim"), player);
 			return false;
 		}else if(doesPlayerKnowWaystone(player, target)){

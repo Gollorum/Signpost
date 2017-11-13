@@ -43,7 +43,7 @@ public class CommonProxy {
 		registerRecipes();
 
 		NetworkHandler.register();
-		SPEventHandler handler = new SPEventHandler();
+		SPEventHandler handler = SPEventHandler.INSTANCE;
 		MinecraftForge.EVENT_BUS.register(handler);
 		FMLCommonHandler.instance().bus().register(handler);
 	}

@@ -37,7 +37,7 @@ public class CommonProxy {
 		registerTiles();
 		
 		NetworkHandler.register();
-		SPEventHandler handler = new SPEventHandler();
+		SPEventHandler handler = SPEventHandler.INSTANCE;
 		MinecraftForge.EVENT_BUS.register(handler);
 		MinecraftForge.EVENT_BUS.register(blockHandler);
 		MinecraftForge.EVENT_BUS.register(ItemHandler.INSTANCE);

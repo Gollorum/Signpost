@@ -72,23 +72,25 @@ public class SignGuiBigPost extends GuiScreen implements SignInput {
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 		super.drawScreen(mouseX, mouseY, partialTicks);
-		if(mc==null){
-			mc = FMLClientHandler.instance().getClient();
-		}
-		if(baseInputBox==null || desc1InputBox==null || desc2InputBox==null || desc3InputBox==null || desc4InputBox==null){
-			initGui();
-		}
-		drawDefaultBackground();
-		baseInputBox.drawSignBox(fontRenderer);
-		this.drawCenteredString(fontRenderer, std, this.width/2, baseInputBox.y+baseInputBox.height+10, col);
-		desc1InputBox.drawTextBox();
-		desc2InputBox.drawTextBox();
-		desc3InputBox.drawTextBox();
-		desc4InputBox.drawTextBox();
-		if(resetMouse){
-			resetMouse = false;
-			org.lwjgl.input.Mouse.setGrabbed(false);
-		}
+		try{
+			if(mc==null){
+				mc = FMLClientHandler.instance().getClient();
+			}
+			if(baseInputBox==null || desc1InputBox==null || desc2InputBox==null || desc3InputBox==null || desc4InputBox==null){
+				initGui();
+			}
+			drawDefaultBackground();
+			baseInputBox.drawSignBox(fontRenderer);
+			this.drawCenteredString(fontRenderer, std, this.width/2, baseInputBox.y+baseInputBox.height+10, col);
+			desc1InputBox.drawTextBox();
+			desc2InputBox.drawTextBox();
+			desc3InputBox.drawTextBox();
+			desc4InputBox.drawTextBox();
+			if(resetMouse){
+				resetMouse = false;
+				org.lwjgl.input.Mouse.setGrabbed(false);
+			}
+		}catch(Exception e){}
 	}
 
 	@Override

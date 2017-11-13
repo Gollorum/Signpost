@@ -24,15 +24,11 @@ public class TextureHelper {
 	public ResourceLocation getHeldBlockTexture(EntityPlayer player, World worldIn, int x, int y, int z){
 		try{
 			Vec3 look = player.getLookVec();
-			System.out.println();
 			int side = getFacingFromVector((float)-look.xCoord, (float)-look.yCoord, (float)-look.zCoord);
-			System.out.println(side);
 			
 			Block block = Block.getBlockFromItem(player.getHeldItem().getItem());
 			String textureName = block.getBlockTextureFromSide(side).getIconName();
-			System.out.println(textureName);
 			String resourceName = textureNameToResourceName(textureName);
-			System.out.println(resourceName);
 
 			ResourceLocation ret = new ResourceLocation(resourceName);
 			
@@ -74,7 +70,16 @@ public class TextureHelper {
 			split[0] = "minecraft";
 			split[1] = textureName;
 		}
-		return split[0]+":textures/blocks/"+split[1]+".png";
+		if(!split[1].startsWith("textures/blocks/")){
+			if(!split[1].startsWith("blocks/")){
+				split[1] = "blocks/"+split[1];
+			}
+			split[1] = "textures/"+split[1];
+		}
+		if(!endsWithIgnoreCase(split[1], ".png")){
+			split[1] += ".png";
+		}
+		return split[0]+":"+split[1];
 	}
 
 	public boolean setTexture(int x, int y, int z){
@@ -92,5 +97,9 @@ public class TextureHelper {
 			((SuperPostPost)superTile.getBlockType()).sendPostBasesToServer(superTile);
 			return true;
 		}
+	}
+	
+	private static boolean endsWithIgnoreCase(String str1, String str2){
+		return str1.length()<str2.length() || str1.substring(str1.length()-str2.length()).equalsIgnoreCase(str2);
 	}
 }

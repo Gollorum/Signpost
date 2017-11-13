@@ -45,6 +45,7 @@ public class BigPostPost extends SuperPostPost {
 						STONE(	Material.rock, 	"bigsign_stone", 	"stone",			Item.getItemFromBlock(Blocks.stone),		0);
 		public Material material;
 		public ResourceLocation texture;
+		public String blockTexture;
 		public String textureMain;
 		public ResourceLocation resLocMain;
 		public Item baseItem;
@@ -53,6 +54,7 @@ public class BigPostPost extends SuperPostPost {
 		private BigPostType(Material material, String texture, String textureMain, Item baseItem, int metadata) {
 			this.material = material;
 			this.texture = new ResourceLocation(Signpost.MODID + ":textures/blocks/"+texture+".png");
+			this.blockTexture = texture;
 			this.textureMain = textureMain;
 			this.resLocMain = new ResourceLocation("minecraft:textures/blocks/"+textureMain+".png");
 			this.baseItem = baseItem;
@@ -87,7 +89,7 @@ public class BigPostPost extends SuperPostPost {
 		this.type = type;
 		setBlockName("SignpostBigPost"+type.toString());
 		setCreativeTab(CreativeTabs.tabTransport);
-		setBlockTextureName("minecraft:"+type.textureMain);
+		setBlockTextureName(Signpost.MODID+":"+type.blockTexture);
 		this.setHardness(2);
 		this.setResistance(100000);
 		float f = 15F / 32;
