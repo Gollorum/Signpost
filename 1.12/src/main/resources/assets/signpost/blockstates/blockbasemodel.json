@@ -1,0 +1,34 @@
+{
+  "forge_marker":1,
+  "defaults": {
+    "transform": "forge:default-block",
+    "custom": { "flip-v": true},
+    "model": "signpost:ws1tri.obj"
+  },
+  "variants": {
+    "facing=east,type=model0": { "model": "signpost:ws1tri.obj",  "y": 0 },
+    "facing=south,type=model0": { "model": "signpost:ws1tri.obj",  "y": 90 },
+    "facing=west,type=model0": { "model": "signpost:ws1tri.obj",  "y": 180 },
+    "facing=north,type=model0": { "model": "signpost:ws1tri.obj",  "y": 270 },
+    "facing=east,type=model1": { "model": "signpost:ws2tri.obj",  "y": 0 },
+    "facing=south,type=model1": { "model": "signpost:ws2tri.obj",  "y": 90 },
+    "facing=west,type=model1": { "model": "signpost:ws2tri.obj",  "y": 180 },
+    "facing=north,type=model1": { "model": "signpost:ws2tri.obj",  "y": 270 },
+    "facing=east,type=model2": { "model": "signpost:ws3tri.obj",  "y": 0 },
+    "facing=south,type=model2": { "model": "signpost:ws3tri.obj",  "y": 90 },
+    "facing=west,type=model2": { "model": "signpost:ws3tri.obj",  "y": 180 },
+    "facing=north,type=model2": { "model": "signpost:ws3tri.obj",  "y": 270 },
+    "facing=east,type=model3": { "model": "signpost:ws4tri.obj",  "y": 0 },
+    "facing=south,type=model3": { "model": "signpost:ws4tri.obj",  "y": 90 },
+    "facing=west,type=model3": { "model": "signpost:ws4tri.obj",  "y": 180 },
+    "facing=north,type=model3": { "model": "signpost:ws4tri.obj",  "y": 270 },
+    "facing=east,type=model4": { "model": "signpost:ws5tri.obj",  "y": 0 },
+    "facing=south,type=model4": { "model": "signpost:ws5tri.obj",  "y": 90 },
+    "facing=west,type=model4": { "model": "signpost:ws5tri.obj",  "y": 180 },
+    "facing=north,type=model4": { "model": "signpost:ws5tri.obj",  "y": 270 },
+    "normal": [{}],
+    "inventory": [{
+      "model": "signpost:ws1tri.obj"
+    }]
+  }
+}
