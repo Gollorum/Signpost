@@ -1,6 +1,5 @@
 package gollorum.signpost.commands;
 
-import cpw.mods.fml.common.FMLCommonHandler;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
@@ -17,21 +16,21 @@ import net.minecraft.server.MinecraftServer;
 public class DiscoverWaystone extends CommandBase {
 
 	@Override
-	public String getCommandName() {
+	public String getName() {
 		return "discoverwaystone";
 	}
 
 	@Override
-	public String getCommandUsage(ICommandSender p_71518_1_) {
+	public String getUsage(ICommandSender p_71518_1_) {
 		return "/discoverwaystone <name> [player]";
 	}
 
 	@Override
-	public void processCommand(ICommandSender sender, String[] args) throws PlayerNotFoundException, CommandException {
+	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws PlayerNotFoundException, CommandException {
 		if(sender instanceof EntityPlayerMP){
 			EntityPlayerMP player = (EntityPlayerMP) sender;
 			if (args.length < 1){
-				throw new WrongUsageException(getCommandUsage(null), new Object[0]);
+				throw new WrongUsageException(getUsage(null), new Object[0]);
 			}
 			String waystoneName = "";
 			String playerName = null;
@@ -51,7 +50,7 @@ public class DiscoverWaystone extends CommandBase {
 			}
 			EntityPlayerMP target = player;
 			if(playerName!=null){
-				target = getPlayer(FMLCommonHandler.instance().getMinecraftServerInstance(), playerName);
+				target = getPlayer(server, sender, playerName);
 			}
 			if(base==null){
 				String[] keys = {"<Waystone>"};
@@ -65,13 +64,14 @@ public class DiscoverWaystone extends CommandBase {
 			}
 		}
 	}
-
+	
 	public int getRequiredPermissionLevel(){
 		return 2;
 	}
 
 	@Override
-	public boolean canCommandSenderUseCommand(ICommandSender sender){
-		return sender instanceof EntityPlayerMP && ConfigHandler.isOp((EntityPlayerMP)sender);
-	}
+    public boolean checkPermission(MinecraftServer server, ICommandSender sender){
+    	return sender instanceof EntityPlayerMP && ConfigHandler.isOp((EntityPlayerMP)sender);
+    }
+
 }

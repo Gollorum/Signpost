@@ -3,8 +3,6 @@ package gollorum.signpost.network.messages;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-import cpw.mods.fml.common.network.ByteBufUtils;
-import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import gollorum.signpost.blocks.tiles.PostPostTile;
 import gollorum.signpost.blocks.tiles.SuperPostPostTile;
 import gollorum.signpost.management.PostHandler;
@@ -16,6 +14,8 @@ import gollorum.signpost.util.Sign.OverlayType;
 import gollorum.signpost.util.collections.Lurchpaerchensauna;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
 public class SendAllPostBasesMessage implements IMessage{
 
@@ -90,7 +90,7 @@ public class SendAllPostBasesMessage implements IMessage{
 																  now.getValue().overlay2,
 																  now.getValue().bool4,
 																  paint2
-																 ),
+														 ),
 														 postPaint));
 		}
 		return postMap;
@@ -145,8 +145,7 @@ public class SendAllPostBasesMessage implements IMessage{
 										OverlayType.get(ByteBufUtils.readUTF8String(buf)),
 										OverlayType.get(ByteBufUtils.readUTF8String(buf)),
 										buf.readBoolean(), buf.readBoolean(),
-										ByteBufUtils.readUTF8String(buf),
-										ByteBufUtils.readUTF8String(buf),
+										ByteBufUtils.readUTF8String(buf), ByteBufUtils.readUTF8String(buf),
 										ByteBufUtils.readUTF8String(buf),
 										buf.readByte()));
 		}

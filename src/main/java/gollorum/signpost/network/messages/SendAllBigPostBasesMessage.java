@@ -3,8 +3,6 @@ package gollorum.signpost.network.messages;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-import cpw.mods.fml.common.network.ByteBufUtils;
-import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.blocks.tiles.SuperPostPostTile;
 import gollorum.signpost.management.PostHandler;
@@ -16,6 +14,8 @@ import gollorum.signpost.util.Sign.OverlayType;
 import gollorum.signpost.util.collections.Lurchpaerchensauna;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
 public class SendAllBigPostBasesMessage implements IMessage{
 
@@ -56,8 +56,8 @@ public class SendAllBigPostBasesMessage implements IMessage{
 															   now.getValue().overlay,
 															   now.getValue().bool2,
 															   now.getValue().paint),
-															   now.getValue().strings,
-															   now.getValue().postPaint));
+														now.getValue().strings,
+														now.getValue().postPaint));
 		}
 		return postMap;
 	}

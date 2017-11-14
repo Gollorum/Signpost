@@ -2,14 +2,13 @@ package gollorum.signpost.render;
 
 import org.lwjgl.opengl.GL11;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import gollorum.signpost.blocks.PostPost;
 import gollorum.signpost.blocks.tiles.PostPostTile;
 import gollorum.signpost.util.DoubleBaseInfo;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
 public class ModelPost extends ModelBase {
@@ -38,17 +37,10 @@ public class ModelPost extends ModelBase {
 
 	public void render(PostRenderer postRenderer, float f1, float f5, DoubleBaseInfo tilebases, PostPostTile tile, double rotation1, double rotation2) {
 		super.render(null, 0, f1, 0, 0, 0, f5);
-		
-		//Post
-
 		if(tile.isAwaitingPaint() && tile.getPaintObject() instanceof DoubleBaseInfo){
 			postRenderer.setTexture(tilebases.POST_PAINT);
 		}else{
-			if(tile.isItem){
-				postRenderer.setTexture(((PostPost)tile.blockType).type.resLocMain);
-			}else{
-				postRenderer.setTexture(tilebases.postPaint);
-			}
+			postRenderer.setTexture(tilebases.postPaint);
 		}
 
 		GL11.glPushMatrix();
@@ -56,18 +48,10 @@ public class ModelPost extends ModelBase {
 		GL11.glRotated(180, 1, 0, 0);
 		post.render(f5);
 		GL11.glPopMatrix();
-        
-        //Waystone
-        
-		if(!tile.isItem){
-	        if(tile.isWaystone){
-	        	postRenderer.setTexture(BASETEXTURE);
-	        	waystone.render(f5);
-	        }
+		if(tile.isWaystone){
+			postRenderer.setTexture(BASETEXTURE);
+			waystone.render(f5);
 		}
-		
-		//Signs
-		
 		ResourceLocation mainLoc = tile.type.texture;
 		if (tile.isItem || tilebases.sign1.isValid()) {
 			GL11.glPushMatrix();

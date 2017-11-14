@@ -22,8 +22,8 @@ public class WorldSigns extends WorldSavedData{
 	}
 
 	public static WorldSigns worldSigns(World world){
-		MapStorage storage = world.perWorldStorage;
-		WorldSigns ret = (WorldSigns) storage.loadData(WorldSigns.class, key);
+		MapStorage storage = world.getPerWorldStorage();
+		WorldSigns ret = (WorldSigns) storage.getOrLoadData(WorldSigns.class, key);
 		if(ret == null){
 			ret = new WorldSigns();
 			storage.setData(key, ret);
@@ -52,7 +52,7 @@ public class WorldSigns extends WorldSavedData{
 	}
 
 	@Override
-	public void writeToNBT(NBTTagCompound tC) {
+	public NBTTagCompound writeToNBT(NBTTagCompound tC) {
 		if(world.equals(DimensionManager.getWorld(0))){
 			NBTTagCompound info = new NBTTagCompound();
 			StonedHashSet worldBases = PostHandler.allWaystones;
@@ -67,6 +67,7 @@ public class WorldSigns extends WorldSavedData{
 			}
 			tC.setTag("SignInfo", info);
 		}
+		return tC;
 	}
 
 }

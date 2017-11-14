@@ -1,6 +1,5 @@
 package gollorum.signpost.util;
 
-import java.util.Collection;
 import java.util.HashSet;
 
 import gollorum.signpost.management.PostHandler;

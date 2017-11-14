@@ -7,11 +7,9 @@ import net.minecraft.item.Item;
 public class PostBrush extends Item {
 	
 	public PostBrush() {
-	    super();
-
 	    this.setUnlocalizedName("SignpostBrush");
-	    this.setCreativeTab(CreativeTabs.tabTools);
-	    this.setTextureName(Signpost.MODID + ":brush");
+		this.setRegistryName(Signpost.MODID+":itembrush");
+	    this.setCreativeTab(CreativeTabs.TOOLS);
 	}
 
 }

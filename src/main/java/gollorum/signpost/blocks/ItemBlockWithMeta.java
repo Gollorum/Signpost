@@ -5,7 +5,7 @@ import net.minecraft.item.ItemBlock;
 
 public class ItemBlockWithMeta extends ItemBlock{
 
-	public ItemBlockWithMeta(Block block){
+	public ItemBlockWithMeta(Block block) {
 		super(block);
 		setMaxDamage(0);
 		setHasSubtypes(true);
@@ -15,5 +15,5 @@ public class ItemBlockWithMeta extends ItemBlock{
 	public int getMetadata(int damage){
 		return damage;
 	}
-	
+
 }

@@ -1,8 +1,8 @@
 package gollorum.signpost.event;
 
-import cpw.mods.fml.common.eventhandler.Event;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.eventhandler.Event;
 
 /**
  * Fired server- and client-side upon right-clicking a signpost.

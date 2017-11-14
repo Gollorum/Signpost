@@ -1,6 +1,5 @@
 package gollorum.signpost.util;
 
-import cpw.mods.fml.common.network.ByteBufUtils;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.blocks.tiles.PostPostTile;
@@ -9,45 +8,60 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 
-public class MyBlockPos {
+public class MyBlockPos{
 	
 	public int x, y, z;
 	public String world;
 	public int dim;
-
-	public MyBlockPos(World world, int x, int y, int z, int dim){
-		this((world==null||world.isRemote)?"":world.getWorldInfo().getWorldName(), x,
-				y, z, dim);
+	
+	public MyBlockPos(World world, BlockPos pos, int dim){
+		this(world, pos.getX(), pos.getY(), pos.getZ(), dim);
 	}
-
+	
+	public MyBlockPos(World world, int x, int y, int z, int dim){
+		this((world==null||world.isRemote)?"":world.getWorldInfo().getWorldName(), x, y, z, dim);
+	}
+	
 	public MyBlockPos(String world, double x, double y, double z, int dim){
 		this(world, (int)x, (int)y, (int)z, dim);
 	}
 
-	public MyBlockPos(String world, int x, int y, int z, int dim){
+	public MyBlockPos(String world, BlockPos pos, int dim){
+		x = pos.getX();
+		y = pos.getY();
+		z = pos.getZ();
 		this.world = world;
+		this.dim = dim;
+	}
+	public MyBlockPos(String world, int x, int y, int z, int dim){
 		this.x = x;
 		this.y = y;
 		this.z = z;
+		this.world = world;
 		this.dim = dim;
 	}
 
 	public MyBlockPos(MyBlockPos pos) {
 		this(pos.world, pos.x, pos.y, pos.z, pos.dim);
 	}
-
+	
 	public MyBlockPos(Entity entity){
-		this(entity.worldObj, (int)Math.floor(entity.posX), (int)Math.floor(entity.posY), (int)Math.floor(entity.posZ), dim(entity.worldObj));
+		this(entity.world, (int)Math.floor(entity.posX), (int)Math.floor(entity.posY), (int)Math.floor(entity.posZ), dim(entity.world));
 	}
 
 	public static int dim(World world){
 		if(world==null||world.provider==null){
 			return Integer.MIN_VALUE;
 		}else
-			return world.provider.dimensionId;
+			return world.provider.getDimension();
 	}
+
+	public static enum Connection{VALID, WORLD, DIST}
 	
 	public Connection canConnectTo(BaseInfo inf){
 		if(inf==null){
@@ -64,8 +78,6 @@ public class MyBlockPos {
 		}
 		return Connection.VALID;
 	}
-
-	public static enum Connection{VALID, WORLD, DIST}
 	
 	public boolean checkInterdimensional(MyBlockPos pos){
 		if(pos==null){
@@ -74,7 +86,7 @@ public class MyBlockPos {
 		boolean config = ClientConfigStorage.INSTANCE.interdimensional();
 		return config || (sameWorld(pos) && sameDim(pos));
 	}
-	
+
 	public NBTTagCompound writeToNBT(NBTTagCompound tC){
 		int[] arr = {x, y, z, dim};
 		tC.setIntArray("Position", arr);
@@ -103,7 +115,7 @@ public class MyBlockPos {
 		int dim = buf.readInt();
 		return new MyBlockPos(world, x, y, z, dim);
 	}
-	
+
 	@Override
 	public boolean equals(Object obj){
 		if(!(obj instanceof MyBlockPos)){
@@ -142,7 +154,7 @@ public class MyBlockPos {
 		}
 		return true;
 	}
-	
+
 	public MyBlockPos update(MyBlockPos newPos){
 		x = newPos.x;
 		y = newPos.y;
@@ -167,19 +179,48 @@ public class MyBlockPos {
 		return Math.sqrt(dx*dx+dy*dy+dz*dz);
 	}
 
+	public BlockPos toBlockPos(){
+		return new BlockPos(x, y, z);
+	}
+	
+	public double getLength(){
+		return Math.sqrt(x*x+y*y+z*z);
+	}
+	
+	public static double toLength(Vec3i vec){
+		return Math.sqrt(vec.getX()*vec.getX()+vec.getY()*vec.getY()+vec.getZ()*vec.getZ());
+	}
+	
+	public static Vec3i normalize(Vec3i vec){
+		double length = toLength(vec);
+		return new Vec3i(vec.getX()/length, vec.getY()/length, vec.getZ()/length);
+	}
+
+	public static double normalizedY(Vec3i vec){
+		return vec.getY()/toLength(vec);
+	}
+
+	public static double toLength(double x, double y, double z){
+		return Math.sqrt(x*x+y*y+z*z);
+	}
+	
+	public static double normalizedY(double x, double y, double z){
+		return y/toLength(x, y, z);
+	}
+	
 	@Override
 	public String toString(){
 		return world+": "+x+"|"+y+"|"+z+" in "+dim;
 	}
-
+	
 	public World getWorld(){
 		return Signpost.proxy.getWorld(this.world, this.dim);
 	}
-
+	
 	public TileEntity getTile(){
 		World world = getWorld();
 		if(world!=null){
-			TileEntity tile = world.getTileEntity(x, y, z);
+			TileEntity tile = world.getTileEntity(this.toBlockPos());
 			if(tile instanceof PostPostTile){
 				((PostPostTile) tile).getBases();
 			}else if(tile instanceof PostPostTile){

@@ -27,7 +27,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 public class BigPostPost extends SuperPostPost {
@@ -35,17 +36,16 @@ public class BigPostPost extends SuperPostPost {
 	public BigPostType type;
 
 	public static enum BigPostType{
-						OAK(	Material.wood, 	"bigsign_oak", 		"log_oak",			Item.getItemFromBlock(Blocks.log),		0),
-						SPRUCE(	Material.wood, 	"bigsign_spruce", 	"log_spruce",		Item.getItemFromBlock(Blocks.log),		1),
-						BIRCH(	Material.wood, 	"bigsign_birch", 	"log_birch",		Item.getItemFromBlock(Blocks.log),		2),
-						JUNGLE(	Material.wood,	"bigsign_jungle", 	"log_jungle",		Item.getItemFromBlock(Blocks.log),		3),
-						ACACIA(	Material.wood, 	"bigsign_acacia", 	"log_acacia",		Item.getItemFromBlock(Blocks.log2),		0),
-						BIGOAK(	Material.wood, 	"bigsign_big_oak", 	"log_big_oak",		Item.getItemFromBlock(Blocks.log2),		1),
-						IRON(	Material.iron, 	"bigsign_iron", 	"iron_block",		Items.iron_ingot,							0),
-						STONE(	Material.rock, 	"bigsign_stone", 	"stone",			Item.getItemFromBlock(Blocks.stone),		0);
+						OAK(	Material.WOOD, 	"bigsign_oak", 		"log_oak",		Item.getItemFromBlock(Blocks.LOG),		0),
+						SPRUCE(	Material.WOOD, 	"bigsign_spruce", 	"log_spruce",	Item.getItemFromBlock(Blocks.LOG),		1),
+						BIRCH(	Material.WOOD, 	"bigsign_birch", 	"log_birch",	Item.getItemFromBlock(Blocks.LOG),		2),
+						JUNGLE(	Material.WOOD,	"bigsign_jungle", 	"log_jungle",	Item.getItemFromBlock(Blocks.LOG),		3),
+						ACACIA(	Material.WOOD, 	"bigsign_acacia", 	"log_acacia",	Item.getItemFromBlock(Blocks.LOG2),		0),
+						BIGOAK(	Material.WOOD, 	"bigsign_big_oak", 	"log_big_oak",	Item.getItemFromBlock(Blocks.LOG2),		1),
+						IRON(	Material.IRON, 	"bigsign_iron", 	"iron_block",		Items.IRON_INGOT,							0),
+						STONE(	Material.ROCK, 	"bigsign_stone", 	"stone",			Item.getItemFromBlock(Blocks.STONE),		0);
 		public Material material;
 		public ResourceLocation texture;
-		public String blockTexture;
 		public String textureMain;
 		public ResourceLocation resLocMain;
 		public Item baseItem;
@@ -54,7 +54,6 @@ public class BigPostPost extends SuperPostPost {
 		private BigPostType(Material material, String texture, String textureMain, Item baseItem, int metadata) {
 			this.material = material;
 			this.texture = new ResourceLocation(Signpost.MODID + ":textures/blocks/"+texture+".png");
-			this.blockTexture = texture;
 			this.textureMain = textureMain;
 			this.resLocMain = new ResourceLocation("minecraft:textures/blocks/"+textureMain+".png");
 			this.baseItem = baseItem;
@@ -74,26 +73,36 @@ public class BigPostPost extends SuperPostPost {
 
 	@Deprecated
 	public BigPostPost() {
-		super(Material.wood);
-		setBlockName("SignpostBigPost");
-		setCreativeTab(CreativeTabs.tabTransport);
-		setBlockTextureName("minecraft:planks_oak");
+		super(Material.WOOD);
+		setCreativeTab(CreativeTabs.TRANSPORTATION);
+		this.setHarvestLevel("axe", 0);
 		this.setHardness(2);
 		this.setResistance(100000);
-		float f = 15F / 32;
-		this.setBlockBounds(0.5f - f, 0.0F, 0.5F - f, 0.5F + f, 1, 0.5F + f);
+		this.setLightOpacity(0);
+		this.setUnlocalizedName("SignpostBigPostOAK");
+		this.setRegistryName(Signpost.MODID+":blockbigpostoak");
 	}
-	
+
 	public BigPostPost(BigPostType type){
 		super(type.material);
 		this.type = type;
-		setBlockName("SignpostBigPost"+type.toString());
-		setCreativeTab(CreativeTabs.tabTransport);
-		setBlockTextureName(Signpost.MODID+":"+type.blockTexture);
+		setCreativeTab(CreativeTabs.TRANSPORTATION);
+		switch(type){
+		case STONE:
+			this.setHarvestLevel("pickaxe", 0);
+			break;
+		case IRON:
+			this.setHarvestLevel("pickaxe", 1);
+			break;
+		default:
+			this.setHarvestLevel("axe", 0);
+			break;
+		}
 		this.setHardness(2);
 		this.setResistance(100000);
-		float f = 15F / 32;
-		this.setBlockBounds(0.5f - f, 0.0F, 0.5F - f, 0.5F + f, 1, 0.5F + f);
+		this.setLightOpacity(0);
+		this.setUnlocalizedName("SignpostBigPost"+type.name());
+		this.setRegistryName(Signpost.MODID+":blockbigpost"+type.name().toLowerCase());
 	}
 	
 	@Override
@@ -103,7 +112,7 @@ public class BigPostPost extends SuperPostPost {
 	}
 
 	public static BigPostPostTile getWaystonePostTile(World world, int x, int y, int z) {
-		TileEntity ret = world.getTileEntity(x, y, z);
+		TileEntity ret = world.getTileEntity(new BlockPos(x, y, z));
 		if (ret instanceof BigPostPostTile) {
 			return (BigPostPostTile) ret;
 		} else {
@@ -126,8 +135,6 @@ public class BigPostPost extends SuperPostPost {
 		BigBaseInfo tilebases = ((BigPostPostTile)superTile).getBases();
 		if (hit.target == BigHitTarget.BASE) {
 			tilebases.sign.rot(15, x, z);
-//		} else if (hit.target == BigHitTarget.POST){
-//			NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiBigPostID, x, y, z), (EntityPlayerMP) player);
 		}
 	}
 
@@ -201,11 +208,11 @@ public class BigPostPost extends SuperPostPost {
 			}
 		}
 		for(OverlayType now: OverlayType.values()){
-			if(player.getHeldItem().getItem().getClass() == now.item.getClass()){
+			if(player.getHeldItemMainhand().getItem().getClass() == now.item.getClass()){
 				if (hit.target == BigHitTarget.BASE) {
 					tilebases.sign.overlay = now;
 				}
-				player.inventory.consumeInventoryItem(now.item);
+				player.inventory.clearMatchingItems(now.item, 0, 1, null);
 				return;
 			}
 		}
@@ -232,7 +239,7 @@ public class BigPostPost extends SuperPostPost {
 						PostHandler.teleportMe(destination, (EntityPlayerMP) player, stackSize);
 					}else{
 						String[] keyword = { "<itemName>", "<amount>" };
-						String[] replacement = { ClientConfigStorage.INSTANCE.getCost().getUnlocalizedName() + ".name",     "" + stackSize };
+						String[] replacement = { ClientConfigStorage.INSTANCE.getCost().getUnlocalizedName() + ".name",	"" + stackSize };
 						NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.payment", keyword, replacement), (EntityPlayerMP) player);
 					}
 				}
@@ -282,11 +289,11 @@ public class BigPostPost extends SuperPostPost {
 	
 	@Override
 	public Object getHitTarget(World world, int x, int y, int z, EntityPlayer player){
-		Vec3 head = Vec3.createVectorHelper(player.posX, player.posY, player.posZ);
-		head.yCoord+=player.getEyeHeight();
+		DDDVector head = new DDDVector(player.posX, player.posY, player.posZ);
+		head.y+=player.getEyeHeight();
 		if(player.isSneaking())
-			head.yCoord-=0.08;
-		Vec3 look = player.getLookVec();
+			head.y-=0.08;
+		Vec3d look = player.getLookVec();
 		BigPostPostTile tile = getWaystonePostTile(world, x, y, z);
 		BigBaseInfo bases = tile.getBases();
 		DDDVector rotPos = new DDDVector(x+0.5,y+0.5,z+0.5);
@@ -302,7 +309,7 @@ public class BigPostPost extends SuperPostPost {
 		Cuboid post = new Cuboid(new DDDVector(x+0.375, y, z+0.375), new DDDVector(0.25, 1, 0.25), 0);
 		Cuboid waystone = new Cuboid(new DDDVector(x+0.25, y, z+0.25), new DDDVector(0.5, 0.5, 0.5), 0);
 
-		DDDVector start = new DDDVector(head.xCoord, head.yCoord, head.zCoord);
+		DDDVector start = new DDDVector(head.x, head.y, head.z);
 		DDDVector end = start.add(new DDDVector(look.xCoord, look.yCoord, look.zCoord));
 		Intersect signHit = sign.traceLine(start, end, true);
 		Intersect postHit = post.traceLine(start, end, true);
@@ -329,18 +336,6 @@ public class BigPostPost extends SuperPostPost {
 		return new BigHit(target, pos);
 	}
 
-	public int getRenderType() {
-		return -1;
-	}
-
-	public boolean renderAsNormalBlock() {
-		return false;
-	}
-
-	public boolean isOpaqueCube() {
-		return false;
-	}
-
 	@Override
 	public Paintable getPaintableByHit(SuperPostPostTile tile, Object hit){
 		switch((BigHitTarget)hit){
@@ -353,8 +348,8 @@ public class BigPostPost extends SuperPostPost {
 		}
 	}
 
-	public static BigPostPostTile getTile(World world, int x, int y, int z) {
-		TileEntity ret = world.getTileEntity(x, y, z);
+	public static BigPostPostTile getTile(World world, BlockPos pos) {
+		TileEntity ret = world.getTileEntity(pos);
 		if (ret instanceof BigPostPostTile) {
 			return (BigPostPostTile) ret;
 		} else {

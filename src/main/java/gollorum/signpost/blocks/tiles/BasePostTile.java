@@ -17,9 +17,22 @@ public class BasePostTile extends TileEntity implements WaystoneContainer {
 
 	public boolean isCanceled = false;
 
-	public BasePostTile() {super();}
+	public BasePostTile() {}
 	
 	public BasePostTile setup(){
+		SPEventHandler.scheduleTask(new BoolRun() {
+			@Override
+			public boolean run() {
+				if(isCanceled){
+					return true;
+				}
+				if(world==null){
+					return false;
+				}
+				init();
+				return true;
+			}
+		});
 		return this;
 	}
 	
@@ -27,35 +40,44 @@ public class BasePostTile extends TileEntity implements WaystoneContainer {
 		return PostHandler.allWaystones.getByPos(toPos());
 	}
 
+	public void init(){
+		boolean found = false;
+		if(getBaseInfo()!=null){
+			return;
+		}
+//		PostHandler.allWaystones.add(new BaseInfo(BasePost.generateName(), toPos(), null));
+	}
+
 	public MyBlockPos toPos(){
-		if(worldObj==null||worldObj.isRemote){
-			return new MyBlockPos("", xCoord, yCoord, zCoord, dim());
+		if(world==null||world.isRemote){
+			return new MyBlockPos("", pos.getX(), pos.getY(), pos.getZ(), dim());
 		}else{
-			return new MyBlockPos(worldObj.getWorldInfo().getWorldName(), xCoord, yCoord, zCoord, dim());
+			return new MyBlockPos(world.getWorldInfo().getWorldName(), pos.getX(), pos.getY(), pos.getZ(), dim());
 		}
 	}
 
 	public int dim(){
-		if(worldObj==null||worldObj.provider==null){
+		if(world==null||world.provider==null){
 			return Integer.MIN_VALUE;
 		}else
-			return worldObj.provider.dimensionId;
+			return world.provider.getDimension();
 	}
 	
 	public void onBlockDestroy(MyBlockPos pos) {
 		isCanceled = true;
+//		BaseInfo base = PostHandler.allWaystones.getByPos(pos);
 		BaseInfo base = getBaseInfo();
-		if(PostHandler.allWaystones.remove(base)){
-			MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.DESTROYED, worldObj, xCoord, yCoord, zCoord, base==null?"":base.name));
+		if(PostHandler.allWaystones.removeByPos(pos)){
+			MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.DESTROYED, world, this.pos.getX(), this.pos.getY(), this.pos.getZ(), base==null?"":base.name));
 			NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
 		}
 	}
 
 	@Override
 	public void setName(String name) {
-		BaseInfo bi = getBaseInfo();
-		bi.name = name;
-		NetworkHandler.netWrap.sendToServer(new BaseUpdateServerMessage(bi, false));
+		BaseInfo ws = getBaseInfo();
+		ws.name = name;
+		NetworkHandler.netWrap.sendToServer(new BaseUpdateServerMessage(ws, false));
 	}
 
 	@Override
@@ -68,11 +90,5 @@ public class BasePostTile extends TileEntity implements WaystoneContainer {
 	public String toString() {
 		return getName();
 	}
-	
-	@Override
-	 public int getBlockMetadata(){
-		try{
-			return super.getBlockMetadata();
-		}catch(NullPointerException e){return 0;}
-	}
+
 }

@@ -4,34 +4,29 @@ import org.lwjgl.opengl.GL11;
 
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blocks.tiles.PostPostTile;
+import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.util.DoubleBaseInfo;
+import gollorum.signpost.util.MyBlockPos;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 
-public class PostRenderer extends TileEntitySpecialRenderer{
+public class PostRenderer extends TileEntitySpecialRenderer<PostPostTile>{
 
 	private static final ModelPost model = new ModelPost();
 	
 	public PostRenderer(){}
-
+	
 	void setTexture(ResourceLocation loc){
 		try{
 			bindTexture(loc);
 		}catch(Exception e){
-			if(loc==null){
-			}else if(loc.equals(new ResourceLocation("signpost:textures/blocks/sign.png"))){
-				bindTexture(new ResourceLocation("signpost:textures/blocks/sign_oak.png"));
-			}else if(loc.equals(new ResourceLocation("signpost:textures/blocks/bigsign.png"))){
-				bindTexture(new ResourceLocation("signpost:textures/blocks/bigsign_oak.png"));
-			}
+//			bindTexture(new ResourceLocation("textures/blocks/planks_oak"));
 		}
 	}
 	
 	@Override
-	public void renderTileEntityAt(TileEntity ti, double x, double y, double z, float scale) {
-		PostPostTile tile = (PostPostTile)ti;
+    public void renderTileEntityAt(PostPostTile tile, double x, double y, double z, float partialTicks, int destroyStage){
 		DoubleBaseInfo tilebases = tile.bases;
 		double rotation1 = 0;
 		double rotation2 = 0;
@@ -39,12 +34,12 @@ public class PostRenderer extends TileEntitySpecialRenderer{
 			tilebases = tile.getBases();
 		}
 		if(!tile.isItem){
-			rotation1 = tilebases.sign1.calcRot(tile.xCoord, tile.zCoord);
-			rotation2 = tilebases.sign2.calcRot(tile.xCoord, tile.zCoord);
+			rotation1 = tilebases.sign1.calcRot(tile.getPos().getX(), tile.getPos().getZ());
+			rotation2 = tilebases.sign2.calcRot(tile.getPos().getX(), tile.getPos().getZ());
 		}
 		GL11.glPushMatrix();
 		GL11.glTranslated(x+0.5, y, z+0.5);
-		setTexture(tile.type.texture);
+		this.setTexture(tile.type.texture);
 		model.render(this, 0.1f, 0.0625f, tilebases, tile, rotation1, rotation2);
 
 		//Overlays
@@ -59,7 +54,7 @@ public class PostRenderer extends TileEntitySpecialRenderer{
 			}
 		}
         
-        FontRenderer fontrenderer = this.func_147498_b();
+        FontRenderer fontrenderer = this.getFontRenderer();
         GL11.glPushMatrix();
 		GL11.glTranslated(0, 0.8d, 0);
 		GL11.glRotated(180, 0, 0, 1);

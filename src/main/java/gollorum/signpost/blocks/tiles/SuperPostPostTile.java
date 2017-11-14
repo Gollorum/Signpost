@@ -24,7 +24,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 
 public abstract class SuperPostPostTile extends TileEntity implements WaystoneContainer{
-	
+
 	public boolean isItem = false;
 	public boolean isCanceled = false;
 	public UUID owner;
@@ -33,10 +33,11 @@ public abstract class SuperPostPostTile extends TileEntity implements WaystoneCo
 	public boolean isWaystone = false;
 	
 	public SuperPostPostTile(){
+		super();
 		SPEventHandler.scheduleTask(new BoolRun(){
 			@Override
 			public boolean run() {
-				if(worldObj==null){
+				if(world==null){
 					return false;
 				}else{
 					isWaystone();
@@ -45,16 +46,16 @@ public abstract class SuperPostPostTile extends TileEntity implements WaystoneCo
 			}
 		});
 	}
-
+	
 	public final MyBlockPos toPos(){
-		return new MyBlockPos(worldObj, xCoord, yCoord, zCoord, dim());
+		return new MyBlockPos(world, pos.getX(), pos.getY(), pos.getZ(), dim());
 	}
 
 	public final int dim(){
-		if(worldObj==null||worldObj.provider==null){
+		if(world==null||world.provider==null){
 			return Integer.MIN_VALUE;
 		}else
-			return worldObj.provider.dimensionId;
+			return world.provider.getDimension();
 	}
 
 	public static final ResourceLocation stringToLoc(String str){
@@ -64,28 +65,28 @@ public abstract class SuperPostPostTile extends TileEntity implements WaystoneCo
 	public static final String locToString(ResourceLocation loc){
 		return loc==null?"null":loc.getResourceDomain()+":"+loc.getResourcePath();
 	}
-	
+
 	public void onBlockDestroy(MyBlockPos pos){
 		if(isWaystone()){
 			destroyWaystone();
 		}
 	}
-
+	
 	public void destroyWaystone(){
 		MyBlockPos pos = toPos();
 		isWaystone = false;
-		EntityItem item = new EntityItem(worldObj, pos.x, pos.y, pos.z, new ItemStack(BlockHandler.base, 1));
-		worldObj.spawnEntityInWorld(item);
+		EntityItem item = new EntityItem(world, pos.x, pos.y, pos.z, new ItemStack(BlockHandler.base, 1));
+		world.spawnEntity(item);
 		BaseInfo base = PostHandler.allWaystones.getByPos(pos);
 		SPEventHandler.INSTANCE.updateWaystoneCount(this);
 		if(PostHandler.allWaystones.removeByPos(pos)){
-			MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.DESTROYED, worldObj, base.pos.x, base.pos.y, base.pos.z, base==null?"":base.name));
+			MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.DESTROYED, world, base.pos.x, base.pos.y, base.pos.z, base==null?"":base.name));
 			NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
 		}
 	}
 	
 	@Override
-	public void writeToNBT(NBTTagCompound tagCompound) {
+	public NBTTagCompound writeToNBT(NBTTagCompound tagCompound) {
 		super.writeToNBT(tagCompound);
 		tagCompound.setInteger("signpostNBTVersion", 1);
 		NBTTagCompound tagComp = new NBTTagCompound();
@@ -94,6 +95,7 @@ public abstract class SuperPostPostTile extends TileEntity implements WaystoneCo
 		}
 		save(tagComp);
 		tagCompound.setTag("signpostDataTag", tagComp);
+		return tagCompound;
 	}
 
 	@Override
@@ -115,7 +117,7 @@ public abstract class SuperPostPostTile extends TileEntity implements WaystoneCo
 
 	public abstract void save(NBTTagCompound tagCompound);
 	public abstract void load(NBTTagCompound tagCompound);
-
+	
 	public abstract Sign getSign(EntityPlayer player);
 	public abstract Paintable getPaintable(EntityPlayer player);
 	public abstract ResourceLocation getPostPaint();
@@ -125,7 +127,7 @@ public abstract class SuperPostPostTile extends TileEntity implements WaystoneCo
 	public abstract Paintable getPaintObject();
 	public abstract void setAwaitingPaint(boolean awaitingPaint);
 	public abstract void setPaintObject(Paintable paintObject);
-
+	
 	public boolean isWaystone(){
 		return isWaystone = (getBaseInfo()!=null);
 	}
@@ -147,10 +149,4 @@ public abstract class SuperPostPostTile extends TileEntity implements WaystoneCo
 		return ws == null ? "null" : getBaseInfo().toString();
 	}
 	
-	@Override
-	 public int getBlockMetadata(){
-		try{
-			return super.getBlockMetadata();
-		}catch(NullPointerException e){System.out.println(getClass());return 0;}
-	}
 }

@@ -1,8 +1,8 @@
 package gollorum.signpost.network.messages;
 
-import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import gollorum.signpost.util.BaseInfo;
 import io.netty.buffer.ByteBuf;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
 public class TeleportMeMessage implements IMessage{
 

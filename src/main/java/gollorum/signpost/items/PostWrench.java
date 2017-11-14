@@ -7,11 +7,9 @@ import net.minecraft.item.Item;
 public class PostWrench extends Item {
 	
 	public PostWrench() {
-	    super();
-
 	    this.setUnlocalizedName("SignpostTool");
-	    this.setCreativeTab(CreativeTabs.tabTools);
-	    this.setTextureName(Signpost.MODID + ":tool");
+		this.setRegistryName(Signpost.MODID+":itemwrench");
+	    this.setCreativeTab(CreativeTabs.TOOLS);
 	}
 
 }

@@ -1,15 +1,16 @@
 package gollorum.signpost.gui;
 
-import cpw.mods.fml.client.FMLClientHandler;
+import java.io.IOException;
+
 import gollorum.signpost.SPEventHandler;
 import gollorum.signpost.blocks.SuperPostPost;
 import gollorum.signpost.blocks.tiles.SuperPostPostTile;
 import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.Paintable;
-import gollorum.signpost.util.collections.Lurchsauna;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.client.FMLClientHandler;
 
 public class SignGuiPaint extends GuiScreen {
 
@@ -17,9 +18,6 @@ public class SignGuiPaint extends GuiScreen {
 	private Paintable paintable;
 	private SuperPostPostTile tile;
 	
-	private Lurchsauna<String> possibilities = new Lurchsauna<String>();
-	private int possibleCount = 0;
-	private int possibleIndex = 0;
 
 	private boolean resetMouse;
 
@@ -48,7 +46,6 @@ public class SignGuiPaint extends GuiScreen {
 			}
 			nameInputBox.setText(name);
 		}
-
 		try{
 			nameInputBox.drawTextBox();
 		}catch(Exception e){}
@@ -57,6 +54,7 @@ public class SignGuiPaint extends GuiScreen {
 			resetMouse = false;
 			org.lwjgl.input.Mouse.setGrabbed(false);
 		}
+		
 		super.drawScreen(mouseX, mouseY, partialTicks);
 	}
 
@@ -73,7 +71,7 @@ public class SignGuiPaint extends GuiScreen {
 				if(fontRendererObj==null){
 					return false;
 				}
-				nameInputBox = new GuiTextField(fontRendererObj, width/4, height/2 - 46, width/2, 20);
+				nameInputBox = new GuiTextField(0, fontRendererObj, width/4, height/2 - 46, width/2, 20);
 				nameInputBox.setMaxStringLength(100);
 				ResourceLocation loc = paintable==null ? tile.getPostPaint() : paintable.getTexture();
 				String name;
@@ -86,7 +84,7 @@ public class SignGuiPaint extends GuiScreen {
 				return true;
 			}
 		});
-		nameInputBox = new GuiTextField(this.fontRendererObj, this.width/4, this.height/2 - 46, this.width/2, 20);
+		nameInputBox = new GuiTextField(0, this.fontRendererObj, this.width/4, this.height/2 - 46, this.width/2, 20);
 		nameInputBox.setMaxStringLength(100);
 		if(mc==null){
 			mc = FMLClientHandler.instance().getClient();
@@ -100,12 +98,11 @@ public class SignGuiPaint extends GuiScreen {
 		}
 		nameInputBox.setText(name);
 		nameInputBox.setFocused(true);
-		
 		resetMouse = true;
 	}
 
 	@Override
-	protected void keyTyped(char par1, int par2) {
+	protected void keyTyped(char par1, int par2) throws IOException {
 		if(par1==13){
 			this.mc.displayGuiScreen(null);
 			return;
@@ -127,7 +124,7 @@ public class SignGuiPaint extends GuiScreen {
 	}
 
 	@Override
-	protected void mouseClicked(int x, int y, int btn) {
+	protected void mouseClicked(int x, int y, int btn) throws IOException {
 		super.mouseClicked(x, y, btn);
 		this.nameInputBox.mouseClicked(x, y, btn);
 	}
@@ -140,6 +137,6 @@ public class SignGuiPaint extends GuiScreen {
 		}else{
 			tile.setPostPaint(new ResourceLocation(nameInputBox.getText()));
 		}
-		((SuperPostPost)tile.blockType).sendPostBasesToServer(tile);
+		((SuperPostPost)tile.getBlockType()).sendPostBasesToAll(tile);
 	}
 }

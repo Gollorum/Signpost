@@ -1,12 +1,12 @@
 package gollorum.signpost.gui;
 
 import java.awt.Color;
+import java.io.IOException;
 
-import cpw.mods.fml.client.FMLClientHandler;
 import gollorum.signpost.blocks.WaystoneContainer;
-import gollorum.signpost.blocks.tiles.BasePostTile;
 import gollorum.signpost.management.PostHandler;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraftforge.fml.client.FMLClientHandler;
 
 public class SignGuiBase extends GuiScreen {
 
@@ -16,6 +16,9 @@ public class SignGuiBase extends GuiScreen {
 
 	public SignGuiBase(WaystoneContainer tile) {
 		this.tile = tile;
+		if(tile==null){
+			System.out.println("ACHTUNG; DAT TEIL IST FETT NULL!!!!!");
+		}
 		initGui();
 	}
 
@@ -48,7 +51,7 @@ public class SignGuiBase extends GuiScreen {
 	}
 
 	@Override
-	protected void keyTyped(char par1, int par2) {
+	protected void keyTyped(char par1, int par2) throws IOException {
 		if(par1==13){
 			this.mc.displayGuiScreen(null);
 			return;
@@ -83,7 +86,7 @@ public class SignGuiBase extends GuiScreen {
 	}
 
 	@Override
-	protected void mouseClicked(int x, int y, int btn) {
+	protected void mouseClicked(int x, int y, int btn) throws IOException {
 		super.mouseClicked(x, y, btn);
 		this.nameInputBox.mouseClicked(x, y, btn);
 	}

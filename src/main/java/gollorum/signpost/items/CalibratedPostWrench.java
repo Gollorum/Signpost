@@ -6,12 +6,12 @@ import net.minecraft.item.Item;
 
 public class CalibratedPostWrench extends Item {
 	
+	public static final String NAME = "wrench";
+	
 	public CalibratedPostWrench() {
-	    super();
-
 	    this.setUnlocalizedName("SignpostCalibratedTool");
-	    this.setCreativeTab(CreativeTabs.tabTools);
-	    this.setTextureName(Signpost.MODID + ":toolcalibrated");
+		this.setRegistryName(Signpost.MODID+":itemcalibratedwrench");
+	    this.setCreativeTab(CreativeTabs.TOOLS);
 	}
 
 }

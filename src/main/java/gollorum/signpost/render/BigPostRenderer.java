@@ -8,10 +8,9 @@ import gollorum.signpost.util.BigBaseInfo;
 import gollorum.signpost.util.Sign;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 
-public class BigPostRenderer extends TileEntitySpecialRenderer{
+public class BigPostRenderer extends TileEntitySpecialRenderer<BigPostPostTile>{
 
 	private static final ModelBigSign model16 = new ModelBigSign(true);
 	private static final ModelBigSign model32 = new ModelBigSign(false);
@@ -26,15 +25,14 @@ public class BigPostRenderer extends TileEntitySpecialRenderer{
 	}
 	
 	@Override
-	public void renderTileEntityAt(TileEntity ti, double x, double y, double z, float scale) {
-		BigPostPostTile tile = (BigPostPostTile)ti;
+    public void renderTileEntityAt(BigPostPostTile tile, double x, double y, double z, float partialTicks, int destroyStage){
 		BigBaseInfo tilebases = tile.bases;
 		double rotation = 0;
 		if(tilebases==null && !tile.isItem){
 			tilebases = tile.getBases();
 		}
 		if(!tile.isItem){
-			rotation = tilebases.sign.calcRot(tile.xCoord, tile.zCoord);
+			rotation = tilebases.sign.calcRot(tile.getPos().getX(), tile.getPos().getZ());
 		}
 		
 		GL11.glPushMatrix();
@@ -66,7 +64,7 @@ public class BigPostRenderer extends TileEntitySpecialRenderer{
 			}
 		}
         
-        FontRenderer fontrenderer = this.func_147498_b();
+        FontRenderer fontrenderer = this.getFontRenderer();
         GL11.glPushMatrix();
 		GL11.glTranslated(0, 1.12, 0);
 		GL11.glRotated(180, 0, 0, 1);

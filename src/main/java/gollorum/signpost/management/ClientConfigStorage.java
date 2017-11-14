@@ -4,6 +4,7 @@ import gollorum.signpost.Signpost;
 import gollorum.signpost.management.ConfigHandler.RecipeCost;
 import gollorum.signpost.management.ConfigHandler.SecurityLevel;
 import net.minecraft.item.Item;
+import net.minecraft.util.ResourceLocation;
 
 public class ClientConfigStorage {
 	
@@ -28,9 +29,9 @@ public class ClientConfigStorage {
 	private boolean disableDiscovery;
 	
 	public void postInit(){
-		cost = (Item) Item.itemRegistry.getObject(paymentItem);
+		cost = (Item) Item.REGISTRY.getObject(new ResourceLocation(paymentItem));
 		if(cost==null){
-			cost = (Item) Item.itemRegistry.getObject("minecraft:"+paymentItem);
+			cost = (Item) Item.REGISTRY.getObject(new ResourceLocation("minecraft:"+paymentItem));
 		}
 		Signpost.proxy.blockHandler.registerRecipes();
 	}

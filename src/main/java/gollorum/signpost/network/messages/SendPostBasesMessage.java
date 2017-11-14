@@ -1,12 +1,12 @@
 package gollorum.signpost.network.messages;
 
-import cpw.mods.fml.common.network.ByteBufUtils;
-import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import gollorum.signpost.blocks.tiles.PostPostTile;
 import gollorum.signpost.blocks.tiles.SuperPostPostTile;
 import gollorum.signpost.util.DoubleBaseInfo;
 import gollorum.signpost.util.MyBlockPos;
 import io.netty.buffer.ByteBuf;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
 public class SendPostBasesMessage implements IMessage {
 
@@ -29,7 +29,7 @@ public class SendPostBasesMessage implements IMessage {
 
 	public String paint1;
 	public String paint2;
-	
+
 	public String postPaint;
 	
 	public byte paintObjectIndex;
@@ -62,7 +62,6 @@ public class SendPostBasesMessage implements IMessage {
 		}else{
 			paintObjectIndex = 0;
 		}
-		
 	}
 
 	@Override

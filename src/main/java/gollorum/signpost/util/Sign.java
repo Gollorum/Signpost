@@ -7,7 +7,7 @@ import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
 
-public class Sign implements Paintable {
+public class Sign implements Paintable{
 
 	public BaseInfo base;
 	public int rotation;
@@ -35,9 +35,9 @@ public class Sign implements Paintable {
 	}
 
 	public static enum OverlayType{
-		GRAS(	"grass",	Items.wheat_seeds),
-		VINE(	"vine",		Item.getItemFromBlock(Blocks.vine)),
-		SNOW(	"snow",		Items.snowball);
+		GRAS(	"grass",	Items.WHEAT_SEEDS),
+		VINE(	"vine",		Item.getItemFromBlock(Blocks.VINE)),
+		SNOW(	"snow",		Items.SNOWBALL);
 		public String texture;
 		public Item item;
 		OverlayType(String texture, Item item){
@@ -54,7 +54,7 @@ public class Sign implements Paintable {
 	}
 
 	public final double calcRot(int x, int z) {
- 		if(point&&!(base==null||base.blockPos==null||ClientConfigStorage.INSTANCE.deactivateTeleportation())){
+ 		if(point&&!(base==null||base.pos==null||ClientConfigStorage.INSTANCE.deactivateTeleportation())){
 			int dx = x-base.blockPos.x;
 			int dz = z-base.blockPos.z;
 			return DDDVector.genAngle(dx, dz)+Math.toRadians(-90+(flip?0:180)+(dx<0&&dz>0?180:0));

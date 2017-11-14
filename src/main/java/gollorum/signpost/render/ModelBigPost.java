@@ -2,7 +2,6 @@ package gollorum.signpost.render;
 
 import org.lwjgl.opengl.GL11;
 
-import gollorum.signpost.blocks.BigPostPost;
 import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.util.BigBaseInfo;
 import net.minecraft.client.model.ModelBase;
@@ -33,11 +32,7 @@ public class ModelBigPost extends ModelBase {
 		if(tile.isAwaitingPaint() && tile.getPaintObject() instanceof BigBaseInfo){
 			postRenderer.setTexture(tilebases.POST_PAINT);
 		}else{
-			if(tile.isItem){
-				postRenderer.setTexture(((BigPostPost)tile.blockType).type.resLocMain);
-			}else{
-				postRenderer.setTexture(tilebases.postPaint);
-			}
+			postRenderer.setTexture(tilebases.postPaint);
 		}
 		GL11.glPushMatrix();
 		GL11.glRotated(180, 1, 0, 0);

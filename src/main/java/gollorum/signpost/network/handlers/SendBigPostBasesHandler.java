@@ -1,9 +1,5 @@
 package gollorum.signpost.network.handlers;
 
-import cpw.mods.fml.common.network.simpleimpl.IMessage;
-import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
-import cpw.mods.fml.common.network.simpleimpl.MessageContext;
-import cpw.mods.fml.relauncher.Side;
 import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
@@ -12,6 +8,10 @@ import gollorum.signpost.util.BigBaseInfo;
 import gollorum.signpost.util.Sign;
 import gollorum.signpost.util.Sign.OverlayType;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.fml.relauncher.Side;
 
 public class SendBigPostBasesHandler implements IMessageHandler<SendBigPostBasesMessage, IMessage>{
 
@@ -54,7 +54,7 @@ public class SendBigPostBasesHandler implements IMessageHandler<SendBigPostBases
 			break;
 		}
 		if(ctx.side.equals(Side.SERVER)){
-			ctx.getServerHandler().playerEntity.worldObj.getTileEntity(message.pos.x, message.pos.y, message.pos.z).markDirty();
+			ctx.getServerHandler().playerEntity.world.getTileEntity(message.pos.toBlockPos()).markDirty();
 			NetworkHandler.netWrap.sendToAll(message);
 		}
 		return null;

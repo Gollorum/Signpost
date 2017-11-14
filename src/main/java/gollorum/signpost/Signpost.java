@@ -3,16 +3,6 @@ package gollorum.signpost;
 import java.io.File;
 import java.util.UUID;
 
-import cpw.mods.fml.common.Mod;
-import cpw.mods.fml.common.Mod.EventHandler;
-import cpw.mods.fml.common.Mod.Instance;
-import cpw.mods.fml.common.SidedProxy;
-import cpw.mods.fml.common.event.FMLInitializationEvent;
-import cpw.mods.fml.common.event.FMLPostInitializationEvent;
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.event.FMLServerAboutToStartEvent;
-import cpw.mods.fml.common.event.FMLServerStartingEvent;
-import cpw.mods.fml.common.network.NetworkRegistry;
 import gollorum.signpost.commands.ConfirmTeleportCommand;
 import gollorum.signpost.commands.DiscoverWaystone;
 import gollorum.signpost.commands.GetSignpostCount;
@@ -30,6 +20,16 @@ import gollorum.signpost.util.StonedHashSet;
 import gollorum.signpost.util.collections.Lurchpaerchensauna;
 import net.minecraft.command.ServerCommandManager;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventHandler;
+import net.minecraftforge.fml.common.Mod.Instance;
+import net.minecraftforge.fml.common.SidedProxy;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerAboutToStartEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
 
 @Mod(modid = Signpost.MODID, version = Signpost.VERSION, name = "SignPost")
 public class Signpost{
@@ -44,30 +44,29 @@ public class Signpost{
 	public static final int GuiBigPostID = 2;
 	public static final int GuiPostBrushID = 3;
 	public static final int GuiPostRotationID = 4;
+
+	public static File configFile;
 	
 	public static NBTTagCompound saveFile;
-	
-	public static File configFile;
 	
 	@SidedProxy(clientSide = "gollorum.signpost.ClientProxy", serverSide = "gollorum.signpost.CommonProxy")
 	public static CommonProxy proxy;
 
 	@EventHandler
 	public void preinit(FMLPreInitializationEvent event) {
-		
+
 		File configFolder = new File(event.getModConfigurationDirectory() + "/" + MODID);
 		configFolder.mkdirs();
 		configFile = new File(configFolder.getPath(), MODID + ".cfg");
 		ConfigHandler.init(configFile);
 		proxy.preInit();
         
-		proxy.init();
-		
 	}
 
 	@EventHandler
 	public void init(FMLInitializationEvent event) {
 		NetworkRegistry.INSTANCE.registerGuiHandler(this, new SignGuiHandler());
+		proxy.init();
 	}
 	
 	@EventHandler
@@ -78,16 +77,11 @@ public class Signpost{
 		PostHandler.setBigPosts(new Lurchpaerchensauna<MyBlockPos, BigBaseInfo>());
 		PostHandler.awaiting = new Lurchpaerchensauna<UUID, TeleportInformation>();
 	}
-
-    @EventHandler
-    public void preServerStart(FMLServerAboutToStartEvent event) {
-        PostHandler.init();
-    }
-
-    @EventHandler
-    public void serverAboutToStart(FMLServerAboutToStartEvent e){
-    	PostHandler.init();
-    }
+	
+	@EventHandler
+	public void serverAboutToStart(FMLServerAboutToStartEvent e){
+		PostHandler.init();
+	}
     
 	@EventHandler
 	public void serverStarting(FMLServerStartingEvent e) {
@@ -100,5 +94,4 @@ public class Signpost{
 		manager.registerCommand(new DiscoverWaystone());
 		ConfigHandler.init(configFile);
 	}
-
 }

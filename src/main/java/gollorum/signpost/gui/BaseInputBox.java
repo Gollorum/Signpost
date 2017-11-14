@@ -2,13 +2,12 @@ package gollorum.signpost.gui;
 
 import org.lwjgl.opengl.GL11;
 
-import cpw.mods.fml.client.FMLClientHandler;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.util.ChatAllowedCharacters;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.client.FMLClientHandler;
 
 public class BaseInputBox extends Gui{
 	
@@ -54,24 +53,11 @@ public class BaseInputBox extends Gui{
 	
 	public void drawSignBox(FontRenderer fontRend){
 		FMLClientHandler.instance().getClient().renderEngine.bindTexture(texture);
-		drawTexturedModalRect(this.x, this.y, 0, 0, width, height);
+		drawModalRectWithCustomSizedTexture(x, y, 0f, 0f, width, height, (float)pWidth*5.5f, (float)pHeight*5.5f);
 		if((this.fontRend = fontRend)!=null){
 			drawText();
 		}
 	}
-	
-	@Override  
-	public void drawTexturedModalRect(int x, int y, int u, int v, int width, int height){
-        float f = 0.00390625F;
-        float f1 = 0.00390625F;
-        Tessellator tessellator = Tessellator.instance;
-        tessellator.startDrawingQuads();
-        tessellator.addVertexWithUV((double)(x), 		(double)(y+height), (double)this.zLevel, 0.0, 1.0);
-        tessellator.addVertexWithUV((double)(x+width), 	(double)(y+height), (double)this.zLevel, 1.0, 1.0);
-        tessellator.addVertexWithUV((double)(x+width), 	(double)(y), 		(double)this.zLevel, 1.0, 0.0);
-        tessellator.addVertexWithUV((double)(x),		(double)(y), 		(double)this.zLevel, 0.0, 0.0);
-        tessellator.draw();
-    }
 	
 	public void drawText(){
 		String txt;
@@ -170,7 +156,7 @@ public class BaseInputBox extends Gui{
     }
 
     public void writeText(String p_146191_1_){
-        String s2 = ChatAllowedCharacters.filerAllowedCharacters(p_146191_1_);
+        String s2 = ChatAllowedCharacters.filterAllowedCharacters(p_146191_1_);
 
         this.text = text.substring(0, cursorPosition)+s2+text.substring(cursorPosition);
         this.moveCursorBy(s2.length());

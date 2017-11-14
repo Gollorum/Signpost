@@ -23,23 +23,42 @@ import net.minecraft.util.ResourceLocation;
 
 public class BigPostPostTile extends SuperPostPostTile {
 
-	public BigPostType type = BigPostType.OAK;
+	public BigPostType type = null;
 	public static final int DESCRIPTIONLENGTH = 4;
 
 	@Deprecated
 	public BigBaseInfo bases = null;
 
-	public BigPostPostTile(){super();}
+	public BigPostPostTile(){
+		super();
+		SPEventHandler.scheduleTask(new BoolRun(){
+			@Override
+			public boolean run() {
+				if(getBlockType()==null){
+					return false;
+				}else{
+					if(getBlockType() instanceof BigPostPost){
+						type = ((BigPostPost)getBlockType()).type;
+					}
+					return true;
+				}
+			}
+		});
+	}
 
 	public BigPostPostTile(BigPostType type){
-		this();
+		super();
 		this.type = type;
 	}
 	
 	public BigBaseInfo getBases(){
 		BigBaseInfo bases = PostHandler.getBigPosts().get(toPos());
 		if(bases==null){
-			bases = new BigBaseInfo(type.texture, type.resLocMain);
+			if(type ==null){
+				bases = new BigBaseInfo(BigPostType.OAK.texture, BigPostType.OAK.resLocMain);
+			}else{
+				bases = new BigBaseInfo(type.texture, type.resLocMain);
+			}
 			PostHandler.getBigPosts().put(toPos(), bases);
 		}
 		this.bases = bases;
@@ -52,8 +71,8 @@ public class BigPostPostTile extends SuperPostPostTile {
 		isCanceled = true;
 		BigBaseInfo bases = getBases();
 		if(bases.sign.overlay!=null){
-			EntityItem item = new EntityItem(worldObj, pos.x, pos.y, pos.z, new ItemStack(bases.sign.overlay.item, 1));
-			worldObj.spawnEntityInWorld(item);
+			EntityItem item = new EntityItem(world, pos.x, pos.y, pos.z, new ItemStack(bases.sign.overlay.item, 1));
+			world.spawnEntity(item);
 		}
 		if(PostHandler.getBigPosts().remove(pos)!=null){
 			NetworkHandler.netWrap.sendToAll(new SendAllBigPostBasesMessage());
@@ -92,6 +111,8 @@ public class BigPostPostTile extends SuperPostPostTile {
 		final String[] description = new String[DESCRIPTIONLENGTH];
 		final String paint = tagCompound.getString("paint");
 		final String postPaint = tagCompound.getString("postPaint");
+		
+		final BigPostPostTile self = this;
 
 		for(int i=0; i<DESCRIPTIONLENGTH; i++){
 			description[i] = tagCompound.getString("description"+i);
@@ -101,10 +122,10 @@ public class BigPostPostTile extends SuperPostPostTile {
 		SPEventHandler.scheduleTask(new BoolRun(){
 			@Override
 			public boolean run() {
-				if(worldObj==null){
+				if(world==null || type==null){
 					return false;
 				}else{
-					if(worldObj.isRemote){
+					if(world.isRemote){
 						return true;
 					}
 					BigBaseInfo bases = getBases();
@@ -129,8 +150,8 @@ public class BigPostPostTile extends SuperPostPostTile {
 						bases.paintObject = null;
 						bases.awaitingPaint = false;
 						break;
-					}
-					NetworkHandler.netWrap.sendToAll(new SendBigPostBasesMessage((BigPostPostTile) worldObj.getTileEntity(xCoord, yCoord, zCoord), bases));
+				}
+				NetworkHandler.netWrap.sendToAll(new SendBigPostBasesMessage(self, bases));
 					return true;
 				}
 			}
@@ -140,7 +161,7 @@ public class BigPostPostTile extends SuperPostPostTile {
 	@Override
 	public Sign getSign(EntityPlayer player) {
 		BigBaseInfo bases = getBases();
-		BigHit hit = (BigHit) ((BigPostPost)blockType).getHitTarget(worldObj, xCoord, yCoord, zCoord, player);
+		BigHit hit = (BigHit) ((BigPostPost)getBlockType()).getHitTarget(world, getPos().getX(), pos.getY(), pos.getZ(), player);
 		if(hit.target.equals(BigHitTarget.BASE)){
 			return bases.sign;
 		}else{
@@ -151,19 +172,19 @@ public class BigPostPostTile extends SuperPostPostTile {
 	@Override
 	public Paintable getPaintable(EntityPlayer player) {
 		BigBaseInfo bases = getBases();
-		BigHit hit = (BigHit) ((BigPostPost)getBlockType()).getHitTarget(worldObj, xCoord, yCoord, zCoord, player);
+		BigHit hit = (BigHit) ((BigPostPost)getBlockType()).getHitTarget(world, pos.getX(), pos.getY(), pos.getZ(), player);
 		if(hit.target.equals(BigHitTarget.BASE)){
 			return bases.sign;
 		}else{
 			return bases;
 		}
 	}
-
+	
 	@Override
 	public ResourceLocation getPostPaint(){
 		return getBases().postPaint;
 	}
-
+	
 	public void setPostPaint(ResourceLocation loc){
 		getBases().postPaint = loc;
 	}
@@ -187,7 +208,7 @@ public class BigPostPostTile extends SuperPostPostTile {
 	public void setPaintObject(Paintable paintObject){
 		getBases().paintObject = paintObject;
 	}
-	
+
 	@Override
 	public String toString(){
 		return getBases()+" at "+toPos();

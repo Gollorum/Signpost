@@ -2,18 +2,18 @@ package gollorum.signpost.management;
 
 import java.io.File;
 
-import cpw.mods.fml.common.registry.LanguageRegistry;
 import gollorum.signpost.Signpost;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.translation.I18n;
 import net.minecraftforge.common.config.Configuration;
 
 public class ConfigHandler {
 
 	private static Configuration config;
-	
+
 	public static boolean skipTeleportConfirm;
 	
 	public static boolean deactivateTeleportation;
@@ -24,7 +24,7 @@ public class ConfigHandler {
 	public static Item cost;
 	public static String paymentItem;
 	public static int costMult;
-
+	
 	public static RecipeCost signRec;
 	public static RecipeCost waysRec;
 
@@ -44,16 +44,16 @@ public class ConfigHandler {
 			return ret;
 		}
 		public boolean canPlace(EntityPlayerMP player){
-			return this.equals(ConfigHandler.SecurityLevel.ALL)||
+			return this.equals(ALL)||
 				   this.equals(OWNERS)||
 				   isOp(player)||
-				   (isCreative(player)&&this.equals(ConfigHandler.SecurityLevel.CREATIVEONLY));
+				   (isCreative(player)&&this.equals(CREATIVEONLY));
 		}
 		public boolean canUse(EntityPlayerMP player, String owner){
-			return this.equals(ConfigHandler.SecurityLevel.ALL)||
-				   isOp(player)||
-				   (this.equals(ConfigHandler.SecurityLevel.OWNERS) && (owner.equals(player.getUniqueID().toString()) || owner.equals("null")))||
-				   (isCreative(player)&&this.equals(ConfigHandler.SecurityLevel.CREATIVEONLY));
+			return this.equals(ALL)||
+					   isOp(player)||
+					   (this.equals(OWNERS) && (owner.equals(player.getUniqueID().toString()) || owner.equals("null")))||
+					   (isCreative(player)&&this.equals(CREATIVEONLY));
 		}
 	}
 
@@ -61,10 +61,10 @@ public class ConfigHandler {
 		DEACTIVATED, NORMAL, EXPENSIVE, VERY_EXPENSIVE;
 		public static String[] allValues(){
 			String[] ret = {
-					DEACTIVATED.toString(),
-					NORMAL.toString(),
-					EXPENSIVE.toString(),
-					VERY_EXPENSIVE.toString(),
+				DEACTIVATED.toString(),
+				NORMAL.toString(),
+				EXPENSIVE.toString(),
+				VERY_EXPENSIVE.toString(),
 			};
 			return ret;
 		}
@@ -79,21 +79,21 @@ public class ConfigHandler {
 	}
 	
 	public static void postInit(){
-		cost = (Item) Item.itemRegistry.getObject(paymentItem);
+		cost = (Item) Item.REGISTRY.getObject(new ResourceLocation(paymentItem));
 		if(cost==null){
-			cost = (Item) Item.itemRegistry.getObject("minecraft:"+paymentItem);
+			cost = (Item) Item.REGISTRY.getObject(new ResourceLocation("minecraft:"+paymentItem));
 		}
 		ClientConfigStorage.INSTANCE.setCost(cost);
 		Signpost.proxy.blockHandler.registerRecipes();
 	}
-	
+
 	public static void loadClientSettings(){
 		String category = "Client Settings";
 		
 		config.addCustomCategoryComment(category, "Client-Side settings");
 		
 		skipTeleportConfirm = config.getBoolean("skipTeleportConfirm", category, true, "Directly teleports the player on waystone right-click");
-		
+
 		ClientConfigStorage.INSTANCE.setSkipTeleportConfirm(skipTeleportConfirm);
 	}
 	
@@ -147,8 +147,8 @@ public class ConfigHandler {
 		ClientConfigStorage.INSTANCE.setDisableDiscovery(disableDiscovery);
 	}
 
-	public static boolean isOp(EntityPlayer player){
-		return MinecraftServer.getServer().getConfigurationManager().func_152596_g(player.getGameProfile());
+	public static boolean isOp(EntityPlayerMP player){
+		return player.canUseCommand(2, "");
 	}
 	
 	public static boolean isCreative(EntityPlayer player){
@@ -156,10 +156,6 @@ public class ConfigHandler {
 	}
 	
 	public static String costName(){
-		String out = LanguageRegistry.instance().getStringLocalization(ClientConfigStorage.INSTANCE.getCost().getUnlocalizedName()+".name");
-		if(out.equals("")){
-			out = LanguageRegistry.instance().getStringLocalization(ClientConfigStorage.INSTANCE.getCost().getUnlocalizedName()+".name", "en_US");
-		}
-		return out;
+		return I18n.translateToLocal(ClientConfigStorage.INSTANCE.getCost().getUnlocalizedName()+".name");
 	}
 }

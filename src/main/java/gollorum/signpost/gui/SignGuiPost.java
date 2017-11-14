@@ -1,9 +1,8 @@
 package gollorum.signpost.gui;
 
 import java.awt.Color;
+import java.io.IOException;
 
-import cpw.mods.fml.client.FMLClientHandler;
-import cpw.mods.fml.common.registry.LanguageRegistry;
 import gollorum.signpost.blocks.tiles.PostPostTile;
 import gollorum.signpost.management.ClientConfigStorage;
 import gollorum.signpost.management.ConfigHandler;
@@ -14,6 +13,8 @@ import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.DoubleBaseInfo;
 import gollorum.signpost.util.MyBlockPos.Connection;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.util.text.translation.I18n;
+import net.minecraftforge.fml.client.FMLClientHandler;
 
 public class SignGuiPost extends GuiScreen implements SignInput {
 
@@ -51,7 +52,7 @@ public class SignGuiPost extends GuiScreen implements SignInput {
 	}
 	
 	@Override
-    protected void mouseClicked(int x, int y, int bla){
+    protected void mouseClicked(int x, int y, int bla) throws IOException{
 		super.mouseClicked(x, y, bla);
 		base1InputBox.mouseClicked(x, y, bla);
 		base2InputBox.mouseClicked(x, y, bla);
@@ -64,15 +65,15 @@ public class SignGuiPost extends GuiScreen implements SignInput {
 			if(mc==null){
 				mc = FMLClientHandler.instance().getClient();
 			}
-			if (base1InputBox == null) {
+			if(base1InputBox==null){
 				DoubleBaseInfo tilebases = tile.getBases();
 				base1InputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137, this);
-				base1InputBox.setText(tilebases.sign1.base == null ? "" : tilebases.sign1.base.toString());
+				base1InputBox.setText(tilebases.sign1.base==null?"":tilebases.sign1.base.toString());
 			}
-			if (base2InputBox == null) {
+			if(base2InputBox==null){
 				DoubleBaseInfo tilebases = tile.getBases();
 				base2InputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 + 40, 137, this);
-				base2InputBox.setText(tilebases.sign2.base == null ? "" : tilebases.sign2.base.toString());
+				base2InputBox.setText(tilebases.sign2.base==null?"":tilebases.sign2.base.toString());
 			}
 			drawDefaultBackground();
 	
@@ -90,7 +91,7 @@ public class SignGuiPost extends GuiScreen implements SignInput {
 	}
 
 	@Override
-	protected void keyTyped(char par1, int par2) {
+	protected void keyTyped(char par1, int par2) throws IOException {
 		super.keyTyped(par1, par2);
 		if(par1==13){
 			if(base1InputBox.isFocused()){
@@ -152,20 +153,17 @@ public class SignGuiPost extends GuiScreen implements SignInput {
 		}
 		NetworkHandler.netWrap.sendToServer(new SendPostBasesMessage(tile, tilebases));
 	}
-	
+
 	@Override
-	public void onTextChange(SignInputBox box){
+	public void onTextChange(SignInputBox box) {
 		boolean base2 = box==base2InputBox;
 		BaseInfo inf = PostHandler.getWSbyName(box.getText());
 		Connection connect = tile.toPos().canConnectTo(inf);
 		if(inf==null||!connect.equals(Connection.VALID)){
 			box.textColor = Color.red.getRGB();
 			if(connect.equals(Connection.DIST)){
-				
-				String out = LanguageRegistry.instance().getStringLocalization("signpost.guiTooFar");
-				if(out.equals("")){
-					out = LanguageRegistry.instance().getStringLocalization("signpost.guiTooFar", "en_US");
-				}
+
+				String out = I18n.translateToLocal("signpost.guiTooFar");
 				out = out.replaceAll("<distance>", ""+(int)tile.toPos().distance(inf.pos)+1);
 				out = out.replaceAll("<maxDist>", ""+ClientConfigStorage.INSTANCE.getMaxDist());
 				if(base2){
@@ -180,10 +178,7 @@ public class SignGuiPost extends GuiScreen implements SignInput {
 				
 			}else if(connect.equals(Connection.WORLD)){
 
-				String out = LanguageRegistry.instance().getStringLocalization("signpost.guiWorldDim");
-				if(out.equals("")){
-					out = LanguageRegistry.instance().getStringLocalization("signpost.guiWorldDim", "en_US");
-				}
+				String out = I18n.translateToLocal("signpost.guiWorldDim");
 				if(base2){
 					std1 = out;
 					col1 = Color.red.getRGB();
@@ -216,10 +211,7 @@ public class SignGuiPost extends GuiScreen implements SignInput {
 			}
 
 			if(!(ClientConfigStorage.INSTANCE.deactivateTeleportation()||ClientConfigStorage.INSTANCE.getCost()==null)){
-				String out = LanguageRegistry.instance().getStringLocalization("signpost.guiPrev");
-				if(out.equals("")){
-					out = LanguageRegistry.instance().getStringLocalization("signpost.guiPrev", "en_US");
-				}
+				String out = I18n.translateToLocal("signpost.guiPrev");
 				int distance = (int) tile.toPos().distance(inf.pos)+1;
 				out = out.replaceAll("<distance>", ""+distance);
 				out = out.replaceAll("<amount>", Integer.toString(PostHandler.getStackSize(tile.toPos(), inf.pos)));

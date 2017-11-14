@@ -6,31 +6,31 @@ import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.ChatMessage;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.ChatComponentText;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.text.TextComponentString;
 
 public class SetSignpostCount extends CommandBase {
 
 	@Override
-	public String getCommandName() {
+	public String getName() {
 		return "setsignpostsleft";
 	}
 
 	@Override
-	public String getCommandUsage(ICommandSender p_71518_1_) {
+	public String getUsage(ICommandSender p_71518_1_) {
 		return "/setsignpostsleft <amount> [<player>]";
 	}
 
 	@Override
-	public void processCommand(ICommandSender sender, String[] args) {
+	public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
 		if(sender instanceof EntityPlayerMP){
 			EntityPlayerMP player = (EntityPlayerMP) sender;
 			if(args.length==1){
 				try{
 					PostHandler.playerKnownWaystonePositions.get(player.getUniqueID()).b.b = Integer.parseInt(args[0]);
 				}catch(Exception e){
-					sender.addChatMessage(new ChatComponentText("Error: '"+args[0]+"' is not a numer"));
+					sender.sendMessage(new TextComponentString("Error: '"+args[0]+"' is not a numer"));
 				}
 			}else if(args.length==2){
 				EntityPlayerMP p = (EntityPlayerMP) PostHandler.getPlayerByName(args[1]);
@@ -41,18 +41,18 @@ public class SetSignpostCount extends CommandBase {
 					try{
 						PostHandler.playerKnownWaystonePositions.get(p.getUniqueID()).b.b = Integer.parseInt(args[0]);
 					}catch(Exception e){
-						sender.addChatMessage(new ChatComponentText("Error: '"+args[0]+"' is not a numer"));
+						sender.sendMessage(new TextComponentString("Error: '"+args[0]+"' is not a numer"));
 					}
 				}
 			}else{
-				sender.addChatMessage(new ChatComponentText("Error: wrong argument count, use "+getCommandUsage(null)));
+				sender.sendMessage(new TextComponentString("Error: wrong argument count, use "+getUsage(null)));
 			}
 		}
 	}
 
 	@Override
-    public boolean canCommandSenderUseCommand(ICommandSender sender){
-    	return sender instanceof EntityPlayer && ConfigHandler.isOp((EntityPlayer)sender);
+    public boolean checkPermission(MinecraftServer server, ICommandSender sender){
+    	return sender instanceof EntityPlayerMP && ConfigHandler.isOp((EntityPlayerMP)sender);
     }
 
 }

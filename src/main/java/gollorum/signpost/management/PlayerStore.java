@@ -4,23 +4,22 @@ import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.util.MyBlockPosSet;
 import gollorum.signpost.util.StringSet;
 import gollorum.signpost.util.collections.Pair;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.World;
-import net.minecraftforge.common.IExtendedEntityProperties;
 
-public class PlayerStore implements IExtendedEntityProperties {
+public class PlayerStore{
+
+//	public StringSet known;
+//	
+//	public static ResourceLocation loc = new ResourceLocation(Signpost.MODID+":Playerstore");
 
 	public EntityPlayerMP player;
-
-	@Override
-	public void init(Entity entity, World world) {
-		player = (EntityPlayerMP) entity;
+	
+	public void init(EntityPlayerMP player){
+		this.player = player;
 	}
-
-	@Override
-	public void saveNBTData(NBTTagCompound compound) {
+	
+	public NBTTagCompound saveNBTData(NBTTagCompound compound) {
 		StringSet knownOld = PostHandler.playerKnownWaystones.get(player.getUniqueID());
 		compound.setInteger("knownCount", knownOld.size());
 		int i = 0;
@@ -35,9 +34,9 @@ public class PlayerStore implements IExtendedEntityProperties {
 		}
 		compound.setInteger("leftWaystones", known.b.a);
 		compound.setInteger("leftSignposts", known.b.b);
+		return compound;
 	}
 
-	@Override
 	public void loadNBTData(NBTTagCompound compound) {
 		StringSet toBeAdded = new StringSet();
 		int c = compound.getInteger("knownCount");
@@ -46,7 +45,6 @@ public class PlayerStore implements IExtendedEntityProperties {
 			toBeAdded.add(getString);
 		}
 		PostHandler.addAllDiscoveredByName(player.getUniqueID(), toBeAdded);
-		
 		MyBlockPosSet toBeAddedPos = new MyBlockPosSet();
 		c = compound.getInteger("knownCountPos");
 		for(int i=0; i<c; i++){

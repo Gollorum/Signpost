@@ -5,15 +5,14 @@ import java.util.ArrayList;
 
 import org.lwjgl.opengl.GL11;
 
-import cpw.mods.fml.client.FMLClientHandler;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.util.BaseInfo;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.util.ChatAllowedCharacters;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.client.FMLClientHandler;
 
 public class SignInputBox extends Gui{
 	
@@ -65,29 +64,16 @@ public class SignInputBox extends Gui{
 	public boolean isFocused(){
 		return isFocused;
 	}
-
+	
 	public void drawSignBox(FontRenderer fontRend){
 		this.fontRend = fontRend;
 		GL11.glColor4f(boxColor[0], boxColor[1], boxColor[2], boxColor[3]);
 		FMLClientHandler.instance().getClient().renderEngine.bindTexture(texture);
-		drawTexturedModalRect(this.x, this.y, 0, 0, width, height);
+		drawModalRectWithCustomSizedTexture(x, y, 0f, 0f, width, height, (float)pWidth*5.5f, (float)pHeight*5.5f);
 		if(fontRend!=null){
 			drawText();
 		}
 	}
-	
-	@Override  
-	public void drawTexturedModalRect(int x, int y, int u, int v, int width, int height){
-        float f = 0.00390625F;
-        float f1 = 0.00390625F;
-        Tessellator tessellator = Tessellator.instance;
-        tessellator.startDrawingQuads();
-        tessellator.addVertexWithUV((double)(x), 		(double)(y+height), (double)this.zLevel, 0.0, 1.0);
-        tessellator.addVertexWithUV((double)(x+width), 	(double)(y+height), (double)this.zLevel, 1.0, 1.0);
-        tessellator.addVertexWithUV((double)(x+width), 	(double)(y), 		(double)this.zLevel, 1.0, 0.0);
-        tessellator.addVertexWithUV((double)(x),		(double)(y), 		(double)this.zLevel, 0.0, 0.0);
-        tessellator.draw();
-    }
 	
 	public void drawText(){
 		String txt;
@@ -107,20 +93,15 @@ public class SignInputBox extends Gui{
 		scc = sc2;
 		GL11.glPushMatrix();
 		GL11.glScaled(sc2, sc2, 1);
-//		GL11.glTranslated(x+width/2.0, 0, y+height/2.0);
-//		GL11.glScaled(1, 1, 1);
-//		GL11.glTranslated(-fontRend.getStringWidth(getText())/2.0, 0, -fontRend.FONT_HEIGHT/2.0);
-//		fontRend.drawString(getText(), 0, 0, color);
 		if(sc2==1.0){
 			drawXat = (int) (x = (x-fontRend.getStringWidth(txt)/2.0));
 		}else{
 			drawXat = (int) (x-50);
 			x = (x-50)/sc2;
 		}
-//		sc2*=2.0;
 		fontRend.drawString(txt, (int) x, (int) ((y-fontRend.FONT_HEIGHT/2.0*sc2)/sc2), textColor);
 		GL11.glPopMatrix();
-
+		
 		if(isFocused && possible.size()>0){
 			possibleCount = (possibleCount+1)%50;
 			if(possibleCount == 49){
@@ -135,16 +116,13 @@ public class SignInputBox extends Gui{
 		this.text = text;
 		possible = new ArrayList<String>();
 		for(BaseInfo now: PostHandler.allWaystones){
-			if(now.name!=null && (now.name.contains(getText())) || getText().equals("")){
+			if(now.name!=null && now.name.contains(getText())){
 				possible.add(now.name);
 			}
 		}
 	}
 	
 	public String getText(){
-		if(text==null){
-			text = "";
-		}
 		return text;
 	}
 
@@ -154,7 +132,7 @@ public class SignInputBox extends Gui{
         }else{
         	switch (p_146201_1_){
                 case 1:
-                	cursorPosition = getText().length();
+                    cursorPosition = getText().length();
                     return true;
                 case 22:
                     this.writeText(GuiScreen.getClipboardString());
@@ -186,7 +164,7 @@ public class SignInputBox extends Gui{
                             }
                             return true;
                         case 207:
-                        	cursorPosition = getText().length();
+                            cursorPosition = getText().length();
                             return true;
                         case 211:
                             if (GuiScreen.isCtrlKeyDown()){
@@ -209,7 +187,7 @@ public class SignInputBox extends Gui{
     }
 
     public void writeText(String p_146191_1_){
-        String s2 = ChatAllowedCharacters.filerAllowedCharacters(p_146191_1_);
+        String s2 = ChatAllowedCharacters.filterAllowedCharacters(p_146191_1_);
 
         this.setText(getText().substring(0, cursorPosition)+s2+getText().substring(cursorPosition));
         this.moveCursorBy(s2.length());
@@ -232,7 +210,7 @@ public class SignInputBox extends Gui{
     }
 
     public void deleteFromCursor(int p_146175_1_){
-    	if (this.getText().length() != 0){
+        if (this.getText().length() != 0){
 			boolean flag = p_146175_1_ < 0;
 			int j = flag ? this.cursorPosition + p_146175_1_ : this.cursorPosition;
 			int k = flag ? this.cursorPosition : this.cursorPosition + p_146175_1_;
@@ -307,26 +285,26 @@ public class SignInputBox extends Gui{
         }
 
         return k;
-	}
+    }
 
-	public void mouseClicked(int x, int y, int p_146192_3_){
-		isFocused = (x >= this.x &&
-				x < this.x + this.width &&
-				y >= this.y &&
-				y < this.y + this.height);
+    public void mouseClicked(int x, int y, int p_146192_3_){
+        isFocused = (x >= this.x &&
+        			 x < this.x + this.width &&
+        			 y >= this.y &&
+        			 y < this.y + this.height);
 
 		double scale = this.width/pWidth;
 		try{
-			if(x >= (this.x+width+5) &&
-					x < (this.x+width+5+fontRend.getStringWidth(possible.get(possibleIndex))) &&
-					y >= (this.y+(scale*pHeight-fontRend.FONT_HEIGHT)/2.0) &&
-					y < (this.y+(scale*pHeight-fontRend.FONT_HEIGHT)/2.0)+fontRend.FONT_HEIGHT){
-				this.setText(possible.get(possibleIndex));
-				PARENT.onTextChange(this);
-				isFocused = true;
-			}
+	        if(x >= (this.x+width+5) &&
+	           x < (this.x+width+5+fontRend.getStringWidth(possible.get(possibleIndex))) &&
+	           y >= (this.y+(scale*pHeight-fontRend.FONT_HEIGHT)/2.0) &&
+	           y < (this.y+(scale*pHeight-fontRend.FONT_HEIGHT)/2.0)+fontRend.FONT_HEIGHT){
+	        	this.setText(possible.get(possibleIndex));
+	        	PARENT.onTextChange(this);
+	        	isFocused = true;
+	        }
 		}catch(Exception e){}
-
+		
         if (this.isFocused && p_146192_3_ == 0){
             int l = x - drawXat;
             this.setCursorPosition(correctTrim((int) (l/scc)).length());

@@ -6,21 +6,22 @@ import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.server.MinecraftServer;
 
 public class ConfirmTeleportCommand extends CommandBase {
 
 	@Override
-	public String getCommandName() {
+	public String getName() {
 		return "signpostconfirm";
 	}
 
 	@Override
-	public String getCommandUsage(ICommandSender p_71518_1_) {
+	public String getUsage(ICommandSender p_71518_1_) {
 		return "/signpostconfirm";
 	}
 
 	@Override
-	public void processCommand(final ICommandSender sender, String[] args) {
+	public void execute(MinecraftServer server, final ICommandSender sender, String[] args) {
 		if(sender instanceof EntityPlayerMP){
 			SPEventHandler.scheduleTask(new Runnable(){
 				@Override
@@ -32,7 +33,7 @@ public class ConfirmTeleportCommand extends CommandBase {
 	}
 
 	@Override
-    public boolean canCommandSenderUseCommand(ICommandSender sender){
+    public boolean checkPermission(MinecraftServer server, ICommandSender sender){
     	return sender instanceof EntityPlayer;
     }
 

@@ -2,7 +2,7 @@ package gollorum.signpost.util;
 
 import net.minecraft.util.ResourceLocation;
 
-public class DoubleBaseInfo implements Paintable {
+public class DoubleBaseInfo implements Paintable{
 
 	public Sign sign1;
 	public Sign sign2;

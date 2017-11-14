@@ -1,13 +1,13 @@
 package gollorum.signpost.network.messages;
 
-import cpw.mods.fml.common.network.ByteBufUtils;
-import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.blocks.tiles.SuperPostPostTile;
 import gollorum.signpost.util.BigBaseInfo;
 import gollorum.signpost.util.MyBlockPos;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
 public class SendBigPostBasesMessage implements IMessage {
 
@@ -75,7 +75,7 @@ public class SendBigPostBasesMessage implements IMessage {
 		for(int i=0; i<description.length; i++){
 			description[i] = ByteBufUtils.readUTF8String(buf);
 		}
-		paint = SuperPostPostTile.stringToLoc(ByteBufUtils.readUTF8String(buf)); //Kann mich bitte jemand verprügeln? Solch Dummheit muss bestraft werden. AARGH
+		paint = SuperPostPostTile.stringToLoc(ByteBufUtils.readUTF8String(buf));
 		postPaint = SuperPostPostTile.stringToLoc(ByteBufUtils.readUTF8String(buf));
 		paintObjectIndex = buf.readByte();
 	}

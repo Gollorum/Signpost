@@ -1,14 +1,15 @@
 package gollorum.signpost.gui;
 
 import java.awt.Color;
+import java.io.IOException;
 
-import cpw.mods.fml.client.FMLClientHandler;
 import gollorum.signpost.blocks.SuperPostPost;
 import gollorum.signpost.blocks.tiles.SuperPostPostTile;
 import gollorum.signpost.util.Sign;
 import gollorum.signpost.util.math.tracking.DDDVector;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
+import net.minecraftforge.fml.client.FMLClientHandler;
 
 public class SignGuiRotation extends GuiScreen {
 
@@ -67,11 +68,11 @@ public class SignGuiRotation extends GuiScreen {
 
 	@Override
 	public void initGui() {
-		degreesInputBox = new GuiTextField(this.fontRendererObj, 140, this.height/2 - 46, this.width/2, 20);
+		degreesInputBox = new GuiTextField(0, this.fontRendererObj, 140, this.height/2 - 46, this.width/2, 20);
 		degreesInputBox.setMaxStringLength(100);
-		xInputBox = new GuiTextField(this.fontRendererObj, this.width/2-20, this.height/2, 60, 20);
+		xInputBox = new GuiTextField(1, this.fontRendererObj, this.width/2-20, this.height/2, 60, 20);
 		xInputBox.setMaxStringLength(100);
-		zInputBox = new GuiTextField(this.fontRendererObj, this.width/2+80, this.height/2, 60, 20);
+		zInputBox = new GuiTextField(2, this.fontRendererObj, this.width/2+80, this.height/2, 60, 20);
 		zInputBox.setMaxStringLength(100);
 		if(mc==null){
 			mc = FMLClientHandler.instance().getClient();
@@ -87,7 +88,7 @@ public class SignGuiRotation extends GuiScreen {
 	}
 
 	@Override
-	protected void keyTyped(char par1, int par2) {
+	protected void keyTyped(char par1, int par2) throws IOException {
 		if(par1==13){
 			if(degreesInputBox.isFocused()){
 				this.mc.displayGuiScreen(null);
@@ -98,8 +99,8 @@ public class SignGuiRotation extends GuiScreen {
 				try{
 					double x = Double.parseDouble(xInputBox.getText());
 					double z = Double.parseDouble(zInputBox.getText());
-					double dx = x-tile.xCoord;
-					double dz = z-tile.zCoord;
+					double dx = x-tile.getPos().getX();
+					double dz = z-tile.getPos().getZ();
 					double degree = Math.toDegrees(DDDVector.genAngle(dx, dz)+Math.toRadians(-90+(dx<0&&dz>0?180:0)));
 					degreesInputBox.setText(""+degree);
 					this.mc.displayGuiScreen(null);
@@ -150,8 +151,8 @@ public class SignGuiRotation extends GuiScreen {
 			try{
 				double x = Double.parseDouble(xInputBox.getText());
 				double z = Double.parseDouble(zInputBox.getText());
-				double dx = x-tile.xCoord;
-				double dz = z-tile.zCoord;
+				double dx = x-tile.getPos().getX();
+				double dz = z-tile.getPos().getZ();
 				double degree = Math.toDegrees(DDDVector.genAngle(dx, dz)+Math.toRadians(-90+(dx<0&&dz>0?180:0)));
 				degreesInputBox.setText(""+degree);
 			}catch(Exception e2){}
@@ -174,7 +175,7 @@ public class SignGuiRotation extends GuiScreen {
 	}
 
 	@Override
-	protected void mouseClicked(int x, int y, int btn) {
+	protected void mouseClicked(int x, int y, int btn) throws IOException {
 		super.mouseClicked(x, y, btn);
 		this.degreesInputBox.mouseClicked(x, y, btn);
 		this.xInputBox.mouseClicked(x, y, btn);
@@ -185,7 +186,7 @@ public class SignGuiRotation extends GuiScreen {
 	public void onGuiClosed() {
 		try{
 			sign.rotation = (int)Double.parseDouble(degreesInputBox.getText());
-			((SuperPostPost)tile.blockType).sendPostBasesToServer(tile);
+			((SuperPostPost)tile.getBlockType()).sendPostBasesToServer(tile);
 		}catch(Exception e){}
 		super.onGuiClosed();
 	}

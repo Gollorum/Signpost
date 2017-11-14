@@ -18,6 +18,7 @@ import gollorum.signpost.util.math.tracking.Cuboid;
 import gollorum.signpost.util.math.tracking.DDDVector;
 import gollorum.signpost.util.math.tracking.Intersect;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -26,27 +27,26 @@ import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 public class PostPost extends SuperPostPost {
-	
+
 	public PostType type;
 
 	public static enum PostType{
-						OAK(	Material.wood, 	"sign_oak", 	"log_oak",			Item.getItemFromBlock(Blocks.log),		0),
-						SPRUCE(	Material.wood, 	"sign_spruce", 	"log_spruce",		Item.getItemFromBlock(Blocks.log),		1),
-						BIRCH(	Material.wood, 	"sign_birch", 	"log_birch",		Item.getItemFromBlock(Blocks.log),		2),
-						JUNGLE(	Material.wood,	"sign_jungle", 	"log_jungle",		Item.getItemFromBlock(Blocks.log),		3),
-						ACACIA(	Material.wood, 	"sign_acacia", 	"log_acacia",		Item.getItemFromBlock(Blocks.log2),		0),
-						BIGOAK(	Material.wood, 	"sign_big_oak", "log_big_oak",		Item.getItemFromBlock(Blocks.log2),		1),
-						IRON(	Material.iron, 	"sign_iron", 	"iron_block",		Items.iron_ingot,							0),
-						STONE(	Material.rock, 	"sign_stone", 	"stone",			Item.getItemFromBlock(Blocks.stone),		0);
+						OAK(	Material.WOOD, 	"sign_oak", 	"log_oak",		Item.getItemFromBlock(Blocks.LOG),	0),
+						SPRUCE(	Material.WOOD, 	"sign_spruce", 	"log_spruce",	Item.getItemFromBlock(Blocks.LOG),	1),
+						BIRCH(	Material.WOOD, 	"sign_birch", 	"log_birch",	Item.getItemFromBlock(Blocks.LOG),	2),
+						JUNGLE(	Material.WOOD,	"sign_jungle", 	"log_jungle",	Item.getItemFromBlock(Blocks.LOG),	3),
+						ACACIA(	Material.WOOD, 	"sign_acacia", 	"log_acacia",	Item.getItemFromBlock(Blocks.LOG2),	0),
+						BIGOAK(	Material.WOOD, 	"sign_big_oak", "log_big_oak",	Item.getItemFromBlock(Blocks.LOG2),	1),
+						IRON(	Material.IRON, 	"sign_iron", 	"iron_block",	Items.IRON_INGOT,						0),
+						STONE(	Material.ROCK, 	"sign_stone", 	"stone",		Item.getItemFromBlock(Blocks.STONE),	0);
 		public Material material;
 		public ResourceLocation texture;
-		public String blockTexture;
 		public String textureMain;
 		public ResourceLocation resLocMain;
 		public Item baseItem;
@@ -55,14 +55,13 @@ public class PostPost extends SuperPostPost {
 		private PostType(Material material, String texture, String textureMain, Item baseItem, int metadata) {
 			this.material = material;
 			this.texture = new ResourceLocation(Signpost.MODID + ":textures/blocks/"+texture+".png");
-			this.blockTexture = texture;
 			this.textureMain = textureMain;
 			this.resLocMain = new ResourceLocation("minecraft:textures/blocks/"+textureMain+".png");
 			this.baseItem = baseItem;
 			this.metadata = metadata;
 		}
 	}
-	
+
 	public static enum HitTarget{BASE1, BASE2, POST, STONE;}
 	
 	public static class Hit{
@@ -72,39 +71,56 @@ public class PostPost extends SuperPostPost {
 			this.target = target; this.pos = pos;
 		}
 	}
-
+	
 	@Deprecated
 	public PostPost() {
-		super(Material.wood);
-		setBlockName("SignpostPost");
-		setCreativeTab(CreativeTabs.tabTransport);
-		setBlockTextureName("minecraft:planks_oak");
+		super(Material.WOOD);
+		setCreativeTab(CreativeTabs.TRANSPORTATION);
+		this.setHarvestLevel("axe", 0);
 		this.setHardness(2);
 		this.setResistance(100000);
-		float f = 15F / 32;
-		this.setBlockBounds(0.5f - f, 0.0F, 0.5F - f, 0.5F + f, 1, 0.5F + f);
+		this.setLightOpacity(0);
+		this.setUnlocalizedName("SignpostPostOAK");
+		this.setRegistryName(Signpost.MODID+":blockpostoak");
 	}
-	
+
 	public PostPost(PostType type){
 		super(type.material);
 		this.type = type;
-		setBlockName("SignpostPost"+type.toString());
-		setCreativeTab(CreativeTabs.tabTransport);
-		setBlockTextureName(Signpost.MODID+":"+type.blockTexture);
+		setCreativeTab(CreativeTabs.TRANSPORTATION);
+		switch(type){
+		case STONE:
+			this.setHarvestLevel("pickaxe", 0);
+			break;
+		case IRON:
+			this.setHarvestLevel("pickaxe", 1);
+			break;
+		default:
+			this.setHarvestLevel("axe", 0);
+			break;
+		}
 		this.setHardness(2);
 		this.setResistance(100000);
-		float f = 15F / 32;
-		this.setBlockBounds(0.5f - f, 0.0F, 0.5F - f, 0.5F + f, 1, 0.5F + f);
+		this.setLightOpacity(0);
+		this.setUnlocalizedName("SignpostPost"+type.name());
+		this.setRegistryName(Signpost.MODID+":blockpost"+type.name().toLowerCase());
 	}
 	
 	@Override
-	public TileEntity createNewTileEntity(World p_149915_1_, int p_149915_2_) {
+	public TileEntity createTileEntity(World world, IBlockState state) {
 		PostPostTile tile = new PostPostTile(type);
 		return tile;
 	}
 
-	public static PostPostTile getWaystonePostTile(World world, int x, int y, int z) {
-		TileEntity ret = world.getTileEntity(x, y, z);
+	@Override
+	public TileEntity createNewTileEntity(World worldIn, int meta) {
+		PostPostTile tile = new PostPostTile(type);
+		tile.isItem = false;
+		return tile;
+	}
+
+	public static PostPostTile getWaystonePostTile(World world, BlockPos pos) {
+		TileEntity ret = world.getTileEntity(pos);
 		if (ret instanceof PostPostTile) {
 			return (PostPostTile) ret;
 		} else {
@@ -209,13 +225,13 @@ public class PostPost extends SuperPostPost {
 			}
 		}
 		for(OverlayType now: OverlayType.values()){
-			if(player.getHeldItem().getItem().getClass() == now.item.getClass()){
+			if(player.getHeldItemMainhand().getItem().getClass() == now.item.getClass()){
 				if (hit.target == HitTarget.BASE1) {
 					tilebases.sign1.overlay = now;
 				} else if(hit.target == HitTarget.BASE2) {
 					tilebases.sign2.overlay = now;
 				}
-				player.inventory.consumeInventoryItem(now.item);
+				player.inventory.clearMatchingItems(now.item, 0, 1, null);
 				NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(tile, tilebases));
 				return;
 			}
@@ -302,12 +318,12 @@ public class PostPost extends SuperPostPost {
 	
 	@Override
 	public Object getHitTarget(World world, int x, int y, int z, EntityPlayer player){
-		Vec3 head = Vec3.createVectorHelper(player.posX, player.posY, player.posZ);
-		head.yCoord+=player.getEyeHeight();
+		DDDVector head = new DDDVector(player.posX, player.posY, player.posZ);
+		head.y+=player.getEyeHeight();
 		if(player.isSneaking())
-			head.yCoord-=0.08;
-		Vec3 look = player.getLookVec();
-		PostPostTile tile = getWaystonePostTile(world, x, y, z);
+			head.y-=0.08;
+		Vec3d look = player.getLookVec();
+		PostPostTile tile = getWaystonePostTile(world, new BlockPos(x, y, z));
 		DoubleBaseInfo bases = tile.getBases();
 		DDDVector rotPos = new DDDVector(x+0.5,y+0.5,z+0.5);
 		DDDVector signPos;
@@ -329,15 +345,15 @@ public class PostPost extends SuperPostPost {
 		Cuboid post = new Cuboid(new DDDVector(x+0.375, y, z+0.375), new DDDVector(0.25, 1, 0.25), 0);
 		Cuboid waystone = new Cuboid(new DDDVector(x+0.25, y, z+0.25), new DDDVector(0.5, 0.5, 0.5), 0);
 
-		DDDVector start = new DDDVector(head.xCoord, head.yCoord, head.zCoord);
+		DDDVector start = new DDDVector(head);
 		DDDVector end = start.add(new DDDVector(look.xCoord, look.yCoord, look.zCoord));
 		Intersect sign1Hit = sign1.traceLine(start, end, true);
 		Intersect sign2Hit = sign2.traceLine(start, end, true);
 		Intersect postHit = post.traceLine(start, end, true);
 		Intersect waystoneHit = waystone.traceLine(start, end, true);
-		double sign1Dist = sign1Hit.exists&&bases.sign1.isValid()?sign1Hit.pos.distance(start):Double.MAX_VALUE;
-		double sign2Dist = sign2Hit.exists&&bases.sign2.isValid()?sign2Hit.pos.distance(start):Double.MAX_VALUE;
-		double postDist = postHit.exists?postHit.pos.distance(start):Double.MAX_VALUE/2;
+		double sign1Dist = sign1Hit.exists&&bases.sign1.base!=null&&bases.sign1.base.hasName()?sign1Hit.pos.distance(start):Double.MAX_VALUE;
+		double sign2Dist = sign2Hit.exists&&bases.sign2.base!=null&&bases.sign2.base.hasName()?sign2Hit.pos.distance(start):Double.MAX_VALUE;
+		double postDist = postHit.exists?postHit.pos.distance(start):Double.MAX_VALUE;
 		double waystoneDist = waystoneHit.exists&&tile.isWaystone()?waystoneHit.pos.distance(start):Double.MAX_VALUE;
 		double dist;
 		HitTarget target;
@@ -356,12 +372,26 @@ public class PostPost extends SuperPostPost {
 			pos = waystoneHit.pos;
 			target = HitTarget.STONE;
 		}
-		if(postDist<dist){
+		if(postDist<=dist){
 			dist = postDist;
 			pos = postHit.pos;
 			target = HitTarget.POST;
 		}
 		return new Hit(target, pos);
+	}
+
+	public static PostPostTile getTile(World world, BlockPos pos) {
+		return getWaystonePostTile(world, pos);
+	}
+
+	public Sign getSignByHit(Hit hit, PostPostTile tile){
+		if(hit.target.equals(HitTarget.BASE1)){
+			return tile.getBases().sign1;
+		}else if(hit.target.equals(HitTarget.BASE2)){
+			return tile.getBases().sign2;
+		}else{
+			return null;
+		}
 	}
 
 	@Override
@@ -374,25 +404,6 @@ public class PostPost extends SuperPostPost {
 		case POST:
 			return ((PostPostTile)tile).getBases();
 		default:
-			return null;
-		}
-	}
-
-	public static PostPostTile getTile(World world, int x, int y, int z) {
-		TileEntity ret = world.getTileEntity(x, y, z);
-		if (ret instanceof PostPostTile) {
-			return (PostPostTile) ret;
-		} else {
-			return null;
-		}
-	}
-	
-	public Sign getSignByHit(Hit hit, PostPostTile tile){
-		if(hit.target.equals(HitTarget.BASE1)){
-			return tile.getBases().sign1;
-		}else if(hit.target.equals(HitTarget.BASE2)){
-			return tile.getBases().sign2;
-		}else{
 			return null;
 		}
 	}

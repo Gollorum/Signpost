@@ -23,25 +23,44 @@ import net.minecraft.util.ResourceLocation;
 
 public class PostPostTile extends SuperPostPostTile {
 
-	public PostType type = PostType.OAK;
+	public PostType type = null;
 
 	@Deprecated
 	public DoubleBaseInfo bases = null;
-
-	public PostPostTile(){super();}
+	
+	public PostPostTile(){
+		super();
+		SPEventHandler.scheduleTask(new BoolRun(){
+			@Override
+			public boolean run() {
+				if(getBlockType()==null){
+					return false;
+				}else{
+					if(getBlockType() instanceof PostPost){
+						type = ((PostPost)getBlockType()).type;
+					}
+					return true;
+				}
+			}
+		});
+	}
 
 	public PostPostTile(PostType type){
-		this();
+		super();
 		this.type = type;
 	}
-	
+
 	public DoubleBaseInfo getBases(){
 		DoubleBaseInfo bases = PostHandler.getPosts().get(toPos());
 		if(bases==null){
-			bases = new DoubleBaseInfo(type.texture, type.resLocMain);
+			if(type ==null){
+				bases = new DoubleBaseInfo(PostType.OAK.texture, PostType.OAK.resLocMain);
+			}else{
+				bases = new DoubleBaseInfo(type.texture, type.resLocMain);
+			}
 			PostHandler.getPosts().put(toPos(), bases);
 		}
-		return this.bases =  bases;
+		return this.bases = bases;
 	}
 	
 	@Override
@@ -50,12 +69,12 @@ public class PostPostTile extends SuperPostPostTile {
 		isCanceled = true;
 		DoubleBaseInfo bases = getBases();
 		if(bases.sign1.overlay!=null){
-			EntityItem item = new EntityItem(worldObj, pos.x, pos.y, pos.z, new ItemStack(bases.sign1.overlay.item, 1));
-			worldObj.spawnEntityInWorld(item);
+			EntityItem item = new EntityItem(world, pos.x, pos.y, pos.z, new ItemStack(bases.sign1.overlay.item, 1));
+			world.spawnEntity(item);
 		}
 		if(bases.sign2.overlay!=null){
-			EntityItem item = new EntityItem(worldObj, pos.x, pos.y, pos.z, new ItemStack(bases.sign2.overlay.item, 1));
-			worldObj.spawnEntityInWorld(item);
+			EntityItem item = new EntityItem(world, pos.x, pos.y, pos.z, new ItemStack(bases.sign2.overlay.item, 1));
+			world.spawnEntity(item);
 		}
 		if(PostHandler.getPosts().remove(pos)!=null){
 			NetworkHandler.netWrap.sendToAll(new SendAllPostBasesMessage());
@@ -111,16 +130,18 @@ public class PostPostTile extends SuperPostPostTile {
 		final String paint2 = tagCompound.getString("paint2");
 		
 		final String postPaint = tagCompound.getString("postPaint");
+		
+		final PostPostTile self = this;
 
 		final byte paintObjectIndex = tagCompound.getByte("paintObjectIndex");
 
 		SPEventHandler.scheduleTask(new BoolRun(){
 			@Override
 			public boolean run() {
-				if(worldObj==null){
+				if(world==null || type==null){
 					return false;
 				}else{
-					if(worldObj.isRemote){
+					if(world.isRemote){
 						return true;
 					}
 					DoubleBaseInfo bases = getBases();
@@ -156,7 +177,7 @@ public class PostPostTile extends SuperPostPostTile {
 						bases.awaitingPaint = false;
 						break;
 					}
-					NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage((PostPostTile) worldObj.getTileEntity(xCoord, yCoord, zCoord), bases));
+					NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(self, bases));
 					return true;
 				}
 			}
@@ -166,7 +187,7 @@ public class PostPostTile extends SuperPostPostTile {
 	@Override
 	public Sign getSign(EntityPlayer player) {
 		DoubleBaseInfo bases = getBases();
-		Hit hit = (Hit) ((PostPost)blockType).getHitTarget(worldObj, xCoord, yCoord, zCoord, player);
+		Hit hit = (Hit) ((PostPost)getBlockType()).getHitTarget(world, pos.getX(), pos.getY(), pos.getZ(), player);
 		if(hit.target.equals(HitTarget.BASE1)){
 			return bases.sign1;
 		}else if(hit.target.equals(HitTarget.BASE2)){
@@ -179,7 +200,7 @@ public class PostPostTile extends SuperPostPostTile {
 	@Override
 	public Paintable getPaintable(EntityPlayer player) {
 		DoubleBaseInfo bases = getBases();
-		Hit hit = (Hit) ((PostPost)getBlockType()).getHitTarget(worldObj, xCoord, yCoord, zCoord, player);
+		Hit hit = (Hit) ((PostPost)getBlockType()).getHitTarget(world, pos.getX(), pos.getY(), pos.getZ(), player);
 		if(hit.target.equals(HitTarget.BASE1)){
 			return bases.sign1;
 		}else if(hit.target.equals(HitTarget.BASE2)){
@@ -188,12 +209,12 @@ public class PostPostTile extends SuperPostPostTile {
 			return bases;
 		}
 	}
-
+	
 	@Override
 	public ResourceLocation getPostPaint(){
 		return getBases().postPaint;
 	}
-
+	
 	public void setPostPaint(ResourceLocation loc){
 		getBases().postPaint = loc;
 	}
@@ -218,7 +239,7 @@ public class PostPostTile extends SuperPostPostTile {
 	public void setPaintObject(Paintable paintObject){
 		getBases().paintObject = paintObject;
 	}
-
+	
 	@Override
 	public String toString(){
 		return getBases()+" at "+toPos();

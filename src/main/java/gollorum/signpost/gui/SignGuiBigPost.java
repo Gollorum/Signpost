@@ -1,9 +1,8 @@
 package gollorum.signpost.gui;
 
 import java.awt.Color;
+import java.io.IOException;
 
-import cpw.mods.fml.client.FMLClientHandler;
-import cpw.mods.fml.common.registry.LanguageRegistry;
 import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.management.ClientConfigStorage;
 import gollorum.signpost.management.ConfigHandler;
@@ -15,8 +14,10 @@ import gollorum.signpost.util.BigBaseInfo;
 import gollorum.signpost.util.MyBlockPos.Connection;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.util.text.translation.I18n;
+import net.minecraftforge.fml.client.FMLClientHandler;
 
-public class SignGuiBigPost extends GuiScreen implements SignInput{
+public class SignGuiBigPost extends GuiScreen implements SignInput {
 
 	private SignInputBox baseInputBox;
 
@@ -46,20 +47,20 @@ public class SignGuiBigPost extends GuiScreen implements SignInput{
 		go = true;
 		baseInputBox.setFocused(true);
 
-		desc1InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, 106, 137, 20);
+		desc1InputBox = new GuiTextField(0, this.fontRendererObj, this.width / 2 - 68, 106, 137, 20);
 		desc1InputBox.setText(""+tilebases.description[0]);
-		desc2InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, 136, 137, 20);
+		desc2InputBox = new GuiTextField(1, this.fontRendererObj, this.width / 2 - 68, 136, 137, 20);
 		desc2InputBox.setText(""+tilebases.description[1]);
-		desc3InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, 166, 137, 20);
+		desc3InputBox = new GuiTextField(2, this.fontRendererObj, this.width / 2 - 68, 166, 137, 20);
 		desc3InputBox.setText(""+tilebases.description[2]);
-		desc4InputBox = new GuiTextField(this.fontRendererObj, this.width / 2 - 68, 196, 137, 20);
+		desc4InputBox = new GuiTextField(3, this.fontRendererObj, this.width / 2 - 68, 196, 137, 20);
 		desc4InputBox.setText(""+tilebases.description[3]);
 		
 		resetMouse = true;
 	}
 	
 	@Override
-    protected void mouseClicked(int x, int y, int bla){
+    protected void mouseClicked(int x, int y, int bla) throws IOException{
 		super.mouseClicked(x, y, bla);
 		baseInputBox.mouseClicked(x, y, bla);
 		desc1InputBox.mouseClicked(x, y, bla);
@@ -93,7 +94,7 @@ public class SignGuiBigPost extends GuiScreen implements SignInput{
 	}
 
 	@Override
-	protected void keyTyped(char par1, int par2) {
+	protected void keyTyped(char par1, int par2) throws IOException {
 		super.keyTyped(par1, par2);
 		if((par1==13&&par2==28) || (par1==9&&par2==15) || (par1==0&&par2==208)){
 			if(baseInputBox.isFocused()){
@@ -178,19 +179,16 @@ public class SignGuiBigPost extends GuiScreen implements SignInput{
 		tilebases.description[3] = desc4InputBox.getText();
 		NetworkHandler.netWrap.sendToServer(new SendBigPostBasesMessage(tile, tilebases));
 	}
-	
+
 	@Override
-	public void onTextChange(SignInputBox box){
+	public void onTextChange(SignInputBox box) {
 		BaseInfo inf = PostHandler.getWSbyName(box.getText());
 		Connection connect = tile.toPos().canConnectTo(inf);
 		if(inf==null||!connect.equals(Connection.VALID)){
 			box.setTextColor(Color.red.getRGB());
 			if(connect.equals(Connection.DIST)){
 				
-				String out = LanguageRegistry.instance().getStringLocalization("signpost.guiTooFar");
-				if(out.equals("")){
-					out = LanguageRegistry.instance().getStringLocalization("signpost.guiTooFar", "en_US");
-				}
+				String out = I18n.translateToLocal("signpost.guiTooFar");
 				out = out.replaceAll("<distance>", ""+(int)tile.toPos().distance(inf.pos)+1);
 				out = out.replaceAll("<maxDist>", ""+ClientConfigStorage.INSTANCE.getMaxDist());
 				std = out;
@@ -199,10 +197,7 @@ public class SignGuiBigPost extends GuiScreen implements SignInput{
 				
 			}else if(connect.equals(Connection.WORLD)){
 
-				String out = LanguageRegistry.instance().getStringLocalization("signpost.guiWorldDim");
-				if(out.equals("")){
-					out = LanguageRegistry.instance().getStringLocalization("signpost.guiWorldDim", "en_US");
-				}
+				String out = I18n.translateToLocal("signpost.guiWorldDim");
 				std = out;
 				col = Color.red.getRGB();
 				go = false;
@@ -218,10 +213,7 @@ public class SignGuiBigPost extends GuiScreen implements SignInput{
 			go = true;
 
 			if(!(ClientConfigStorage.INSTANCE.deactivateTeleportation()||ClientConfigStorage.INSTANCE.getCost()==null)){
-				String out = LanguageRegistry.instance().getStringLocalization("signpost.guiPrev");
-				if(out.equals("")){
-					out = LanguageRegistry.instance().getStringLocalization("signpost.guiPrev", "en_US");
-				}
+				String out = I18n.translateToLocal("signpost.guiPrev");
 				int distance = (int) tile.toPos().distance(inf.pos)+1;
 				out = out.replaceAll("<distance>", ""+distance);
 				out = out.replaceAll("<amount>", Integer.toString((int) (tile.toPos().distance(inf.pos)/ClientConfigStorage.INSTANCE.getCostMult()+1)));

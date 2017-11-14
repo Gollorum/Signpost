@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.UUID;
 
-import cpw.mods.fml.common.FMLCommonHandler;
 import gollorum.signpost.SPEventHandler;
 import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.blocks.tiles.PostPostTile;
@@ -25,20 +24,21 @@ import gollorum.signpost.util.collections.Pair;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Blocks;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.management.ServerConfigurationManager;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 
 public class PostHandler {
 
-	public static StonedHashSet allWaystones = new StonedHashSet();
+	public static StonedHashSet allWaystones = new StonedHashSet();	
 	private static Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo> posts = new Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo>();
 	private static Lurchpaerchensauna<MyBlockPos, BigBaseInfo> bigPosts = new Lurchpaerchensauna<MyBlockPos, BigBaseInfo>();
 	//ServerSide
 	public static Lurchpaerchensauna<UUID, TeleportInformation> awaiting =  new Lurchpaerchensauna<UUID, TeleportInformation>(); 
-	
+
 	/**
 	 * UUID = the player;
 	 * StringSet = the discovered waystones;
@@ -77,7 +77,7 @@ public class PostHandler {
 			}
 		}
 	};
-
+	
 	public static boolean doesPlayerKnowWaystone(EntityPlayerMP player, BaseInfo waystone){
 		if(ClientConfigStorage.INSTANCE.isDisableDiscovery()){
 			return true;
@@ -147,7 +147,7 @@ public class PostHandler {
 		refreshDoublePosts();
 		refreshBigPosts();
 	}
-
+	
 	public static void refreshDoublePosts(){
 		for(Entry<MyBlockPos, DoubleBaseInfo> now: posts.entrySet()){
 			PostPostTile tile = (PostPostTile) now.getKey().getTile();
@@ -157,7 +157,7 @@ public class PostHandler {
 			}
 		}
 	}
-
+	
 	public static void refreshBigPosts(){
 		for(Entry<MyBlockPos, BigBaseInfo> now: bigPosts.entrySet()){
 			BigPostPostTile tile = (BigPostPostTile) now.getKey().getTile();
@@ -180,7 +180,7 @@ public class PostHandler {
 			return null;
 		}
 	}
-	
+
 	public static BaseInfo getForceWSbyName(String name){
 		if(name==null || name.equals("null")){
 			return null;
@@ -205,7 +205,7 @@ public class PostHandler {
 			this.boolRun = boolRun;
 		}
 	}
-	
+
 	/**
 	 * @return whether the player could pay
 	 */
@@ -225,7 +225,7 @@ public class PostHandler {
 			int playerItemCount = 0;
 			for(ItemStack now: player.inventory.mainInventory){
 				if(now != null && now.getItem() !=null && now.getItem().getClass() == ClientConfigStorage.INSTANCE.getCost().getClass()){
-					playerItemCount += now.stackSize;
+					playerItemCount += now.getCount();
 				}
 			}
 			return playerItemCount>=getStackSize(x1, y1, z1, x2, y2, z2);
@@ -237,9 +237,7 @@ public class PostHandler {
 			return;
 		}else{
 			int stackSize = getStackSize(x1, y1, z1, x2, y2, z2);
-			while(stackSize-->0){
-				player.inventory.consumeInventoryItem(ClientConfigStorage.INSTANCE.getCost());
-			}
+			player.inventory.clearMatchingItems(ClientConfigStorage.INSTANCE.getCost(), 0, stackSize, null);
 		}
 	}
 	
@@ -256,7 +254,6 @@ public class PostHandler {
 		return getStackSize(pos1.x, pos1.y, pos1.z, pos2.x, pos2.y, pos2.z);
 	}
 	
-
 	public static void confirm(final EntityPlayerMP player){
 		final TeleportInformation info = awaiting.get(player.getUniqueID());
 		SPEventHandler.scheduleTask(new Runnable(){
@@ -268,12 +265,11 @@ public class PostHandler {
 				}else{
 					doPay(player, (int)player.posX, (int)player.posY, (int)player.posZ, info.destination.pos.x, info.destination.pos.y+1, info.destination.pos.z);
 					SPEventHandler.cancelTask(info.boolRun);
-					ServerConfigurationManager manager = player.mcServer.getConfigurationManager();
-					if(!(player.getServerForPlayer().getWorldInfo().getWorldName().equals(info.world.getWorldInfo().getWorldName()))){
-						manager.transferEntityToWorld(player, player.dimension, player.getServerForPlayer(), info.world, new SignTeleporter(info.world));
+					if(!(player.getServerWorld().getWorldInfo().getWorldName().equals(info.world.getWorldInfo().getWorldName()))){
+						player.mcServer.getPlayerList().transferEntityToWorld(player, player.dimension, player.getServerWorld(), info.world, new SignTeleporter(info.world));
 					}
 					if(!(player.dimension==info.destination.pos.dim)){
-						manager.transferPlayerToDimension(player, info.destination.pos.dim, new SignTeleporter(info.world));
+						player.mcServer.getPlayerList().transferPlayerToDimension(player, info.destination.pos.dim, new SignTeleporter(info.world));
 //						player.changeDimension(info.destination.pos.dim);
 					}
 					player.setPositionAndUpdate(info.destination.pos.x+0.5, info.destination.pos.y+1, info.destination.pos.z+0.5);
@@ -321,7 +317,6 @@ public class PostHandler {
 		if(destroyed){
 			if(allWaystones.remove(getWSbyName(newWS.name))){
 				for(Entry<UUID, Pair<MyBlockPosSet, Pair<Integer, Integer>>> now: playerKnownWaystonePositions.entrySet()){
-					now.getValue().a.remove(newWS);
 				}
 				return true;
 			}
@@ -454,7 +449,7 @@ public class PostHandler {
 	public static WorldServer getWorldByName(String world, int dim){
 		WorldServer ret = null;
 		forLoop:
-			for(WorldServer now: FMLCommonHandler.instance().getMinecraftServerInstance().worldServers){
+		for(WorldServer now: FMLCommonHandler.instance().getMinecraftServerInstance().worlds){
 			if(now.getWorldInfo().getWorldName().equals(world)){
 				ret = now;
 				continue forLoop;
@@ -472,29 +467,28 @@ public class PostHandler {
 		allWaystones.add(ws);
 		return true;
 	}
-
+	
 	public static EntityPlayer getPlayerByName(String name){
-		for(Object player : MinecraftServer.getServer().getConfigurationManager().playerEntityList){
-			if(player instanceof EntityPlayer && ((EntityPlayer)player).getCommandSenderName().equals(name)){
-				return (EntityPlayer) player;
-			}
-		}
-		return null;
+		return FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUsername(name);
+	}
+	
+	public static boolean isHandEmpty(EntityPlayer player){
+		return player.getHeldItemMainhand()==null || player.getHeldItemMainhand().getItem()==null || player.getHeldItemMainhand().getItem().equals(Item.getItemFromBlock(Blocks.AIR));
 	}
 
 	private static class SignTeleporter extends Teleporter{
 
 		public SignTeleporter(WorldServer worldIn) {super(worldIn);}
-
+		
 		@Override
-		public void placeInPortal(Entity entityIn, double p_77185_2_, double p_77185_4_, double p_77185_6_, float p_77185_8_){}
-
+		public void placeInPortal(Entity entityIn, float rotationYaw){}
+		
 		@Override
-		public boolean placeInExistingPortal(Entity entityIn, double p_77185_2_, double p_77185_4_, double p_77185_6_, float p_77185_8_){return true;}
-
+		public boolean placeInExistingPortal(Entity entityIn, float rotationYaw){return true;}
+		
 		@Override
 		public boolean makePortal(Entity entityIn){return true;}
-
+		
 		@Override
 		public void removeStalePortalLocations(long worldTime){}
 	}

@@ -1,8 +1,5 @@
 package gollorum.signpost.network;
 
-import cpw.mods.fml.common.network.NetworkRegistry;
-import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
-import cpw.mods.fml.relauncher.Side;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.network.handlers.BaseUpdateClientHandler;
 import gollorum.signpost.network.handlers.BaseUpdateServerHandler;
@@ -30,11 +27,14 @@ import gollorum.signpost.network.messages.SendDiscoveredToServerMessage;
 import gollorum.signpost.network.messages.SendPostBasesMessage;
 import gollorum.signpost.network.messages.TeleportMeMessage;
 import gollorum.signpost.network.messages.TeleportRequestMessage;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
+import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
+import net.minecraftforge.fml.relauncher.Side;
 
 public class NetworkHandler {
 
 	public static final SimpleNetworkWrapper netWrap = NetworkRegistry.INSTANCE.newSimpleChannel(Signpost.MODID);
-	
+
 	public static void register(){
 		netWrap.registerMessage(BaseUpdateServerHandler.class, BaseUpdateServerMessage.class, 0, Side.SERVER);
 		netWrap.registerMessage(BaseUpdateClientHandler.class, BaseUpdateClientMessage.class, 1, Side.CLIENT);

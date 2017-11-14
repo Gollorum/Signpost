@@ -7,5 +7,4 @@ public interface WaystoneContainer {
 	public String getName();
 	public void setName(String name);
 	public BaseInfo getBaseInfo();
-
 }
