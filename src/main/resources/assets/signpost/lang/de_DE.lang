@@ -1,0 +1,44 @@
+﻿tile.SignpostBase.name=Wegstein
+tile.SignpostPostOAK.name=Wegweiser - Eiche
+tile.SignpostPostACACIA.name=Wegweiser - Akazie
+tile.SignpostPostBIGOAK.name=Wegweiser - Schwarzeiche
+tile.SignpostPostBIRCH.name=Wegweiser - Birke
+tile.SignpostPostIRON.name=Wegweiser - Eisen
+tile.SignpostPostJUNGLE.name=Wegweiser - Tropenholz
+tile.SignpostPostSPRUCE.name=Wegweiser - Fichte
+tile.SignpostPostSTONE.name=Wegweiser - Stein
+
+tile.SignpostBigPostOAK.name=Großer Wegweiser - Eiche
+tile.SignpostBigPostACACIA.name=Großer Wegweiser - Akazie
+tile.SignpostBigPostBIGOAK.name=Großer Wegweiser - Schwarzeiche
+tile.SignpostBigPostBIRCH.name=Großer Wegweiser - Birke
+tile.SignpostBigPostIRON.name=Großer Wegweiser - Eisen
+tile.SignpostBigPostJUNGLE.name=Großer Wegweiser - Tropenholz
+tile.SignpostBigPostSPRUCE.name=Großer Wegweiser - Fichte
+tile.SignpostBigPostSTONE.name=Großer Wegweiser - Stein
+
+item.SignpostTool.name=Wegweiser-Werkzeug
+item.SignpostCalibratedTool.name=Kalibriertes Wegweiser-Werkzeug
+item.SignpostBrush.name=Wegweiser-Pinsel
+
+signpost.discovered=Du hast '<Waystone>' entdeckt!
+signpost.notDiscovered=Du hast <Waystone> noch nicht entdeckt
+signpost.errorWorld=FEHLER: Die Welt '<world>' existiert nicht
+signpost.payment=Du musst <amount>x<itemName> bezahlen, um diesen Wegweiser verwenden zu können
+signpost.noTeleport=Dieses Schild hat kein Ziel und ist rein dekorativ.
+
+signpost.guiPrev=Der Wegstein ist <distance> Blöcke entfernt. Spieler werden <amount>x<itemName> bezahlen müssen.
+signpost.guiWorldDim=Der Wegstein ist nicht in dieser Welt/Dimension. Interdimensionale Wegweiser sind deaktivert.
+signpost.guiTooFar=Der Wegstein ist zu weit entfernt (<distance> Blöcke). Die maximale Distanz beträgt <maxDist> Blöcke.
+
+signpost.confirmTeleport=Gib '/signpostconfirm' ein, um für <amount>x<itemName> nach <Waystone> zu reisen.
+signpost.confirmTeleportNoCost=Gib '/signpostconfirm' ein, um nach <Waystone> zu reisen.
+signpost.noConfirm=Es existiert keine Teleportationsanfrage, die es zu bestätigen gilt. Anfragen halten für 30 Sekunden.
+
+signpost.getwaystonesleft=Du kannst noch <amount> Wegsteine platzieren.
+signpost.getsignpostsleft=Du kannst noch <amount> Wegweiser platzieren.
+signpost.getwaystonesleftop=<player> kann noch <amount> Wegsteine platzieren.
+signpost.getsignpostsleftop=<player> kann noch <amount> Wegweiser platzieren.
+
+signpost.playerNotFound=Der Spieler <player> ist nicht auf dem Server.
+signpost.waystoneNotFound=Der Wegstein '<Waystone>' wurde nicht gefunden.

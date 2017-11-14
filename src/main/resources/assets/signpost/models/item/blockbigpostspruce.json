@@ -1,0 +1,6 @@
+{
+    "parent": "signpost:block/bigpost",
+    "textures": {
+        "type": "minecraft:blocks/planks_spruce"
+    }
+}
