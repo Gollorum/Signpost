@@ -1,0 +1,6 @@
+{
+    "parent": "signpost:block/post",
+    "textures": {
+        "type": "minecraft:blocks/planks_jungle"
+    }
+}

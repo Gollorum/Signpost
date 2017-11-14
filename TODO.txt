@@ -1,0 +1,6 @@
+-waystones with rendered name?
+-auto generate signposts in villages
+-integration of the waystones mod
+-BUG: github rotation reset?
+-cauldron/thermos permissions support?
+-not forget waystones on crash - not reproducable

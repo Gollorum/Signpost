@@ -1,0 +1,16 @@
+[
+{
+  "modid": "signpost",
+  "name": "Sign Post",
+  "description": "signpost mod.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Gollorum"],
+  "credits": "gollorum",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
