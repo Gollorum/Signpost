@@ -39,7 +39,7 @@ public class SendAllPostBasesMessage implements IMessage{
 		public String paint2;
 		
 		public String postPaint;
-
+		
 		public byte paintObjectIndex;
 		
 		public DoubleStringInt(String string1, String string2, 

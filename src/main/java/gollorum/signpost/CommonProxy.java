@@ -18,10 +18,13 @@ public class CommonProxy {
 	public BlockHandler blockHandler;
 	
 	public CommonProxy(){
-		blockHandler = new BlockHandler();
+		blockHandler = BlockHandler.INSTANCE;
 	}
 	
-	void preInit(){}
+	void preInit(){
+		MinecraftForge.EVENT_BUS.register(BlockHandler.INSTANCE);
+		MinecraftForge.EVENT_BUS.register(ItemHandler.INSTANCE);
+	}
 	
 	void init(){
 		blockHandler.init();
@@ -36,6 +39,8 @@ public class CommonProxy {
 		NetworkHandler.register();
 		SPEventHandler handler = SPEventHandler.INSTANCE;
 		MinecraftForge.EVENT_BUS.register(handler);
+		MinecraftForge.EVENT_BUS.register(blockHandler);
+		MinecraftForge.EVENT_BUS.register(ItemHandler.INSTANCE);
 	}
 
 	protected void registerTiles(){
@@ -49,7 +54,7 @@ public class CommonProxy {
 	}
 
 	public World getWorld(MessageContext ctx){
-		return ctx.getServerHandler().playerEntity.world;
+		return ctx.getServerHandler().player.world;
 	}
 	
 	public World getWorld(String worldName, int dim){

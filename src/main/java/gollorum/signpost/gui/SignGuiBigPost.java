@@ -42,18 +42,18 @@ public class SignGuiBigPost extends GuiScreen implements SignInput {
 	@Override
 	public void initGui() {
 		BigBaseInfo tilebases = tile.getBases();
-		baseInputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, 46, 137, this);
+		baseInputBox = new SignInputBox(this.fontRenderer, this.width / 2 - 68, 46, 137, this);
 		baseInputBox.setText(tilebases.sign.base==null?"":tilebases.sign.base.toString());
 		go = true;
 		baseInputBox.setFocused(true);
 
-		desc1InputBox = new GuiTextField(0, this.fontRendererObj, this.width / 2 - 68, 106, 137, 20);
+		desc1InputBox = new GuiTextField(0, this.fontRenderer, this.width / 2 - 68, 106, 137, 20);
 		desc1InputBox.setText(""+tilebases.description[0]);
-		desc2InputBox = new GuiTextField(1, this.fontRendererObj, this.width / 2 - 68, 136, 137, 20);
+		desc2InputBox = new GuiTextField(1, this.fontRenderer, this.width / 2 - 68, 136, 137, 20);
 		desc2InputBox.setText(""+tilebases.description[1]);
-		desc3InputBox = new GuiTextField(2, this.fontRendererObj, this.width / 2 - 68, 166, 137, 20);
+		desc3InputBox = new GuiTextField(2, this.fontRenderer, this.width / 2 - 68, 166, 137, 20);
 		desc3InputBox.setText(""+tilebases.description[2]);
-		desc4InputBox = new GuiTextField(3, this.fontRendererObj, this.width / 2 - 68, 196, 137, 20);
+		desc4InputBox = new GuiTextField(3, this.fontRenderer, this.width / 2 - 68, 196, 137, 20);
 		desc4InputBox.setText(""+tilebases.description[3]);
 		
 		resetMouse = true;
@@ -80,8 +80,8 @@ public class SignGuiBigPost extends GuiScreen implements SignInput {
 				initGui();
 			}
 			drawDefaultBackground();
-			baseInputBox.drawSignBox(fontRendererObj);
-			this.drawCenteredString(fontRendererObj, std, this.width/2, baseInputBox.y+baseInputBox.height+10, col);
+			baseInputBox.drawSignBox(fontRenderer);
+			this.drawCenteredString(fontRenderer, std, this.width/2, baseInputBox.y+baseInputBox.height+10, col);
 			desc1InputBox.drawTextBox();
 			desc2InputBox.drawTextBox();
 			desc3InputBox.drawTextBox();

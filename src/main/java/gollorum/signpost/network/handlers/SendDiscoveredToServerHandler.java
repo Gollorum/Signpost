@@ -10,7 +10,7 @@ public class SendDiscoveredToServerHandler implements IMessageHandler<SendDiscov
 
 	@Override
 	public IMessage onMessage(SendDiscoveredToServerMessage message, MessageContext ctx) {
-		PostHandler.addDiscovered(ctx.getServerHandler().playerEntity.getUniqueID(), PostHandler.getWSbyName(message.waystone));
+		PostHandler.addDiscovered(ctx.getServerHandler().player.getUniqueID(), PostHandler.getWSbyName(message.waystone));
 		return null;
 	}
 

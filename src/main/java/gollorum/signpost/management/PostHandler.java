@@ -434,16 +434,15 @@ public class PostHandler {
 	}
 	
 	public static boolean canTeleport(EntityPlayerMP player, BaseInfo target){
-		if(doesPlayerKnowWaystone(player, target)){
-			if(new MyBlockPos(player).checkInterdimensional(target.blockPos)){
-				return true;
-			}else{
-				NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.guiWorldDim"), player);
-			}
+		if(!target.pos.checkInterdimensional(new MyBlockPos(player))){
+			NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.guiWorldDim"), player);
+			return false;
+		}else if(doesPlayerKnowWaystone(player, target)){
+			return true;
 		}else{
 			NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.notDiscovered", "<Waystone>", target.name), player);
+			return false;
 		}
-		return false;
 	}
 	
 	public static WorldServer getWorldByName(String world, int dim){
@@ -456,7 +455,7 @@ public class PostHandler {
 			}
 		}
 		if(dim!=0){
-			ret = FMLCommonHandler.instance().getMinecraftServerInstance().worldServerForDimension(dim);
+			ret = FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(dim);
 		}
 		return ret;
 	}

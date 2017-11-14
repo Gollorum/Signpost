@@ -16,9 +16,6 @@ public class SignGuiBase extends GuiScreen {
 
 	public SignGuiBase(WaystoneContainer tile) {
 		this.tile = tile;
-		if(tile==null){
-			System.out.println("ACHTUNG; DAT TEIL IST FETT NULL!!!!!");
-		}
 		initGui();
 	}
 
@@ -34,7 +31,7 @@ public class SignGuiBase extends GuiScreen {
 		if(nameInputBox.getText() == null || nameInputBox.getText().equals("null")){
 			nameInputBox.setText(tile.getName());
 		}
-		nameInputBox.drawSignBox(fontRendererObj);
+		nameInputBox.drawSignBox(fontRenderer);
 		super.drawScreen(mouseX, mouseY, partialTicks);
 	}
 
@@ -45,7 +42,7 @@ public class SignGuiBase extends GuiScreen {
 
 	@Override
 	public void initGui() {
-		nameInputBox = new BaseInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137);
+		nameInputBox = new BaseInputBox(this.fontRenderer, this.width / 2 - 68, this.height / 2 - 46, 137);
 		nameInputBox.setText(tile.getName());
 		nameInputBox.setFocused(true);
 	}

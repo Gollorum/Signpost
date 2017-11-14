@@ -1,7 +1,6 @@
 package gollorum.signpost;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 
 import gollorum.signpost.blocks.BaseModelPost;
 import gollorum.signpost.blocks.BasePost;
@@ -10,7 +9,6 @@ import gollorum.signpost.blocks.BigPostPost.BigPostType;
 import gollorum.signpost.blocks.ItemBlockWithMeta;
 import gollorum.signpost.blocks.PostPost;
 import gollorum.signpost.blocks.PostPost.PostType;
-import gollorum.signpost.management.ClientConfigStorage;
 import gollorum.signpost.management.ConfigHandler;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
@@ -20,10 +18,17 @@ import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.item.crafting.Ingredient;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.registries.ForgeRegistry;
+import net.minecraftforge.registries.IForgeRegistry;
 
 public class BlockHandler {
-
+	
 	public static BasePost base = new BasePost();
 	public static BaseModelPost[] basemodels = BaseModelPost.createAll();
 	
@@ -48,38 +53,55 @@ public class BlockHandler {
 	public static final BigPostPost[] bigposts = {bigpost_oak, bigpost_spruce, bigpost_birch, bigpost_jungle, bigpost_acacia, bigpost_big_oak, bigpost_iron, bigpost_stone};
 	
 	protected ArrayList<ItemBlockWithMeta>  baseModelItems = new ArrayList<ItemBlockWithMeta>();
+
+	public static final BlockHandler INSTANCE = new BlockHandler();
 	
-	public static void init(){
-	}
+	protected BlockHandler(){}
 	
-	public void register(){
-		registerBlock(base);
-		for(BaseModelPost basemodel: basemodels){
-			registerBlock(basemodel);
-		}
+	public static void init(){}
+
+	@SubscribeEvent
+	public void registerBlocks(RegistryEvent.Register<Block> event) {
+		IForgeRegistry<Block> registry = event.getRegistry();
+		registerBlock(base, registry);
 		for(PostPost now: posts){
-			registerBlock(now);
+			registerBlock(now, registry);
 		}
 		for(BigPostPost now: bigposts){
-			registerBlock(now);
+			registerBlock(now, registry);
+		}
+		for(BaseModelPost now: basemodels){
+			registerBlock(now, registry);
+		}
+	}
+
+	@SubscribeEvent
+	public void registerItems(RegistryEvent.Register<Item> event) {
+		IForgeRegistry<Item> registry = event.getRegistry();
+		registerItem(base, registry);
+		for(PostPost now: posts){
+			registerItem(now, registry);
+		}
+		for(BigPostPost now: bigposts){
+			registerItem(now, registry);
+		}
+		for(BaseModelPost now: basemodels){
+			registerItem(now, registry);
 		}
 		registerRecipes();
 	}
 	
-	public void registerBlock(Block block){
-		GameRegistry.register(block);
-		ItemBlock item;
-		if(block instanceof BaseModelPost){
-			item = new ItemBlockWithMeta(block);
-			
-		}else{
-			item = new ItemBlock(block);
-		}
+	private void registerBlock(Block block, IForgeRegistry<Block> registry){
+		registry.register(block);
+	}
+
+	private void registerItem(Block block, IForgeRegistry<Item> registry){
+		ItemBlock item = new ItemBlock(block);
 		item.setRegistryName(block.getRegistryName());
-		GameRegistry.register(item);
+		registry.register(item);
 	}
 	
-	public void registerRecipes() {
+	private void registerRecipes() {
 		waystoneRecipe();
 		for(PostPost now: posts){
 			postRecipe(now);
@@ -90,23 +112,20 @@ public class BlockHandler {
 	}
 	
 	private void waystoneRecipe(){
-		HashSet<Object> toDelete = new HashSet<Object>();
-		for(IRecipe now: CraftingManager.getInstance().getRecipeList()){
-			if(now==null || now.getRecipeOutput()==null || now.getRecipeOutput().getItem()==null){
-				continue;
-			}
-			if(now.getRecipeOutput().getItem().equals(Item.getItemFromBlock(base))){
-				toDelete.add(now);
-			}
-		}
-		if(toDelete!=null){
-			CraftingManager.getInstance().getRecipeList().removeAll(toDelete);
-		}
-
-		if(ClientConfigStorage.INSTANCE.getSecurityLevelWaystone().equals(ConfigHandler.SecurityLevel.ALL)&&!ClientConfigStorage.INSTANCE.deactivateTeleportation()){
-			switch(ClientConfigStorage.INSTANCE.getWaysRec()){
+		ForgeRegistry<IRecipe> registry = ((ForgeRegistry<IRecipe>)ForgeRegistries.RECIPES);
+//		boolean unfreezed = false;
+//		if(registry.isLocked()){
+//			registry.unfreeze();
+//			unfreezed = true;
+//		}
+		registry.remove(new ResourceLocation("signpost:blockbaserecipe"));
+//		if(unfreezed){
+//			registry.freeze();
+//		}
+		if(ConfigHandler.securityLevelWaystone.equals(ConfigHandler.SecurityLevel.ALL)&&!ConfigHandler.deactivateTeleportation){
+			switch(ConfigHandler.waysRec){
 				case EXPENSIVE:
-					GameRegistry.addRecipe(new ItemStack(base, 1), 
+					GameRegistry.addShapedRecipe(new ResourceLocation("signpost:blockbaserecipe"), null, new ItemStack(base, 1), 
 							"SSS",
 							"PPP",
 							"SSS",
@@ -114,7 +133,7 @@ public class BlockHandler {
 							'P', Items.ENDER_PEARL);
 					break;
 				case VERY_EXPENSIVE:
-					GameRegistry.addRecipe(new ItemStack(base, 1), 
+					GameRegistry.addShapedRecipe(new ResourceLocation("signpost:blockbaserecipe"), null, new ItemStack(base, 1), 
 							"SSS",
 							" P ",
 							"SSS",
@@ -124,7 +143,7 @@ public class BlockHandler {
 				case DEACTIVATED:
 					break;
 				default:
-					GameRegistry.addRecipe(new ItemStack(base, 1), 
+					GameRegistry.addShapedRecipe(new ResourceLocation("signpost:blockbaserecipe"), null, new ItemStack(base, 1), 
 							"SSS",
 							" P ",
 							"SSS",
@@ -132,33 +151,21 @@ public class BlockHandler {
 							'P', Items.ENDER_PEARL);
 					break;
 			}
-			GameRegistry.addShapelessRecipe(new ItemStack(basemodels[0], 1), base);
+			GameRegistry.addShapelessRecipe(new ResourceLocation("signpost:basemodel0recipe"), null, new ItemStack(basemodels[0], 1), Ingredient.fromStacks(new ItemStack(base, 1)));
 			for(int i=1; i<basemodels.length; i++){
-				GameRegistry.addShapelessRecipe(new ItemStack(basemodels[i], 1), basemodels[i-1]);
+				GameRegistry.addShapelessRecipe(new ResourceLocation("signpost:basemodel"+i+"recipe"), null, new ItemStack(basemodels[i], 1), Ingredient.fromStacks(new ItemStack(basemodels[i-1], 1)));
 			}
-			GameRegistry.addShapelessRecipe(new ItemStack(base, 1), basemodels[basemodels.length-1]);
+			GameRegistry.addShapelessRecipe(new ResourceLocation("signpost:basemodel"+basemodels.length+"recipe"), null, new ItemStack(base, 1), Ingredient.fromStacks(new ItemStack(basemodels[basemodels.length-1], 1)));
 		}
 	}
 	
 	private void postRecipe(PostPost post){
-		IRecipe toDelete = null;
-		for(IRecipe now: CraftingManager.getInstance().getRecipeList()){
-			if(now==null || now.getRecipeOutput()==null || now.getRecipeOutput().getItem()==null){
-				continue;
-			}
-			if(now.getRecipeOutput().getItem().equals(Item.getItemFromBlock(post))){
-				toDelete = now;
-				break;
-			}
-		}
-		if(toDelete!=null){
-			CraftingManager.getInstance().getRecipeList().remove(toDelete);
-		}
-		
-		if(ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().equals(ConfigHandler.SecurityLevel.ALL) || ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().equals(ConfigHandler.SecurityLevel.OWNERS)){
-			switch(ClientConfigStorage.INSTANCE.getSignRec()){
+		ForgeRegistry<IRecipe> registry = ((ForgeRegistry<IRecipe>)ForgeRegistries.RECIPES);
+		registry.remove(new ResourceLocation("signpost:blockpostpostrecipe"+post.type));
+		if(ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.ALL) || ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.OWNERS)){
+			switch(ConfigHandler.signRec){
 				case EXPENSIVE:
-					GameRegistry.addRecipe(new ItemStack(post, 1),
+					GameRegistry.addShapedRecipe(new ResourceLocation("signpost:blockpostpostrecipe"+post.type), null, new ItemStack(post, 1),
 							"A",
 							"P",
 							"B",
@@ -167,7 +174,7 @@ public class BlockHandler {
 							'P', Items.ENDER_PEARL);
 					break;
 				case VERY_EXPENSIVE:
-					GameRegistry.addRecipe(new ItemStack(post, 1),
+					GameRegistry.addShapedRecipe(new ResourceLocation("signpost:blockpostpostrecipe"+post.type), null, new ItemStack(post, 1),
 							"A",
 							"P",
 							"B",
@@ -178,7 +185,7 @@ public class BlockHandler {
 				case DEACTIVATED:
 					break;
 				default:
-					GameRegistry.addRecipe(new ItemStack(post, 4),
+					GameRegistry.addShapedRecipe(new ResourceLocation("signpost:blockpostpostrecipe"+post.type), null, new ItemStack(post, 4),
 							"A",
 							"A",
 							"B",
@@ -190,24 +197,12 @@ public class BlockHandler {
 	}
 	
 	private void bigPostRecipe(BigPostPost post){
-		IRecipe toDelete = null;
-		for(IRecipe now: CraftingManager.getInstance().getRecipeList()){
-			if(now==null || now.getRecipeOutput()==null || now.getRecipeOutput().getItem()==null){
-				continue;
-			}
-			if(now.getRecipeOutput().getItem().equals(Item.getItemFromBlock(post))){
-				toDelete = now;
-				break;
-			}
-		}
-		if(toDelete!=null){
-			CraftingManager.getInstance().getRecipeList().remove(toDelete);
-		}
-		
-		if(ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().equals(ConfigHandler.SecurityLevel.ALL) || ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().equals(ConfigHandler.SecurityLevel.OWNERS)){
-			switch(ClientConfigStorage.INSTANCE.getSignRec()){
+		ForgeRegistry<IRecipe> registry = ((ForgeRegistry<IRecipe>)ForgeRegistries.RECIPES);
+		registry.remove(new ResourceLocation("signpost:blockbigpostrecipe"+post.type));
+		if(ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.ALL) || ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.OWNERS)){
+			switch(ConfigHandler.signRec){
 				case EXPENSIVE:
-					GameRegistry.addRecipe(new ItemStack(post, 1),
+					GameRegistry.addShapedRecipe(new ResourceLocation("signpost:blockbigpostrecipe"+post.type), null, new ItemStack(post, 1),
 							"AAA",
 							"APA",
 							" B ",
@@ -216,7 +211,7 @@ public class BlockHandler {
 							'P', Items.ENDER_PEARL);
 					break;
 				case VERY_EXPENSIVE:
-					GameRegistry.addRecipe(new ItemStack(post, 1),
+					GameRegistry.addShapedRecipe(new ResourceLocation("signpost:blockbigpostrecipe"+post.type), null, new ItemStack(post, 1),
 							"AAA",
 							"APA",
 							" B ",
@@ -227,7 +222,7 @@ public class BlockHandler {
 				case DEACTIVATED:
 					break;
 				default:
-					GameRegistry.addRecipe(new ItemStack(post, 4),
+					GameRegistry.addShapedRecipe(new ResourceLocation("signpost:blockbigpostrecipe"+post.type), null, new ItemStack(post, 4),
 							"AAA",
 							"AAA",
 							" B ",
@@ -237,4 +232,6 @@ public class BlockHandler {
 			}
 		}
 	}
+
+	public void register() {}
 }

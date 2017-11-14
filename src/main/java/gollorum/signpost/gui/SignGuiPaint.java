@@ -68,10 +68,10 @@ public class SignGuiPaint extends GuiScreen {
 		SPEventHandler.scheduleTask(new BoolRun(){
 			@Override
 			public boolean run(){
-				if(fontRendererObj==null){
+				if(fontRenderer==null){
 					return false;
 				}
-				nameInputBox = new GuiTextField(0, fontRendererObj, width/4, height/2 - 46, width/2, 20);
+				nameInputBox = new GuiTextField(0, fontRenderer, width/4, height/2 - 46, width/2, 20);
 				nameInputBox.setMaxStringLength(100);
 				ResourceLocation loc = paintable==null ? tile.getPostPaint() : paintable.getTexture();
 				String name;
@@ -84,7 +84,7 @@ public class SignGuiPaint extends GuiScreen {
 				return true;
 			}
 		});
-		nameInputBox = new GuiTextField(0, this.fontRendererObj, this.width/4, this.height/2 - 46, this.width/2, 20);
+		nameInputBox = new GuiTextField(0, this.fontRenderer, this.width/4, this.height/2 - 46, this.width/2, 20);
 		nameInputBox.setMaxStringLength(100);
 		if(mc==null){
 			mc = FMLClientHandler.instance().getClient();

@@ -2,6 +2,7 @@ package gollorum.signpost.blocks.tiles;
 
 import gollorum.signpost.SPEventHandler;
 import gollorum.signpost.blocks.PostPost;
+import gollorum.signpost.blocks.BigPostPost.BigPostType;
 import gollorum.signpost.blocks.PostPost.Hit;
 import gollorum.signpost.blocks.PostPost.HitTarget;
 import gollorum.signpost.blocks.PostPost.PostType;
@@ -9,6 +10,7 @@ import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.SendAllPostBasesMessage;
 import gollorum.signpost.network.messages.SendPostBasesMessage;
+import gollorum.signpost.util.BigBaseInfo;
 import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.DoubleBaseInfo;
 import gollorum.signpost.util.MyBlockPos;
@@ -158,7 +160,6 @@ public class PostPostTile extends SuperPostPostTile {
 					bases.sign1.paint = stringToLoc(paint1);
 					bases.sign2.paint = stringToLoc(paint2);
 					bases.postPaint = postPaint==null || postPaint.equals("") || postPaint.equals("null") || postPaint.equals("minecraft:") ? type.resLocMain : stringToLoc(postPaint);
-
 					switch(paintObjectIndex){
 					case 1:
 						bases.paintObject = bases;
@@ -176,14 +177,14 @@ public class PostPostTile extends SuperPostPostTile {
 						bases.paintObject = null;
 						bases.awaitingPaint = false;
 						break;
-					}
-					NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(self, bases));
+				}
+				NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(self, bases));
 					return true;
 				}
 			}
 		});
 	}
-	
+
 	@Override
 	public Sign getSign(EntityPlayer player) {
 		DoubleBaseInfo bases = getBases();
@@ -239,7 +240,7 @@ public class PostPostTile extends SuperPostPostTile {
 	public void setPaintObject(Paintable paintObject){
 		getBases().paintObject = paintObject;
 	}
-	
+
 	@Override
 	public String toString(){
 		return getBases()+" at "+toPos();

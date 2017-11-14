@@ -44,16 +44,16 @@ public class SignGuiRotation extends GuiScreen {
 			degreesInputBox.setText(""+sign.rotation);
 		}
 		String str = "Angle (degrees): ";
-		int stringwidth = fontRendererObj.getStringWidth(str);
-		fontRendererObj.drawString(str, degreesInputBox.xPosition-stringwidth, degreesInputBox.yPosition+(degreesInputBox.height-fontRendererObj.FONT_HEIGHT)/2, Color.white.getRGB());
+		int stringwidth = fontRenderer.getStringWidth(str);
+		fontRenderer.drawString(str, degreesInputBox.x-stringwidth, degreesInputBox.y+(degreesInputBox.height-fontRenderer.FONT_HEIGHT)/2, Color.white.getRGB());
 
 		str = "Block position to point to:   X= ";
-		stringwidth = fontRendererObj.getStringWidth(str);
-		fontRendererObj.drawString(str, xInputBox.xPosition-stringwidth, xInputBox.yPosition+(xInputBox.height-fontRendererObj.FONT_HEIGHT)/2, Color.white.getRGB());
+		stringwidth = fontRenderer.getStringWidth(str);
+		fontRenderer.drawString(str, xInputBox.x-stringwidth, xInputBox.y+(xInputBox.height-fontRenderer.FONT_HEIGHT)/2, Color.white.getRGB());
 
 		str = "Z= ";
-		stringwidth = fontRendererObj.getStringWidth(str);
-		fontRendererObj.drawString(str, zInputBox.xPosition-stringwidth, zInputBox.yPosition+(xInputBox.height-fontRendererObj.FONT_HEIGHT)/2, Color.white.getRGB());
+		stringwidth = fontRenderer.getStringWidth(str);
+		fontRenderer.drawString(str, zInputBox.x-stringwidth, zInputBox.y+(xInputBox.height-fontRenderer.FONT_HEIGHT)/2, Color.white.getRGB());
 		
 		degreesInputBox.drawTextBox();
 		xInputBox.drawTextBox();
@@ -68,11 +68,11 @@ public class SignGuiRotation extends GuiScreen {
 
 	@Override
 	public void initGui() {
-		degreesInputBox = new GuiTextField(0, this.fontRendererObj, 140, this.height/2 - 46, this.width/2, 20);
+		degreesInputBox = new GuiTextField(0, this.fontRenderer, 140, this.height/2 - 46, this.width/2, 20);
 		degreesInputBox.setMaxStringLength(100);
-		xInputBox = new GuiTextField(1, this.fontRendererObj, this.width/2-20, this.height/2, 60, 20);
+		xInputBox = new GuiTextField(1, this.fontRenderer, this.width/2-20, this.height/2, 60, 20);
 		xInputBox.setMaxStringLength(100);
-		zInputBox = new GuiTextField(2, this.fontRendererObj, this.width/2+80, this.height/2, 60, 20);
+		zInputBox = new GuiTextField(2, this.fontRenderer, this.width/2+80, this.height/2, 60, 20);
 		zInputBox.setMaxStringLength(100);
 		if(mc==null){
 			mc = FMLClientHandler.instance().getClient();

@@ -48,6 +48,7 @@ public class ModelPost extends ModelBase {
 		GL11.glRotated(180, 1, 0, 0);
 		post.render(f5);
 		GL11.glPopMatrix();
+		
 		if(tile.isWaystone){
 			postRenderer.setTexture(BASETEXTURE);
 			waystone.render(f5);

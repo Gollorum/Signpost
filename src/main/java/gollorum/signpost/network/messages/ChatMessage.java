@@ -34,8 +34,8 @@ public class ChatMessage implements IMessage {
 		ByteBufUtils.writeUTF8String(buf, message);
 		buf.writeInt(keyword.length);
 		for(int i=0; i<keyword.length; i++){
-			ByteBufUtils.writeUTF8String(buf, keyword[i]);
-			ByteBufUtils.writeUTF8String(buf, replacement[i]);
+			ByteBufUtils.writeUTF8String(buf, getKeyword(i));
+			ByteBufUtils.writeUTF8String(buf, getReplacement(i));
 		}
 	}
 
@@ -48,5 +48,15 @@ public class ChatMessage implements IMessage {
 			keyword[i] = ByteBufUtils.readUTF8String(buf);
 			replacement[i] = ByteBufUtils.readUTF8String(buf);
 		}
+	}
+	
+	private String getKeyword(int i){
+		String ret = keyword[i];
+		return ""+ret;
+	}
+	
+	private String getReplacement(int i){
+		String ret = replacement[i];
+		return ""+ret;
 	}
 }

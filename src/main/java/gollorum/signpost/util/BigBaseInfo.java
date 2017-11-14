@@ -1,5 +1,6 @@
 package gollorum.signpost.util;
 
+import gollorum.signpost.Signpost;
 import net.minecraft.util.ResourceLocation;
 
 public class BigBaseInfo implements Paintable{

@@ -33,7 +33,6 @@ public class ClientConfigStorage {
 		if(cost==null){
 			cost = (Item) Item.REGISTRY.getObject(new ResourceLocation("minecraft:"+paymentItem));
 		}
-		Signpost.proxy.blockHandler.registerRecipes();
 	}
 	
 	public boolean skipTeleportConfirm() {

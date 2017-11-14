@@ -17,19 +17,19 @@ public class TeleportMeHandler implements IMessageHandler<TeleportMeMessage, IMe
 		if(ClientConfigStorage.INSTANCE.deactivateTeleportation()){
 			return null;
 		}
-		if(PostHandler.canTeleport(ctx.getServerHandler().playerEntity, message.base)){
+		if(PostHandler.canTeleport(ctx.getServerHandler().player, message.base)){
 			World world = message.base.pos.getWorld();
 			if(world == null){
 				return new ChatMessage("signpost.errorWorld", "<world>", message.base.pos.world);
 			}else{
-				EntityPlayerMP player = ctx.getServerHandler().playerEntity;
+				EntityPlayerMP player = ctx.getServerHandler().player;
 				if(!player.world.equals(world)){
 					player.setWorld(world);
 				}
 				if(!(player.dimension==message.base.pos.dim)){
 					player.changeDimension(message.base.pos.dim);
 				}
-				ctx.getServerHandler().playerEntity.setPositionAndUpdate(message.base.pos.x, message.base.pos.y, message.base.pos.z);
+				ctx.getServerHandler().player.setPositionAndUpdate(message.base.pos.x, message.base.pos.y, message.base.pos.z);
 			}
 		}
 		return null;

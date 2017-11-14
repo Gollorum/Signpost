@@ -117,7 +117,7 @@ public abstract class SuperPostPostTile extends TileEntity implements WaystoneCo
 
 	public abstract void save(NBTTagCompound tagCompound);
 	public abstract void load(NBTTagCompound tagCompound);
-	
+
 	public abstract Sign getSign(EntityPlayer player);
 	public abstract Paintable getPaintable(EntityPlayer player);
 	public abstract ResourceLocation getPostPaint();

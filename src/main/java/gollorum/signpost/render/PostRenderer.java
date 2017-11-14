@@ -26,7 +26,7 @@ public class PostRenderer extends TileEntitySpecialRenderer<PostPostTile>{
 	}
 	
 	@Override
-    public void renderTileEntityAt(PostPostTile tile, double x, double y, double z, float partialTicks, int destroyStage){
+    public void render(PostPostTile tile, double x, double y, double z, float partialTicks, int destroyStage, float alfa){
 		DoubleBaseInfo tilebases = tile.bases;
 		double rotation1 = 0;
 		double rotation2 = 0;

@@ -15,6 +15,10 @@ import net.minecraftforge.fml.client.registry.ClientRegistry;
 
 public class BlockHandlerClient extends BlockHandler {
 
+	public static final BlockHandlerClient INSTANCE = new BlockHandlerClient();
+	
+	private BlockHandlerClient(){}
+	
 	public void registerRenders(){
 		registerRender(base);
 		for(BaseModelPost basemodel: basemodels){

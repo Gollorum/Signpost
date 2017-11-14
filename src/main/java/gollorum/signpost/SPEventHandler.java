@@ -26,6 +26,7 @@ import gollorum.signpost.util.MyBlockPosSet;
 import gollorum.signpost.util.collections.Lurchpaerchensauna;
 import gollorum.signpost.util.collections.Lurchsauna;
 import gollorum.signpost.util.collections.Pair;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -155,9 +156,9 @@ public class SPEventHandler {
 	public static final ResourceLocation PLAYER_CAP = new ResourceLocation(Signpost.MODID, "playerstore");
 	 
 	@SubscribeEvent
-	public void attachCapability(AttachCapabilitiesEvent.Entity event) {
-		if (event.getEntity() instanceof EntityPlayerMP) {
-			PlayerProvider provider = new PlayerProvider((EntityPlayerMP) event.getEntity());
+	public void attachCapability(AttachCapabilitiesEvent<Entity> event) {
+		if (event.getObject() instanceof EntityPlayerMP) {
+			PlayerProvider provider = new PlayerProvider((EntityPlayerMP) event.getObject());
 			event.addCapability(PLAYER_CAP, provider);
 		}
 	}

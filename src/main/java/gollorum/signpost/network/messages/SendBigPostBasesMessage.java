@@ -20,7 +20,7 @@ public class SendBigPostBasesMessage implements IMessage {
 	public String[] description;
 	public ResourceLocation paint;
 	public ResourceLocation postPaint;
-
+	
 	public byte paintObjectIndex;
 
 	public SendBigPostBasesMessage(){}

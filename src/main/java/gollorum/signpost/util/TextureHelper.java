@@ -33,6 +33,7 @@ public class TextureHelper {
 		try{
 			ItemStack stack = player.inventory.getCurrentItem();
 			ResourceLocation ret;
+
 			Block block = Block.getBlockFromItem(stack.getItem());
 			if(block instanceof PostPost){
 				ret = ((PostPost)block).type.texture;
@@ -44,13 +45,13 @@ public class TextureHelper {
 				IBakedModel model = FMLClientHandler.instance().getClient().getRenderItem().getItemModelMesher().getItemModel(stack);
 		
 				Vec3d look = player.getLookVec();
-				EnumFacing side = EnumFacing.getFacingFromVector((float)-look.xCoord, (float)-look.yCoord, (float)-look.zCoord);
+				EnumFacing side = EnumFacing.getFacingFromVector((float)-look.x, (float)-look.y, (float)-look.z);
 				
 				BakedQuad quad = model.getQuads(blockState, side, 0).get(0);
 				
 				String textureName = quad.getSprite().getIconName();
 				String resourceName = textureNameToResourceName(textureName);
-				
+
 				ret = new ResourceLocation(resourceName);
 			}
 			

@@ -310,7 +310,7 @@ public class BigPostPost extends SuperPostPost {
 		Cuboid waystone = new Cuboid(new DDDVector(x+0.25, y, z+0.25), new DDDVector(0.5, 0.5, 0.5), 0);
 
 		DDDVector start = new DDDVector(head.x, head.y, head.z);
-		DDDVector end = start.add(new DDDVector(look.xCoord, look.yCoord, look.zCoord));
+		DDDVector end = start.add(new DDDVector(look.x, look.y, look.z));
 		Intersect signHit = sign.traceLine(start, end, true);
 		Intersect postHit = post.traceLine(start, end, true);
 		Intersect waystoneHit = waystone.traceLine(start, end, true);
@@ -347,7 +347,7 @@ public class BigPostPost extends SuperPostPost {
 			return null;
 		}
 	}
-
+	
 	public static BigPostPostTile getTile(World world, BlockPos pos) {
 		TileEntity ret = world.getTileEntity(pos);
 		if (ret instanceof BigPostPostTile) {

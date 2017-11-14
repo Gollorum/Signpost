@@ -138,20 +138,20 @@ public class BigPostPostTile extends SuperPostPostTile {
 					bases.sign.paint = stringToLoc(paint);
 					bases.postPaint = postPaint==null || postPaint.equals("") || postPaint.equals("null") || postPaint.equals("minecraft:") ? type.resLocMain : stringToLoc(postPaint);
 					switch(paintObjectIndex){
-					case 1:
-						bases.paintObject = bases;
-						bases.awaitingPaint = true;
-						break;
-					case 2:
-						bases.paintObject = bases.sign;
-						bases.awaitingPaint = true;
-						break;
-					default:
-						bases.paintObject = null;
-						bases.awaitingPaint = false;
-						break;
-				}
-				NetworkHandler.netWrap.sendToAll(new SendBigPostBasesMessage(self, bases));
+						case 1:
+							bases.paintObject = bases;
+							bases.awaitingPaint = true;
+							break;
+						case 2:
+							bases.paintObject = bases.sign;
+							bases.awaitingPaint = true;
+							break;
+						default:
+							bases.paintObject = null;
+							bases.awaitingPaint = false;
+							break;
+					}
+					NetworkHandler.netWrap.sendToAll(new SendBigPostBasesMessage(self, bases));
 					return true;
 				}
 			}

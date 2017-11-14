@@ -1,5 +1,6 @@
 package gollorum.signpost.util;
 
+import gollorum.signpost.Signpost;
 import gollorum.signpost.management.ClientConfigStorage;
 import gollorum.signpost.util.math.tracking.DDDVector;
 import net.minecraft.init.Blocks;

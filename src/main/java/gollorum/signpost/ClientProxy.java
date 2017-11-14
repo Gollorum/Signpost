@@ -10,7 +10,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 public class ClientProxy extends CommonProxy{
 
 	public ClientProxy(){
-		blockHandler = new BlockHandlerClient();
+		blockHandler = BlockHandlerClient.INSTANCE;
 	}
 	
 	@Override

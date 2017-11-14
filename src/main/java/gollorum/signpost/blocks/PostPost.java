@@ -346,7 +346,7 @@ public class PostPost extends SuperPostPost {
 		Cuboid waystone = new Cuboid(new DDDVector(x+0.25, y, z+0.25), new DDDVector(0.5, 0.5, 0.5), 0);
 
 		DDDVector start = new DDDVector(head);
-		DDDVector end = start.add(new DDDVector(look.xCoord, look.yCoord, look.zCoord));
+		DDDVector end = start.add(new DDDVector(look.x, look.y, look.z));
 		Intersect sign1Hit = sign1.traceLine(start, end, true);
 		Intersect sign2Hit = sign2.traceLine(start, end, true);
 		Intersect postHit = post.traceLine(start, end, true);
@@ -407,7 +407,7 @@ public class PostPost extends SuperPostPost {
 			return null;
 		}
 	}
-
+	
 	@Override
 	protected boolean isHitWaystone(Object hitObj) {
 		return ((Hit)hitObj).target.equals(HitTarget.STONE);

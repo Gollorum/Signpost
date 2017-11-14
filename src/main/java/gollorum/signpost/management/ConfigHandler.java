@@ -84,7 +84,6 @@ public class ConfigHandler {
 			cost = (Item) Item.REGISTRY.getObject(new ResourceLocation("minecraft:"+paymentItem));
 		}
 		ClientConfigStorage.INSTANCE.setCost(cost);
-		Signpost.proxy.blockHandler.registerRecipes();
 	}
 
 	public static void loadClientSettings(){

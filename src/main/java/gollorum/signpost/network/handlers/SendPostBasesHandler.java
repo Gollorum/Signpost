@@ -67,7 +67,7 @@ public class SendPostBasesHandler implements IMessageHandler<SendPostBasesMessag
 		}
 		
 		if(ctx.side.equals(Side.SERVER)){
-			ctx.getServerHandler().playerEntity.world.getTileEntity(message.pos.toBlockPos()).markDirty();
+			ctx.getServerHandler().player.world.getTileEntity(message.pos.toBlockPos()).markDirty();
 			NetworkHandler.netWrap.sendToAll(message);
 		}
 		return null;

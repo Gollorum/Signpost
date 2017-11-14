@@ -25,7 +25,7 @@ public class BigPostRenderer extends TileEntitySpecialRenderer<BigPostPostTile>{
 	}
 	
 	@Override
-    public void renderTileEntityAt(BigPostPostTile tile, double x, double y, double z, float partialTicks, int destroyStage){
+    public void render(BigPostPostTile tile, double x, double y, double z, float partialTicks, int destroyStage, float alfa){
 		BigBaseInfo tilebases = tile.bases;
 		double rotation = 0;
 		if(tilebases==null && !tile.isItem){

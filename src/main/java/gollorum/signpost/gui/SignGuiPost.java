@@ -41,11 +41,11 @@ public class SignGuiPost extends GuiScreen implements SignInput {
 	@Override
 	public void initGui() {
 		DoubleBaseInfo tilebases = tile.getBases();
-		base1InputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137, this);
+		base1InputBox = new SignInputBox(this.fontRenderer, this.width / 2 - 68, this.height / 2 - 46, 137, this);
 		base1InputBox.setText(tilebases.sign1.base==null?"":tilebases.sign1.base.toString());
 		go1 = true;
 		base1InputBox.setFocused(true);
-		base2InputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 + 40, 137, this);
+		base2InputBox = new SignInputBox(this.fontRenderer, this.width / 2 - 68, this.height / 2 + 40, 137, this);
 		base2InputBox.setText(tilebases.sign2.base==null?"":tilebases.sign2.base.toString());
 		go2 = true;
 		resetMouse = true;
@@ -67,21 +67,21 @@ public class SignGuiPost extends GuiScreen implements SignInput {
 			}
 			if(base1InputBox==null){
 				DoubleBaseInfo tilebases = tile.getBases();
-				base1InputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 - 46, 137, this);
+				base1InputBox = new SignInputBox(this.fontRenderer, this.width / 2 - 68, this.height / 2 - 46, 137, this);
 				base1InputBox.setText(tilebases.sign1.base==null?"":tilebases.sign1.base.toString());
 			}
 			if(base2InputBox==null){
 				DoubleBaseInfo tilebases = tile.getBases();
-				base2InputBox = new SignInputBox(this.fontRendererObj, this.width / 2 - 68, this.height / 2 + 40, 137, this);
+				base2InputBox = new SignInputBox(this.fontRenderer, this.width / 2 - 68, this.height / 2 + 40, 137, this);
 				base2InputBox.setText(tilebases.sign2.base==null?"":tilebases.sign2.base.toString());
 			}
 			drawDefaultBackground();
 	
-			base1InputBox.drawSignBox(fontRendererObj);
-			this.drawCenteredString(fontRendererObj, std2, this.width/2, base1InputBox.y+base1InputBox.height+10, col2);
+			base1InputBox.drawSignBox(fontRenderer);
+			this.drawCenteredString(fontRenderer, std2, this.width/2, base1InputBox.y+base1InputBox.height+10, col2);
 	
-			base2InputBox.drawSignBox(fontRendererObj);
-			this.drawCenteredString(fontRendererObj, std1, this.width/2, base2InputBox.y+base2InputBox.height+10, col1);
+			base2InputBox.drawSignBox(fontRenderer);
+			this.drawCenteredString(fontRenderer, std1, this.width/2, base2InputBox.y+base2InputBox.height+10, col1);
 			
 			if(resetMouse){
 				resetMouse = false;

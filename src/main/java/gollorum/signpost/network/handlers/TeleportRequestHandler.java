@@ -17,7 +17,7 @@ public class TeleportRequestHandler implements IMessageHandler<TeleportRequestMe
 	@Override
 	public IMessage onMessage(TeleportRequestMessage message, MessageContext ctx) {
 		if(ctx.side.equals(Side.SERVER)){
-			PostHandler.confirm(ctx.getServerHandler().playerEntity);
+			PostHandler.confirm(ctx.getServerHandler().player);
 		}else{
 			if(ClientConfigStorage.INSTANCE.skipTeleportConfirm()){
 				return message;

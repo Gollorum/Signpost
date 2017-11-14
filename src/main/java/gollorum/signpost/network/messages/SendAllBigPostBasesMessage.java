@@ -28,7 +28,7 @@ public class SendAllBigPostBasesMessage implements IMessage{
 		public String[] strings;
 		public ResourceLocation paint;
 		public ResourceLocation postPaint;
-
+		
 		public byte paintObjectIndex;
 		
 		public BigStringInt(String string, int datInt, boolean bool, OverlayType overlay, boolean bool2, String[] strings, ResourceLocation paint, ResourceLocation postPaint,  byte paintObjectIndex) {

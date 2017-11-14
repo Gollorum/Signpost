@@ -1,5 +1,6 @@
 package gollorum.signpost.util;
 
+import gollorum.signpost.Signpost;
 import net.minecraft.util.ResourceLocation;
 
 public class DoubleBaseInfo implements Paintable{
@@ -21,7 +22,7 @@ public class DoubleBaseInfo implements Paintable{
 		this.sign2 = sign2;
 		postPaint = texture;
 	}
-	
+
 	@Override
 	public String toString(){
 		return sign1+" and "+sign2;
