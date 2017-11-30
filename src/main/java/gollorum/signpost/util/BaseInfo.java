@@ -125,4 +125,8 @@ public class BaseInfo {
 		return !(name==null || name.equals("null") || name.equals(""));
 	}
 	
+	public static BaseInfo fromExternal(String name, int x, int y, int z, int dimension, String modId){
+		MyBlockPos pos = new MyBlockPos("", x, y, z, dimension, modId);
+		return new BaseInfo(name, pos, null);
+	}
 }

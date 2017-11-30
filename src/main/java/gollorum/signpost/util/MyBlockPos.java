@@ -16,6 +16,7 @@ public class MyBlockPos {
 	public int x, y, z;
 	public String world;
 	public int dim;
+	public String modID;
 
 	public MyBlockPos(World world, int x, int y, int z, int dim){
 		this((world==null||world.isRemote)?"":world.getWorldInfo().getWorldName(), x,
@@ -32,6 +33,12 @@ public class MyBlockPos {
 		this.y = y;
 		this.z = z;
 		this.dim = dim;
+		this.modID = Signpost.MODID;
+	}
+	
+	public MyBlockPos(String world, int x, int y, int z, int dim, String modID){
+		this(world, x, y, z, dim);
+		this.modID = modID;
 	}
 
 	public MyBlockPos(MyBlockPos pos) {

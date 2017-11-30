@@ -1,14 +1,14 @@
 [
 {
   "modid": "signpost",
-  "name": "Sign Post",
+  "name": "Signpost",
   "description": "signpost mod.",
   "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "",
   "updateUrl": "",
   "authorList": ["Gollorum"],
-  "credits": "gollorum",
+  "credits": "Developed by Gollorum; Chinese localization by TartaricAcid; Russian localization by Aqelius",
   "logoFile": "",
   "screenshots": [],
   "dependencies": []
