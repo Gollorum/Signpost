@@ -4,6 +4,7 @@ import java.util.Set;
 
 import cpw.mods.fml.common.Loader;
 import gollorum.signpost.util.BaseInfo;
+import gollorum.signpost.util.StonedHashSet;
 import gollorum.signpost.util.collections.Lurchsauna;
 import net.minecraft.entity.player.EntityPlayer;
 
@@ -31,16 +32,16 @@ public class SignpostAdapter {
 		return handlers.remove(handler);
 	}
 
-	public Set<BaseInfo> getExternalBaseInfos(){
-		Set<BaseInfo> ret = new Lurchsauna<BaseInfo>();
+	public StonedHashSet getExternalBaseInfos(){
+		StonedHashSet ret = new StonedHashSet();
 		for(ModHandler now: handlers){
 			ret.addAll(now.getAllBaseInfos());
 		}
 		return ret;
 	}
 	
-	public Set<BaseInfo> getExternalPlayerBaseInfos(EntityPlayer player){
-		Set<BaseInfo> ret = new Lurchsauna<BaseInfo>();
+	public StonedHashSet getExternalPlayerBaseInfos(EntityPlayer player){
+		StonedHashSet ret = new StonedHashSet();
 		for(ModHandler now: handlers){
 			ret.addAll(now.getAllBaseInfosByPlayer(player));
 		}

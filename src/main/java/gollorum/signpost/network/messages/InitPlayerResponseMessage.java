@@ -28,7 +28,7 @@ public class InitPlayerResponseMessage implements IMessage{
 	
 	public InitPlayerResponseMessage(){
 		if(!ConfigHandler.deactivateTeleportation){
-			allWaystones = PostHandler.allWaystones;
+			allWaystones = PostHandler.getAllWaystones();
 		}
 		deactivateTeleportation = ConfigHandler.deactivateTeleportation;
 		interdimensional = ConfigHandler.interdimensional;

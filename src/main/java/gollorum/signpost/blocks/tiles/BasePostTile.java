@@ -24,7 +24,7 @@ public class BasePostTile extends TileEntity implements WaystoneContainer {
 	}
 	
 	public BaseInfo getBaseInfo(){
-		return PostHandler.allWaystones.getByPos(toPos());
+		return PostHandler.getNativeWaystones().getByPos(toPos());
 	}
 
 	public MyBlockPos toPos(){
@@ -45,7 +45,7 @@ public class BasePostTile extends TileEntity implements WaystoneContainer {
 	public void onBlockDestroy(MyBlockPos pos) {
 		isCanceled = true;
 		BaseInfo base = getBaseInfo();
-		if(PostHandler.allWaystones.remove(base)){
+		if(PostHandler.getNativeWaystones().remove(base)){
 			MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.DESTROYED, worldObj, xCoord, yCoord, zCoord, base==null?"":base.name));
 			NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
 		}

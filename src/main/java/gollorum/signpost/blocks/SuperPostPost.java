@@ -166,7 +166,7 @@ public abstract class SuperPostPost extends BlockContainer {
 		String name = BasePost.generateName();
 		UUID owner = player.getUniqueID();
 		BaseInfo ws = new BaseInfo(name, blockPos, telePos, owner);
-		PostHandler.allWaystones.add(ws);
+		PostHandler.addWaystone(ws);
 		PostHandler.addDiscovered(owner, ws);
 		NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
 		MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.PLACED,superTile.getWorldObj(), telePos.x, telePos.y, telePos.z, name));

@@ -12,7 +12,7 @@ public class InitPlayerResponseHandler implements IMessageHandler<InitPlayerResp
 	@Override
 	public IMessage onMessage(InitPlayerResponseMessage message, MessageContext ctx) {
 		if(!message.deactivateTeleportation){
-			PostHandler.allWaystones = message.allWaystones;
+			PostHandler.setNativeWaystones(message.allWaystones);
 		}
 		ClientConfigStorage.INSTANCE.setDeactivateTeleportation(message.deactivateTeleportation);
 		ClientConfigStorage.INSTANCE.setInterdimensional(message.interdimensional);

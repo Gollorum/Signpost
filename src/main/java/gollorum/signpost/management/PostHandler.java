@@ -9,6 +9,7 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import gollorum.signpost.SPEventHandler;
 import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.blocks.tiles.PostPostTile;
+import gollorum.signpost.modIntegration.SignpostAdapter;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.ChatMessage;
 import gollorum.signpost.network.messages.TeleportRequestMessage;
@@ -33,7 +34,7 @@ import net.minecraft.world.WorldServer;
 
 public class PostHandler {
 
-	public static StonedHashSet allWaystones = new StonedHashSet();
+	private static StonedHashSet allWaystones = new StonedHashSet();
 	private static Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo> posts = new Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo>();
 	private static Lurchpaerchensauna<MyBlockPos, BigBaseInfo> bigPosts = new Lurchpaerchensauna<MyBlockPos, BigBaseInfo>();
 	//ServerSide
@@ -497,5 +498,33 @@ public class PostHandler {
 
 		@Override
 		public void removeStalePortalLocations(long worldTime){}
+	}
+
+	public static StonedHashSet getAllWaystones() {
+		StonedHashSet ret = SignpostAdapter.INSTANCE.getExternalBaseInfos();
+		ret.addAll(allWaystones);
+		return ret;
+	}
+	
+	public static StonedHashSet getNativeWaystones(){
+		return allWaystones;
+	}
+	
+	public static void setNativeWaystones(StonedHashSet set){
+		allWaystones = set;
+	}
+	
+	public static StonedHashSet getPlayerKnownWaystones(EntityPlayerMP player){
+		StonedHashSet ret = SignpostAdapter.INSTANCE.getExternalPlayerBaseInfos(player);
+		for(BaseInfo now: allWaystones){
+			if(doesPlayerKnowWaystone(player, now)){
+				ret.add(now);
+			}
+		}
+		return ret;
+	}
+	
+	public static boolean addWaystone(BaseInfo baseInfo){
+		return allWaystones.add(baseInfo);
 	}
 }

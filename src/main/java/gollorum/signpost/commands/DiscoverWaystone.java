@@ -39,7 +39,7 @@ public class DiscoverWaystone extends CommandBase {
 				waystoneName+=" "+now;
 			}
 			waystoneName = waystoneName.substring(1);
-			BaseInfo base = PostHandler.allWaystones.getByName(waystoneName);
+			BaseInfo base = PostHandler.getNativeWaystones().getByName(waystoneName);
 			if(base==null && args.length>1){
 				waystoneName="";
 				playerName = args[args.length-1];
@@ -47,7 +47,7 @@ public class DiscoverWaystone extends CommandBase {
 					waystoneName+=" "+args[i];
 				}
 				waystoneName = waystoneName.substring(1);
-				base = PostHandler.allWaystones.getByName(waystoneName);
+				base = PostHandler.getNativeWaystones().getByName(waystoneName);
 			}
 			EntityPlayerMP target = player;
 			if(playerName!=null){

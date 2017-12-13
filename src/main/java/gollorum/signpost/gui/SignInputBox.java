@@ -134,7 +134,7 @@ public class SignInputBox extends Gui{
 	public void setText(String text){
 		this.text = text;
 		possible = new ArrayList<String>();
-		for(BaseInfo now: PostHandler.allWaystones){
+		for(BaseInfo now: PostHandler.getAllWaystones()){
 			if(now.name!=null && (now.name.contains(getText())) || getText().equals("")){
 				possible.add(now.name);
 			}

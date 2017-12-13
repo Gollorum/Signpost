@@ -115,7 +115,7 @@ public class BaseModelPost extends BlockContainer {
 			BaseInfo ws = getWaystoneRootTile(worldIn, x, y, z).getBaseInfo();
 			if(ws==null){
 				ws = new BaseInfo(BasePost.generateName(), new MyBlockPos(worldIn, x, y, z, playerIn.dimension), playerIn.getUniqueID());
-				PostHandler.allWaystones.add(ws);
+				PostHandler.addWaystone(ws);
 			}
 			if (!playerIn.isSneaking()) {
 				if(!PostHandler.doesPlayerKnowWaystone((EntityPlayerMP) playerIn, ws)){
@@ -156,7 +156,7 @@ public class BaseModelPost extends BlockContainer {
 		BaseInfo ws;
 		if((ws = tile.getBaseInfo())==null){
 			ws = new BaseInfo(name, blockPos, telePos, owner);
-			PostHandler.allWaystones.add(ws);
+			PostHandler.addWaystone(ws);
 		}else{
 			ws.setAll(new BaseInfo(name, blockPos, telePos, owner));
 		}

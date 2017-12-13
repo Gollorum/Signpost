@@ -43,7 +43,7 @@ public class BasePost extends BlockContainer {
 			BaseInfo ws = getWaystoneRootTile(worldIn, x, y, z).getBaseInfo();
 			if(ws==null){
 				ws = new BaseInfo(generateName(), new MyBlockPos(worldIn, x, y, z, playerIn.dimension), playerIn.getUniqueID());
-				PostHandler.allWaystones.add(ws);
+				PostHandler.addWaystone(ws);
 			}
 			if (!playerIn.isSneaking()) {
 				if(!PostHandler.doesPlayerKnowWaystone((EntityPlayerMP) playerIn, ws)){
@@ -81,7 +81,7 @@ public class BasePost extends BlockContainer {
 		String ret;
 		do {
 			ret = "Waystone " + (i++);
-		} while (PostHandler.allWaystones.nameTaken(ret));
+		} while (PostHandler.getAllWaystones().nameTaken(ret));
 		return ret;
 	}
 
@@ -92,7 +92,7 @@ public class BasePost extends BlockContainer {
 		BaseInfo ws;
 		if((ws = tile.getBaseInfo())==null){
 			ws = new BaseInfo(name, pos, owner);
-			PostHandler.allWaystones.add(ws);
+			PostHandler.addWaystone(ws);
 		}else{
 			ws.setAll(new BaseInfo(name, pos, owner));
 		}
@@ -105,10 +105,10 @@ public class BasePost extends BlockContainer {
 	public static void placeClient(final World world, final MyBlockPos pos, final EntityPlayer player) {
 		BasePostTile tile = getWaystoneRootTile(world, pos.x, pos.y, pos.z);
 		if (tile != null && tile.getBaseInfo() == null) {
-            BaseInfo ws = PostHandler.allWaystones.getByPos(pos);
+            BaseInfo ws = PostHandler.getAllWaystones().getByPos(pos);
             if (ws == null) {
             	UUID owner = player.getUniqueID();
-            	PostHandler.allWaystones.add(new BaseInfo("", pos, owner));
+            	PostHandler.getAllWaystones().add(new BaseInfo("", pos, owner));
             }
 		}
 	}

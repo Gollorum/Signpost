@@ -73,7 +73,7 @@ public class Signpost{
 	@EventHandler
 	public void postInit(FMLPostInitializationEvent event){
 		ConfigHandler.postInit();
-		PostHandler.allWaystones = new StonedHashSet();
+		PostHandler.setNativeWaystones(new StonedHashSet());
 		PostHandler.setPosts(new Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo>());
 		PostHandler.setBigPosts(new Lurchpaerchensauna<MyBlockPos, BigBaseInfo>());
 		PostHandler.awaiting = new Lurchpaerchensauna<UUID, TeleportInformation>();

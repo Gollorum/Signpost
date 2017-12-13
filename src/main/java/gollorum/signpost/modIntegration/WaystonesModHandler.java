@@ -3,8 +3,7 @@ package gollorum.signpost.modIntegration;
 import java.util.Set;
 
 import gollorum.signpost.util.BaseInfo;
-import gollorum.signpost.util.MyBlockPos;
-import gollorum.signpost.util.collections.Lurchsauna;
+import gollorum.signpost.util.StonedHashSet;
 import net.blay09.mods.waystones.WaystoneManager;
 import net.blay09.mods.waystones.Waystones;
 import net.blay09.mods.waystones.util.WaystoneEntry;
@@ -14,7 +13,7 @@ public class WaystonesModHandler implements ModHandler {
 
 	@Override
 	public Set<BaseInfo> getAllBaseInfos() {
-		Lurchsauna<BaseInfo> ret = new Lurchsauna<BaseInfo>();
+		StonedHashSet ret = new StonedHashSet();
 		for(WaystoneEntry entry: WaystoneManager.getServerWaystones()){
 			ret.add(baseInfoFromWaystoneEntry(entry));
 		}
@@ -23,7 +22,7 @@ public class WaystonesModHandler implements ModHandler {
 
 	@Override
 	public Set<BaseInfo> getAllBaseInfosByPlayer(EntityPlayer player) {
-		Lurchsauna<BaseInfo> ret = new Lurchsauna<BaseInfo>();
+		StonedHashSet ret = new StonedHashSet();
 		for(WaystoneEntry entry: WaystoneManager.getServerWaystones()){
 			WaystoneEntry playerEntry = WaystoneManager.getKnownWaystone(entry.getName());
 			if(playerEntry != null){
