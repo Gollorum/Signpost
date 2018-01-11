@@ -2,9 +2,11 @@ package gollorum.signpost.util;
 
 import java.util.UUID;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.network.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.World;
 
 public class BaseInfo {
 
@@ -52,7 +54,7 @@ public class BaseInfo {
 		blockPos.writeToNBT(blockPosComp);
 		tC.setTag("blockPos", blockPosComp);
 		pos.writeToNBT(tC);
-		tC.setString("UUID", owner.toString());
+		tC.setString("UUID", ""+owner);
 	}
 
 	public static BaseInfo readFromNBT(NBTTagCompound tC) {
@@ -60,11 +62,11 @@ public class BaseInfo {
 		if(tC.hasKey("blockPos")){
 			MyBlockPos pos = MyBlockPos.readFromNBT(tC.getCompoundTag("pos"));
 			MyBlockPos blockPos = MyBlockPos.readFromNBT(tC.getCompoundTag("blockPos"));
-			UUID owner = UUID.fromString(tC.getString("UUID"));
+			UUID owner = uuidFromString(tC.getString("UUID"));
 			return loadBaseInfo(name, blockPos, pos, owner);
 		}else{
 			MyBlockPos pos = MyBlockPos.readFromNBT(tC);
-			UUID owner = UUID.fromString(tC.getString("UUID"));
+			UUID owner = uuidFromString(tC.getString("UUID"));
 			return new BaseInfo(name, pos, owner);
 		}
 	}
@@ -82,11 +84,16 @@ public class BaseInfo {
 		String o = ByteBufUtils.readUTF8String(buf);
 		if(o.startsWith(VERSION)){
 			o = o.replaceFirst(VERSION, "");
-			UUID owner = UUID.fromString(o);
+			UUID owner;
+			try{
+				owner = uuidFromString(o);
+			}catch(Exception e){
+				owner = null;
+			}
 			MyBlockPos blockPos = MyBlockPos.fromBytes(buf);
 			return loadBaseInfo(name, blockPos, pos, owner);//Ich bin sehr dumm.
 		}else{
-			UUID owner = UUID.fromString(o);
+			UUID owner = uuidFromString(o);
 			return new BaseInfo(name, pos, owner);
 		}
 	}
@@ -126,7 +133,35 @@ public class BaseInfo {
 	}
 	
 	public static BaseInfo fromExternal(String name, int x, int y, int z, int dimension, String modId){
-		MyBlockPos pos = new MyBlockPos("", x, y, z, dimension, modId);
+		World world = FMLCommonHandler.instance().getMinecraftServerInstance().worldServerForDimension(dimension);
+		String worldString;
+		try{
+			worldString = world.getWorldInfo().getWorldName();
+		}catch(Exception e){
+			worldString = "";
+		}
+		MyBlockPos pos = new MyBlockPos(worldString, x, y, z, dimension, modId);
 		return new BaseInfo(name, pos, null);
+	}
+	
+	public static BaseInfo fromExternal(String name, int blockX, int blockY, int blockZ, int teleX, int teleY, int teleZ, int dimension, String modId){
+		World world = FMLCommonHandler.instance().getMinecraftServerInstance().worldServerForDimension(dimension);
+		String worldString;
+		try{
+			worldString = world.getWorldInfo().getWorldName();
+		}catch(Exception e){
+			worldString = "";
+		}
+		MyBlockPos blockPos = new MyBlockPos(worldString, blockX, blockY, blockZ, dimension, modId);
+		MyBlockPos telePos = new MyBlockPos(worldString, teleX, teleY, teleZ, dimension, modId);
+		return new BaseInfo(name, blockPos, telePos, null);
+	}
+	
+	private static UUID uuidFromString(String string){
+		try{
+			return UUID.fromString(string);
+		}catch(IllegalArgumentException e){
+			return null;
+		}
 	}
 }

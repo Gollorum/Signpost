@@ -137,7 +137,7 @@ public abstract class SuperPostPost extends BlockContainer {
 	private void rightClickWaystone(SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z) {
 		BaseInfo ws = superTile.getBaseInfo();
 		if(!player.isSneaking()){
-			if(!PostHandler.doesPlayerKnowWaystone((EntityPlayerMP) player, ws)){
+			if(!PostHandler.doesPlayerKnowNativeWaystone((EntityPlayerMP) player, ws)){
 				if (!ClientConfigStorage.INSTANCE.deactivateTeleportation()) {
 					NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.name), (EntityPlayerMP) player);
 				}
@@ -179,7 +179,7 @@ public abstract class SuperPostPost extends BlockContainer {
 	private void preRightClick(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z){
 		if(isHitWaystone(hitObj)){
 			BaseInfo ws = superTile.getBaseInfo();
-			if(!PostHandler.doesPlayerKnowWaystone((EntityPlayerMP) player, ws)){
+			if(!PostHandler.doesPlayerKnowNativeWaystone((EntityPlayerMP) player, ws)){
 				if (!ClientConfigStorage.INSTANCE.deactivateTeleportation()) {
 	NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.name), (EntityPlayerMP) player);
 				}

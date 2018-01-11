@@ -82,6 +82,15 @@ public class PostHandler {
 	public static boolean doesPlayerKnowWaystone(EntityPlayerMP player, BaseInfo waystone){
 		if(ClientConfigStorage.INSTANCE.isDisableDiscovery()){
 			return true;
+		}else{
+			return doesPlayerKnowNativeWaystone(player, waystone) || getPlayerKnownWaystones(player).contains(waystone);
+		}
+	}
+
+
+	public static boolean doesPlayerKnowNativeWaystone(EntityPlayerMP player, BaseInfo waystone){
+		if(ClientConfigStorage.INSTANCE.isDisableDiscovery()){
+			return true;
 		}else if(playerKnownWaystonePositions.get(player.getUniqueID()).a.contains(waystone.blockPos)){
 			if(playerKnownWaystones.containsKey(player)){
 				playerKnownWaystones.get(player.getUniqueID()).remove(waystone.name);
@@ -173,7 +182,7 @@ public class PostHandler {
 		if(ClientConfigStorage.INSTANCE.deactivateTeleportation()){
 			return new BaseInfo(name, null, null);
 		}else{
-			for(BaseInfo now:allWaystones){
+			for(BaseInfo now:getAllWaystones()){
 				if(name.equals(now.name)){
 					return now;
 				}
@@ -186,7 +195,7 @@ public class PostHandler {
 		if(name==null || name.equals("null")){
 			return null;
 		}
-		for(BaseInfo now:allWaystones){
+		for(BaseInfo now:getAllWaystones()){
 			if(name.equals(now.name)){
 				return now;
 			}
@@ -310,8 +319,8 @@ public class PostHandler {
 	
 	public static StonedHashSet getByWorld(String world){
 		StonedHashSet ret = new StonedHashSet();
-		for(BaseInfo now: allWaystones){
-			if(now.pos.world.equals(world)){
+		for(BaseInfo now: getAllWaystones()){
+			if(now.pos.sameWorld(world)){
 				ret.add(now);
 			}
 		}
@@ -341,7 +350,7 @@ public class PostHandler {
 		StringSet newStrs = new StringSet();
 		newStrs.addAll(ws);
 		for(String now: ws){
-			for(BaseInfo base: allWaystones){
+			for(BaseInfo base: getAllWaystones()){
 				if(base.name.equals(now)){
 					set.add(base.blockPos);
 					newStrs.remove(now);
@@ -461,7 +470,7 @@ public class PostHandler {
 				continue forLoop;
 			}
 		}
-		if(dim!=0){
+		if(dim!=0 || world==null){
 			ret = FMLCommonHandler.instance().getMinecraftServerInstance().worldServerForDimension(dim);
 		}
 		return ret;
@@ -517,7 +526,7 @@ public class PostHandler {
 	public static StonedHashSet getPlayerKnownWaystones(EntityPlayerMP player){
 		StonedHashSet ret = SignpostAdapter.INSTANCE.getExternalPlayerBaseInfos(player);
 		for(BaseInfo now: allWaystones){
-			if(doesPlayerKnowWaystone(player, now)){
+			if(doesPlayerKnowNativeWaystone(player, now)){
 				ret.add(now);
 			}
 		}

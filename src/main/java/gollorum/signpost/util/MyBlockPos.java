@@ -131,11 +131,15 @@ public class MyBlockPos {
 	}
 	
 	public boolean sameWorld(MyBlockPos other){
-		if(other.world.equals("")){
-			other.world = this.world;
+		return sameWorld(other.world);
+	}
+	
+	public boolean sameWorld(String world){
+		if(world.equals("")){
+			world = this.world;
 		}else if(this.world.equals("")){
-			this.world = other.world;
-		}else if(!this.world.equals(other.world)){
+			this.world = world;
+		}else if(!this.world.equals(world)){
 			return false;
 		}
 		return true;
