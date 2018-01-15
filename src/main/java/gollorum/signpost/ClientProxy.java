@@ -1,19 +1,13 @@
 package gollorum.signpost;
 
+import java.util.Collection;
+import java.util.LinkedList;
+
 import cpw.mods.fml.client.FMLClientHandler;
-import cpw.mods.fml.client.registry.ClientRegistry;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
-import gollorum.signpost.blocks.BigPostPost;
-import gollorum.signpost.blocks.PostPost;
-import gollorum.signpost.blocks.tiles.BigPostPostTile;
-import gollorum.signpost.blocks.tiles.PostPostTile;
-import gollorum.signpost.render.BigPostRenderer;
-import gollorum.signpost.render.BlockItemRenderer;
-import gollorum.signpost.render.PostRenderer;
-import net.minecraft.item.Item;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
-import net.minecraftforge.client.MinecraftForgeClient;
 
 public class ClientProxy extends CommonProxy{
 
@@ -45,6 +39,12 @@ public class ClientProxy extends CommonProxy{
 		}else{
 			return FMLClientHandler.instance().getWorldClient();
 		}
+	}
+	@Override
+	public Collection<EntityPlayer> getAllPlayers(){
+		LinkedList<EntityPlayer> ret = new LinkedList();
+		ret.add(FMLClientHandler.instance().getClientPlayerEntity());
+		return ret;
 	}
 	
 }

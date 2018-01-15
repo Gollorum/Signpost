@@ -2,11 +2,13 @@ package gollorum.signpost.gui;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collection;
 
 import org.lwjgl.opengl.GL11;
 
 import cpw.mods.fml.client.FMLClientHandler;
 import gollorum.signpost.management.PostHandler;
+import gollorum.signpost.modIntegration.SignpostAdapter;
 import gollorum.signpost.util.BaseInfo;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
@@ -134,11 +136,16 @@ public class SignInputBox extends Gui{
 	public void setText(String text){
 		this.text = text;
 		possible = new ArrayList<String>();
-		for(BaseInfo now: PostHandler.getAllWaystones()){
+		for(BaseInfo now: getAllPossibilities()){
 			if(now.name!=null && (now.name.contains(getText())) || getText().equals("")){
 				possible.add(now.name);
 			}
 		}
+	}
+	
+	public static Collection<BaseInfo> getAllPossibilities(){
+		Collection<BaseInfo> ret = PostHandler.getAllWaystones();
+		return ret;
 	}
 	
 	public String getText(){

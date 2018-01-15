@@ -2,6 +2,7 @@ package gollorum.signpost.util;
 
 import java.util.UUID;
 
+import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.network.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
@@ -145,9 +146,9 @@ public class BaseInfo {
 	}
 	
 	public static BaseInfo fromExternal(String name, int blockX, int blockY, int blockZ, int teleX, int teleY, int teleZ, int dimension, String modId){
-		World world = FMLCommonHandler.instance().getMinecraftServerInstance().worldServerForDimension(dimension);
 		String worldString;
 		try{
+			World world = FMLCommonHandler.instance().getMinecraftServerInstance().worldServerForDimension(dimension);
 			worldString = world.getWorldInfo().getWorldName();
 		}catch(Exception e){
 			worldString = "";
