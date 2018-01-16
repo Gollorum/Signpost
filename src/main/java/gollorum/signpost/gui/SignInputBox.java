@@ -2,6 +2,7 @@ package gollorum.signpost.gui;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collection;
 
 import org.lwjgl.opengl.GL11;
 
@@ -115,12 +116,18 @@ public class SignInputBox extends Gui{
 	public void setText(String text){
 		this.text = text;
 		possible = new ArrayList<String>();
-		for(BaseInfo now: PostHandler.allWaystones){
+		for(BaseInfo now: getAllPossibilities()){
 			if(now.name!=null && now.name.contains(getText())){
 				possible.add(now.name);
 			}
 		}
 	}
+
+	public static Collection<BaseInfo> getAllPossibilities(){
+		Collection<BaseInfo> ret = PostHandler.getAllWaystones();
+		return ret;
+	}
+
 	
 	public String getText(){
 		return text;

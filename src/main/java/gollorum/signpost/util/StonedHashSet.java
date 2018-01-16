@@ -55,7 +55,7 @@ public class StonedHashSet extends Lurchsauna<BaseInfo>{
 	public boolean addAll(HashSet<String> names){
 		boolean ret = false;
 		for(String nown: names){
-			for(BaseInfo nowws: PostHandler.allWaystones){
+			for(BaseInfo nowws: PostHandler.getAllWaystones()){
 				if(nowws.name.equals(nown)){
 					add(nowws);
 					ret = true;

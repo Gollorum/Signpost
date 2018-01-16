@@ -22,6 +22,7 @@ import gollorum.signpost.network.messages.RequestTextureMessage;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.util.Paintable;
+import gollorum.signpost.util.TextureHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
@@ -33,6 +34,7 @@ import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
@@ -91,7 +93,7 @@ public abstract class SuperPostPost extends BlockContainer {
 		}
 		sendPostBasesToAll(superTile);
 	}
-
+	
 	@Override
 	public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ){
 		if(MinecraftForge.EVENT_BUS.post(new UseSignpostEvent(playerIn, worldIn, pos.getX(), pos.getY(), pos.getZ())) || worldIn.isRemote){
@@ -146,7 +148,7 @@ public abstract class SuperPostPost extends BlockContainer {
 	private void rightClickWaystone(SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z) {
 		BaseInfo ws = superTile.getBaseInfo();
 		if(!player.isSneaking()){
-			if(!PostHandler.doesPlayerKnowWaystone((EntityPlayerMP) player, ws)){
+			if(!PostHandler.doesPlayerKnowNativeWaystone((EntityPlayerMP) player, ws)){
 				if (!ClientConfigStorage.INSTANCE.deactivateTeleportation()) {
 					NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.name), (EntityPlayerMP) player);
 				}
@@ -175,7 +177,7 @@ public abstract class SuperPostPost extends BlockContainer {
 		String name = BasePost.generateName();
 		UUID owner = player.getUniqueID();
 		BaseInfo ws = new BaseInfo(name, blockPos, telePos, owner);
-		PostHandler.allWaystones.add(ws);
+		PostHandler.addWaystone(ws);
 		PostHandler.addDiscovered(owner, ws);
 		NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
 		MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.PLACED,superTile.getWorld(), telePos.x, telePos.y, telePos.z, name));
@@ -190,7 +192,7 @@ public abstract class SuperPostPost extends BlockContainer {
 	private void preRightClick(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z){
 		if(isHitWaystone(hitObj)){
 			BaseInfo ws = superTile.getBaseInfo();
-			if(!PostHandler.doesPlayerKnowWaystone((EntityPlayerMP) player, ws)){
+			if(!PostHandler.doesPlayerKnowNativeWaystone((EntityPlayerMP) player, ws)){
 				if (!ClientConfigStorage.INSTANCE.deactivateTeleportation()) {
 					NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.name), (EntityPlayerMP) player);
 				}

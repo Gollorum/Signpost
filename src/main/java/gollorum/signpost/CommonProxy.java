@@ -1,5 +1,9 @@
 package gollorum.signpost;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
+
 import gollorum.signpost.blocks.tiles.BasePostTile;
 import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.blocks.tiles.PostPostTile;
@@ -7,9 +11,12 @@ import gollorum.signpost.management.PlayerStorage;
 import gollorum.signpost.management.PlayerStore;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 
@@ -56,4 +63,17 @@ public class CommonProxy {
 		return PostHandler.getWorldByName(worldName, dim);
 	}
 	
+	public World[] getWorlds(){
+		return FMLCommonHandler.instance().getMinecraftServerInstance().worlds;
+	}
+
+	public Collection<EntityPlayer> getAllPlayers(){
+		LinkedList<EntityPlayer> ret = new LinkedList<EntityPlayer>();
+		for(Object now: FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayers()){
+			if(now instanceof EntityPlayer){
+				ret.add((EntityPlayer) now);
+			}
+		}
+		return ret;
+	}
 }
