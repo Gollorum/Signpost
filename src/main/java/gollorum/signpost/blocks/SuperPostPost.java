@@ -92,7 +92,7 @@ public abstract class SuperPostPost extends BlockContainer {
 		}
 		sendPostBasesToAll(superTile);
 	}
-
+	
 	@Override
 	public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, ItemStack heldItem, EnumFacing facing, float hitX, float hitY, float hitZ){
 		if(MinecraftForge.EVENT_BUS.post(new UseSignpostEvent(playerIn, worldIn, pos.getX(), pos.getY(), pos.getZ())) || worldIn.isRemote){
@@ -147,7 +147,7 @@ public abstract class SuperPostPost extends BlockContainer {
 	private void rightClickWaystone(SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z) {
 		BaseInfo ws = superTile.getBaseInfo();
 		if(!player.isSneaking()){
-			if(!PostHandler.doesPlayerKnowWaystone((EntityPlayerMP) player, ws)){
+			if(!PostHandler.doesPlayerKnowNativeWaystone((EntityPlayerMP) player, ws)){
 				if (!ClientConfigStorage.INSTANCE.deactivateTeleportation()) {
 					NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.name), (EntityPlayerMP) player);
 				}
@@ -176,7 +176,7 @@ public abstract class SuperPostPost extends BlockContainer {
 		String name = BasePost.generateName();
 		UUID owner = player.getUniqueID();
 		BaseInfo ws = new BaseInfo(name, blockPos, telePos, owner);
-		PostHandler.allWaystones.add(ws);
+		PostHandler.addWaystone(ws);
 		PostHandler.addDiscovered(owner, ws);
 		NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
 		MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.PLACED,superTile.getWorld(), telePos.x, telePos.y, telePos.z, name));
@@ -191,7 +191,7 @@ public abstract class SuperPostPost extends BlockContainer {
 	private void preRightClick(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z){
 		if(isHitWaystone(hitObj)){
 			BaseInfo ws = superTile.getBaseInfo();
-			if(!PostHandler.doesPlayerKnowWaystone((EntityPlayerMP) player, ws)){
+			if(!PostHandler.doesPlayerKnowNativeWaystone((EntityPlayerMP) player, ws)){
 				if (!ClientConfigStorage.INSTANCE.deactivateTeleportation()) {
 					NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.name), (EntityPlayerMP) player);
 				}

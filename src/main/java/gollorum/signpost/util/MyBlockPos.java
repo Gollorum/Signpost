@@ -18,6 +18,7 @@ public class MyBlockPos{
 	public int x, y, z;
 	public String world;
 	public int dim;
+	public String modID;
 	
 	public MyBlockPos(World world, BlockPos pos, int dim){
 		this(world, pos.getX(), pos.getY(), pos.getZ(), dim);
@@ -38,12 +39,18 @@ public class MyBlockPos{
 		this.world = world;
 		this.dim = dim;
 	}
+	
 	public MyBlockPos(String world, int x, int y, int z, int dim){
 		this.x = x;
 		this.y = y;
 		this.z = z;
 		this.world = world;
 		this.dim = dim;
+	}
+
+	public MyBlockPos(String world, int x, int y, int z, int dim, String modID){
+		this(world, x, y, z, dim);
+		this.modID = modID;
 	}
 
 	public MyBlockPos(MyBlockPos pos) {
@@ -136,11 +143,15 @@ public class MyBlockPos{
 	}
 	
 	public boolean sameWorld(MyBlockPos other){
-		if(other.world.equals("")){
-			other.world = this.world;
+		return sameWorld(other.world);
+	}
+	
+	public boolean sameWorld(String world){
+		if(world.equals("")){
+			world = this.world;
 		}else if(this.world.equals("")){
-			this.world = other.world;
-		}else if(!this.world.equals(other.world)){
+			this.world = world;
+		}else if(!this.world.equals(world)){
 			return false;
 		}
 		return true;

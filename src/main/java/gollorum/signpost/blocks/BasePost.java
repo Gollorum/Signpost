@@ -50,10 +50,10 @@ public class BasePost extends BlockContainer {
 			BaseInfo ws = getWaystoneRootTile(worldIn, pos).getBaseInfo();
 			if(ws==null){
 				ws = new BaseInfo(BasePost.generateName(), new MyBlockPos(worldIn, pos, playerIn.dimension), playerIn.getUniqueID());
-				PostHandler.allWaystones.add(ws);
+				PostHandler.addWaystone(ws);
 			}
 			if (!playerIn.isSneaking()) {
-				if(!PostHandler.doesPlayerKnowWaystone((EntityPlayerMP) playerIn, ws)){
+				if(!PostHandler.doesPlayerKnowNativeWaystone((EntityPlayerMP) playerIn, ws)){
 					if (!ClientConfigStorage.INSTANCE.deactivateTeleportation()||ClientConfigStorage.INSTANCE.isDisableDiscovery()) {
 						NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.name), (EntityPlayerMP) playerIn);
 					}
@@ -88,7 +88,7 @@ public class BasePost extends BlockContainer {
 		String ret;
 		do {
 			ret = "Waystone " + (i++);
-		} while (PostHandler.allWaystones.nameTaken(ret));
+		} while (PostHandler.getAllWaystones().nameTaken(ret));
 		return ret;
 	}
 
@@ -102,7 +102,7 @@ public class BasePost extends BlockContainer {
 				System.out.println("bp ps t null");
 			}
 			ws = new BaseInfo(name, pos, owner);
-			PostHandler.allWaystones.add(ws);
+			PostHandler.addWaystone(ws);
 		}else{
 			if(owner==null){
 				System.out.println("bp ps f null");
@@ -118,13 +118,13 @@ public class BasePost extends BlockContainer {
 	public static void placeClient(final World world, final MyBlockPos pos, final EntityPlayer player) {
 		BasePostTile tile = getWaystoneRootTile(world, pos.toBlockPos());
 		if (tile != null && tile.getBaseInfo() == null) {
-			BaseInfo ws = PostHandler.allWaystones.getByPos(pos);
+			BaseInfo ws = PostHandler.getAllWaystones().getByPos(pos);
 			if (ws == null) {
 				UUID owner = player.getUniqueID();
 				if(owner==null){
 					System.out.println("bp pc null");
 				}
-				PostHandler.allWaystones.add(new BaseInfo("", pos, owner));
+				PostHandler.getAllWaystones().add(new BaseInfo("", pos, owner));
 			}
 		}
 	}

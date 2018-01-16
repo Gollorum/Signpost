@@ -8,6 +8,7 @@ import java.util.UUID;
 import gollorum.signpost.SPEventHandler;
 import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.blocks.tiles.PostPostTile;
+import gollorum.signpost.modIntegration.SignpostAdapter;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.ChatMessage;
 import gollorum.signpost.network.messages.TeleportRequestMessage;
@@ -33,7 +34,7 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 
 public class PostHandler {
 
-	public static StonedHashSet allWaystones = new StonedHashSet();	
+	private static StonedHashSet allWaystones = new StonedHashSet();	
 	private static Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo> posts = new Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo>();
 	private static Lurchpaerchensauna<MyBlockPos, BigBaseInfo> bigPosts = new Lurchpaerchensauna<MyBlockPos, BigBaseInfo>();
 	//ServerSide
@@ -79,6 +80,14 @@ public class PostHandler {
 	};
 	
 	public static boolean doesPlayerKnowWaystone(EntityPlayerMP player, BaseInfo waystone){
+		if(ClientConfigStorage.INSTANCE.isDisableDiscovery()){
+			return true;
+		}else{
+			return doesPlayerKnowNativeWaystone(player, waystone) || getPlayerKnownWaystones(player).contains(waystone);
+		}
+	}
+
+	public static boolean doesPlayerKnowNativeWaystone(EntityPlayerMP player, BaseInfo waystone){
 		if(ClientConfigStorage.INSTANCE.isDisableDiscovery()){
 			return true;
 		}else if(playerKnownWaystonePositions.get(player.getUniqueID()).a.contains(waystone.blockPos)){
@@ -172,7 +181,7 @@ public class PostHandler {
 		if(ClientConfigStorage.INSTANCE.deactivateTeleportation()){
 			return new BaseInfo(name, null, null);
 		}else{
-			for(BaseInfo now:allWaystones){
+			for(BaseInfo now:getAllWaystones()){
 				if(name.equals(now.name)){
 					return now;
 				}
@@ -185,7 +194,7 @@ public class PostHandler {
 		if(name==null || name.equals("null")){
 			return null;
 		}
-		for(BaseInfo now:allWaystones){
+		for(BaseInfo now:getAllWaystones()){
 			if(name.equals(now.name)){
 				return now;
 			}
@@ -305,8 +314,8 @@ public class PostHandler {
 	
 	public static StonedHashSet getByWorld(String world){
 		StonedHashSet ret = new StonedHashSet();
-		for(BaseInfo now: allWaystones){
-			if(now.pos.world.equals(world)){
+		for(BaseInfo now: getAllWaystones()){
+			if(now.pos.sameWorld(world)){
 				ret.add(now);
 			}
 		}
@@ -335,7 +344,7 @@ public class PostHandler {
 		StringSet newStrs = new StringSet();
 		newStrs.addAll(ws);
 		for(String now: ws){
-			for(BaseInfo base: allWaystones){
+			for(BaseInfo base: getAllWaystones()){
 				if(base.name.equals(now)){
 					set.add(base.blockPos);
 					newStrs.remove(now);
@@ -455,7 +464,7 @@ public class PostHandler {
 				continue forLoop;
 			}
 		}
-		if(dim!=0){
+		if(dim!=0 || world==null){
 			ret = FMLCommonHandler.instance().getMinecraftServerInstance().worldServerForDimension(dim);
 		}
 		return ret;
@@ -492,4 +501,33 @@ public class PostHandler {
 		@Override
 		public void removeStalePortalLocations(long worldTime){}
 	}
+
+	public static StonedHashSet getAllWaystones() {
+		StonedHashSet ret = SignpostAdapter.INSTANCE.getExternalBaseInfos();
+		ret.addAll(allWaystones);
+		return ret;
+	}
+
+	public static StonedHashSet getNativeWaystones(){
+		return allWaystones;
+	}
+
+	public static void setNativeWaystones(StonedHashSet set){
+		allWaystones = set;
+	}
+
+	public static StonedHashSet getPlayerKnownWaystones(EntityPlayerMP player){
+		StonedHashSet ret = SignpostAdapter.INSTANCE.getExternalPlayerBaseInfos(player);
+		for(BaseInfo now: allWaystones){
+			if(doesPlayerKnowNativeWaystone(player, now)){
+				ret.add(now);
+			}
+		}
+		return ret;
+	}
+
+	public static boolean addWaystone(BaseInfo baseInfo){
+		return allWaystones.add(baseInfo);
+	}
+
 }

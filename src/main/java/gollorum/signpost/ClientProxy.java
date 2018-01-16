@@ -1,6 +1,10 @@
 package gollorum.signpost;
 
+import java.util.Collection;
+import java.util.LinkedList;
+
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
 import net.minecraftforge.client.model.obj.OBJLoader;
 import net.minecraftforge.fml.client.FMLClientHandler;
@@ -42,4 +46,10 @@ public class ClientProxy extends CommonProxy{
 		}
 	}
 	
+	@Override
+	public Collection<EntityPlayer> getAllPlayers(){
+		LinkedList<EntityPlayer> ret = new LinkedList();
+		ret.add(FMLClientHandler.instance().getClientPlayerEntity());
+		return ret;
+	}
 }

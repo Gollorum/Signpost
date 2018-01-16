@@ -46,7 +46,7 @@ public class WorldSigns extends WorldSavedData{
 					bases.add(neu);
 				}
 			}
-			PostHandler.allWaystones.addAll(bases);
+			PostHandler.getNativeWaystones().addAll(bases);
 			PostHandler.refreshDiscovered();
 		}
 	}
@@ -55,7 +55,7 @@ public class WorldSigns extends WorldSavedData{
 	public NBTTagCompound writeToNBT(NBTTagCompound tC) {
 		if(world.equals(DimensionManager.getWorld(0))){
 			NBTTagCompound info = new NBTTagCompound();
-			StonedHashSet worldBases = PostHandler.allWaystones;
+			StonedHashSet worldBases = PostHandler.getNativeWaystones();
 //			StonedHashSet worldBases = PostHandler.getByWorld(world);
 			info.setInteger("infoSize", worldBases.size());
 			int i = 0;
