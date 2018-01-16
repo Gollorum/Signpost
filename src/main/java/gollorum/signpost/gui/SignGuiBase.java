@@ -60,7 +60,7 @@ public class SignGuiBase extends GuiScreen {
 			nameInputBox.setTextColor(Color.black.getRGB());
 			textChanged = false;
 		}else if (!before.equals(nameInputBox.getText())) {
-			if (PostHandler.allWaystones.nameTaken(nameInputBox.getText())) {
+			if (PostHandler.getAllWaystones().nameTaken(nameInputBox.getText())) {
 				nameInputBox.setTextColor(Color.red.getRGB());
 				textChanged = false;
 			} else {
