@@ -20,20 +20,25 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 
 public class CommonProxy {
 
-	public BlockHandler blockHandler;
+	protected BlockHandler blockHandler;
+	protected ItemHandler itemHandler;
 	
 	public CommonProxy(){
-		blockHandler = new BlockHandler();
+		blockHandler = BlockHandler.INSTANCE;
+		itemHandler = ItemHandler.INSTANCE;
 	}
 	
-	void preInit(){}
+	void preInit(){
+		MinecraftForge.EVENT_BUS.register(blockHandler);
+		MinecraftForge.EVENT_BUS.register(itemHandler);
+	}
 	
 	void init(){
 		blockHandler.init();
 		blockHandler.register();
 
-		ItemHandler.init();
-		ItemHandler.register();
+		itemHandler.init();
+		itemHandler.register();
 		
 		registerCapabilities();
 		registerTiles();
@@ -59,6 +64,10 @@ public class CommonProxy {
 	
 	public World getWorld(String worldName, int dim){
 		return PostHandler.getWorldByName(worldName, dim);
+	}
+	
+	public World[] getWorlds(){
+		return FMLCommonHandler.instance().getMinecraftServerInstance().worlds;
 	}
 
 	public Collection<EntityPlayer> getAllPlayers(){

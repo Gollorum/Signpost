@@ -55,7 +55,7 @@ public class Sign implements Paintable{
 	}
 
 	public final double calcRot(int x, int z) {
- 		if(point&&!(base==null||base.pos==null||ClientConfigStorage.INSTANCE.deactivateTeleportation())){
+ 		if(point&&!(base==null||base.blockPos==null||ClientConfigStorage.INSTANCE.deactivateTeleportation())){
 			int dx = x-base.blockPos.x;
 			int dz = z-base.blockPos.z;
 			return DDDVector.genAngle(dx, dz)+Math.toRadians(-90+(flip?0:180)+(dx<0&&dz>0?180:0));

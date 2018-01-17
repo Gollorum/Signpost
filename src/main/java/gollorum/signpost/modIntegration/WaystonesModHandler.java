@@ -7,14 +7,16 @@ import java.util.Set;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.StonedHashSet;
+import net.blay09.mods.waystones.GlobalWaystones;
 import net.blay09.mods.waystones.PlayerWaystoneHelper;
-import net.blay09.mods.waystones.WaystoneManager;
 import net.blay09.mods.waystones.Waystones;
+import net.blay09.mods.waystones.client.ClientWaystones;
 import net.blay09.mods.waystones.util.WaystoneEntry;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
@@ -37,8 +39,18 @@ public class WaystonesModHandler implements ModHandler {
 	
 	private Set<BaseInfo> getGlobal(){
 		StonedHashSet ret = new StonedHashSet();
-		for(WaystoneEntry entry: WaystoneManager.getServerWaystones()){
-			ret.add(baseInfoFromWaystoneEntry(entry));
+		if(FMLCommonHandler.instance().getEffectiveSide().equals(Side.CLIENT)){
+			for(WaystoneEntry entry: ClientWaystones.getKnownWaystones()){
+				ret.add(baseInfoFromWaystoneEntry(entry));
+			}
+		}else{
+			for(World world: Signpost.proxy.getWorlds()){
+				try{
+					for(WaystoneEntry entry: GlobalWaystones.get(world).getGlobalWaystones()){
+						ret.add(baseInfoFromWaystoneEntry(entry));
+					}
+				}catch(Exception e){}
+			}
 		}
 		return ret;
 	}

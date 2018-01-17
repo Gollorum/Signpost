@@ -92,6 +92,7 @@ public class BlockHandler {
 	}
 	
 	private void registerBlock(Block block, IForgeRegistry<Block> registry){
+		System.out.println("Registering "+block.getRegistryName());
 		registry.register(block);
 	}
 

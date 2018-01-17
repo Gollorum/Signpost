@@ -27,7 +27,7 @@ public class ClientProxy extends CommonProxy{
 	void init(){
 		super.init();
 		((BlockHandlerClient)blockHandler).registerRenders();
-		ItemHandler.registerRenders();
+		itemHandler.registerRenders();
 	}
 
 	@Override
@@ -45,6 +45,12 @@ public class ClientProxy extends CommonProxy{
 			return FMLClientHandler.instance().getWorldClient();
 		}
 	}
+	
+	@Override
+	public World[] getWorlds(){
+		return new World[]{FMLClientHandler.instance().getWorldClient()};
+	}
+
 	
 	@Override
 	public Collection<EntityPlayer> getAllPlayers(){
