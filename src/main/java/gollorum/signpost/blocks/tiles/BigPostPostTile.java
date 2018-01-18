@@ -9,6 +9,7 @@ import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.SendAllBigPostBasesMessage;
 import gollorum.signpost.network.messages.SendBigPostBasesMessage;
+import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.BigBaseInfo;
 import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.MyBlockPos;
@@ -41,6 +42,13 @@ public class BigPostPostTile extends SuperPostPostTile {
 		if(bases==null){
 			bases = new BigBaseInfo(type.texture, type.resLocMain);
 			PostHandler.getBigPosts().put(toPos(), bases);
+		} else {
+			if (bases.sign != null && bases.sign.base != null && bases.sign.base.pos == null) {
+				BaseInfo newBase = PostHandler.getWSbyName(bases.sign.base.name);
+				if (newBase != null) {
+					bases.sign.base = newBase;
+				}
+			}
 		}
 		this.bases = bases;
 		return bases;
