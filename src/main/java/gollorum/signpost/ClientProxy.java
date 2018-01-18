@@ -40,6 +40,12 @@ public class ClientProxy extends CommonProxy{
 			return FMLClientHandler.instance().getWorldClient();
 		}
 	}
+	
+	@Override
+	public World[] getWorlds(){
+		return new World[]{FMLClientHandler.instance().getWorldClient()};
+	}
+	
 	@Override
 	public Collection<EntityPlayer> getAllPlayers(){
 		LinkedList<EntityPlayer> ret = new LinkedList();

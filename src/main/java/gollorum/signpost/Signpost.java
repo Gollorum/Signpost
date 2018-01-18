@@ -3,6 +3,9 @@ package gollorum.signpost;
 import java.io.File;
 import java.util.UUID;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -23,6 +26,7 @@ import gollorum.signpost.gui.SignGuiHandler;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.management.PostHandler.TeleportInformation;
+import gollorum.signpost.modIntegration.SignpostAdapter;
 import gollorum.signpost.util.BigBaseInfo;
 import gollorum.signpost.util.DoubleBaseInfo;
 import gollorum.signpost.util.MyBlockPos;
@@ -46,6 +50,7 @@ public class Signpost{
 	public static final int GuiPostRotationID = 4;
 	
 	public static NBTTagCompound saveFile;
+	public static final Logger LOG = LogManager.getLogger(MODID);
 	
 	public static File configFile;
 	

@@ -64,11 +64,15 @@ public abstract class SuperPostPostTile extends TileEntity implements WaystoneCo
 	public static final String locToString(ResourceLocation loc){
 		return loc==null?"null":loc.getResourceDomain()+":"+loc.getResourcePath();
 	}
-	
+
 	public void onBlockDestroy(MyBlockPos pos){
 		if(isWaystone()){
 			destroyWaystone();
 		}
+	}
+
+	public boolean isWaystone(){
+		return isWaystone = (getBaseInfo()!=null);
 	}
 
 	public void destroyWaystone(){
@@ -125,10 +129,6 @@ public abstract class SuperPostPostTile extends TileEntity implements WaystoneCo
 	public abstract Paintable getPaintObject();
 	public abstract void setAwaitingPaint(boolean awaitingPaint);
 	public abstract void setPaintObject(Paintable paintObject);
-
-	public boolean isWaystone(){
-		return isWaystone = (getBaseInfo()!=null);
-	}
 
 	public BaseInfo getBaseInfo(){
 		return PostHandler.getNativeWaystones().getByPos(toPos());

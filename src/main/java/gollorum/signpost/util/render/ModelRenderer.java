@@ -12,7 +12,6 @@ public class ModelRenderer extends TileEntitySpecialRenderer {
 	@Override
 	public void renderTileEntityAt(TileEntity ti, double x, double y, double z, float scale) {
 		if(!(ti instanceof ModelObject)){
-			System.out.println("NO MODEL OBJECT");
 			return;
 		}
 		ModelObject tile = (ModelObject)ti;

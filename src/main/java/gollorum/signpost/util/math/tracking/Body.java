@@ -8,7 +8,6 @@ public class Body extends ArrayList<Rectangle>{
 
 	public Intersect traceLine(DDDVector start, DDDVector end, boolean unlimited){
 		if(this.size()==0){
-			System.out.println("Traced empty");
 			return new Intersect(false, null);
 		}
 		Intersect nearest = new Intersect(false, null);

@@ -87,7 +87,6 @@ public class PostHandler {
 		}
 	}
 
-
 	public static boolean doesPlayerKnowNativeWaystone(EntityPlayerMP player, BaseInfo waystone){
 		if(ClientConfigStorage.INSTANCE.isDisableDiscovery()){
 			return true;

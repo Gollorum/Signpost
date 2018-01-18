@@ -25,10 +25,10 @@ public class InitPlayerResponseMessage implements IMessage{
 
 	public static SecurityLevel securityLevelWaystone;
 	public static SecurityLevel securityLevelSignpost;
-	
+
 	public InitPlayerResponseMessage(){
 		if(!ConfigHandler.deactivateTeleportation){
-			allWaystones = PostHandler.getAllWaystones();
+			allWaystones = PostHandler.getNativeWaystones();
 		}
 		deactivateTeleportation = ConfigHandler.deactivateTeleportation;
 		interdimensional = ConfigHandler.interdimensional;

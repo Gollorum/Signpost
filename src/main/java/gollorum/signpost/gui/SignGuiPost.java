@@ -138,22 +138,6 @@ public class SignGuiPost extends GuiScreen implements SignInput {
 	}
 
 	@Override
-	public void onGuiClosed() {
-		DoubleBaseInfo tilebases = tile.getBases();
-		if(ClientConfigStorage.INSTANCE.deactivateTeleportation()||go2){
-			tilebases.sign1.base = PostHandler.getForceWSbyName(base1InputBox.getText());
-		}else{
-			tilebases.sign1.base = null;
-		}
-		if(ClientConfigStorage.INSTANCE.deactivateTeleportation()||go1){
-			tilebases.sign2.base = PostHandler.getForceWSbyName(base2InputBox.getText());
-		}else{
-			tilebases.sign2.base = null;
-		}
-		NetworkHandler.netWrap.sendToServer(new SendPostBasesMessage(tile, tilebases));
-	}
-	
-	@Override
 	public void onTextChange(SignInputBox box){
 		boolean base2 = box==base2InputBox;
 		BaseInfo inf = PostHandler.getWSbyName(box.getText());
@@ -234,4 +218,21 @@ public class SignGuiPost extends GuiScreen implements SignInput {
 			}
 		}
 	}
+
+	@Override
+	public void onGuiClosed() {
+		DoubleBaseInfo tilebases = tile.getBases();
+		if(ClientConfigStorage.INSTANCE.deactivateTeleportation()||go2){
+			tilebases.sign1.base = PostHandler.getForceWSbyName(base1InputBox.getText());
+		}else{
+			tilebases.sign1.base = null;
+		}
+		if(ClientConfigStorage.INSTANCE.deactivateTeleportation()||go1){
+			tilebases.sign2.base = PostHandler.getForceWSbyName(base2InputBox.getText());
+		}else{
+			tilebases.sign2.base = null;
+		}
+		NetworkHandler.netWrap.sendToServer(new SendPostBasesMessage(tile, tilebases));
+	}
+	
 }

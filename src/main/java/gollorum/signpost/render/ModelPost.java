@@ -41,11 +41,11 @@ public class ModelPost extends ModelBase {
 		
 		//Post
 
-		if(tile.isAwaitingPaint() && tile.getPaintObject() instanceof DoubleBaseInfo){
-			postRenderer.setTexture(tilebases.POST_PAINT);
+		if(tile.isItem){
+			postRenderer.setTexture(((PostPost)tile.blockType).type.resLocMain);
 		}else{
-			if(tile.isItem){
-				postRenderer.setTexture(((PostPost)tile.blockType).type.resLocMain);
+			if(tile.isAwaitingPaint() && tile.getPaintObject() instanceof DoubleBaseInfo){
+				postRenderer.setTexture(tilebases.POST_PAINT);
 			}else{
 				postRenderer.setTexture(tilebases.postPaint);
 			}

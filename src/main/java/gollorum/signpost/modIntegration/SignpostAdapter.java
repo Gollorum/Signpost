@@ -12,7 +12,7 @@ public class SignpostAdapter {
 	
 	public static final SignpostAdapter INSTANCE = new SignpostAdapter();
 	
-	private final String WAYSTONES_MOD_ID = "waystones";
+	public static final String WAYSTONES_MOD_ID = "waystones";
 	
 	private final Set<ModHandler> handlers;
 	

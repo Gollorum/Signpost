@@ -77,7 +77,7 @@ public class BaseModelPostTile extends BasePostTile implements ModelObject{
 			}else{
 				return super.getBlockMetadata();
 			}
-		}catch(NullPointerException e){System.out.println(getClass());return 0;}
+		}catch(NullPointerException e){return 0;}
 	}
 	
 }

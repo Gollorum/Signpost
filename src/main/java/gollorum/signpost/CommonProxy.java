@@ -59,6 +59,10 @@ public class CommonProxy {
 		return PostHandler.getWorldByName(worldName, dim);
 	}
 	
+	public World[] getWorlds(){
+		return FMLCommonHandler.instance().getMinecraftServerInstance().worldServers;
+	}
+	
 	public Collection<EntityPlayer> getAllPlayers(){
 		LinkedList<EntityPlayer> ret = new LinkedList<EntityPlayer>();
 		for(Object now: FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager().playerEntityList){

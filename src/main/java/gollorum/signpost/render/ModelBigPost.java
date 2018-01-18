@@ -15,27 +15,27 @@ public class ModelBigPost extends ModelBase {
 	
 	public ModelRenderer waystone;
 	public static final ResourceLocation BASETEXTURE = new ResourceLocation("minecraft:textures/blocks/stone.png");
-//	public static final ResourceLocation BASETEXTURE = new ResourceLocation("signpost:textures/blocks/base.png");
-	
-	public ModelBigPost(){
+	// public static final ResourceLocation BASETEXTURE = new ResourceLocation("signpost:textures/blocks/base.png");
+
+	public ModelBigPost() {
 
 		textureWidth = 16;
 		textureHeight = 16;
 
 		post = new ModelRenderer(this, 0, -4);
 		post.addBox(-2F, 0F, -2F, 4, 16, 4, 0F);
-		
+
 		waystone = new ModelRenderer(this, 4, 4);
 		waystone.addBox(-4f, 0f, -4f, 8, 8, 8);
 	}
 
 	public void render(BigPostRenderer postRenderer, float f1, float f5, BigBaseInfo tilebases, BigPostPostTile tile, double rotation) {
-		if(tile.isAwaitingPaint() && tile.getPaintObject() instanceof BigBaseInfo){
-			postRenderer.setTexture(tilebases.POST_PAINT);
-		}else{
-			if(tile.isItem){
-				postRenderer.setTexture(((BigPostPost)tile.blockType).type.resLocMain);
-			}else{
+		if (tile.isItem) {
+			postRenderer.setTexture(((BigPostPost) tile.blockType).type.resLocMain);
+		} else {
+			if (tile.isAwaitingPaint() && tile.getPaintObject() instanceof BigBaseInfo) {
+				postRenderer.setTexture(tilebases.POST_PAINT);
+			} else {
 				postRenderer.setTexture(tilebases.postPaint);
 			}
 		}
@@ -44,10 +44,10 @@ public class ModelBigPost extends ModelBase {
 		GL11.glTranslated(0, -1, 0);
 		post.render(f5);
 		GL11.glPopMatrix();
-		if(tile.isWaystone){
+		if (tile.isWaystone) {
 			postRenderer.setTexture(BASETEXTURE);
 			waystone.render(f5);
 		}
 	}
-	
+
 }

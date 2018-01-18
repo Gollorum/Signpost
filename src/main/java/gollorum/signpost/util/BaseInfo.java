@@ -5,6 +5,7 @@ import java.util.UUID;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.network.ByteBufUtils;
+import gollorum.signpost.Signpost;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
@@ -131,6 +132,10 @@ public class BaseInfo {
 	
 	public boolean hasName(){
 		return !(name==null || name.equals("null") || name.equals(""));
+	}
+	
+	public boolean isNative(){
+		return blockPos.modID.equals(Signpost.MODID);
 	}
 	
 	public static BaseInfo fromExternal(String name, int x, int y, int z, int dimension, String modId){

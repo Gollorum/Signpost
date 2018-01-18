@@ -86,12 +86,13 @@ public class MyBlockPos {
 		int[] arr = {x, y, z, dim};
 		tC.setIntArray("Position", arr);
 		tC.setString("WorldName", world);
+		tC.setString("modID", modID);
 		return tC;
 	}
 	
 	public static MyBlockPos readFromNBT(NBTTagCompound tC){
 		int[] arr = tC.getIntArray("Position");
-		return new MyBlockPos(tC.getString("WorldName"), arr[0], arr[1], arr[2], arr[3]);
+		return new MyBlockPos(tC.getString("WorldName"), arr[0], arr[1], arr[2], arr[3], tC.getString("modID"));
 	}
 
 	public void toBytes(ByteBuf buf) {
@@ -100,6 +101,7 @@ public class MyBlockPos {
 		buf.writeInt(y);
 		buf.writeInt(z);
 		buf.writeInt(dim);
+		ByteBufUtils.writeUTF8String(buf, modID);
 	}
 	
 	public static MyBlockPos fromBytes(ByteBuf buf) {
@@ -108,7 +110,8 @@ public class MyBlockPos {
 		int y = buf.readInt();
 		int z = buf.readInt();
 		int dim = buf.readInt();
-		return new MyBlockPos(world, x, y, z, dim);
+		String modID = ByteBufUtils.readUTF8String(buf);
+		return new MyBlockPos(world, x, y, z, dim, modID);
 	}
 	
 	@Override
