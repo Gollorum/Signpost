@@ -11,7 +11,7 @@ public class BaseUpdateClientMessage implements IMessage {
 	public StonedHashSet waystones = new StonedHashSet();
 	
 	public BaseUpdateClientMessage(){
-		waystones = PostHandler.getAllWaystones();
+		waystones = PostHandler.getNativeWaystones();
 	}
 	
 	@Override

@@ -2,7 +2,6 @@ package gollorum.signpost.blocks.tiles;
 
 import gollorum.signpost.SPEventHandler;
 import gollorum.signpost.blocks.PostPost;
-import gollorum.signpost.blocks.BigPostPost.BigPostType;
 import gollorum.signpost.blocks.PostPost.Hit;
 import gollorum.signpost.blocks.PostPost.HitTarget;
 import gollorum.signpost.blocks.PostPost.PostType;
@@ -10,7 +9,7 @@ import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.SendAllPostBasesMessage;
 import gollorum.signpost.network.messages.SendPostBasesMessage;
-import gollorum.signpost.util.BigBaseInfo;
+import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.DoubleBaseInfo;
 import gollorum.signpost.util.MyBlockPos;
@@ -61,6 +60,19 @@ public class PostPostTile extends SuperPostPostTile {
 				bases = new DoubleBaseInfo(type.texture, type.resLocMain);
 			}
 			PostHandler.getPosts().put(toPos(), bases);
+		}else{ 
+	        if(bases.sign1!=null && bases.sign1.base!=null && bases.sign1.base.pos==null){ 
+	          BaseInfo newBase = PostHandler.getWSbyName(bases.sign1.base.name); 
+	          if(newBase!=null){ 
+	            bases.sign1.base = newBase; 
+	          } 
+	        } 
+	        if(bases.sign2!=null && bases.sign2.base!=null && bases.sign2.base.pos==null){ 
+	          BaseInfo newBase = PostHandler.getWSbyName(bases.sign2.base.name); 
+	          if(newBase!=null){ 
+	            bases.sign2.base = newBase; 
+	          } 
+	        } 
 		}
 		return this.bases = bases;
 	}
