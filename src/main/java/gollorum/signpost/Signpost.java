@@ -3,6 +3,9 @@ package gollorum.signpost;
 import java.io.File;
 import java.util.UUID;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import gollorum.signpost.commands.ConfirmTeleportCommand;
 import gollorum.signpost.commands.DiscoverWaystone;
 import gollorum.signpost.commands.GetSignpostCount;
@@ -48,6 +51,7 @@ public class Signpost{
 	public static File configFile;
 	
 	public static NBTTagCompound saveFile;
+	public static final Logger LOG = LogManager.getLogger(MODID);
 	
 	@SidedProxy(clientSide = "gollorum.signpost.ClientProxy", serverSide = "gollorum.signpost.CommonProxy")
 	public static CommonProxy proxy;
