@@ -46,7 +46,7 @@ public class WorldSigns extends WorldSavedData{
 					bases.add(neu);
 				}
 			}
-			Signpost.LOG.info(bases.size()+" waystones loaded");  
+//			Signpost.LOG.info(bases.size()+" waystones loaded");  
 			PostHandler.getNativeWaystones().addAll(bases);
 			PostHandler.refreshDiscovered();
 		}
@@ -57,7 +57,7 @@ public class WorldSigns extends WorldSavedData{
 		if(world.provider.getDimension() == 0){ 
 			NBTTagCompound info = new NBTTagCompound();
 			StonedHashSet worldBases = PostHandler.getNativeWaystones();
-			Signpost.LOG.info(worldBases.size()+" waystones saved");  
+//			Signpost.LOG.info(worldBases.size()+" waystones saved");  
 //			StonedHashSet worldBases = PostHandler.getByWorld(world);
 			info.setInteger("infoSize", worldBases.size());
 			int i = 0;
