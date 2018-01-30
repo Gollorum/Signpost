@@ -98,6 +98,7 @@ public class BaseModelPost extends BlockContainer {
 	    return new BlockStateContainer(this, new IProperty[] { FACING });
 	}
 
+	@Override
 	public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer){
 		return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing().getOpposite());
 	}
@@ -111,11 +112,6 @@ public class BaseModelPost extends BlockContainer {
 	public int getMetaFromState(IBlockState state) {
 		EnumFacing face = (EnumFacing) state.getValue(FACING);
 		return face.getHorizontalIndex();
-	}
-
-	@Override
-	public int damageDropped(IBlockState state) {
-		return getMetaFromState(state);
 	}
 
 	@Override
