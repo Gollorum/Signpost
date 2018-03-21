@@ -120,7 +120,7 @@ public class BaseModelPost extends BlockContainer {
 			if (!playerIn.isSneaking()) {
 				if(!PostHandler.doesPlayerKnowNativeWaystone((EntityPlayerMP) playerIn, ws)){
 					if (!ClientConfigStorage.INSTANCE.deactivateTeleportation()) {
-						NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.name), (EntityPlayerMP) playerIn);
+						NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.getName()), (EntityPlayerMP) playerIn);
 					}
 					PostHandler.addDiscovered(playerIn.getUniqueID(), ws);
 				}

@@ -19,7 +19,7 @@ public class StonedHashSet extends Lurchsauna<BaseInfo>{
 
 	public BaseInfo getByName(String waystoneName) {
 		for(BaseInfo now: this){
-			if(now.name.equals(waystoneName)){
+			if(now.getName().equals(waystoneName)){
 				return now;
 			}
 		}
@@ -31,7 +31,7 @@ public class StonedHashSet extends Lurchsauna<BaseInfo>{
 			return false;
 		}
 		for(BaseInfo now:this){
-			if(name.equals(now.name)){
+			if(name.equals(now.getName())){
 				return true;
 			}
 		}
@@ -57,7 +57,7 @@ public class StonedHashSet extends Lurchsauna<BaseInfo>{
 		boolean ret = false;
 		for(String nown: names){
 			for(BaseInfo nowws: PostHandler.getAllWaystones()){
-				if(nowws.name.equals(nown)){
+				if(nowws.getName().equals(nown)){
 					add(nowws);
 					ret = true;
 				}

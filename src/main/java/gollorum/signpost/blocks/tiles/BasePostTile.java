@@ -46,7 +46,7 @@ public class BasePostTile extends TileEntity implements WaystoneContainer {
 		isCanceled = true;
 		BaseInfo base = getBaseInfo();
 		if(PostHandler.getNativeWaystones().remove(base)){
-			MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.DESTROYED, worldObj, xCoord, yCoord, zCoord, base==null?"":base.name));
+			MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.DESTROYED, worldObj, xCoord, yCoord, zCoord, base==null?"":base.getName()));
 			NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
 		}
 	}
@@ -54,7 +54,7 @@ public class BasePostTile extends TileEntity implements WaystoneContainer {
 	@Override
 	public void setName(String name) {
 		BaseInfo bi = getBaseInfo();
-		bi.name = name;
+		bi.setName(name);
 		NetworkHandler.netWrap.sendToServer(new BaseUpdateServerMessage(bi, false));
 	}
 

@@ -71,8 +71,8 @@ public class PostRenderer extends TileEntitySpecialRenderer{
 //		int color = (1<<16) + (1<<8);
 		
         if(!tile.isItem){
-        	if(tilebases.sign1.base!=null&&!tilebases.sign1.base.name.equals("null")&&!tilebases.sign1.base.name.equals("")){
-        		String s = tilebases.sign1.base.name;
+        	if(tilebases.sign1.base!=null&&!tilebases.sign1.base.getName().equals("null")&&!tilebases.sign1.base.getName().equals("")){
+        		String s = tilebases.sign1.base.getName();
         		double sc2 = 100d/fontrenderer.getStringWidth(s);
         		if(sc2>=1){
         			sc2 = 1;
@@ -92,9 +92,9 @@ public class PostRenderer extends TileEntitySpecialRenderer{
                 GL11.glPopMatrix();
         	}
 
-        	if(tilebases.sign2.base!=null&&!tilebases.sign2.base.name.equals("null")&&!tilebases.sign2.base.name.equals("")){
+        	if(tilebases.sign2.base!=null&&!tilebases.sign2.base.getName().equals("null")&&!tilebases.sign2.base.getName().equals("")){
         		GL11.glTranslated(0, 0.5d, 0);
-        		String s = tilebases.sign2.base.name;
+        		String s = tilebases.sign2.base.getName();
         		double sc2 = 100d/fontrenderer.getStringWidth(s);
         		if(sc2>=1){
         			sc2 = 1;

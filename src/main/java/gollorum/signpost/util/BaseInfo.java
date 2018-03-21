@@ -13,7 +13,7 @@ import net.minecraft.world.World;
 public class BaseInfo {
 
 	private static final String VERSION = "Version2:";
-	public String name;
+	private String name;
 	public MyBlockPos blockPos;
 	/**
 	 * One block below the teleport destination
@@ -127,11 +127,19 @@ public class BaseInfo {
 
 	@Override
 	public String toString(){
-		return name;
+		return ""+name;
 	}
 	
 	public boolean hasName(){
 		return !(name==null || name.equals("null") || name.equals(""));
+	}
+	
+	public String getName(){
+		return toString();
+	}
+
+	public void setName(String name){
+		this.name = name;
 	}
 	
 	public boolean isNative(){

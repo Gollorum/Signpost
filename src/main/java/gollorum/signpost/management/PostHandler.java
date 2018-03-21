@@ -92,11 +92,11 @@ public class PostHandler {
 			return true;
 		}else if(playerKnownWaystonePositions.get(player.getUniqueID()).a.contains(waystone.blockPos)){
 			if(playerKnownWaystones.containsKey(player)){
-				playerKnownWaystones.get(player.getUniqueID()).remove(waystone.name);
+				playerKnownWaystones.get(player.getUniqueID()).remove(waystone.getName());
 			}
 			return true;
 		}else{
-			return playerKnownWaystones.get(player.getUniqueID()).contains(waystone.name);
+			return playerKnownWaystones.get(player.getUniqueID()).contains(waystone.getName());
 		}
 	}
 	
@@ -182,7 +182,7 @@ public class PostHandler {
 			return new BaseInfo(name, null, null);
 		}else{
 			for(BaseInfo now:getAllWaystones()){
-				if(name.equals(now.name)){
+				if(name.equals(now.getName())){
 					return now;
 				}
 			}
@@ -195,7 +195,7 @@ public class PostHandler {
 			return null;
 		}
 		for(BaseInfo now:getAllWaystones()){
-			if(name.equals(now.name)){
+			if(name.equals(now.getName())){
 				return now;
 			}
 		}
@@ -311,7 +311,7 @@ public class PostHandler {
 						return false;
 					}
 				})).boolRun);
-				NetworkHandler.netWrap.sendTo(new TeleportRequestMessage(stackSize, destination.name), player);
+				NetworkHandler.netWrap.sendTo(new TeleportRequestMessage(stackSize, destination.getName()), player);
 			}
 		}
 	}
@@ -328,7 +328,7 @@ public class PostHandler {
 	
 	public static boolean updateWS(BaseInfo newWS, boolean destroyed){
 		if(destroyed){
-			if(allWaystones.remove(getWSbyName(newWS.name))){
+			if(allWaystones.remove(getWSbyName(newWS.getName()))){
 				for(Entry<UUID, Pair<MyBlockPosSet, Pair<Integer, Integer>>> now: playerKnownWaystonePositions.entrySet()){
 					now.getValue().a.remove(newWS);
 				}
@@ -350,7 +350,7 @@ public class PostHandler {
 		newStrs.addAll(ws);
 		for(String now: ws){
 			for(BaseInfo base: getAllWaystones()){
-				if(base.name.equals(now)){
+				if(base.getName().equals(now)){
 					set.add(base.blockPos);
 					newStrs.remove(now);
 				}
@@ -402,7 +402,7 @@ public class PostHandler {
 		}
 		if(playerKnownWaystonePositions.containsKey(player)){
 			boolean ret = playerKnownWaystonePositions.get(player).a.add(ws.blockPos);
-			ret = ret |! (playerKnownWaystonePositions.containsKey(player) && playerKnownWaystones.get(player).remove(ws.name));
+			ret = ret |! (playerKnownWaystonePositions.containsKey(player) && playerKnownWaystones.get(player).remove(ws.getName()));
 			return ret;
 		}else{
 			MyBlockPosSet newSet = new MyBlockPosSet();
@@ -413,7 +413,7 @@ public class PostHandler {
 			pair.b.a = ClientConfigStorage.INSTANCE.getMaxWaystones();
 			pair.b.b = ClientConfigStorage.INSTANCE.getMaxSignposts();
 			playerKnownWaystonePositions.put(player, pair);
-			return !(playerKnownWaystonePositions.containsKey(player) && playerKnownWaystones.get(player).remove(ws.name));
+			return !(playerKnownWaystonePositions.containsKey(player) && playerKnownWaystones.get(player).remove(ws.getName()));
 		}
 	}
 	
@@ -425,7 +425,7 @@ public class PostHandler {
 			MyBlockPosSet newPosSet = new MyBlockPosSet();
 			for(String str: now.getValue()){
 				for(BaseInfo base: allWaystones){
-					if(base.hasName() && base.name.equals(str)){
+					if(base.hasName() && base.getName().equals(str)){
 						newPosSet.add(base.blockPos);
 						newSet.add(str);
 					}
@@ -455,7 +455,7 @@ public class PostHandler {
 				NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.guiWorldDim"), player);
 			}
 		}else{
-			NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.notDiscovered", "<Waystone>", target.name), player);
+			NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.notDiscovered", "<Waystone>", target.getName()), player);
 		}
 		return false;
 	}

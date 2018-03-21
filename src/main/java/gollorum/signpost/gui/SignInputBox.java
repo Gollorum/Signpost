@@ -110,10 +110,6 @@ public class SignInputBox extends Gui{
 		scc = sc2;
 		GL11.glPushMatrix();
 		GL11.glScaled(sc2, sc2, 1);
-//		GL11.glTranslated(x+width/2.0, 0, y+height/2.0);
-//		GL11.glScaled(1, 1, 1);
-//		GL11.glTranslated(-fontRend.getStringWidth(getText())/2.0, 0, -fontRend.FONT_HEIGHT/2.0);
-//		fontRend.drawString(getText(), 0, 0, color);
 		if(sc2==1.0){
 			drawXat = (int) (x = (x-fontRenderer.getStringWidth(txt)/2.0));
 		}else{
@@ -146,8 +142,8 @@ public class SignInputBox extends Gui{
 		this.text = text;
 		possible = new ArrayList<String>();
 		for(BaseInfo now: getAllPossibilities()){
-			if(now.name!=null && (now.name.contains(getText())) || getText().equals("")){
-				possible.add(now.name);
+			if((now.getName().contains(getText())) || getText().equals("")){
+				possible.add(now.getName());
 			}
 		}
 	}
