@@ -30,7 +30,7 @@ public class ModelBigSign extends ModelBase {
 	
 	public void render(BigPostRenderer postRenderer, float f1, float f5, BigBaseInfo tilebases, BigPostPostTile tile, double rotation) {
 		super.render(null, 0, f1, 0, 0, 0, f5);
-		if (tile.isItem || (tilebases.sign.base != null&&!tilebases.sign.base.name.equals("null")&&!tilebases.sign.base.name.equals(""))) {
+		if (tile.isItem || (tilebases.sign.base != null&&!tilebases.sign.base.getName().equals("null")&&!tilebases.sign.base.getName().equals(""))) {
 			GL11.glPushMatrix();
 			GL11.glRotated(180, 0, 0, 1);
 			GL11.glTranslated(0, -1, 0);

@@ -49,14 +49,14 @@ public class SignGuiBase extends GuiScreen {
 
 	@Override
 	protected void keyTyped(char par1, int par2) throws IOException {
-		if(par1==13){
+		if(par1==13 || tile == null){
 			this.mc.displayGuiScreen(null);
 			return;
 		}
 		String before = nameInputBox.getText();
 		super.keyTyped(par1, par2);
 		this.nameInputBox.textboxKeyTyped(par1, par2);
-		if(nameInputBox.getText().equals(tile.getBaseInfo().name)){
+		if(nameInputBox.getText().equals(tile.getName())){
 			nameInputBox.setTextColor(Color.black.getRGB());
 			textChanged = false;
 		}else if (!before.equals(nameInputBox.getText())) {

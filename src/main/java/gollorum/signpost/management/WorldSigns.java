@@ -42,7 +42,7 @@ public class WorldSigns extends WorldSavedData{
 			for(int i = 0; i<infoSize; i++){
 				NBTTagCompound nowInfo = (NBTTagCompound) info.getTag("Base"+i);
 				BaseInfo neu = BaseInfo.readFromNBT(nowInfo);
-				if(neu.name!=null){
+				if(neu.getName()!=null){
 					bases.add(neu);
 				}
 			}
