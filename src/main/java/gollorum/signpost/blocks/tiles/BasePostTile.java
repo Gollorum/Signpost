@@ -76,7 +76,7 @@ public class BasePostTile extends TileEntity implements WaystoneContainer {
 	@Override
 	public void setName(String name) {
 		BaseInfo ws = getBaseInfo();
-		ws.name = name;
+		ws.setName(name);
 		NetworkHandler.netWrap.sendToServer(new BaseUpdateServerMessage(ws, false));
 	}
 
