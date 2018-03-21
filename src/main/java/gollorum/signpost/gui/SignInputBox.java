@@ -29,11 +29,12 @@ public class SignInputBox extends Gui{
     private int cursorPosition;
     
     private ArrayList<String> possible = new ArrayList<String>();
-    private int possibleCount = 0;
+    private int cycleTime = 1000; 
+    private long lastSystemTime; 
     private int possibleIndex = 0;
     
     public int textColor = 0;
-    private int cursorCount = 0;
+    private int cursorCycleTime = 500;
     public int drawXat;
     public double scc;
 
@@ -41,20 +42,21 @@ public class SignInputBox extends Gui{
     
     private static final ResourceLocation texture = new ResourceLocation("signpost:textures/gui/sign_gui.png");
 	
-	private FontRenderer fontRend;
+	private FontRenderer fontRenderer;
 	
 	public String text = "";
 	
 	private final SignInput PARENT;
 	
 	public SignInputBox(FontRenderer p_i1032_1_, int x, int y, int width, SignInput parent) {
-		this.fontRend = p_i1032_1_;
+		this.fontRenderer = p_i1032_1_;
 		this.x = x;
 		this.y = y;
 		this.width = width;
 		this.height = (int) (width/verh);
 		PARENT = parent;
 		setText("");
+		lastSystemTime = System.currentTimeMillis(); 
 	}
 	
 	public void setFocused(boolean bool){
@@ -67,7 +69,7 @@ public class SignInputBox extends Gui{
 	}
 	
 	public void drawSignBox(FontRenderer fontRend){
-		this.fontRend = fontRend;
+		this.fontRenderer = fontRend;
 		GL11.glColor4f(boxColor[0], boxColor[1], boxColor[2], boxColor[3]);
 		FMLClientHandler.instance().getClient().renderEngine.bindTexture(texture);
 		drawModalRectWithCustomSizedTexture(x, y, 0f, 0f, width, height, (float)pWidth*5.5f, (float)pHeight*5.5f);
@@ -78,8 +80,7 @@ public class SignInputBox extends Gui{
 	
 	public void drawText(){
 		String txt;
-		cursorCount = (cursorCount+1)%60;
-		if(cursorCount<30&&isFocused){
+		if(drawCursor() && isFocused){
 			txt = getText().substring(0, cursorPosition)+"|"+getText().substring(cursorPosition);
 		}else{
 			txt = getText();
@@ -87,7 +88,7 @@ public class SignInputBox extends Gui{
 		double scale = this.width/pWidth;
 		double x = this.x+(this.width)/2.0-scale;
 		double y = this.y+(this.height)/2.0+scale/4;
-		double sc2 = 100d/fontRend.getStringWidth(txt);
+		double sc2 = 100d/fontRenderer.getStringWidth(txt);
 		if(sc2>=1){
 			sc2 = 1;
 		}
@@ -95,22 +96,30 @@ public class SignInputBox extends Gui{
 		GL11.glPushMatrix();
 		GL11.glScaled(sc2, sc2, 1);
 		if(sc2==1.0){
-			drawXat = (int) (x = (x-fontRend.getStringWidth(txt)/2.0));
+			drawXat = (int) (x = (x-fontRenderer.getStringWidth(txt)/2.0));
 		}else{
 			drawXat = (int) (x-50);
 			x = (x-50)/sc2;
 		}
-		fontRend.drawString(txt, (int) x, (int) ((y-fontRend.FONT_HEIGHT/2.0*sc2)/sc2), textColor);
+		fontRenderer.drawString(txt, (int) x, (int) ((y-fontRenderer.FONT_HEIGHT/2.0*sc2)/sc2), textColor);
 		GL11.glPopMatrix();
 		
 		if(isFocused && possible.size()>0){
-			possibleCount = (possibleCount+1)%50;
-			if(possibleCount == 49){
+			if(cycleTimeHasPassed()){ 
 				possibleIndex = possibleIndex+1;
 			}
+			lastSystemTime = System.currentTimeMillis(); 
 			possibleIndex = possibleIndex%possible.size();
-			fontRend.drawString(possible.get(possibleIndex), (int)(this.x+width+5), (int)(this.y+(scale*pHeight-fontRend.FONT_HEIGHT)/2.0), Color.WHITE.getRGB());
+			fontRenderer.drawString(possible.get(possibleIndex), (int)(this.x+width+5), (int)(this.y+(scale*pHeight-fontRenderer.FONT_HEIGHT)/2.0), Color.WHITE.getRGB());
 		}
+	}
+
+	private boolean drawCursor() {
+		return (System.currentTimeMillis() / cursorCycleTime) % 2 == 0;
+	}
+
+	private boolean cycleTimeHasPassed() {
+		return (System.currentTimeMillis() % cycleTime) <= System.currentTimeMillis() - lastSystemTime;
 	}
 	
 	public void setText(String text){
@@ -205,7 +214,6 @@ public class SignInputBox extends Gui{
     }
 
     public void setCursorPosition(int p_146190_1_){
-    	cursorCount = 0;
         this.cursorPosition = p_146190_1_;
         int j = this.getText().length();
 
@@ -303,9 +311,9 @@ public class SignInputBox extends Gui{
 		double scale = this.width/pWidth;
 		try{
 	        if(x >= (this.x+width+5) &&
-	           x < (this.x+width+5+fontRend.getStringWidth(possible.get(possibleIndex))) &&
-	           y >= (this.y+(scale*pHeight-fontRend.FONT_HEIGHT)/2.0) &&
-	           y < (this.y+(scale*pHeight-fontRend.FONT_HEIGHT)/2.0)+fontRend.FONT_HEIGHT){
+	           x < (this.x+width+5+fontRenderer.getStringWidth(possible.get(possibleIndex))) &&
+	           y >= (this.y+(scale*pHeight-fontRenderer.FONT_HEIGHT)/2.0) &&
+	           y < (this.y+(scale*pHeight-fontRenderer.FONT_HEIGHT)/2.0)+fontRenderer.FONT_HEIGHT){
 	        	this.setText(possible.get(possibleIndex));
 	        	PARENT.onTextChange(this);
 	        	isFocused = true;
@@ -319,12 +327,12 @@ public class SignInputBox extends Gui{
     }
     
     public String correctTrim(int width){
-    	int l = this.fontRend.trimStringToWidth(getText(), width).length();
+    	int l = this.fontRenderer.trimStringToWidth(getText(), width).length();
     	if(getText().length() == l){
     		return getText();
     	}
-    	int l1 = this.fontRend.getStringWidth(getText().substring(0, l));
-    	int l2 = this.fontRend.getStringWidth(getText().substring(0, l+1));
+    	int l1 = this.fontRenderer.getStringWidth(getText().substring(0, l));
+    	int l2 = this.fontRenderer.getStringWidth(getText().substring(0, l+1));
     	if(width-l1<l2-width){
     		return getText().substring(0, l);
     	}else{

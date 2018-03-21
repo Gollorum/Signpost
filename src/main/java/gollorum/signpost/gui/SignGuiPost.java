@@ -40,15 +40,24 @@ public class SignGuiPost extends GuiScreen implements SignInput {
 
 	@Override
 	public void initGui() {
+		setupInputBox1();
+		setupInputBox2();
+		resetMouse = true;
+		base1InputBox.setFocused(true);
+	}
+	
+	private void setupInputBox1(){
 		DoubleBaseInfo tilebases = tile.getBases();
 		base1InputBox = new SignInputBox(this.fontRenderer, this.width / 2 - 68, this.height / 2 - 46, 137, this);
 		base1InputBox.setText(tilebases.sign1.base==null?"":tilebases.sign1.base.toString());
 		go1 = true;
-		base1InputBox.setFocused(true);
+	}
+	
+	private void setupInputBox2(){
+		DoubleBaseInfo tilebases = tile.getBases();
 		base2InputBox = new SignInputBox(this.fontRenderer, this.width / 2 - 68, this.height / 2 + 40, 137, this);
 		base2InputBox.setText(tilebases.sign2.base==null?"":tilebases.sign2.base.toString());
 		go2 = true;
-		resetMouse = true;
 	}
 	
 	@Override
@@ -66,14 +75,10 @@ public class SignGuiPost extends GuiScreen implements SignInput {
 				mc = FMLClientHandler.instance().getClient();
 			}
 			if(base1InputBox==null){
-				DoubleBaseInfo tilebases = tile.getBases();
-				base1InputBox = new SignInputBox(this.fontRenderer, this.width / 2 - 68, this.height / 2 - 46, 137, this);
-				base1InputBox.setText(tilebases.sign1.base==null?"":tilebases.sign1.base.toString());
+				setupInputBox1();
 			}
 			if(base2InputBox==null){
-				DoubleBaseInfo tilebases = tile.getBases();
-				base2InputBox = new SignInputBox(this.fontRenderer, this.width / 2 - 68, this.height / 2 + 40, 137, this);
-				base2InputBox.setText(tilebases.sign2.base==null?"":tilebases.sign2.base.toString());
+				setupInputBox2();
 			}
 			drawDefaultBackground();
 	
