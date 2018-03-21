@@ -74,7 +74,7 @@ public class BigPostRenderer extends TileEntitySpecialRenderer<BigPostPostTile>{
 		int color = 0;
 		
         if(!tile.isItem){
-        	if(tilebases.sign.base!=null&&!tilebases.sign.base.name.equals("null")&&!tilebases.sign.base.name.equals("")){
+        	if(tilebases.sign.base!=null&&!tilebases.sign.base.getName().equals("null")&&!tilebases.sign.base.getName().equals("")){
         		GL11.glTranslated(0, 0.1, 0);
         		for(String s: tilebases.description){
 	        		GL11.glTranslated(0, 0.165, 0);

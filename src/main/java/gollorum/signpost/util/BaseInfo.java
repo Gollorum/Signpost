@@ -12,7 +12,7 @@ import net.minecraftforge.fml.common.network.ByteBufUtils;
 public class BaseInfo {
 
 	private static final String VERSION = "Version2:";
-	public String name;
+	private String name;
 	public MyBlockPos blockPos;
 	/**
 	 * One block below the teleport destination
@@ -22,7 +22,7 @@ public class BaseInfo {
 	public UUID owner;
 
 	public BaseInfo(String name, MyBlockPos pos, UUID owner){
-		this.name = ""+name;
+		this.setName(""+name);
 		this.blockPos = pos;
 		if(pos==null){
 			this.pos = null;
@@ -34,7 +34,7 @@ public class BaseInfo {
 	
 	public BaseInfo(String name, MyBlockPos blockPos, MyBlockPos telePos, UUID owner){
 		telePos.y--;
-		this.name = ""+name;
+		this.setName(""+name);
 		this.blockPos = blockPos;
 		this.pos = telePos;
 		this.owner = owner;
@@ -46,7 +46,7 @@ public class BaseInfo {
 	}
 
 	public void writeToNBT(NBTTagCompound tC){
-		tC.setString("name", ""+name);	//Warum bin ich nur so unglaublich gehörnamputiert? *kotz*
+		tC.setString("name", ""+getName());	//Warum bin ich nur so unglaublich gehörnamputiert? *kotz*
 		NBTTagCompound posComp = new NBTTagCompound();
 		pos.writeToNBT(posComp);
 		tC.setTag("pos", posComp);
@@ -73,7 +73,7 @@ public class BaseInfo {
 	}
 
 	public void toBytes(ByteBuf buf) {
-		ByteBufUtils.writeUTF8String(buf, ""+name);
+		ByteBufUtils.writeUTF8String(buf, ""+getName());
 		pos.toBytes(buf);
 		ByteBufUtils.writeUTF8String(buf, VERSION+owner);
 		blockPos.toBytes(buf);
@@ -109,7 +109,7 @@ public class BaseInfo {
 	}
 	
 	public void setAll(BaseInfo newWS){
-		this.name = ""+newWS.name;
+		this.setName(""+newWS.getName());
 		this.pos.update(newWS.pos);
 		this.blockPos.update(newWS.blockPos);
 		this.owner = newWS.owner;
@@ -126,13 +126,21 @@ public class BaseInfo {
 
 	@Override
 	public String toString(){
-		return name;
+		return ""+name;
 	}
 	
 	public boolean hasName(){
 		return !(name==null || name.equals("null") || name.equals(""));
 	}
+	
+	public String getName(){
+		return toString();
+	}
 
+	public void setName(String name){
+		this.name = name;
+	}
+	
 	public boolean isNative() {
 		return blockPos.modID.equals(Signpost.MODID);
 	}

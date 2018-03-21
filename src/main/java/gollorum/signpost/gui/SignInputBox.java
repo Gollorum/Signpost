@@ -127,8 +127,8 @@ public class SignInputBox extends Gui{
 		this.text = text;
 		possible = new ArrayList<String>();
 		for(BaseInfo now: getAllPossibilities()){
-			if(now.name!=null && now.name.contains(getText())){
-				possible.add(now.name);
+			if(now.getName()!=null && now.getName().contains(getText())){
+				possible.add(now.getName());
 			}
 		}
 	}

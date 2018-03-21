@@ -150,7 +150,7 @@ public abstract class SuperPostPost extends BlockContainer {
 		if(!player.isSneaking()){
 			if(!PostHandler.doesPlayerKnowNativeWaystone((EntityPlayerMP) player, ws)){
 				if (!ClientConfigStorage.INSTANCE.deactivateTeleportation()) {
-					NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.name), (EntityPlayerMP) player);
+					NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.getName()), (EntityPlayerMP) player);
 				}
 				PostHandler.addDiscovered(player.getUniqueID(), ws);
 			}
@@ -194,7 +194,7 @@ public abstract class SuperPostPost extends BlockContainer {
 			BaseInfo ws = superTile.getBaseInfo();
 			if(!PostHandler.doesPlayerKnowNativeWaystone((EntityPlayerMP) player, ws)){
 				if (!ClientConfigStorage.INSTANCE.deactivateTeleportation()) {
-					NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.name), (EntityPlayerMP) player);
+					NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.getName()), (EntityPlayerMP) player);
 				}
 				PostHandler.addDiscovered(player.getUniqueID(), ws);
 			}
