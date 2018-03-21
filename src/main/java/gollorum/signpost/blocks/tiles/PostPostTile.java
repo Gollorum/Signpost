@@ -83,12 +83,12 @@ public class PostPostTile extends SuperPostPostTile {
 		isCanceled = true;
 		DoubleBaseInfo bases = getBases();
 		if(bases.sign1.overlay!=null){
-			EntityItem item = new EntityItem(world, pos.x, pos.y, pos.z, new ItemStack(bases.sign1.overlay.item, 1));
-			world.spawnEntity(item);
+			EntityItem item = new EntityItem(getWorld(), pos.x, pos.y, pos.z, new ItemStack(bases.sign1.overlay.item, 1));
+			getWorld().spawnEntity(item);
 		}
 		if(bases.sign2.overlay!=null){
-			EntityItem item = new EntityItem(world, pos.x, pos.y, pos.z, new ItemStack(bases.sign2.overlay.item, 1));
-			world.spawnEntity(item);
+			EntityItem item = new EntityItem(getWorld(), pos.x, pos.y, pos.z, new ItemStack(bases.sign2.overlay.item, 1));
+			getWorld().spawnEntity(item);
 		}
 		if(PostHandler.getPosts().remove(pos)!=null){
 			NetworkHandler.netWrap.sendToAll(new SendAllPostBasesMessage());
@@ -152,10 +152,10 @@ public class PostPostTile extends SuperPostPostTile {
 		SPEventHandler.scheduleTask(new BoolRun(){
 			@Override
 			public boolean run() {
-				if(world==null || type==null){
+				if(getWorld()==null || type==null){
 					return false;
 				}else{
-					if(world.isRemote){
+					if(getWorld().isRemote){
 						return true;
 					}
 					DoubleBaseInfo bases = getBases();
@@ -200,7 +200,7 @@ public class PostPostTile extends SuperPostPostTile {
 	@Override
 	public Sign getSign(EntityPlayer player) {
 		DoubleBaseInfo bases = getBases();
-		Hit hit = (Hit) ((PostPost)getBlockType()).getHitTarget(world, pos.getX(), pos.getY(), pos.getZ(), player);
+		Hit hit = (Hit) ((PostPost)getBlockType()).getHitTarget(getWorld(), pos.getX(), pos.getY(), pos.getZ(), player);
 		if(hit.target.equals(HitTarget.BASE1)){
 			return bases.sign1;
 		}else if(hit.target.equals(HitTarget.BASE2)){
@@ -213,7 +213,7 @@ public class PostPostTile extends SuperPostPostTile {
 	@Override
 	public Paintable getPaintable(EntityPlayer player) {
 		DoubleBaseInfo bases = getBases();
-		Hit hit = (Hit) ((PostPost)getBlockType()).getHitTarget(world, pos.getX(), pos.getY(), pos.getZ(), player);
+		Hit hit = (Hit) ((PostPost)getBlockType()).getHitTarget(getWorld(), pos.getX(), pos.getY(), pos.getZ(), player);
 		if(hit.target.equals(HitTarget.BASE1)){
 			return bases.sign1;
 		}else if(hit.target.equals(HitTarget.BASE2)){
