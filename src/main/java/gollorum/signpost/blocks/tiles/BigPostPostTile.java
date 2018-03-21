@@ -80,7 +80,7 @@ public class BigPostPostTile extends SuperPostPostTile {
 		BigBaseInfo bases = getBases();
 		if(bases.sign.overlay!=null){
 			EntityItem item = new EntityItem(getWorld(), pos.x, pos.y, pos.z, new ItemStack(bases.sign.overlay.item, 1));
-			worldObj.spawnEntityInWorld(item);
+			getWorld().spawnEntityInWorld(item);
 		}
 		if(PostHandler.getBigPosts().remove(pos)!=null){
 			NetworkHandler.netWrap.sendToAll(new SendAllBigPostBasesMessage());
@@ -130,10 +130,10 @@ public class BigPostPostTile extends SuperPostPostTile {
 		SPEventHandler.scheduleTask(new BoolRun(){
 			@Override
 			public boolean run() {
-				if(worldObj==null || type==null){
+				if(getWorld()==null || type==null){
 					return false;
 				}else{
-					if(worldObj.isRemote){
+					if(getWorld().isRemote){
 						return true;
 					}
 					BigBaseInfo bases = getBases();
@@ -169,7 +169,7 @@ public class BigPostPostTile extends SuperPostPostTile {
 	@Override
 	public Sign getSign(EntityPlayer player) {
 		BigBaseInfo bases = getBases();
-		BigHit hit = (BigHit) ((BigPostPost)getBlockType()).getHitTarget(worldObj, getPos().getX(), pos.getY(), pos.getZ(), player);
+		BigHit hit = (BigHit) ((BigPostPost)getBlockType()).getHitTarget(getWorld(), getPos().getX(), pos.getY(), pos.getZ(), player);
 		if(hit.target.equals(BigHitTarget.BASE)){
 			return bases.sign;
 		}else{
@@ -180,7 +180,7 @@ public class BigPostPostTile extends SuperPostPostTile {
 	@Override
 	public Paintable getPaintable(EntityPlayer player) {
 		BigBaseInfo bases = getBases();
-		BigHit hit = (BigHit) ((BigPostPost)getBlockType()).getHitTarget(worldObj, pos.getX(), pos.getY(), pos.getZ(), player);
+		BigHit hit = (BigHit) ((BigPostPost)getBlockType()).getHitTarget(getWorld(), pos.getX(), pos.getY(), pos.getZ(), player);
 		if(hit.target.equals(BigHitTarget.BASE)){
 			return bases.sign;
 		}else{
