@@ -80,7 +80,7 @@ public abstract class SuperPostPostTile extends TileEntity implements WaystoneCo
 		BaseInfo base = PostHandler.getNativeWaystones().getByPos(pos);
 		SPEventHandler.INSTANCE.updateWaystoneCount(this);
 		if(PostHandler.getNativeWaystones().removeByPos(pos)){
-			MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.DESTROYED, getWorld(), base.pos.x, base.pos.y, base.pos.z, base==null?"":base.name));
+			MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.DESTROYED, getWorld(), base.pos.x, base.pos.y, base.pos.z, base==null?"":base.getName()));
 			NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
 		}
 	}
@@ -139,7 +139,7 @@ public abstract class SuperPostPostTile extends TileEntity implements WaystoneCo
 	@Override
 	public void setName(String name) {
 		BaseInfo ws = getBaseInfo();
-		ws.name = name;
+		ws.setName(name);
 		NetworkHandler.netWrap.sendToServer(new BaseUpdateServerMessage(ws, false));
 	}
 
