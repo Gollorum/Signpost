@@ -60,8 +60,8 @@ public class BigPostPostTile extends SuperPostPostTile {
 		isCanceled = true;
 		BigBaseInfo bases = getBases();
 		if(bases.sign.overlay!=null){
-			EntityItem item = new EntityItem(worldObj, pos.x, pos.y, pos.z, new ItemStack(bases.sign.overlay.item, 1));
-			worldObj.spawnEntityInWorld(item);
+			EntityItem item = new EntityItem(getWorldObj(), pos.x, pos.y, pos.z, new ItemStack(bases.sign.overlay.item, 1));
+			getWorldObj().spawnEntityInWorld(item);
 		}
 		if(PostHandler.getBigPosts().remove(pos)!=null){
 			NetworkHandler.netWrap.sendToAll(new SendAllBigPostBasesMessage());
@@ -109,10 +109,10 @@ public class BigPostPostTile extends SuperPostPostTile {
 		SPEventHandler.scheduleTask(new BoolRun(){
 			@Override
 			public boolean run() {
-				if(worldObj==null){
+				if(getWorldObj()==null){
 					return false;
 				}else{
-					if(worldObj.isRemote){
+					if(getWorldObj().isRemote){
 						return true;
 					}
 					BigBaseInfo bases = getBases();
@@ -138,7 +138,7 @@ public class BigPostPostTile extends SuperPostPostTile {
 						bases.awaitingPaint = false;
 						break;
 					}
-					NetworkHandler.netWrap.sendToAll(new SendBigPostBasesMessage((BigPostPostTile) worldObj.getTileEntity(xCoord, yCoord, zCoord), bases));
+					NetworkHandler.netWrap.sendToAll(new SendBigPostBasesMessage((BigPostPostTile) getWorldObj().getTileEntity(xCoord, yCoord, zCoord), bases));
 					return true;
 				}
 			}
@@ -148,7 +148,7 @@ public class BigPostPostTile extends SuperPostPostTile {
 	@Override
 	public Sign getSign(EntityPlayer player) {
 		BigBaseInfo bases = getBases();
-		BigHit hit = (BigHit) ((BigPostPost)blockType).getHitTarget(worldObj, xCoord, yCoord, zCoord, player);
+		BigHit hit = (BigHit) ((BigPostPost)blockType).getHitTarget(getWorldObj(), xCoord, yCoord, zCoord, player);
 		if(hit.target.equals(BigHitTarget.BASE)){
 			return bases.sign;
 		}else{
@@ -159,7 +159,7 @@ public class BigPostPostTile extends SuperPostPostTile {
 	@Override
 	public Paintable getPaintable(EntityPlayer player) {
 		BigBaseInfo bases = getBases();
-		BigHit hit = (BigHit) ((BigPostPost)getBlockType()).getHitTarget(worldObj, xCoord, yCoord, zCoord, player);
+		BigHit hit = (BigHit) ((BigPostPost)getBlockType()).getHitTarget(getWorldObj(), xCoord, yCoord, zCoord, player);
 		if(hit.target.equals(BigHitTarget.BASE)){
 			return bases.sign;
 		}else{

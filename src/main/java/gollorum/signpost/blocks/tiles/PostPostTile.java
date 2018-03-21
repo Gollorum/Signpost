@@ -64,12 +64,12 @@ public class PostPostTile extends SuperPostPostTile {
 		isCanceled = true;
 		DoubleBaseInfo bases = getBases();
 		if(bases.sign1.overlay!=null){
-			EntityItem item = new EntityItem(worldObj, pos.x, pos.y, pos.z, new ItemStack(bases.sign1.overlay.item, 1));
-			worldObj.spawnEntityInWorld(item);
+			EntityItem item = new EntityItem(getWorldObj(), pos.x, pos.y, pos.z, new ItemStack(bases.sign1.overlay.item, 1));
+			getWorldObj().spawnEntityInWorld(item);
 		}
 		if(bases.sign2.overlay!=null){
-			EntityItem item = new EntityItem(worldObj, pos.x, pos.y, pos.z, new ItemStack(bases.sign2.overlay.item, 1));
-			worldObj.spawnEntityInWorld(item);
+			EntityItem item = new EntityItem(getWorldObj(), pos.x, pos.y, pos.z, new ItemStack(bases.sign2.overlay.item, 1));
+			getWorldObj().spawnEntityInWorld(item);
 		}
 		if(PostHandler.getPosts().remove(pos)!=null){
 			NetworkHandler.netWrap.sendToAll(new SendAllPostBasesMessage());
@@ -131,10 +131,10 @@ public class PostPostTile extends SuperPostPostTile {
 		SPEventHandler.scheduleTask(new BoolRun(){
 			@Override
 			public boolean run() {
-				if(worldObj==null){
+				if(getWorldObj()==null){
 					return false;
 				}else{
-					if(worldObj.isRemote){
+					if(getWorldObj().isRemote){
 						return true;
 					}
 					DoubleBaseInfo bases = getBases();
@@ -170,7 +170,7 @@ public class PostPostTile extends SuperPostPostTile {
 						bases.awaitingPaint = false;
 						break;
 					}
-					NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage((PostPostTile) worldObj.getTileEntity(xCoord, yCoord, zCoord), bases));
+					NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage((PostPostTile) getWorldObj().getTileEntity(xCoord, yCoord, zCoord), bases));
 					return true;
 				}
 			}
@@ -180,7 +180,7 @@ public class PostPostTile extends SuperPostPostTile {
 	@Override
 	public Sign getSign(EntityPlayer player) {
 		DoubleBaseInfo bases = getBases();
-		Hit hit = (Hit) ((PostPost)blockType).getHitTarget(worldObj, xCoord, yCoord, zCoord, player);
+		Hit hit = (Hit) ((PostPost)blockType).getHitTarget(getWorldObj(), xCoord, yCoord, zCoord, player);
 		if(hit.target.equals(HitTarget.BASE1)){
 			return bases.sign1;
 		}else if(hit.target.equals(HitTarget.BASE2)){
@@ -193,7 +193,7 @@ public class PostPostTile extends SuperPostPostTile {
 	@Override
 	public Paintable getPaintable(EntityPlayer player) {
 		DoubleBaseInfo bases = getBases();
-		Hit hit = (Hit) ((PostPost)getBlockType()).getHitTarget(worldObj, xCoord, yCoord, zCoord, player);
+		Hit hit = (Hit) ((PostPost)getBlockType()).getHitTarget(getWorldObj(), xCoord, yCoord, zCoord, player);
 		if(hit.target.equals(HitTarget.BASE1)){
 			return bases.sign1;
 		}else if(hit.target.equals(HitTarget.BASE2)){

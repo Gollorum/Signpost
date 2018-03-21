@@ -36,7 +36,7 @@ public abstract class SuperPostPostTile extends TileEntity implements WaystoneCo
 		SPEventHandler.scheduleTask(new BoolRun(){
 			@Override
 			public boolean run() {
-				if(worldObj==null){
+				if(getWorldObj()==null){
 					return false;
 				}else{
 					isWaystone();
@@ -47,14 +47,14 @@ public abstract class SuperPostPostTile extends TileEntity implements WaystoneCo
 	}
 
 	public final MyBlockPos toPos(){
-		return new MyBlockPos(worldObj, xCoord, yCoord, zCoord, dim());
+		return new MyBlockPos(getWorldObj(), xCoord, yCoord, zCoord, dim());
 	}
 
 	public final int dim(){
-		if(worldObj==null||worldObj.provider==null){
+		if(getWorldObj()==null||getWorldObj().provider==null){
 			return Integer.MIN_VALUE;
 		}else
-			return worldObj.provider.dimensionId;
+			return getWorldObj().provider.dimensionId;
 	}
 
 	public static final ResourceLocation stringToLoc(String str){
@@ -78,12 +78,12 @@ public abstract class SuperPostPostTile extends TileEntity implements WaystoneCo
 	public void destroyWaystone(){
 		MyBlockPos pos = toPos();
 		isWaystone = false;
-		EntityItem item = new EntityItem(worldObj, pos.x, pos.y, pos.z, new ItemStack(BlockHandler.base, 1));
-		worldObj.spawnEntityInWorld(item);
+		EntityItem item = new EntityItem(getWorldObj(), pos.x, pos.y, pos.z, new ItemStack(BlockHandler.base, 1));
+		getWorldObj().spawnEntityInWorld(item);
 		BaseInfo base = PostHandler.getNativeWaystones().getByPos(pos);
 		SPEventHandler.INSTANCE.updateWaystoneCount(this);
 		if(PostHandler.getNativeWaystones().removeByPos(pos)){
-			MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.DESTROYED, worldObj, base.pos.x, base.pos.y, base.pos.z, base==null?"":base.getName()));
+			MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.DESTROYED, getWorldObj(), base.pos.x, base.pos.y, base.pos.z, base==null?"":base.getName()));
 			NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
 		}
 	}

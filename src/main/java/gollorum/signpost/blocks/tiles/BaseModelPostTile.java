@@ -47,10 +47,10 @@ public class BaseModelPostTile extends BasePostTile implements ModelObject{
 
 	@Override
 	public double getAngle() {
-		if(worldObj==null){
+		if(getWorldObj()==null){
 			return 0;
 		}else{
-			return facingMatrix[worldObj.getBlockMetadata(xCoord, yCoord, zCoord)]*90;
+			return facingMatrix[getWorldObj().getBlockMetadata(xCoord, yCoord, zCoord)]*90;
 		}
 	}
 
@@ -72,7 +72,7 @@ public class BaseModelPostTile extends BasePostTile implements ModelObject{
 	@Override
 	 public int getBlockMetadata(){
 		try{
-			if(worldObj==null){
+			if(getWorldObj()==null){
 				return 0;
 			}else{
 				return super.getBlockMetadata();
