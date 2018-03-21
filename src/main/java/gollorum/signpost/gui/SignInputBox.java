@@ -36,7 +36,7 @@ public class SignInputBox extends Gui{
     private int possibleIndex = 0;
     
     public int textColor = 0;
-    private int cursorCount = 0;
+    private int cursorCycleTime = 500;
     public int drawXat;
     public double scc;
 
@@ -95,8 +95,7 @@ public class SignInputBox extends Gui{
 	
 	public void drawText(){
 		String txt;
-		cursorCount = (cursorCount+1)%60;
-		if(cursorCount<30&&isFocused){
+		if(drawCursor() && isFocused){
 			txt = getText().substring(0, cursorPosition)+"|"+getText().substring(cursorPosition);
 		}else{
 			txt = getText();
@@ -126,13 +125,21 @@ public class SignInputBox extends Gui{
 		GL11.glPopMatrix();
 
 		if(isFocused && possible.size()>0){
-			if((System.currentTimeMillis() % cycleTime) <= System.currentTimeMillis() - lastSystemTime){
+			if(cycleTimeHasPassed()){
 				possibleIndex = possibleIndex+1;
 			}
 			lastSystemTime = System.currentTimeMillis();
 			possibleIndex = possibleIndex%possible.size();
 			fontRenderer.drawString(possible.get(possibleIndex), (int)(this.x+width+5), (int)(this.y+(scale*pHeight-fontRenderer.FONT_HEIGHT)/2.0), Color.WHITE.getRGB());
 		}
+	}
+	
+	private boolean drawCursor(){
+		return (System.currentTimeMillis() / cursorCycleTime) % 2 == 0;
+	}
+
+	private boolean cycleTimeHasPassed() {
+		return (System.currentTimeMillis() % cycleTime) <= System.currentTimeMillis() - lastSystemTime;
 	}
 	
 	public void setText(String text){
@@ -229,7 +236,6 @@ public class SignInputBox extends Gui{
     }
 
     public void setCursorPosition(int p_146190_1_){
-    	cursorCount = 0;
         this.cursorPosition = p_146190_1_;
         int j = this.getText().length();
 
