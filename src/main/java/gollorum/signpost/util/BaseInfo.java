@@ -130,7 +130,7 @@ public class BaseInfo {
 
 	@Override
 	public String toString(){
-		return ""+getName();
+		return ""+name;
 	}
 	
 	public boolean hasName(){

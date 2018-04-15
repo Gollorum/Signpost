@@ -8,9 +8,11 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 
 public class MyBlockPos{
@@ -19,9 +21,17 @@ public class MyBlockPos{
 	public String world;
 	public int dim;
 	public String modID = Signpost.MODID;
-	
+
 	public MyBlockPos(World world, BlockPos pos, int dim){
 		this(world, pos.getX(), pos.getY(), pos.getZ(), dim);
+	}
+	
+	public MyBlockPos(World world, BlockPos pos){
+		this(world, pos.getX(), pos.getY(), pos.getZ());
+	}
+	
+	public MyBlockPos(World world, int x, int y, int z){
+		this((world==null||world.isRemote)?"":world.getWorldInfo().getWorldName(), x, y, z, dim(world));
 	}
 	
 	public MyBlockPos(World world, int x, int y, int z, int dim){
@@ -242,6 +252,30 @@ public class MyBlockPos{
 			}
 			return tile;
 		}else{
+			return null;
+		}
+	} 
+
+	public MyBlockPos fromNewPos(int x, int y, int z) {
+		return new MyBlockPos(world, x, y, z, dim, modID);
+	}
+
+	public MyBlockPos getBelow() {
+		return fromNewPos(x, y - 1, z);
+	}
+
+	public MyBlockPos front(EnumFacing facing, int i) {
+		int newX = x + facing.getFrontOffsetX() * i;
+		int newY = y + facing.getFrontOffsetY() * i;
+		int newZ = z + facing.getFrontOffsetZ() * i;
+		return fromNewPos(newX, newY, newZ);
+	}
+
+	public Biome getBiome() {
+		World world = getWorld();
+		if (world != null) {
+			return world.getBiome(toBlockPos());
+		} else {
 			return null;
 		}
 	}

@@ -30,6 +30,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
@@ -236,6 +237,30 @@ public abstract class SuperPostPost extends BlockContainer {
 	
 	public static SuperPostPostTile getSuperTile(World world, BlockPos pos){
 		return (SuperPostPostTile) world.getTileEntity(pos);
+	}
+
+	public static SuperPostPostTile getSuperTile(MyBlockPos pos) {
+		TileEntity tile = pos.getTile();
+		if (tile instanceof SuperPostPostTile) {
+			return (SuperPostPostTile) tile;
+		}
+		return null;
+	}
+
+	public static void updateServer(MyBlockPos pos) {
+		SuperPostPostTile tile = getSuperTile(pos);
+		if (tile == null) {
+			return;
+		}
+		tile.getSuperBlock().sendPostBasesToAll(tile);
+	}
+
+	public static void updateClient(MyBlockPos pos) {
+		SuperPostPostTile tile = getSuperTile(pos);
+		if (tile == null) {
+			return;
+		}
+		tile.getSuperBlock().sendPostBasesToServer(tile);
 	}
 
 	public abstract Object getHitTarget(World world, int x, int y, int z, EntityPlayer/*MP*/ player);
