@@ -101,6 +101,10 @@ public class BaseModelPost extends BlockContainer {
 	@Override
 	public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer){
 		return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing().getOpposite());
+	} 
+	 
+	public IBlockState getStateForFacing(EnumFacing facing) {
+		return this.getDefaultState().withProperty(FACING, facing);
 	}
 
 	@Override

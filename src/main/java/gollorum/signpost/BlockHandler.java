@@ -9,6 +9,7 @@ import gollorum.signpost.blocks.BigPostPost.BigPostType;
 import gollorum.signpost.blocks.ItemBlockWithMeta;
 import gollorum.signpost.blocks.PostPost;
 import gollorum.signpost.blocks.PostPost.PostType;
+import gollorum.signpost.management.ClientConfigStorage;
 import gollorum.signpost.management.ConfigHandler;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
@@ -16,7 +17,6 @@ import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.util.ResourceLocation;
@@ -123,8 +123,8 @@ public class BlockHandler {
 //		if(unfreezed){
 //			registry.freeze();
 //		}
-		if(ConfigHandler.securityLevelWaystone.equals(ConfigHandler.SecurityLevel.ALL)&&!ConfigHandler.deactivateTeleportation){
-			switch(ConfigHandler.waysRec){
+		if(ClientConfigStorage.INSTANCE.getSecurityLevelWaystone().equals(ConfigHandler.SecurityLevel.ALL)&&!ClientConfigStorage.INSTANCE.deactivateTeleportation()){
+			switch(ClientConfigStorage.INSTANCE.getWaysRec()){
 				case EXPENSIVE:
 					GameRegistry.addShapedRecipe(new ResourceLocation("signpost:blockbaserecipe"), null, new ItemStack(base, 1), 
 							"SSS",
@@ -163,8 +163,8 @@ public class BlockHandler {
 	private void postRecipe(PostPost post){
 		ForgeRegistry<IRecipe> registry = ((ForgeRegistry<IRecipe>)ForgeRegistries.RECIPES);
 		registry.remove(new ResourceLocation("signpost:blockpostpostrecipe"+post.type));
-		if(ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.ALL) || ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.OWNERS)){
-			switch(ConfigHandler.signRec){
+		if(ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().equals(ConfigHandler.SecurityLevel.ALL) || ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().equals(ConfigHandler.SecurityLevel.OWNERS)){
+			switch(ClientConfigStorage.INSTANCE.getSignRec()){
 				case EXPENSIVE:
 					GameRegistry.addShapedRecipe(new ResourceLocation("signpost:blockpostpostrecipe"+post.type), null, new ItemStack(post, 1),
 							"A",
@@ -200,8 +200,8 @@ public class BlockHandler {
 	private void bigPostRecipe(BigPostPost post){
 		ForgeRegistry<IRecipe> registry = ((ForgeRegistry<IRecipe>)ForgeRegistries.RECIPES);
 		registry.remove(new ResourceLocation("signpost:blockbigpostrecipe"+post.type));
-		if(ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.ALL) || ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.OWNERS)){
-			switch(ConfigHandler.signRec){
+		if(ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().equals(ConfigHandler.SecurityLevel.ALL) || ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().equals(ConfigHandler.SecurityLevel.OWNERS)){
+			switch(ClientConfigStorage.INSTANCE.getSignRec()){
 				case EXPENSIVE:
 					GameRegistry.addShapedRecipe(new ResourceLocation("signpost:blockbigpostrecipe"+post.type), null, new ItemStack(post, 1),
 							"AAA",

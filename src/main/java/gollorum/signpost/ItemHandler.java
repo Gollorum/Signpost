@@ -3,6 +3,7 @@ package gollorum.signpost;
 import gollorum.signpost.items.CalibratedPostWrench;
 import gollorum.signpost.items.PostBrush;
 import gollorum.signpost.items.PostWrench;
+import gollorum.signpost.management.ClientConfigStorage;
 import gollorum.signpost.management.ConfigHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -56,7 +57,7 @@ public class ItemHandler {
 	}
 
 	private static void registerRecipes() {
-		if(ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.ALL) || ConfigHandler.securityLevelSignpost.equals(ConfigHandler.SecurityLevel.OWNERS)){
+		if(ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().equals(ConfigHandler.SecurityLevel.ALL) || ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().equals(ConfigHandler.SecurityLevel.OWNERS)){
 			GameRegistry.addShapedRecipe(new ResourceLocation("signpost:itemwrenchrecipe"), null, new ItemStack(tool),
 					"II",
 					"IS",

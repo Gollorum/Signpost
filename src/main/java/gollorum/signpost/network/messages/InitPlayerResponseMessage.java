@@ -26,25 +26,34 @@ public class InitPlayerResponseMessage implements IMessage{
 	public static SecurityLevel securityLevelWaystone;
 	public static SecurityLevel securityLevelSignpost;
 	
+	public float villageWaystonePropability;
+	public int villageMinSignposts;
+	public int villageMaxSignposts;
+	public boolean onlyVillageTargets;
+	
 	public InitPlayerResponseMessage(){
-		if(!ConfigHandler.deactivateTeleportation){
+		if(!ConfigHandler.isDeactivateTeleportation()){
 			allWaystones = PostHandler.getNativeWaystones();
 		}
-		deactivateTeleportation = ConfigHandler.deactivateTeleportation;
-		interdimensional = ConfigHandler.interdimensional;
-		maxDist = ConfigHandler.maxDist;
-		paymentItem = ConfigHandler.paymentItem;
-		costMult = ConfigHandler.costMult;
-		signRec = ConfigHandler.signRec;
-		waysRec = ConfigHandler.waysRec;
-		securityLevelWaystone = ConfigHandler.securityLevelWaystone;
-		securityLevelSignpost = ConfigHandler.securityLevelSignpost;
+		deactivateTeleportation = ConfigHandler.isDeactivateTeleportation(); 
+	    interdimensional = ConfigHandler.isInterdimensional(); 
+	    maxDist = ConfigHandler.getMaxDist(); 
+	    paymentItem = ConfigHandler.getPaymentItem(); 
+	    costMult = ConfigHandler.getCostMult(); 
+	    signRec = ConfigHandler.getSignRec(); 
+	    waysRec = ConfigHandler.getWaysRec(); 
+	    securityLevelWaystone = ConfigHandler.getSecurityLevelWaystone(); 
+	    securityLevelSignpost = ConfigHandler.getSecurityLevelSignpost(); 
+	    villageWaystonePropability = ConfigHandler.getVillageWaystonePropability(); 
+	    villageMinSignposts = ConfigHandler.getVillageMinSignposts(); 
+	    villageMaxSignposts = ConfigHandler.getVillageMaxSignposts(); 
+	    onlyVillageTargets = ConfigHandler.isOnlyVillageTargets();
 	}
 
 	@Override
 	public void toBytes(ByteBuf buf) {
 		buf.writeBoolean(deactivateTeleportation);
-		if(!ConfigHandler.deactivateTeleportation){
+		if(!ConfigHandler.isDeactivateTeleportation()){
 			buf.writeInt(allWaystones.size());
 			for(BaseInfo now:allWaystones){
 				now.toBytes(buf);
@@ -58,6 +67,10 @@ public class InitPlayerResponseMessage implements IMessage{
 		ByteBufUtils.writeUTF8String(buf, waysRec.name());
 		ByteBufUtils.writeUTF8String(buf, securityLevelWaystone.name());
 		ByteBufUtils.writeUTF8String(buf, securityLevelSignpost.name());
+		buf.writeFloat(villageWaystonePropability); 
+	    buf.writeInt(villageMinSignposts); 
+	    buf.writeInt(villageMaxSignposts); 
+	    buf.writeBoolean(onlyVillageTargets);
 	}
 
 	@Override
@@ -78,6 +91,10 @@ public class InitPlayerResponseMessage implements IMessage{
 		waysRec = RecipeCost.valueOf(ByteBufUtils.readUTF8String(buf));
 		securityLevelWaystone = SecurityLevel.valueOf(ByteBufUtils.readUTF8String(buf));
 		securityLevelSignpost = SecurityLevel.valueOf(ByteBufUtils.readUTF8String(buf));
+		villageWaystonePropability = buf.readFloat(); 
+	    villageMinSignposts = buf.readInt(); 
+	    villageMaxSignposts = buf.readInt(); 
+	    onlyVillageTargets = buf.readBoolean();
 	}
 
 }

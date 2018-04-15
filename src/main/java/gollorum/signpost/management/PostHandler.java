@@ -2,6 +2,8 @@ package gollorum.signpost.management;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
 
@@ -18,6 +20,8 @@ import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.DoubleBaseInfo;
 import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.util.MyBlockPosSet;
+import gollorum.signpost.util.Paintable;
+import gollorum.signpost.util.Sign;
 import gollorum.signpost.util.StonedHashSet;
 import gollorum.signpost.util.StringSet;
 import gollorum.signpost.util.collections.Lurchpaerchensauna;
@@ -155,6 +159,38 @@ public class PostHandler {
 	private static void refreshPosts(){
 		refreshDoublePosts();
 		refreshBigPosts();
+	}
+	 
+	public static List<Sign> getSigns(MyBlockPos pos) {
+		List<Sign> ret = new LinkedList();
+
+		DoubleBaseInfo doubleBase = getPosts().get(pos);
+		if (doubleBase != null) {
+			ret.add(doubleBase.sign1);
+			ret.add(doubleBase.sign2);
+		} else {
+			BigBaseInfo bigBase = getBigPosts().get(pos);
+			if (bigBase != null) {
+				ret.add(bigBase.sign);
+			}
+		}
+
+		return ret;
+	}
+
+	public static Paintable getPost(MyBlockPos pos) {
+		Paintable ret = getPosts().get(pos);
+		if (ret == null) {
+			ret = getBigPosts().get(pos);
+		}
+		if (ret == null) {
+			pos.getTile();
+			ret = getPosts().get(pos);
+			if (ret == null) {
+				ret = getBigPosts().get(pos);
+			}
+		}
+		return ret;
 	}
 	
 	public static void refreshDoublePosts(){

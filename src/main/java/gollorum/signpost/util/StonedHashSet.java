@@ -1,6 +1,8 @@
 package gollorum.signpost.util;
 
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Set;
 
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.util.collections.Lurchsauna;
@@ -87,5 +89,13 @@ public class StonedHashSet extends Lurchsauna<BaseInfo>{
 			}
 		}
 		return super.remove(toDelete);
+	}
+
+	public Collection<MyBlockPos> positions() {
+		Set<MyBlockPos> positions = new HashSet<MyBlockPos>(size());
+		for (BaseInfo now : this) {
+			positions.add(now.blockPos);
+		}
+		return positions;
 	}
 }
