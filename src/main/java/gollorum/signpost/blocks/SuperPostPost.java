@@ -22,7 +22,6 @@ import gollorum.signpost.network.messages.RequestTextureMessage;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.util.Paintable;
-import gollorum.signpost.util.TextureHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
@@ -30,11 +29,11 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
@@ -237,6 +236,30 @@ public abstract class SuperPostPost extends BlockContainer {
 	
 	public static SuperPostPostTile getSuperTile(World world, BlockPos pos){
 		return (SuperPostPostTile) world.getTileEntity(pos);
+	} 
+	 
+	public static SuperPostPostTile getSuperTile(MyBlockPos pos) {
+		TileEntity tile = pos.getTile();
+		if (tile instanceof SuperPostPostTile) {
+			return (SuperPostPostTile) tile;
+		}
+		return null;
+	}
+
+	public static void updateServer(MyBlockPos pos) {
+		SuperPostPostTile tile = getSuperTile(pos);
+		if (tile == null) {
+			return;
+		}
+		tile.getSuperBlock().sendPostBasesToAll(tile);
+	}
+
+	public static void updateClient(MyBlockPos pos) {
+		SuperPostPostTile tile = getSuperTile(pos);
+		if (tile == null) {
+			return;
+		}
+		tile.getSuperBlock().sendPostBasesToServer(tile);
 	}
 
 	public abstract Object getHitTarget(World world, int x, int y, int z, EntityPlayer/*MP*/ player);

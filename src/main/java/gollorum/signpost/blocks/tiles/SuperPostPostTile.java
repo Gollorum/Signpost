@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import gollorum.signpost.BlockHandler;
 import gollorum.signpost.SPEventHandler;
+import gollorum.signpost.blocks.SuperPostPost;
 import gollorum.signpost.blocks.WaystoneContainer;
 import gollorum.signpost.event.UpdateWaystoneEvent;
 import gollorum.signpost.management.PostHandler;
@@ -127,7 +128,11 @@ public abstract class SuperPostPostTile extends TileEntity implements WaystoneCo
 	public abstract Paintable getPaintObject();
 	public abstract void setAwaitingPaint(boolean awaitingPaint);
 	public abstract void setPaintObject(Paintable paintObject);
-	
+
+	public SuperPostPost getSuperBlock() {
+		return (SuperPostPost) this.getBlockType();
+	}
+
 	public boolean isWaystone(){
 		return isWaystone = (getBaseInfo()!=null);
 	}

@@ -14,23 +14,28 @@ public class ConfigHandler {
 
 	private static Configuration config;
 
-	public static boolean skipTeleportConfirm;
-	
-	public static boolean deactivateTeleportation;
-	public static boolean interdimensional;
-	public static int maxWaystones;
-	public static int maxSignposts;
-	public static int maxDist;
-	public static Item cost;
-	public static String paymentItem;
-	public static int costMult;
-	
-	public static RecipeCost signRec;
-	public static RecipeCost waysRec;
+	private static boolean skipTeleportConfirm; 
+	 
+	private static boolean deactivateTeleportation;
+	private static boolean interdimensional;
+	private static int maxWaystones;
+	private static int maxSignposts;
+	private static int maxDist;
+	private static Item cost;
+	private static String paymentItem;
+	private static int costMult;
 
-	public static SecurityLevel securityLevelWaystone;
-	public static SecurityLevel securityLevelSignpost;
-	public static boolean disableDiscovery;
+	private static RecipeCost signRec;
+	private static RecipeCost waysRec;
+
+	private static SecurityLevel securityLevelWaystone;
+	private static SecurityLevel securityLevelSignpost;
+	private static boolean disableDiscovery;
+
+	private static float villageWaystonePropability;
+	private static int villageMinSignposts;
+	private static int villageMaxSignposts;
+	private static boolean onlyVillageTargets;
 	
 	public enum SecurityLevel{
 		ALL, OWNERS, CREATIVEONLY, OPONLY;
@@ -75,6 +80,7 @@ public class ConfigHandler {
 		loadClientSettings();
 		loadLimitation();
 		loadSecurity();
+		loadWorldGen(); 
 		config.save();
 	}
 	
@@ -85,6 +91,23 @@ public class ConfigHandler {
 		}
 		ClientConfigStorage.INSTANCE.setCost(cost);
 		Signpost.proxy.blockHandler.registerRecipes();
+	}
+	
+	private static void loadWorldGen() {
+		String category = "WorldGen";
+		config.addCustomCategoryComment(category, "World generation settings");
+
+		villageWaystonePropability = config.getFloat("villagePropability", category, 0.5f, 0, 1,
+				"Defines the propability of signposts spawning in villages (0 = 0%, 1 = 100%)");
+		villageMaxSignposts = config.getInt("villageMaxSignposts", category, 1, 0, Integer.MAX_VALUE,
+				"The maximum count of signposts spawning in villages");
+		villageMinSignposts = config.getInt("villageMinSignposts", category, 1, 0, Integer.MAX_VALUE,
+				"The minimum count of signposts spawning in villages");
+		onlyVillageTargets = config.getBoolean("onlyVillageDestinations", category, true,
+				"Defines wether signposts in villages only point to other villages");
+
+		ClientConfigStorage.INSTANCE.setVillageWaystonePropability(villageWaystonePropability);
+		ClientConfigStorage.INSTANCE.setOnlyVillageTargets(onlyVillageTargets);
 	}
 
 	public static void loadClientSettings(){
@@ -157,5 +180,75 @@ public class ConfigHandler {
 	
 	public static String costName(){
 		return I18n.translateToLocal(ClientConfigStorage.INSTANCE.getCost().getUnlocalizedName()+".name");
+	}
+	 
+	@Deprecated
+	public static boolean isSkipTeleportConfirm() {
+		return skipTeleportConfirm;
+	}
+
+	@Deprecated
+	public static boolean isDeactivateTeleportation() {
+		return deactivateTeleportation;
+	}
+
+	@Deprecated
+	public static boolean isInterdimensional() {
+		return interdimensional;
+	}
+
+	@Deprecated
+	public static int getMaxDist() {
+		return maxDist;
+	}
+
+	@Deprecated
+	public static String getPaymentItem() {
+		return paymentItem;
+	}
+
+	@Deprecated
+	public static int getCostMult() {
+		return costMult;
+	}
+
+	@Deprecated
+	public static RecipeCost getSignRec() {
+		return signRec;
+	}
+
+	@Deprecated
+	public static RecipeCost getWaysRec() {
+		return waysRec;
+	}
+
+	@Deprecated
+	public static SecurityLevel getSecurityLevelWaystone() {
+		return securityLevelWaystone;
+	}
+
+	@Deprecated
+	public static SecurityLevel getSecurityLevelSignpost() {
+		return securityLevelSignpost;
+	}
+
+	@Deprecated
+	public static float getVillageWaystonePropability() {
+		return villageWaystonePropability;
+	}
+
+	@Deprecated
+	public static int getVillageMinSignposts() {
+		return villageMinSignposts;
+	}
+
+	@Deprecated
+	public static int getVillageMaxSignposts() {
+		return villageMaxSignposts;
+	}
+
+	@Deprecated
+	public static boolean isOnlyVillageTargets() {
+		return onlyVillageTargets;
 	}
 }

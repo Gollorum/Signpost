@@ -26,7 +26,12 @@ public class ClientConfigStorage {
 
 	private SecurityLevel securityLevelWaystone;
 	private SecurityLevel securityLevelSignpost;
-	private boolean disableDiscovery;
+	private boolean disableDiscovery; 
+	 
+	private float villageWaystonePropability;
+	private int villageMinSignposts;
+	private int villageMaxSignposts;
+	private boolean onlyVillageTargets;  
 	
 	public void postInit(){
 		cost = (Item) Item.REGISTRY.getObject(new ResourceLocation(paymentItem));
@@ -146,6 +151,38 @@ public class ClientConfigStorage {
 
 	public void setDisableDiscovery(boolean disableDiscovery) {
 		this.disableDiscovery = disableDiscovery;
+	}  
+
+	public float getVillageWaystonePropability() {
+		return villageWaystonePropability;
+	}
+
+	public void setVillageWaystonePropability(float villagePropability) {
+		this.villageWaystonePropability = villagePropability;
+	}
+
+	public int getVillageMinSignposts() {
+		return villageMinSignposts;
+	}
+
+	public void setVillageMinSignposts(int villageMinSignposts) {
+		this.villageMinSignposts = villageMinSignposts;
+	}
+
+	public int getVillageMaxSignposts() {
+		return villageMaxSignposts;
+	}
+
+	public void setVillageMaxSignposts(int villageMaxSignposts) {
+		this.villageMaxSignposts = villageMaxSignposts;
+	}
+
+	public boolean isOnlyVillageTargets() {
+		return onlyVillageTargets;
+	}
+
+	public void setOnlyVillageTargets(boolean onlyVillageTargets) {
+		this.onlyVillageTargets = onlyVillageTargets;
 	}
 
 	private ClientConfigStorage(){}

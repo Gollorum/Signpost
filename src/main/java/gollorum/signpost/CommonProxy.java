@@ -1,6 +1,5 @@
 package gollorum.signpost;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 
@@ -11,9 +10,9 @@ import gollorum.signpost.management.PlayerStorage;
 import gollorum.signpost.management.PlayerStore;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
+import gollorum.signpost.worldGen.villages.VillageHandler;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -31,18 +30,29 @@ public class CommonProxy {
 	void preInit(){}
 	
 	void init(){
+		registerBlocksAndItems();
+		registerCapabilities();
+		registerTiles();
+		registerHandlers();
+		registerVillageCreation();
+	}
+	
+	private void registerVillageCreation(){
+		VillageHandler.getInstance().register();
+	}
+
+	private void registerHandlers() {
+		NetworkHandler.register();
+		SPEventHandler handler = SPEventHandler.INSTANCE;
+		MinecraftForge.EVENT_BUS.register(handler);
+	}
+
+	private void registerBlocksAndItems() {
 		blockHandler.init();
 		blockHandler.register();
 
 		ItemHandler.init();
 		ItemHandler.register();
-		
-		registerCapabilities();
-		registerTiles();
-		
-		NetworkHandler.register();
-		SPEventHandler handler = SPEventHandler.INSTANCE;
-		MinecraftForge.EVENT_BUS.register(handler);
 	}
 
 	protected void registerTiles(){
@@ -60,7 +70,7 @@ public class CommonProxy {
 	}
 	
 	public World getWorld(String worldName, int dim){
-		return PostHandler.getWorldByName(worldName, dim);
+		return FMLCommonHandler.instance().getMinecraftServerInstance().worldServerForDimension(dim); 
 	}
 	
 	public World[] getWorlds(){
