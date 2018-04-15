@@ -8,7 +8,7 @@ import net.minecraftforge.client.model.IModelCustom;
 public class BaseModelPostTile extends BasePostTile implements ModelObject{
 
 	private ModelType typ;
-	
+
 	private static final byte[] facingMatrix = new byte[]{1,0,3,2};
 	
 	public BaseModelPostTile(){

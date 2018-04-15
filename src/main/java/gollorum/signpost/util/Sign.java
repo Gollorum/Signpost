@@ -1,11 +1,13 @@
 package gollorum.signpost.util;
 
+import gollorum.signpost.blocks.PostPost;
 import gollorum.signpost.management.ClientConfigStorage;
 import gollorum.signpost.util.math.tracking.DDDVector;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.biome.BiomeGenBase;
 
 public class Sign implements Paintable {
 
@@ -88,5 +90,24 @@ public class Sign implements Paintable {
 	@Override
 	public void setTexture(ResourceLocation texture) {
 		paint = texture;
+	}
+
+	@Override
+	public ResourceLocation getDefaultBiomeTexture(BiomeGenBase biome) {
+		if(biome.biomeName.contains("Plains")){
+			return PostPost.PostType.OAK.texture;
+		}else if(biome.biomeName.contains("Desert")){
+			return new ResourceLocation("textures/blocks/sandstone_smooth.png");
+		}else if(biome.biomeName.contains("Taiga")){
+			return PostPost.PostType.SPRUCE.texture;
+		}else if(biome.biomeName.contains("Savanna")){
+			return PostPost.PostType.ACACIA.texture;
+		}else{
+			return PostPost.PostType.OAK.texture;
+		}
+	}
+	
+	public void setTextureToBiomeDefault(BiomeGenBase biome){
+		setTexture(getDefaultBiomeTexture(biome));
 	}
 }

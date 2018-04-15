@@ -21,7 +21,7 @@ public class ItemHandler {
 		tool = new PostWrench();
 	}
 
-	public static void register(){
+	public static void registerItems(){
 		GameRegistry.registerItem(tool, "SignpostTool");
 		GameRegistry.registerItem(calibratedTool, "SignpostCalibratedTool");
 		GameRegistry.registerItem(brush, "SignpostBrush");

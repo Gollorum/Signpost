@@ -27,6 +27,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 
@@ -224,6 +225,30 @@ public abstract class SuperPostPost extends BlockContainer {
 	
 	public static SuperPostPostTile getSuperTile(World world, int x, int y, int z){
 		return (SuperPostPostTile) world.getTileEntity(x, y, z);
+	}
+	
+	public static SuperPostPostTile getSuperTile(MyBlockPos pos){
+		TileEntity tile = pos.getTile();
+		if(tile instanceof SuperPostPostTile){
+			return (SuperPostPostTile) tile;
+		}
+		return null;
+	}
+	
+	public static void updateServer(MyBlockPos pos){
+		SuperPostPostTile tile = getSuperTile(pos);
+		if(tile == null){
+			return;
+		}
+		tile.getSuperBlock().sendPostBasesToAll(tile);
+	}
+	
+	public static void updateClient(MyBlockPos pos){
+		SuperPostPostTile tile = getSuperTile(pos);
+		if(tile == null){
+			return;
+		}
+		tile.getSuperBlock().sendPostBasesToServer(tile);
 	}
 
 	public abstract Object getHitTarget(World world, int x, int y, int z, EntityPlayer/*MP*/ player);

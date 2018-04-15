@@ -3,6 +3,7 @@ package gollorum.signpost.management;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.StonedHashSet;
+import gollorum.signpost.worldGen.villages.VillageLibrary;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldSavedData;
@@ -46,9 +47,11 @@ public class WorldSigns extends WorldSavedData{
 					bases.add(neu);
 				}
 			}
-//			Signpost.LOG.info(bases.size()+" waystones loaded");
 			PostHandler.getNativeWaystones().addAll(bases);
 			PostHandler.refreshDiscovered();
+		}
+		if(tC.hasKey("VillageLibrary")){
+			VillageLibrary.getInstance().load(tC.getCompoundTag("VillageLibrary"));
 		}
 	}
 
@@ -57,8 +60,6 @@ public class WorldSigns extends WorldSavedData{
 		if(world.provider.dimensionId == 0){
 			NBTTagCompound info = new NBTTagCompound();
 			StonedHashSet worldBases = PostHandler.getNativeWaystones();
-//			Signpost.LOG.info(worldBases.size()+" waystones saved");
-//			StonedHashSet worldBases = PostHandler.getByWorld(world);
 			info.setInteger("infoSize", worldBases.size());
 			int i = 0;
 			for(BaseInfo now: worldBases){
@@ -68,6 +69,9 @@ public class WorldSigns extends WorldSavedData{
 				i++;
 			}
 			tC.setTag("SignInfo", info);
+			NBTTagCompound library = new NBTTagCompound();
+			VillageLibrary.getInstance().save(library);
+			tC.setTag("VillageLibrary", library);
 		}
 	}
 

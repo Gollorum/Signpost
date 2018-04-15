@@ -112,4 +112,23 @@ public class BasePost extends BlockContainer {
             }
 		}
 	}
+	
+	public static void generate(World world, MyBlockPos blockPos, MyBlockPos telePos){
+		String name = generateName();
+		generate(world, blockPos, telePos, name);
+	}
+	
+	public static void generate(World world, MyBlockPos blockPos, MyBlockPos telePos, String name){
+		BasePostTile tile = getWaystoneRootTile(world, blockPos.x, blockPos.y, blockPos.z);
+		UUID owner = null;
+		BaseInfo ws;
+		if((ws = tile.getBaseInfo())==null){
+			ws = new BaseInfo(name, blockPos, telePos, owner);
+			PostHandler.addWaystone(ws);
+		}else{
+			ws.setAll(new BaseInfo(name, blockPos, telePos, owner));
+		}
+		NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
+		MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.PLACED, world, blockPos.x, blockPos.y, blockPos.z, name));
+	}
 }

@@ -10,8 +10,8 @@ import gollorum.signpost.blocks.tiles.BaseModelPostTile;
 import gollorum.signpost.blocks.tiles.BasePostTile;
 import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.blocks.tiles.PostPostTile;
-import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
+import gollorum.signpost.worldGen.villages.VillageHandler;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
@@ -28,15 +28,27 @@ public class CommonProxy {
 	void preInit(){}
 
 	public void init(){
-		blockHandler.register();
-		registerTiles();
-		itemHandler.register();
-		registerRecipes();
+		registerBlocksAndItems();
+		registerHandlers();
+		registerVillageCreation();
+	}
 
+	private void registerVillageCreation() {
+		VillageHandler.getInstance().register();
+	}
+
+	private void registerHandlers() {
 		NetworkHandler.register();
 		SPEventHandler handler = SPEventHandler.INSTANCE;
 		MinecraftForge.EVENT_BUS.register(handler);
 		FMLCommonHandler.instance().bus().register(handler);
+	}
+
+	private void registerBlocksAndItems() {
+		blockHandler.registerBlocks();
+		registerTiles();
+		itemHandler.registerItems();
+		registerRecipes();
 	}
 	
 	protected void registerTiles(){
@@ -56,7 +68,7 @@ public class CommonProxy {
 	}
 
 	public World getWorld(String worldName, int dim){
-		return PostHandler.getWorldByName(worldName, dim);
+		return FMLCommonHandler.instance().getMinecraftServerInstance().worldServerForDimension(dim);
 	}
 	
 	public World[] getWorlds(){

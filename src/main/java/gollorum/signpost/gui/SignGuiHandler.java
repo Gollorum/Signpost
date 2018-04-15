@@ -6,6 +6,7 @@ import gollorum.signpost.blocks.WaystoneContainer;
 import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.blocks.tiles.PostPostTile;
 import gollorum.signpost.blocks.tiles.SuperPostPostTile;
+import gollorum.signpost.util.MyBlockPos;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
 
@@ -20,7 +21,7 @@ public class SignGuiHandler implements IGuiHandler {
 	public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
 		switch (ID) {
 		case Signpost.GuiBaseID:
-			return new SignGuiBase((WaystoneContainer)world.getTileEntity(x, y, z));
+			return new SignGuiBase((WaystoneContainer) world.getTileEntity(x, y, z));
 		case Signpost.GuiPostID:
 			return new SignGuiPost((PostPostTile) world.getTileEntity(x, y, z));
 		case Signpost.GuiBigPostID:

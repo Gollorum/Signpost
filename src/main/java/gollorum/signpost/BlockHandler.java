@@ -48,7 +48,7 @@ public class BlockHandler {
 
 	protected ArrayList<ItemBlockWithMeta>  baseModelItems = new ArrayList<ItemBlockWithMeta>();
 
-	public void register(){
+	public void registerBlocks(){
 		GameRegistry.registerBlock(base, "SignpostBase");
 		for(BaseModelPost basemodel: basemodels){
 			GameRegistry.registerBlock(basemodel, ItemBlockWithMetaFacing.class, "blockbasemodel"+basemodel.type.getID());

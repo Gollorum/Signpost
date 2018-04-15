@@ -23,6 +23,10 @@ public class InitPlayerResponseHandler implements IMessageHandler<InitPlayerResp
 		ClientConfigStorage.INSTANCE.setWaysRec(message.waysRec);
 		ClientConfigStorage.INSTANCE.setSecurityLevelWaystone(message.securityLevelWaystone);
 		ClientConfigStorage.INSTANCE.setSecurityLevelSignpost(message.securityLevelSignpost);
+		ClientConfigStorage.INSTANCE.setVillageWaystonePropability(message.villageWaystonePropability);
+		ClientConfigStorage.INSTANCE.setVillageMinSignposts(message.villageMinSignposts);
+		ClientConfigStorage.INSTANCE.setVillageMaxSignposts(message.villageMaxSignposts);
+		ClientConfigStorage.INSTANCE.setOnlyVillageTargets(message.onlyVillageTargets);
 		ClientConfigStorage.INSTANCE.postInit();
 		return null;
 	}

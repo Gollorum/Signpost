@@ -9,7 +9,9 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.BiomeGenBase;
 
 public class MyBlockPos {
 	
@@ -21,6 +23,11 @@ public class MyBlockPos {
 	public MyBlockPos(World world, int x, int y, int z, int dim){
 		this((world==null||world.isRemote)?"":world.getWorldInfo().getWorldName(), x,
 				y, z, dim);
+	}
+
+	public MyBlockPos(World world, int x, int y, int z){
+		this((world==null||world.isRemote)?"":world.getWorldInfo().getWorldName(), x,
+				y, z, dim(world));
 	}
 
 	public MyBlockPos(String world, double x, double y, double z, int dim){
@@ -200,6 +207,30 @@ public class MyBlockPos {
 				((BigPostPostTile) tile).getBases();
 			}
 			return tile;
+		}else{
+			return null;
+		}
+	}
+	
+	public MyBlockPos fromNewPos(int x, int y, int z){
+		return new MyBlockPos(world, x, y, z, dim, modID);
+	}
+
+	public MyBlockPos getBelow(){
+		return fromNewPos(x, y-1, z);
+	}
+	
+	public MyBlockPos front(EnumFacing facing, int i) {
+		int newX = x + facing.getFrontOffsetX() * i;
+		int newY = y + facing.getFrontOffsetY() * i;
+		int newZ = z + facing.getFrontOffsetZ() * i;
+		return fromNewPos(newX, newY, newZ);
+	}
+
+	public BiomeGenBase getBiome(){
+		World world = getWorld();
+		if(world != null){
+			return world.getBiomeGenForCoords(x, z);
 		}else{
 			return null;
 		}
