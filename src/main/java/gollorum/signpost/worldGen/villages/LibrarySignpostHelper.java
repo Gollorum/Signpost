@@ -9,11 +9,15 @@ import gollorum.signpost.blocks.SuperPostPost;
 import gollorum.signpost.management.ClientConfigStorage;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.util.MyBlockPos;
+import gollorum.signpost.util.MyBlockPosSet;
 import gollorum.signpost.util.Paintable;
 import gollorum.signpost.util.Sign;
+import gollorum.signpost.util.collections.Lurchpaerchensauna;
 import net.minecraft.world.biome.Biome;
 
 class LibrarySignpostHelper extends LibraryHelper {
+	private static final Map<MyBlockPos, MyBlockPosSet> takenWaystones = new Lurchpaerchensauna<MyBlockPos, MyBlockPosSet>(); 
+	
 	private MyBlockPos signpostLocation;
 	private Map<MyBlockPos, MyBlockPos> villageWaystones;
 
@@ -21,6 +25,9 @@ class LibrarySignpostHelper extends LibraryHelper {
 		super(villageLocation);
 		this.signpostLocation = signpostLocation;
 		this.villageWaystones = villageWaystones;
+		if (!takenWaystones.containsKey(villageLocation)) {
+			takenWaystones.put(villageLocation, new MyBlockPosSet());
+		}
 	}
 
 	void enscribeNewSign(double optimalRot) {
@@ -40,6 +47,7 @@ class LibrarySignpostHelper extends LibraryHelper {
 				continue;
 			}
 			signs.get(i).base = getBaseInfo(closestWaystones.get(i));
+			takenWaystones.get(villageLocation).add(closestWaystones.get(i)); 
 			signs.get(i).point = true;
 			if(angleTooLarge(calcRot(signpostLocation, closestWaystones.get(i)), optimalRot)){
 				signs.get(i).flip = true;
@@ -77,6 +85,7 @@ class LibrarySignpostHelper extends LibraryHelper {
 		}else{
 			ret.addAll(PostHandler.getNativeWaystones().positions());
 		}
+		ret.removeAll(takenWaystones.get(villageLocation)); 
 		return ret;
 	}
 }

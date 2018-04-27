@@ -1,5 +1,6 @@
 package gollorum.signpost.worldGen.villages;
 
+import gollorum.signpost.management.ClientConfigStorage;
 import gollorum.signpost.worldGen.villages.signpost.SignpostVillageCreationHandler;
 import gollorum.signpost.worldGen.villages.signpost.VillageComponentSignpost;
 import gollorum.signpost.worldGen.villages.waystone.VillageComponentWaystone;
@@ -18,7 +19,10 @@ public class VillageHandler {
 	
 	private VillageHandler(){}
 
-	public void register(){
+	public void register(){ 
+		if (ClientConfigStorage.INSTANCE.isDisableVillageGeneration()) {
+			return;
+		}
 		registerVillagePieces();
 		registerHandlers();
 	}

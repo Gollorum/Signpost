@@ -28,9 +28,10 @@ public class ClientConfigStorage {
 	private SecurityLevel securityLevelSignpost;
 	private boolean disableDiscovery;
 
-	private float villageWaystonePropability;
-	private int villageMinSignposts;
+	private boolean disableVillageGeneration;
+	private int villageWaystonesWeight;
 	private int villageMaxSignposts;
+	private int villageSignpostsWeight;
 	private boolean onlyVillageTargets; 
 	
 	public void postInit(){
@@ -153,20 +154,28 @@ public class ClientConfigStorage {
 		this.disableDiscovery = disableDiscovery;
 	} 
 
-	public float getVillageWaystonePropability() {
-		return villageWaystonePropability;
+	public boolean isDisableVillageGeneration() {
+		return disableVillageGeneration;
 	}
 
-	public void setVillageWaystonePropability(float villagePropability) {
-		this.villageWaystonePropability = villagePropability;
+	public void setDisableVillageGeneration(boolean disableVillageGeneration) {
+		this.disableVillageGeneration = disableVillageGeneration;
 	}
 
-	public int getVillageMinSignposts() {
-		return villageMinSignposts;
+	public int getVillageWaystonesWeight() {
+		return villageWaystonesWeight;
 	}
 
-	public void setVillageMinSignposts(int villageMinSignposts) {
-		this.villageMinSignposts = villageMinSignposts;
+	public void setVillageWaystonesWeight(int villageWaystonesWeight) {
+		this.villageWaystonesWeight = villageWaystonesWeight;
+	}
+
+	public int getVillageSignpostsWeight() {
+		return villageSignpostsWeight;
+	}
+
+	public void setVillageSignpostsWeight(int villageSignpostsWeight) {
+		this.villageSignpostsWeight = villageSignpostsWeight;
 	}
 
 	public int getVillageMaxSignposts() {
