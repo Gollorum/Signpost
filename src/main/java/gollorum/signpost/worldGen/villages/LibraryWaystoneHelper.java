@@ -7,11 +7,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import gollorum.signpost.SPEventHandler;
 import gollorum.signpost.blocks.SuperPostPost;
+import gollorum.signpost.blocks.tiles.SuperPostPostTile;
 import gollorum.signpost.management.PostHandler;
+import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.util.Sign;
 import gollorum.signpost.util.collections.Lurchsauna;
+import net.minecraft.tileentity.TileEntity;
 
 class LibraryWaystoneHelper extends LibraryHelper {
 	private MyBlockPos waystoneLocation;
@@ -24,15 +28,33 @@ class LibraryWaystoneHelper extends LibraryHelper {
 	}
 
 	void enscribeEmptySign(){
-		Set<VillagePost> posts = fetchOtherVillagesPosts();
-		SignChooser.SingeEmptySign emptySign = new SignChooser(posts).getBestSign();
+		final Set<VillagePost> posts = fetchOtherVillagesPosts();
+		final SignChooser.SingeEmptySign emptySign = new SignChooser(posts).getBestSign();
 		if(emptySign != null){
-			emptySign.sign.base = getBaseInfo(waystoneLocation);
-			emptySign.sign.point = true;
-			if(angleTooLarge(calcRot(emptySign.post.topSignPosition, waystoneLocation), emptySign.post.desiredRotation)){
-				emptySign.sign.flip = true;
-			}
-			SuperPostPost.updateServer(emptySign.post.topSignPosition);
+			final MyBlockPos pos = emptySign.post.topSignPosition;
+			final Sign sign = SuperPostPost.getSuperTile(pos).getEmptySigns().get(0);
+			SPEventHandler.scheduleTask(new BoolRun() {
+				boolean go = false;
+				@Override
+				public boolean run() {
+					TileEntity tile = pos.getTile();
+					if (tile instanceof SuperPostPostTile && ((SuperPostPostTile) tile).isLoading()) {
+						return false;
+					}
+					if (!go) {
+						go = true;
+						return false;
+					} else {
+						sign.base = getBaseInfo(waystoneLocation);
+						sign.point = true;
+						if (angleTooLarge(calcRot(pos, waystoneLocation), emptySign.post.desiredRotation)) {
+							emptySign.sign.flip = true;
+						}
+						SuperPostPost.updateServer(pos);
+						return true;
+					}
+				}
+			});
 		}
 	}
 

@@ -3,7 +3,7 @@ package gollorum.signpost.worldGen.villages.waystone;
 import java.util.List;
 import java.util.Random;
 
-import gollorum.signpost.worldGen.villages.NameLibrary;
+import gollorum.signpost.management.ClientConfigStorage;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.gen.structure.StructureVillagePieces.PieceWeight;
 import net.minecraft.world.gen.structure.StructureVillagePieces.Start;
@@ -12,17 +12,16 @@ import net.minecraftforge.fml.common.registry.VillagerRegistry.IVillageCreationH
 
 public class WaystoneVillageCreationHandler implements IVillageCreationHandler{
 
-	private static final int PIECE_WEIGHT = 3;
 	private static final int COUNT = 1;
 	private static final Class COMPONENT_CLASS = VillageComponentWaystone.class;
 
 	@Override
 	public PieceWeight getVillagePieceWeight(Random random, int i) {
-		int postCount = 0;
-		if(NameLibrary.getInstance() != null && NameLibrary.getInstance().namesLeft()){
-			postCount = COUNT;
+		if (ClientConfigStorage.INSTANCE.isDisableVillageGeneration()) {
+			return new PieceWeight(COMPONENT_CLASS, 0, 0);
 		}
-		return new PieceWeight(COMPONENT_CLASS, PIECE_WEIGHT, postCount);
+		int weight = ClientConfigStorage.INSTANCE.getVillageWaystonesWeight();
+		return new PieceWeight(COMPONENT_CLASS, weight, COUNT);
 	}
 
 	@Override

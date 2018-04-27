@@ -3,6 +3,7 @@ package gollorum.signpost.worldGen.villages.signpost;
 import java.util.List;
 import java.util.Random;
 
+import gollorum.signpost.management.ClientConfigStorage;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.gen.structure.StructureVillagePieces.PieceWeight;
 import net.minecraft.world.gen.structure.StructureVillagePieces.Start;
@@ -11,13 +12,18 @@ import net.minecraftforge.fml.common.registry.VillagerRegistry.IVillageCreationH
 
 public class SignpostVillageCreationHandler implements IVillageCreationHandler{
 
-	private static final int PIECE_WEIGHT = 3;
-	private static final int COUNT = 1;
 	private static final Class COMPONENT_CLASS = VillageComponentSignpost.class;
 
 	@Override
 	public PieceWeight getVillagePieceWeight(Random random, int i) {
-		return new PieceWeight(COMPONENT_CLASS, PIECE_WEIGHT, COUNT);
+		if (ClientConfigStorage.INSTANCE.isDisableVillageGeneration()) {
+			return new PieceWeight(COMPONENT_CLASS, 0, 0);
+		}
+		return new PieceWeight(COMPONENT_CLASS, ClientConfigStorage.INSTANCE.getVillageSignpostsWeight(), getCount(random));
+	}
+
+	private int getCount(Random random) {
+		return ClientConfigStorage.INSTANCE.getVillageMaxSignposts();
 	}
 
 	@Override
