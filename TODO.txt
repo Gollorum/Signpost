@@ -1,4 +1,3 @@
--Generate street below floating waystones and signposts
 -Choose proper village names
 -waystones with rendered name?
 -BUG: github rotation reset?
