@@ -9,7 +9,8 @@ import gollorum.signpost.Signpost;
 import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.worldGen.villages.GenerateStructureHelper;
 import gollorum.signpost.worldGen.villages.VillageLibrary;
-import net.minecraft.block.BlockAir;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -55,6 +56,18 @@ public class VillageComponentSignpost extends StructureVillagePieces.Village{
 		BlockPos postPos = GenerateStructureHelper.getInstance().getTopSolidOrLiquidBlock(world, new BlockPos(x, 0, z));
 		world.setBlockState(postPos, Signpost.proxy.blockHandler.post_oak.getDefaultState());
 		world.setBlockState(postPos.add(0, 1, 0), Signpost.proxy.blockHandler.post_oak.getDefaultState());
+		if (world.getBlockState(postPos.add(0, -1, 0)).getMaterial().isLiquid()) {
+			IBlockState block = this.getBiomeSpecificBlockState(Blocks.PLANKS.getDefaultState());
+			world.setBlockState(postPos.add(0, -1, 0), block);
+			world.setBlockState(postPos.add(-1, -1, -1), block);
+			world.setBlockState(postPos.add(-1, -1, 0), block);
+			world.setBlockState(postPos.add(-1, -1, 1), block);
+			world.setBlockState(postPos.add(0, -1, -1), block);
+			world.setBlockState(postPos.add(0, -1, 1), block);
+			world.setBlockState(postPos.add(1, -1, -1), block);
+			world.setBlockState(postPos.add(1, -1, 0), block);
+			world.setBlockState(postPos.add(1, -1, 1), block);
+		}
 		StructureBoundingBox villageBox = start.getBoundingBox();
 		MyBlockPos villagePos = new MyBlockPos(world, villageBox.minX, 0, villageBox.minZ);
 		MyBlockPos blockPos = new MyBlockPos(world, postPos.add(0, 1, 0));

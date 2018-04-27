@@ -15,6 +15,8 @@ import gollorum.signpost.worldGen.villages.GenerateStructureHelper;
 import gollorum.signpost.worldGen.villages.NameLibrary;
 import gollorum.signpost.worldGen.villages.VillageLibrary;
 import net.minecraft.block.BlockAir;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -59,6 +61,10 @@ public class VillageComponentWaystone extends StructureVillagePieces.Village{
 		final int x = this.boundingBox.getCenter().getX();
 		final int z = this.boundingBox.getCenter().getZ();
 		BlockPos postPos = GenerateStructureHelper.getInstance().getTopSolidOrLiquidBlock(world, new BlockPos(x, 0, z));
+		if (world.getBlockState(postPos.add(0, -1, 0)).getMaterial().isLiquid()) {
+			IBlockState block = this.getBiomeSpecificBlockState(Blocks.PLANKS.getDefaultState());
+			world.setBlockState(postPos.add(0, -1, 0), block);
+		}
 		final BlockPos finalPos = postPos;
 		if(world.setBlockState(finalPos, BlockHandler.basemodels[random.nextInt(2)].getStateForFacing(facing), 3)){
 			SPEventHandler.scheduleTask(new BoolRun() {
