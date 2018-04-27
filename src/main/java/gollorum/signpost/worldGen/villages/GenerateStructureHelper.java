@@ -1,5 +1,6 @@
 package gollorum.signpost.worldGen.villages;
 
+import gollorum.signpost.util.MyBlockPos;
 import net.minecraft.block.Block;
 import net.minecraft.world.World;
 
@@ -21,6 +22,11 @@ public class GenerateStructureHelper {
 			block = world.getBlock(x, y, z);
 		}
 		return y;
+	}
+	
+	public MyBlockPos getTopSolidOrLiquidBlock(MyBlockPos blockPos){
+		int y = getTopSolidOrLiquidBlock(blockPos.getWorld(), blockPos.x, blockPos.z);
+		return blockPos.fromNewPos(blockPos.x, y, blockPos.z);
 	}
 
 }

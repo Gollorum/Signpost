@@ -16,7 +16,7 @@ public class WaystoneVillageCreationHandler implements IVillageCreationHandler{
 
 	@Override
 	public PieceWeight getVillagePieceWeight(Random random, int i) {
-		if(ClientConfigStorage.INSTANCE.isDisableVillageGeneration()){
+		if(ClientConfigStorage.INSTANCE.isDisableVillageGeneration() ||! NameLibrary.getInstance().namesLeft()){
 			return new PieceWeight(COMPONENT_CLASS, 0, 0);
 		}
 		int weight = ClientConfigStorage.INSTANCE.getVillageWaystonesWeight();
