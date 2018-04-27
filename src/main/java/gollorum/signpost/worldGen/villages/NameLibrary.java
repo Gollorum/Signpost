@@ -74,7 +74,7 @@ public class NameLibrary {
 			List<String> possibles = getPossibleNames();
 			return possibles.get(new Random().nextInt(possibles.size()));
 		}else{
-			return "null";
+			return null;
 		}
 	}
 	

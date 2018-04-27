@@ -56,6 +56,10 @@ public class VillageComponentWaystone extends StructureVillagePieces.Village{
 			return true;
 		}else{
 			built = true;
+		} 
+		final String name = NameLibrary.getInstance().getName();
+		if (name == null) {
+			return true;
 		}
 		int x = (this.boundingBox.minX + this.boundingBox.maxX)/2;
 		int z = (this.boundingBox.minZ + this.boundingBox.maxZ)/2;
@@ -71,7 +75,7 @@ public class VillageComponentWaystone extends StructureVillagePieces.Village{
 				public boolean run() {
 					TileEntity tile = world.getTileEntity(finalPos);
 					if(tile instanceof WaystoneContainer){
-						setupWaystone(world, finalPos, (WaystoneContainer) tile);
+						setupWaystone(name, world, finalPos, (WaystoneContainer) tile);
 						return true;
 					}else{
 						return false;
@@ -82,8 +86,7 @@ public class VillageComponentWaystone extends StructureVillagePieces.Village{
 		return true;
 	}
 
-	private void setupWaystone(World world, BlockPos postPos, WaystoneContainer container) {
-		String name = NameLibrary.getInstance().getName();
+	private void setupWaystone(String name, World world, BlockPos postPos, WaystoneContainer container) {
 		assureBaseInfo(container, world, new MyBlockPos(world, postPos), facing, name);
 		
 		StructureBoundingBox villageBox = start.getBoundingBox();
@@ -94,7 +97,11 @@ public class VillageComponentWaystone extends StructureVillagePieces.Village{
 	
 	private void assureBaseInfo(WaystoneContainer container, World world, MyBlockPos blockPos, EnumFacing facing, String name){
 		if(container.getBaseInfo()==null){
-			BasePost.generate(world, blockPos, blockPos.front(facing, 2), name);
+			MyBlockPos telePos = GenerateStructureHelper.getInstance().getTopSolidOrLiquidBlock(blockPos.front(facing, 2));
+			if (telePos.getWorld().getBlockState(telePos.toBlockPos().add(0, -1, 0)).getBlock() == Blocks.GRASS_PATH) {
+				telePos.y++;
+			}
+			BasePost.generate(world, blockPos, telePos, name);
 		}else{
 			container.setName(name);
 		}
