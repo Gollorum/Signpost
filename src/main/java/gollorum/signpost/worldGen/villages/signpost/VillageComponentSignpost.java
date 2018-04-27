@@ -9,6 +9,8 @@ import gollorum.signpost.Signpost;
 import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.worldGen.villages.GenerateStructureHelper;
 import gollorum.signpost.worldGen.villages.VillageLibrary;
+import net.minecraft.block.Block;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
@@ -53,6 +55,18 @@ public class VillageComponentSignpost extends StructureVillagePieces.Village{
 		int y = GenerateStructureHelper.getInstance().getTopSolidOrLiquidBlock(world, x, z);
 		world.setBlock(x, y, z, Signpost.proxy.blockHandler.post_oak);
 		world.setBlock(x, y + 1, z, Signpost.proxy.blockHandler.post_oak);
+		if(world.getBlock(x, y-1, z).getMaterial().isLiquid()){
+			Block block = this.func_151558_b(Blocks.planks, 0);
+			world.setBlock(x,   y-1, z,   block);
+			world.setBlock(x-1, y-1, z-1, block);
+			world.setBlock(x-1, y-1, z,   block);
+			world.setBlock(x-1, y-1, z+1, block);
+			world.setBlock(x,   y-1, z-1, block);
+			world.setBlock(x,   y-1, z+1, block);
+			world.setBlock(x+1, y-1, z-1, block);
+			world.setBlock(x+1, y-1, z,   block);
+			world.setBlock(x+1, y-1, z+1, block);
+		}
 		StructureBoundingBox villageBox = start.getBoundingBox();
 		MyBlockPos villagePos = new MyBlockPos(world, villageBox.minX, 0, villageBox.minZ);
 		MyBlockPos blockPos = new MyBlockPos(world, x, y + 1, z);
