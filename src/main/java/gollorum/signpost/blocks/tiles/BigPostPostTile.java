@@ -1,5 +1,8 @@
 package gollorum.signpost.blocks.tiles;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import gollorum.signpost.SPEventHandler;
 import gollorum.signpost.blocks.BigPostPost;
 import gollorum.signpost.blocks.BigPostPost.BigHit;
@@ -26,6 +29,7 @@ public class BigPostPostTile extends SuperPostPostTile {
 
 	public BigPostType type = BigPostType.OAK;
 	public static final int DESCRIPTIONLENGTH = 4;
+	private boolean isLoading = false;
 
 	@Deprecated
 	public BigBaseInfo bases = null;
@@ -92,6 +96,7 @@ public class BigPostPostTile extends SuperPostPostTile {
 
 	@Override
 	public void load(NBTTagCompound tagCompound) {
+		isLoading = true;
 		final String base = tagCompound.getString("base");
 		final int rotation = tagCompound.getInteger("rot");
 		final boolean flip = tagCompound.getBoolean("flip");
@@ -139,10 +144,15 @@ public class BigPostPostTile extends SuperPostPostTile {
 						break;
 					}
 					NetworkHandler.netWrap.sendToAll(new SendBigPostBasesMessage((BigPostPostTile) getWorldObj().getTileEntity(xCoord, yCoord, zCoord), bases));
+					isLoading = false;
 					return true;
 				}
 			}
 		});
+	}
+	
+	public boolean isLoading(){
+		return isLoading;
 	}
 
 	@Override
@@ -199,5 +209,16 @@ public class BigPostPostTile extends SuperPostPostTile {
 	@Override
 	public String toString(){
 		return getBases()+" at "+toPos();
+	}
+	
+
+	@Override
+	public List<Sign> getEmptySigns() {
+		List<Sign> ret = new LinkedList<Sign>();
+		BigBaseInfo bases = getBases();
+		if(bases.sign == null && !bases.sign.isValid()){
+			ret.add(bases.sign);
+		}
+		return ret;
 	}
 }

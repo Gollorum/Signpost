@@ -5,24 +5,24 @@ import java.util.Random;
 
 import cpw.mods.fml.common.registry.VillagerRegistry.IVillageCreationHandler;
 import gollorum.signpost.management.ClientConfigStorage;
+import gollorum.signpost.management.ConfigHandler;
 import net.minecraft.world.gen.structure.StructureVillagePieces.PieceWeight;
 import net.minecraft.world.gen.structure.StructureVillagePieces.Start;
 
 public class SignpostVillageCreationHandler implements IVillageCreationHandler{
 
-	private static final int PIECE_WEIGHT = 3;
 	private static final Class COMPONENT_CLASS = VillageComponentSignpost.class;
 
 	@Override
 	public PieceWeight getVillagePieceWeight(Random random, int i) {
-		return new PieceWeight(COMPONENT_CLASS, PIECE_WEIGHT, getCount(random));
+		if(ClientConfigStorage.INSTANCE.isDisableVillageGeneration()){
+			return new PieceWeight(COMPONENT_CLASS, 0, 0);
+		}
+		return new PieceWeight(COMPONENT_CLASS, ClientConfigStorage.INSTANCE.getVillageSignpostsWeight(), getCount(random));
 	}
 	
 	private int getCount(Random random){
-		int minCount = ClientConfigStorage.INSTANCE.getVillageMinSignposts();
-		int maxCount = ClientConfigStorage.INSTANCE.getVillageMaxSignposts();
-		int offset = random.nextInt(maxCount - minCount + 1);
-		return minCount + offset;
+		return ClientConfigStorage.INSTANCE.getVillageMaxSignposts();
 	}
 
 	@Override

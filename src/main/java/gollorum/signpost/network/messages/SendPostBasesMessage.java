@@ -62,7 +62,6 @@ public class SendPostBasesMessage implements IMessage {
 		}else{
 			paintObjectIndex = 0;
 		}
-		
 	}
 
 	@Override

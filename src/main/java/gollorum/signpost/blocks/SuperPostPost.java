@@ -229,6 +229,10 @@ public abstract class SuperPostPost extends BlockContainer {
 	
 	public static SuperPostPostTile getSuperTile(MyBlockPos pos){
 		TileEntity tile = pos.getTile();
+		if(tile == null){
+			pos.getWorld().getBlock(pos.x, pos.y, pos.z);
+			tile = getSuperTile(pos);
+		}
 		if(tile instanceof SuperPostPostTile){
 			return (SuperPostPostTile) tile;
 		}

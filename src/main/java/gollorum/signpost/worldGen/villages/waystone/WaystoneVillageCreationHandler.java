@@ -11,20 +11,16 @@ import net.minecraft.world.gen.structure.StructureVillagePieces.Start;
 
 public class WaystoneVillageCreationHandler implements IVillageCreationHandler{
 
-	private static final int PIECE_WEIGHT = 3;
 	private static final int COUNT = 1;
 	private static final Class COMPONENT_CLASS = VillageComponentWaystone.class;
 
 	@Override
 	public PieceWeight getVillagePieceWeight(Random random, int i) {
-		int postCount = 0;
-		if(NameLibrary.getInstance() != null && NameLibrary.getInstance().namesLeft()){
-			System.out.println(random.nextFloat()+"|"+ClientConfigStorage.INSTANCE.getVillageWaystonePropability());
-			if(random.nextFloat() <= ClientConfigStorage.INSTANCE.getVillageWaystonePropability()){
-				postCount = COUNT;
-			}
+		if(ClientConfigStorage.INSTANCE.isDisableVillageGeneration()){
+			return new PieceWeight(COMPONENT_CLASS, 0, 0);
 		}
-		return new PieceWeight(COMPONENT_CLASS, PIECE_WEIGHT, postCount);
+		int weight = ClientConfigStorage.INSTANCE.getVillageWaystonesWeight();
+		return new PieceWeight(COMPONENT_CLASS, weight, COUNT);
 	}
 
 	@Override

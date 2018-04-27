@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import cpw.mods.fml.common.registry.VillagerRegistry;
+import gollorum.signpost.management.ClientConfigStorage;
 import gollorum.signpost.worldGen.villages.signpost.SignpostVillageCreationHandler;
 import gollorum.signpost.worldGen.villages.signpost.VillageComponentSignpost;
 import gollorum.signpost.worldGen.villages.waystone.VillageComponentWaystone;
@@ -22,6 +23,9 @@ public class VillageHandler {
 	private VillageHandler(){}
 
 	public void register(){
+		if(ClientConfigStorage.INSTANCE.isDisableVillageGeneration()){
+			return;
+		}
 		registerVillagePieces();
 		registerHandlers();
 	}

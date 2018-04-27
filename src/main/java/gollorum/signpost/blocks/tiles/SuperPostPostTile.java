@@ -1,5 +1,6 @@
 package gollorum.signpost.blocks.tiles;
 
+import java.util.List;
 import java.util.UUID;
 
 import gollorum.signpost.BlockHandler;
@@ -130,6 +131,10 @@ public abstract class SuperPostPostTile extends TileEntity implements WaystoneCo
 	public abstract Paintable getPaintObject();
 	public abstract void setAwaitingPaint(boolean awaitingPaint);
 	public abstract void setPaintObject(Paintable paintObject);
+
+	public abstract boolean isLoading();
+	
+	public abstract List<Sign> getEmptySigns();
 	
 	public SuperPostPost getSuperBlock(){
 		return (SuperPostPost) this.getBlockType();
