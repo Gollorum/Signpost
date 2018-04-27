@@ -26,9 +26,10 @@ public class InitPlayerResponseMessage implements IMessage{
 	public static SecurityLevel securityLevelWaystone;
 	public static SecurityLevel securityLevelSignpost;
 	
-	public float villageWaystonePropability;
-	public int villageMinSignposts;
+	public boolean disableVillageGeneration; 
+	public int villageWaystonesWeight;
 	public int villageMaxSignposts;
+	public int villageSignpostsWeight;
 	public boolean onlyVillageTargets;
 	
 	public InitPlayerResponseMessage(){
@@ -44,9 +45,10 @@ public class InitPlayerResponseMessage implements IMessage{
 	    waysRec = ConfigHandler.getWaysRec(); 
 	    securityLevelWaystone = ConfigHandler.getSecurityLevelWaystone(); 
 	    securityLevelSignpost = ConfigHandler.getSecurityLevelSignpost(); 
-	    villageWaystonePropability = ConfigHandler.getVillageWaystonePropability(); 
-	    villageMinSignposts = ConfigHandler.getVillageMinSignposts(); 
+	    disableVillageGeneration = ConfigHandler.isDisableVillageGeneration();   
 	    villageMaxSignposts = ConfigHandler.getVillageMaxSignposts(); 
+	    villageSignpostsWeight = ConfigHandler.getVillageSignpostsWeight(); 
+	    villageWaystonesWeight = ConfigHandler.getVillageWaystonesWeight();
 	    onlyVillageTargets = ConfigHandler.isOnlyVillageTargets();
 	}
 
@@ -67,9 +69,10 @@ public class InitPlayerResponseMessage implements IMessage{
 		ByteBufUtils.writeUTF8String(buf, waysRec.name());
 		ByteBufUtils.writeUTF8String(buf, securityLevelWaystone.name());
 		ByteBufUtils.writeUTF8String(buf, securityLevelSignpost.name());
-		buf.writeFloat(villageWaystonePropability); 
-	    buf.writeInt(villageMinSignposts); 
-	    buf.writeInt(villageMaxSignposts); 
+		buf.writeBoolean(disableVillageGeneration);
+		buf.writeInt(villageMaxSignposts);
+		buf.writeInt(villageSignpostsWeight);
+		buf.writeInt(villageWaystonesWeight);
 	    buf.writeBoolean(onlyVillageTargets);
 	}
 
@@ -91,9 +94,10 @@ public class InitPlayerResponseMessage implements IMessage{
 		waysRec = RecipeCost.valueOf(ByteBufUtils.readUTF8String(buf));
 		securityLevelWaystone = SecurityLevel.valueOf(ByteBufUtils.readUTF8String(buf));
 		securityLevelSignpost = SecurityLevel.valueOf(ByteBufUtils.readUTF8String(buf));
-		villageWaystonePropability = buf.readFloat(); 
-	    villageMinSignposts = buf.readInt(); 
-	    villageMaxSignposts = buf.readInt(); 
+		disableVillageGeneration = buf.readBoolean();
+		villageMaxSignposts = buf.readInt();
+		villageSignpostsWeight = buf.readInt();
+		villageWaystonesWeight = buf.readInt(); 
 	    onlyVillageTargets = buf.readBoolean();
 	}
 

@@ -1,5 +1,8 @@
 package gollorum.signpost.blocks.tiles;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import gollorum.signpost.SPEventHandler;
 import gollorum.signpost.blocks.PostPost;
 import gollorum.signpost.blocks.PostPost.Hit;
@@ -25,6 +28,7 @@ import net.minecraft.util.ResourceLocation;
 public class PostPostTile extends SuperPostPostTile {
 
 	public PostType type = null;
+	private boolean isLoading = false; 
 
 	@Deprecated
 	public DoubleBaseInfo bases = null;
@@ -125,6 +129,7 @@ public class PostPostTile extends SuperPostPostTile {
 
 	@Override
 	public void load(NBTTagCompound tagCompound) {
+	    isLoading = true;
 		final String base1 = tagCompound.getString("base1");
 		final String base2 = tagCompound.getString("base2");
 
@@ -189,12 +194,17 @@ public class PostPostTile extends SuperPostPostTile {
 						bases.paintObject = null;
 						bases.awaitingPaint = false;
 						break;
-				}
-				NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(self, bases));
+					}
+					NetworkHandler.netWrap.sendToAll(new SendPostBasesMessage(self, bases));
+					isLoading = false;
 					return true;
 				}
 			}
 		});
+	}
+    
+	public boolean isLoading() {
+		return isLoading;
 	}
 
 	@Override
@@ -256,5 +266,18 @@ public class PostPostTile extends SuperPostPostTile {
 	@Override
 	public String toString(){
 		return getBases()+" at "+toPos();
+	}
+
+	@Override
+	public List<Sign> getEmptySigns() {
+		List<Sign> ret = new LinkedList<Sign>();
+		DoubleBaseInfo bases = getBases();
+		if (bases.sign1 == null || !bases.sign1.isValid()) {
+			ret.add(bases.sign1);
+		}
+		if (bases.sign2 == null || !bases.sign2.isValid()) {
+			ret.add(bases.sign2);
+		}
+		return ret;
 	}
 }

@@ -32,9 +32,10 @@ public class ConfigHandler {
 	private static SecurityLevel securityLevelSignpost;
 	private static boolean disableDiscovery;
 
-	private static float villageWaystonePropability;
-	private static int villageMinSignposts;
+	private static boolean disableVillageGeneration;
+	private static int villageWaystonesWeight;
 	private static int villageMaxSignposts;
+	private static int villageSignpostsWeight;
 	private static boolean onlyVillageTargets; 
 	
 	public enum SecurityLevel{
@@ -96,16 +97,16 @@ public class ConfigHandler {
 		String category = "WorldGen";
 		config.addCustomCategoryComment(category, "World generation settings");
 
-		villageWaystonePropability = config.getFloat("villagePropability", category, 0.5f, 0, 1,
-				"Defines the propability of signposts spawning in villages (0 = 0%, 1 = 100%)");
-		villageMaxSignposts = config.getInt("villageMaxSignposts", category, 1, 0, Integer.MAX_VALUE,
-				"The maximum count of signposts spawning in villages");
-		villageMinSignposts = config.getInt("villageMinSignposts", category, 1, 0, Integer.MAX_VALUE,
-				"The minimum count of signposts spawning in villages");
-		onlyVillageTargets = config.getBoolean("onlyVillageDestinations", category, true,
-				"Defines wether signposts in villages only point to other villages");
+		disableVillageGeneration = config.getBoolean("disableVillageGeneration", category, false, "Disables the generation of signposts and waystones in villages"); 
+	    villageMaxSignposts = config.getInt("villageMaxSignposts", category, 1, 0, Integer.MAX_VALUE, "The maximum count of signposts spawning in villages"); 
+	    villageSignpostsWeight = config.getInt("villageSignpostsWeight", category, 20, 0, Integer.MAX_VALUE, "Defines the village component weight of signposts"); 
+	    villageWaystonesWeight = config.getInt("villageWaystoneWeight", category, 20, 0, Integer.MAX_VALUE, "Defines the village component weight of waystones"); 
+	    onlyVillageTargets = config.getBoolean("onlyVillageDestinations", category, true, "Defines wether signposts in villages only point to other villages");
 
-		ClientConfigStorage.INSTANCE.setVillageWaystonePropability(villageWaystonePropability);
+	    ClientConfigStorage.INSTANCE.setDisableVillageGeneration(disableVillageGeneration); 
+	    ClientConfigStorage.INSTANCE.setVillageMaxSignposts(villageMaxSignposts); 
+	    ClientConfigStorage.INSTANCE.setVillageSignpostsWeight(villageSignpostsWeight); 
+	    ClientConfigStorage.INSTANCE.setVillageWaystonesWeight(villageWaystonesWeight);
 		ClientConfigStorage.INSTANCE.setOnlyVillageTargets(onlyVillageTargets);
 	}
 
@@ -232,18 +233,23 @@ public class ConfigHandler {
 	}
 
 	@Deprecated
-	public static float getVillageWaystonePropability() {
-		return villageWaystonePropability;
-	}
-
-	@Deprecated
-	public static int getVillageMinSignposts() {
-		return villageMinSignposts;
+	public static boolean isDisableVillageGeneration() { 
+	    return disableVillageGeneration;
 	}
 
 	@Deprecated
 	public static int getVillageMaxSignposts() {
 		return villageMaxSignposts;
+	}
+
+	@Deprecated
+	public static int getVillageSignpostsWeight() {
+		return villageSignpostsWeight;
+	}
+
+	@Deprecated
+	public static int getVillageWaystonesWeight() {
+		return villageWaystonesWeight;
 	}
 
 	@Deprecated

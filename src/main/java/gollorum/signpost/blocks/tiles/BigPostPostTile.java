@@ -1,5 +1,8 @@
 package gollorum.signpost.blocks.tiles;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import gollorum.signpost.SPEventHandler;
 import gollorum.signpost.blocks.BigPostPost;
 import gollorum.signpost.blocks.BigPostPost.BigHit;
@@ -26,6 +29,7 @@ public class BigPostPostTile extends SuperPostPostTile {
 
 	public BigPostType type = null;
 	public static final int DESCRIPTIONLENGTH = 4;
+	private boolean isLoading = false;
 
 	@Deprecated
 	public BigBaseInfo bases = null;
@@ -89,6 +93,7 @@ public class BigPostPostTile extends SuperPostPostTile {
 
 	@Override
 	public void save(NBTTagCompound tagCompound) {
+		isLoading = true;
 		BigBaseInfo bases = getBases();
 		tagCompound.setString("base", ""+bases.sign.base);
 		tagCompound.setInteger("rot", bases.sign.rotation);
@@ -159,11 +164,16 @@ public class BigPostPostTile extends SuperPostPostTile {
 							bases.awaitingPaint = false;
 							break;
 					}
+					isLoading = false;
 					NetworkHandler.netWrap.sendToAll(new SendBigPostBasesMessage(self, bases));
 					return true;
 				}
 			}
 		});
+	}
+
+	public boolean isLoading() {
+		return isLoading;
 	}
 
 	@Override
@@ -220,5 +230,15 @@ public class BigPostPostTile extends SuperPostPostTile {
 	@Override
 	public String toString(){
 		return getBases()+" at "+toPos();
+	}
+    
+	@Override
+	public List<Sign> getEmptySigns() {
+		List<Sign> ret = new LinkedList<Sign>();
+		BigBaseInfo bases = getBases();
+		if (bases.sign == null && !bases.sign.isValid()) {
+			ret.add(bases.sign);
+		}
+		return ret;
 	}
 }
