@@ -80,11 +80,11 @@ public class VillageComponentSignpost extends StructureVillagePieces.Village{
 			case NORTH:
 				return 0;
 			case EAST:
-				return 0.5*Math.PI;
+				return 1.5*Math.PI;
 			case SOUTH:
 				return Math.PI;
 			case WEST:
-				return 1.5*Math.PI;
+				return 0.5*Math.PI;
 			default:
 				return 0;
 		}

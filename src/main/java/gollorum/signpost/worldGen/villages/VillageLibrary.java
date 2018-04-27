@@ -91,7 +91,6 @@ public class VillageLibrary {
 		NBTTagCompound compound = new NBTTagCompound();
 		compound.setInteger("PostCount", villagePosts.size());
 		int i=0;
-		System.out.println("Saving "+villagePosts.size()+" signs");
 		for(Entry<MyBlockPos, Set<VillagePost>> now: villagePosts.entrySet()){
 			compound.setTag("Posts"+(i++), savePostCollection(now.getKey(), now.getValue()));
 		}
