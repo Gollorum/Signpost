@@ -1,5 +1,6 @@
 package gollorum.signpost;
 
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.LinkedList;
 
@@ -89,5 +90,9 @@ public class CommonProxy {
 			}
 		}
 		return ret;
+	}
+	
+	public InputStream getResourceInputStream(String location){
+		return getClass().getResourceAsStream(location);
 	}
 }

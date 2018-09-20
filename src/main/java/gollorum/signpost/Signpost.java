@@ -66,7 +66,7 @@ public class Signpost{
 		configFolder = new File(event.getModConfigurationDirectory() + "/" + MODID);
 		configFolder.mkdirs();
 		configFile = new File(configFolder.getPath(), MODID + ".cfg");
-		villageNamesFile = new File(configFolder.getPath(), "villageNames.txt");   
+		villageNamesFile = new File(configFolder.getPath(), "villagenames.txt");   
 		ConfigHandler.init(configFile);
 		NameLibrary.init(villageNamesFile); 
 		proxy.preInit();

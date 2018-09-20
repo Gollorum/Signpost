@@ -1,10 +1,13 @@
 package gollorum.signpost;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.LinkedList;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.client.model.obj.OBJLoader;
 import net.minecraftforge.fml.client.FMLClientHandler;
@@ -57,5 +60,15 @@ public class ClientProxy extends CommonProxy{
 		LinkedList<EntityPlayer> ret = new LinkedList();
 		ret.add(FMLClientHandler.instance().getClientPlayerEntity());
 		return ret;
+	}
+
+	public InputStream getResourceInputStream(String location){
+		try {
+			InputStream ret = FMLClientHandler.instance().getClient().getResourceManager().getResource(new ResourceLocation(location)).getInputStream();
+			if(ret != null){
+				return ret;
+			}
+		} catch (IOException e) {}
+		return super.getResourceInputStream(location);
 	}
 }

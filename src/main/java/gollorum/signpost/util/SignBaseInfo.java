@@ -22,13 +22,13 @@ public abstract class SignBaseInfo implements Paintable {
 
 	@Override
 	public ResourceLocation getDefaultBiomeTexture(Biome biome) {
-		if(biome.getBiomeName().contains("Plains")){
+		if(biome.getRegistryName().getResourcePath().contains("plains")){
 			return PostPost.PostType.OAK.resLocMain;
-		}else if(biome.getBiomeName().contains("Desert")){
+		}else if(biome.getRegistryName().getResourcePath().contains("desert")){
 			return new ResourceLocation("textures/blocks/cobblestone.png");
-		}else if(biome.getBiomeName().contains("Taiga")){
+		}else if(biome.getRegistryName().getResourcePath().contains("taiga")){
 			return PostPost.PostType.SPRUCE.resLocMain;
-		}else if(biome.getBiomeName().contains("Savanna")){
+		}else if(biome.getRegistryName().getResourcePath().contains("savanna")){
 			return PostPost.PostType.ACACIA.resLocMain;
 		}else{
 			return PostPost.PostType.OAK.resLocMain;

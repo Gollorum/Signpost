@@ -1,7 +1,6 @@
 package gollorum.signpost.worldGen.villages;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,8 +12,11 @@ import java.util.Random;
 
 import org.apache.commons.io.IOUtils;
 
+import gollorum.signpost.ClientProxy;
+import gollorum.signpost.Signpost;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.util.BaseInfo;
+import net.minecraft.util.ResourceLocation;
 
 public class NameLibrary {
 	
@@ -48,7 +50,11 @@ public class NameLibrary {
 	}
 
 	private void copyFile(File file) throws IOException {
-		InputStream in = getClass().getResourceAsStream("villageNames.txt");
+		InputStream in;
+		in = Signpost.proxy.getResourceInputStream(Signpost.MODID+":worldgen/villagenames.txt");
+		if(in == null){
+			in = Signpost.proxy.getResourceInputStream("/assets/signpost/worldgen/villagenames.txt");
+		}
 		OutputStream out = new FileOutputStream(file);
 		IOUtils.copy(in, out);
 		in.close();

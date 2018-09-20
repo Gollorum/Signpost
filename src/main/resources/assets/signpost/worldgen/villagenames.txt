@@ -15,9 +15,6 @@ Flusholla
 Ulrabar
 Lanrubar
 Queshkrak
-Dunkelberg
-Zwergenflucht
-Feuerdorf
 Bompa
 Kop
 Hapot
@@ -41,10 +38,3 @@ Blussal
 Ellosa
 Swull
 Wloss
-Schmokers Reich
-Schmachtenberg
-Weissbrunnen
-Phunks Lustgrotte
-Hessische Villa
-Flur
-Pan Doriah

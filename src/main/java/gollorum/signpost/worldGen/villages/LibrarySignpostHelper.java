@@ -41,6 +41,9 @@ class LibrarySignpostHelper extends LibraryHelper {
 		if(!(post == null || biome == null)){
 			post.setTextureToBiomeDefault(biome);
 		}
+		if(biome!=null){
+			signs.forEach((sign)->sign.setTextureToBiomeDefault(biome));
+		}
 		List<MyBlockPos> closestWaystones = getClosestWaystones(signs.size());
 		for(int i=0; i<signs.size() && i<closestWaystones.size(); i++){
 			if(signs.get(i).base != null){
@@ -51,9 +54,6 @@ class LibrarySignpostHelper extends LibraryHelper {
 			signs.get(i).point = true;
 			if(angleTooLarge(calcRot(signpostLocation, closestWaystones.get(i)), optimalRot)){
 				signs.get(i).flip = true;
-			}
-			if(biome != null){
-				signs.get(i).setTextureToBiomeDefault(biome);
 			}
 		}
 		SuperPostPost.updateServer(signpostLocation);

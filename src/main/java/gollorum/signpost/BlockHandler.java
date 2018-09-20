@@ -92,7 +92,6 @@ public class BlockHandler {
 	}
 	
 	private void registerBlock(Block block, IForgeRegistry<Block> registry){
-		System.out.println("Registering "+block.getRegistryName());
 		registry.register(block);
 	}
 
@@ -114,15 +113,7 @@ public class BlockHandler {
 	
 	private void waystoneRecipe(){
 		ForgeRegistry<IRecipe> registry = ((ForgeRegistry<IRecipe>)ForgeRegistries.RECIPES);
-//		boolean unfreezed = false;
-//		if(registry.isLocked()){
-//			registry.unfreeze();
-//			unfreezed = true;
-//		}
 		registry.remove(new ResourceLocation("signpost:blockbaserecipe"));
-//		if(unfreezed){
-//			registry.freeze();
-//		}
 		if(ClientConfigStorage.INSTANCE.getSecurityLevelWaystone().equals(ConfigHandler.SecurityLevel.ALL)&&!ClientConfigStorage.INSTANCE.deactivateTeleportation()){
 			switch(ClientConfigStorage.INSTANCE.getWaysRec()){
 				case EXPENSIVE:
