@@ -1,9 +1,10 @@
 package gollorum.signpost.util;
 
 import gollorum.signpost.Signpost;
+import gollorum.signpost.util.code.MinecraftDependent;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.biome.Biome;
 
+@MinecraftDependent
 public interface Paintable {
 
 	public static final ResourceLocation SIGN_PAINT = new ResourceLocation(Signpost.MODID, "textures/blocks/sign_paint.png");
@@ -12,7 +13,7 @@ public interface Paintable {
 
 	public ResourceLocation getTexture();
 	public void setTexture(ResourceLocation texture);
-	public ResourceLocation getDefaultBiomeTexture(Biome biome);
-	public void setTextureToBiomeDefault(Biome biome);
+	public ResourceLocation getDefaultBiomeTexture(BiomeContainer biome);
+	public void setTextureToBiomeDefault(BiomeContainer biome);
 	
 }

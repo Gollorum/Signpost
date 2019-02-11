@@ -8,13 +8,15 @@ import java.util.Map;
 import gollorum.signpost.blocks.SuperPostPost;
 import gollorum.signpost.management.ClientConfigStorage;
 import gollorum.signpost.management.PostHandler;
+import gollorum.signpost.util.BiomeContainer;
 import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.util.MyBlockPosSet;
 import gollorum.signpost.util.Paintable;
 import gollorum.signpost.util.Sign;
+import gollorum.signpost.util.code.MinecraftIndependent;
 import gollorum.signpost.util.collections.Lurchpaerchensauna;
-import net.minecraft.world.biome.Biome;
 
+@MinecraftIndependent
 class LibrarySignpostHelper extends LibraryHelper {
 	private static final Map<MyBlockPos, MyBlockPosSet> takenWaystones = new Lurchpaerchensauna<MyBlockPos, MyBlockPosSet>();
 	
@@ -33,7 +35,7 @@ class LibrarySignpostHelper extends LibraryHelper {
 	void enscribeNewSign(double optimalRot) {
 		List<Sign> signs = PostHandler.getSigns(signpostLocation);
 		Paintable post = PostHandler.getPost(signpostLocation);
-		Biome biome = signpostLocation.getBiome();
+		BiomeContainer biome = signpostLocation.getBiome();
 		if(!(post == null || biome == null)){
 			post.setTextureToBiomeDefault(biome);
 		}

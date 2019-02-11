@@ -271,10 +271,10 @@ public class MyBlockPos{
 		return fromNewPos(newX, newY, newZ);
 	}
 
-	public Biome getBiome() {
+	public BiomeContainer getBiome() {
 		World world = getWorld();
 		if (world != null) {
-			return world.getBiome(toBlockPos());
+			return new BiomeContainer(world.getBiome(toBlockPos()));
 		} else {
 			return null;
 		}

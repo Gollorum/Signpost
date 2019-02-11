@@ -7,7 +7,6 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.biome.Biome;
 
 public class Sign implements Paintable{
 
@@ -93,21 +92,24 @@ public class Sign implements Paintable{
 	}
 
 	@Override
-	public ResourceLocation getDefaultBiomeTexture(Biome biome) {
-		if(biome.getRegistryName().getResourcePath().contains("plains")){
+	public ResourceLocation getDefaultBiomeTexture(BiomeContainer biome) {
+		if(biome == null || biome.getBiome() == null) {
 			return PostPost.PostType.OAK.texture;
-		}else if(biome.getRegistryName().getResourcePath().contains("desert")){
+		}
+		if(biome.getBiome().getRegistryName().getResourcePath().contains("plains")){
+			return PostPost.PostType.OAK.texture;
+		}else if(biome.getBiome().getRegistryName().getResourcePath().contains("desert")){
 			return new ResourceLocation("textures/blocks/sandstone_smooth.png");
-		}else if(biome.getRegistryName().getResourcePath().contains("taiga")){
+		}else if(biome.getBiome().getRegistryName().getResourcePath().contains("taiga")){
 			return PostPost.PostType.SPRUCE.texture;
-		}else if(biome.getRegistryName().getResourcePath().contains("savanna")){
+		}else if(biome.getBiome().getRegistryName().getResourcePath().contains("savanna")){
 			return PostPost.PostType.ACACIA.texture;
 		} else {
 			return PostPost.PostType.OAK.texture;
 		}
 	}
 
-	public void setTextureToBiomeDefault(Biome biome) {
+	public void setTextureToBiomeDefault(BiomeContainer biome) {
 		setTexture(getDefaultBiomeTexture(biome));
 	}
 }
