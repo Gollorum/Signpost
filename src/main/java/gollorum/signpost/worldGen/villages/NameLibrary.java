@@ -12,59 +12,76 @@ import java.util.Random;
 
 import org.apache.commons.io.IOUtils;
 
-import gollorum.signpost.ClientProxy;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.management.PostHandler;
-import gollorum.signpost.util.BaseInfo;
-import net.minecraft.util.ResourceLocation;
 
 public class NameLibrary {
 	
 	private static NameLibrary INSTANCE;
 	
+	private static final int MAX_TRIES = 50;
+	
 	public static NameLibrary getInstance(){
 		return INSTANCE;
 	}
+
+	private final List<String> first;
+	private final List<String> second;
+	private final List<String> third;
 	
-	private final List<String> possibleNames;
-	
-	public static void init(File file){
+	public static void init(String configFolder){
 		try{
-			INSTANCE = new NameLibrary(file);
+			INSTANCE = new NameLibrary(configFolder);
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 	}
 	
-	private NameLibrary(File file){
-		assureFileExists(file);
-		this.possibleNames = readPossibleNames(file);
+	private NameLibrary(String configFolder){
+		assureFileExists(configFolder, "first");
+		this.first = readNameParts(configFolder, "first");
+		assureFileExists(configFolder, "second");
+		this.second = readNameParts(configFolder, "second");
+		assureFileExists(configFolder, "third");
+		this.third = readNameParts(configFolder, "third");
+
+		for(int i=0; i<first.size(); i++) {
+			for(int j=0; j<second.size(); j++) {
+				for(int k=0; k<third.size(); k++) {
+					System.out.println(getName(i, j, k));
+				}
+			}
+		}
+	}
+	
+	private File getFile(String folder, String index) {
+		return new File(folder, "villagenames"+index+".txt");
 	}
 
-	private void assureFileExists(File file) {
+	private void assureFileExists(String configFolder, String index) {
 		try {
-			if(!file.exists()){
-				copyFile(file);
+			if(!getFile(configFolder, index).exists()){
+				copyFile(configFolder, index);
 			}
 		} catch (IOException e) {e.printStackTrace();}
 	}
 
-	private void copyFile(File file) throws IOException {
+	private void copyFile(String configFolder, String index) throws IOException {
 		InputStream in;
-		in = Signpost.proxy.getResourceInputStream(Signpost.MODID+":worldgen/villagenames.txt");
+		in = Signpost.proxy.getResourceInputStream(Signpost.MODID+":worldgen/villagenames"+index+".txt");
 		if(in == null){
-			in = Signpost.proxy.getResourceInputStream("/assets/signpost/worldgen/villagenames.txt");
+			in = Signpost.proxy.getResourceInputStream("/assets/signpost/worldgen/villagenames"+index+".txt");
 		}
-		OutputStream out = new FileOutputStream(file);
+		OutputStream out = new FileOutputStream(getFile(configFolder, index));
 		IOUtils.copy(in, out);
 		in.close();
 		out.close();
 	}
 
-	public List<String> readPossibleNames(File file) {
+	private List<String> readNameParts(String configFolder, String index) {
 		List<String> possibleNames = new LinkedList<String>();
 		try{
-			possibleNames.addAll(Files.readAllLines(file.toPath()));
+			possibleNames.addAll(Files.readAllLines(getFile(configFolder, index).toPath()));
 		}catch(IOException e){
 			e.printStackTrace();
 		}
@@ -72,24 +89,41 @@ public class NameLibrary {
 	}
 	
 	public boolean namesLeft(){
-		return !getPossibleNames().isEmpty();
+		for(int i=0; i<first.size(); i++) {
+			for(int j=0; j<second.size(); j++) {
+				for(int k=0; k<third.size(); k++) {
+					if(!PostHandler.getNativeWaystones().nameTaken(getName(i, j, k))) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
 	}
 	
-	public String getName(){
-		if(namesLeft()){
-			List<String> possibles = getPossibleNames();
-			return possibles.get(new Random().nextInt(possibles.size()));
-		}else{
-			return null;
+	public String getName(Random random){
+		for(int i=0; i<MAX_TRIES; i++) {
+			String name = getName(random.nextInt(first.size()),
+						random.nextInt(second.size()),
+						random.nextInt(third.size()));
+			if(!PostHandler.getNativeWaystones().nameTaken(name)){
+				return name;
+			}
 		}
+		return null;
 	}
 	
-	private List<String> getPossibleNames(){
-		LinkedList<String> possibles = new LinkedList<String>();
-		possibles.addAll(possibleNames);
-		for(BaseInfo now: PostHandler.getNativeWaystones()){
-			possibles.remove(now.getName());
+	private String getName(int i, int j, int k) {
+		String a = first.get(i);
+		String b = second.get(j);
+		String c = third.get(k);
+		if(a.endsWith(" ")) {
+			b = b.substring(0, 1).toUpperCase() + b.substring(1);
 		}
-		return possibles;
+		if(b.endsWith(" ")) {
+			c = c.substring(0, 1).toUpperCase() + c.substring(1);
+		}
+		return a+b+c;
 	}
+	
 }

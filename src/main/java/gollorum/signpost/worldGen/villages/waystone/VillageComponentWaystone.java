@@ -57,7 +57,7 @@ public class VillageComponentWaystone extends StructureVillagePieces.Village{
 		}else{
 			built = true;
 		}
-		final String name = NameLibrary.getInstance().getName();
+		final String name = NameLibrary.getInstance().getName(random);
 		if(name==null){
 			return true;
 		}
