@@ -1,5 +1,6 @@
 package gollorum.signpost;
 
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.LinkedList;
 
@@ -17,17 +18,18 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 
 public class CommonProxy {
-	
+
 	public BlockHandler blockHandler;
 	ItemHandler itemHandler = new ItemHandler();
-	
-	public CommonProxy(){
+
+	public CommonProxy() {
 		blockHandler = new BlockHandler();
 	}
-	
-	void preInit(){}
 
-	public void init(){
+	void preInit() {
+	}
+
+	public void init() {
 		registerBlocksAndItems();
 		registerHandlers();
 		registerVillageCreation();
@@ -50,8 +52,8 @@ public class CommonProxy {
 		itemHandler.registerItems();
 		registerRecipes();
 	}
-	
-	protected void registerTiles(){
+
+	protected void registerTiles() {
 		GameRegistry.registerTileEntity(BasePostTile.class, "SignpostBaseTile");
 		GameRegistry.registerTileEntity(PostPostTile.class, "SignpostPostTile");
 		GameRegistry.registerTileEntity(BigPostPostTile.class, "SignpostBigPostTile");
@@ -63,26 +65,30 @@ public class CommonProxy {
 		itemHandler.registerRecipes();
 	}
 
-	public World getWorld(MessageContext ctx){
+	public World getWorld(MessageContext ctx) {
 		return ctx.getServerHandler().playerEntity.worldObj;
 	}
 
-	public World getWorld(String worldName, int dim){
+	public World getWorld(String worldName, int dim) {
 		return FMLCommonHandler.instance().getMinecraftServerInstance().worldServerForDimension(dim);
 	}
-	
-	public World[] getWorlds(){
+
+	public World[] getWorlds() {
 		return FMLCommonHandler.instance().getMinecraftServerInstance().worldServers;
 	}
-	
-	public Collection<EntityPlayer> getAllPlayers(){
+
+	public Collection<EntityPlayer> getAllPlayers() {
 		LinkedList<EntityPlayer> ret = new LinkedList<EntityPlayer>();
-		for(Object now: FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager().playerEntityList){
-			if(now instanceof EntityPlayer){
-				ret.add((EntityPlayer) now); 
+		for (Object now : FMLCommonHandler.instance().getMinecraftServerInstance()
+				.getConfigurationManager().playerEntityList) {
+			if (now instanceof EntityPlayer) {
+				ret.add((EntityPlayer) now);
 			}
 		}
 		return ret;
 	}
-	
+
+	public InputStream getResourceInputStream(String location) {
+		return getClass().getResourceAsStream(location);
+	}
 }

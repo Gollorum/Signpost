@@ -4,17 +4,20 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import gollorum.signpost.blocks.SuperPostPost;
 import gollorum.signpost.management.ClientConfigStorage;
 import gollorum.signpost.management.PostHandler;
+import gollorum.signpost.util.BiomeContainer;
 import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.util.MyBlockPosSet;
 import gollorum.signpost.util.Paintable;
 import gollorum.signpost.util.Sign;
+import gollorum.signpost.util.code.MinecraftIndependent;
 import gollorum.signpost.util.collections.Lurchpaerchensauna;
-import net.minecraft.world.biome.BiomeGenBase;
 
+@MinecraftIndependent
 class LibrarySignpostHelper extends LibraryHelper {
 	private static final Map<MyBlockPos, MyBlockPosSet> takenWaystones = new Lurchpaerchensauna<MyBlockPos, MyBlockPosSet>();
 	
@@ -25,7 +28,7 @@ class LibrarySignpostHelper extends LibraryHelper {
 		super(villageLocation);
 		this.signpostLocation = signpostLocation;
 		this.villageWaystones = villageWaystones;
-		if(!takenWaystones.containsKey(villageLocation)){
+		if (!takenWaystones.containsKey(villageLocation)) {
 			takenWaystones.put(villageLocation, new MyBlockPosSet());
 		}
 	}
@@ -33,13 +36,20 @@ class LibrarySignpostHelper extends LibraryHelper {
 	void enscribeNewSign(double optimalRot) {
 		List<Sign> signs = PostHandler.getSigns(signpostLocation);
 		Paintable post = PostHandler.getPost(signpostLocation);
-		BiomeGenBase biome = signpostLocation.getBiome();
+		final BiomeContainer biome = signpostLocation.getBiome();
 		if(!(post == null || biome == null)){
 			post.setTextureToBiomeDefault(biome);
 		}
 		post = PostHandler.getPost(signpostLocation.getBelow());
 		if(!(post == null || biome == null)){
 			post.setTextureToBiomeDefault(biome);
+		}
+		if(biome!=null){
+			signs.forEach(new Consumer<Sign>() {
+				@Override public void accept(Sign sign) {
+					sign.setTextureToBiomeDefault(biome);
+				}
+			});
 		}
 		List<MyBlockPos> closestWaystones = getClosestWaystones(signs.size());
 		for(int i=0; i<signs.size() && i<closestWaystones.size(); i++){
@@ -51,9 +61,6 @@ class LibrarySignpostHelper extends LibraryHelper {
 			signs.get(i).point = true;
 			if(angleTooLarge(calcRot(signpostLocation, closestWaystones.get(i)), optimalRot)){
 				signs.get(i).flip = true;
-			}
-			if(biome != null){
-				signs.get(i).setTextureToBiomeDefault(biome);
 			}
 		}
 		SuperPostPost.updateServer(signpostLocation);

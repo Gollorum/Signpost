@@ -11,7 +11,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.BiomeGenBase;
 
 public class MyBlockPos {
 	
@@ -227,10 +226,10 @@ public class MyBlockPos {
 		return fromNewPos(newX, newY, newZ);
 	}
 
-	public BiomeGenBase getBiome(){
+	public BiomeContainer getBiome(){
 		World world = getWorld();
 		if(world != null){
-			return world.getBiomeGenForCoords(x, z);
+			return new BiomeContainer(world.getBiomeGenForCoords(x, z));
 		}else{
 			return null;
 		}

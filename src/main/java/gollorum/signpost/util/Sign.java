@@ -7,7 +7,6 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.biome.BiomeGenBase;
 
 public class Sign implements Paintable {
 
@@ -93,21 +92,24 @@ public class Sign implements Paintable {
 	}
 
 	@Override
-	public ResourceLocation getDefaultBiomeTexture(BiomeGenBase biome) {
-		if(biome.biomeName.contains("Plains")){
+	public ResourceLocation getDefaultBiomeTexture(BiomeContainer biome) {
+		if(biome == null || biome.getBiome() == null) {
 			return PostPost.PostType.OAK.texture;
-		}else if(biome.biomeName.contains("Desert")){
+		}
+		if(biome.getBiome().biomeName.contains("Plains")){
+			return PostPost.PostType.OAK.texture;
+		}else if(biome.getBiome().biomeName.contains("Desert")){
 			return new ResourceLocation("textures/blocks/sandstone_smooth.png");
-		}else if(biome.biomeName.contains("Taiga")){
+		}else if(biome.getBiome().biomeName.contains("Taiga")){
 			return PostPost.PostType.SPRUCE.texture;
-		}else if(biome.biomeName.contains("Savanna")){
+		}else if(biome.getBiome().biomeName.contains("Savanna")){
 			return PostPost.PostType.ACACIA.texture;
 		}else{
 			return PostPost.PostType.OAK.texture;
 		}
 	}
 	
-	public void setTextureToBiomeDefault(BiomeGenBase biome){
+	public void setTextureToBiomeDefault(BiomeContainer biome){
 		setTexture(getDefaultBiomeTexture(biome));
 	}
 }

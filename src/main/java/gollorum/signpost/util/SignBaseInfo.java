@@ -2,7 +2,6 @@ package gollorum.signpost.util;
 
 import gollorum.signpost.blocks.PostPost;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.biome.BiomeGenBase;
 
 public abstract class SignBaseInfo implements Paintable {
 
@@ -21,21 +20,24 @@ public abstract class SignBaseInfo implements Paintable {
 	}
 
 	@Override
-	public ResourceLocation getDefaultBiomeTexture(BiomeGenBase biome) {
-		if(biome.biomeName.contains("Plains")){
+	public ResourceLocation getDefaultBiomeTexture(BiomeContainer biome) {
+		if(biome == null || biome.getBiome() == null) {
 			return PostPost.PostType.OAK.resLocMain;
-		}else if(biome.biomeName.contains("Desert")){
+		}
+		if(biome.getBiome().biomeName.contains("Plains")){
+			return PostPost.PostType.OAK.resLocMain;
+		}else if(biome.getBiome().biomeName.contains("Desert")){
 			return new ResourceLocation("textures/blocks/cobblestone.png");
-		}else if(biome.biomeName.contains("Taiga")){
+		}else if(biome.getBiome().biomeName.contains("Taiga")){
 			return PostPost.PostType.SPRUCE.resLocMain;
-		}else if(biome.biomeName.contains("Savanna")){
+		}else if(biome.getBiome().biomeName.contains("Savanna")){
 			return PostPost.PostType.ACACIA.resLocMain;
 		}else{
 			return PostPost.PostType.OAK.resLocMain;
 		}
 	}
 	
-	public void setTextureToBiomeDefault(BiomeGenBase biome){
+	public void setTextureToBiomeDefault(BiomeContainer biome){
 		setTexture(getDefaultBiomeTexture(biome));
 	}
 }

@@ -7,16 +7,17 @@ import javax.annotation.Nullable;
 
 import gollorum.signpost.Signpost;
 import gollorum.signpost.util.MyBlockPos;
+import gollorum.signpost.util.code.MinecraftDependent;
 import gollorum.signpost.worldGen.villages.GenerateStructureHelper;
 import gollorum.signpost.worldGen.villages.VillageLibrary;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 import net.minecraft.world.gen.structure.StructureComponent;
 import net.minecraft.world.gen.structure.StructureVillagePieces;
 
+@MinecraftDependent
 public class VillageComponentSignpost extends StructureVillagePieces.Village{
 	
 	private boolean built = false;

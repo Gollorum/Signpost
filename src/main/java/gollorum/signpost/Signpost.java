@@ -54,7 +54,6 @@ public class Signpost{
 	public static final Logger LOG = LogManager.getLogger(MODID);
 
 	public static File configFile;
-	public static File villageNamesFile;
 	public static File configFolder;
 	
 	@SidedProxy(clientSide = "gollorum.signpost.ClientProxy", serverSide = "gollorum.signpost.CommonProxy")
@@ -66,9 +65,8 @@ public class Signpost{
 		configFolder = new File(event.getModConfigurationDirectory() + "/" + MODID);
 		configFolder.mkdirs();
 		configFile = new File(configFolder.getPath(), MODID + ".cfg");
-		villageNamesFile = new File(configFolder.getPath(), "villageNames.txt");
 		ConfigHandler.init(configFile);
-		NameLibrary.init(villageNamesFile);
+		NameLibrary.init(configFolder.getPath());
 		proxy.preInit();
         
 		proxy.init();

@@ -12,7 +12,7 @@ public interface Paintable {
 
 	public ResourceLocation getTexture();
 	public void setTexture(ResourceLocation texture);
-	public ResourceLocation getDefaultBiomeTexture(BiomeGenBase biome);
-	public void setTextureToBiomeDefault(BiomeGenBase biome);
+	public ResourceLocation getDefaultBiomeTexture(BiomeContainer biome);
+	public void setTextureToBiomeDefault(BiomeContainer biome);
 	
 }
