@@ -107,7 +107,7 @@ public class WaystonesModHandler implements ModHandler {
 						stream.close();
 						Set<BaseInfo> bases = getNotGlobalByTagCompound(tagCompound);
 						ret.addAll(bases);
-					}catch(Exception e){e.printStackTrace();}
+					}catch(Exception e){}
 				}
 			}
 			return ret;
