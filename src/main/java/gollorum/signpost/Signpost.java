@@ -10,6 +10,7 @@ import gollorum.signpost.commands.ConfirmTeleportCommand;
 import gollorum.signpost.commands.DiscoverWaystone;
 import gollorum.signpost.commands.GetSignpostCount;
 import gollorum.signpost.commands.GetWaystoneCount;
+import gollorum.signpost.commands.ListAllWaystones;
 import gollorum.signpost.commands.SetSignpostCount;
 import gollorum.signpost.commands.SetWaystoneCount;
 import gollorum.signpost.gui.SignGuiHandler;
@@ -94,13 +95,17 @@ public class Signpost {
 
 	@EventHandler
 	public void serverStarting(FMLServerStartingEvent e) {
-		ServerCommandManager manager = (ServerCommandManager) e.getServer().getCommandManager();
+		registerCommands((ServerCommandManager) e.getServer().getCommandManager());
+		ConfigHandler.init(configFile);
+	}
+	
+	private void registerCommands(ServerCommandManager manager) {
 		manager.registerCommand(new ConfirmTeleportCommand());
 		manager.registerCommand(new GetWaystoneCount());
 		manager.registerCommand(new GetSignpostCount());
 		manager.registerCommand(new SetWaystoneCount());
 		manager.registerCommand(new SetSignpostCount());
 		manager.registerCommand(new DiscoverWaystone());
-		ConfigHandler.init(configFile);
+		manager.registerCommand(new ListAllWaystones());
 	}
 }
