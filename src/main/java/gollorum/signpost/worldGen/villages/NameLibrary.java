@@ -14,7 +14,9 @@ import org.apache.commons.io.IOUtils;
 
 import gollorum.signpost.Signpost;
 import gollorum.signpost.management.PostHandler;
+import gollorum.signpost.util.code.MinecraftIndependent;
 
+@MinecraftIndependent
 public class NameLibrary {
 	
 	private static NameLibrary INSTANCE;
@@ -44,14 +46,6 @@ public class NameLibrary {
 		this.second = readNameParts(configFolder, "second");
 		assureFileExists(configFolder, "third");
 		this.third = readNameParts(configFolder, "third");
-
-		for(int i=0; i<first.size(); i++) {
-			for(int j=0; j<second.size(); j++) {
-				for(int k=0; k<third.size(); k++) {
-					System.out.println(getName(i, j, k));
-				}
-			}
-		}
 	}
 	
 	private File getFile(String folder, String index) {

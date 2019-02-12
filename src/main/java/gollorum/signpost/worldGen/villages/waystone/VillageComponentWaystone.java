@@ -9,6 +9,7 @@ import gollorum.signpost.BlockHandler;
 import gollorum.signpost.SPEventHandler;
 import gollorum.signpost.blocks.BasePost;
 import gollorum.signpost.blocks.WaystoneContainer;
+import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.worldGen.villages.GenerateStructureHelper;
@@ -75,7 +76,11 @@ public class VillageComponentWaystone extends StructureVillagePieces.Village{
 				public boolean run() {
 					TileEntity tile = world.getTileEntity(finalPos);
 					if(tile instanceof WaystoneContainer){
-						setupWaystone(name, world, finalPos, (WaystoneContainer) tile);
+						if(PostHandler.getNativeWaystones().nameTaken(name)) {
+							setupWaystone(NameLibrary.getInstance().getName(random), world, finalPos, (WaystoneContainer) tile);
+						} else {
+							setupWaystone(name, world, finalPos, (WaystoneContainer) tile);
+						}
 						return true;
 					}else{
 						return false;
