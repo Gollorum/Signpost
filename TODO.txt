@@ -1,4 +1,3 @@
--Choose proper village names
 -waystones with rendered name?
 -BUG: github rotation reset?
 -cauldron/thermos permissions support?
