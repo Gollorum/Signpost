@@ -12,7 +12,6 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 
 public class MyBlockPos{
@@ -271,10 +270,10 @@ public class MyBlockPos{
 		return fromNewPos(newX, newY, newZ);
 	}
 
-	public Biome getBiome() { 
+	public BiomeContainer getBiome() { 
 	    World world = getWorld(); 
 	    if (world != null) { 
-	      return world.getBiome(toBlockPos()); 
+	      return new BiomeContainer(world.getBiome(toBlockPos())); 
 	    } else { 
 	      return null; 
 	    } 

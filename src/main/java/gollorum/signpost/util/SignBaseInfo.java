@@ -21,21 +21,24 @@ public abstract class SignBaseInfo implements Paintable {
 	}
 
 	@Override
-	public ResourceLocation getDefaultBiomeTexture(Biome biome) {
-		if(biome.getBiomeName().contains("Plains")){
+	public ResourceLocation getDefaultBiomeTexture(BiomeContainer biome) {
+		if(biome == null || biome.getBiome() == null) {
 			return PostPost.PostType.OAK.resLocMain;
-		}else if(biome.getBiomeName().contains("Desert")){
+		}
+		if(biome.getBiome().getBiomeName().contains("Plains")){
+			return PostPost.PostType.OAK.resLocMain;
+		}else if(biome.getBiome().getBiomeName().contains("Desert")){
 			return new ResourceLocation("textures/blocks/cobblestone.png");
-		}else if(biome.getBiomeName().contains("Taiga")){
+		}else if(biome.getBiome().getBiomeName().contains("Taiga")){
 			return PostPost.PostType.SPRUCE.resLocMain;
-		}else if(biome.getBiomeName().contains("Savanna")){
+		}else if(biome.getBiome().getBiomeName().contains("Savanna")){
 			return PostPost.PostType.ACACIA.resLocMain;
 		}else{
 			return PostPost.PostType.OAK.resLocMain;
 		}
 	}
 	
-	public void setTextureToBiomeDefault(Biome biome){
+	public void setTextureToBiomeDefault(BiomeContainer biome){
 		setTexture(getDefaultBiomeTexture(biome));
 	}
 }

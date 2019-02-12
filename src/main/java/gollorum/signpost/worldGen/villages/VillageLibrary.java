@@ -7,11 +7,13 @@ import java.util.Set;
 import gollorum.signpost.SPEventHandler;
 import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.MyBlockPos;
+import gollorum.signpost.util.code.MinecraftDependent;
 import gollorum.signpost.util.collections.Lurchpaerchensauna;
 import gollorum.signpost.util.collections.Lurchsauna;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 
+@MinecraftDependent
 public class VillageLibrary {
 
 	private static VillageLibrary INSTANCE = new VillageLibrary();

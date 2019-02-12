@@ -102,7 +102,7 @@ public class ConfigHandler {
 		villageMaxSignposts = config.getInt("villageMaxSignposts", category, 1, 0, Integer.MAX_VALUE, "The maximum count of signposts spawning in villages");
 		villageSignpostsWeight = config.getInt("villageSignpostsWeight", category, 20, 0, Integer.MAX_VALUE, "Defines the village component weight of signposts");
 		villageWaystonesWeight = config.getInt("villageWaystoneWeight", category, 20, 0, Integer.MAX_VALUE, "Defines the village component weight of waystones");
-		onlyVillageTargets = config.getBoolean("onlyVillageDestinations", category, true, "Defines wether signposts in villages only point to other villages"); 
+		onlyVillageTargets = config.getBoolean("onlyVillageDestinations", category, true, "Defines wether signposts in villages can be generated with waystones placed by players as destinations");
 
 		ClientConfigStorage.INSTANCE.setDisableVillageGeneration(disableVillageGeneration);
 		ClientConfigStorage.INSTANCE.setVillageMaxSignposts(villageMaxSignposts);

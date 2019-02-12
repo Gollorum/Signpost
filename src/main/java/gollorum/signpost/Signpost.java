@@ -50,8 +50,7 @@ public class Signpost{
 	public static final int GuiPostBrushID = 3;
 	public static final int GuiPostRotationID = 4;
 
-	public static File configFile; 
-	public static File villageNamesFile;
+	public static File configFile;
 	public static File configFolder;  
 	
 	public static NBTTagCompound saveFile;
@@ -66,9 +65,8 @@ public class Signpost{
 		configFolder = new File(event.getModConfigurationDirectory() + "/" + MODID);
 		configFolder.mkdirs();
 		configFile = new File(configFolder.getPath(), MODID + ".cfg");
-		villageNamesFile = new File(configFolder.getPath(), "villageNames.txt");  
 		ConfigHandler.init(configFile);
-		NameLibrary.init(villageNamesFile);
+		NameLibrary.init(configFolder.getPath());
 		proxy.preInit();
         
 	}
