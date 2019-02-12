@@ -1,5 +1,6 @@
 package gollorum.signpost;
 
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.LinkedList;
 
@@ -8,7 +9,6 @@ import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.blocks.tiles.PostPostTile;
 import gollorum.signpost.management.PlayerStorage;
 import gollorum.signpost.management.PlayerStore;
-import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.worldGen.villages.VillageHandler;
 import net.minecraft.entity.player.EntityPlayer;
@@ -22,19 +22,20 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 public class CommonProxy {
 
 	public BlockHandler blockHandler;
-	
-	public CommonProxy(){
+
+	public CommonProxy() {
 		blockHandler = new BlockHandler();
 	}
-	
-	void preInit(){}
-	
-	void init(){
+
+	void preInit() {
+	}
+
+	void init() {
 		registerBlocksAndItems();
 		registerCapabilities();
 		registerTiles();
 		registerHandlers();
-	    registerVillageCreation(); 
+		registerVillageCreation();
 	}
 
 	private void registerVillageCreation() {
@@ -55,21 +56,21 @@ public class CommonProxy {
 		ItemHandler.register();
 	}
 
-	protected void registerTiles(){
+	protected void registerTiles() {
 		GameRegistry.registerTileEntity(BasePostTile.class, "SignpostBaseTile");
 		GameRegistry.registerTileEntity(PostPostTile.class, "SignpostPostTile");
 		GameRegistry.registerTileEntity(BigPostPostTile.class, "SignpostBigPostTile");
 	}
-	
+
 	protected void registerCapabilities() {
 		CapabilityManager.INSTANCE.register(PlayerStore.class, new PlayerStorage(), PlayerStore.class);
 	}
 
-	public World getWorld(MessageContext ctx){
+	public World getWorld(MessageContext ctx) {
 		return ctx.getServerHandler().playerEntity.getEntityWorld();
 	}
-	
-	public World getWorld(String worldName, int dim){
+
+	public World getWorld(String worldName, int dim) {
 		return FMLCommonHandler.instance().getMinecraftServerInstance().worldServerForDimension(dim);
 	}
 
@@ -77,13 +78,17 @@ public class CommonProxy {
 		return FMLCommonHandler.instance().getMinecraftServerInstance().worldServers;
 	}
 
-	public Collection<EntityPlayer> getAllPlayers(){
+	public Collection<EntityPlayer> getAllPlayers() {
 		LinkedList<EntityPlayer> ret = new LinkedList<EntityPlayer>();
-		for(Object now: FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerList()){
-			if(now instanceof EntityPlayer){
+		for (Object now : FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerList()) {
+			if (now instanceof EntityPlayer) {
 				ret.add((EntityPlayer) now);
 			}
 		}
 		return ret;
+	}
+
+	public InputStream getResourceInputStream(String location) {
+		return getClass().getResourceAsStream(location);
 	}
 }

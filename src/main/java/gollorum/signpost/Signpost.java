@@ -37,7 +37,7 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 
 @Mod(modid = Signpost.MODID, version = Signpost.VERSION, name = "SignPost")
-public class Signpost{
+public class Signpost {
 
 	@Instance
 	public static Signpost instance;
@@ -50,13 +50,12 @@ public class Signpost{
 	public static final int GuiPostBrushID = 3;
 	public static final int GuiPostRotationID = 4;
 
-	public static File configFile; 
-	  public static File villageNamesFile; 
-	  public static File configFolder; 
-	
+	public static File configFile;
+	public static File configFolder;
+
 	public static NBTTagCompound saveFile;
-	public static final Logger LOG = LogManager.getLogger(MODID);  
-	
+	public static final Logger LOG = LogManager.getLogger(MODID);
+
 	@SidedProxy(clientSide = "gollorum.signpost.ClientProxy", serverSide = "gollorum.signpost.CommonProxy")
 	public static CommonProxy proxy;
 
@@ -65,12 +64,11 @@ public class Signpost{
 
 		configFolder = new File(event.getModConfigurationDirectory() + "/" + MODID);
 		configFolder.mkdirs();
-		configFile = new File(configFolder.getPath(), MODID + ".cfg"); 
-	    villageNamesFile = new File(configFolder.getPath(), "villageNames.txt"); 
-		ConfigHandler.init(configFile); 
-	    NameLibrary.init(villageNamesFile); 
+		configFile = new File(configFolder.getPath(), MODID + ".cfg");
+		ConfigHandler.init(configFile);
+		NameLibrary.init(configFolder.getPath());
 		proxy.preInit();
-        
+
 	}
 
 	@EventHandler
@@ -78,22 +76,22 @@ public class Signpost{
 		NetworkRegistry.INSTANCE.registerGuiHandler(this, new SignGuiHandler());
 		proxy.init();
 	}
-	
+
 	@EventHandler
-	public void postInit(FMLPostInitializationEvent event){
+	public void postInit(FMLPostInitializationEvent event) {
 		ConfigHandler.postInit();
 		PostHandler.setNativeWaystones(new StonedHashSet());
 		PostHandler.setPosts(new Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo>());
 		PostHandler.setBigPosts(new Lurchpaerchensauna<MyBlockPos, BigBaseInfo>());
 		PostHandler.awaiting = new Lurchpaerchensauna<UUID, TeleportInformation>();
 	}
-	
+
 	@EventHandler
-	public void serverAboutToStart(FMLServerAboutToStartEvent e){
-		PostHandler.init(); 
-        VillageLibrary.init();
+	public void serverAboutToStart(FMLServerAboutToStartEvent e) {
+		PostHandler.init();
+		VillageLibrary.init();
 	}
-    
+
 	@EventHandler
 	public void serverStarting(FMLServerStartingEvent e) {
 		ServerCommandManager manager = (ServerCommandManager) e.getServer().getCommandManager();

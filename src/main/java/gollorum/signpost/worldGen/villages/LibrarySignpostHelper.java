@@ -4,19 +4,22 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import gollorum.signpost.blocks.SuperPostPost;
 import gollorum.signpost.management.ClientConfigStorage;
 import gollorum.signpost.management.PostHandler;
+import gollorum.signpost.util.BiomeContainer;
 import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.util.MyBlockPosSet;
 import gollorum.signpost.util.Paintable;
 import gollorum.signpost.util.Sign;
+import gollorum.signpost.util.code.MinecraftIndependent;
 import gollorum.signpost.util.collections.Lurchpaerchensauna;
-import net.minecraft.world.biome.Biome;
 
+@MinecraftIndependent
 class LibrarySignpostHelper extends LibraryHelper {
-	private static final Map<MyBlockPos, MyBlockPosSet> takenWaystones = new Lurchpaerchensauna<MyBlockPos, MyBlockPosSet>(); 
+	private static final Map<MyBlockPos, MyBlockPosSet> takenWaystones = new Lurchpaerchensauna<MyBlockPos, MyBlockPosSet>();
 	
 	private MyBlockPos signpostLocation;
 	private Map<MyBlockPos, MyBlockPos> villageWaystones;
@@ -33,7 +36,7 @@ class LibrarySignpostHelper extends LibraryHelper {
 	void enscribeNewSign(double optimalRot) {
 		List<Sign> signs = PostHandler.getSigns(signpostLocation);
 		Paintable post = PostHandler.getPost(signpostLocation);
-		Biome biome = signpostLocation.getBiome();
+		final BiomeContainer biome = signpostLocation.getBiome();
 		if(!(post == null || biome == null)){
 			post.setTextureToBiomeDefault(biome);
 		}
@@ -41,19 +44,21 @@ class LibrarySignpostHelper extends LibraryHelper {
 		if(!(post == null || biome == null)){
 			post.setTextureToBiomeDefault(biome);
 		}
+		if(biome!=null){
+			signs.forEach(new Consumer<Sign>() {
+			@Override public void accept(Sign sign) {sign.setTextureToBiomeDefault(biome);}
+			});
+		}
 		List<MyBlockPos> closestWaystones = getClosestWaystones(signs.size());
 		for(int i=0; i<signs.size() && i<closestWaystones.size(); i++){
 			if(signs.get(i).base != null){
 				continue;
 			}
 			signs.get(i).base = getBaseInfo(closestWaystones.get(i));
-			takenWaystones.get(villageLocation).add(closestWaystones.get(i)); 
+			takenWaystones.get(villageLocation).add(closestWaystones.get(i));
 			signs.get(i).point = true;
 			if(angleTooLarge(calcRot(signpostLocation, closestWaystones.get(i)), optimalRot)){
 				signs.get(i).flip = true;
-			}
-			if(biome != null){
-				signs.get(i).setTextureToBiomeDefault(biome);
 			}
 		}
 		SuperPostPost.updateServer(signpostLocation);
@@ -85,7 +90,7 @@ class LibrarySignpostHelper extends LibraryHelper {
 		}else{
 			ret.addAll(PostHandler.getNativeWaystones().positions());
 		}
-		ret.removeAll(takenWaystones.get(villageLocation)); 
+		ret.removeAll(takenWaystones.get(villageLocation));
 		return ret;
 	}
 }
