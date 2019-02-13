@@ -96,13 +96,13 @@ public class Sign implements Paintable{
 		if(biome == null || biome.getBiome() == null) {
 			return PostPost.PostType.OAK.texture;
 		}
-		if(biome.getBiome().getRegistryName().getResourcePath().contains("plains")){
+		if(biome.getBiome().getRegistryName().getPath().contains("plains")){
 			return PostPost.PostType.OAK.texture;
-		}else if(biome.getBiome().getRegistryName().getResourcePath().contains("desert")){
+		}else if(biome.getBiome().getRegistryName().getPath().contains("desert")){
 			return new ResourceLocation("textures/blocks/sandstone_smooth.png");
-		}else if(biome.getBiome().getRegistryName().getResourcePath().contains("taiga")){
+		}else if(biome.getBiome().getRegistryName().getPath().contains("taiga")){
 			return PostPost.PostType.SPRUCE.texture;
-		}else if(biome.getBiome().getRegistryName().getResourcePath().contains("savanna")){
+		}else if(biome.getBiome().getRegistryName().getPath().contains("savanna")){
 			return PostPost.PostType.ACACIA.texture;
 		} else {
 			return PostPost.PostType.OAK.texture;

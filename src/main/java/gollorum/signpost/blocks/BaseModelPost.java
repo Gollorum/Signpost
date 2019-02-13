@@ -87,7 +87,7 @@ public class BaseModelPost extends BlockContainer {
 		this.setHardness(2);
 		this.setResistance(100000);
 		setCreativeTab(CreativeTabs.TRANSPORTATION);
-		this.setUnlocalizedName("SignpostBase");
+		this.setTranslationKey("SignpostBase");
 		this.setRegistryName(Signpost.MODID+":blockbasemodel"+typ);
 		type = ModelType.values()[typ];
 		this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.SOUTH));
@@ -109,13 +109,12 @@ public class BaseModelPost extends BlockContainer {
 
 	@Override
 	public IBlockState getStateFromMeta(int meta) {
-		return getDefaultState().withProperty(FACING, EnumFacing.getHorizontal(meta));
+		return getDefaultState().withProperty(FACING, EnumFacing.byHorizontalIndex(meta));
 	}
 
 	@Override
 	public int getMetaFromState(IBlockState state) {
-		EnumFacing face = (EnumFacing) state.getValue(FACING);
-		return face.getHorizontalIndex();
+		return state.getValue(FACING).getHorizontalIndex();
 	}
 
 	@Override
@@ -219,7 +218,7 @@ public class BaseModelPost extends BlockContainer {
 	}
 
 	@Override
-	public BlockRenderLayer getBlockLayer() {
+	public BlockRenderLayer getRenderLayer() {
 		return BlockRenderLayer.TRANSLUCENT;
 	}
 

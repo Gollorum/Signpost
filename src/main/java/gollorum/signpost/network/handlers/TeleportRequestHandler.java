@@ -4,8 +4,8 @@ import gollorum.signpost.management.ClientConfigStorage;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.messages.TeleportRequestMessage;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.translation.I18n;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
@@ -24,12 +24,12 @@ public class TeleportRequestHandler implements IMessageHandler<TeleportRequestMe
 			}else{
 				String out;
 				if(ClientConfigStorage.INSTANCE.getCost()!=null){
-					out = I18n.translateToLocal("signpost.confirmTeleport");
+					out = I18n.format("signpost.confirmTeleport");
 					out = out.replaceAll("<Waystone>", message.waystoneName);
 					out = out.replaceAll("<amount>", Integer.toString(message.stackSize));
 					out = out.replaceAll("<itemName>", ConfigHandler.costName());
 				}else{
-					out = I18n.translateToLocal("signpost.confirmTeleportNoCost");
+					out = I18n.format("signpost.confirmTeleportNoCost");
 					out = out.replaceAll("<Waystone>", message.waystoneName);
 				}
 				FMLClientHandler.instance().getClient().player.sendMessage(new TextComponentString(out));
@@ -39,7 +39,7 @@ public class TeleportRequestHandler implements IMessageHandler<TeleportRequestMe
 	}
 
 	public String getReplacement(String replace){
-		String ret = I18n.translateToLocal(replace);
+		String ret = I18n.format(replace);
 		if(!ret.equals("")){
 			return ret;
 		}

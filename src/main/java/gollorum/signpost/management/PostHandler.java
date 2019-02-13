@@ -311,10 +311,10 @@ public class PostHandler {
 					doPay(player, (int)player.posX, (int)player.posY, (int)player.posZ, info.destination.pos.x, info.destination.pos.y+1, info.destination.pos.z);
 					SPEventHandler.cancelTask(info.boolRun);
 					if(!(player.getServerWorld().getWorldInfo().getWorldName().equals(info.world.getWorldInfo().getWorldName()))){
-						player.mcServer.getPlayerList().transferEntityToWorld(player, player.dimension, player.getServerWorld(), info.world, new SignTeleporter(info.world));
+						player.server.getPlayerList().transferEntityToWorld(player, player.dimension, player.getServerWorld(), info.world, new SignTeleporter(info.world));
 					}
 					if(!(player.dimension==info.destination.pos.dim)){
-						player.mcServer.getPlayerList().transferPlayerToDimension(player, info.destination.pos.dim, new SignTeleporter(info.world));
+						player.server.getPlayerList().transferPlayerToDimension(player, info.destination.pos.dim, new SignTeleporter(info.world));
 //						player.changeDimension(info.destination.pos.dim);
 					}
 					player.setPositionAndUpdate(info.destination.pos.x+0.5, info.destination.pos.y+1, info.destination.pos.z+0.5);

@@ -14,7 +14,7 @@ import gollorum.signpost.util.BigBaseInfo;
 import gollorum.signpost.util.MyBlockPos.Connection;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
-import net.minecraft.util.text.translation.I18n;
+import net.minecraft.client.resources.I18n;
 import net.minecraftforge.fml.client.FMLClientHandler;
 
 public class SignGuiBigPost extends GuiScreen implements SignInput {
@@ -188,7 +188,7 @@ public class SignGuiBigPost extends GuiScreen implements SignInput {
 			box.setTextColor(Color.red.getRGB());
 			if(connect.equals(Connection.DIST)){
 				
-				String out = I18n.translateToLocal("signpost.guiTooFar");
+				String out = I18n.format("signpost.guiTooFar");
 				out = out.replaceAll("<distance>", ""+(int)tile.toPos().distance(inf.pos)+1);
 				out = out.replaceAll("<maxDist>", ""+ClientConfigStorage.INSTANCE.getMaxDist());
 				std = out;
@@ -197,7 +197,7 @@ public class SignGuiBigPost extends GuiScreen implements SignInput {
 				
 			}else if(connect.equals(Connection.WORLD)){
 
-				String out = I18n.translateToLocal("signpost.guiWorldDim");
+				String out = I18n.format("signpost.guiWorldDim");
 				std = out;
 				col = Color.red.getRGB();
 				go = false;
@@ -213,7 +213,7 @@ public class SignGuiBigPost extends GuiScreen implements SignInput {
 			go = true;
 
 			if(!(ClientConfigStorage.INSTANCE.deactivateTeleportation()||ClientConfigStorage.INSTANCE.getCost()==null)){
-				String out = I18n.translateToLocal("signpost.guiPrev");
+				String out = I18n.format("signpost.guiPrev");
 				int distance = (int) tile.toPos().distance(inf.pos)+1;
 				out = out.replaceAll("<distance>", ""+distance);
 				out = out.replaceAll("<amount>", Integer.toString((int) (tile.toPos().distance(inf.pos)/ClientConfigStorage.INSTANCE.getCostMult()+1)));

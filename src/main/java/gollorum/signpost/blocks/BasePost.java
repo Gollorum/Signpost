@@ -36,7 +36,7 @@ public class BasePost extends BlockContainer {
 		this.setHardness(2);
 		this.setResistance(100000);
 		setCreativeTab(CreativeTabs.TRANSPORTATION);
-		this.setUnlocalizedName("SignpostBase");
+		this.setTranslationKey("SignpostBase");
 		this.setRegistryName(Signpost.MODID+":blockbase");
 	}
 
@@ -149,7 +149,7 @@ public class BasePost extends BlockContainer {
 	}
 
 	@Override
-	public BlockRenderLayer getBlockLayer() {
+	public BlockRenderLayer getRenderLayer() {
 		return BlockRenderLayer.SOLID;
 	}
 

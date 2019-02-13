@@ -65,7 +65,7 @@ public abstract class SuperPostPostTile extends TileEntity implements WaystoneCo
 	}
 	
 	public static final String locToString(ResourceLocation loc){
-		return loc==null?"null":loc.getResourceDomain()+":"+loc.getResourcePath();
+		return loc==null?"null":loc.getNamespace()+":"+loc.getPath();
 	}
 
 	public void onBlockDestroy(MyBlockPos pos){

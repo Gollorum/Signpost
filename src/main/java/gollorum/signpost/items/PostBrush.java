@@ -7,7 +7,7 @@ import net.minecraft.item.Item;
 public class PostBrush extends Item {
 	
 	public PostBrush() {
-	    this.setUnlocalizedName("SignpostBrush");
+	    this.setTranslationKey("SignpostBrush");
 		this.setRegistryName(Signpost.MODID+":itembrush");
 	    this.setCreativeTab(CreativeTabs.TOOLS);
 	}

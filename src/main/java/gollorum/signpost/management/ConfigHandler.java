@@ -3,11 +3,11 @@ package gollorum.signpost.management;
 import java.io.File;
 
 import gollorum.signpost.Signpost;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.translation.I18n;
 import net.minecraftforge.common.config.Configuration;
 
 public class ConfigHandler {
@@ -179,7 +179,7 @@ public class ConfigHandler {
 	}
 	
 	public static String costName(){
-		return I18n.translateToLocal(ClientConfigStorage.INSTANCE.getCost().getUnlocalizedName()+".name");
+		return I18n.format(ClientConfigStorage.INSTANCE.getCost().getTranslationKey()+".name");
 	}
     
 	@Deprecated

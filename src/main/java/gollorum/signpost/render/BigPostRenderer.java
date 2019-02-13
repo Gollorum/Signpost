@@ -50,7 +50,7 @@ public class BigPostRenderer extends TileEntitySpecialRenderer<BigPostPostTile>{
 			this.setTexture(resLoc = tile.type.texture);
 			tilebases.sign.paint = resLoc;
 		}
-		if(resLoc.getResourceDomain().equals("signpost")){
+		if(resLoc.getNamespace().equals("signpost")){
 			model32.render(this, 0.1f, 0.0625f, tilebases, tile, rotation);
 		}else{
 			model16.render(this, 0.1f, 0.0625f, tilebases, tile, rotation);
