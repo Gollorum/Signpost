@@ -284,9 +284,9 @@ public abstract class SuperPostPost extends BlockContainer {
 	public boolean isFullCube(IBlockState state){
 		return false;
 	}
-	
+
 	@Override
-	public BlockRenderLayer getBlockLayer(){
+	public BlockRenderLayer getRenderLayer(){
 		return BlockRenderLayer.TRANSLUCENT;
 	}
 

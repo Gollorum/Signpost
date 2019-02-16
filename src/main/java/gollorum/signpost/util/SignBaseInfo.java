@@ -24,13 +24,13 @@ public abstract class SignBaseInfo implements Paintable {
 		if(biome == null || biome.getBiome() == null) {
 			return PostPost.PostType.OAK.resLocMain;
 		}
-		if(biome.getBiome().getRegistryName().getResourcePath().contains("plains")){
+		if(biome.getBiome().getRegistryName().getPath().contains("plains")){
 			return PostPost.PostType.OAK.resLocMain;
-		}else if(biome.getBiome().getRegistryName().getResourcePath().contains("desert")){
+		}else if(biome.getBiome().getRegistryName().getPath().contains("desert")){
 			return new ResourceLocation("textures/blocks/cobblestone.png");
-		}else if(biome.getBiome().getRegistryName().getResourcePath().contains("taiga")){
+		}else if(biome.getBiome().getRegistryName().getPath().contains("taiga")){
 			return PostPost.PostType.SPRUCE.resLocMain;
-		}else if(biome.getBiome().getRegistryName().getResourcePath().contains("savanna")){
+		}else if(biome.getBiome().getRegistryName().getPath().contains("savanna")){
 			return PostPost.PostType.ACACIA.resLocMain;
 		}else{
 			return PostPost.PostType.OAK.resLocMain;

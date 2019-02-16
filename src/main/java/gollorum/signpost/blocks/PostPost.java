@@ -80,7 +80,7 @@ public class PostPost extends SuperPostPost {
 		this.setHardness(2);
 		this.setResistance(100000);
 		this.setLightOpacity(0);
-		this.setUnlocalizedName("SignpostPostOAK");
+		this.setTranslationKey("SignpostPostOAK");
 		this.setRegistryName(Signpost.MODID+":blockpostoak");
 	}
 
@@ -102,7 +102,7 @@ public class PostPost extends SuperPostPost {
 		this.setHardness(2);
 		this.setResistance(100000);
 		this.setLightOpacity(0);
-		this.setUnlocalizedName("SignpostPost"+type.name());
+		this.setTranslationKey("SignpostPost"+type.name());
 		this.setRegistryName(Signpost.MODID+":blockpost"+type.name().toLowerCase());
 	}
 	
@@ -262,7 +262,7 @@ public class PostPost extends SuperPostPost {
 						PostHandler.teleportMe(destination, (EntityPlayerMP) player, stackSize);
 					}else{
 						String[] keyword = { "<itemName>", "<amount>" };
-						String[] replacement = { ClientConfigStorage.INSTANCE.getCost().getUnlocalizedName() + ".name",	"" + stackSize };
+						String[] replacement = { ClientConfigStorage.INSTANCE.getCost().getTranslationKey() + ".name",	"" + stackSize };
 						NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.payment", keyword, replacement), (EntityPlayerMP) player);
 					}
 				}

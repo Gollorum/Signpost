@@ -9,7 +9,7 @@ public class CalibratedPostWrench extends Item {
 	public static final String NAME = "wrench";
 	
 	public CalibratedPostWrench() {
-	    this.setUnlocalizedName("SignpostCalibratedTool");
+	    this.setTranslationKey("SignpostCalibratedTool");
 		this.setRegistryName(Signpost.MODID+":itemcalibratedwrench");
 	    this.setCreativeTab(CreativeTabs.TOOLS);
 	}

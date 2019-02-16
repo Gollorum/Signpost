@@ -265,9 +265,9 @@ public class MyBlockPos{
 	}
 
 	public MyBlockPos front(EnumFacing facing, int i) {
-		int newX = x + facing.getFrontOffsetX() * i;
-		int newY = y + facing.getFrontOffsetY() * i;
-		int newZ = z + facing.getFrontOffsetZ() * i;
+		int newX = x + facing.getXOffset() * i;
+		int newY = y + facing.getYOffset() * i;
+		int newZ = z + facing.getZOffset() * i;
 		return fromNewPos(newX, newY, newZ);
 	}
 
