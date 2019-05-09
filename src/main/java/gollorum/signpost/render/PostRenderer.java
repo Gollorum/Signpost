@@ -3,6 +3,7 @@ package gollorum.signpost.render;
 import org.lwjgl.opengl.GL11;
 
 import gollorum.signpost.Signpost;
+import gollorum.signpost.blocks.PostPost.PostType;
 import gollorum.signpost.blocks.tiles.PostPostTile;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.util.DoubleBaseInfo;
@@ -39,7 +40,8 @@ public class PostRenderer extends TileEntitySpecialRenderer<PostPostTile>{
 		}
 		GL11.glPushMatrix();
 		GL11.glTranslated(x+0.5, y, z+0.5);
-		this.setTexture(tile.type.texture);
+		if(tile.type == null)  this.setTexture(PostType.OAK.texture);
+		else this.setTexture(tile.type.texture);
 		model.render(this, 0.1f, 0.0625f, tilebases, tile, rotation1, rotation2);
 
 		//Overlays

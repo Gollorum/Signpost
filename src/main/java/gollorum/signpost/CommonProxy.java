@@ -67,7 +67,7 @@ public class CommonProxy {
 	}
 	
 	protected void registerCapabilities() {
-		CapabilityManager.INSTANCE.register(PlayerStore.class, new PlayerStorage(), PlayerStore.class);
+		CapabilityManager.INSTANCE.register(PlayerStore.class, new PlayerStorage(), PlayerStore::new);
 	}
 
 	public World getWorld(MessageContext ctx){
