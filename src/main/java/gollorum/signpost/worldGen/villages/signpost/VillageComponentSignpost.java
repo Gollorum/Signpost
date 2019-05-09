@@ -55,7 +55,12 @@ public class VillageComponentSignpost extends StructureVillagePieces.Village{
 		}
 		int x = (this.boundingBox.minX + this.boundingBox.maxX)/2;
 		int z = (this.boundingBox.minZ + this.boundingBox.maxZ)/2;
-		BlockPos postPos = GenerateStructureHelper.getInstance().getTopSolidOrLiquidBlock(world, new BlockPos(x, 0, z));
+		BlockPos postPos;
+		try{
+			postPos = GenerateStructureHelper.getInstance().getTopSolidOrLiquidBlock(world, new BlockPos(x, 0, z));
+		}catch(Exception e) {
+			postPos = new BlockPos(x, this.boundingBox.maxY, z);
+		}
 		world.setBlockState(postPos, Signpost.proxy.blockHandler.post_oak.getDefaultState());
 		world.setBlockState(postPos.add(0, 1, 0), Signpost.proxy.blockHandler.post_oak.getDefaultState());
 		if (world.getBlockState(postPos.add(0, -1, 0)).getMaterial().isLiquid()) {

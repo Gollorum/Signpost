@@ -95,7 +95,7 @@ public class PostHandler {
 		if(ClientConfigStorage.INSTANCE.isDisableDiscovery()){
 			return true;
 		}else if(playerKnownWaystonePositions.get(player.getUniqueID()).a.contains(waystone.blockPos)){
-			if(playerKnownWaystones.containsKey(player)){
+			if(playerKnownWaystones.containsKey(player.getUniqueID())){
 				playerKnownWaystones.get(player.getUniqueID()).remove(waystone.getName());
 			}
 			return true;
