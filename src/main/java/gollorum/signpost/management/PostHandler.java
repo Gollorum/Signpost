@@ -95,7 +95,7 @@ public class PostHandler {
 		if(ClientConfigStorage.INSTANCE.isDisableDiscovery()){
 			return true;
 		}else if(playerKnownWaystonePositions.get(player.getUniqueID()).a.contains(waystone.blockPos)){
-			if(playerKnownWaystones.containsKey(player)){
+			if(playerKnownWaystones.containsKey(player.getUniqueID())){
 				playerKnownWaystones.get(player.getUniqueID()).remove(waystone.getName());
 			}
 			return true;
@@ -366,7 +366,6 @@ public class PostHandler {
 		if(destroyed){
 			if(allWaystones.remove(getWSbyName(newWS.getName()))){
 				for(Entry<UUID, Pair<MyBlockPosSet, Pair<Integer, Integer>>> now: playerKnownWaystonePositions.entrySet()){
-					now.getValue().a.remove(newWS);
 				}
 				return true;
 			}

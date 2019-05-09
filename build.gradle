@@ -17,13 +17,13 @@ buildscript {
 
 apply plugin: 'forge'
 
-version = "1.7.10-1.08"
+version = "1.7.10-1.08.1"
 group= "gollorum.signpost"
 archivesBaseName = "signpost"
 
 minecraft {
     version = "1.7.10-10.13.4.1558-1.7.10"
-    runDir = "eclipse"
+    runDir = "run"
 }
 
 dependencies {}
