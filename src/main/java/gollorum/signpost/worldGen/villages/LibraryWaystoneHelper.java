@@ -37,25 +37,27 @@ class LibraryWaystoneHelper extends LibraryHelper {
 					go = true;
 					return false;
 				}
-				final Set<VillagePost> posts = fetchOtherVillagesPosts();
-				final SignChooser.SingeEmptySign emptySign = new SignChooser(posts).getBestSign();
-				if (emptySign != null) {
-					final MyBlockPos pos = emptySign.post.getTopSignPosition();
-					final Sign sign = SuperPostPost.getSuperTile(pos).getEmptySigns().get(0);
-					if (pos.getTile() instanceof SuperPostPostTile && ((SuperPostPostTile) pos.getTile()).isLoading()) {
-						return false;
-					} else {
-						sign.base = getBaseInfo(waystoneLocation);
-						sign.point = true;
-						if (angleTooLarge(calcRot(pos, waystoneLocation), emptySign.post.desiredRotation)) {
-							emptySign.sign.flip = true;
+				try {
+					final Set<VillagePost> posts = fetchOtherVillagesPosts();
+					final SignChooser.SingeEmptySign emptySign = new SignChooser(posts).getBestSign();
+					if (emptySign != null) {
+						final MyBlockPos pos = emptySign.post.getTopSignPosition();
+						final Sign sign = SuperPostPost.getSuperTile(pos).getEmptySigns().get(0);
+						if (pos.getTile() instanceof SuperPostPostTile && ((SuperPostPostTile) pos.getTile()).isLoading()) {
+							return false;
+						} else {
+							sign.base = getBaseInfo(waystoneLocation);
+							sign.point = true;
+							if (angleTooLarge(calcRot(pos, waystoneLocation), emptySign.post.desiredRotation)) {
+								emptySign.sign.flip = true;
+							}
+							SuperPostPost.updateServer(pos);
+							return true;
 						}
-						SuperPostPost.updateServer(pos);
+					} else {
 						return true;
 					}
-				} else {
-					return true;
-				}
+				} catch(Exception e) {return true;}
 			}
 		});
 	}
@@ -91,9 +93,17 @@ class LibraryWaystoneHelper extends LibraryHelper {
 		public SingeEmptySign getBestSign() {
 			sort();
 			if (signs.size() > 0) {
-				List<Sign> postSigns = signs.get(0).signs;
-				if (postSigns.size() > 0) {
-					return new SingeEmptySign(postSigns.get(0), signs.get(0).post);
+				for(VillageSign sign : signs) {
+					if(sign == null || sign.post == null) continue;
+					List<Sign> postSigns = sign.signs;
+					if(postSigns.size() == 0) continue;
+					final MyBlockPos pos = sign.post.getTopSignPosition();
+					if (pos != null && SuperPostPost.getSuperTile(pos) != null) {
+						try {
+							SuperPostPost.getSuperTile(pos).getEmptySigns().get(0);
+							return new SingeEmptySign(postSigns.get(0), sign.post);
+						} catch(Exception e) {}
+					}
 				}
 			}
 			return null;
