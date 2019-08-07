@@ -8,6 +8,7 @@ import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.ChatMessage;
 import gollorum.signpost.network.messages.OpenGuiMessage;
+import gollorum.signpost.network.messages.SendAllWaystoneNamesMessage;
 import gollorum.signpost.network.messages.SendPostBasesMessage;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.DoubleBaseInfo;
@@ -269,6 +270,7 @@ public class PostPost extends SuperPostPost {
 			}
 		} else {
 			NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiPostID, x, y, z), (EntityPlayerMP) player);
+			NetworkHandler.netWrap.sendTo(new SendAllWaystoneNamesMessage(PostHandler.getAllWaystones().select(b -> b.getName())), (EntityPlayerMP) player);
 		}
 	}
 

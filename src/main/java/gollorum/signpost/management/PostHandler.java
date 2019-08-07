@@ -1,5 +1,6 @@
 package gollorum.signpost.management;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -12,6 +13,7 @@ import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.blocks.tiles.PostPostTile;
 import gollorum.signpost.modIntegration.SignpostAdapter;
 import gollorum.signpost.network.NetworkHandler;
+import gollorum.signpost.network.handlers.SendAllWaystoneNamesHandler;
 import gollorum.signpost.network.messages.ChatMessage;
 import gollorum.signpost.network.messages.TeleportRequestMessage;
 import gollorum.signpost.util.BaseInfo;
@@ -35,6 +37,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.relauncher.Side;
 
 public class PostHandler {
 
@@ -541,6 +544,14 @@ public class PostHandler {
 	public static StonedHashSet getAllWaystones() {
 		StonedHashSet ret = SignpostAdapter.INSTANCE.getExternalBaseInfos();
 		ret.addAll(allWaystones);
+		return ret;
+	}
+	
+	public static Collection<String> getAllWaystoneNames(){
+		Collection<String> ret = getAllWaystones().select(b -> b.getName());
+		if(FMLCommonHandler.instance().getEffectiveSide().equals(Side.CLIENT)) {
+			ret.addAll(SendAllWaystoneNamesHandler.cachedWaystoneNames);
+		}
 		return ret;
 	}
 

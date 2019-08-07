@@ -7,6 +7,7 @@ import java.util.Collection;
 import org.lwjgl.opengl.GL11;
 
 import gollorum.signpost.management.PostHandler;
+import gollorum.signpost.network.handlers.SendAllWaystoneNamesHandler;
 import gollorum.signpost.util.BaseInfo;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
@@ -125,16 +126,15 @@ public class SignInputBox extends Gui{
 	public void setText(String text){
 		this.text = text;
 		possible = new ArrayList<String>();
-		for(BaseInfo now: getAllPossibilities()){
-			if(now.getName().contains(getText())){
-				possible.add(now.getName());
+		for(String name: getAllPossibilities()){
+			if(name.contains(getText()) || getText().equals("")){
+				possible.add(name);
 			}
 		}
 	}
 
-	public static Collection<BaseInfo> getAllPossibilities(){
-		Collection<BaseInfo> ret = PostHandler.getAllWaystones();
-		return ret;
+	public static Collection<String> getAllPossibilities(){
+		return PostHandler.getAllWaystoneNames();
 	}
 
 	

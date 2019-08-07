@@ -114,7 +114,7 @@ public class BlockHandler {
 	private void waystoneRecipe(){
 		ForgeRegistry<IRecipe> registry = ((ForgeRegistry<IRecipe>)ForgeRegistries.RECIPES);
 		registry.remove(new ResourceLocation("signpost:blockbaserecipe"));
-		if(ClientConfigStorage.INSTANCE.getSecurityLevelWaystone().equals(ConfigHandler.SecurityLevel.ALL)&&!ClientConfigStorage.INSTANCE.deactivateTeleportation()){
+		if(ClientConfigStorage.INSTANCE.getSecurityLevelWaystone().canCraft && !ClientConfigStorage.INSTANCE.deactivateTeleportation()){
 			switch(ClientConfigStorage.INSTANCE.getWaysRec()){
 				case EXPENSIVE:
 					GameRegistry.addShapedRecipe(new ResourceLocation("signpost:blockbaserecipe"), null, new ItemStack(base, 1), 
@@ -154,7 +154,7 @@ public class BlockHandler {
 	private void postRecipe(PostPost post){
 		ForgeRegistry<IRecipe> registry = ((ForgeRegistry<IRecipe>)ForgeRegistries.RECIPES);
 		registry.remove(new ResourceLocation("signpost:blockpostpostrecipe"+post.type));
-		if(ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().equals(ConfigHandler.SecurityLevel.ALL) || ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().equals(ConfigHandler.SecurityLevel.OWNERS)){
+		if(ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canCraft){
 			switch(ClientConfigStorage.INSTANCE.getSignRec()){
 				case EXPENSIVE:
 					GameRegistry.addShapedRecipe(new ResourceLocation("signpost:blockpostpostrecipe"+post.type), null, new ItemStack(post, 1),
@@ -191,7 +191,7 @@ public class BlockHandler {
 	private void bigPostRecipe(BigPostPost post){
 		ForgeRegistry<IRecipe> registry = ((ForgeRegistry<IRecipe>)ForgeRegistries.RECIPES);
 		registry.remove(new ResourceLocation("signpost:blockbigpostrecipe"+post.type));
-		if(ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().equals(ConfigHandler.SecurityLevel.ALL) || ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().equals(ConfigHandler.SecurityLevel.OWNERS)){
+		if(ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canCraft){
 			switch(ClientConfigStorage.INSTANCE.getSignRec()){
 				case EXPENSIVE:
 					GameRegistry.addShapedRecipe(new ResourceLocation("signpost:blockbigpostrecipe"+post.type), null, new ItemStack(post, 1),
