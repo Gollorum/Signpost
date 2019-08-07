@@ -126,16 +126,15 @@ public class SignInputBox extends Gui{
 	public void setText(String text){
 		this.text = text;
 		possible = new ArrayList<String>();
-		for(BaseInfo now: getAllPossibilities()){
-			if(now.getName().contains(getText())){
-				possible.add(now.getName());
+		for(String name: getAllPossibilities()){
+			if(name.contains(getText()) || getText().equals("")){
+				possible.add(name);
 			}
 		}
 	}
 
-	public static Collection<BaseInfo> getAllPossibilities(){
-		Collection<BaseInfo> ret = PostHandler.getAllWaystones();
-		return ret;
+	public static Collection<String> getAllPossibilities(){
+		return PostHandler.getAllWaystoneNames();
 	}
 
 	

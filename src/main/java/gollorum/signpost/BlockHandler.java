@@ -103,7 +103,7 @@ public class BlockHandler {
 			CraftingManager.getInstance().getRecipeList().removeAll(toDelete);
 		}
 
-		if(ClientConfigStorage.INSTANCE.getSecurityLevelWaystone().equals(ConfigHandler.SecurityLevel.ALL)&&!ClientConfigStorage.INSTANCE.deactivateTeleportation()){
+		if(ClientConfigStorage.INSTANCE.getSecurityLevelWaystone().canCraft && !ClientConfigStorage.INSTANCE.deactivateTeleportation()){
 			switch(ClientConfigStorage.INSTANCE.getWaysRec()){
 				case EXPENSIVE:
 					GameRegistry.addRecipe(new ItemStack(base, 1), 
@@ -155,7 +155,7 @@ public class BlockHandler {
 			CraftingManager.getInstance().getRecipeList().remove(toDelete);
 		}
 		
-		if(ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().equals(ConfigHandler.SecurityLevel.ALL) || ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().equals(ConfigHandler.SecurityLevel.OWNERS)){
+		if(ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canCraft){
 			switch(ClientConfigStorage.INSTANCE.getSignRec()){
 				case EXPENSIVE:
 					GameRegistry.addRecipe(new ItemStack(post, 1),
@@ -204,7 +204,7 @@ public class BlockHandler {
 			CraftingManager.getInstance().getRecipeList().remove(toDelete);
 		}
 		
-		if(ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().equals(ConfigHandler.SecurityLevel.ALL) || ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().equals(ConfigHandler.SecurityLevel.OWNERS)){
+		if(ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canCraft){
 			switch(ClientConfigStorage.INSTANCE.getSignRec()){
 				case EXPENSIVE:
 					GameRegistry.addRecipe(new ItemStack(post, 1),
