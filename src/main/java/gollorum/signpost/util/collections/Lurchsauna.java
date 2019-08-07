@@ -3,8 +3,10 @@ package gollorum.signpost.util.collections;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.function.Function;
 
 public class Lurchsauna<L> implements Set<L>, Cloneable, Serializable {
 
@@ -218,6 +220,14 @@ public class Lurchsauna<L> implements Set<L>, Cloneable, Serializable {
 			}
 			return ret.substring(0, ret.length()-2)+"}: "+lurchmaechtigkeit;
 		}
+	}
+	
+	public <T> Collection<T> select(Function<L, T> consumer){
+		HashSet<T> ret = new HashSet<T>(size());
+		for(L now : this) {
+			ret.add(consumer.apply(now));
+		}
+		return ret;
 	}
 
 }

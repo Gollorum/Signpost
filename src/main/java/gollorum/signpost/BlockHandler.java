@@ -11,7 +11,6 @@ import gollorum.signpost.blocks.ItemBlockWithMeta;
 import gollorum.signpost.blocks.PostPost;
 import gollorum.signpost.blocks.PostPost.PostType;
 import gollorum.signpost.management.ClientConfigStorage;
-import gollorum.signpost.management.ConfigHandler;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -103,7 +102,7 @@ public class BlockHandler {
 			CraftingManager.getInstance().getRecipeList().removeAll(toDelete);
 		}
 
-		if(ClientConfigStorage.INSTANCE.getSecurityLevelWaystone().equals(ConfigHandler.SecurityLevel.ALL)&&!ClientConfigStorage.INSTANCE.deactivateTeleportation()){
+		if(ClientConfigStorage.INSTANCE.getSecurityLevelWaystone().canCraft && !ClientConfigStorage.INSTANCE.deactivateTeleportation()){
 			switch(ClientConfigStorage.INSTANCE.getWaysRec()){
 				case EXPENSIVE:
 					GameRegistry.addRecipe(new ItemStack(base, 1), 
@@ -155,7 +154,7 @@ public class BlockHandler {
 			CraftingManager.getInstance().getRecipeList().remove(toDelete);
 		}
 		
-		if(ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().equals(ConfigHandler.SecurityLevel.ALL) || ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().equals(ConfigHandler.SecurityLevel.OWNERS)){
+		if(ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canCraft){
 			switch(ClientConfigStorage.INSTANCE.getSignRec()){
 				case EXPENSIVE:
 					GameRegistry.addRecipe(new ItemStack(post, 1),
@@ -204,7 +203,7 @@ public class BlockHandler {
 			CraftingManager.getInstance().getRecipeList().remove(toDelete);
 		}
 		
-		if(ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().equals(ConfigHandler.SecurityLevel.ALL) || ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().equals(ConfigHandler.SecurityLevel.OWNERS)){
+		if(ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canCraft){
 			switch(ClientConfigStorage.INSTANCE.getSignRec()){
 				case EXPENSIVE:
 					GameRegistry.addRecipe(new ItemStack(post, 1),
