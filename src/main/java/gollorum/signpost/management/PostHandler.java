@@ -1,18 +1,22 @@
 package gollorum.signpost.management;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
+import java.util.function.Function;
 
 import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.relauncher.Side;
 import gollorum.signpost.SPEventHandler;
 import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.blocks.tiles.PostPostTile;
 import gollorum.signpost.modIntegration.SignpostAdapter;
 import gollorum.signpost.network.NetworkHandler;
+import gollorum.signpost.network.handlers.SendAllWaystoneNamesHandler;
 import gollorum.signpost.network.messages.ChatMessage;
 import gollorum.signpost.network.messages.TeleportRequestMessage;
 import gollorum.signpost.util.BaseInfo;
@@ -548,7 +552,20 @@ public class PostHandler {
 		ret.addAll(allWaystones);
 		return ret;
 	}
-	
+
+	public static Collection<String> getAllWaystoneNames(){
+		Collection<String> ret = getAllWaystones().select(new Function<BaseInfo, String>() {
+			@Override
+			public String apply(BaseInfo b) {
+				return b.getName();
+			}
+		});
+		if(FMLCommonHandler.instance().getEffectiveSide().equals(Side.CLIENT)) {
+			ret.addAll(SendAllWaystoneNamesHandler.cachedWaystoneNames);
+		}
+		return ret;
+	}
+
 	public static StonedHashSet getNativeWaystones(){
 		return allWaystones;
 	}

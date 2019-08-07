@@ -1,5 +1,7 @@
 package gollorum.signpost.blocks;
 
+import java.util.function.Function;
+
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.blocks.tiles.SuperPostPostTile;
@@ -8,6 +10,7 @@ import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.ChatMessage;
 import gollorum.signpost.network.messages.OpenGuiMessage;
+import gollorum.signpost.network.messages.SendAllWaystoneNamesMessage;
 import gollorum.signpost.network.messages.SendBigPostBasesMessage;
 import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.BigBaseInfo;
@@ -239,6 +242,12 @@ public class BigPostPost extends SuperPostPost {
 			}
 		} else {
 			NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiBigPostID, x, y, z), (EntityPlayerMP) player);
+			NetworkHandler.netWrap.sendTo(new SendAllWaystoneNamesMessage(PostHandler.getAllWaystones().select(new Function<BaseInfo, String>() {
+				@Override
+				public String apply(BaseInfo b) {
+					return b.getName();
+				}
+			})), (EntityPlayerMP) player);
 		}
 	}
 

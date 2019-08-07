@@ -39,7 +39,17 @@ public class ConfigHandler {
 	private static boolean onlyVillageTargets;
 	
 	public enum SecurityLevel{
-		ALL, OWNERS, CREATIVEONLY, OPONLY;
+		ALL(true), 
+		OWNERS(true), 
+		CREATIVEONLY(false), 
+		OPONLY(false);
+
+		public final boolean canCraft;
+		
+		private SecurityLevel(boolean canCraft) {
+			this.canCraft = canCraft;
+		}
+		
 		public static String[] allValues(){
 			String[] ret = {
 				ALL.toString(),

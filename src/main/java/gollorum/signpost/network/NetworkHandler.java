@@ -12,6 +12,7 @@ import gollorum.signpost.network.handlers.OpenGuiHandler;
 import gollorum.signpost.network.handlers.RequestTextureHandler;
 import gollorum.signpost.network.handlers.SendAllBigPostBasesHandler;
 import gollorum.signpost.network.handlers.SendAllPostBasesHandler;
+import gollorum.signpost.network.handlers.SendAllWaystoneNamesHandler;
 import gollorum.signpost.network.handlers.SendBigPostBasesHandler;
 import gollorum.signpost.network.handlers.SendDiscoveredToServerHandler;
 import gollorum.signpost.network.handlers.SendPostBasesHandler;
@@ -25,6 +26,7 @@ import gollorum.signpost.network.messages.OpenGuiMessage;
 import gollorum.signpost.network.messages.RequestTextureMessage;
 import gollorum.signpost.network.messages.SendAllBigPostBasesMessage;
 import gollorum.signpost.network.messages.SendAllPostBasesMessage;
+import gollorum.signpost.network.messages.SendAllWaystoneNamesMessage;
 import gollorum.signpost.network.messages.SendBigPostBasesMessage;
 import gollorum.signpost.network.messages.SendDiscoveredToServerMessage;
 import gollorum.signpost.network.messages.SendPostBasesMessage;
@@ -52,6 +54,7 @@ public class NetworkHandler {
 		netWrap.registerMessage(TeleportRequestHandler.class, TeleportRequestMessage.class, 13, Side.CLIENT);
 		netWrap.registerMessage(TeleportRequestHandler.class, TeleportRequestMessage.class, 14, Side.SERVER);
 		netWrap.registerMessage(RequestTextureHandler.class, RequestTextureMessage.class, 15, Side.CLIENT);
+		netWrap.registerMessage(SendAllWaystoneNamesHandler.class, SendAllWaystoneNamesMessage.class, 16, Side.CLIENT);
 	}
 	
 }
