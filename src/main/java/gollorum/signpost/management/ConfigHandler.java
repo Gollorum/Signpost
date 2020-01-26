@@ -63,13 +63,13 @@ public class ConfigHandler {
 			return this.equals(ALL)||
 				   this.equals(OWNERS)||
 				   isOp(player)||
-				   (isCreative(player)&&this.equals(CREATIVEONLY));
+				   (isCreative(player) && this.equals(CREATIVEONLY));
 		}
 		public boolean canUse(EntityPlayerMP player, String owner){
 			return this.equals(ALL)||
 					   isOp(player)||
-					   (this.equals(OWNERS) && (owner.equals(player.getUniqueID().toString()) || owner.equals("null")))||
-					   (isCreative(player)&&this.equals(CREATIVEONLY));
+					   (this.equals(OWNERS) && owner.equals(player.getUniqueID().toString()))||
+					   (isCreative(player) && this.equals(CREATIVEONLY));
 		}
 	}
 

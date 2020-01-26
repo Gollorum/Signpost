@@ -25,7 +25,6 @@ public class SendAllWaystoneNamesMessage implements IMessage {
 		for (int i = 0; i < count; i++) {
 			String name = ByteBufUtils.readUTF8String(buf);
 			waystones.add(name);
-			System.out.println("FromBytes: "+name);
 		}
 	}
 
@@ -34,7 +33,6 @@ public class SendAllWaystoneNamesMessage implements IMessage {
 		buf.writeInt(waystones.size());
 		for (String name : waystones) {
 			ByteBufUtils.writeUTF8String(buf, name);
-			System.out.println("ToBytes: "+name);
 		}
 	}
 

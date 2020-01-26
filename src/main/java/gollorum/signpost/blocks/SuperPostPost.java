@@ -45,7 +45,7 @@ public abstract class SuperPostPost extends BlockContainer {
 	@Override
 	public void onBlockClicked(World world, BlockPos pos, EntityPlayer player) {
 		SuperPostPostTile superTile = getSuperTile(world, pos);
-		if (world.isRemote || !ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canUse((EntityPlayerMP) player, ""+superTile.owner)) {
+		if (world.isRemote || !canUse((EntityPlayerMP) player, superTile)) {
 			return;
 		}
 		Object hit = getHitTarget(world, pos.getX(), pos.getY(), pos.getZ(), player);
@@ -101,23 +101,24 @@ public abstract class SuperPostPost extends BlockContainer {
 		
 		Object hit = getHitTarget(worldIn, pos.getX(), pos.getY(), pos.getZ(), playerIn);
 		SuperPostPostTile superTile = getSuperTile(worldIn, pos);
+		EntityPlayerMP player = (EntityPlayerMP) playerIn;
 		if(isHitWaystone(hit)){
 			rightClickWaystone(superTile, playerIn, pos.getX(), pos.getY(), pos.getZ());
 		}
 		else if (!PostHandler.isHandEmpty(playerIn)){
 			if(playerIn.getHeldItemMainhand().getItem() instanceof PostWrench){
-				if(!ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canUse((EntityPlayerMP) playerIn, ""+superTile.owner)){
+				if(!canUse(player, superTile)){
 					return true;
 				}
 				rightClickWrench(hit, superTile, playerIn, pos.getX(), pos.getY(), pos.getZ());
 				sendPostBasesToAll(superTile);
 			}else if(playerIn.getHeldItemMainhand().getItem() instanceof CalibratedPostWrench){
-				if(!ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canUse((EntityPlayerMP) playerIn, ""+superTile.owner)){
+				if(!canUse(player, superTile)){
 					return true;
 				}
 				rightClickCalibratedWrench(hit, superTile, playerIn, pos.getX(), pos.getY(), pos.getZ());
 			}else if(playerIn.getHeldItemMainhand().getItem() instanceof PostBrush){
-				if(!ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canUse((EntityPlayerMP) playerIn, ""+superTile.owner)){
+				if(!canUse(player, superTile)){
 					return true;
 				}
 				rightClickBrush(hit, superTile, playerIn, pos.getX(), pos.getY(), pos.getZ());
@@ -126,7 +127,7 @@ public abstract class SuperPostPost extends BlockContainer {
 				if(superTile.getPaintObject()==null){
 					superTile.setAwaitingPaint(false);
 				}else{
-					if(!ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canUse((EntityPlayerMP) playerIn, ""+superTile.owner)){
+					if(!canUse(player, superTile)){
 						return true;
 					}
 					NetworkHandler.netWrap.sendTo(new RequestTextureMessage(pos.getX(), pos.getY(), pos.getZ(), hand, facing, hitX, hitY, hitZ), (EntityPlayerMP)playerIn);
@@ -142,6 +143,10 @@ public abstract class SuperPostPost extends BlockContainer {
 			preRightClick(hit, superTile, playerIn, pos.getX(), pos.getY(), pos.getZ());
 		}
 		return true;
+	}
+	
+	protected boolean canUse(EntityPlayerMP player, SuperPostPostTile tile) {
+		return ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canUse(player, ""+tile.owner);
 	}
 
 	private void rightClickWaystone(SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z) {

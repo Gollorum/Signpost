@@ -246,6 +246,7 @@ public class BigPostPost extends SuperPostPost {
 				}
 			}
 		} else {
+			if(!canUse((EntityPlayerMP) player, superTile)) return;
 			NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiBigPostID, x, y, z), (EntityPlayerMP) player);
 			NetworkHandler.netWrap.sendTo(new SendAllWaystoneNamesMessage(PostHandler.getAllWaystones().select(b -> b.getName())), (EntityPlayerMP) player);
 		}
