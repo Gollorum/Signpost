@@ -61,6 +61,7 @@ public class CommonProxy {
 	}
 
 	protected void registerTiles(){
+		//TODO: Replace names with new ResourceLocation("signpost", "basetile") when MissingMappings works for TileEntities
 		GameRegistry.registerTileEntity(BasePostTile.class, "SignpostBaseTile");
 		GameRegistry.registerTileEntity(PostPostTile.class, "SignpostPostTile");
 		GameRegistry.registerTileEntity(BigPostPostTile.class, "SignpostBigPostTile");
