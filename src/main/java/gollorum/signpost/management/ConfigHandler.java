@@ -2,7 +2,6 @@ package gollorum.signpost.management;
 
 import java.io.File;
 
-import gollorum.signpost.Signpost;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -24,6 +23,7 @@ public class ConfigHandler {
 	private static Item cost;
 	private static String paymentItem;
 	private static int costMult;
+	private static int costBase;
 
 	private static RecipeCost signRec;
 	private static RecipeCost waysRec;
@@ -135,23 +135,35 @@ public class ConfigHandler {
 		
 		config.addCustomCategoryComment(category, "Teleport limitaion settings");
 		
-		deactivateTeleportation = config.getBoolean("deactivateTeleportation", category, false, "Deactivates teleportation and the waystone recipe, since it isn't needed");
+		deactivateTeleportation = config.getBoolean("deactivateTeleportation", category, false, 
+				"Deactivates teleportation and the waystone recipe, since it isn't needed");
 		
-		interdimensional = config.getBoolean("interdimensional", category, true, "Enables interdimensional teleportation (e.g. overworld-nether)");
+		interdimensional = config.getBoolean("interdimensional", category, true, 
+				"Enables interdimensional teleportation (e.g. overworld-nether)");
 
-		maxWaystones = config.getInt("maxWaystones", category, -1, -1, Integer.MAX_VALUE, "The amount of waystones a player is allowed to place (-1 = unlimited)");
+		maxWaystones = config.getInt("maxWaystones", category, -1, -1, Integer.MAX_VALUE, 
+				"The amount of waystones a player is allowed to place (-1 = unlimited)");
 
-		maxSignposts = config.getInt("maxSignposts", category, -1, -1, Integer.MAX_VALUE, "The amount of signposts a player is allowed to place (-1 = unlimited)");
+		maxSignposts = config.getInt("maxSignposts", category, -1, -1, Integer.MAX_VALUE, 
+				"The amount of signposts a player is allowed to place (-1 = unlimited)");
 		
-		maxDist = config.getInt("maxDistance", category, -1, -1, (int)Math.sqrt(Integer.MAX_VALUE), "The allowed distance between signpost an waystone (-1 = unlimited)");
+		maxDist = config.getInt("maxDistance", category, -1, -1, (int)Math.sqrt(Integer.MAX_VALUE), 
+				"The allowed distance between signpost an waystone (-1 = unlimited)");
 		
-		paymentItem = config.getString("paymentItem", category, "", "The item players have to pay in order to use a signpost (e.g. minecraft:enderPearl, '' = free)");
+		paymentItem = config.getString("paymentItem", category, "", 
+				"The item players have to pay in order to use a signpost (e.g. minecraft:ender_pearl, '' = free)");
 		
-		costMult = config.getInt("distancePerPayment", category, 0, 0, Integer.MAX_VALUE, "The distance a Player can teleport with one item (the total cost of a teleportation is calculated using the total distance)(0 = unlimited)");
+		costMult = config.getInt("distancePerPayment", category, 0, 0, Integer.MAX_VALUE, 
+				"The distance a Player can teleport with one item (the total cost of a teleportation is calculated using the total distance)(0 = unlimited)");
+		
+		costBase = config.getInt("constantPaymentPerTeleport", category, 1, 1, Integer.MAX_VALUE, 
+				"The amount of items players always have to pay when teleporting, regardless of the distance. For the total cost, this amount will be added to the distance-based cost.");
 	
-		signRec = RecipeCost.valueOf(config.getString("signpostRecipeCost", category, "NORMAL", "Changes the recipe for signposts (NORMAL/EXPENSIVE/VERY_EXPENSIVE/DEACTIVATED)", RecipeCost.allValues()));
+		signRec = RecipeCost.valueOf(config.getString("signpostRecipeCost", category, "NORMAL", 
+				"Changes the recipe for signposts (NORMAL/EXPENSIVE/VERY_EXPENSIVE/DEACTIVATED)", RecipeCost.allValues()));
 
-		waysRec = RecipeCost.valueOf(config.getString("waystoneRecipeCost", category, "NORMAL", "Changes the recipe for waystones (NORMAL/EXPENSIVE/VERY_EXPENSIVE/DEACTIVATED)", RecipeCost.allValues()));
+		waysRec = RecipeCost.valueOf(config.getString("waystoneRecipeCost", category, "NORMAL", 
+				"Changes the recipe for waystones (NORMAL/EXPENSIVE/VERY_EXPENSIVE/DEACTIVATED)", RecipeCost.allValues()));
 	
 		ClientConfigStorage.INSTANCE.setDeactivateTeleportation(deactivateTeleportation);
 		ClientConfigStorage.INSTANCE.setInterdimensional(interdimensional);
@@ -160,6 +172,7 @@ public class ConfigHandler {
 		ClientConfigStorage.INSTANCE.setMaxDist(maxDist);
 		ClientConfigStorage.INSTANCE.setPaymentItem(paymentItem);
 		ClientConfigStorage.INSTANCE.setCostMult(costMult);
+		ClientConfigStorage.INSTANCE.setCostBase(costBase);
 		ClientConfigStorage.INSTANCE.setSignRec(signRec);
 		ClientConfigStorage.INSTANCE.setWaysRec(waysRec);
 	}
@@ -220,6 +233,11 @@ public class ConfigHandler {
 	@Deprecated
 	public static int getCostMult() {
 		return costMult;
+	}
+
+	@Deprecated
+	public static int getCostBase() {
+		return costBase;
 	}
 
 	@Deprecated

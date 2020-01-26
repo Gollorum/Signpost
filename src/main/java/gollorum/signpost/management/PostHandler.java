@@ -290,11 +290,15 @@ public class PostHandler {
 	}
 	
 	public static int getStackSize(int x1, int y1, int z1, int x2, int y2, int z2){
+		int dx = x1-x2; int dy = y1-y2; int dz = z1-z2;
+		return getStackSize((float)Math.sqrt(dx*dx+dy*dy+dz*dz));
+	}
+	
+	public static int getStackSize(float distance){
 		if(ClientConfigStorage.INSTANCE.getCostMult()==0){
-			return 1;
+			return ClientConfigStorage.INSTANCE.getCostBase();
 		}else{
-			int dx = x1-x2; int dy = y1-y2; int dz = z1-z2;
-			return (int) Math.sqrt(dx*dx+dy*dy+dz*dz) / ClientConfigStorage.INSTANCE.getCostMult() + 1;
+			return (int) (distance / ClientConfigStorage.INSTANCE.getCostMult() + ClientConfigStorage.INSTANCE.getCostBase());
 		}
 	}
 	
