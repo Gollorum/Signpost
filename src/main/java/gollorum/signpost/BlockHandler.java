@@ -98,7 +98,6 @@ public class BlockHandler {
     }
 
     private void waystoneRecipe() {
-        System.out.println("Waystonne recs");
         HashSet<Object> toDelete = new HashSet<Object>();
         Item[] outputsToRemove = new Item[basemodels.length + 1];
         for (int i = 0; i < basemodels.length; i++) outputsToRemove[i] = Item.getItemFromBlock(basemodels[i]);
