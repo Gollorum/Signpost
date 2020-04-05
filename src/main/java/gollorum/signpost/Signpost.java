@@ -26,7 +26,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.util.UUID;
 
-@Mod(modid = Signpost.MODID, version = Signpost.VERSION, name = "SignPost", dependencies = "required-after:waystones")
+@Mod(modid = Signpost.MODID, version = Signpost.VERSION, name = "SignPost")
 public class Signpost{
 
 	@Instance

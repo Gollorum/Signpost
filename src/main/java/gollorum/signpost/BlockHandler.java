@@ -48,7 +48,7 @@ public class BlockHandler {
         List<BaseModelPost> allModels = Arrays.asList(basemodels);
         ArrayList<BaseModelPost> allowedModels = new ArrayList<BaseModelPost>();
         for (final String model : ClientConfigStorage.INSTANCE.getAllowedCraftingModels()){
-            BaseModelPost block = CollectionUtils.Companion.find(allModels, new Predicate<BaseModelPost>() {
+            BaseModelPost block = CollectionUtils.find(allModels, new Predicate<BaseModelPost>() {
                 @Override
                 public boolean test(BaseModelPost m) {
                     return m.type.name.equals(model);
@@ -63,7 +63,7 @@ public class BlockHandler {
         List<BaseModelPost> allModels = Arrays.asList(basemodels);
         ArrayList<BaseModelPost> allowedModels = new ArrayList<BaseModelPost>();
         for (final String model : ClientConfigStorage.INSTANCE.getAllowedVillageModels()){
-            BaseModelPost block = CollectionUtils.Companion.find(allModels, new Predicate<BaseModelPost>() {
+            BaseModelPost block = CollectionUtils.find(allModels, new Predicate<BaseModelPost>() {
                 @Override
                 public boolean test(BaseModelPost m) {
                     return m.type.name.equals(model);
