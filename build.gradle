@@ -20,7 +20,7 @@ buildscript {
 apply plugin: 'forge'
 apply plugin: 'kotlin'
 
-version = "1.7.10-1.08.3"
+version = "1.7.10-1.08.4"
 group= "gollorum.signpost"
 archivesBaseName = "signpost"
 

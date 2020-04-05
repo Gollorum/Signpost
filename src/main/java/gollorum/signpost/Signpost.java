@@ -32,7 +32,7 @@ public class Signpost{
 	@Instance
 	public static Signpost instance;
 	public static final String MODID = "signpost";
-	public static final String VERSION = "1.08.3";
+	public static final String VERSION = "1.08.4";
 
 	public static final int GuiBaseID = 0;
 	public static final int GuiPostID = 1;
