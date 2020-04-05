@@ -1,14 +1,15 @@
 package gollorum.signpost.management;
 
-import java.io.File;
-
 import cpw.mods.fml.common.registry.LanguageRegistry;
 import gollorum.signpost.Signpost;
+import gollorum.signpost.blocks.BaseModelPost;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.config.Configuration;
+
+import java.io.File;
 
 public class ConfigHandler {
 
@@ -37,6 +38,9 @@ public class ConfigHandler {
 	private static int villageMaxSignposts;
 	private static int villageSignpostsWeight;
 	private static boolean onlyVillageTargets;
+
+	private static String[] allowedCraftingModels;
+	private static String[] allowedVillageModels;
 	
 	public enum SecurityLevel{
 		ALL(true), 
@@ -63,13 +67,13 @@ public class ConfigHandler {
 			return this.equals(ConfigHandler.SecurityLevel.ALL)||
 				   this.equals(OWNERS)||
 				   isOp(player)||
-				   (isCreative(player)&&this.equals(ConfigHandler.SecurityLevel.CREATIVEONLY));
+				   (isCreative(player) && this.equals(ConfigHandler.SecurityLevel.CREATIVEONLY));
 		}
 		public boolean canUse(EntityPlayerMP player, String owner){
 			return this.equals(ConfigHandler.SecurityLevel.ALL)||
 				   isOp(player)||
-				   (this.equals(ConfigHandler.SecurityLevel.OWNERS) && (owner.equals(player.getUniqueID().toString()) || owner.equals("null")))||
-				   (isCreative(player)&&this.equals(ConfigHandler.SecurityLevel.CREATIVEONLY));
+				   (this.equals(ConfigHandler.SecurityLevel.OWNERS) && owner.equals(player.getUniqueID().toString()))||
+				   (isCreative(player) && this.equals(ConfigHandler.SecurityLevel.CREATIVEONLY));
 		}
 	}
 
@@ -104,7 +108,7 @@ public class ConfigHandler {
 		villageSignpostsWeight = config.getInt("villageSignpostsWeight", category, 20, 0, Integer.MAX_VALUE, "Defines the village component weight of signposts");
 		villageWaystonesWeight = config.getInt("villageWaystoneWeight", category, 20, 0, Integer.MAX_VALUE, "Defines the village component weight of waystones");
 		onlyVillageTargets = config.getBoolean("onlyVillageDestinations", category, true, "Defines wether signposts in villages can be generated with waystones placed by players as destinations");
-		
+
 		ClientConfigStorage.INSTANCE.setDisableVillageGeneration(disableVillageGeneration);
 		ClientConfigStorage.INSTANCE.setVillageMaxSignposts(villageMaxSignposts);
 		ClientConfigStorage.INSTANCE.setVillageSignpostsWeight(villageSignpostsWeight);
@@ -143,7 +147,9 @@ public class ConfigHandler {
 		costMult = config.getInt("distancePerPayment", category, 0, 0, Integer.MAX_VALUE, "The distance a Player can teleport with one item (the total cost of a teleportation is calculated using the total distance)(0 = unlimited)");
 		signRec = RecipeCost.valueOf(config.getString("signpostRecipeCost", category, "NORMAL", "Changes the recipe for signposts (NORMAL/EXPENSIVE/VERY_EXPENSIVE/DEACTIVATED)", RecipeCost.allValues()));
 		waysRec = RecipeCost.valueOf(config.getString("waystoneRecipeCost", category, "NORMAL", "Changes the recipe for waystones (NORMAL/EXPENSIVE/VERY_EXPENSIVE/DEACTIVATED)", RecipeCost.allValues()));
-	
+		allowedCraftingModels = config.getStringList("waystoneModelCraftingTypes", category, BaseModelPost.allTypeNames, "Decide what waystone models can be crafted. You can look up the model names at [TODO: Insert link]", BaseModelPost.allTypeNames);
+		allowedVillageModels = config.getStringList("waystoneModelVillageTypes", category, BaseModelPost.allDefaultVillageTypeNames, "Decide what waystone models are generated in villages. You can look up the model names at [TODO: Insert link]", BaseModelPost.allTypeNames);
+
 		ClientConfigStorage.INSTANCE.setDeactivateTeleportation(deactivateTeleportation);
 		ClientConfigStorage.INSTANCE.setInterdimensional(interdimensional);
 		ClientConfigStorage.INSTANCE.setMaxWaystones(maxWaystones);
@@ -153,6 +159,8 @@ public class ConfigHandler {
 		ClientConfigStorage.INSTANCE.setCostMult(costMult);
 		ClientConfigStorage.INSTANCE.setSignRec(signRec);
 		ClientConfigStorage.INSTANCE.setWaysRec(waysRec);
+		ClientConfigStorage.INSTANCE.setAllowedCraftingModels(allowedCraftingModels);
+		ClientConfigStorage.INSTANCE.setAllowedVillageModels(allowedVillageModels);
 	}
 	
 	public static void loadSecurity(){
@@ -257,6 +265,16 @@ public class ConfigHandler {
 	@Deprecated
 	public static boolean isOnlyVillageTargets() {
 		return onlyVillageTargets;
+	}
+
+	@Deprecated
+	public static String[] getAllowedCraftingModels() {
+		return allowedCraftingModels;
+	}
+
+	@Deprecated
+	public static String[] getAllowedVillageModels() {
+		return allowedVillageModels;
 	}
 	
 }

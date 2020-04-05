@@ -1,12 +1,8 @@
 package gollorum.signpost.worldGen.villages.waystone;
 
-import java.util.List;
-import java.util.Random;
-
-import javax.annotation.Nullable;
-
-import gollorum.signpost.BlockHandler;
 import gollorum.signpost.SPEventHandler;
+import gollorum.signpost.Signpost;
+import gollorum.signpost.blocks.BaseModelPost;
 import gollorum.signpost.blocks.BasePost;
 import gollorum.signpost.blocks.WaystoneContainer;
 import gollorum.signpost.management.PostHandler;
@@ -23,6 +19,10 @@ import net.minecraft.world.World;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 import net.minecraft.world.gen.structure.StructureComponent;
 import net.minecraft.world.gen.structure.StructureVillagePieces;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Random;
 
 public class VillageComponentWaystone extends StructureVillagePieces.Village {
 
@@ -67,11 +67,15 @@ public class VillageComponentWaystone extends StructureVillagePieces.Village {
 		final int x = this.boundingBox.getCenterX();
 		final int z = this.boundingBox.getCenterZ();
 		final int y = GenerateStructureHelper.getInstance().getTopSolidOrLiquidBlock(world, x, z);
+
+		List<BaseModelPost> allowedModelTypes = Signpost.proxy.blockHandler.baseModelsForVillages();
+		if(allowedModelTypes.size() == 0) return true;
+
 		if (world.getBlock(x, y - 1, z).getMaterial().isLiquid()) {
 			Block block = this.func_151558_b(Blocks.planks, 0);
 			world.setBlock(x, y - 1, z, block);
 		}
-		if (world.setBlock(x, y, z, BlockHandler.basemodels[random.nextInt(2)], facing, 3)) {
+		if (world.setBlock(x, y, z, allowedModelTypes.get(random.nextInt(allowedModelTypes.size())), facing, 3)) {
 			SPEventHandler.scheduleTask(new BoolRun() {
 				@Override
 				public boolean run() {

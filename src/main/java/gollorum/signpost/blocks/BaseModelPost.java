@@ -1,7 +1,5 @@
 package gollorum.signpost.blocks;
 
-import java.util.UUID;
-
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import gollorum.signpost.SPEventHandler;
@@ -9,7 +7,6 @@ import gollorum.signpost.Signpost;
 import gollorum.signpost.blocks.tiles.BaseModelPostTile;
 import gollorum.signpost.event.UpdateWaystoneEvent;
 import gollorum.signpost.management.ClientConfigStorage;
-import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.BaseUpdateClientMessage;
@@ -33,20 +30,38 @@ import net.minecraftforge.client.model.AdvancedModelLoader;
 import net.minecraftforge.client.model.IModelCustom;
 import net.minecraftforge.common.MinecraftForge;
 
+import java.util.UUID;
+
 public class BaseModelPost extends BlockContainer {
 
-	public static enum ModelType{
-		MODEL1(0, "model0", new ResourceLocation("signpost:models/block/ws1tri.obj"), new ResourceLocation("signpost:textures/blocks/base.png")),
-		MODEL2(1, "model1", new ResourceLocation("signpost:models/block/ws2tri.obj"), new ResourceLocation("signpost:textures/blocks/base.png")),
-		MODEL3(2, "model2", new ResourceLocation("signpost:models/block/ws3tri.obj"), new ResourceLocation("signpost:textures/blocks/base.png")),
-		MODEL4(3, "model3", new ResourceLocation("signpost:models/block/ws4tri.obj"), new ResourceLocation("signpost:textures/blocks/base.png")),
-		MODEL5(4, "model4", new ResourceLocation("signpost:models/block/ws5tri.obj"), new ResourceLocation("signpost:textures/blocks/base.png"));
+	public static final String[] allTypeNames = {"simple0", "simple1", "simple2", "detailed0", "detailed1", "aer", "dwarf", "ygnar"};
+	public static final String[] allDefaultVillageTypeNames = {"simple0", "simple1", "simple2", "detailed0", "detailed1"};
+    public static final int[] allTypeIds = {5, 6, 7, 0, 1, 2, 3, 4};
+
+	public static enum ModelType {
+
+        MODEL0(0),
+		MODEL1(1),
+		MODEL2(2),
+		MODEL3(3),
+		MODEL4(4),
+        MODEL5(5),
+        MODEL6(6),
+        MODEL7(7);
 
 		private int ID;
-		private String name;
+        public final String name;
 		public IModelCustom MODEL;
 		public final ResourceLocation TEXTURE;
-			
+
+        private ModelType(int i){
+            this(allTypeIds[i], allTypeNames[i]);
+        }
+
+        private ModelType(int ID, String name){
+            this(ID, name, new ResourceLocation("signpost:models/block/"+name+".obj"), new ResourceLocation("signpost:textures/blocks/waystone.png"));
+        }
+
 		private ModelType(int ID, String name, final ResourceLocation model, ResourceLocation texture){
 			this.ID = ID;
 			this.name = name;
@@ -79,14 +94,23 @@ public class BaseModelPost extends BlockContainer {
 			return ID;
 		}
 
-		private static ModelType getByID(int ID){
-			for(ModelType now: ModelType.values()){
-				if(ID == now.ID){
-					return now;
-				}
-			}
-			return ModelType.MODEL1;
-		}
+		public static ModelType getByID(int ID){
+            for(ModelType now: ModelType.values()){
+                if(ID == now.ID){
+                    return now;
+                }
+            }
+            return ModelType.MODEL1;
+        }
+
+        public static ModelType getByName(String name){
+            for(ModelType now: ModelType.values()){
+                if(name.equals(now.name)){
+                    return now;
+                }
+            }
+            return ModelType.MODEL1;
+        }
 	}
 
 	public final ModelType type;

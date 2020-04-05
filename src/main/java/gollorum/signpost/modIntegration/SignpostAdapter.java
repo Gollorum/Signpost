@@ -1,12 +1,11 @@
 package gollorum.signpost.modIntegration;
 
-import java.util.Set;
-
 import cpw.mods.fml.common.Loader;
-import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.StonedHashSet;
 import gollorum.signpost.util.collections.Lurchsauna;
 import net.minecraft.entity.player.EntityPlayer;
+
+import java.util.Set;
 
 public class SignpostAdapter {
 	

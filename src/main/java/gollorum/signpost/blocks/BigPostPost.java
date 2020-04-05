@@ -1,7 +1,5 @@
 package gollorum.signpost.blocks;
 
-import java.util.function.Function;
-
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.blocks.tiles.SuperPostPostTile;
@@ -32,6 +30,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
+
+import java.util.function.Function;
 
 public class BigPostPost extends SuperPostPost {
 
@@ -241,6 +241,7 @@ public class BigPostPost extends SuperPostPost {
 				}
 			}
 		} else {
+			if(!canUse((EntityPlayerMP) player, superTile)) return;
 			NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiBigPostID, x, y, z), (EntityPlayerMP) player);
 			NetworkHandler.netWrap.sendTo(new SendAllWaystoneNamesMessage(PostHandler.getAllWaystones().select(new Function<BaseInfo, String>() {
 				@Override

@@ -1,28 +1,12 @@
 package gollorum.signpost;
 
-import java.io.File;
-import java.util.UUID;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
 import cpw.mods.fml.common.SidedProxy;
-import cpw.mods.fml.common.event.FMLInitializationEvent;
-import cpw.mods.fml.common.event.FMLPostInitializationEvent;
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.event.FMLServerAboutToStartEvent;
-import cpw.mods.fml.common.event.FMLServerStartingEvent;
+import cpw.mods.fml.common.event.*;
 import cpw.mods.fml.common.network.NetworkRegistry;
-import gollorum.signpost.commands.ConfirmTeleportCommand;
-import gollorum.signpost.commands.DiscoverWaystone;
-import gollorum.signpost.commands.GetSignpostCount;
-import gollorum.signpost.commands.GetWaystoneCount;
-import gollorum.signpost.commands.ListAllWaystones;
-import gollorum.signpost.commands.SetSignpostCount;
-import gollorum.signpost.commands.SetWaystoneCount;
+import gollorum.signpost.commands.*;
 import gollorum.signpost.gui.SignGuiHandler;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
@@ -36,8 +20,13 @@ import gollorum.signpost.worldGen.villages.NameLibrary;
 import gollorum.signpost.worldGen.villages.VillageLibrary;
 import net.minecraft.command.ServerCommandManager;
 import net.minecraft.nbt.NBTTagCompound;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-@Mod(modid = Signpost.MODID, version = Signpost.VERSION, name = "SignPost")
+import java.io.File;
+import java.util.UUID;
+
+@Mod(modid = Signpost.MODID, version = Signpost.VERSION, name = "SignPost", dependencies = "required-after:waystones")
 public class Signpost{
 
 	@Instance

@@ -38,7 +38,7 @@ public abstract class SuperPostPost extends BlockContainer {
 	@Override
 	public void onBlockClicked(World world, int x, int y, int z, EntityPlayer player) {
 		SuperPostPostTile superTile = getSuperTile(world, x, y, z);
-		if (world.isRemote || !ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canUse((EntityPlayerMP) player, ""+superTile.owner)) {
+		if (world.isRemote || !canUse((EntityPlayerMP) player, superTile)) {
 			return;
 		}
 		Object hit = getHitTarget(world, x, y, z, player);
@@ -87,28 +87,29 @@ public abstract class SuperPostPost extends BlockContainer {
 	}
 
 	@Override
-	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int facing, float hitX, float hitY, float hitZ) {
-		if(MinecraftForge.EVENT_BUS.post(new UseSignpostEvent(player, world, x, y, z)) || world.isRemote){
+	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer playerIn, int facing, float hitX, float hitY, float hitZ) {
+		if(MinecraftForge.EVENT_BUS.post(new UseSignpostEvent(playerIn, world, x, y, z)) || world.isRemote){
 			return true;
 		}
-		Object hit = getHitTarget(world, x, y, z, player);
+		Object hit = getHitTarget(world, x, y, z, playerIn);
 		SuperPostPostTile superTile = getSuperTile(world, x, y, z);
+		EntityPlayerMP player = (EntityPlayerMP) playerIn;
 		if(isHitWaystone(hit)){
 			rightClickWaystone(superTile, player, x, y, z);
 		}else if (player.getHeldItem() != null){
 			if(player.getHeldItem().getItem() instanceof PostWrench){
-				if(!ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canUse((EntityPlayerMP) player, ""+superTile.owner)){
+				if(!canUse(player, superTile)){
 					return true;
 				}
 				rightClickWrench(hit, superTile, player, x, y, z);
 				sendPostBasesToAll(superTile);
 			}else if(player.getHeldItem().getItem() instanceof CalibratedPostWrench){
-				if(!ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canUse((EntityPlayerMP) player, ""+superTile.owner)){
+				if(!canUse(player, superTile)){
 					return true;
 				}
 				rightClickCalibratedWrench(hit, superTile, player, x, y, z);
 			}else if(player.getHeldItem().getItem() instanceof PostBrush){
-				if(!ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canUse((EntityPlayerMP) player, ""+superTile.owner)){
+				if(!canUse(player, superTile)){
 					return true;
 				}
 				rightClickBrush(hit, superTile, player, x, y, z);
@@ -117,7 +118,7 @@ public abstract class SuperPostPost extends BlockContainer {
 				if(superTile.getPaintObject()==null){
 					superTile.setAwaitingPaint(false);
 				}else{
-					if(!ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canUse((EntityPlayerMP) player, ""+superTile.owner)){
+					if(!canUse(player, superTile)){
 						return true;
 					}
 					NetworkHandler.netWrap.sendTo(new RequestTextureMessage(x, y, z), (EntityPlayerMP)player);
@@ -133,6 +134,10 @@ public abstract class SuperPostPost extends BlockContainer {
 			preRightClick(hit, superTile, player, x, y, z);
 		}
 		return true;
+	}
+	
+	protected boolean canUse(EntityPlayerMP player, SuperPostPostTile tile) {
+		return ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canUse(player, ""+tile.owner);
 	}
 
 	private void rightClickWaystone(SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z) {

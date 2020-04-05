@@ -31,7 +31,7 @@ public class BasePost extends BlockContainer {
 		this.setResistance(100000);
 		setBlockName("SignpostBase");
 		setCreativeTab(CreativeTabs.tabTransport);
-		setBlockTextureName(Signpost.MODID + ":base");
+		setBlockTextureName(Signpost.MODID + ":waystone");
 	}
 
 	@Override

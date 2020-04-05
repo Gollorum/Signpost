@@ -1,9 +1,5 @@
 package gollorum.signpost.modIntegration;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.Set;
-
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.Side;
@@ -25,6 +21,10 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.Set;
 
 public class WaystonesModHandler implements ModHandler {
 
