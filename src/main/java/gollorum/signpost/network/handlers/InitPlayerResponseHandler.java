@@ -19,6 +19,7 @@ public class InitPlayerResponseHandler implements IMessageHandler<InitPlayerResp
 		ClientConfigStorage.INSTANCE.setMaxDist(message.maxDist);
 		ClientConfigStorage.INSTANCE.setPaymentItem(message.paymentItem);
 		ClientConfigStorage.INSTANCE.setCostMult(message.costMult);
+		ClientConfigStorage.INSTANCE.setCostBase(message.costBase);
 		ClientConfigStorage.INSTANCE.setSignRec(message.signRec);
 		ClientConfigStorage.INSTANCE.setWaysRec(message.waysRec);
 		ClientConfigStorage.INSTANCE.setSecurityLevelWaystone(message.securityLevelWaystone);

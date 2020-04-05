@@ -1,7 +1,5 @@
 package gollorum.signpost.blocks;
 
-import java.util.UUID;
-
 import gollorum.signpost.BlockHandler;
 import gollorum.signpost.SPEventHandler;
 import gollorum.signpost.Signpost;
@@ -30,6 +28,8 @@ import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
+
+import java.util.UUID;
 
 public abstract class SuperPostPost extends BlockContainer {
 	

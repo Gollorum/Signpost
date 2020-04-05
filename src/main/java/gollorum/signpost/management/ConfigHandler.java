@@ -25,6 +25,7 @@ public class ConfigHandler {
 	private static Item cost;
 	private static String paymentItem;
 	private static int costMult;
+	private static int costBase;
 
 	private static RecipeCost signRec;
 	private static RecipeCost waysRec;
@@ -80,12 +81,11 @@ public class ConfigHandler {
 	public enum RecipeCost{
 		DEACTIVATED, NORMAL, EXPENSIVE, VERY_EXPENSIVE;
 		public static String[] allValues(){
-			String[] ret = {
-					DEACTIVATED.toString(),
-					NORMAL.toString(),
-					EXPENSIVE.toString(),
-					VERY_EXPENSIVE.toString(),
-			};
+			String[] ret = new String[values().length];
+			RecipeCost[] values = values();
+			for (int i = 0; i < values.length; i++) {
+				ret[i] = values[i].toString();
+			}
 			return ret;
 		}
 	}
@@ -103,11 +103,20 @@ public class ConfigHandler {
 		String category = "WorldGen";
 		config.addCustomCategoryComment(category, "World generation settings");
 
-		disableVillageGeneration = config.getBoolean("disableVillageGeneration", category, false, "Disables the generation of signposts and waystones in villages");
-		villageMaxSignposts = config.getInt("villageMaxSignposts", category, 1, 0, Integer.MAX_VALUE, "The maximum count of signposts spawning in villages");
-		villageSignpostsWeight = config.getInt("villageSignpostsWeight", category, 20, 0, Integer.MAX_VALUE, "Defines the village component weight of signposts");
-		villageWaystonesWeight = config.getInt("villageWaystoneWeight", category, 20, 0, Integer.MAX_VALUE, "Defines the village component weight of waystones");
-		onlyVillageTargets = config.getBoolean("onlyVillageDestinations", category, true, "Defines wether signposts in villages can be generated with waystones placed by players as destinations");
+		disableVillageGeneration = config.getBoolean("disableVillageGeneration", category, false,
+				"Disables the generation of signposts and waystones in villages");
+
+		villageMaxSignposts = config.getInt("villageMaxSignposts", category, 1, 0, Integer.MAX_VALUE,
+				"The maximum count of signposts spawning in villages");
+
+		villageSignpostsWeight = config.getInt("villageSignpostsWeight", category, 20, 0, Integer.MAX_VALUE,
+				"Defines the village component weight of signposts");
+
+		villageWaystonesWeight = config.getInt("villageWaystoneWeight", category, 20, 0, Integer.MAX_VALUE,
+				"Defines the village component weight of waystones");
+
+		onlyVillageTargets = config.getBoolean("onlyVillageDestinations", category, true,
+				"Defines wether signposts in villages can be generated with waystones placed by players as destinations");
 
 		ClientConfigStorage.INSTANCE.setDisableVillageGeneration(disableVillageGeneration);
 		ClientConfigStorage.INSTANCE.setVillageMaxSignposts(villageMaxSignposts);
@@ -129,7 +138,8 @@ public class ConfigHandler {
 		String category = "Client Settings";
 		config.addCustomCategoryComment(category, "Client-Side settings");
 		
-		skipTeleportConfirm = config.getBoolean("skipTeleportConfirm", category, true, "Directly teleports the player on waystone right-click");
+		skipTeleportConfirm = config.getBoolean("skipTeleportConfirm", category, true,
+				"Directly teleports the player on waystone right-click");
 		
 		ClientConfigStorage.INSTANCE.setSkipTeleportConfirm(skipTeleportConfirm);
 	}
@@ -138,17 +148,41 @@ public class ConfigHandler {
 		String category = "Limitaion";
 		config.addCustomCategoryComment(category, "Teleport limitaion settings");
 		
-		deactivateTeleportation = config.getBoolean("deactivateTeleportation", category, false, "Deactivates teleportation and the waystone recipe, since it isn't needed");
-		interdimensional = config.getBoolean("interdimensional", category, true, "Enables interdimensional teleportation (e.g. overworld-nether)");
-		maxWaystones = config.getInt("maxWaystones", category, -1, -1, Integer.MAX_VALUE, "The amount of waystones a player is allowed to place (-1 = unlimited)");
-		maxSignposts = config.getInt("maxSignposts", category, -1, -1, Integer.MAX_VALUE, "The amount of signposts a player is allowed to place (-1 = unlimited)");
-		maxDist = config.getInt("maxDistance", category, -1, -1, (int)Math.sqrt(Integer.MAX_VALUE), "The allowed distance between signpost an waystone (-1 = unlimited)");
-		paymentItem = config.getString("paymentItem", category, "", "The item players have to pay in order to use a signpost (e.g. minecraft:enderPearl, '' = free)");
-		costMult = config.getInt("distancePerPayment", category, 0, 0, Integer.MAX_VALUE, "The distance a Player can teleport with one item (the total cost of a teleportation is calculated using the total distance)(0 = unlimited)");
-		signRec = RecipeCost.valueOf(config.getString("signpostRecipeCost", category, "NORMAL", "Changes the recipe for signposts (NORMAL/EXPENSIVE/VERY_EXPENSIVE/DEACTIVATED)", RecipeCost.allValues()));
-		waysRec = RecipeCost.valueOf(config.getString("waystoneRecipeCost", category, "NORMAL", "Changes the recipe for waystones (NORMAL/EXPENSIVE/VERY_EXPENSIVE/DEACTIVATED)", RecipeCost.allValues()));
-		allowedCraftingModels = config.getStringList("waystoneModelCraftingTypes", category, BaseModelPost.allTypeNames, "Decide what waystone models can be crafted. You can look up the model names at [TODO: Insert link]", BaseModelPost.allTypeNames);
-		allowedVillageModels = config.getStringList("waystoneModelVillageTypes", category, BaseModelPost.allDefaultVillageTypeNames, "Decide what waystone models are generated in villages. You can look up the model names at [TODO: Insert link]", BaseModelPost.allTypeNames);
+		deactivateTeleportation = config.getBoolean("deactivateTeleportation", category, false,
+				"Deactivates teleportation and the waystone recipe, since it isn't needed");
+
+		interdimensional = config.getBoolean("interdimensional", category, true,
+				"Enables interdimensional teleportation (e.g. overworld-nether)");
+
+		maxWaystones = config.getInt("maxWaystones", category, -1, -1, Integer.MAX_VALUE,
+				"The amount of waystones a player is allowed to place (-1 = unlimited)");
+
+		maxSignposts = config.getInt("maxSignposts", category, -1, -1, Integer.MAX_VALUE,
+				"The amount of signposts a player is allowed to place (-1 = unlimited)");
+
+		maxDist = config.getInt("maxDistance", category, -1, -1, (int)Math.sqrt(Integer.MAX_VALUE),
+				"The allowed distance between signpost an waystone (-1 = unlimited)");
+
+		paymentItem = config.getString("paymentItem", category, "",
+				"The item players have to pay in order to use a signpost (e.g. minecraft:enderPearl, '' = free)");
+
+		costMult = config.getInt("distancePerPayment", category, 0, 0, Integer.MAX_VALUE,
+				"The distance a Player can teleport with one item (the total cost of a teleportation is calculated using the total distance)(0 = unlimited)");
+
+		costBase = config.getInt("constantPaymentPerTeleport", category, 1, 1, Integer.MAX_VALUE,
+				"The amount of items players always have to pay when teleporting, regardless of the distance. For the total cost, this amount will be added to the distance-based cost.");
+
+		signRec = RecipeCost.valueOf(config.getString("signpostRecipeCost", category, "NORMAL",
+				"Changes the recipe for signposts (NORMAL/EXPENSIVE/VERY_EXPENSIVE/DEACTIVATED)", RecipeCost.allValues()));
+
+		waysRec = RecipeCost.valueOf(config.getString("waystoneRecipeCost", category, "NORMAL",
+				"Changes the recipe for waystones (NORMAL/EXPENSIVE/VERY_EXPENSIVE/DEACTIVATED)", RecipeCost.allValues()));
+
+		allowedCraftingModels = config.getStringList("waystoneModelCraftingTypes", category, BaseModelPost.allTypeNames,
+				"Decide what waystone models can be crafted. You can look up the model names at [TODO: Insert link]", BaseModelPost.allTypeNames);
+
+		allowedVillageModels = config.getStringList("waystoneModelVillageTypes", category, BaseModelPost.allDefaultVillageTypeNames,
+				"Decide what waystone models are generated in villages. You can look up the model names at [TODO: Insert link]", BaseModelPost.allTypeNames);
 
 		ClientConfigStorage.INSTANCE.setDeactivateTeleportation(deactivateTeleportation);
 		ClientConfigStorage.INSTANCE.setInterdimensional(interdimensional);
@@ -157,6 +191,7 @@ public class ConfigHandler {
 		ClientConfigStorage.INSTANCE.setMaxDist(maxDist);
 		ClientConfigStorage.INSTANCE.setPaymentItem(paymentItem);
 		ClientConfigStorage.INSTANCE.setCostMult(costMult);
+		ClientConfigStorage.INSTANCE.setCostBase(costBase);
 		ClientConfigStorage.INSTANCE.setSignRec(signRec);
 		ClientConfigStorage.INSTANCE.setWaysRec(waysRec);
 		ClientConfigStorage.INSTANCE.setAllowedCraftingModels(allowedCraftingModels);
@@ -167,9 +202,14 @@ public class ConfigHandler {
 		String category = "Security";
 		config.addCustomCategoryComment(category, "Security settings");
 
-		securityLevelWaystone = SecurityLevel.valueOf(config.getString("waystonePermissionLevel", category, "ALL", "Defines which players can place and edit a waystone (ALL, OWNERS, CREATIVEONLY, OPONLY). OPs are always included, 'OWNERS' = everyone can place, only the owner+OPs can edit.", SecurityLevel.allValues()));
-		securityLevelSignpost = SecurityLevel.valueOf(config.getString("signpostPermissionLevel", category, "ALL", "Defines which players can place and edit a signpost (ALL, OWNERS, CREATIVEONLY, OPONLY). OPs are always included, 'OWNERS' = everyone can place, only the owner+OPs can edit.", SecurityLevel.allValues()));
-		disableDiscovery = config.getBoolean("disableDiscovery", category, false, "Allows players to travel to waystones without the need to discover them");
+		securityLevelWaystone = SecurityLevel.valueOf(config.getString("waystonePermissionLevel", category, "ALL",
+				"Defines which players can place and edit a waystone (ALL, OWNERS, CREATIVEONLY, OPONLY). OPs are always included, 'OWNERS' = everyone can place, only the owner+OPs can edit.", SecurityLevel.allValues()));
+
+		securityLevelSignpost = SecurityLevel.valueOf(config.getString("signpostPermissionLevel", category, "ALL",
+				"Defines which players can place and edit a signpost (ALL, OWNERS, CREATIVEONLY, OPONLY). OPs are always included, 'OWNERS' = everyone can place, only the owner+OPs can edit.", SecurityLevel.allValues()));
+
+		disableDiscovery = config.getBoolean("disableDiscovery", category, false,
+				"Allows players to travel to waystones without the need to discover them");
 	
 		ClientConfigStorage.INSTANCE.setSecurityLevelWaystone(securityLevelWaystone);
 		ClientConfigStorage.INSTANCE.setSecurityLevelSignpost(securityLevelSignpost);
@@ -221,6 +261,9 @@ public class ConfigHandler {
 	public static int getCostMult() {
 		return costMult;
 	}
+
+	@Deprecated
+	public static int getCostBase() { return costBase; }
 
 	@Deprecated
 	public static RecipeCost getSignRec() {

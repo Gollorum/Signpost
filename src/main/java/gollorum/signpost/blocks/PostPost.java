@@ -1,7 +1,5 @@
 package gollorum.signpost.blocks;
 
-import java.util.function.Function;
-
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blocks.tiles.PostPostTile;
 import gollorum.signpost.blocks.tiles.SuperPostPostTile;
@@ -32,6 +30,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
+
+import java.util.function.Function;
 
 public class PostPost extends SuperPostPost {
 	

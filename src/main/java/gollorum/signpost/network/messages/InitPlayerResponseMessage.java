@@ -19,6 +19,7 @@ public class InitPlayerResponseMessage implements IMessage{
 	public int maxDist;
 	public String paymentItem;
 	public int costMult;
+	public int costBase;
 	
 	public RecipeCost signRec;
 	public RecipeCost waysRec;
@@ -44,6 +45,7 @@ public class InitPlayerResponseMessage implements IMessage{
 		maxDist = ConfigHandler.getMaxDist();
 		paymentItem = ConfigHandler.getPaymentItem();
 		costMult = ConfigHandler.getCostMult();
+		costBase = ConfigHandler.getCostBase();
 		signRec = ConfigHandler.getSignRec();
 		waysRec = ConfigHandler.getWaysRec();
 		securityLevelWaystone = ConfigHandler.getSecurityLevelWaystone();
@@ -70,6 +72,7 @@ public class InitPlayerResponseMessage implements IMessage{
 		buf.writeInt(maxDist);
 		ByteBufUtils.writeUTF8String(buf, paymentItem);
 		buf.writeInt(costMult);
+		buf.writeInt(costBase);
 		ByteBufUtils.writeUTF8String(buf, securityLevelWaystone.name());
 		ByteBufUtils.writeUTF8String(buf, securityLevelSignpost.name());
 		ByteBufUtils.writeUTF8String(buf, signRec.name());
@@ -100,6 +103,7 @@ public class InitPlayerResponseMessage implements IMessage{
 		maxDist = buf.readInt();
 		paymentItem = ByteBufUtils.readUTF8String(buf);
 		costMult = buf.readInt();
+		costBase = buf.readInt();
 		securityLevelWaystone = SecurityLevel.valueOf(ByteBufUtils.readUTF8String(buf));
 		securityLevelSignpost = SecurityLevel.valueOf(ByteBufUtils.readUTF8String(buf));
 		signRec = RecipeCost.valueOf(ByteBufUtils.readUTF8String(buf));

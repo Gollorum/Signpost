@@ -19,6 +19,7 @@ public class ClientConfigStorage {
 	private Item cost;
 	private String paymentItem;
 	private int costMult;
+	private int costBase;
 
 	private RecipeCost signRec;
 	private RecipeCost waysRec;
@@ -106,6 +107,9 @@ public class ClientConfigStorage {
 	public void setCostMult(int costMult) {
 		this.costMult = costMult;
 	}
+
+	public void setCostBase(int costBase) { this.costBase = costBase; }
+	public int getCostBase() { return costBase; }
 
 	public RecipeCost getSignRec() {
 		return signRec;

@@ -1,14 +1,5 @@
 package gollorum.signpost.management;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.UUID;
-import java.util.function.Function;
-
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import gollorum.signpost.SPEventHandler;
@@ -19,16 +10,7 @@ import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.handlers.SendAllWaystoneNamesHandler;
 import gollorum.signpost.network.messages.ChatMessage;
 import gollorum.signpost.network.messages.TeleportRequestMessage;
-import gollorum.signpost.util.BaseInfo;
-import gollorum.signpost.util.BigBaseInfo;
-import gollorum.signpost.util.BoolRun;
-import gollorum.signpost.util.DoubleBaseInfo;
-import gollorum.signpost.util.MyBlockPos;
-import gollorum.signpost.util.MyBlockPosSet;
-import gollorum.signpost.util.Paintable;
-import gollorum.signpost.util.Sign;
-import gollorum.signpost.util.StonedHashSet;
-import gollorum.signpost.util.StringSet;
+import gollorum.signpost.util.*;
 import gollorum.signpost.util.collections.Lurchpaerchensauna;
 import gollorum.signpost.util.collections.Pair;
 import net.minecraft.entity.Entity;
@@ -39,6 +21,10 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.ServerConfigurationManager;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.WorldServer;
+
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.function.Function;
 
 public class PostHandler {
 
@@ -291,16 +277,20 @@ public class PostHandler {
 			}
 		}
 	}
-	
+
 	public static int getStackSize(int x1, int y1, int z1, int x2, int y2, int z2){
+		int dx = x1-x2; int dy = y1-y2; int dz = z1-z2;
+		return getStackSize((float)Math.sqrt(dx*dx+dy*dy+dz*dz));
+	}
+
+	public static int getStackSize(float distance){
 		if(ClientConfigStorage.INSTANCE.getCostMult()==0){
-			return 1;
+			return ClientConfigStorage.INSTANCE.getCostBase();
 		}else{
-			int dx = x1-x2; int dy = y1-y2; int dz = z1-z2;
-			return (int) Math.sqrt(dx*dx+dy*dy+dz*dz) / ClientConfigStorage.INSTANCE.getCostMult() + 1;
+			return (int) (distance / ClientConfigStorage.INSTANCE.getCostMult() + ClientConfigStorage.INSTANCE.getCostBase());
 		}
 	}
-	
+
 	public static int getStackSize(MyBlockPos pos1, MyBlockPos pos2){
 		return getStackSize(pos1.x, pos1.y, pos1.z, pos2.x, pos2.y, pos2.z);
 	}
