@@ -1,12 +1,8 @@
 package gollorum.signpost.worldGen.villages.waystone;
 
-import java.util.List;
-import java.util.Random;
-
-import javax.annotation.Nullable;
-
-import gollorum.signpost.BlockHandler;
 import gollorum.signpost.SPEventHandler;
+import gollorum.signpost.Signpost;
+import gollorum.signpost.blocks.BaseModelPost;
 import gollorum.signpost.blocks.BasePost;
 import gollorum.signpost.blocks.WaystoneContainer;
 import gollorum.signpost.management.PostHandler;
@@ -24,6 +20,10 @@ import net.minecraft.world.World;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 import net.minecraft.world.gen.structure.StructureComponent;
 import net.minecraft.world.gen.structure.StructureVillagePieces;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Random;
 
 public class VillageComponentWaystone extends StructureVillagePieces.Village{
 	
@@ -65,12 +65,16 @@ public class VillageComponentWaystone extends StructureVillagePieces.Village{
 		int x = (this.boundingBox.minX + this.boundingBox.maxX)/2;
 		int z = (this.boundingBox.minZ + this.boundingBox.maxZ)/2;
 		BlockPos postPos = GenerateStructureHelper.getInstance().getTopSolidOrLiquidBlock(world, new BlockPos(x, 0, z));
+
+		List<BaseModelPost> allowedModelTypes = Signpost.proxy.blockHandler.baseModelsForVillages();
+		if(allowedModelTypes.size() == 0) return true;
+
 		if (world.getBlockState(postPos.add(0, -1, 0)).getMaterial().isLiquid()) {
 			IBlockState block = this.getBiomeSpecificBlockState(Blocks.PLANKS.getDefaultState());
 			world.setBlockState(postPos.add(0, -1, 0), block);
 		}
 		final BlockPos finalPos = postPos;
-		if(world.setBlockState(finalPos, BlockHandler.basemodels[random.nextInt(2)].getStateForFacing(facing), 3)){
+		if(world.setBlockState(finalPos, allowedModelTypes.get(random.nextInt(allowedModelTypes.size())).getStateForFacing(facing), 3)){
 			SPEventHandler.scheduleTask(new BoolRun() {
 				@Override
 				public boolean run() {

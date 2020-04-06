@@ -1,16 +1,13 @@
 package gollorum.signpost;
 
-import java.util.ArrayList;
-
 import gollorum.signpost.blocks.BaseModelPost;
 import gollorum.signpost.blocks.BasePost;
 import gollorum.signpost.blocks.BigPostPost;
 import gollorum.signpost.blocks.BigPostPost.BigPostType;
-import gollorum.signpost.blocks.ItemBlockWithMeta;
 import gollorum.signpost.blocks.PostPost;
 import gollorum.signpost.blocks.PostPost.PostType;
 import gollorum.signpost.management.ClientConfigStorage;
-import gollorum.signpost.management.ConfigHandler;
+import gollorum.signpost.util.collections.CollectionUtils;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -26,6 +23,12 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.registries.ForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistry;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class BlockHandler {
 	
@@ -51,14 +54,32 @@ public class BlockHandler {
 	public static final BigPostPost bigpost_iron = new BigPostPost(BigPostType.IRON);
 	public static final BigPostPost bigpost_stone = new BigPostPost(BigPostType.STONE);
 	public static final BigPostPost[] bigposts = {bigpost_oak, bigpost_spruce, bigpost_birch, bigpost_jungle, bigpost_acacia, bigpost_big_oak, bigpost_iron, bigpost_stone};
-	
-	protected ArrayList<ItemBlockWithMeta>  baseModelItems = new ArrayList<ItemBlockWithMeta>();
 
 	public static final BlockHandler INSTANCE = new BlockHandler();
 	
 	protected BlockHandler(){}
 	
 	public static void init(){}
+
+	public List<BaseModelPost> baseModelsForCrafting(){
+		List<BaseModelPost> allModels = Arrays.asList(basemodels);
+		ArrayList<BaseModelPost> allowedModels = new ArrayList<BaseModelPost>();
+		for (final String model : ClientConfigStorage.INSTANCE.getAllowedCraftingModels()){
+			BaseModelPost block = CollectionUtils.find(allModels, (Predicate<BaseModelPost>) m -> m.type.name.equals(model));
+			if(block != null) allowedModels.add(block);
+		}
+		return allowedModels;
+	}
+
+	public List<BaseModelPost> baseModelsForVillages(){
+		List<BaseModelPost> allModels = Arrays.asList(basemodels);
+		ArrayList<BaseModelPost> allowedModels = new ArrayList<BaseModelPost>();
+		for (final String model : ClientConfigStorage.INSTANCE.getAllowedVillageModels()){
+			BaseModelPost block = CollectionUtils.find(allModels, (Predicate<BaseModelPost>) m -> m.type.name.equals(model));
+			if(block != null) allowedModels.add(block);
+		}
+		return allowedModels;
+	}
 
 	@SubscribeEvent
 	public void registerBlocks(RegistryEvent.Register<Block> event) {
@@ -114,6 +135,9 @@ public class BlockHandler {
 	private void waystoneRecipe(){
 		ForgeRegistry<IRecipe> registry = ((ForgeRegistry<IRecipe>)ForgeRegistries.RECIPES);
 		registry.remove(new ResourceLocation("signpost:blockbaserecipe"));
+		Function<Integer, ResourceLocation> makeKey = i -> new ResourceLocation("signpost:basemodel"+i+"recipe");
+		for(int i=0; registry.containsKey(makeKey.apply(i)); i++)
+			registry.remove(makeKey.apply(i));
 		if(ClientConfigStorage.INSTANCE.getSecurityLevelWaystone().canCraft && !ClientConfigStorage.INSTANCE.deactivateTeleportation()){
 			switch(ClientConfigStorage.INSTANCE.getWaysRec()){
 				case EXPENSIVE:
@@ -143,11 +167,14 @@ public class BlockHandler {
 							'P', Items.ENDER_PEARL);
 					break;
 			}
-			GameRegistry.addShapelessRecipe(new ResourceLocation("signpost:basemodel0recipe"), null, new ItemStack(basemodels[0], 1), Ingredient.fromStacks(new ItemStack(base, 1)));
-			for(int i=1; i<basemodels.length; i++){
-				GameRegistry.addShapelessRecipe(new ResourceLocation("signpost:basemodel"+i+"recipe"), null, new ItemStack(basemodels[i], 1), Ingredient.fromStacks(new ItemStack(basemodels[i-1], 1)));
+			List<BaseModelPost> allowedModels = baseModelsForCrafting();
+			if (allowedModels.size() > 0) {
+				GameRegistry.addShapelessRecipe(new ResourceLocation("signpost:basemodel0recipe"), null, new ItemStack(allowedModels.get(0), 1), Ingredient.fromStacks(new ItemStack(base, 1)));
+				for (int i = 1; i < allowedModels.size(); i++) {
+					GameRegistry.addShapelessRecipe(new ResourceLocation("signpost:basemodel" + i + "recipe"), null, new ItemStack(allowedModels.get(i), 1), Ingredient.fromStacks(new ItemStack(allowedModels.get(i - 1), 1)));
+				}
+				GameRegistry.addShapelessRecipe(new ResourceLocation("signpost:basemodel" + allowedModels.size() + "recipe"), null, new ItemStack(base, 1), Ingredient.fromStacks(new ItemStack(allowedModels.get(allowedModels.size() - 1))));
 			}
-			GameRegistry.addShapelessRecipe(new ResourceLocation("signpost:basemodel"+basemodels.length+"recipe"), null, new ItemStack(base, 1), Ingredient.fromStacks(new ItemStack(basemodels[basemodels.length-1], 1)));
 		}
 	}
 	

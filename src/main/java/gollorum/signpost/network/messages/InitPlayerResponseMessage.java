@@ -32,7 +32,10 @@ public class InitPlayerResponseMessage implements IMessage{
 	public int villageMaxSignposts;
 	public int villageSignpostsWeight;
 	public boolean onlyVillageTargets;
-	
+
+	public String[] allowedCraftingModels;
+	public String[] allowedVillageModels;
+
 	public InitPlayerResponseMessage(){
 		if(!ConfigHandler.isDeactivateTeleportation()){
 			allWaystones = PostHandler.getNativeWaystones();
@@ -52,6 +55,8 @@ public class InitPlayerResponseMessage implements IMessage{
 	    villageSignpostsWeight = ConfigHandler.getVillageSignpostsWeight(); 
 	    villageWaystonesWeight = ConfigHandler.getVillageWaystonesWeight();
 	    onlyVillageTargets = ConfigHandler.isOnlyVillageTargets();
+		allowedCraftingModels = ConfigHandler.getAllowedCraftingModels();
+		allowedVillageModels = ConfigHandler.getAllowedVillageModels();
 	}
 
 	@Override
@@ -77,6 +82,11 @@ public class InitPlayerResponseMessage implements IMessage{
 		buf.writeInt(villageSignpostsWeight);
 		buf.writeInt(villageWaystonesWeight);
 	    buf.writeBoolean(onlyVillageTargets);
+
+		buf.writeInt(allowedCraftingModels.length);
+		for(String ws: allowedCraftingModels) ByteBufUtils.writeUTF8String(buf, ws);
+		buf.writeInt(allowedVillageModels.length);
+		for(String ws: allowedVillageModels) ByteBufUtils.writeUTF8String(buf, ws);
 	}
 
 	@Override
@@ -103,6 +113,11 @@ public class InitPlayerResponseMessage implements IMessage{
 		villageSignpostsWeight = buf.readInt();
 		villageWaystonesWeight = buf.readInt(); 
 	    onlyVillageTargets = buf.readBoolean();
+
+		allowedCraftingModels = new String[buf.readInt()];
+		for(int i=0; i<allowedCraftingModels.length; i++) allowedCraftingModels[i] = ByteBufUtils.readUTF8String(buf);
+		allowedVillageModels = new String[buf.readInt()];
+		for(int i=0; i<allowedVillageModels.length; i++) allowedVillageModels[i] = ByteBufUtils.readUTF8String(buf);
 	}
 
 }

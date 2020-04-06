@@ -3,7 +3,7 @@
   "defaults": {
     "transform": "forge:default-block",
     "custom": { "flip-v": true},
-    "model": "signpost:ygnar.obj"
+    "model": "signpost:simple2.obj"
   },
   "variants": {
     "facing=east": { "y": 0, "uvlock": true },

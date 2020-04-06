@@ -3,7 +3,7 @@
   "defaults": {
     "transform": "forge:default-block",
     "custom": { "flip-v": true},
-    "model": "signpost:ws2tri.obj",
+    "model": "signpost:detailed1.obj",
 	"uvlock": true
   },
   "variants": {

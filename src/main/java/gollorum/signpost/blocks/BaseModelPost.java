@@ -1,7 +1,5 @@
 package gollorum.signpost.blocks;
 
-import java.util.UUID;
-
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blocks.tiles.BasePostTile;
 import gollorum.signpost.event.UpdateWaystoneEvent;
@@ -31,46 +29,62 @@ import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 
+import java.util.UUID;
+
 public class BaseModelPost extends BlockContainer {
 
-	public static enum ModelType implements IStringSerializable{
-		MODEL1(0, "model0"),
-		MODEL2(1, "model1"),
-		MODEL3(2, "model2"),
-		MODEL4(3, "model3"),
-		MODEL5(4, "model4");
+	public static final String[] allTypeNames = {"simple0", "simple1", "simple2", "detailed0", "detailed1", "aer", "dwarf", "ygnar"};
+	public static final String[] allDefaultVillageTypeNames = {"simple0", "simple1", "simple2", "detailed0", "detailed1"};
+	public static final int[] allTypeIds = {5, 6, 7, 0, 1, 2, 3, 4};
+
+	public static enum ModelType {
+		MODEL0(0),
+		MODEL1(1),
+		MODEL2(2),
+		MODEL3(3),
+		MODEL4(4),
+		MODEL5(5),
+		MODEL6(6),
+		MODEL7(7);
 		
 		private int ID;
-		private String name;
-		
+		public final String name;
+
+		private ModelType(int i){
+			this(allTypeIds[i], allTypeNames[i]);
+		}
+
 		private ModelType(int ID, String name){
 			this.ID = ID;
 			this.name = name;
 		}
-		
-		@Override
-		public String getName(){
-			return name;
-		}
-		
+
 		@Override
 		public String toString(){
-			return getName();
+			return name;
 		}
 		
 		public int getID(){
 			return ID;
 		}
-		
-		private static ModelType getByID(int ID){
+
+		public static ModelType getByID(int ID){
 			for(ModelType now: ModelType.values()){
 				if(ID == now.ID){
+					return now;
+				}
+			}
+			return ModelType.MODEL1;
+		}
+
+		public static ModelType getByName(String name){
+			for(ModelType now: ModelType.values()){
+				if(name.equals(now.name)){
 					return now;
 				}
 			}

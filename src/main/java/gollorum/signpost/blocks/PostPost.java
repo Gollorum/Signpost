@@ -187,7 +187,6 @@ public class PostPost extends SuperPostPost {
 				tilebases.awaitingPaint = false;
 			}
 		}
-//		NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiPostBrushID, x, y, z), (EntityPlayerMP) player);
 	}
 
 	public void clickCalibratedWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z){

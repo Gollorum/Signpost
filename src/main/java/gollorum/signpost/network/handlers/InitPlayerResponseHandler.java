@@ -29,6 +29,8 @@ public class InitPlayerResponseHandler implements IMessageHandler<InitPlayerResp
 	    ClientConfigStorage.INSTANCE.setVillageSignpostsWeight(message.villageSignpostsWeight); 
 	    ClientConfigStorage.INSTANCE.setVillageWaystonesWeight(message.villageWaystonesWeight);
 	    ClientConfigStorage.INSTANCE.setOnlyVillageTargets(message.onlyVillageTargets);
+		ClientConfigStorage.INSTANCE.setAllowedCraftingModels(message.allowedCraftingModels);
+		ClientConfigStorage.INSTANCE.setAllowedVillageModels(message.allowedVillageModels);
 		ClientConfigStorage.INSTANCE.postInit();
 		return null;
 	}
