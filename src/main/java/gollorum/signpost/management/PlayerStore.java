@@ -3,7 +3,6 @@ package gollorum.signpost.management;
 import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.util.MyBlockPosSet;
 import gollorum.signpost.util.StringSet;
-import gollorum.signpost.util.collections.Pair;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
@@ -21,20 +20,20 @@ public class PlayerStore implements IExtendedEntityProperties {
 
 	@Override
 	public void saveNBTData(NBTTagCompound compound) {
-		StringSet knownOld = PostHandler.playerKnownWaystones.get(player.getUniqueID());
+		StringSet knownOld = PostHandler.getPlayerKnownWaystoneNames(player.getUniqueID());
 		compound.setInteger("knownCount", knownOld.size());
 		int i = 0;
 		for (String now : knownOld) {
 			compound.setString("ws" + (i++), now);
 		}
-		Pair<MyBlockPosSet, Pair<Integer, Integer>> known = PostHandler.playerKnownWaystonePositions.get(player.getUniqueID());
-		compound.setInteger("knownCountPos", known.a.size());
+		PlayerRestrictions known = PostHandler.getPlayerKnownWaystonePositions(player.getUniqueID());
+		compound.setInteger("knownCountPos", known.discoveredWastones.size());
 		i = 0;
-		for (MyBlockPos now : known.a) {
+		for (MyBlockPos now : known.discoveredWastones) {
 			compound.setTag("wsPos" + (i++), now.writeToNBT(new NBTTagCompound()));
 		}
-		compound.setInteger("leftWaystones", known.b.a);
-		compound.setInteger("leftSignposts", known.b.b);
+		compound.setInteger("leftWaystones", known.remainingWaystones);
+		compound.setInteger("leftSignposts", known.remainingWaystones);
 	}
 
 	@Override
@@ -54,18 +53,14 @@ public class PlayerStore implements IExtendedEntityProperties {
 			toBeAddedPos.add(getPos);
 		}
 		PostHandler.addAllDiscoveredByPos(player.getUniqueID(), toBeAddedPos);
-		
-		Pair<Integer, Integer> pair = PostHandler.playerKnownWaystonePositions.get(player.getUniqueID()).b;
-		if(compound.hasKey("leftWaystones")){
-			pair.a = compound.getInteger("leftWaystones");
-		}else{
-			pair.a = ClientConfigStorage.INSTANCE.getMaxWaystones();
-		}
-		if(compound.hasKey("leftSignposts")){
-			pair.b = compound.getInteger("leftSignposts");
-		}else{
-			pair.b = ClientConfigStorage.INSTANCE.getMaxSignposts();
-		}
+
+		PlayerRestrictions known = PostHandler.playerKnownWaystonePositions.get(player.getUniqueID());
+		known.remainingWaystones = compound.hasKey("leftWaystones")
+				? compound.getInteger("leftWaystones")
+				: ClientConfigStorage.INSTANCE.getMaxWaystones();
+		known.remainingSignposts = compound.hasKey("leftSignposts")
+				? compound.getInteger("leftSignposts")
+				: ClientConfigStorage.INSTANCE.getMaxSignposts();
 	}
 
 }

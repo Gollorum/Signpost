@@ -1,6 +1,5 @@
 package gollorum.signpost.blocks.tiles;
 
-import gollorum.signpost.SPEventHandler;
 import gollorum.signpost.blocks.WaystoneContainer;
 import gollorum.signpost.event.UpdateWaystoneEvent;
 import gollorum.signpost.management.PostHandler;
@@ -8,7 +7,6 @@ import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.BaseUpdateClientMessage;
 import gollorum.signpost.network.messages.BaseUpdateServerMessage;
 import gollorum.signpost.util.BaseInfo;
-import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.MyBlockPos;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.MinecraftForge;
@@ -28,11 +26,7 @@ public class BasePostTile extends TileEntity implements WaystoneContainer {
 	}
 
 	public MyBlockPos toPos(){
-		if(getWorldObj()==null||getWorldObj().isRemote){
-			return new MyBlockPos("", xCoord, yCoord, zCoord, dim());
-		}else{
-			return new MyBlockPos(getWorldObj().getWorldInfo().getWorldName(), xCoord, yCoord, zCoord, dim());
-		}
+		return new MyBlockPos(xCoord, yCoord, zCoord, dim());
 	}
 
 	public int dim(){

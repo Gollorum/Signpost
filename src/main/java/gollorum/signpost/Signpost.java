@@ -10,12 +10,6 @@ import gollorum.signpost.commands.*;
 import gollorum.signpost.gui.SignGuiHandler;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
-import gollorum.signpost.management.PostHandler.TeleportInformation;
-import gollorum.signpost.util.BigBaseInfo;
-import gollorum.signpost.util.DoubleBaseInfo;
-import gollorum.signpost.util.MyBlockPos;
-import gollorum.signpost.util.StonedHashSet;
-import gollorum.signpost.util.collections.Lurchpaerchensauna;
 import gollorum.signpost.worldGen.villages.NameLibrary;
 import gollorum.signpost.worldGen.villages.VillageLibrary;
 import net.minecraft.command.ServerCommandManager;
@@ -24,7 +18,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
-import java.util.UUID;
 
 @Mod(modid = Signpost.MODID, version = Signpost.VERSION, name = "SignPost")
 public class Signpost{
@@ -71,10 +64,6 @@ public class Signpost{
 	@EventHandler
 	public void postInit(FMLPostInitializationEvent event){
 		ConfigHandler.postInit();
-		PostHandler.setNativeWaystones(new StonedHashSet());
-		PostHandler.setPosts(new Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo>());
-		PostHandler.setBigPosts(new Lurchpaerchensauna<MyBlockPos, BigBaseInfo>());
-		PostHandler.awaiting = new Lurchpaerchensauna<UUID, TeleportInformation>();
 	}
 
     @EventHandler

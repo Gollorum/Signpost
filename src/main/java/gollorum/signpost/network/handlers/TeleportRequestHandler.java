@@ -28,9 +28,9 @@ public class TeleportRequestHandler implements IMessageHandler<TeleportRequestMe
 					if(out.equals("")){
 						out = LanguageRegistry.instance().getStringLocalization("signpost.confirmTeleport", "en_US");
 					}
-					out = out.replaceAll("<Waystone>", message.waystoneName);
-					out = out.replaceAll("<amount>", Integer.toString(message.stackSize));
-					out = out.replaceAll("<itemName>", ConfigHandler.costName());
+					out = out.replaceAll("<Waystone>", message.waystoneName)
+						.replaceAll("<amount>", Integer.toString(message.stackSize))
+						.replaceAll("<itemName>", ConfigHandler.costName());
 				}else{
 					out = LanguageRegistry.instance().getStringLocalization("signpost.confirmTeleportNoCost");
 					if(out.equals("")){

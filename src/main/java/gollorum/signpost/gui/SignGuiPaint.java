@@ -6,10 +6,11 @@ import gollorum.signpost.blocks.SuperPostPost;
 import gollorum.signpost.blocks.tiles.SuperPostPostTile;
 import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.Paintable;
-import gollorum.signpost.util.collections.Lurchsauna;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.util.ResourceLocation;
+
+import java.util.HashSet;
 
 public class SignGuiPaint extends GuiScreen {
 
@@ -17,7 +18,7 @@ public class SignGuiPaint extends GuiScreen {
 	private Paintable paintable;
 	private SuperPostPostTile tile;
 	
-	private Lurchsauna<String> possibilities = new Lurchsauna<String>();
+	private HashSet<String> possibilities = new HashSet<>();
 	private int possibleCount = 0;
 	private int possibleIndex = 0;
 

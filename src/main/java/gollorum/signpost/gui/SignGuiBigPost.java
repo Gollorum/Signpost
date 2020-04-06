@@ -191,7 +191,7 @@ public class SignGuiBigPost extends GuiScreen implements SignInput{
 				if(out.equals("")){
 					out = LanguageRegistry.instance().getStringLocalization("signpost.guiTooFar", "en_US");
 				}
-				out = out.replaceAll("<distance>", ""+(int)tile.toPos().distance(inf.pos)+1);
+				out = out.replaceAll("<distance>", ""+(int)tile.toPos().distance(inf.teleportPosition)+1);
 				out = out.replaceAll("<maxDist>", ""+ClientConfigStorage.INSTANCE.getMaxDist());
 				std = out;
 				col = Color.red.getRGB();
@@ -222,9 +222,9 @@ public class SignGuiBigPost extends GuiScreen implements SignInput{
 				if(out.equals("")){
 					out = LanguageRegistry.instance().getStringLocalization("signpost.guiPrev", "en_US");
 				}
-				int distance = (int) tile.toPos().distance(inf.pos)+1;
+				int distance = (int) tile.toPos().distance(inf.teleportPosition)+1;
 				out = out.replaceAll("<distance>", ""+distance);
-				out = out.replaceAll("<amount>", Integer.toString(PostHandler.getStackSize(tile.toPos(), inf.pos)));
+				out = out.replaceAll("<amount>", Integer.toString(PostHandler.getStackSize(tile.toPos(), inf.teleportPosition)));
 				out = out.replaceAll("<itemName>", ConfigHandler.costName());
 				col = Color.white.getRGB();
 				std = out;

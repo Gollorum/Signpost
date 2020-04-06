@@ -1,8 +1,5 @@
 package gollorum.signpost.network.messages;
 
-import java.util.HashMap;
-import java.util.Map.Entry;
-
 import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import gollorum.signpost.blocks.tiles.BigPostPostTile;
@@ -13,9 +10,12 @@ import gollorum.signpost.util.BigBaseInfo;
 import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.util.Sign;
 import gollorum.signpost.util.Sign.OverlayType;
-import gollorum.signpost.util.collections.Lurchpaerchensauna;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.util.ResourceLocation;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 public class SendAllBigPostBasesMessage implements IMessage{
 
@@ -46,18 +46,19 @@ public class SendAllBigPostBasesMessage implements IMessage{
 	
 	public HashMap<MyBlockPos, BigStringInt> bigPosts = new HashMap<MyBlockPos, BigStringInt>();
 
-	public Lurchpaerchensauna<MyBlockPos, BigBaseInfo> toPostMap(){
-		Lurchpaerchensauna<MyBlockPos, BigBaseInfo> postMap = new Lurchpaerchensauna<MyBlockPos, BigBaseInfo>();
+	public Map<MyBlockPos, BigBaseInfo> toPostMap(){
+		Map<MyBlockPos, BigBaseInfo> postMap = new HashMap<>();
 		for(Entry<MyBlockPos, BigStringInt> now: bigPosts.entrySet()){
 			BaseInfo base = PostHandler.getForceWSbyName(now.getValue().string);
-			postMap.put(now.getKey(), new BigBaseInfo(new Sign(base,
-															   now.getValue().datInt,
-															   now.getValue().bool,
-															   now.getValue().overlay,
-															   now.getValue().bool2,
-															   now.getValue().paint),
-															   now.getValue().strings,
-															   now.getValue().postPaint));
+			postMap.put(now.getKey(), new BigBaseInfo(new Sign(
+				base,
+				now.getValue().datInt,
+				now.getValue().bool,
+				now.getValue().overlay,
+				now.getValue().bool2,
+				now.getValue().paint),
+				now.getValue().strings,
+				now.getValue().postPaint));
 		}
 		return postMap;
 	}
@@ -99,16 +100,18 @@ public class SendAllBigPostBasesMessage implements IMessage{
 	public void fromBytes(ByteBuf buf) {
 		int c = buf.readInt();
 		for(int i = 0; i<c; i++){
-			bigPosts.put(MyBlockPos.fromBytes(buf), 
-					new BigStringInt(ByteBufUtils.readUTF8String(buf),
-										buf.readInt(),
-										buf.readBoolean(),
-										OverlayType.get(ByteBufUtils.readUTF8String(buf)),
-										buf.readBoolean(),
-										readDescription(buf),
-										SuperPostPostTile.stringToLoc(ByteBufUtils.readUTF8String(buf)),
-										SuperPostPostTile.stringToLoc(ByteBufUtils.readUTF8String(buf)),
-										buf.readByte()));
+			bigPosts.put(
+				MyBlockPos.fromBytes(buf),
+				new BigStringInt(
+					ByteBufUtils.readUTF8String(buf),
+					buf.readInt(),
+					buf.readBoolean(),
+					OverlayType.get(ByteBufUtils.readUTF8String(buf)),
+					buf.readBoolean(),
+					readDescription(buf),
+					SuperPostPostTile.stringToLoc(ByteBufUtils.readUTF8String(buf)),
+					SuperPostPostTile.stringToLoc(ByteBufUtils.readUTF8String(buf)),
+					buf.readByte()));
 		}
 	}
 

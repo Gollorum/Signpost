@@ -2,9 +2,9 @@ package gollorum.signpost.modIntegration;
 
 import cpw.mods.fml.common.Loader;
 import gollorum.signpost.util.StonedHashSet;
-import gollorum.signpost.util.collections.Lurchsauna;
 import net.minecraft.entity.player.EntityPlayer;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class SignpostAdapter {
@@ -16,7 +16,7 @@ public class SignpostAdapter {
 	private final Set<ModHandler> handlers;
 	
 	private SignpostAdapter(){
-		handlers = new Lurchsauna<ModHandler>();
+		handlers = new HashSet<>();
 				
 		if(Loader.isModLoaded(WAYSTONES_MOD_ID)){
 			registerModHandler(new WaystonesModHandler());

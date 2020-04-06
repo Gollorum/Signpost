@@ -13,7 +13,6 @@ import gollorum.signpost.network.messages.BaseUpdateClientMessage;
 import gollorum.signpost.network.messages.ChatMessage;
 import gollorum.signpost.network.messages.OpenGuiMessage;
 import gollorum.signpost.util.BaseInfo;
-import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.MyBlockPos;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
@@ -67,19 +66,14 @@ public class BaseModelPost extends BlockContainer {
 			this.name = name;
 			MODEL = null;
 			if(FMLCommonHandler.instance().getEffectiveSide().equals(Side.CLIENT) || FMLCommonHandler.instance().getMinecraftServerInstance().isSinglePlayer()){
-				SPEventHandler.scheduleTask(new BoolRun(){
-
-					@Override
-					public boolean run() {
-						try{
-							MODEL = AdvancedModelLoader.loadModel(model);
-							return true;
-						}catch(Exception e){
-							e.printStackTrace();
-							return false;
-						}
+				SPEventHandler.scheduleTask(() -> {
+					try{
+						MODEL = AdvancedModelLoader.loadModel(model);
+						return true;
+					}catch(Exception e){
+						e.printStackTrace();
+						return false;
 					}
-					
 				});
 			}
 			TEXTURE = texture;
@@ -138,7 +132,7 @@ public class BaseModelPost extends BlockContainer {
 		if (!worldIn.isRemote) {
 			BaseInfo ws = getWaystoneRootTile(worldIn, x, y, z).getBaseInfo();
 			if(ws==null){
-				ws = new BaseInfo(BasePost.generateName(), new MyBlockPos(worldIn, x, y, z, playerIn.dimension), playerIn.getUniqueID());
+				ws = new BaseInfo(BasePost.generateName(), new MyBlockPos(x, y, z, playerIn.dimension), playerIn.getUniqueID());
 				PostHandler.addWaystone(ws);
 			}
 			if (!playerIn.isSneaking()) {
@@ -188,22 +182,9 @@ public class BaseModelPost extends BlockContainer {
 		NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
 		MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.PLACED, world, blockPos.x, blockPos.y, blockPos.z, name));
 		NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiBaseID, blockPos.x, blockPos.y, blockPos.z), player);
-//		int l = MathHelper.floor_double((double)(player.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
-//		world.setBlockMetadataWithNotify(blockPos.x, blockPos.y, blockPos.z, l, 2);
 	}
 
-	public static void placeClient(final World world, final MyBlockPos blockPos, final EntityPlayer player) {
-//		int l = MathHelper.floor_double((double)(player.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
-//		world.setBlockMetadataWithNotify(blockPos.x, blockPos.y, blockPos.z, l, 2);
-//		BaseModelPostTile tile = getWaystoneRootTile(world, pos.toBlockPos());       
-//		if (tile != null && tile.getBaseInfo() == null) {
-//			BaseInfo ws = PostHandler.allWaystones.getByPos(pos);
-//			if (ws == null) {
-//				UUID owner = player.getUniqueID();
-//				PostHandler.allWaystones.add(new BaseInfo("", pos, owner));
-//			}
-//	}
-	}
+	public static void placeClient(final World world, final MyBlockPos blockPos, final EntityPlayer player) {}
 
 	public int getRenderType() {
 		return -1;

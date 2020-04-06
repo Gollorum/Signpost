@@ -36,11 +36,12 @@ public abstract class SuperPostPost extends BlockContainer {
 	protected SuperPostPost(Material p_i45386_1_) {super(p_i45386_1_);}
 
 	@Override
-	public void onBlockClicked(World world, int x, int y, int z, EntityPlayer player) {
+	public void onBlockClicked(World world, int x, int y, int z, EntityPlayer playerIn) {
 		SuperPostPostTile superTile = getSuperTile(world, x, y, z);
-		if (world.isRemote || !canUse((EntityPlayerMP) player, superTile)) {
+		if (world.isRemote || !canUse((EntityPlayerMP) playerIn, superTile)) {
 			return;
 		}
+		EntityPlayerMP player = (EntityPlayerMP) playerIn;
 		Object hit = getHitTarget(world, x, y, z, player);
 		if(isHitWaystone(hit)&&player.isSneaking()){
 			superTile.destroyWaystone();
@@ -121,10 +122,10 @@ public abstract class SuperPostPost extends BlockContainer {
 				if(superTile.getPaintObject()==null){
 					superTile.setAwaitingPaint(false);
 				}else{
-					NetworkHandler.netWrap.sendTo(new RequestTextureMessage(x, y, z), (EntityPlayerMP)player);
+					NetworkHandler.netWrap.sendTo(new RequestTextureMessage(x, y, z), player);
 				}
 			}else if(Block.getBlockFromItem(player.getHeldItem().getItem()) instanceof BasePost){
-				if(rightClickBase(superTile, (EntityPlayerMP) player, x, y, z)){
+				if(rightClickBase(superTile, player, x, y, z)){
 					preRightClick(hit, superTile, player, x, y, z);
 				}
 			}else{
@@ -140,19 +141,19 @@ public abstract class SuperPostPost extends BlockContainer {
 		return ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canUse(player, ""+tile.owner);
 	}
 
-	private void rightClickWaystone(SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z) {
+	private void rightClickWaystone(SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z) {
 		BaseInfo ws = superTile.getBaseInfo();
 		if(!player.isSneaking()){
-			if(!PostHandler.doesPlayerKnowNativeWaystone((EntityPlayerMP) player, ws)){
+			if(!PostHandler.doesPlayerKnowNativeWaystone(player, ws)){
 				if (!ClientConfigStorage.INSTANCE.deactivateTeleportation()) {
-					NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.getName()), (EntityPlayerMP) player);
+					NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.getName()), player);
 				}
 				PostHandler.addDiscovered(player.getUniqueID(), ws);
 			}
 		}else{
 			if (!ClientConfigStorage.INSTANCE.deactivateTeleportation()
-					&& ClientConfigStorage.INSTANCE.getSecurityLevelWaystone().canUse((EntityPlayerMP) player, ""+ws.owner)) {
-				NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiBaseID, x, y, z), (EntityPlayerMP) player);
+					&& ClientConfigStorage.INSTANCE.getSecurityLevelWaystone().canUse(player, ""+ws.owner)) {
+				NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiBaseID, x, y, z), player);
 			}
 		}
 	}
@@ -164,7 +165,7 @@ public abstract class SuperPostPost extends BlockContainer {
 		if(superTile.isWaystone()){
 			return true;
 		}
-		if(!(ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canUse((EntityPlayerMP) player, ""+superTile.owner) && SPEventHandler.INSTANCE.checkWaystoneCount(player))){
+		if(!(ClientConfigStorage.INSTANCE.getSecurityLevelSignpost().canUse(player, ""+superTile.owner) && SPEventHandler.INSTANCE.checkWaystoneCount(player))){
 			return true;
 		}
 		MyBlockPos blockPos = superTile.toPos();
@@ -182,12 +183,12 @@ public abstract class SuperPostPost extends BlockContainer {
 		return false;
 	}
 
-	private void preRightClick(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z){
+	private void preRightClick(Object hitObj, SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z){
 		if(isHitWaystone(hitObj)){
 			BaseInfo ws = superTile.getBaseInfo();
-			if(!PostHandler.doesPlayerKnowNativeWaystone((EntityPlayerMP) player, ws)){
+			if(!PostHandler.doesPlayerKnowNativeWaystone(player, ws)){
 				if (!ClientConfigStorage.INSTANCE.deactivateTeleportation()) {
-	NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.getName()), (EntityPlayerMP) player);
+	NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.discovered", "<Waystone>", ws.getName()), player);
 				}
 				PostHandler.addDiscovered(player.getUniqueID(), ws);
 			}
@@ -196,7 +197,7 @@ public abstract class SuperPostPost extends BlockContainer {
 		}
 	}
 
-	private boolean preShiftClick(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z) {
+	private boolean preShiftClick(Object hitObj, SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z) {
 		if(isHitWaystone(hitObj)){
 			superTile.destroyWaystone();
 			return false;
@@ -207,23 +208,23 @@ public abstract class SuperPostPost extends BlockContainer {
 
 	protected abstract boolean isHitWaystone(Object hitObj);
 
-	public abstract void clickWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
-	public abstract void rightClickWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
-	public abstract void shiftClickWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
+	public abstract void clickWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z);
+	public abstract void rightClickWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z);
+	public abstract void shiftClickWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z);
 
-	public abstract void clickCalibratedWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
-	public abstract void rightClickCalibratedWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
-	public abstract void shiftClickCalibratedWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
+	public abstract void clickCalibratedWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z);
+	public abstract void rightClickCalibratedWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z);
+	public abstract void shiftClickCalibratedWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z);
 
-	public abstract void clickBrush(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
-	public abstract void rightClickBrush(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
+	public abstract void clickBrush(Object hitObj, SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z);
+	public abstract void rightClickBrush(Object hitObj, SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z);
 	
-	public abstract void click(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
-	public abstract void rightClick(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
-	public abstract void shiftClick(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
+	public abstract void click(Object hitObj, SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z);
+	public abstract void rightClick(Object hitObj, SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z);
+	public abstract void shiftClick(Object hitObj, SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z);
 	
-	public abstract void clickBare(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
-	public abstract void shiftClickBare(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z);
+	public abstract void clickBare(Object hitObj, SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z);
+	public abstract void shiftClickBare(Object hitObj, SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z);
 
 	public abstract void sendPostBasesToAll(SuperPostPostTile superTile);
 	public abstract void sendPostBasesToServer(SuperPostPostTile superTile);

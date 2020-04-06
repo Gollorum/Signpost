@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.function.Predicate;
 
 public class BlockHandler {
 
@@ -46,14 +45,9 @@ public class BlockHandler {
 
     public List<BaseModelPost> baseModelsForCrafting(){
         List<BaseModelPost> allModels = Arrays.asList(basemodels);
-        ArrayList<BaseModelPost> allowedModels = new ArrayList<BaseModelPost>();
+        ArrayList<BaseModelPost> allowedModels = new ArrayList<>();
         for (final String model : ClientConfigStorage.INSTANCE.getAllowedCraftingModels()){
-            BaseModelPost block = CollectionUtils.find(allModels, new Predicate<BaseModelPost>() {
-                @Override
-                public boolean test(BaseModelPost m) {
-                    return m.type.name.equals(model);
-                }
-            });
+            BaseModelPost block = CollectionUtils.find(allModels, m -> m.type.name.equals(model));
             if(block != null) allowedModels.add(block);
         }
         return allowedModels;
@@ -61,14 +55,9 @@ public class BlockHandler {
 
     public List<BaseModelPost> baseModelsForVillages(){
         List<BaseModelPost> allModels = Arrays.asList(basemodels);
-        ArrayList<BaseModelPost> allowedModels = new ArrayList<BaseModelPost>();
+        ArrayList<BaseModelPost> allowedModels = new ArrayList<>();
         for (final String model : ClientConfigStorage.INSTANCE.getAllowedVillageModels()){
-            BaseModelPost block = CollectionUtils.find(allModels, new Predicate<BaseModelPost>() {
-                @Override
-                public boolean test(BaseModelPost m) {
-                    return m.type.name.equals(model);
-                }
-            });
+            BaseModelPost block = CollectionUtils.find(allModels, m -> m.type.name.equals(model));
             if(block != null) allowedModels.add(block);
         }
         return allowedModels;
@@ -98,7 +87,7 @@ public class BlockHandler {
     }
 
     private void waystoneRecipe() {
-        HashSet<Object> toDelete = new HashSet<Object>();
+        HashSet<Object> toDelete = new HashSet<>();
         Item[] outputsToRemove = new Item[basemodels.length + 1];
         for (int i = 0; i < basemodels.length; i++) outputsToRemove[i] = Item.getItemFromBlock(basemodels[i]);
         outputsToRemove[outputsToRemove.length - 1] = Item.getItemFromBlock(base);

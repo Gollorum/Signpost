@@ -10,10 +10,7 @@ import gollorum.signpost.network.messages.ChatMessage;
 import gollorum.signpost.network.messages.OpenGuiMessage;
 import gollorum.signpost.network.messages.SendAllWaystoneNamesMessage;
 import gollorum.signpost.network.messages.SendBigPostBasesMessage;
-import gollorum.signpost.util.BaseInfo;
-import gollorum.signpost.util.BigBaseInfo;
-import gollorum.signpost.util.Paintable;
-import gollorum.signpost.util.Sign;
+import gollorum.signpost.util.*;
 import gollorum.signpost.util.Sign.OverlayType;
 import gollorum.signpost.util.math.tracking.Cuboid;
 import gollorum.signpost.util.math.tracking.DDDVector;
@@ -37,7 +34,7 @@ public class BigPostPost extends SuperPostPost {
 
 	public BigPostType type;
 
-	public static enum BigPostType{
+	public enum BigPostType{
 						OAK(	Material.wood, 	"bigsign_oak", 		"log_oak",			Item.getItemFromBlock(Blocks.log),		0),
 						SPRUCE(	Material.wood, 	"bigsign_spruce", 	"log_spruce",		Item.getItemFromBlock(Blocks.log),		1),
 						BIRCH(	Material.wood, 	"bigsign_birch", 	"log_birch",		Item.getItemFromBlock(Blocks.log),		2),
@@ -54,7 +51,7 @@ public class BigPostPost extends SuperPostPost {
 		public Item baseItem;
 		public int metadata;
 
-		private BigPostType(Material material, String texture, String textureMain, Item baseItem, int metadata) {
+		BigPostType(Material material, String texture, String textureMain, Item baseItem, int metadata) {
 			this.material = material;
 			this.texture = new ResourceLocation(Signpost.MODID + ":textures/blocks/"+texture+".png");
 			this.blockTexture = texture;
@@ -65,7 +62,7 @@ public class BigPostPost extends SuperPostPost {
 		}
 	}
 	
-	public static enum BigHitTarget{BASE, POST, STONE;}
+	public enum BigHitTarget{BASE, POST, STONE}
 	
 	public static class BigHit{
 		public BigHitTarget target;
@@ -115,7 +112,7 @@ public class BigPostPost extends SuperPostPost {
 	}
 
 	@Override
-	public void clickWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z) {
+	public void clickWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z) {
 		BigHit hit = (BigHit)hitObj;
 		BigBaseInfo tilebases = ((BigPostPostTile)superTile).getBases();
 		if (hit.target == BigHitTarget.BASE) {
@@ -124,18 +121,16 @@ public class BigPostPost extends SuperPostPost {
 	}
 
 	@Override
-	public void rightClickWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z) {
+	public void rightClickWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z) {
 		BigHit hit = (BigHit)hitObj;
 		BigBaseInfo tilebases = ((BigPostPostTile)superTile).getBases();
 		if (hit.target == BigHitTarget.BASE) {
 			tilebases.sign.rot(15, x, z);
-//		} else if (hit.target == BigHitTarget.POST){
-//			NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiBigPostID, x, y, z), (EntityPlayerMP) player);
 		}
 	}
 
 	@Override
-	public void shiftClickWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z) {
+	public void shiftClickWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z) {
 		BigHit hit = (BigHit)hitObj;
 		BigBaseInfo tilebases = ((BigPostPostTile)superTile).getBases();
 		if (hit.target == BigHitTarget.BASE) {
@@ -144,12 +139,12 @@ public class BigPostPost extends SuperPostPost {
 	}
 
 	@Override
-	public void clickBrush(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z){
-		NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiPostBrushID, x, y, z), (EntityPlayerMP) player);
+	public void clickBrush(Object hitObj, SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z){
+		NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiPostBrushID, x, y, z), player);
 	}
 
 	@Override
-	public void rightClickBrush(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z){
+	public void rightClickBrush(Object hitObj, SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z){
 		BigBaseInfo tilebases = ((BigPostPostTile)superTile).getBases();
 		if(tilebases.awaitingPaint && tilebases.paintObject!=null){
 			tilebases.paintObject = null;
@@ -166,10 +161,9 @@ public class BigPostPost extends SuperPostPost {
 				tilebases.awaitingPaint = false;
 			}
 		}
-//		NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiPostBrushID, x, y, z), (EntityPlayerMP) player);
 	}
 
-	public void clickCalibratedWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z){
+	public void clickCalibratedWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z){
 		if(((BigHit)hitObj).target.equals(BigHitTarget.BASE)){
 			Sign sign = ((BigPostPostTile)superTile).getBases().sign;
 			if(sign != null){
@@ -178,14 +172,14 @@ public class BigPostPost extends SuperPostPost {
 		}
 	}
 	
-	public void rightClickCalibratedWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z){
+	public void rightClickCalibratedWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z){
 		BigHit hit = (BigHit)hitObj;
 		if(hit.target.equals(BigHitTarget.BASE)){
-			NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiPostRotationID, x, y, z), (EntityPlayerMP) player);
+			NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiPostRotationID, x, y, z), player);
 		}
 	}
 	
-	public void shiftClickCalibratedWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z){
+	public void shiftClickCalibratedWrench(Object hitObj, SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z){
 		if(((BigHit)hitObj).target.equals(BigHitTarget.BASE)){
 			Sign sign = ((BigPostPostTile)superTile).getBases().sign;
 			if(sign != null){
@@ -195,7 +189,7 @@ public class BigPostPost extends SuperPostPost {
 	}
 	
 	@Override
-	public void click(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z) {
+	public void click(Object hitObj, SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z) {
 		BigHit hit = (BigHit)hitObj;
 		BigBaseInfo tilebases = ((BigPostPostTile)superTile).getBases();
 		if (hit.target == BigHitTarget.BASE) {
@@ -218,7 +212,7 @@ public class BigPostPost extends SuperPostPost {
 	}
 
 	@Override
-	public void rightClick(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z) {
+	public void rightClick(Object hitObj, SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z) {
 		BigHit hit = (BigHit)hitObj;
 		if (hit.target != BigHitTarget.POST) {
 			if (ClientConfigStorage.INSTANCE.deactivateTeleportation()) {
@@ -227,33 +221,33 @@ public class BigPostPost extends SuperPostPost {
 			BigPostPostTile tile = (BigPostPostTile)superTile;
 			BaseInfo destination = tile.getBases().sign.base;
 			if (destination != null) {
-				if(destination.pos==null){
-					NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.noTeleport"), (EntityPlayerMP) player);
+				if(destination.teleportPosition ==null){
+					NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.noTeleport"), player);
 				}else{
-					int stackSize = PostHandler.getStackSize(destination.pos, tile.toPos());
-					if(PostHandler.canPay(player, destination.pos.x, destination.pos.y, destination.pos.z, x, y, z)){
-						PostHandler.teleportMe(destination, (EntityPlayerMP) player, stackSize);
+					int stackSize = PostHandler.getStackSize(tile.toPos(), destination.teleportPosition);
+					if(PostHandler.canPay(player, tile.toPos(), destination.teleportPosition)){
+						PostHandler.teleportMe(destination, player, stackSize);
 					}else{
 						String[] keyword = { "<itemName>", "<amount>" };
 						String[] replacement = { ClientConfigStorage.INSTANCE.getCost().getUnlocalizedName() + ".name",     "" + stackSize };
-						NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.payment", keyword, replacement), (EntityPlayerMP) player);
+						NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.payment", keyword, replacement), player);
 					}
 				}
 			}
 		} else {
-			if(!canUse((EntityPlayerMP) player, superTile)) return;
-			NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiBigPostID, x, y, z), (EntityPlayerMP) player);
+			if(!canUse(player, superTile)) return;
+			NetworkHandler.netWrap.sendTo(new OpenGuiMessage(Signpost.GuiBigPostID, x, y, z), player);
 			NetworkHandler.netWrap.sendTo(new SendAllWaystoneNamesMessage(PostHandler.getAllWaystones().select(new Function<BaseInfo, String>() {
 				@Override
 				public String apply(BaseInfo b) {
 					return b.getName();
 				}
-			})), (EntityPlayerMP) player);
+			})), player);
 		}
 	}
 
 	@Override
-	public void shiftClick(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z) {
+	public void shiftClick(Object hitObj, SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z) {
 		BigHit hit = (BigHit)hitObj;
 		BigBaseInfo tilebases = ((BigPostPostTile)superTile).getBases();
 		if (hit.target == BigHitTarget.BASE) {
@@ -262,7 +256,7 @@ public class BigPostPost extends SuperPostPost {
 	}
 
 	@Override
-	public void clickBare(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z) {
+	public void clickBare(Object hitObj, SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z) {
 		BigHit hit = (BigHit)hitObj;
 		BigBaseInfo tilebases = ((BigPostPostTile)superTile).getBases();
 		if (hit.target == BigHitTarget.BASE) {
@@ -271,7 +265,7 @@ public class BigPostPost extends SuperPostPost {
 	}
 
 	@Override
-	public void shiftClickBare(Object hitObj, SuperPostPostTile superTile, EntityPlayer player, int x, int y, int z) {
+	public void shiftClickBare(Object hitObj, SuperPostPostTile superTile, EntityPlayerMP player, int x, int y, int z) {
 		BigHit hit = (BigHit)hitObj;
 		shiftClick(hitObj, superTile, player, x, y, z);
 	}

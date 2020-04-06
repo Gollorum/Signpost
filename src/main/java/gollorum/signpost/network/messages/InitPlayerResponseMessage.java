@@ -10,6 +10,7 @@ import gollorum.signpost.util.BaseInfo;
 import gollorum.signpost.util.StonedHashSet;
 import io.netty.buffer.ByteBuf;
 
+@SuppressWarnings("deprecation")
 public class InitPlayerResponseMessage implements IMessage{
 
 	public StonedHashSet allWaystones = new StonedHashSet();

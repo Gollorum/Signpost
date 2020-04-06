@@ -21,6 +21,9 @@ version = "1.7.10-1.08.4"
 group= "gollorum.signpost"
 archivesBaseName = "signpost"
 
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
 minecraft {
     version = "1.7.10-10.13.4.1558-1.7.10"
     runDir = "run"

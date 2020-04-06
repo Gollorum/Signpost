@@ -6,7 +6,6 @@ import gollorum.signpost.blocks.BaseModelPost;
 import gollorum.signpost.blocks.BasePost;
 import gollorum.signpost.blocks.WaystoneContainer;
 import gollorum.signpost.management.PostHandler;
-import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.worldGen.villages.GenerateStructureHelper;
 import gollorum.signpost.worldGen.villages.NameLibrary;
@@ -76,20 +75,17 @@ public class VillageComponentWaystone extends StructureVillagePieces.Village {
 			world.setBlock(x, y - 1, z, block);
 		}
 		if (world.setBlock(x, y, z, allowedModelTypes.get(random.nextInt(allowedModelTypes.size())), facing, 3)) {
-			SPEventHandler.scheduleTask(new BoolRun() {
-				@Override
-				public boolean run() {
-					TileEntity tile = world.getTileEntity(x, y, z);
-					if (tile instanceof WaystoneContainer) {
-						if (PostHandler.getNativeWaystones().nameTaken(name)) {
-							setupWaystone(NameLibrary.getInstance().getName(random), world, x, y, z, (WaystoneContainer) tile);
-						} else {
-							setupWaystone(name, world, x, y, z, (WaystoneContainer) tile);
-						}
-						return true;
+			SPEventHandler.scheduleTask(() -> {
+				TileEntity tile = world.getTileEntity(x, y, z);
+				if (tile instanceof WaystoneContainer) {
+					if (PostHandler.getNativeWaystones().nameTaken(name)) {
+						setupWaystone(NameLibrary.getInstance().getName(random), world, x, y, z, (WaystoneContainer) tile);
 					} else {
-						return false;
+						setupWaystone(name, world, x, y, z, (WaystoneContainer) tile);
 					}
+					return true;
+				} else {
+					return false;
 				}
 			});
 		}

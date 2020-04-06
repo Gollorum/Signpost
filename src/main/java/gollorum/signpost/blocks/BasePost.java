@@ -1,12 +1,9 @@
 package gollorum.signpost.blocks;
 
-import java.util.UUID;
-
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blocks.tiles.BasePostTile;
 import gollorum.signpost.event.UpdateWaystoneEvent;
 import gollorum.signpost.management.ClientConfigStorage;
-import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.BaseUpdateClientMessage;
@@ -22,6 +19,8 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
+
+import java.util.UUID;
 
 public class BasePost extends BlockContainer {
 
@@ -42,7 +41,7 @@ public class BasePost extends BlockContainer {
 		if (!worldIn.isRemote) {
 			BaseInfo ws = getWaystoneRootTile(worldIn, x, y, z).getBaseInfo();
 			if(ws==null){
-				ws = new BaseInfo(generateName(), new MyBlockPos(worldIn, x, y, z, playerIn.dimension), playerIn.getUniqueID());
+				ws = new BaseInfo(generateName(), new MyBlockPos(x, y, z, playerIn.dimension), playerIn.getUniqueID());
 				PostHandler.addWaystone(ws);
 			}
 			if (!playerIn.isSneaking()) {
@@ -88,7 +87,7 @@ public class BasePost extends BlockContainer {
 	public static void placeServer(World world, MyBlockPos pos, EntityPlayerMP player) {
 		BasePostTile tile = getWaystoneRootTile(world, pos.x, pos.y, pos.z);
 		String name = generateName();
-		UUID owner = player.getUniqueID();
+		UUID owner = player != null ? player.getUniqueID() : null;
 		BaseInfo ws;
 		if((ws = tile.getBaseInfo())==null){
 			ws = new BaseInfo(name, pos, owner);
@@ -107,7 +106,7 @@ public class BasePost extends BlockContainer {
 		if (tile != null && tile.getBaseInfo() == null) {
             BaseInfo ws = PostHandler.getAllWaystones().getByPos(pos);
             if (ws == null) {
-            	UUID owner = player.getUniqueID();
+				UUID owner = player != null ? player.getUniqueID() : null;
             	PostHandler.getAllWaystones().add(new BaseInfo("", pos, owner));
             }
 		}

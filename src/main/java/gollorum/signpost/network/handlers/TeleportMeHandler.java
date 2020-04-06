@@ -22,20 +22,20 @@ public class TeleportMeHandler implements IMessageHandler<TeleportMeMessage, IMe
 			return null;
 		}
 		if(PostHandler.canTeleport(ctx.getServerHandler().playerEntity, message.base)){
-			World world = message.base.pos.getWorld();
+			World world = message.base.teleportPosition.getWorld();
 			if(world == null){
-				return new ChatMessage("signpost.errorWorld", "<world>", message.base.pos.world);
+				return new ChatMessage("signpost.errorWorld", "<world>", ""+message.base.teleportPosition.dim);
 			}else{
 				ServerConfigurationManager manager = FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager();
 				EntityPlayerMP player = ctx.getServerHandler().playerEntity;
 				if(!player.worldObj.equals(world)){
 					manager.transferEntityToWorld(player, 1, (WorldServer)player.worldObj, (WorldServer)world);
 				}
-				if(!(player.dimension==message.base.pos.dim)){
-		            WorldServer minecraftserver = MinecraftServer.getServer().worldServerForDimension(message.base.pos.dim);
+				if(!(player.dimension==message.base.teleportPosition.dim)){
+		            WorldServer minecraftserver = MinecraftServer.getServer().worldServerForDimension(message.base.teleportPosition.dim);
 					manager.transferEntityToWorld(player, 1, (WorldServer)player.worldObj, minecraftserver);
 				}
-				ctx.getServerHandler().playerEntity.setPositionAndUpdate(message.base.pos.x, message.base.pos.y, message.base.pos.z);
+				ctx.getServerHandler().playerEntity.setPositionAndUpdate(message.base.teleportPosition.x, message.base.teleportPosition.y, message.base.teleportPosition.z);
 			}
 		}
 		return null;
