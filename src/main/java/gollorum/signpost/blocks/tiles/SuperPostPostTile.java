@@ -1,8 +1,5 @@
 package gollorum.signpost.blocks.tiles;
 
-import java.util.List;
-import java.util.UUID;
-
 import gollorum.signpost.BlockHandler;
 import gollorum.signpost.SPEventHandler;
 import gollorum.signpost.blocks.SuperPostPost;
@@ -12,11 +9,7 @@ import gollorum.signpost.management.PostHandler;
 import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.BaseUpdateClientMessage;
 import gollorum.signpost.network.messages.BaseUpdateServerMessage;
-import gollorum.signpost.util.BaseInfo;
-import gollorum.signpost.util.BoolRun;
-import gollorum.signpost.util.MyBlockPos;
-import gollorum.signpost.util.Paintable;
-import gollorum.signpost.util.Sign;
+import gollorum.signpost.util.*;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -24,6 +17,9 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
+
+import java.util.List;
+import java.util.UUID;
 
 public abstract class SuperPostPostTile extends TileEntity implements WaystoneContainer{
 
@@ -36,21 +32,18 @@ public abstract class SuperPostPostTile extends TileEntity implements WaystoneCo
 	
 	public SuperPostPostTile(){
 		super();
-		SPEventHandler.scheduleTask(new BoolRun(){
-			@Override
-			public boolean run() {
-				if(getWorld()==null){
-					return false;
-				}else{
-					isWaystone();
-					return true;
-				}
+		SPEventHandler.scheduleTask(() -> {
+			if(getWorld()==null){
+				return false;
+			}else{
+				isWaystone();
+				return true;
 			}
 		});
 	}
 	
 	public final MyBlockPos toPos(){
-		return new MyBlockPos(getWorld(), pos.getX(), pos.getY(), pos.getZ(), dim());
+		return new MyBlockPos(pos.getX(), pos.getY(), pos.getZ(), dim());
 	}
 
 	public final int dim(){
@@ -82,7 +75,7 @@ public abstract class SuperPostPostTile extends TileEntity implements WaystoneCo
 		BaseInfo base = PostHandler.getNativeWaystones().getByPos(pos);
 		SPEventHandler.INSTANCE.updateWaystoneCount(this);
 		if(PostHandler.getNativeWaystones().removeByPos(pos)){
-			MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.DESTROYED, getWorld(), base.pos.x, base.pos.y, base.pos.z, base==null?"":base.getName()));
+			MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.DESTROYED, getWorld(), base.teleportPosition.x, base.teleportPosition.y, base.teleportPosition.z, base==null?"":base.getName()));
 			NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
 		}
 	}

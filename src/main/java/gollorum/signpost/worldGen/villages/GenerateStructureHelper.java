@@ -27,7 +27,7 @@ public class GenerateStructureHelper {
     
 	public MyBlockPos getTopSolidOrLiquidBlock(MyBlockPos pos) {
 		BlockPos blockPos = getTopSolidOrLiquidBlock(pos.getWorld(), pos.toBlockPos());
-		return pos.fromNewPos(blockPos.getX(), blockPos.getY(), blockPos.getZ());
+		return new MyBlockPos(blockPos, pos.dim);
 	}
 
 }

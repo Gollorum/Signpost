@@ -66,7 +66,7 @@ public class BigPostPostTile extends SuperPostPostTile {
 			}
 			PostHandler.getBigPosts().put(toPos(), bases);
 		} else {
-			if (bases.sign != null && bases.sign.base != null && bases.sign.base.pos == null) {
+			if (bases.sign != null && bases.sign.base != null && bases.sign.base.teleportPosition == null) {
 				BaseInfo newBase = PostHandler.getWSbyName(bases.sign.base.getName());
 				if (newBase != null) {
 					bases.sign.base = newBase;

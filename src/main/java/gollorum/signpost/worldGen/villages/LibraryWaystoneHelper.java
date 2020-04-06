@@ -1,12 +1,5 @@
 package gollorum.signpost.worldGen.villages;
 
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import gollorum.signpost.SPEventHandler;
 import gollorum.signpost.blocks.SuperPostPost;
 import gollorum.signpost.blocks.tiles.SuperPostPostTile;
@@ -14,7 +7,9 @@ import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.MyBlockPos;
 import gollorum.signpost.util.Sign;
 import gollorum.signpost.util.code.MinecraftIndependent;
-import gollorum.signpost.util.collections.Lurchsauna;
+
+import java.util.*;
+import java.util.Map.Entry;
 
 @MinecraftIndependent
 class LibraryWaystoneHelper extends LibraryHelper {
@@ -63,7 +58,7 @@ class LibraryWaystoneHelper extends LibraryHelper {
 	}
 
 	private Set<VillagePost> fetchOtherVillagesPosts() {
-		Set<VillagePost> posts = new Lurchsauna();
+		Set<VillagePost> posts = new HashSet<>();
 		for (Entry<MyBlockPos, Set<VillagePost>> entry : villagePosts.entrySet()) {
 			if (!(entry.getKey().equals(villageLocation) || containsMeAsTarget(entry.getValue()))) {
 				posts.addAll(entry.getValue());
@@ -75,7 +70,7 @@ class LibraryWaystoneHelper extends LibraryHelper {
 	private boolean containsMeAsTarget(Set<VillagePost> posts) {
 		for(VillagePost post : posts) {
 			for(Sign sign : post.getSigns()) {
-				if(sign != null && sign.isValid() && sign.base != null && sign.base.blockPos != null && sign.base.blockPos.equals(waystoneLocation)){
+				if(sign != null && sign.isValid() && sign.base != null && sign.base.blockPosition != null && sign.base.blockPosition.equals(waystoneLocation)){
 					return true;
 				}
 			}

@@ -10,65 +10,47 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 
+import java.util.Objects;
+import java.util.function.Function;
+
 public class MyBlockPos{
+
+	private static final String VERSION = "1";
 	
 	public int x, y, z;
-	public String world;
 	public int dim;
-	public String modID = Signpost.MODID;
-	
-	public MyBlockPos(World world, BlockPos pos, int dim){
-		this(world, pos.getX(), pos.getY(), pos.getZ(), dim);
+
+	public MyBlockPos(World world, int x, int y, int z) {
+		this(x, y, z, dim(world));
 	}
 
 	public MyBlockPos(World world, BlockPos pos) {
-		this(world, pos.getX(), pos.getY(), pos.getZ());
+		this(pos, dim(world));
 	}
 
-	public MyBlockPos(World world, int x, int y, int z) {
-		this((world == null || world.isRemote) ? "" : world.getWorldInfo().getWorldName(), x, y, z, dim(world));
-	}
-
-	public MyBlockPos(World world, int x, int y, int z, int dim){
-		this((world==null||world.isRemote)?"":world.getWorldInfo().getWorldName(), x, y, z, dim);
-	}
-	
-	public MyBlockPos(String world, double x, double y, double z, int dim){
-		this(world, (int)x, (int)y, (int)z, dim);
-	}
-
-	public MyBlockPos(String world, BlockPos pos, int dim){
+	public MyBlockPos(BlockPos pos, int dim){
 		x = pos.getX();
 		y = pos.getY();
 		z = pos.getZ();
-		this.world = world;
 		this.dim = dim;
 	}
 	
-	public MyBlockPos(String world, int x, int y, int z, int dim){
+	public MyBlockPos(int x, int y, int z, int dim){
 		this.x = x;
 		this.y = y;
 		this.z = z;
-		this.world = world;
 		this.dim = dim;
 	}
 
-	public MyBlockPos(String world, int x, int y, int z, int dim, String modID){
-		this(world, x, y, z, dim);
-		this.modID = modID;
-	}
-
 	public MyBlockPos(MyBlockPos pos) {
-		this(pos.world, pos.x, pos.y, pos.z, pos.dim);
+		this(pos.x, pos.y, pos.z, pos.dim);
 	}
 	
 	public MyBlockPos(Entity entity){
-		this(entity.world, (int)Math.floor(entity.posX), (int)Math.floor(entity.posY), (int)Math.floor(entity.posZ), dim(entity.world));
+		this((int)Math.floor(entity.posX), (int)Math.floor(entity.posY), (int)Math.floor(entity.posZ), dim(entity.world));
 	}
 
 	public static int dim(World world){
@@ -87,10 +69,10 @@ public class MyBlockPos{
 		if(ClientConfigStorage.INSTANCE.deactivateTeleportation()){
 			return Connection.VALID;
 		}
-		if(!checkInterdimensional(inf.pos)){
+		if(!checkInterdimensional(inf.teleportPosition)){
 			return Connection.WORLD;
 		}
-		if(ClientConfigStorage.INSTANCE.getMaxDist()>-1&&distance(inf.pos)>ClientConfigStorage.INSTANCE.getMaxDist()){
+		if(ClientConfigStorage.INSTANCE.getMaxDist()>-1&&distance(inf.teleportPosition)>ClientConfigStorage.INSTANCE.getMaxDist()){
 			return Connection.DIST;
 		}
 		return Connection.VALID;
@@ -101,40 +83,44 @@ public class MyBlockPos{
 			return true;
 		}
 		boolean config = ClientConfigStorage.INSTANCE.interdimensional();
-		return config || (sameWorld(pos) && sameDim(pos));
+		return config || sameDim(pos);
 	}
 
 	public NBTTagCompound writeToNBT(NBTTagCompound tC){
 		int[] arr = {x, y, z, dim};
 		tC.setIntArray("Position", arr);
-		tC.setString("WorldName", world);
-		tC.setString("modID", modID); 
+		tC.setString("Version", VERSION);
 		return tC;
 	}
 	
 	public static MyBlockPos readFromNBT(NBTTagCompound tC){
 		int[] arr = tC.getIntArray("Position");
-		return new MyBlockPos(tC.getString("WorldName"), arr[0], arr[1], arr[2], arr[3], tC.getString("modID"));
+		return new MyBlockPos(arr[0], arr[1], arr[2], arr[3]);
 	}
 
 	public void toBytes(ByteBuf buf) {
-		ByteBufUtils.writeUTF8String(buf, world);
+		ByteBufUtils.writeUTF8String(buf, VERSION);
 		buf.writeInt(x);
 		buf.writeInt(y);
 		buf.writeInt(z);
 		buf.writeInt(dim);
-		ByteBufUtils.writeUTF8String(buf, modID); 
 	}
 	
 	public static MyBlockPos fromBytes(ByteBuf buf) {
-		String world = ByteBufUtils.readUTF8String(buf);
+		String savedVersion = ByteBufUtils.readUTF8String(buf);
 		int x = buf.readInt();
 		int y = buf.readInt();
 		int z = buf.readInt();
 		int dim = buf.readInt();
-		String modID = ByteBufUtils.readUTF8String(buf); 
-	    return new MyBlockPos(world, x, y, z, dim, modID); 
+		if(!savedVersion.equals(VERSION)) ByteBufUtils.readUTF8String(buf);
+	    return new MyBlockPos(x, y, z, dim);
 	}
+
+	@Override
+	public String toString(){
+		return x+"|"+y+"|"+z+" in "+dim;
+	}
+
 
 	@Override
 	public boolean equals(Object obj){
@@ -142,40 +128,21 @@ public class MyBlockPos{
 			return false;
 		}
 		MyBlockPos other = (MyBlockPos)obj;
-			if(other.x!=this.x){
-				return false;
-			}else if(other.y!=this.y){
-				return false;
-			}else if(other.z!=this.z){
-				return false;
-			}else if(!sameWorld(other)){
-				return false;
-			}else if(!sameDim(other)){
-				return false;
-			}else return true;
+		return other.x == this.x
+			&& other.y == this.y
+			&& other.z == this.z
+			&& sameDim(other);
 	}
-	
-	public boolean sameWorld(MyBlockPos other){
-		return sameWorld(other.world);
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(x, y, z, dim);
 	}
-	
-	public boolean sameWorld(String world){
-		if(world.equals("")){
-			world = this.world;
-		}else if(this.world.equals("")){
-			this.world = world;
-		}else if(!this.world.equals(world)){
-			return false;
-		}
-		return true;
-	}
-	
+
 	public boolean sameDim(MyBlockPos other){
 		if(other.dim==Integer.MIN_VALUE || this.dim == Integer.MIN_VALUE){
 			other.dim = this.dim = Math.max(other.dim, this.dim);
-		}else if(other.dim!=this.dim){
-				return false;
-		}
+		} else return other.dim == this.dim;
 		return true;
 	}
 
@@ -188,11 +155,6 @@ public class MyBlockPos{
 		}else{
 			newPos.dim = dim;
 		}
-		if(!newPos.world.equals("")){
-			world = newPos.world;
-		}else{
-			newPos.world = world;
-		}
 		return this;
 	}
 	
@@ -200,75 +162,65 @@ public class MyBlockPos{
 		int dx = this.x-other.x;
 		int dy = this.y-other.y;
 		int dz = this.z-other.z;
-		return Math.sqrt(dx*dx+dy*dy+dz*dz);
+		return Math.sqrt(dx*dx + dy*dy + dz*dz);
 	}
 
 	public BlockPos toBlockPos(){
 		return new BlockPos(x, y, z);
 	}
-	
-	public double getLength(){
-		return Math.sqrt(x*x+y*y+z*z);
-	}
-	
-	public static double toLength(Vec3i vec){
-		return Math.sqrt(vec.getX()*vec.getX()+vec.getY()*vec.getY()+vec.getZ()*vec.getZ());
-	}
-	
-	public static Vec3i normalize(Vec3i vec){
-		double length = toLength(vec);
-		return new Vec3i(vec.getX()/length, vec.getY()/length, vec.getZ()/length);
-	}
 
-	public static double normalizedY(Vec3i vec){
-		return vec.getY()/toLength(vec);
-	}
-
-	public static double toLength(double x, double y, double z){
-		return Math.sqrt(x*x+y*y+z*z);
-	}
-	
-	public static double normalizedY(double x, double y, double z){
-		return y/toLength(x, y, z);
-	}
-	
-	@Override
-	public String toString(){
-		return world+": "+x+"|"+y+"|"+z+" in "+dim;
-	}
-	
 	public World getWorld(){
-		return Signpost.proxy.getWorld(this.world, this.dim);
+		return Signpost.proxy.getWorld(this.dim);
 	}
-	
+
 	public TileEntity getTile(){
 		World world = getWorld();
 		if(world!=null){
 			TileEntity tile = world.getTileEntity(this.toBlockPos());
 			if(tile instanceof PostPostTile){
 				((PostPostTile) tile).getBases();
-			}else if(tile instanceof PostPostTile){
+			} else if(tile instanceof BigPostPostTile){
 				((BigPostPostTile) tile).getBases();
 			}
 			return tile;
 		}else{
 			return null;
 		}
-	} 
-    
-	public MyBlockPos fromNewPos(int x, int y, int z) {
-		return new MyBlockPos(world, x, y, z, dim, modID);
+	}
+
+	public MyBlockPos withX(int x) {
+		return new MyBlockPos(x, y, z, dim);
+	}
+
+	public MyBlockPos withX(Function<Integer, Integer> xMap) {
+		return this.withX(xMap.apply(x));
+	}
+
+	public MyBlockPos withY(int y) {
+		return new MyBlockPos(x, y, z, dim);
+	}
+
+	public MyBlockPos withY(Function<Integer, Integer> yMap) {
+		return this.withY(yMap.apply(y));
+	}
+
+	public MyBlockPos withZ(int z) {
+		return new MyBlockPos(x, y, z, dim);
+	}
+
+	public MyBlockPos withZ(Function<Integer, Integer> zMap) {
+		return this.withZ(zMap.apply(z));
 	}
 
 	public MyBlockPos getBelow() {
-		return fromNewPos(x, y - 1, z);
+		return this.withY(y -> y - 1);
 	}
 
 	public MyBlockPos front(EnumFacing facing, int i) {
-		int newX = x + facing.getXOffset() * i;
-		int newY = y + facing.getYOffset() * i;
-		int newZ = z + facing.getZOffset() * i;
-		return fromNewPos(newX, newY, newZ);
+		return this
+			.withX(x -> x + facing.getXOffset() * i)
+			.withY(y -> y + facing.getYOffset() * i)
+			.withZ(z -> z + facing.getZOffset() * i);
 	}
 
 	public BiomeContainer getBiome() {

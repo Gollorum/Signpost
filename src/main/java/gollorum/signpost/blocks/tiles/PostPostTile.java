@@ -65,13 +65,13 @@ public class PostPostTile extends SuperPostPostTile {
 			}
 			PostHandler.getPosts().put(toPos(), bases);
 		}else{ 
-	        if(bases.sign1!=null && bases.sign1.base!=null && bases.sign1.base.pos==null){ 
+	        if(bases.sign1!=null && bases.sign1.base!=null && bases.sign1.base.teleportPosition ==null){
 	          BaseInfo newBase = PostHandler.getWSbyName(bases.sign1.base.getName()); 
 	          if(newBase!=null){ 
 	            bases.sign1.base = newBase; 
 	          } 
 	        } 
-	        if(bases.sign2!=null && bases.sign2.base!=null && bases.sign2.base.pos==null){ 
+	        if(bases.sign2!=null && bases.sign2.base!=null && bases.sign2.base.teleportPosition ==null){
 	          BaseInfo newBase = PostHandler.getWSbyName(bases.sign2.base.getName()); 
 	          if(newBase!=null){ 
 	            bases.sign2.base = newBase; 

@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 public class BlockHandler {
 	
@@ -63,9 +62,9 @@ public class BlockHandler {
 
 	public List<BaseModelPost> baseModelsForCrafting(){
 		List<BaseModelPost> allModels = Arrays.asList(basemodels);
-		ArrayList<BaseModelPost> allowedModels = new ArrayList<BaseModelPost>();
+		ArrayList<BaseModelPost> allowedModels = new ArrayList<>();
 		for (final String model : ClientConfigStorage.INSTANCE.getAllowedCraftingModels()){
-			BaseModelPost block = CollectionUtils.find(allModels, (Predicate<BaseModelPost>) m -> m.type.name.equals(model));
+			BaseModelPost block = CollectionUtils.find(allModels, m -> m.type.name.equals(model));
 			if(block != null) allowedModels.add(block);
 		}
 		return allowedModels;
@@ -73,9 +72,9 @@ public class BlockHandler {
 
 	public List<BaseModelPost> baseModelsForVillages(){
 		List<BaseModelPost> allModels = Arrays.asList(basemodels);
-		ArrayList<BaseModelPost> allowedModels = new ArrayList<BaseModelPost>();
+		ArrayList<BaseModelPost> allowedModels = new ArrayList<>();
 		for (final String model : ClientConfigStorage.INSTANCE.getAllowedVillageModels()){
-			BaseModelPost block = CollectionUtils.find(allModels, (Predicate<BaseModelPost>) m -> m.type.name.equals(model));
+			BaseModelPost block = CollectionUtils.find(allModels, m -> m.type.name.equals(model));
 			if(block != null) allowedModels.add(block);
 		}
 		return allowedModels;

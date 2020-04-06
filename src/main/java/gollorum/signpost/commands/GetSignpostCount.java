@@ -27,7 +27,7 @@ public class GetSignpostCount extends CommandBase {
 		if(sender instanceof EntityPlayerMP){
 			EntityPlayerMP player = (EntityPlayerMP) sender;
 			if(args.length==0 || !ConfigHandler.isOp(player)){
-				String amount = ""+PostHandler.playerKnownWaystonePositions.get(player.getUniqueID()).b.b;
+				String amount = ""+PostHandler.getPlayerKnownWaystonePositions(player.getUniqueID()).remainingSignposts;
 				if(amount.equals("-1")){
 					amount = "unlimited";
 				}
@@ -38,7 +38,7 @@ public class GetSignpostCount extends CommandBase {
 					NetworkHandler.netWrap.sendTo(new ChatMessage("signpost.playerNotFound", "<player>", args[0]), player);
 					return;
 				}
-				String amount = ""+PostHandler.playerKnownWaystonePositions.get(p.getUniqueID()).b.b;
+				String amount = ""+PostHandler.getPlayerKnownWaystonePositions(p.getUniqueID()).remainingSignposts;
 				if(amount.equals("-1")){
 					amount = "unlimited";
 				}

@@ -1,17 +1,16 @@
 package gollorum.signpost.worldGen.villages;
 
+import gollorum.signpost.SPEventHandler;
+import gollorum.signpost.util.MyBlockPos;
+import gollorum.signpost.util.code.MinecraftDependent;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
+
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import gollorum.signpost.SPEventHandler;
-import gollorum.signpost.util.BoolRun;
-import gollorum.signpost.util.MyBlockPos;
-import gollorum.signpost.util.code.MinecraftDependent;
-import gollorum.signpost.util.collections.Lurchpaerchensauna;
-import gollorum.signpost.util.collections.Lurchsauna;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
 
 @MinecraftDependent
 public class VillageLibrary {
@@ -28,21 +27,18 @@ public class VillageLibrary {
 	private Map<MyBlockPos, Set<VillagePost>> villagePosts;
 	
 	private VillageLibrary(){
-		villageWaystones = new Lurchpaerchensauna<MyBlockPos, MyBlockPos>();
-		villagePosts = new Lurchpaerchensauna<MyBlockPos, Set<VillagePost>>();
+		villageWaystones = new HashMap<>();
+		villagePosts = new HashMap<>();
 	}
 	
 	public void putWaystone(final MyBlockPos villageLocation, final MyBlockPos waystoneLocation){
 		villageWaystones.put(villageLocation, waystoneLocation);
-		SPEventHandler.scheduleTask(new BoolRun(){
-			@Override
-			public boolean run() {
-				if(waystoneLocation.getTile() == null){
-					return false;
-				}else{
-					new LibraryWaystoneHelper(villageLocation, villagePosts, waystoneLocation).enscribeEmptySign();
-					return true;
-				}
+		SPEventHandler.scheduleTask(() -> {
+			if(waystoneLocation.getTile() == null){
+				return false;
+			}else{
+				new LibraryWaystoneHelper(villageLocation, villagePosts, waystoneLocation).enscribeEmptySign();
+				return true;
 			}
 		});
 	}
@@ -50,19 +46,16 @@ public class VillageLibrary {
 	public void putSignpost(final MyBlockPos villageLocation, final MyBlockPos signpostLocation, final double optimalRot){
 		Set<VillagePost> villageSignposts = villagePosts.get(villageLocation);
 		if(villageSignposts == null){
-			villageSignposts = new Lurchsauna<VillagePost>();
+			villageSignposts = new HashSet<>();
 			villagePosts.put(villageLocation, villageSignposts);
 		}
 		villageSignposts.add(new VillagePost(signpostLocation, optimalRot));
-		SPEventHandler.scheduleTask(new BoolRun(){
-			@Override
-			public boolean run() {
-				if(signpostLocation.getTile() == null){
-					return false;
-				}else{
-					new LibrarySignpostHelper(villageLocation, signpostLocation, villageWaystones).enscribeNewSign(optimalRot);
-					return true;
-				}
+		SPEventHandler.scheduleTask(() -> {
+			if(signpostLocation.getTile() == null){
+				return false;
+			}else{
+				new LibrarySignpostHelper(villageLocation, signpostLocation, villageWaystones).enscribeNewSign(optimalRot);
+				return true;
 			}
 		});
 	}
@@ -116,7 +109,7 @@ public class VillageLibrary {
 	}
 	
 	private void loadWaystones(NBTTagCompound compound) {
-		villageWaystones = new Lurchpaerchensauna<MyBlockPos, MyBlockPos>();
+		villageWaystones = new HashMap<>();
 		int count = compound.getInteger("WaystoneCount");
 		for(int i=0; i<count; i++){
 			NBTTagCompound entry = compound.getCompoundTag("Waystone"+i);
@@ -127,7 +120,7 @@ public class VillageLibrary {
 	}
 
 	private void loadSignpost(NBTTagCompound compound) {
-		villagePosts = new Lurchpaerchensauna<MyBlockPos, Set<VillagePost>>();
+		villagePosts = new HashMap<>();
 		int postCount = compound.getInteger("PostCount");
 		for(int i=0; i<postCount; i++){
 			NBTTagCompound entry = compound.getCompoundTag("Posts"+i);
@@ -138,7 +131,7 @@ public class VillageLibrary {
 	}
 	
 	private Set<VillagePost> loadPostSet(NBTTagCompound compound) {
-		Set<VillagePost> ret = new Lurchsauna<VillagePost>();
+		Set<VillagePost> ret = new HashSet<>();
 		int postCount = compound.getInteger("PostCount");
 		for(int i=0; i<postCount; i++){
 			ret.add(VillagePost.load(compound.getCompoundTag("Post"+i)));

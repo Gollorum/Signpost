@@ -8,7 +8,6 @@ import gollorum.signpost.network.NetworkHandler;
 import gollorum.signpost.network.messages.BaseUpdateClientMessage;
 import gollorum.signpost.network.messages.BaseUpdateServerMessage;
 import gollorum.signpost.util.BaseInfo;
-import gollorum.signpost.util.BoolRun;
 import gollorum.signpost.util.MyBlockPos;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.MinecraftForge;
@@ -20,18 +19,15 @@ public class BasePostTile extends TileEntity implements WaystoneContainer {
 	public BasePostTile() {}
 	
 	public BasePostTile setup(){
-		SPEventHandler.scheduleTask(new BoolRun() {
-			@Override
-			public boolean run() {
-				if(isCanceled){
-					return true;
-				}
-				if(getWorld()==null){
-					return false;
-				}
-				init();
+		SPEventHandler.scheduleTask(() -> {
+			if(isCanceled){
 				return true;
 			}
+			if(getWorld()==null){
+				return false;
+			}
+			init();
+			return true;
 		});
 		return this;
 	}
@@ -40,20 +36,10 @@ public class BasePostTile extends TileEntity implements WaystoneContainer {
 		return PostHandler.getNativeWaystones().getByPos(toPos());
 	}
 
-	public void init(){
-		boolean found = false;
-		if(getBaseInfo()!=null){
-			return;
-		}
-//		PostHandler.allWaystones.add(new BaseInfo(BasePost.generateName(), toPos(), null));
-	}
+	public void init(){}
 
 	public MyBlockPos toPos(){
-		if(getWorld()==null||getWorld().isRemote){
-			return new MyBlockPos("", pos.getX(), pos.getY(), pos.getZ(), dim());
-		}else{
-			return new MyBlockPos(getWorld().getWorldInfo().getWorldName(), pos.getX(), pos.getY(), pos.getZ(), dim());
-		}
+		return new MyBlockPos(pos.getX(), pos.getY(), pos.getZ(), dim());
 	}
 
 	public int dim(){
@@ -65,7 +51,6 @@ public class BasePostTile extends TileEntity implements WaystoneContainer {
 	
 	public void onBlockDestroy(MyBlockPos pos) {
 		isCanceled = true;
-//		BaseInfo base = PostHandler.allWaystones.getByPos(pos);
 		BaseInfo base = getBaseInfo();
 		if(PostHandler.getNativeWaystones().remove(base)){
 			MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.DESTROYED, getWorld(), this.pos.getX(), this.pos.getY(), this.pos.getZ(), base==null?"":base.getName()));

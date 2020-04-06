@@ -33,25 +33,25 @@ public class BaseUpdateClientHandler implements IMessageHandler<BaseUpdateClient
 		}
 		PostHandler.setNativeWaystones(message.waystones);
 		for(BaseInfo now: PostHandler.getNativeWaystones()){
-			TileEntity tile = FMLClientHandler.instance().getWorldClient().getTileEntity(now.blockPos.toBlockPos());
+			TileEntity tile = FMLClientHandler.instance().getWorldClient().getTileEntity(now.blockPosition.toBlockPos());
 			if(tile instanceof SuperPostPostTile){
 				((SuperPostPostTile)tile).isWaystone=true;
 			}
 		}
 		for(Entry<MyBlockPos, DoubleBaseInfo> now: PostHandler.getPosts().entrySet()){
 			BaseInfo base = now.getValue().sign1.base;
-			if(base!=null &&!(base.pos==null && base.owner==null)){
-				now.getValue().sign1.base = PostHandler.getAllWaystones().getByPos(base.blockPos);
+			if(base!=null &&!(base.teleportPosition ==null && base.owner==null)){
+				now.getValue().sign1.base = PostHandler.getAllWaystones().getByPos(base.blockPosition);
 			}
 			base = now.getValue().sign2.base;
-			if(base!=null &&!(base.pos==null && base.owner==null)){
-				now.getValue().sign2.base = PostHandler.getAllWaystones().getByPos(base.blockPos);
+			if(base!=null &&!(base.teleportPosition ==null && base.owner==null)){
+				now.getValue().sign2.base = PostHandler.getAllWaystones().getByPos(base.blockPosition);
 			}
 		}
 		for(Entry<MyBlockPos, BigBaseInfo> now: PostHandler.getBigPosts().entrySet()){
 			BaseInfo base = now.getValue().sign.base;
-			if(base!=null &&!(base.pos==null && base.owner==null)){
-				now.getValue().sign.base = PostHandler.getAllWaystones().getByPos(base.blockPos);
+			if(base!=null &&!(base.teleportPosition ==null && base.owner==null)){
+				now.getValue().sign.base = PostHandler.getAllWaystones().getByPos(base.blockPosition);
 			}
 			TileEntity tile = now.getKey().getTile();
 		}

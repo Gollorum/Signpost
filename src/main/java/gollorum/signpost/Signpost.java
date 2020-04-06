@@ -1,27 +1,9 @@
 package gollorum.signpost;
 
-import java.io.File;
-import java.util.UUID;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import gollorum.signpost.commands.ConfirmTeleportCommand;
-import gollorum.signpost.commands.DiscoverWaystone;
-import gollorum.signpost.commands.GetSignpostCount;
-import gollorum.signpost.commands.GetWaystoneCount;
-import gollorum.signpost.commands.ListAllWaystones;
-import gollorum.signpost.commands.SetSignpostCount;
-import gollorum.signpost.commands.SetWaystoneCount;
+import gollorum.signpost.commands.*;
 import gollorum.signpost.gui.SignGuiHandler;
 import gollorum.signpost.management.ConfigHandler;
 import gollorum.signpost.management.PostHandler;
-import gollorum.signpost.management.PostHandler.TeleportInformation;
-import gollorum.signpost.util.BigBaseInfo;
-import gollorum.signpost.util.DoubleBaseInfo;
-import gollorum.signpost.util.MyBlockPos;
-import gollorum.signpost.util.StonedHashSet;
-import gollorum.signpost.util.collections.Lurchpaerchensauna;
 import gollorum.signpost.worldGen.villages.NameLibrary;
 import gollorum.signpost.worldGen.villages.VillageLibrary;
 import net.minecraft.command.ServerCommandManager;
@@ -30,12 +12,12 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
 import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerAboutToStartEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.event.*;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.io.File;
 
 @Mod(modid = Signpost.MODID, version = Signpost.VERSION, name = "SignPost")
 public class Signpost{
@@ -81,10 +63,6 @@ public class Signpost{
 	@EventHandler
 	public void postInit(FMLPostInitializationEvent event){
 		ConfigHandler.postInit();
-		PostHandler.setNativeWaystones(new StonedHashSet());
-		PostHandler.setPosts(new Lurchpaerchensauna<MyBlockPos, DoubleBaseInfo>());
-		PostHandler.setBigPosts(new Lurchpaerchensauna<MyBlockPos, BigBaseInfo>());
-		PostHandler.awaiting = new Lurchpaerchensauna<UUID, TeleportInformation>();
 	}
 	
 	@EventHandler

@@ -102,8 +102,8 @@ public class BaseModelPost extends BlockContainer {
 		this.setResistance(100000);
 		setCreativeTab(CreativeTabs.TRANSPORTATION);
 		this.setTranslationKey("SignpostBase");
-		this.setRegistryName(Signpost.MODID+":blockbasemodel"+typ);
 		type = ModelType.values()[typ];
+		this.setRegistryName(Signpost.MODID+":blockbasemodel"+type.getID());
 		this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.SOUTH));
 	}
 
@@ -144,7 +144,7 @@ public class BaseModelPost extends BlockContainer {
 		if (!worldIn.isRemote) {
 			BaseInfo ws = getWaystoneRootTile(worldIn, pos).getBaseInfo();
 			if(ws==null){
-				ws = new BaseInfo(BasePost.generateName(), new MyBlockPos(worldIn, pos, playerIn.dimension), playerIn.getUniqueID());
+				ws = new BaseInfo(BasePost.generateName(), new MyBlockPos(pos, playerIn.dimension), playerIn.getUniqueID());
 				PostHandler.addWaystone(ws);
 			}
 			if (!playerIn.isSneaking()) {

@@ -1,10 +1,5 @@
 package gollorum.signpost;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collection;
-import java.util.LinkedList;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
@@ -13,6 +8,11 @@ import net.minecraftforge.client.model.obj.OBJLoader;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collection;
+import java.util.LinkedList;
 
 public class ClientProxy extends CommonProxy{
 
@@ -39,11 +39,11 @@ public class ClientProxy extends CommonProxy{
 	}
 	
 	@Override
-	public World getWorld(String worldName, int dim){
+	public World getWorld(int dim){
 		if(FMLCommonHandler.instance()!=null &&
 				FMLCommonHandler.instance().getMinecraftServerInstance()!=null &&
 				FMLCommonHandler.instance().getMinecraftServerInstance().isSinglePlayer()){
-			return super.getWorld(worldName, dim);
+			return super.getWorld(dim);
 		}else{
 			return FMLClientHandler.instance().getWorldClient();
 		}

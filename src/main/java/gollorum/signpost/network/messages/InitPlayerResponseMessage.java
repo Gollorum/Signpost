@@ -10,6 +10,7 @@ import io.netty.buffer.ByteBuf;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
+@SuppressWarnings("deprecation")
 public class InitPlayerResponseMessage implements IMessage{
 
 	public StonedHashSet allWaystones = new StonedHashSet();

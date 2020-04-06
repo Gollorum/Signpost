@@ -19,10 +19,10 @@ public class BaseUpdateServerHandler implements IMessageHandler<BaseUpdateServer
 		} else {
 			PostHandler.addDiscovered(ctx.getServerHandler().player.getUniqueID(), message.wayStone);
 		}
-		BaseInfo waystone = PostHandler.getAllWaystones().getByPos(message.wayStone.blockPos);
+		BaseInfo waystone = PostHandler.getAllWaystones().getByPos(message.wayStone.blockPosition);
 		waystone.setAll(message.wayStone);
 		NetworkHandler.netWrap.sendToAll(new BaseUpdateClientMessage());
-		MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.NAMECHANGED, ctx.getServerHandler().player.world, waystone.pos.x, waystone.pos.y, waystone.pos.z, waystone.getName()));
+		MinecraftForge.EVENT_BUS.post(new UpdateWaystoneEvent(UpdateWaystoneEvent.WaystoneEventType.NAMECHANGED, ctx.getServerHandler().player.world, waystone.teleportPosition.x, waystone.teleportPosition.y, waystone.teleportPosition.z, waystone.getName()));
 		return null;
 	}
 

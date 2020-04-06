@@ -1,24 +1,16 @@
 package gollorum.signpost.worldGen.villages;
 
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
 import gollorum.signpost.blocks.SuperPostPost;
 import gollorum.signpost.management.ClientConfigStorage;
 import gollorum.signpost.management.PostHandler;
-import gollorum.signpost.util.BiomeContainer;
-import gollorum.signpost.util.MyBlockPos;
-import gollorum.signpost.util.MyBlockPosSet;
-import gollorum.signpost.util.Paintable;
-import gollorum.signpost.util.Sign;
+import gollorum.signpost.util.*;
 import gollorum.signpost.util.code.MinecraftIndependent;
-import gollorum.signpost.util.collections.Lurchpaerchensauna;
+
+import java.util.*;
 
 @MinecraftIndependent
 class LibrarySignpostHelper extends LibraryHelper {
-	private static final Map<MyBlockPos, MyBlockPosSet> takenWaystones = new Lurchpaerchensauna<MyBlockPos, MyBlockPosSet>();
+	private static final Map<MyBlockPos, MyBlockPosSet> takenWaystones = new HashMap<>();
 	
 	private MyBlockPos signpostLocation;
 	private Map<MyBlockPos, MyBlockPos> villageWaystones;

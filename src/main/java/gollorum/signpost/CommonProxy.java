@@ -1,9 +1,5 @@
 package gollorum.signpost;
 
-import java.io.InputStream;
-import java.util.Collection;
-import java.util.LinkedList;
-
 import gollorum.signpost.blocks.tiles.BasePostTile;
 import gollorum.signpost.blocks.tiles.BigPostPostTile;
 import gollorum.signpost.blocks.tiles.PostPostTile;
@@ -18,6 +14,10 @@ import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+
+import java.io.InputStream;
+import java.util.Collection;
+import java.util.LinkedList;
 
 public class CommonProxy {
 
@@ -75,7 +75,7 @@ public class CommonProxy {
 		return ctx.getServerHandler().player.world;
 	}
 	
-	public World getWorld(String worldName, int dim){
+	public World getWorld(int dim){
 		return FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(dim);
 	}
 	

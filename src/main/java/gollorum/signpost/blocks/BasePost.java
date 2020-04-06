@@ -1,7 +1,5 @@
 package gollorum.signpost.blocks;
 
-import java.util.UUID;
-
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blocks.tiles.BasePostTile;
 import gollorum.signpost.event.UpdateWaystoneEvent;
@@ -28,6 +26,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 
+import java.util.UUID;
+
 public class BasePost extends BlockContainer {
 
 	public BasePost() {
@@ -48,7 +48,7 @@ public class BasePost extends BlockContainer {
 		if (!worldIn.isRemote) {
 			BaseInfo ws = getWaystoneRootTile(worldIn, pos).getBaseInfo();
 			if(ws==null){
-				ws = new BaseInfo(BasePost.generateName(), new MyBlockPos(worldIn, pos, playerIn.dimension), playerIn.getUniqueID());
+				ws = new BaseInfo(BasePost.generateName(), new MyBlockPos(pos, playerIn.dimension), playerIn.getUniqueID());
 				PostHandler.addWaystone(ws);
 			}
 			if (!playerIn.isSneaking()) {
@@ -94,18 +94,12 @@ public class BasePost extends BlockContainer {
 	public static void placeServer(World world, MyBlockPos pos, EntityPlayerMP player) {
 		BasePostTile tile = getWaystoneRootTile(world, pos.toBlockPos());
 		String name = generateName();
-		UUID owner = player.getUniqueID();
+		UUID owner = player != null ? player.getUniqueID() : null;
 		BaseInfo ws;
 		if((ws = tile.getBaseInfo())==null){
-			if(owner==null){
-				System.out.println("bp ps t null");
-			}
 			ws = new BaseInfo(name, pos, owner);
 			PostHandler.addWaystone(ws);
 		}else{
-			if(owner==null){
-				System.out.println("bp ps f null");
-			}
 			ws.setAll(new BaseInfo(name, pos, owner));
 		}
 		PostHandler.addDiscovered(player.getUniqueID(), ws);
@@ -119,10 +113,7 @@ public class BasePost extends BlockContainer {
 		if (tile != null && tile.getBaseInfo() == null) {
 			BaseInfo ws = PostHandler.getAllWaystones().getByPos(pos);
 			if (ws == null) {
-				UUID owner = player.getUniqueID();
-				if(owner==null){
-					System.out.println("bp pc null");
-				}
+				UUID owner = player != null ? player.getUniqueID() : null;
 				PostHandler.getAllWaystones().add(new BaseInfo("", pos, owner));
 			}
 		}

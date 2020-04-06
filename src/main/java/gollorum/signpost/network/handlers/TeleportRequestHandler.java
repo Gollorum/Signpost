@@ -24,13 +24,13 @@ public class TeleportRequestHandler implements IMessageHandler<TeleportRequestMe
 			}else{
 				String out;
 				if(ClientConfigStorage.INSTANCE.getCost()!=null){
-					out = I18n.format("signpost.confirmTeleport");
-					out = out.replaceAll("<Waystone>", message.waystoneName);
-					out = out.replaceAll("<amount>", Integer.toString(message.stackSize));
-					out = out.replaceAll("<itemName>", ConfigHandler.costName());
+					out = I18n.format("signpost.confirmTeleport")
+					 .replaceAll("<Waystone>", message.waystoneName)
+					 .replaceAll("<amount>", Integer.toString(message.stackSize))
+					 .replaceAll("<itemName>", ConfigHandler.costName());
 				}else{
-					out = I18n.format("signpost.confirmTeleportNoCost");
-					out = out.replaceAll("<Waystone>", message.waystoneName);
+					out = I18n.format("signpost.confirmTeleportNoCost")
+					 .replaceAll("<Waystone>", message.waystoneName);
 				}
 				FMLClientHandler.instance().getClient().player.sendMessage(new TextComponentString(out));
 			}
