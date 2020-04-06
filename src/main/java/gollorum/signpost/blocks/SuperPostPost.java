@@ -115,12 +115,12 @@ public abstract class SuperPostPost extends BlockContainer {
 				rightClickBrush(hit, superTile, player, x, y, z);
 				sendPostBasesToAll(superTile);
 			}else if(superTile.isAwaitingPaint()){
+				if(!canUse(player, superTile)){
+					return true;
+				}
 				if(superTile.getPaintObject()==null){
 					superTile.setAwaitingPaint(false);
 				}else{
-					if(!canUse(player, superTile)){
-						return true;
-					}
 					NetworkHandler.netWrap.sendTo(new RequestTextureMessage(x, y, z), (EntityPlayerMP)player);
 				}
 			}else if(Block.getBlockFromItem(player.getHeldItem().getItem()) instanceof BasePost){

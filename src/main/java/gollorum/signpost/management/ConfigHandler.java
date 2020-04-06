@@ -179,10 +179,10 @@ public class ConfigHandler {
 				"Changes the recipe for waystones (NORMAL/EXPENSIVE/VERY_EXPENSIVE/DEACTIVATED)", RecipeCost.allValues()));
 
 		allowedCraftingModels = config.getStringList("waystoneModelCraftingTypes", category, BaseModelPost.allTypeNames,
-				"Decide what waystone models can be crafted. You can look up the model names at [TODO: Insert link]", BaseModelPost.allTypeNames);
+				"Decide what waystone models can be crafted. You can look up the model names at https://www.curseforge.com/minecraft/mc-mods/signpost/pages/waystone-models", BaseModelPost.allTypeNames);
 
 		allowedVillageModels = config.getStringList("waystoneModelVillageTypes", category, BaseModelPost.allDefaultVillageTypeNames,
-				"Decide what waystone models are generated in villages. You can look up the model names at [TODO: Insert link]", BaseModelPost.allTypeNames);
+				"Decide what waystone models are generated in villages. You can look up the model names at https://www.curseforge.com/minecraft/mc-mods/signpost/pages/waystone-models", BaseModelPost.allTypeNames);
 
 		ClientConfigStorage.INSTANCE.setDeactivateTeleportation(deactivateTeleportation);
 		ClientConfigStorage.INSTANCE.setInterdimensional(interdimensional);
