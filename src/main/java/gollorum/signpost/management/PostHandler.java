@@ -9,13 +9,16 @@ import gollorum.signpost.network.handlers.SendAllWaystoneNamesHandler;
 import gollorum.signpost.network.messages.ChatMessage;
 import gollorum.signpost.network.messages.TeleportRequestMessage;
 import gollorum.signpost.util.*;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.common.util.ITeleporter;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 
@@ -251,7 +254,7 @@ public class PostHandler {
 				doPay(player, player.getPosition(), info.destination.teleportPosition.toBlockPos());
 				SPEventHandler.cancelTask(info.boolRun);
 				if(player.dimension != info.destination.teleportPosition.dim){
-					player.changeDimension(info.destination.teleportPosition.dim, null);
+					player.changeDimension(info.destination.teleportPosition.dim, new SignTeleporter());
 				}
 				player.setPositionAndUpdate(info.destination.teleportPosition.x+0.5, info.destination.teleportPosition.y+1, info.destination.teleportPosition.z+0.5);
 			}
@@ -368,6 +371,12 @@ public class PostHandler {
 	
 	public static boolean isHandEmpty(EntityPlayer player){
 		return player.getHeldItemMainhand().getItem().equals(Item.getItemFromBlock(Blocks.AIR));
+	}
+
+	private static class SignTeleporter implements ITeleporter {
+
+		@Override
+		public void placeEntity(World world, Entity entity, float yaw) {}
 	}
 
 	public static StonedHashSet getAllWaystones() {
