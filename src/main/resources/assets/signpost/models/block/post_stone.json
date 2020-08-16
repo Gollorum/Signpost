@@ -1,0 +1,7 @@
+{
+    "parent": "signpost:block/post_preview",
+    "textures": {
+        "post": "block/stone",
+        "sign": "signpost:block/sign_stone"
+    }
+}

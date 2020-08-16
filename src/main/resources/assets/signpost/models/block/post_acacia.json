@@ -1,0 +1,7 @@
+{
+    "parent": "signpost:block/post_preview",
+    "textures": {
+        "post": "block/acacia_log",
+        "sign": "signpost:block/sign_acacia"
+    }
+}

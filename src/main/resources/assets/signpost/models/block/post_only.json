@@ -1,0 +1,17 @@
+{
+  "textures": {
+    "texture": "block/oak_log"
+  },
+  "elements": [{
+    "from": [ -2, 0, -2 ],
+    "to": [ 2, 16, 2 ],
+    "faces": {
+      "down":  { "uv": [ 10, 6, 14, 10 ], "texture": "#texture", "cullface": "down" },
+      "up":    { "uv": [ 6, 6, 10, 10 ], "texture": "#texture", "cullface": "up" },
+      "north": { "uv": [ 0, 0, 4, 16 ], "texture": "#texture" },
+      "south": { "uv": [ 4, 0, 8, 16 ], "texture": "#texture" },
+      "west":  { "uv": [ 8, 0, 12, 16 ], "texture": "#texture" },
+      "east":  { "uv": [ 12, 0, 16, 16 ], "texture": "#texture" }
+    }
+  }]
+}

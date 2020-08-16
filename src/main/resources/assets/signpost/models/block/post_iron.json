@@ -1,0 +1,7 @@
+{
+    "parent": "signpost:block/post_preview",
+    "textures": {
+        "post": "block/iron_block",
+        "sign": "signpost:block/sign_iron"
+    }
+}

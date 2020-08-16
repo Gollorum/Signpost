@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "type=": { "model": "signpost:block/post_oak" }
+  }
+}

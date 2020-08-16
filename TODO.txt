@@ -1,4 +1,0 @@
--waystones with rendered name?
--BUG: github rotation reset?
--cauldron/thermos permissions support?
--not forget waystones on crash - not reproducable
