@@ -28,7 +28,6 @@ import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.fml.network.NetworkEvent;
-import net.minecraftforge.fml.network.PacketDistributor;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -65,7 +64,7 @@ public class PostTile extends TileEntity {
 
     public UUID addPart(UUID identifier, BlockPartInstance part){
         parts.put(identifier, part);
-        if(hasWorld() && !world.isRemote) sendToTracing(identifier, () -> new PartAddedEvent.Packet(
+        if(hasWorld() && !world.isRemote) sendToTracing(() -> new PartAddedEvent.Packet(
             new TilePartInfo(this, identifier),
             part.blockPart.getMeta().identifier,
             part.blockPart.write(),
@@ -76,7 +75,8 @@ public class PostTile extends TileEntity {
 
     public void removePart(UUID id) {
         parts.remove(id);
-        if(!world.isRemote) sendToTracing(id, () -> new PartRemovedEvent.Packet(new TilePartInfo(this, id)));
+        if(getWorld() != null && !getWorld().isRemote)
+            sendToTracing(() -> new PartRemovedEvent.Packet(new TilePartInfo(this, id)));
     }
 
     public Collection<BlockPartInstance> getParts(){ return parts.values(); }
@@ -175,7 +175,7 @@ public class PostTile extends TileEntity {
     }
 
     public void notifyMutation(UUID part, CompoundNBT data) {
-        sendToTracing(part,
+        sendToTracing(
             () -> new PostTile.PartMutatedEvent.Packet(
                 new PostTile.TilePartInfo(this, part),
                 data
@@ -183,9 +183,8 @@ public class PostTile extends TileEntity {
         );
     }
 
-    public <T> void sendToTracing(UUID part, Supplier<T> t) {
-        if(!hasWorld()) Signpost.LOGGER.warn("No world to notify mutation");
-        else PacketHandler.send(PacketDistributor.TRACKING_CHUNK.with(() -> world.getChunkAt(pos)), t.get());
+    public <T> void sendToTracing(Supplier<T> t) {
+        PacketHandler.sendToTracing(this, t);
     }
 
     public static class TilePartInfo {
@@ -271,19 +270,19 @@ public class PostTile extends TileEntity {
 
         @Override
         public void handle(Packet message, Supplier<NetworkEvent.Context> context) {
-            TileEntityUtils.findTileEntityClient(
+            context.get().enqueueWork(() -> TileEntityUtils.findTileEntityClient(
                 DimensionType.getById(message.info.dimensionId),
                 message.info.pos,
                 PostTile.class
             ).ifPresent(tile -> {
                 Optional<BlockPartMetadata<?>> meta = partsMetadata.stream().filter(m -> m.identifier.equals(message.partMetaIdentifier)).findFirst();
-                if(meta.isPresent()) {
+                if (meta.isPresent()) {
                     tile.addPart(message.info.identifier,
                         new BlockPartInstance(meta.get().read(message.partData), message.offset));
                 } else {
-                    Signpost.LOGGER.warn("Could not find meta for part "+message.partMetaIdentifier);
+                    Signpost.LOGGER.warn("Could not find meta for part " + message.partMetaIdentifier);
                 }
-            });
+            }));
         }
 
     }
@@ -313,11 +312,13 @@ public class PostTile extends TileEntity {
 
         @Override
         public void handle(Packet message, Supplier<NetworkEvent.Context> context) {
-            TileEntityUtils.findTileEntityClient(
-                DimensionType.getById(message.info.dimensionId),
-                message.info.pos,
-                PostTile.class
-            ).ifPresent(tile -> tile.removePart(message.info.identifier));
+            context.get().enqueueWork(() ->
+                TileEntityUtils.findTileEntityClient(
+                    DimensionType.getById(message.info.dimensionId),
+                    message.info.pos,
+                    PostTile.class
+                ).ifPresent(tile -> tile.removePart(message.info.identifier))
+            );
         }
     }
 
@@ -355,15 +356,16 @@ public class PostTile extends TileEntity {
 
         @Override
         public void handle(Packet message, Supplier<NetworkEvent.Context> context) {
-            TileEntityUtils.findTileEntityClient(
-                DimensionType.getById(message.info.dimensionId),
-                message.info.pos,
-                PostTile.class
-            ).ifPresent(tile ->
-                tile.parts
-                    .get(message.info.identifier)
-                    .blockPart
-                    .readMutationUpdate(message.data, tile));
+            context.get().enqueueWork(() ->
+                TileEntityUtils.findTileEntityClient(
+                    DimensionType.getById(message.info.dimensionId),
+                    message.info.pos,
+                    PostTile.class
+                ).ifPresent(tile ->
+                    tile.parts
+                        .get(message.info.identifier)
+                        .blockPart
+                        .readMutationUpdate(message.data, tile)));
         }
     }
 }

@@ -26,6 +26,10 @@ public final class Angle {
 
     public Angle add(Angle other) { return Angle.fromRadians(radians + other.radians); }
     public Angle subtract(Angle other) { return Angle.fromRadians(radians - other.radians); }
+    public Angle mul(Float other) { return Angle.fromRadians(radians * other); }
+    public Angle div(Float other) { return Angle.fromRadians(radians / other); }
+
+    public Angle negated() { return new Angle(-radians); }
 
     public float radians(){
         return radians;

@@ -59,19 +59,24 @@ public class SmallWideSign implements BlockPart<SmallWideSign> {
     private boolean flip;
     private ResourceLocation texture;
 
-    private RotatedBox transformedBounds;
+    private TransformedBox transformedBounds;
     private Lazy<IBakedModel> model;
 
     public SmallWideSign(Angle angle, String text, boolean flip, ResourceLocation texture){
         setAngle(angle);
         this.text = text;
         setTexture(texture);
-        this.flip = flip;
+        setFlip(flip);
     }
 
-    public void setAngle(Angle angle){
+    public void setAngle(Angle angle) {
         this.angle = angle;
-        transformedBounds = new RotatedBox(LOCAL_BOUNDS, RotatedBox.Axis.Y, angle);
+        regenerateTransformedBox();
+    }
+
+    public void setFlip(boolean flip) {
+        this.flip = flip;
+        regenerateTransformedBox();
     }
 
     public void setTexture(ResourceLocation texture){
@@ -79,8 +84,11 @@ public class SmallWideSign implements BlockPart<SmallWideSign> {
         this.texture = texture;
     }
 
-    public Angle getAngle(){
-        return angle;
+    public void setText(String text) { this.text = text; }
+
+    private void regenerateTransformedBox() {
+        transformedBounds = new TransformedBox(LOCAL_BOUNDS).rotateAlong(Matrix4x4.Axis.Y, angle);
+        if(flip) transformedBounds = transformedBounds.scale(new Vector3(-1, 1, 1));
     }
 
     @Override

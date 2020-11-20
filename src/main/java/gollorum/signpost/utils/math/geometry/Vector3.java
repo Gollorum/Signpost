@@ -47,10 +47,13 @@ public final class Vector3 {
     public Vector3 add(Vector3 other) {
         return new Vector3(x + other.x, y + other.y, z + other.z);
     }
-
     public Vector3 subtract(Vector3 other) {
         return new Vector3(x - other.x, y - other.y, z - other.z);
     }
+    public Vector3 div(Float other) { return new Vector3(x / other, y / other, z / other); }
+
+    public Vector3 negated() { return new Vector3(-x, -y, -z); }
+
 
     public Vector3 mul(float f) {
         return new Vector3(x * f, y * f, z * f);
@@ -96,6 +99,11 @@ public final class Vector3 {
         return Math.min(Math.min(x, y), z);
     }
 
+    public Vector3 withX(float x) { return new Vector3(x, y, z); }
+    public Vector3 withY(float y) { return new Vector3(x, y, z); }
+    public Vector3 withZ(float z) { return new Vector3(x, y, z); }
+    public Vector4 withW(float w) { return new Vector4(x, y, z, w); }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -119,17 +127,17 @@ public final class Vector3 {
 
         @Override
         public void writeTo(Vector3 vector3, CompoundNBT compound, String keyPrefix) {
-            compound.putFloat(keyPrefix + "x", vector3.x);
-            compound.putFloat(keyPrefix + "y", vector3.y);
-            compound.putFloat(keyPrefix + "z", vector3.z);
+            compound.putFloat(keyPrefix + "X", vector3.x);
+            compound.putFloat(keyPrefix + "Y", vector3.y);
+            compound.putFloat(keyPrefix + "Z", vector3.z);
         }
 
         @Override
         public Vector3 read(CompoundNBT compound, String keyPrefix) {
             return new Vector3(
-                compound.getFloat(keyPrefix + "x"),
-                compound.getFloat(keyPrefix + "y"),
-                compound.getFloat(keyPrefix + "z")
+                compound.getFloat(keyPrefix + "X"),
+                compound.getFloat(keyPrefix + "Y"),
+                compound.getFloat(keyPrefix + "Z")
             );
         }
 

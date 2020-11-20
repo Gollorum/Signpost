@@ -18,6 +18,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.fluid.IFluidState;
+import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.StateContainer;
@@ -69,7 +70,6 @@ public class Post extends Block implements IWaterLoggable {
             return name().toLowerCase();
         }
     }
-    //public static final EnumProperty<ModelType> TYPE_PROPERTY = EnumProperty.create("type", ModelType.class);
 
     private static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
     private static final VoxelShape SHAPE = Block.makeCuboidShape(6.0D, 0.0D, 6.0D, 10.0D, 16.0D, 10.0D);
@@ -110,10 +110,7 @@ public class Post extends Block implements IWaterLoggable {
     private Post(Properties properties, ModelType type) {
         super(properties.notSolid());
         this.type = type;
-        this.setDefaultState(this.getDefaultState()
-           // .with(TYPE_PROPERTY, type)
-            .with(WATERLOGGED, false)
-        );
+        this.setDefaultState(this.getDefaultState().with(WATERLOGGED, false));
     }
 
     @Override
@@ -140,7 +137,7 @@ public class Post extends Block implements IWaterLoggable {
         TileEntity t = world.getTileEntity(pos);
         return t instanceof PostTile
             ? ((PostTile) t).getBounds()
-            : VoxelShapes.fullCube();
+            : VoxelShapes.empty();
     }
 
     @SuppressWarnings("deprecation")
@@ -170,10 +167,7 @@ public class Post extends Block implements IWaterLoggable {
 
     @Override
     protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
-        builder
-//            .add(TYPE_PROPERTY)
-            .add(WATERLOGGED)
-        ;
+        builder.add(WATERLOGGED);
     }
 
     @Override
@@ -207,5 +201,11 @@ public class Post extends Block implements IWaterLoggable {
             default:
                 return ActionResultType.SUCCESS;
         }
+    }
+
+    @Override
+    public BlockState getStateForPlacement(BlockItemUseContext context) {
+        return super.getStateForPlacement(context)
+            .with(WATERLOGGED, context.getWorld().getFluidState(context.getPos()).getFluid() == Fluids.WATER);
     }
 }

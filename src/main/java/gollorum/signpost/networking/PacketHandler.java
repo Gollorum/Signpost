@@ -4,7 +4,10 @@ import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.NetworkEvent;
 import net.minecraftforge.fml.network.NetworkRegistry;
@@ -18,7 +21,9 @@ import java.util.function.Supplier;
 public class PacketHandler {
 
     private static final Event<?>[] EVENTS = new Event<?>[]{
-        new PostTile.PartAddedEvent(), new PostTile.PartMutatedEvent(), new PostTile.PartRemovedEvent()
+        new PostTile.PartAddedEvent(),
+        new PostTile.PartMutatedEvent(),
+        new PostTile.PartRemovedEvent(),
     };
 
     private static final String PROTOCOL_VERSION = "1";
@@ -61,6 +66,16 @@ public class PacketHandler {
 
     public static <T> void send(PacketDistributor.PacketTarget target, T message) {
         channel.send(target, message);
+    }
+
+    public static <T> void sendToTracing(World world, BlockPos pos, Supplier<T> t) {
+        if(world == null) Signpost.LOGGER.warn("No world to notify mutation");
+        else if(pos == null) Signpost.LOGGER.warn("No position to notify mutation");
+        else PacketHandler.send(PacketDistributor.TRACKING_CHUNK.with(() -> world.getChunkAt(pos)), t.get());
+    }
+
+    public static <T> void sendToTracing(TileEntity tile, Supplier<T> t) {
+        sendToTracing(tile.getWorld(), tile.getPos(), t);
     }
 
     public static <T> void sendToAll(T message) {
