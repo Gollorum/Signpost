@@ -1,0 +1,51 @@
+{
+  "elements": [{
+    "from": [ 2, -3, -0.5 ],
+    "to": [ 14, 3, 0.5 ],
+    "faces": {
+      "down":  { "uv": [ 0, 8, 10, 7 ], "texture": "#sign" },
+      "up":    { "uv": [ 0, 16, 10, 15 ], "texture": "#sign" },
+      "north": { "uv": [ 0, 1, 12, 7 ], "texture": "#sign" },
+      "south": { "uv": [ 0, 9, 12, 15 ], "texture": "#sign" },
+      "east":  { "uv": [ 8, 15, 9, 9 ], "texture": "#sign" }
+    }
+  }, {
+    "from": [ 14, 1, -0.5 ],
+    "to": [ 16, 2, 0.5 ],
+    "faces": {
+      "up":    { "uv": [ 0, 9, 2, 10 ], "texture": "#sign" },
+      "north": { "uv": [ 0, 10, 2, 11 ], "texture": "#sign" },
+      "south": { "uv": [ 8, 10, 10, 11 ], "texture": "#sign" },
+      "east":  { "uv": [ 9, 14, 10, 13 ], "texture": "#sign" }
+    }
+  }, {
+    "from": [ 14, -2, -0.5 ],
+    "to": [ 16, -1, 0.5 ],
+    "faces": {
+      "down":  { "uv": [ 0, 14, 2, 15 ], "texture": "#sign" },
+      "north": { "uv": [ 0, 13, 2, 14 ], "texture": "#sign" },
+      "south": { "uv": [ 8, 13, 10, 14 ], "texture": "#sign" },
+      "east":  { "uv": [ 9, 11, 10, 10 ], "texture": "#sign" }
+    }
+  }, {
+    "from": [ 14, -1, -0.5 ],
+    "to": [ 16, 1, 0.5 ],
+    "faces": {
+      "north": { "uv": [ 12, 3, 14, 5 ], "texture": "#sign" },
+      "south": { "uv": [ 12, 11, 14, 13 ], "texture": "#sign" }
+    }
+  }, {
+    "from": [ 16, -1, -0.5 ],
+    "to": [ 18, 1, 0.5 ],
+    "faces": {
+      "down":  { "uv": [ 2, 13, 4, 14 ], "texture": "#sign" },
+      "up":    { "uv": [ 2, 10, 4, 11 ], "texture": "#sign" },
+      "north": { "uv": [ 2, 11, 4, 13 ], "texture": "#sign" },
+      "south": { "uv": [ 10, 11, 12, 13 ], "texture": "#sign" },
+      "east":  { "uv": [ 4, 11, 5, 13 ], "texture": "#sign" }
+    }
+  }],
+  "textures": {
+    "sign": "signpost:block/sign_oak"
+  }
+}

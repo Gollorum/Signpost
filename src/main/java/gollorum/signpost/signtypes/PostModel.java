@@ -1,8 +1,8 @@
 package gollorum.signpost.signtypes;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import gollorum.signpost.Signpost;
 import gollorum.signpost.interactions.InteractionInfo;
+import gollorum.signpost.minecraft.gui.SignGui;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.utils.BlockPart;
 import gollorum.signpost.utils.BlockPartMetadata;
@@ -10,6 +10,7 @@ import gollorum.signpost.utils.math.geometry.AABB;
 import gollorum.signpost.utils.math.geometry.Intersectable;
 import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.Vector3;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.model.IBakedModel;
@@ -44,7 +45,7 @@ public class PostModel implements BlockPart<PostModel> {
     }
 
     public void setTexture(ResourceLocation texture){
-        model = RenderingUtil.loadModel(RenderingUtil.MODEL_POST, texture);
+        model = RenderingUtil.loadModel(RenderingUtil.ModelPost, texture);
         this.texture = texture;
     }
 
@@ -53,8 +54,8 @@ public class PostModel implements BlockPart<PostModel> {
 
     @Override
     public InteractionResult interact(InteractionInfo info) {
-        // TODO Implement.
-        Signpost.LOGGER.info("Interacted with post");
+        if(info.isRemote)
+            Minecraft.getInstance().displayGuiScreen(new SignGui(info.tile, info.localHitPos));
         return InteractionResult.Accepted;
     }
 

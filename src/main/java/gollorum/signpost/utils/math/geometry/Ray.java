@@ -22,4 +22,8 @@ public class Ray {
     public Ray offset(Vector3 vec){
         return new Ray(start.add(vec), dir);
     }
+
+    public Vector3 atDistance(float t) {
+        return start.add(dir.normalized().mul(t));
+    }
 }

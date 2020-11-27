@@ -100,8 +100,11 @@ public final class Vector3 {
     }
 
     public Vector3 withX(float x) { return new Vector3(x, y, z); }
+    public Vector3 withX(Function<Float, Float> mapping) { return new Vector3(mapping.apply(x), y, z); }
     public Vector3 withY(float y) { return new Vector3(x, y, z); }
+    public Vector3 withY(Function<Float, Float> mapping) { return new Vector3(x, mapping.apply(y), z); }
     public Vector3 withZ(float z) { return new Vector3(x, y, z); }
+    public Vector3 withZ(Function<Float, Float> mapping) { return new Vector3(x, y, mapping.apply(z)); }
     public Vector4 withW(float w) { return new Vector4(x, y, z, w); }
 
     @Override
@@ -120,6 +123,15 @@ public final class Vector3 {
     }
 
     public static final Serializer SERIALIZER = new Serializer();
+
+    public Vector3 normalized() {
+        float length = length();
+        return new Vector3(x / length, y / length, z / length);
+    }
+
+    public float length() {
+        return (float) Math.sqrt(x * x + y * y + z * z);
+    }
 
     public static final class Serializer implements CompoundSerializable<Vector3> {
 

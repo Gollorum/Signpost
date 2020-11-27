@@ -3,11 +3,11 @@ package gollorum.signpost.minecraft.rendering;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import gollorum.signpost.Signpost;
+import gollorum.signpost.minecraft.gui.Point;
+import gollorum.signpost.minecraft.gui.Rect;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BlockModelRenderer;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.TransformationMatrix;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.model.Material;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -25,8 +25,8 @@ import java.util.function.Consumer;
 
 public class RenderingUtil {
 
-    public static final float VOXEL_SIZE = 1f / 16f;
-    public static final float FONT_TO_VOXEL_SIZE = VOXEL_SIZE / 8f;
+    public static final float VoxelSize = 1f / 16f;
+    public static final float FontToVoxelSize = VoxelSize / 8f;
 
     public static IBakedModel loadModel(ResourceLocation location) {
         return ModelLoader.instance().getBakedModel(
@@ -50,18 +50,13 @@ public class RenderingUtil {
             );
     }
 
-//    public static IBakedModel loadObj(ResourceLocation resourceLocation){
-//        OBJModel objModel = OBJLoader.INSTANCE.loadModel(new OBJModel.ModelSettings(
-//            resourceLocation, false, true, false, true, null));
-//        objModel.bake(Minecraft.getInstance().getModelManager().)
-//    }
+    public static final ResourceLocation ModelWideSign = new ResourceLocation(Signpost.MOD_ID, "block/small_wide_sign");
+    public static final ResourceLocation ModelShortSign = new ResourceLocation(Signpost.MOD_ID, "block/small_short_sign");
+    public static final ResourceLocation ModelPost = new ResourceLocation(Signpost.MOD_ID, "block/post_only");
 
-    public static final ResourceLocation MODEL_SIGN = new ResourceLocation(Signpost.MOD_ID, "block/small_wide_sign");
-    public static final ResourceLocation MODEL_POST = new ResourceLocation(Signpost.MOD_ID, "block/post_only");
-
-    private static final Lazy<BlockModelRenderer> RENDERER = Lazy.of(() -> Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelRenderer());
-    private static final Lazy<Tessellator> TESSELLATOR = Lazy.of(() -> Tessellator.getInstance());
-    private static final Lazy<BufferBuilder> BUFFER_BUILDER = Lazy.of(() -> TESSELLATOR.get().getBuffer());
+    private static final Lazy<BlockModelRenderer> Renderer = Lazy.of(() -> Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelRenderer());
+    private static final Lazy<Tessellator> Tesselator = Lazy.of(() -> Tessellator.getInstance());
+    private static final Lazy<BufferBuilder> BufferBuilder = Lazy.of(() -> Tesselator.get().getBuffer());
 
     public static interface RenderModel {
         void render(
@@ -87,8 +82,8 @@ public class RenderingUtil {
         matrix.push();
         inner.accept((model, tileEntity, buffer, checkSides, random, rand, combinedOverlay) -> {
             if(!tileEntity.hasWorld()) throw new RuntimeException("TileEntity without world cannot be rendered.");
-            BUFFER_BUILDER.get().begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
-            RENDERER.get().renderModel(
+            BufferBuilder.get().begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
+            Renderer.get().renderModel(
                 tileEntity.getWorld(),
                 model,
                 tileEntity.getBlockState(),
@@ -101,13 +96,39 @@ public class RenderingUtil {
                 combinedOverlay,
                 tileEntity.getModelData()
             );
-            TESSELLATOR.get().draw();
+            Tesselator.get().draw();
         });
         matrix.pop();
     }
 
     public static float voxelToLocal(float voxelPos) {
-        return voxelPos * VOXEL_SIZE + 0.5f;
+        return voxelPos * VoxelSize + 0.5f;
+    }
+
+    public static int drawString(FontRenderer fontRenderer, String text, Point point, Rect.XAlignment xAlignment, Rect.YAlignment yAlignment, int color, int maxWidth, boolean dropShadow){
+        IRenderTypeBuffer.Impl buffer = IRenderTypeBuffer.getImpl(Tessellator.getInstance().getBuffer()); // copied from fontRenderer
+        int textWidth = fontRenderer.getStringWidth(text);
+        float scale = Math.min(1f, maxWidth / (float) textWidth);
+        Matrix4f matrix = Matrix4f.makeTranslate(
+            Rect.xCoordinateFor(point.x, maxWidth, xAlignment) + maxWidth * 0.5f,
+            Rect.yCoordinateFor(point.y, fontRenderer.FONT_HEIGHT, yAlignment) + fontRenderer.FONT_HEIGHT * 0.5f,
+            0
+        );
+        if(scale < 1) matrix.mul(Matrix4f.makeScale(scale, scale, scale));
+        int i = fontRenderer.renderString(
+            text,
+            (maxWidth - Math.min(maxWidth, textWidth)) * 0.5f,
+            -fontRenderer.FONT_HEIGHT * 0.5f,
+            color,
+            dropShadow,
+            matrix,
+            buffer,
+            false,
+            0,
+            15728880 // copied from fontRenderer
+        );
+        buffer.finish();
+        return i;
     }
 
 }

@@ -19,6 +19,8 @@ public abstract class Either<Left, Right> {
     public abstract <NewRight> Either<Left, NewRight> mapRight(Function<Right, NewRight> mapping);
     public abstract <NewLeft> Either<NewLeft, Right> mapLeft(Function<Left, NewLeft> mapping);
 
+    public abstract <Out> Out match(Function<Left, Out> leftMapping, Function<Right, Out> rightMapping);
+
     public Right rightOrThrow() { return rightOr(l -> { throw new RuntimeException("Right value was not present."); }); }
 
     public Left leftOrThrow() { return leftOr(l -> { throw new RuntimeException("Left value was not present."); }); }
@@ -47,6 +49,11 @@ public abstract class Either<Left, Right> {
         }
 
         @Override
+        public <Out> Out match(Function<Left, Out> leftMapping, Function<Right, Out> rightMapping) {
+            return leftMapping.apply(left);
+        }
+
+        @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
@@ -57,6 +64,11 @@ public abstract class Either<Left, Right> {
         @Override
         public int hashCode() {
             return Objects.hash(left);
+        }
+
+        @Override
+        public String toString() {
+            return "Left{" + left + '}';
         }
     }
 
@@ -84,6 +96,11 @@ public abstract class Either<Left, Right> {
         }
 
         @Override
+        public <Out> Out match(Function<Left, Out> leftMapping, Function<Right, Out> rightMapping) {
+            return rightMapping.apply(right);
+        }
+
+        @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
@@ -94,6 +111,11 @@ public abstract class Either<Left, Right> {
         @Override
         public int hashCode() {
             return Objects.hash(right);
+        }
+
+        @Override
+        public String toString() {
+            return "Right{" + right + '}';
         }
     }
 

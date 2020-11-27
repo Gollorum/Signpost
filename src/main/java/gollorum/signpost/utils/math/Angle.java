@@ -8,6 +8,10 @@ public final class Angle {
     public static final float DEGREES_TO_RADIANS = (float) Math.PI / 180;
     public static final float RADIANS_TO_DEGREES = 1 / DEGREES_TO_RADIANS;
 
+    public static Angle between(float x1, float z1, float x2, float z2) {
+        return fromRadians((float) (Math.atan2(z2, x2) - Math.atan2(z1, x1)));
+    }
+
     public static final Angle ZERO = new Angle(0);
 
     private final float radians;

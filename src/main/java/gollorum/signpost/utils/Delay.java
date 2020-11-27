@@ -38,6 +38,12 @@ public class Delay {
         if(canRun.get()) run.run();
         else clientTasks.add(new Task(canRun, run));
     }
+    public static void until(Supplier<Boolean> canRun, Runnable run, boolean onClient) {
+        if(onClient)
+            onClientUntil(canRun, run);
+        else
+            onServerUntil(canRun, run);
+    }
     public static void until(Supplier<Boolean> canRun, Runnable run) {
         if(canRun.get()) run.run();
         else if(Signpost.getServerType().isServer)
@@ -53,6 +59,12 @@ public class Delay {
     public static void onClientUntil(Supplier<Boolean> canRun, Runnable run, int timeoutFrames) {
         if(canRun.get()) run.run();
         else delayUntil(canRun, run, timeoutFrames, clientTasks);
+    }
+    public static void until(Supplier<Boolean> canRun, Runnable run, int timeoutFrames, boolean onClient) {
+        if(onClient)
+            onClientUntil(canRun, run, timeoutFrames);
+        else
+            onServerUntil(canRun, run, timeoutFrames);
     }
     public static void until(Supplier<Boolean> canRun, Runnable run, int timeoutFrames) {
         if(canRun.get()) run.run();

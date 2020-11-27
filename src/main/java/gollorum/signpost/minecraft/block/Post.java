@@ -1,18 +1,20 @@
 package gollorum.signpost.minecraft.block;
 
 import gollorum.signpost.Signpost;
+import gollorum.signpost.interactions.Interactable;
 import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.gui.SignGui;
 import gollorum.signpost.signtypes.PostModel;
-import gollorum.signpost.signtypes.SmallWideSign;
 import gollorum.signpost.utils.BlockPartInstance;
+import gollorum.signpost.utils.Delay;
 import gollorum.signpost.utils.TileEntityUtils;
-import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.IWaterLoggable;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
@@ -39,8 +41,6 @@ import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
-
-import static gollorum.signpost.interactions.Interactable.InteractionResult.Ignored;
 
 public class Post extends Block implements IWaterLoggable {
 
@@ -116,13 +116,16 @@ public class Post extends Block implements IWaterLoggable {
     @Override
     public void onBlockPlacedBy(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.onBlockPlacedBy(world, pos, state, placer, stack);
-        if(!world.isRemote) TileEntityUtils.findTileEntity(world, pos, PostTile.class)
-            .ifPresent(postTile -> {
-                postTile.addPart(new BlockPartInstance(new PostModel(type.postLocation), Vector3.ZERO));
-                postTile.addPart(new BlockPartInstance(new SmallWideSign(Angle.fromDegrees(10), "Moonlight forest", true, type.signLocation), new Vector3(0, 0.75f, 0)));
-                postTile.addPart(new BlockPartInstance(new SmallWideSign(Angle.fromDegrees(70), "Ygnar's bay", false, type.signLocation), new Vector3(0, 0.25f, 0)));
-                postTile.markDirty();
-            }
+        Delay.until(() -> TileEntityUtils.findTileEntity(world, pos, PostTile.class).isPresent(),
+            () -> {
+                PostTile tile = TileEntityUtils.findTileEntity(world, pos, PostTile.class).get();
+                if (world.isRemote) {
+                    Minecraft.getInstance().displayGuiScreen(new SignGui(tile, new Vector3(0, 1, 0)));
+                } else {
+                    tile.addPart(new BlockPartInstance(new PostModel(type.postLocation), Vector3.ZERO));
+                    tile.markDirty();
+                }
+            }, 100
         );
     }
 
@@ -162,7 +165,7 @@ public class Post extends Block implements IWaterLoggable {
     @Nullable
     @Override
     public TileEntity createTileEntity(BlockState state, IBlockReader world) {
-        return new PostTile();
+        return new PostTile(type);
     }
 
     @Override
@@ -182,7 +185,6 @@ public class Post extends Block implements IWaterLoggable {
 
     @Override
     public ActionResultType onBlockActivated(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
-        if(world.isRemote()) return ActionResultType.SUCCESS;
         TileEntity tileEntity = world.getTileEntity(pos);
         if(!(tileEntity instanceof PostTile)) return ActionResultType.SUCCESS;
         PostTile tile = (PostTile) tileEntity;
@@ -192,9 +194,11 @@ public class Post extends Block implements IWaterLoggable {
                 InteractionInfo.Type.RightClick,
                 player,
                 tile,
-                data -> tile.notifyMutation(p.id, data)
+                p.hitPos,
+                data -> tile.notifyMutation(p.id, data),
+                world.isRemote
             )))
-            .orElse(Ignored)
+            .orElse(Interactable.InteractionResult.Ignored)
         ){
             case Accepted:
             case Ignored:

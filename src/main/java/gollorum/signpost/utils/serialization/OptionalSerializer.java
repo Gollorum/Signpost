@@ -7,6 +7,19 @@ import java.util.Optional;
 
 public final class OptionalSerializer<T> implements CompoundSerializable<Optional<T>> {
 
+    public static final OptionalSerializer<java.util.UUID> UUID = new OptionalSerializer<>(
+        new CompoundSerializable<java.util.UUID>() {
+            @Override
+            public void writeTo(java.util.UUID uuid, CompoundNBT compound, String keyPrefix) {
+                compound.putUniqueId(keyPrefix + "Id", uuid);
+            }
+
+            @Override
+            public java.util.UUID read(CompoundNBT compound, String keyPrefix) {
+                return compound.getUniqueId(keyPrefix + "Id");
+            }
+        });
+
     private final CompoundSerializable<T> valueSerializer;
 
     public OptionalSerializer(CompoundSerializable<T> valueSerializer) {

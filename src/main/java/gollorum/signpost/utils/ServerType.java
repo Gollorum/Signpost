@@ -2,14 +2,16 @@ package gollorum.signpost.utils;
 
 public enum ServerType {
 
-    HostingClient(true),
-    Dedicated(true),
-    ConnectedClient(false);
+    HostingClient(true, true),
+    Dedicated(true, false),
+    ConnectedClient(false, true);
 
     public final boolean isServer;
+    public final boolean isClient;
 
-    ServerType(boolean isServer) {
+    ServerType(boolean isServer, boolean isClient) {
         this.isServer = isServer;
+        this.isClient = isClient;
     }
 
 }

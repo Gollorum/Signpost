@@ -28,22 +28,22 @@ import java.util.UUID;
 import static gollorum.signpost.minecraft.rendering.RenderingUtil.FontToVoxelSize;
 import static gollorum.signpost.minecraft.rendering.RenderingUtil.VoxelSize;
 
-public class SmallWideSign implements BlockPart<SmallWideSign> {
+public class SmallShortSign implements BlockPart<SmallShortSign> {
 
     private static final AABB LOCAL_BOUNDS = new AABB(
-        new Vector3(-9, -11, -2),
-        new Vector3(16, -5, -3)
+        new Vector3(2, -11, 0.5f),
+        new Vector3(18, -5, -0.5f)
     ).map(RenderingUtil::voxelToLocal);
 
-    private static final float TEXT_OFFSET_RIGHT = 7f * VoxelSize;
-    private static final float TEXT_OFFSET_LEFT = 11f * VoxelSize;
+    private static final float TEXT_OFFSET_RIGHT = -3f * VoxelSize;
+    private static final float TEXT_OFFSET_LEFT = 13.5f * VoxelSize;
     private static final float MAXIMUM_TEXT_WIDTH = TEXT_OFFSET_RIGHT + TEXT_OFFSET_LEFT;
 
     private static final float TEXT_RATIO = 1.3f;
     private static final float FONT_SIZE_VOXELS = 2 / TEXT_RATIO;
 
-    public static final BlockPartMetadata<SmallWideSign> METADATA = new BlockPartMetadata<>(
-        "small_wide_sign",
+    public static final BlockPartMetadata<SmallShortSign> METADATA = new BlockPartMetadata<>(
+        "small_short_sign",
         (sign, keyPrefix, compound) -> {
             Angle.SERIALIZER.writeTo(sign.angle, compound, keyPrefix);
             compound.putString(keyPrefix + "Text", sign.text);
@@ -52,7 +52,7 @@ public class SmallWideSign implements BlockPart<SmallWideSign> {
             compound.putInt(keyPrefix + "Color", sign.color);
             OptionalSerializer.UUID.writeTo(sign.destination, compound, "Destination");
         },
-        (compound, keyPrefix) -> new SmallWideSign(
+        (compound, keyPrefix) -> new SmallShortSign(
             Angle.SERIALIZER.read(compound, keyPrefix),
             compound.getString(keyPrefix + "Text"),
             compound.getBoolean(keyPrefix + "Flip"),
@@ -72,7 +72,7 @@ public class SmallWideSign implements BlockPart<SmallWideSign> {
     private TransformedBox transformedBounds;
     private Lazy<IBakedModel> model;
 
-    public SmallWideSign(Angle angle, String text, boolean flip, ResourceLocation texture, int color, Optional<UUID> destination){
+    public SmallShortSign(Angle angle, String text, boolean flip, ResourceLocation texture, int color, Optional<UUID> destination){
         this.color = color;
         this.destination = destination;
         setAngle(angle);
@@ -92,7 +92,7 @@ public class SmallWideSign implements BlockPart<SmallWideSign> {
     }
 
     public void setTexture(ResourceLocation texture){
-        model = RenderingUtil.loadModel(RenderingUtil.ModelWideSign, texture);
+        model = RenderingUtil.loadModel(RenderingUtil.ModelShortSign, texture);
         this.texture = texture;
     }
 
@@ -191,14 +191,14 @@ public class SmallWideSign implements BlockPart<SmallWideSign> {
             matrix.translate(
                 flip ? -offset : offset - fontRenderer.getStringWidth(text) * scale,
                 -scale * 4 * TEXT_RATIO,
-                -3.005 * VoxelSize);
+                -0.505 * VoxelSize);
             matrix.scale(scale, scale * TEXT_RATIO, scale);
             fontRenderer.renderString(text, 0, 0, color, false, matrix.getLast().getMatrix(), buffer, false, 0, combinedLights);
         });
     }
 
     @Override
-    public BlockPartMetadata<SmallWideSign> getMeta() {
+    public BlockPartMetadata<SmallShortSign> getMeta() {
         return METADATA;
     }
 

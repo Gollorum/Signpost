@@ -5,6 +5,7 @@ import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.block.Post;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.signtypes.PostModel;
+import gollorum.signpost.signtypes.SmallShortSign;
 import gollorum.signpost.signtypes.SmallWideSign;
 import gollorum.signpost.utils.BlockPart;
 import gollorum.signpost.utils.BlockPartInstance;
@@ -38,26 +39,32 @@ public class PostTile extends TileEntity {
 
     public static final String REGISTRY_NAME = "post";
 
-    public static final TileEntityType<PostTile> type = TileEntityType.Builder.create(PostTile::new, Post.ALL).build(null);
+    public static final TileEntityType<PostTile> type = TileEntityType.Builder.create(() -> new PostTile(Post.ModelType.Oak), Post.ALL).build(null);
 
     private final Map<UUID, BlockPartInstance> parts = new ConcurrentHashMap<>();
     public static final Set<BlockPartMetadata<?>> partsMetadata = new ConcurrentSet<>();
     static {
         partsMetadata.add(PostModel.METADATA);
         partsMetadata.add(SmallWideSign.METADATA);
+        partsMetadata.add(SmallShortSign.METADATA);
     }
 
     public static class TraceResult {
         public final BlockPart part;
         public final UUID id;
-        public TraceResult(BlockPart part, UUID id) {
+        public final Vector3 hitPos;
+        public TraceResult(BlockPart part, UUID id, Vector3 hitPos) {
             this.part = part;
             this.id = id;
+            this.hitPos = hitPos;
         }
     }
 
-    public PostTile() {
+    public final Post.ModelType modelType;
+
+    public PostTile(Post.ModelType modelType) {
         super(type);
+        this.modelType = modelType;
     }
 
     public UUID addPart(BlockPartInstance part){ return addPart(UUID.randomUUID(), part); }
@@ -113,8 +120,9 @@ public class PostTile extends TileEntity {
             if(now.isPresent() && (!closestTrace.isPresent() || closestTrace.get().getB() > now.get()))
                 closestTrace = Optional.of(new Tuple<>(t.getKey(), now.get()));
         }
-        return closestTrace.map(Tuple::getA).map(id -> new TraceResult(parts.get(id).blockPart, id));
+        return closestTrace.map(trace -> new TraceResult(parts.get(trace.getA()).blockPart, trace.getA(), ray.atDistance(trace.getB())));
     }
+
     @Override
     public CompoundNBT write(CompoundNBT compound) {
         super.write(compound);
@@ -269,9 +277,12 @@ public class PostTile extends TileEntity {
         }
 
         @Override
-        public void handle(Packet message, Supplier<NetworkEvent.Context> context) {
-            context.get().enqueueWork(() -> TileEntityUtils.findTileEntityClient(
-                DimensionType.getById(message.info.dimensionId),
+        public void handle(Packet message, Supplier<NetworkEvent.Context> contextSupplier) {
+            NetworkEvent.Context context = contextSupplier.get();
+            boolean isRemote = !context.getDirection().getReceptionSide().isServer();
+            context.enqueueWork(() -> TileEntityUtils.findTileEntity(
+                message.info.dimensionId,
+                isRemote,
                 message.info.pos,
                 PostTile.class
             ).ifPresent(tile -> {
@@ -279,10 +290,12 @@ public class PostTile extends TileEntity {
                 if (meta.isPresent()) {
                     tile.addPart(message.info.identifier,
                         new BlockPartInstance(meta.get().read(message.partData), message.offset));
+                    tile.markDirty();
                 } else {
                     Signpost.LOGGER.warn("Could not find meta for part " + message.partMetaIdentifier);
                 }
             }));
+            context.setPacketHandled(true);
         }
 
     }
@@ -319,6 +332,7 @@ public class PostTile extends TileEntity {
                     PostTile.class
                 ).ifPresent(tile -> tile.removePart(message.info.identifier))
             );
+            context.get().setPacketHandled(true);
         }
     }
 
@@ -366,6 +380,7 @@ public class PostTile extends TileEntity {
                         .get(message.info.identifier)
                         .blockPart
                         .readMutationUpdate(message.data, tile)));
+            context.get().setPacketHandled(true);
         }
     }
 }

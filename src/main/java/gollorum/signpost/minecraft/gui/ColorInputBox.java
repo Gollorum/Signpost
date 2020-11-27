@@ -1,0 +1,77 @@
+package gollorum.signpost.minecraft.gui;
+
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+
+import javax.annotation.Nullable;
+import java.util.function.Consumer;
+
+public class ColorInputBox extends InputBox {
+
+    @Nullable
+    private Consumer<Integer> responder;
+
+    private int currentResult;
+
+    public ColorInputBox(FontRenderer fontRenderer, Rect inputFieldRect) {
+        super(fontRenderer, new Rect(
+            new Point(inputFieldRect.point.x + inputFieldRect.height, inputFieldRect.point.y),
+            inputFieldRect.width - inputFieldRect.height, inputFieldRect.height
+        ), true, true);
+        setValidator(text -> text.startsWith("#") && text.length() <= 7 && canParse(text.substring(1)));
+        setText("#000000");
+    }
+
+    private static boolean canParse(String text) {
+        if(text.equals("")) return true;
+        try {
+            Integer.parseInt(text, 16);
+            return true;
+        } catch(NumberFormatException e) {
+            return false;
+        }
+    }
+
+    private int getResult() {
+        if(getText().equals("#")) return 0;
+        return Integer.parseInt(getText().substring(1), 16);
+    }
+
+    public int getCurrentColor() { return currentResult; }
+
+    @Override
+    protected void onTextChanged() {
+        currentResult = getResult();
+        if(responder != null) {
+            responder.accept(currentResult);
+        }
+        super.onTextChanged();
+    }
+
+    @Override
+    public void renderButton(int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder bufferbuilder = tessellator.getBuffer();
+        Minecraft.getInstance().getTextureManager().bindTexture(TextureResource.background.location);
+        int red = Colors.getRed(currentResult);
+        int green = Colors.getGreen(currentResult);
+        int blue = Colors.getBlue(currentResult);
+        RenderSystem.color4f(1, 1, 1, 1);
+        int brightness = 255;
+        bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
+        bufferbuilder.pos(x - height, y + height, 0.0D).tex(0, 1).color(red, green, blue, 255).endVertex();
+        bufferbuilder.pos(x, y + height, 0.0D).tex(1, 1).color(red, green, blue, 255).endVertex();
+        bufferbuilder.pos(x, y, 0.0D).tex(1, 0).color(red, green, blue, 255).endVertex();
+        bufferbuilder.pos(x - height, y, 0.0D).tex(0, 0).color(red, green, blue, 255).endVertex();
+        tessellator.draw();
+        super.renderButton(p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
+    }
+
+    public void setColorResponder(@Nullable Consumer<Integer> responder) {
+        this.responder = responder;
+    }
+}

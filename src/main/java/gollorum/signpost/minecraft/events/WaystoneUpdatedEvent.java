@@ -1,6 +1,7 @@
 package gollorum.signpost.minecraft.events;
 
 import gollorum.signpost.utils.WaystoneLocationData;
+import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.serialization.BufferSerializable;
 import net.minecraft.network.PacketBuffer;
 
@@ -18,7 +19,7 @@ public abstract class WaystoneUpdatedEvent {
     }
 
     public enum Type {
-        Added, Removed, Renamed
+        Added, Removed, Renamed, Moved
     }
 
     public final WaystoneLocationData location;
@@ -43,6 +44,8 @@ public abstract class WaystoneUpdatedEvent {
             buffer.writeString(event.name);
             if(event instanceof WaystoneRenamedEvent)
                 buffer.writeString(((WaystoneRenamedEvent)event).oldName);
+            else if(event instanceof WaystoneMovedEvent)
+                WorldLocation.SERIALIZER.writeTo(((WaystoneMovedEvent)event).newLocation, buffer);
         }
 
         @Override
@@ -54,6 +57,7 @@ public abstract class WaystoneUpdatedEvent {
                 case Added: return new WaystoneAddedEvent(location, name);
                 case Removed: return new WaystoneRemovedEvent(location, name);
                 case Renamed: return new WaystoneRenamedEvent(location, name, buffer.readString());
+                case Moved: return new WaystoneMovedEvent(location, WorldLocation.SERIALIZER.readFrom(buffer), name);
                 default: throw new RuntimeException("Type " + type + " is not supported");
             }
         }

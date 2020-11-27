@@ -21,17 +21,17 @@ public class WaystoneGui extends Screen {
 
     private final WorldLocation location;
     private final Optional<WaystoneData> oldData;
-    private WaystoneInputBox inputBox;
+    private ImageInputBox inputBox;
 
     private Optional<Set<String>> allWaystoneNames = Optional.empty();
 
-    private static final int inputBoxWidth = 137;
+    private static final TextureResource texture = TextureResource.waystoneNameField;
+    private static final int inputBoxScale = 3;
     private static final int inputBoxYOffset = -46;
 
     private static final int buttonsYOffset = -inputBoxYOffset;
-    private static final int buttonsXOffset = 15;
-    private static final int buttonsWidth = 98;
-    private static final int buttonsHeight = 20;
+    private static final TextureSize buttonsSize = new TextureSize(98, 20);
+
 
     private Button doneButton;
 
@@ -64,30 +64,29 @@ public class WaystoneGui extends Screen {
     protected void init() {
         super.init();
         WaystoneLibrary.getInstance().requestAllWaystoneNames(names -> allWaystoneNames = Optional.of(new HashSet<>(names)));
-        WaystoneLibrary.getInstance().addListener(waystoneUpdateListener);
-        inputBox = new WaystoneInputBox(
-            getCenterX() - (inputBoxWidth) / 2,
-            getCenterY() - (int)(inputBoxWidth / WaystoneInputBox.widthHeightRatio) / 2 + inputBoxYOffset,
-            inputBoxWidth
-        );
+        WaystoneLibrary.getInstance().updateEventDispatcher.addListener(waystoneUpdateListener);
+        inputBox = new ImageInputBox(font,
+            new Rect(
+                new Point(getCenterX(), getCenterY() + inputBoxYOffset),
+                new TextureSize((texture.size.width - 6) * inputBoxScale, font.FONT_HEIGHT),
+                Rect.XAlignment.Center, Rect.YAlignment.Bottom),
+            new Rect(
+                Point.zero,
+                texture.size.scale(inputBoxScale),
+                Rect.XAlignment.Center, Rect.YAlignment.Center),
+            Rect.XAlignment.Center, Rect.YAlignment.Center,
+            texture,
+            true);
         oldData.ifPresent(data -> inputBox.setText(data.name));
         doneButton = new Button(
-            getCenterX() - buttonsWidth - buttonsXOffset,
-            getCenterY() - buttonsHeight / 2 + buttonsYOffset,
-            buttonsWidth,
-            buttonsHeight,
+            getCenterX() - buttonsSize.width / 2,
+            getCenterY() - buttonsSize.height / 2 + buttonsYOffset,
+            buttonsSize.width,
+            buttonsSize.height,
             I18n.format(LangKeys.Done),
-            this::done
+            b -> onClose()
         );
         addButton(doneButton);
-        addButton(new Button(
-            getCenterX() + buttonsXOffset,
-            getCenterY() - buttonsHeight / 2 + buttonsYOffset,
-            buttonsWidth,
-            buttonsHeight,
-            I18n.format(LangKeys.Cancel),
-            this::cancel
-        ));
         inputBox.setCanLoseFocus(false);
         inputBox.changeFocus(true);
         inputBox.setTextColor(Colors.valid);
@@ -104,24 +103,19 @@ public class WaystoneGui extends Screen {
                 doneButton.active = false;
             }
         });
-        children.add(inputBox);
+        addButton(inputBox);
         setFocusedDefault(inputBox);
     }
 
     private boolean isValid(String name) {
-        return allWaystoneNames.map(names -> !names.contains(name)).orElse(true);
+        return allWaystoneNames.map(names -> !names.contains(name)).orElse(true)
+            || (oldData.isPresent() && oldData.get().name.equals(name));
     }
 
     @Override
     public void render(int p_render_1_, int p_render_2_, float p_render_3_) {
         renderBackground();
         super.render(p_render_1_, p_render_2_, p_render_3_);
-        inputBox.render(p_render_1_, p_render_2_, p_render_3_);
-    }
-
-    @Override
-    public boolean keyPressed(int p_keyPressed_1_, int p_keyPressed_2_, int p_keyPressed_3_) {
-        return inputBox.keyPressed(p_keyPressed_1_, p_keyPressed_2_, p_keyPressed_3_);
     }
 
     @Override
@@ -132,15 +126,8 @@ public class WaystoneGui extends Screen {
     @Override
     public void onClose() {
         super.onClose();
-        WaystoneLibrary.getInstance().removeListener(waystoneUpdateListener);
-    }
-
-    private void cancel(Button button) {
-        getMinecraft().displayGuiScreen(null);
-    }
-
-    private void done(Button button) {
-        WaystoneLibrary.getInstance().update(inputBox.getText(), new WaystoneLocationData(location, Vector3.fromVec3d(getMinecraft().player.getPositionVec())));
-        getMinecraft().displayGuiScreen(null);
+        if(!inputBox.getText().equals("") && isValid(inputBox.getText()))
+            WaystoneLibrary.getInstance().update(inputBox.getText(), new WaystoneLocationData(location, Vector3.fromVec3d(getMinecraft().player.getPositionVec())));
+        WaystoneLibrary.getInstance().updateEventDispatcher.removeListener(waystoneUpdateListener);
     }
 }
