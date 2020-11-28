@@ -1,25 +1,24 @@
 package gollorum.signpost.signtypes;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import gollorum.signpost.Teleport;
 import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
-import gollorum.signpost.utils.BlockPart;
 import gollorum.signpost.utils.BlockPartMetadata;
 import gollorum.signpost.utils.math.Angle;
-import gollorum.signpost.utils.math.geometry.*;
+import gollorum.signpost.utils.math.geometry.AABB;
+import gollorum.signpost.utils.math.geometry.Matrix4x4;
+import gollorum.signpost.utils.math.geometry.TransformedBox;
+import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.OptionalSerializer;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.Quaternion;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Vector3f;
-import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.util.Lazy;
 
 import java.util.Optional;
 import java.util.Random;
@@ -28,7 +27,7 @@ import java.util.UUID;
 import static gollorum.signpost.minecraft.rendering.RenderingUtil.FontToVoxelSize;
 import static gollorum.signpost.minecraft.rendering.RenderingUtil.VoxelSize;
 
-public class SmallShortSign implements BlockPart<SmallShortSign> {
+public class SmallShortSign extends Sign<SmallShortSign> {
 
     private static final AABB LOCAL_BOUNDS = new AABB(
         new Vector3(2, -11, 0.5f),
@@ -64,78 +63,24 @@ public class SmallShortSign implements BlockPart<SmallShortSign> {
         )
     );
 
-    private Angle angle;
     private String text;
-    private int color;
-    private boolean flip;
-    private ResourceLocation mainTexture;
-    private ResourceLocation secondaryTexture;
-    private Optional<UUID> destination;
-
-    private TransformedBox transformedBounds;
-    private Lazy<IBakedModel> model;
 
     public SmallShortSign(Angle angle, String text, boolean flip, ResourceLocation mainTexture, ResourceLocation secondaryTexture, int color, Optional<UUID> destination){
-        this.color = color;
-        this.destination = destination;
-        setAngle(angle);
+        super(angle, flip, mainTexture, secondaryTexture, color, destination);
         this.text = text;
-        setTextures(mainTexture, secondaryTexture);
-        setFlip(flip);
-    }
-
-    public void setAngle(Angle angle) {
-        this.angle = angle;
-        regenerateTransformedBox();
-    }
-
-    public void setFlip(boolean flip) {
-        this.flip = flip;
-        regenerateTransformedBox();
-    }
-
-    public void setTextures(ResourceLocation mainTexture, ResourceLocation secondaryTexture) {
-        model = RenderingUtil.loadModel(RenderingUtil.ModelShortSign, mainTexture, secondaryTexture);
-        this.mainTexture = mainTexture;
-        this.secondaryTexture = secondaryTexture;
     }
 
     public void setText(String text) { this.text = text; }
 
-    private void regenerateTransformedBox() {
+    @Override
+    protected ResourceLocation getModel() {
+        return RenderingUtil.ModelShortSign;
+    }
+
+    @Override
+    protected void regenerateTransformedBox() {
         transformedBounds = new TransformedBox(LOCAL_BOUNDS).rotateAlong(Matrix4x4.Axis.Y, angle);
         if(flip) transformedBounds = transformedBounds.scale(new Vector3(-1, 1, 1));
-    }
-
-    @Override
-    public Intersectable<Ray, Float> getIntersection() {
-        return transformedBounds;
-    }
-
-    @Override
-    public InteractionResult interact(InteractionInfo info) {
-        // TODO Implement.
-        if(!info.isRemote) {
-//            setAngle(angle.add(Angle.fromDegrees(15)));
-//            notifyAngleChanged(info);
-            destination.ifPresent(uuid -> Teleport.toWaystone(uuid, info.player));
-        }
-        return InteractionResult.Accepted;
-    }
-
-    private void notifyAngleChanged(InteractionInfo info) {
-        CompoundNBT compound = new CompoundNBT();
-        compound.putString("type", "angle");
-        compound.putFloat("angle_radians", angle.radians());
-        info.mutationDistributor.accept(compound);
-    }
-
-    private void notifyTextureChanged(InteractionInfo info) {
-        CompoundNBT compound = new CompoundNBT();
-        compound.putString("type", "texture");
-        compound.putString("texture", mainTexture.toString());
-        compound.putString("textureDark", secondaryTexture.toString());
-        info.mutationDistributor.accept(compound);
     }
 
     private void notifyTextChanged(InteractionInfo info) {
@@ -145,29 +90,13 @@ public class SmallShortSign implements BlockPart<SmallShortSign> {
         info.mutationDistributor.accept(compound);
     }
 
-    private void notifyFlipChanged(InteractionInfo info) {
-        CompoundNBT compound = new CompoundNBT();
-        compound.putString("type", "flip");
-        compound.putBoolean("flip", flip);
-        info.mutationDistributor.accept(compound);
-    }
-
     @Override
     public void readMutationUpdate(CompoundNBT compound, TileEntity tile) {
-        switch (compound.getString("type")){
-            case "angle":
-                setAngle(Angle.fromRadians(compound.getFloat("angle_radians")));
-                break;
-            case "texture":
-                setTextures(new ResourceLocation(compound.getString("texture")), new ResourceLocation(compound.getString("textureDark")));
-                break;
-            case "text":
-                text = compound.getString("text");
-                break;
-            case "flip":
-                flip = compound.getBoolean("flip");
-                break;
+        if (compound.getString("type").equals("text")) {
+            text = compound.getString("text");
+            return;
         }
+        super.readMutationUpdate(compound, tile);
     }
 
     @Override
