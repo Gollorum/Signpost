@@ -3,6 +3,7 @@ package gollorum.signpost.minecraft.gui;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import gollorum.signpost.WaystoneLibrary;
+import gollorum.signpost.minecraft.block.Post;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.events.WaystoneRenamedEvent;
 import gollorum.signpost.minecraft.events.WaystoneUpdatedEvent;
@@ -67,11 +68,13 @@ public class SignGui extends Screen {
 
     private SignType selectedType = null;
     private final PostTile tile;
+    private final Post.ModelType modelType;
     private final Vector3 localHitPos;
 
-    public SignGui(PostTile tile, Vector3 localHitPos) {
+    public SignGui(PostTile tile, Post.ModelType modelType, Vector3 localHitPos) {
         super(new StringTextComponent("Sign"));
         this.tile = tile;
+        this.modelType = modelType;
         this.localHitPos = localHitPos;
     }
 
@@ -145,29 +148,29 @@ public class SignGui extends Screen {
 
         Rect wideRect = new Rect(
             new Point(getCenterX() + centerGap + 2 * inputSignsScale, getCenterY() - centralAreaHeight / 2),
-            TextureResource.smallWideSign.size.scale(inputSignsScale),
+            modelType.wideGuiTexture.size.scale(inputSignsScale),
             Rect.XAlignment.Left,
             Rect.YAlignment.Top);
         wideSignInputBox = new ImageInputBox(font,
             wideRect.offset(new Point(5, 3).mul(inputSignsScale), new Point(-1, -11).mul(inputSignsScale)),
             wideRect.withPoint(new Point(-5, -3).mul(inputSignsScale)),
             Rect.XAlignment.Left, Rect.YAlignment.Top,
-            TextureResource.smallWideSign,
+            modelType.wideGuiTexture,
             false);
         Rect shortRect = new Rect(
             wideRect.min().withX(x -> x - 2 * inputSignsScale),
-            TextureResource.smallShortSign.size.scale(inputSignsScale),
+            modelType.shortGuiTexture.size.scale(inputSignsScale),
             Rect.XAlignment.Left,
             Rect.YAlignment.Top);
         shortSignInputBox = new ImageInputBox(font,
             shortRect.offset(new Point(5, 3).mul(inputSignsScale), new Point(-4, -11).mul(inputSignsScale)),
             shortRect.withPoint(new Point(-5, -3).mul(inputSignsScale)),
             Rect.XAlignment.Left, Rect.YAlignment.Top,
-            TextureResource.smallShortSign,
+            modelType.shortGuiTexture,
             false);
         Rect largeRect = new Rect(
             wideRect.min().withX(x -> x + 3 * inputSignsScale),
-            TextureResource.largeSign.size.scale(inputSignsScale),
+            modelType.largeGuiTexture.size.scale(inputSignsScale),
             Rect.XAlignment.Left,
             Rect.YAlignment.Top);
         Rect largeInputRect = largeRect.withPoint(p -> p.add(
@@ -180,7 +183,7 @@ public class SignGui extends Screen {
             largeInputRect,
             largeRect.withPoint(largeRect.point.subtract(largeInputRect.point)),
             Rect.XAlignment.Left, Rect.YAlignment.Top,
-            TextureResource.largeSign,
+            modelType.largeGuiTexture,
             false
         );
         final int largeYSpace = (int) (2.5f * inputSignsScale);
@@ -363,8 +366,8 @@ public class SignGui extends Screen {
                             Angle.fromDegrees(0),
                             wideSignInputBox.getText(),
                             false,
-                            tile.modelType.signTextureLocation,
-                            tile.modelType.darkSignTextureLocation,
+                            modelType.mainTexture,
+                            modelType.secondaryTexture,
                             colorInputBox.getCurrentColor(),
                             destinationId
                         )
@@ -381,7 +384,8 @@ public class SignGui extends Screen {
                             Angle.fromDegrees(0),
                             shortSignInputBox.getText(),
                             false,
-                            tile.modelType.signTextureLocation,
+                            modelType.mainTexture,
+                            modelType.secondaryTexture,
                             colorInputBox.getCurrentColor(),
                             destinationId
                         )
@@ -403,8 +407,8 @@ public class SignGui extends Screen {
                                 largeSignInputBoxes.get(3).getText(),
                             },
                             false,
-                            tile.modelType.signTextureLocation,
-                            tile.modelType.darkSignTextureLocation,
+                            modelType.mainTexture,
+                            modelType.secondaryTexture,
                             colorInputBox.getCurrentColor(),
                             destinationId
                         )

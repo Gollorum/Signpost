@@ -48,8 +48,8 @@ public class SmallWideSign implements BlockPart<SmallWideSign> {
             Angle.SERIALIZER.writeTo(sign.angle, compound, keyPrefix);
             compound.putString(keyPrefix + "Text", sign.text);
             compound.putBoolean(keyPrefix + "Flip", sign.flip);
-            compound.putString(keyPrefix + "Texture", sign.texture.toString());
-            compound.putString(keyPrefix + "TextureDark", sign.textureDark.toString());
+            compound.putString(keyPrefix + "Texture", sign.mainTexture.toString());
+            compound.putString(keyPrefix + "TextureDark", sign.secondaryTexture.toString());
             compound.putInt(keyPrefix + "Color", sign.color);
             OptionalSerializer.UUID.writeTo(sign.destination, compound, "Destination");
         },
@@ -68,19 +68,19 @@ public class SmallWideSign implements BlockPart<SmallWideSign> {
     private String text;
     private int color;
     private boolean flip;
-    private ResourceLocation texture;
-    private ResourceLocation textureDark;
+    private ResourceLocation mainTexture;
+    private ResourceLocation secondaryTexture;
     private Optional<UUID> destination;
 
     private TransformedBox transformedBounds;
     private Lazy<IBakedModel> model;
 
-    public SmallWideSign(Angle angle, String text, boolean flip, ResourceLocation texture, ResourceLocation textureDark, int color, Optional<UUID> destination){
+    public SmallWideSign(Angle angle, String text, boolean flip, ResourceLocation mainTexture, ResourceLocation secondaryTexture, int color, Optional<UUID> destination){
         this.color = color;
         this.destination = destination;
         setAngle(angle);
         this.text = text;
-        setTextures(texture, textureDark);
+        setTextures(mainTexture, secondaryTexture);
         setFlip(flip);
     }
 
@@ -94,10 +94,10 @@ public class SmallWideSign implements BlockPart<SmallWideSign> {
         regenerateTransformedBox();
     }
 
-    public void setTextures(ResourceLocation texture, ResourceLocation textureDark){
-        model = RenderingUtil.loadModel(RenderingUtil.ModelWideSign, texture, textureDark);
-        this.texture = texture;
-        this.textureDark = textureDark;
+    public void setTextures(ResourceLocation mainTexture, ResourceLocation secondaryTexture) {
+        model = RenderingUtil.loadModel(RenderingUtil.ModelWideSign, mainTexture, secondaryTexture);
+        this.mainTexture = mainTexture;
+        this.secondaryTexture = secondaryTexture;
     }
 
     public void setText(String text) { this.text = text; }
@@ -133,8 +133,8 @@ public class SmallWideSign implements BlockPart<SmallWideSign> {
     private void notifyTextureChanged(InteractionInfo info) {
         CompoundNBT compound = new CompoundNBT();
         compound.putString("type", "texture");
-        compound.putString("texture", texture.toString());
-        compound.putString("textureDark", textureDark.toString());
+        compound.putString("texture", mainTexture.toString());
+        compound.putString("textureDark", secondaryTexture.toString());
         info.mutationDistributor.accept(compound);
     }
 

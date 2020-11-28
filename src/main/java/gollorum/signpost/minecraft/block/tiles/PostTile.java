@@ -2,10 +2,9 @@ package gollorum.signpost.minecraft.block.tiles;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import gollorum.signpost.Signpost;
-import gollorum.signpost.minecraft.block.Post;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.signtypes.LargeSign;
-import gollorum.signpost.signtypes.PostModel;
+import gollorum.signpost.signtypes.Post;
 import gollorum.signpost.signtypes.SmallShortSign;
 import gollorum.signpost.signtypes.SmallWideSign;
 import gollorum.signpost.utils.BlockPart;
@@ -40,12 +39,12 @@ public class PostTile extends TileEntity {
 
     public static final String REGISTRY_NAME = "post";
 
-    public static final TileEntityType<PostTile> type = TileEntityType.Builder.create(() -> new PostTile(Post.ModelType.Oak), Post.ALL).build(null);
+    public static final TileEntityType<PostTile> type = TileEntityType.Builder.create(() -> new PostTile(gollorum.signpost.minecraft.block.Post.ModelType.Oak), gollorum.signpost.minecraft.block.Post.ALL).build(null);
 
     private final Map<UUID, BlockPartInstance> parts = new ConcurrentHashMap<>();
     public static final Set<BlockPartMetadata<?>> partsMetadata = new ConcurrentSet<>();
     static {
-        partsMetadata.add(PostModel.METADATA);
+        partsMetadata.add(Post.METADATA);
         partsMetadata.add(SmallWideSign.METADATA);
         partsMetadata.add(SmallShortSign.METADATA);
         partsMetadata.add(LargeSign.METADATA);
@@ -62,9 +61,9 @@ public class PostTile extends TileEntity {
         }
     }
 
-    public final Post.ModelType modelType;
+    public final gollorum.signpost.minecraft.block.Post.ModelType modelType;
 
-    public PostTile(Post.ModelType modelType) {
+    public PostTile(gollorum.signpost.minecraft.block.Post.ModelType modelType) {
         super(type);
         this.modelType = modelType;
     }
@@ -167,7 +166,7 @@ public class PostTile extends TileEntity {
             }
         }
         if(parts.isEmpty()) addPart(
-            new BlockPartInstance(new PostModel(Post.ModelType.Stone.postLocation), Vector3.ZERO)
+            new BlockPartInstance(new Post(gollorum.signpost.minecraft.block.Post.ModelType.Oak.postLocation), Vector3.ZERO)
         );
     }
 

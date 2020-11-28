@@ -5,7 +5,7 @@ import gollorum.signpost.interactions.Interactable;
 import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.SignGui;
-import gollorum.signpost.signtypes.PostModel;
+import gollorum.signpost.minecraft.gui.TextureResource;
 import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.utils.Delay;
 import gollorum.signpost.utils.TileEntityUtils;
@@ -21,7 +21,9 @@ import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.fluid.IFluidState;
 import net.minecraft.item.BlockItemUseContext;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.state.properties.BlockStateProperties;
@@ -45,22 +47,38 @@ import java.util.Arrays;
 public class Post extends Block implements IWaterLoggable {
 
     public static enum ModelType implements IStringSerializable {
-        Acacia(new ResourceLocation("acacia_log"), new ResourceLocation(Signpost.MOD_ID, "acacia"), new ResourceLocation(Signpost.MOD_ID, "acacia_dark")),
-        Birch(new ResourceLocation("birch_log"), new ResourceLocation(Signpost.MOD_ID, "birch"), new ResourceLocation("birch_log")),
-        Iron(new ResourceLocation("iron_block"), new ResourceLocation(Signpost.MOD_ID, "iron"), new ResourceLocation(Signpost.MOD_ID, "iron_dark")),
-        Jungle(new ResourceLocation("jungle_log"), new ResourceLocation(Signpost.MOD_ID, "jungle"), new ResourceLocation("jungle_log")),
-        Oak(new ResourceLocation("oak_log"), new ResourceLocation(Signpost.MOD_ID, "oak"), new ResourceLocation(Signpost.MOD_ID, "oak_dark")),
-        Spruce(new ResourceLocation("spruce_log"), new ResourceLocation(Signpost.MOD_ID, "spruce"), new ResourceLocation(Signpost.MOD_ID, "spruce_dark")),
-        Stone(new ResourceLocation("stone"), new ResourceLocation("stone"), new ResourceLocation(Signpost.MOD_ID, "stone_dark"));
+        Acacia(new ResourceLocation("acacia_log"), new ResourceLocation(Signpost.MOD_ID, "acacia"), new ResourceLocation(Signpost.MOD_ID, "acacia_dark"),
+            TextureResource.SignGui.Wide.Acacia, TextureResource.SignGui.Short.Acacia, TextureResource.SignGui.Large.Acacia),
+        Birch(new ResourceLocation("birch_log"), new ResourceLocation(Signpost.MOD_ID, "birch"), new ResourceLocation("birch_log"),
+            TextureResource.SignGui.Wide.Birch, TextureResource.SignGui.Short.Birch, TextureResource.SignGui.Large.Birch),
+        Iron(new ResourceLocation("iron_block"), new ResourceLocation(Signpost.MOD_ID, "iron"), new ResourceLocation(Signpost.MOD_ID, "iron_dark"),
+            TextureResource.SignGui.Wide.Iron, TextureResource.SignGui.Short.Iron, TextureResource.SignGui.Large.Iron),
+        Jungle(new ResourceLocation("jungle_log"), new ResourceLocation(Signpost.MOD_ID, "jungle"), new ResourceLocation("jungle_log"),
+            TextureResource.SignGui.Wide.Jungle, TextureResource.SignGui.Short.Jungle, TextureResource.SignGui.Large.Jungle),
+        Oak(new ResourceLocation("oak_log"), new ResourceLocation(Signpost.MOD_ID, "oak"), new ResourceLocation(Signpost.MOD_ID, "oak_dark"),
+            TextureResource.SignGui.Wide.Oak, TextureResource.SignGui.Short.Oak, TextureResource.SignGui.Large.Oak),
+        DarkOak(new ResourceLocation("dark_oak_log"), new ResourceLocation(Signpost.MOD_ID, "dark_oak"), new ResourceLocation(Signpost.MOD_ID, "dark_oak_dark"),
+            TextureResource.SignGui.Wide.DarkOak, TextureResource.SignGui.Short.DarkOak, TextureResource.SignGui.Large.DarkOak),
+        Spruce(new ResourceLocation("spruce_log"), new ResourceLocation(Signpost.MOD_ID, "spruce"), new ResourceLocation(Signpost.MOD_ID, "spruce_dark"),
+            TextureResource.SignGui.Wide.Spruce, TextureResource.SignGui.Short.Spruce, TextureResource.SignGui.Large.Spruce),
+        Stone(new ResourceLocation("stone"), new ResourceLocation("stone"), new ResourceLocation(Signpost.MOD_ID, "stone_dark"),
+            TextureResource.SignGui.Wide.Stone, TextureResource.SignGui.Short.Stone, TextureResource.SignGui.Large.Stone);
 
         public final ResourceLocation postLocation;
-        public final ResourceLocation signTextureLocation;
-        public final ResourceLocation darkSignTextureLocation;
+        public final ResourceLocation mainTexture;
+        public final ResourceLocation secondaryTexture;
 
-        ModelType(ResourceLocation postLocation, ResourceLocation largeSignTextureLocation, ResourceLocation darkSignTextureLocation) {
+        public final TextureResource wideGuiTexture;
+        public final TextureResource shortGuiTexture;
+        public final TextureResource largeGuiTexture;
+
+        ModelType(ResourceLocation postLocation, ResourceLocation mainTexture, ResourceLocation secondaryTexture, TextureResource wideGuiTexture, TextureResource shortGuiTexture, TextureResource largeGuiTexture) {
             this.postLocation = expand(postLocation);
-            this.signTextureLocation = expand(largeSignTextureLocation);
-            this.darkSignTextureLocation = expand(darkSignTextureLocation);
+            this.mainTexture = expand(mainTexture);
+            this.secondaryTexture = expand(secondaryTexture);
+            this.wideGuiTexture = wideGuiTexture;
+            this.shortGuiTexture = shortGuiTexture;
+            this.largeGuiTexture = largeGuiTexture;
         }
 
         private ResourceLocation expand(ResourceLocation loc){
@@ -70,6 +88,27 @@ public class Post extends Block implements IWaterLoggable {
         @Override
         public String func_176610_l() {
             return name().toLowerCase();
+        }
+
+        public static ModelType from(Item signItem) {
+            if(signItem.equals(Items.ACACIA_SIGN))
+                return Acacia;
+            else if(signItem.equals(Items.BIRCH_SIGN))
+                return Birch;
+            else if(signItem.equals(Items.DARK_OAK_SIGN))
+                return DarkOak;
+            else if(signItem.equals(Items.IRON_INGOT))
+                return Iron;
+            else if(signItem.equals(Items.JUNGLE_SIGN))
+                return Jungle;
+            else if(signItem.equals(Items.OAK_SIGN))
+                return Oak;
+            else if(signItem.equals(Items.SPRUCE_SIGN))
+                return Spruce;
+            else if(signItem.equals(Items.STONE))
+                return Stone;
+            else
+                return Oak;
         }
     }
 
@@ -99,12 +138,13 @@ public class Post extends Block implements IWaterLoggable {
     public static final Info STONE = new Info(PropertiesUtil.STONE, ModelType.Stone, "stone");
     public static final Info IRON = new Info(PropertiesUtil.IRON, ModelType.Iron, "iron");
     public static final Info OAK = new Info(PropertiesUtil.wood(PropertiesUtil.WoodType.Oak), ModelType.Oak, "oak");
+    public static final Info DARK_OAK = new Info(PropertiesUtil.wood(PropertiesUtil.WoodType.DarkOak), ModelType.DarkOak, "dark_oak");
     public static final Info SPRUCE = new Info(PropertiesUtil.wood(PropertiesUtil.WoodType.Spruce), ModelType.Spruce, "spruce");
     public static final Info BIRCH = new Info(PropertiesUtil.wood(PropertiesUtil.WoodType.Birch), ModelType.Birch, "birch");
     public static final Info JUNGLE =new Info(PropertiesUtil.wood(PropertiesUtil.WoodType.Jungle), ModelType.Jungle, "jungle");
     public static final Info ACACIA = new Info(PropertiesUtil.wood(PropertiesUtil.WoodType.Acacia), ModelType.Acacia, "acacia");
 
-    public static final Info[] All_INFOS = new Info[]{STONE, IRON, OAK, SPRUCE, BIRCH, JUNGLE, ACACIA};
+    public static final Info[] All_INFOS = new Info[]{STONE, IRON, DARK_OAK, OAK, SPRUCE, BIRCH, JUNGLE, ACACIA};
     public static final Block[] ALL = Arrays.stream(All_INFOS).map(i -> i.post).toArray(Block[]::new);
 
     public final ModelType type;
@@ -122,9 +162,9 @@ public class Post extends Block implements IWaterLoggable {
             () -> {
                 PostTile tile = TileEntityUtils.findTileEntity(world, pos, PostTile.class).get();
                 if (world.isRemote) {
-                    Minecraft.getInstance().displayGuiScreen(new SignGui(tile, new Vector3(0, 1, 0)));
+                    Minecraft.getInstance().displayGuiScreen(new SignGui(tile, tile.modelType, new Vector3(0, 1, 0)));
                 } else {
-                    tile.addPart(new BlockPartInstance(new PostModel(type.postLocation), Vector3.ZERO));
+                    tile.addPart(new BlockPartInstance(new gollorum.signpost.signtypes.Post(type.postLocation), Vector3.ZERO));
                     tile.markDirty();
                 }
             }, 100
@@ -195,6 +235,7 @@ public class Post extends Block implements IWaterLoggable {
             .map(p -> p.part.interact(new InteractionInfo(
                 InteractionInfo.Type.RightClick,
                 player,
+                hand,
                 tile,
                 p.hitPos,
                 data -> tile.notifyMutation(p.id, data),
@@ -203,9 +244,10 @@ public class Post extends Block implements IWaterLoggable {
             .orElse(Interactable.InteractionResult.Ignored)
         ){
             case Accepted:
+                return ActionResultType.SUCCESS;
             case Ignored:
             default:
-                return ActionResultType.SUCCESS;
+                return ActionResultType.PASS;
         }
     }
 

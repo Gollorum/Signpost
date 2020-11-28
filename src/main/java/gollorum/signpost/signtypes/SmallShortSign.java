@@ -48,7 +48,8 @@ public class SmallShortSign implements BlockPart<SmallShortSign> {
             Angle.SERIALIZER.writeTo(sign.angle, compound, keyPrefix);
             compound.putString(keyPrefix + "Text", sign.text);
             compound.putBoolean(keyPrefix + "Flip", sign.flip);
-            compound.putString(keyPrefix + "Texture", sign.texture.toString());
+            compound.putString(keyPrefix + "Texture", sign.mainTexture.toString());
+            compound.putString(keyPrefix + "TextureDark", sign.secondaryTexture.toString());
             compound.putInt(keyPrefix + "Color", sign.color);
             OptionalSerializer.UUID.writeTo(sign.destination, compound, "Destination");
         },
@@ -57,6 +58,7 @@ public class SmallShortSign implements BlockPart<SmallShortSign> {
             compound.getString(keyPrefix + "Text"),
             compound.getBoolean(keyPrefix + "Flip"),
             new ResourceLocation(compound.getString(keyPrefix + "Texture")),
+            new ResourceLocation(compound.getString(keyPrefix + "TextureDark")),
             compound.getInt(keyPrefix + "Color"),
             OptionalSerializer.UUID.read(compound, "Destination")
         )
@@ -66,18 +68,19 @@ public class SmallShortSign implements BlockPart<SmallShortSign> {
     private String text;
     private int color;
     private boolean flip;
-    private ResourceLocation texture;
+    private ResourceLocation mainTexture;
+    private ResourceLocation secondaryTexture;
     private Optional<UUID> destination;
 
     private TransformedBox transformedBounds;
     private Lazy<IBakedModel> model;
 
-    public SmallShortSign(Angle angle, String text, boolean flip, ResourceLocation texture, int color, Optional<UUID> destination){
+    public SmallShortSign(Angle angle, String text, boolean flip, ResourceLocation mainTexture, ResourceLocation secondaryTexture, int color, Optional<UUID> destination){
         this.color = color;
         this.destination = destination;
         setAngle(angle);
         this.text = text;
-        setTexture(texture);
+        setTextures(mainTexture, secondaryTexture);
         setFlip(flip);
     }
 
@@ -91,9 +94,10 @@ public class SmallShortSign implements BlockPart<SmallShortSign> {
         regenerateTransformedBox();
     }
 
-    public void setTexture(ResourceLocation texture){
-        model = RenderingUtil.loadModel(RenderingUtil.ModelShortSign, texture);
-        this.texture = texture;
+    public void setTextures(ResourceLocation mainTexture, ResourceLocation secondaryTexture) {
+        model = RenderingUtil.loadModel(RenderingUtil.ModelShortSign, mainTexture, secondaryTexture);
+        this.mainTexture = mainTexture;
+        this.secondaryTexture = secondaryTexture;
     }
 
     public void setText(String text) { this.text = text; }
@@ -129,7 +133,8 @@ public class SmallShortSign implements BlockPart<SmallShortSign> {
     private void notifyTextureChanged(InteractionInfo info) {
         CompoundNBT compound = new CompoundNBT();
         compound.putString("type", "texture");
-        compound.putString("texture", texture.toString());
+        compound.putString("texture", mainTexture.toString());
+        compound.putString("textureDark", secondaryTexture.toString());
         info.mutationDistributor.accept(compound);
     }
 
@@ -154,7 +159,7 @@ public class SmallShortSign implements BlockPart<SmallShortSign> {
                 setAngle(Angle.fromRadians(compound.getFloat("angle_radians")));
                 break;
             case "texture":
-                setTexture(new ResourceLocation(compound.getString("texture")));
+                setTextures(new ResourceLocation(compound.getString("texture")), new ResourceLocation(compound.getString("textureDark")));
                 break;
             case "text":
                 text = compound.getString("text");

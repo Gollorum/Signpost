@@ -15,6 +15,10 @@ import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.item.SignItem;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
@@ -22,25 +26,25 @@ import net.minecraftforge.common.util.Lazy;
 
 import java.util.Random;
 
-public class PostModel implements BlockPart<PostModel> {
+public class Post implements BlockPart<Post> {
 
     private static final AABB BOUNDS = new AABB(
         new Vector3(-2, -8, -2),
         new Vector3(2, 8, 2)
     ).map(RenderingUtil::voxelToLocal);
 
-    public static final BlockPartMetadata<PostModel> METADATA = new BlockPartMetadata<>(
+    public static final BlockPartMetadata<Post> METADATA = new BlockPartMetadata<>(
         "Post",
         (post, keyPrefix, compound) -> {
             compound.putString(keyPrefix + "texture", post.texture.toString());
         },
-        (compound, keyPrefix) -> new PostModel(new ResourceLocation(compound.getString(keyPrefix + "texture")))
+        (compound, keyPrefix) -> new Post(new ResourceLocation(compound.getString(keyPrefix + "texture")))
     );
 
     private Lazy<IBakedModel> model;
     private ResourceLocation texture;
 
-    public PostModel(ResourceLocation texture) {
+    public Post(ResourceLocation texture) {
         setTexture(texture);
     }
 
@@ -54,9 +58,19 @@ public class PostModel implements BlockPart<PostModel> {
 
     @Override
     public InteractionResult interact(InteractionInfo info) {
-        if(info.isRemote)
-            Minecraft.getInstance().displayGuiScreen(new SignGui(info.tile, info.localHitPos));
-        return InteractionResult.Accepted;
+        if(isValidSign(info.player.getHeldItem(info.hand))) {
+            if (info.isRemote) {
+                Minecraft.getInstance().displayGuiScreen(new SignGui(info.tile, gollorum.signpost.minecraft.block.Post.ModelType.from(info.player.getHeldItem(info.hand).getItem()), info.localHitPos));
+            }
+            info.player.inventory.clearMatchingItems(i -> i.getItem() instanceof SignItem, 1);
+            return InteractionResult.Accepted;
+        } else return InteractionResult.Ignored;
+    }
+
+    private static boolean isValidSign(ItemStack itemStack) {
+        if(itemStack == null || itemStack.getCount() < 1) return false;
+        Item item = itemStack.getItem();
+        return item instanceof SignItem || item.equals(Items.IRON_INGOT) || item.equals(Items.STONE);
     }
 
     @Override
@@ -73,7 +87,7 @@ public class PostModel implements BlockPart<PostModel> {
     }
 
     @Override
-    public BlockPartMetadata<PostModel> getMeta() {
+    public BlockPartMetadata<Post> getMeta() {
         return METADATA;
     }
 

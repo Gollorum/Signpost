@@ -8,7 +8,7 @@ import net.minecraft.block.material.MaterialColor;
 public class PropertiesUtil {
 
     public enum WoodType{
-        Oak, Spruce, Birch, Jungle, Acacia
+        Oak, DarkOak, Spruce, Birch, Jungle, Acacia
     }
 
     public static Block.Properties STONE = Block.Properties.create(Material.ROCK, MaterialColor.STONE)
@@ -25,6 +25,7 @@ public class PropertiesUtil {
     private static MaterialColor colorFor(WoodType type){
         switch (type) {
             case Oak: return MaterialColor.WOOD;
+            case DarkOak: return MaterialColor.BROWN;
             case Spruce: return MaterialColor.OBSIDIAN;
             case Birch: return MaterialColor.SAND;
             case Jungle: return MaterialColor.DIRT;

@@ -25,17 +25,126 @@ public class TextureResource {
         "textures/gui/sign_type_selection.png", new TextureSize(58, 44), new TextureSize(174, 88)
     );
 
-    public static final TextureResource largeSign = new TextureResource(
-        "textures/gui/large_sign.png", new TextureSize(22, 16)
-    );
+    public static final class SignGui {
 
-    public static final TextureResource smallShortSign = new TextureResource(
-        "textures/gui/small_slim_sign.png", new TextureSize(20, 16)
-    );
+        public static final class Short {
 
-    public static final TextureResource smallWideSign = new TextureResource(
-        "textures/gui/small_wide_sign.png", new TextureSize(25, 16)
-    );
+            private static final String prefix = "short_";
+            private static final TextureSize size = new TextureSize(20, 16);
+
+            public static final TextureResource Acacia = new TextureResource(
+                "textures/gui/" + prefix + "acacia.png", size
+            );
+
+            public static final TextureResource Birch = new TextureResource(
+                "textures/gui/" + prefix + "birch.png", size
+            );
+
+            public static final TextureResource DarkOak = new TextureResource(
+                "textures/gui/" + prefix + "dark_oak.png", size
+            );
+
+            public static final TextureResource Iron = new TextureResource(
+                "textures/gui/" + prefix + "iron.png", size
+            );
+
+            public static final TextureResource Jungle = new TextureResource(
+                "textures/gui/" + prefix + "jungle.png", size
+            );
+
+            public static final TextureResource Oak = new TextureResource(
+                "textures/gui/" + prefix + "oak.png", size
+            );
+
+            public static final TextureResource Spruce = new TextureResource(
+                "textures/gui/" + prefix + "spruce.png", size
+            );
+
+            public static final TextureResource Stone = new TextureResource(
+                "textures/gui/" + prefix + "spruce.png", size
+            );
+
+        }
+
+        public static final class Wide {
+
+            private static final String prefix = "wide_";
+            private static final TextureSize size = new TextureSize(25, 16);
+
+            public static final TextureResource Acacia = new TextureResource(
+                "textures/gui/" + prefix + "acacia.png", size
+            );
+
+            public static final TextureResource Birch = new TextureResource(
+                "textures/gui/" + prefix + "birch.png", size
+            );
+
+            public static final TextureResource DarkOak = new TextureResource(
+                "textures/gui/" + prefix + "dark_oak.png", size
+            );
+
+            public static final TextureResource Iron = new TextureResource(
+                "textures/gui/" + prefix + "iron.png", size
+            );
+
+            public static final TextureResource Jungle = new TextureResource(
+                "textures/gui/" + prefix + "jungle.png", size
+            );
+
+            public static final TextureResource Oak = new TextureResource(
+                "textures/gui/" + prefix + "oak.png", size
+            );
+
+            public static final TextureResource Spruce = new TextureResource(
+                "textures/gui/" + prefix + "spruce.png", size
+            );
+
+            public static final TextureResource Stone = new TextureResource(
+                "textures/gui/" + prefix + "spruce.png", size
+            );
+
+        }
+
+        public static final class Large {
+
+            private static final String prefix = "large_";
+            private static final TextureSize size = new TextureSize(22, 16);
+
+            public static final TextureResource Acacia = new TextureResource(
+                "textures/gui/" + prefix + "acacia.png", size
+            );
+
+            public static final TextureResource Birch = new TextureResource(
+                "textures/gui/" + prefix + "birch.png", size
+            );
+
+            public static final TextureResource DarkOak = new TextureResource(
+                "textures/gui/" + prefix + "dark_oak.png", size
+            );
+
+            public static final TextureResource Iron = new TextureResource(
+                "textures/gui/" + prefix + "iron.png", size
+            );
+
+            public static final TextureResource Jungle = new TextureResource(
+                "textures/gui/" + prefix + "jungle.png", size
+            );
+
+            public static final TextureResource Oak = new TextureResource(
+                "textures/gui/" + prefix + "oak.png", size
+            );
+
+            public static final TextureResource Spruce = new TextureResource(
+                "textures/gui/" + prefix + "spruce.png", size
+            );
+
+            public static final TextureResource Stone = new TextureResource(
+                "textures/gui/" + prefix + "spruce.png", size
+            );
+
+        }
+
+    }
 
     public final ResourceLocation location;
     public final TextureSize size;
