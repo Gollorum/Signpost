@@ -2,6 +2,7 @@
     "parent": "signpost:block/post_preview",
     "textures": {
         "post": "block/spruce_log",
-        "sign": "signpost:block/sign_spruce"
+        "sign": "signpost:block/spruce",
+        "sign_dark": "signpost:block/spruce_dark"
     }
 }

@@ -7,6 +7,7 @@ import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.events.WaystoneRenamedEvent;
 import gollorum.signpost.minecraft.events.WaystoneUpdatedEvent;
 import gollorum.signpost.networking.PacketHandler;
+import gollorum.signpost.signtypes.LargeSign;
 import gollorum.signpost.signtypes.SmallShortSign;
 import gollorum.signpost.signtypes.SmallWideSign;
 import gollorum.signpost.utils.math.Angle;
@@ -362,7 +363,8 @@ public class SignGui extends Screen {
                             Angle.fromDegrees(0),
                             wideSignInputBox.getText(),
                             false,
-                            tile.modelType.signLocation,
+                            tile.modelType.signTextureLocation,
+                            tile.modelType.darkSignTextureLocation,
                             colorInputBox.getCurrentColor(),
                             destinationId
                         )
@@ -379,7 +381,7 @@ public class SignGui extends Screen {
                             Angle.fromDegrees(0),
                             shortSignInputBox.getText(),
                             false,
-                            tile.modelType.signLocation,
+                            tile.modelType.signTextureLocation,
                             colorInputBox.getCurrentColor(),
                             destinationId
                         )
@@ -388,6 +390,27 @@ public class SignGui extends Screen {
                 );
                 break;
             case Large:
+                PacketHandler.sendToServer(new PostTile.PartAddedEvent.Packet(
+                    tilePartInfo,
+                    LargeSign.METADATA.identifier,
+                    LargeSign.METADATA.write(
+                        new LargeSign(
+                            Angle.fromDegrees(0),
+                            new String[] {
+                                largeSignInputBoxes.get(0).getText(),
+                                largeSignInputBoxes.get(1).getText(),
+                                largeSignInputBoxes.get(2).getText(),
+                                largeSignInputBoxes.get(3).getText(),
+                            },
+                            false,
+                            tile.modelType.signTextureLocation,
+                            tile.modelType.darkSignTextureLocation,
+                            colorInputBox.getCurrentColor(),
+                            destinationId
+                        )
+                    ),
+                    new Vector3(0, 0.5f, 0))
+                );
                 break;
         }
     }

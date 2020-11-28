@@ -42,8 +42,29 @@ public class RenderingUtil {
         return cachedModels.computeIfAbsent(modelLocation, x -> new ConcurrentHashMap<>())
             .computeIfAbsent(
                 textLoc,
-                x -> Lazy.of(() ->ModelLoader.instance().getUnbakedModel(modelLocation).bakeModel(ModelLoader.instance(),
+                x -> Lazy.of(() -> ModelLoader.instance().getUnbakedModel(modelLocation).bakeModel(ModelLoader.instance(),
                     m -> Minecraft.getInstance().getAtlasSpriteGetter(m.getAtlasLocation()).apply(textLoc),
+                    new SimpleModelTransform(TransformationMatrix.identity()),
+                    modelLocation
+                ))
+            );
+    }
+
+    private static final Map<ResourceLocation, Map<ResourceLocation, Map<ResourceLocation, Lazy<IBakedModel>>>> cachedTwoTexturedModels = new ConcurrentHashMap<>();
+    private static final ResourceLocation texture1Marker = new ResourceLocation(Signpost.MOD_ID, "block/oak_wood");
+
+    public static Lazy<IBakedModel> loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation1, ResourceLocation textureLocation2) {
+        final ResourceLocation textLoc1 = trim(textureLocation1);
+        final ResourceLocation textLoc2 = trim(textureLocation2);
+        return cachedTwoTexturedModels
+            .computeIfAbsent(modelLocation, x -> new ConcurrentHashMap<>())
+            .computeIfAbsent(textLoc1, x -> new ConcurrentHashMap<>())
+            .computeIfAbsent(textLoc2,
+                x -> Lazy.of(() -> ModelLoader.instance().getUnbakedModel(modelLocation).bakeModel(ModelLoader.instance(),
+                    m -> Minecraft.getInstance().getAtlasSpriteGetter(m.getAtlasLocation()).apply(
+                        m.getTextureLocation().equals(texture1Marker)
+                            ? textLoc1 : textLoc2
+                    ),
                     new SimpleModelTransform(TransformationMatrix.identity()),
                     modelLocation
                 ))
@@ -52,10 +73,11 @@ public class RenderingUtil {
 
     public static final ResourceLocation ModelWideSign = new ResourceLocation(Signpost.MOD_ID, "block/small_wide_sign");
     public static final ResourceLocation ModelShortSign = new ResourceLocation(Signpost.MOD_ID, "block/small_short_sign");
+    public static final ResourceLocation ModelLargeSign = new ResourceLocation(Signpost.MOD_ID, "block/large_sign");
     public static final ResourceLocation ModelPost = new ResourceLocation(Signpost.MOD_ID, "block/post_only");
 
     private static final Lazy<BlockModelRenderer> Renderer = Lazy.of(() -> Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelRenderer());
-    private static final Lazy<Tessellator> Tesselator = Lazy.of(() -> Tessellator.getInstance());
+    private static final Lazy<Tessellator> Tesselator = Lazy.of(Tessellator::getInstance);
     private static final Lazy<BufferBuilder> BufferBuilder = Lazy.of(() -> Tesselator.get().getBuffer());
 
     public static interface RenderModel {

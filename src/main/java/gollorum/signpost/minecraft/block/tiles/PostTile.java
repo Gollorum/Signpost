@@ -4,6 +4,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.block.Post;
 import gollorum.signpost.networking.PacketHandler;
+import gollorum.signpost.signtypes.LargeSign;
 import gollorum.signpost.signtypes.PostModel;
 import gollorum.signpost.signtypes.SmallShortSign;
 import gollorum.signpost.signtypes.SmallWideSign;
@@ -47,6 +48,7 @@ public class PostTile extends TileEntity {
         partsMetadata.add(PostModel.METADATA);
         partsMetadata.add(SmallWideSign.METADATA);
         partsMetadata.add(SmallShortSign.METADATA);
+        partsMetadata.add(LargeSign.METADATA);
     }
 
     public static class TraceResult {

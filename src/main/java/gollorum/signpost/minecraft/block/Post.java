@@ -45,20 +45,22 @@ import java.util.Arrays;
 public class Post extends Block implements IWaterLoggable {
 
     public static enum ModelType implements IStringSerializable {
-        Acacia(new ResourceLocation("acacia_log"), new ResourceLocation(Signpost.MOD_ID, "sign_acacia")),
-        Birch(new ResourceLocation("birch_log"), new ResourceLocation(Signpost.MOD_ID, "sign_birch")),
-        Iron(new ResourceLocation("iron_block"), new ResourceLocation(Signpost.MOD_ID, "sign_iron")),
-        Jungle(new ResourceLocation("jungle_log"), new ResourceLocation(Signpost.MOD_ID, "sign_jungle")),
-        Oak(new ResourceLocation("oak_log"), new ResourceLocation(Signpost.MOD_ID, "sign_oak")),
-        Spruce(new ResourceLocation("spruce_log"), new ResourceLocation(Signpost.MOD_ID, "sign_spruce")),
-        Stone(new ResourceLocation("stone"), new ResourceLocation(Signpost.MOD_ID, "sign_stone"));
+        Acacia(new ResourceLocation("acacia_log"), new ResourceLocation(Signpost.MOD_ID, "acacia"), new ResourceLocation(Signpost.MOD_ID, "acacia_dark")),
+        Birch(new ResourceLocation("birch_log"), new ResourceLocation(Signpost.MOD_ID, "birch"), new ResourceLocation("birch_log")),
+        Iron(new ResourceLocation("iron_block"), new ResourceLocation(Signpost.MOD_ID, "iron"), new ResourceLocation(Signpost.MOD_ID, "iron_dark")),
+        Jungle(new ResourceLocation("jungle_log"), new ResourceLocation(Signpost.MOD_ID, "jungle"), new ResourceLocation("jungle_log")),
+        Oak(new ResourceLocation("oak_log"), new ResourceLocation(Signpost.MOD_ID, "oak"), new ResourceLocation(Signpost.MOD_ID, "oak_dark")),
+        Spruce(new ResourceLocation("spruce_log"), new ResourceLocation(Signpost.MOD_ID, "spruce"), new ResourceLocation(Signpost.MOD_ID, "spruce_dark")),
+        Stone(new ResourceLocation("stone"), new ResourceLocation("stone"), new ResourceLocation(Signpost.MOD_ID, "stone_dark"));
 
         public final ResourceLocation postLocation;
-        public final ResourceLocation signLocation;
+        public final ResourceLocation signTextureLocation;
+        public final ResourceLocation darkSignTextureLocation;
 
-        ModelType(ResourceLocation postLocation, ResourceLocation signLocation) {
+        ModelType(ResourceLocation postLocation, ResourceLocation largeSignTextureLocation, ResourceLocation darkSignTextureLocation) {
             this.postLocation = expand(postLocation);
-            this.signLocation = expand(signLocation);
+            this.signTextureLocation = expand(largeSignTextureLocation);
+            this.darkSignTextureLocation = expand(darkSignTextureLocation);
         }
 
         private ResourceLocation expand(ResourceLocation loc){

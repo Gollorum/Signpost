@@ -28,34 +28,43 @@ import java.util.UUID;
 import static gollorum.signpost.minecraft.rendering.RenderingUtil.FontToVoxelSize;
 import static gollorum.signpost.minecraft.rendering.RenderingUtil.VoxelSize;
 
-public class SmallWideSign implements BlockPart<SmallWideSign> {
+public class LargeSign implements BlockPart<LargeSign> {
 
     private static final AABB LOCAL_BOUNDS = new AABB(
-        new Vector3(-9, -11, -2),
-        new Vector3(16, -5, -3)
+        new Vector3(-9, -13, -2),
+        new Vector3(13, -1, -3)
     ).map(RenderingUtil::voxelToLocal);
 
     private static final float TEXT_OFFSET_RIGHT = 7f * VoxelSize;
-    private static final float TEXT_OFFSET_LEFT = 11f * VoxelSize;
-    private static final float MAXIMUM_TEXT_WIDTH = TEXT_OFFSET_RIGHT + TEXT_OFFSET_LEFT;
+    private static final float TEXT_OFFSET_LEFT_SHORT = 9f * VoxelSize;
+    private static final float TEXT_OFFSET_LEFT_LONG = 10f * VoxelSize;
+    private static final float MAXIMUM_TEXT_WIDTH_SHORT = TEXT_OFFSET_RIGHT + TEXT_OFFSET_LEFT_SHORT;
+    private static final float MAXIMUM_TEXT_WIDTH_LONG = TEXT_OFFSET_RIGHT + TEXT_OFFSET_LEFT_LONG;
 
     private static final float TEXT_RATIO = 1.3f;
     private static final float FONT_SIZE_VOXELS = 2 / TEXT_RATIO;
 
-    public static final BlockPartMetadata<SmallWideSign> METADATA = new BlockPartMetadata<>(
-        "small_wide_sign",
+    public static final BlockPartMetadata<LargeSign> METADATA = new BlockPartMetadata<>(
+        "large_sign",
         (sign, keyPrefix, compound) -> {
             Angle.SERIALIZER.writeTo(sign.angle, compound, keyPrefix);
-            compound.putString(keyPrefix + "Text", sign.text);
+            compound.putString(keyPrefix + "Text0", sign.text[0]);
+            compound.putString(keyPrefix + "Text1", sign.text[1]);
+            compound.putString(keyPrefix + "Text2", sign.text[2]);
+            compound.putString(keyPrefix + "Text3", sign.text[3]);
             compound.putBoolean(keyPrefix + "Flip", sign.flip);
             compound.putString(keyPrefix + "Texture", sign.texture.toString());
             compound.putString(keyPrefix + "TextureDark", sign.textureDark.toString());
             compound.putInt(keyPrefix + "Color", sign.color);
             OptionalSerializer.UUID.writeTo(sign.destination, compound, "Destination");
         },
-        (compound, keyPrefix) -> new SmallWideSign(
+        (compound, keyPrefix) -> new LargeSign(
             Angle.SERIALIZER.read(compound, keyPrefix),
-            compound.getString(keyPrefix + "Text"),
+            new String[]{
+                compound.getString(keyPrefix + "Text0"),
+                compound.getString(keyPrefix + "Text1"),
+                compound.getString(keyPrefix + "Text2"),
+                compound.getString(keyPrefix + "Text3")},
             compound.getBoolean(keyPrefix + "Flip"),
             new ResourceLocation(compound.getString(keyPrefix + "Texture")),
             new ResourceLocation(compound.getString(keyPrefix + "TextureDark")),
@@ -65,7 +74,7 @@ public class SmallWideSign implements BlockPart<SmallWideSign> {
     );
 
     private Angle angle;
-    private String text;
+    private String[] text;
     private int color;
     private boolean flip;
     private ResourceLocation texture;
@@ -75,10 +84,11 @@ public class SmallWideSign implements BlockPart<SmallWideSign> {
     private TransformedBox transformedBounds;
     private Lazy<IBakedModel> model;
 
-    public SmallWideSign(Angle angle, String text, boolean flip, ResourceLocation texture, ResourceLocation textureDark, int color, Optional<UUID> destination){
+    public LargeSign(Angle angle, String[] text, boolean flip, ResourceLocation texture, ResourceLocation textureDark, int color, Optional<UUID> destination){
         this.color = color;
         this.destination = destination;
         setAngle(angle);
+        assert text.length == 4;
         this.text = text;
         setTextures(texture, textureDark);
         setFlip(flip);
@@ -95,12 +105,12 @@ public class SmallWideSign implements BlockPart<SmallWideSign> {
     }
 
     public void setTextures(ResourceLocation texture, ResourceLocation textureDark){
-        model = RenderingUtil.loadModel(RenderingUtil.ModelWideSign, texture, textureDark);
+        model = RenderingUtil.loadModel(RenderingUtil.ModelLargeSign, texture, textureDark);
         this.texture = texture;
         this.textureDark = textureDark;
     }
 
-    public void setText(String text) { this.text = text; }
+    public void setText(String[] text) { this.text = text; }
 
     private void regenerateTransformedBox() {
         transformedBounds = new TransformedBox(LOCAL_BOUNDS).rotateAlong(Matrix4x4.Axis.Y, angle);
@@ -141,7 +151,10 @@ public class SmallWideSign implements BlockPart<SmallWideSign> {
     private void notifyTextChanged(InteractionInfo info) {
         CompoundNBT compound = new CompoundNBT();
         compound.putString("type", "text");
-        compound.putString("text", text);
+        compound.putString("text0", text[0]);
+        compound.putString("text1", text[1]);
+        compound.putString("text2", text[2]);
+        compound.putString("text3", text[3]);
         info.mutationDistributor.accept(compound);
     }
 
@@ -162,7 +175,12 @@ public class SmallWideSign implements BlockPart<SmallWideSign> {
                 setTextures(new ResourceLocation(compound.getString("texture")), new ResourceLocation(compound.getString("textureDark")));
                 break;
             case "text":
-                text = compound.getString("text");
+                text = new String[]{
+                    compound.getString("text0"),
+                    compound.getString("text1"),
+                    compound.getString("text2"),
+                    compound.getString("text3")
+                };
                 break;
             case "flip":
                 flip = compound.getBoolean("flip");
@@ -188,22 +206,45 @@ public class SmallWideSign implements BlockPart<SmallWideSign> {
             matrix.pop();
             matrix.rotate(Vector3f.ZP.rotationDegrees(180));
             FontRenderer fontRenderer = renderDispatcher.fontRenderer;
-            float scale = FONT_SIZE_VOXELS * FontToVoxelSize;
-            float MAX_WIDTH_FRAC = fontRenderer.getStringWidth(text) * scale / MAXIMUM_TEXT_WIDTH;
-            scale /= Math.max(1, MAX_WIDTH_FRAC);
             matrix.rotate(Vector3f.YP.rotation(-angle.radians()));
-            float offset = TEXT_OFFSET_RIGHT * Math.min(1, MAX_WIDTH_FRAC);
-            matrix.translate(
-                flip ? -offset : offset - fontRenderer.getStringWidth(text) * scale,
-                -scale * 4 * TEXT_RATIO,
-                -3.005 * VoxelSize);
-            matrix.scale(scale, scale * TEXT_RATIO, scale);
-            fontRenderer.renderString(text, 0, 0, color, false, matrix.getLast().getMatrix(), buffer, false, 0, combinedLights);
+            matrix.translate(0, 3.5f * VoxelSize, -3.005 * VoxelSize);
+
+            matrix.push();
+            render(fontRenderer, text[0], matrix, buffer, combinedLights, false);
+            matrix.pop();
+            matrix.translate(0, -7 / 3f * VoxelSize, 0);
+
+            matrix.push();
+            render(fontRenderer, text[1], matrix, buffer, combinedLights, true);
+            matrix.pop();
+            matrix.translate(0, -7 / 3f * VoxelSize, 0);
+
+            matrix.push();
+            render(fontRenderer, text[2], matrix, buffer, combinedLights, true);
+            matrix.pop();
+            matrix.translate(0, -7 / 3f * VoxelSize, 0);
+
+            matrix.push();
+            render(fontRenderer, text[3], matrix, buffer, combinedLights, false);
+            matrix.pop();
         });
     }
 
+    private void render(FontRenderer fontRenderer, String text, MatrixStack matrix, IRenderTypeBuffer buffer, int combinedLights, boolean isLong) {
+        float scale = FONT_SIZE_VOXELS * FontToVoxelSize;
+        float MAX_WIDTH_FRAC = fontRenderer.getStringWidth(text) * scale / (isLong ? MAXIMUM_TEXT_WIDTH_LONG : MAXIMUM_TEXT_WIDTH_SHORT);
+        scale /= Math.max(1, MAX_WIDTH_FRAC);
+        float offset = TEXT_OFFSET_RIGHT * Math.min(1, MAX_WIDTH_FRAC);
+        matrix.translate(
+            flip ? -offset : offset - fontRenderer.getStringWidth(text) * scale,
+            -scale * 4 * TEXT_RATIO,
+            0);
+        matrix.scale(scale, scale * TEXT_RATIO, scale);
+        fontRenderer.renderString(text, 0, 0, color, false, matrix.getLast().getMatrix(), buffer, false, 0, combinedLights);
+    }
+
     @Override
-    public BlockPartMetadata<SmallWideSign> getMeta() {
+    public BlockPartMetadata<LargeSign> getMeta() {
         return METADATA;
     }
 
