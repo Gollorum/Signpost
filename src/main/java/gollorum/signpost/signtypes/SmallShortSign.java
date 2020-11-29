@@ -5,16 +5,14 @@ import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.utils.BlockPartMetadata;
 import gollorum.signpost.utils.math.Angle;
+import gollorum.signpost.utils.math.MathUtils;
 import gollorum.signpost.utils.math.geometry.AABB;
 import gollorum.signpost.utils.math.geometry.Matrix4x4;
 import gollorum.signpost.utils.math.geometry.TransformedBox;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.OptionalSerializer;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.Quaternion;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.Vector3f;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
@@ -104,15 +102,20 @@ public class SmallShortSign extends Sign<SmallShortSign> {
         RenderingUtil.render(matrix, renderModel -> {
             matrix.push();
             matrix.rotate(new Quaternion(Vector3f.YP, angle.radians(), false));
-            if(flip) matrix.rotate(Vector3f.ZP.rotationDegrees(180));
+            Matrix4f rotationMatrix = new Matrix4f(new Quaternion(Vector3f.YP, angle.radians(), false));
+            if (flip) {
+                matrix.rotate(Vector3f.ZP.rotationDegrees(180));
+                rotationMatrix.mul(Vector3f.ZP.rotationDegrees(180));
+            }
             renderModel.render(
-                model.get(),
+                withTransformedDirections(model.get(), flip, angle.degrees()),
                 tileEntity,
                 buffer.getBuffer(RenderType.getSolid()),
                 false,
                 random,
                 randomSeed,
-                combinedOverlay
+                combinedOverlay,
+                rotationMatrix
             );
             matrix.pop();
             matrix.rotate(Vector3f.ZP.rotationDegrees(180));
@@ -121,7 +124,7 @@ public class SmallShortSign extends Sign<SmallShortSign> {
             float MAX_WIDTH_FRAC = fontRenderer.getStringWidth(text) * scale / MAXIMUM_TEXT_WIDTH;
             scale /= Math.max(1, MAX_WIDTH_FRAC);
             matrix.rotate(Vector3f.YP.rotation(-angle.radians()));
-            float offset = TEXT_OFFSET_RIGHT * Math.min(1, MAX_WIDTH_FRAC);
+            float offset = MathUtils.lerp(TEXT_OFFSET_RIGHT, (TEXT_OFFSET_RIGHT - TEXT_OFFSET_LEFT) / 2f, 1 - Math.min(1, MAX_WIDTH_FRAC));
             matrix.translate(
                 flip ? -offset : offset - fontRenderer.getStringWidth(text) * scale,
                 -scale * 4 * TEXT_RATIO,

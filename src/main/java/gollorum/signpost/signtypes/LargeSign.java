@@ -11,10 +11,7 @@ import gollorum.signpost.utils.math.geometry.TransformedBox;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.OptionalSerializer;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.Quaternion;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.Vector3f;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
@@ -123,16 +120,21 @@ public class LargeSign extends Sign<LargeSign> {
     public void render(TileEntity tileEntity, TileEntityRendererDispatcher renderDispatcher, MatrixStack matrix, IRenderTypeBuffer buffer, int combinedLights, int combinedOverlay, Random random, long randomSeed) {
         RenderingUtil.render(matrix, renderModel -> {
             matrix.push();
+            Matrix4f rotationMatrix = new Matrix4f(new Quaternion(Vector3f.YP, angle.radians(), false));
             matrix.rotate(new Quaternion(Vector3f.YP, angle.radians(), false));
-            if (flip) matrix.rotate(Vector3f.ZP.rotationDegrees(180));
+            if (flip) {
+                matrix.rotate(Vector3f.ZP.rotationDegrees(180));
+                rotationMatrix.mul(Vector3f.ZP.rotationDegrees(180));
+            }
             renderModel.render(
-                model.get(),
+                withTransformedDirections(model.get(), flip, angle.degrees()),
                 tileEntity,
                 buffer.getBuffer(RenderType.getSolid()),
                 false,
                 random,
                 randomSeed,
-                combinedOverlay
+                combinedOverlay,
+                rotationMatrix
             );
             matrix.pop();
             matrix.rotate(Vector3f.ZP.rotationDegrees(180));

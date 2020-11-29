@@ -44,6 +44,9 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener {
     private int enabledColor = 14737632;
     private int disabledColor = 7368816;
 
+    public int backgroundHoverColor = 0x60ffffff;
+    public boolean hintBackgroundOnHover = true;
+
     private boolean shouldDropShadow = true;
 
     private String suggestion;
@@ -455,6 +458,9 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener {
             if (this.getEnableBackgroundDrawing()) {
                 fill(this.x - 1, this.y - 1, this.x + this.width + 1, this.y + this.height + 1, -6250336);
                 fill(this.x, this.y, this.x + this.width, this.y + this.height, -16777216);
+            }
+            if (hintBackgroundOnHover && isHovered) {
+                fill(this.x, this.y, this.x + this.width, this.y + this.height, backgroundHoverColor);
             }
 
             int color = this.isEnabled ? this.enabledColor : this.disabledColor;

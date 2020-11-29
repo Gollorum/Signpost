@@ -88,7 +88,8 @@ public class RenderingUtil {
             boolean checkSides,
             Random random,
             long rand,
-            int combinedOverlay
+            int combinedOverlay,
+            Matrix4f rotationMatrix
         );
     }
 
@@ -102,7 +103,7 @@ public class RenderingUtil {
 
     public static void render(MatrixStack matrix, Consumer<RenderModel> inner){
         matrix.push();
-        inner.accept((model, tileEntity, buffer, checkSides, random, rand, combinedOverlay) -> {
+        inner.accept((model, tileEntity, buffer, checkSides, random, rand, combinedOverlay, rotationMatrix) -> {
             if(!tileEntity.hasWorld()) throw new RuntimeException("TileEntity without world cannot be rendered.");
             BufferBuilder.get().begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
             Renderer.get().renderModel(

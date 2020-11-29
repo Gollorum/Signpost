@@ -17,6 +17,10 @@ public class TextureResource {
         "textures/gui/expand_contract.png", new TextureSize(11, 11), new TextureSize(22, 22)
     );
 
+    public static final TextureResource flipDirection = new TextureResource(
+        "textures/gui/flip_direction.png", new TextureSize(15, 15), new TextureSize(15, 30)
+    );
+
     public static final TextureResource background = new TextureResource(
         "textures/gui/background.png", new TextureSize(16, 16)
     );

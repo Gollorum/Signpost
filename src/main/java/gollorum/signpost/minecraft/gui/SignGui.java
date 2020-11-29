@@ -144,7 +144,7 @@ public class SignGui extends Screen {
             true);
         waystoneInputBox.setMaxStringLength(200);
         waystoneInputBox.setResponder(this::onWaystoneSelected);
-        children.add(waystoneInputBox);
+        addButton(waystoneInputBox);
 
         Rect wideRect = new Rect(
             new Point(getCenterX() + centerGap + 2 * inputSignsScale, getCenterY() - centralAreaHeight / 2),
@@ -152,7 +152,7 @@ public class SignGui extends Screen {
             Rect.XAlignment.Left,
             Rect.YAlignment.Top);
         wideSignInputBox = new ImageInputBox(font,
-            wideRect.offset(new Point(5, 3).mul(inputSignsScale), new Point(-1, -11).mul(inputSignsScale)),
+            wideRect.offset(new Point(5, 3).mul(inputSignsScale), new Point(-2, -11).mul(inputSignsScale)),
             wideRect.withPoint(new Point(-5, -3).mul(inputSignsScale)),
             Rect.XAlignment.Left, Rect.YAlignment.Top,
             modelType.wideGuiTexture,
@@ -163,7 +163,7 @@ public class SignGui extends Screen {
             Rect.XAlignment.Left,
             Rect.YAlignment.Top);
         shortSignInputBox = new ImageInputBox(font,
-            shortRect.offset(new Point(5, 3).mul(inputSignsScale), new Point(-4, -11).mul(inputSignsScale)),
+            shortRect.offset(new Point(5, 3).mul(inputSignsScale), new Point(-5, -11).mul(inputSignsScale)),
             shortRect.withPoint(new Point(-5, -3).mul(inputSignsScale)),
             Rect.XAlignment.Left, Rect.YAlignment.Top,
             modelType.shortGuiTexture,
@@ -179,7 +179,7 @@ public class SignGui extends Screen {
                 width -> width - 6 * inputSignsScale,
                 height -> font.FONT_HEIGHT
         );
-        InputBox firstLarge = new ImageInputBox(font,
+        ImageInputBox firstLarge = new ImageInputBox(font,
             largeInputRect,
             largeRect.withPoint(largeRect.point.subtract(largeInputRect.point)),
             Rect.XAlignment.Left, Rect.YAlignment.Top,
@@ -199,11 +199,23 @@ public class SignGui extends Screen {
 
         largeSignInputBoxes = ImmutableList.of(firstLarge, secondLarge, thirdLarge, fourthLarge);
         allSignInputBoxes = ImmutableList.of(wideSignInputBox, shortSignInputBox, firstLarge, secondLarge, thirdLarge, fourthLarge);
+        allImageInputBoxes = ImmutableList.of(wideSignInputBox, shortSignInputBox, firstLarge);
 
         colorInputBox = new ColorInputBox(font,
             new Rect(new Point(wideRect.point.x + wideRect.width / 2, wideRect.point.y + wideRect.height + centerGap), 80, 20, Rect.XAlignment.Center, Rect.YAlignment.Top));
         colorInputBox.setColorResponder(color -> allSignInputBoxes.forEach(b -> b.setTextColor(color)));
-        children.add(colorInputBox);
+        addButton(colorInputBox);
+
+        Button switchDirectionButton = newImageButton(
+            TextureResource.flipDirection,
+            0,
+            new Point(colorInputBox.x + colorInputBox.getWidth() + 10, colorInputBox.y + colorInputBox.getHeight() / 2),
+            1,
+            Rect.XAlignment.Left, Rect.YAlignment.Center,
+            () -> allImageInputBoxes.forEach(ImageInputBox::flip)
+        );
+        addButton(switchDirectionButton);
+
         switchToWide();
 
 
@@ -217,9 +229,10 @@ public class SignGui extends Screen {
     private List<InputBox> largeSignInputBoxes;
 
     private List<InputBox> allSignInputBoxes;
+    private List<ImageInputBox> allImageInputBoxes;
 
     @Nullable
-    private InputBox currentSignInputBox;
+    private ImageInputBox currentSignInputBox;
     private ColorInputBox colorInputBox;
 
     private String lastWaystone = "";
@@ -269,11 +282,6 @@ public class SignGui extends Screen {
     @Override
     public void render(int p_render_1_, int p_render_2_, float p_render_3_) {
         renderBackground();
-        waystoneInputBox.render(p_render_1_, p_render_2_, p_render_3_);
-        for (Widget widget: selectionDependentWidgets) {
-            widget.render(p_render_1_, p_render_2_, p_render_3_);
-        }
-        colorInputBox.render(p_render_1_, p_render_2_, p_render_3_);
         super.render(p_render_1_, p_render_2_, p_render_3_);
     }
 
@@ -309,13 +317,13 @@ public class SignGui extends Screen {
         clearTypeDependentChildren();
         selectedType = SignType.Large;
 
-        switchSignInputBoxTo(largeSignInputBoxes.get(0));
+        switchSignInputBoxTo((ImageInputBox) largeSignInputBoxes.get(0));
 
         addTypeDependentChildren(largeSignInputBoxes);
         updateColorBoxPosition(((ImageInputBox) largeSignInputBoxes.get(0)).bounds.max().y);
     }
 
-    private void switchSignInputBoxTo(InputBox box) {
+    private void switchSignInputBoxTo(ImageInputBox box) {
         if(currentSignInputBox != null)
             box.setText(currentSignInputBox.getText());
         currentSignInputBox = box;
@@ -326,18 +334,33 @@ public class SignGui extends Screen {
     }
 
     private void clearTypeDependentChildren(){
-        children.removeAll(selectionDependentWidgets);
+        removeButtons(selectionDependentWidgets);
         selectionDependentWidgets.clear();
     }
 
     private void addTypeDependentChildren(Collection<? extends Widget> widgets){
         selectionDependentWidgets.addAll(widgets);
-        children.addAll(widgets);
+        addButtons(widgets);
     }
 
     private void addTypeDependentChild(Widget widget){
         selectionDependentWidgets.add(widget);
-        children.add(widget);
+        addButton(widget);
+    }
+
+    private void addButtons(Collection<? extends Widget> widgets) {
+        this.buttons.addAll(widgets);
+        this.children.addAll(widgets);
+    }
+
+    private void removeButtons(Collection<? extends Widget> widgets) {
+        this.buttons.removeAll(widgets);
+        this.children.removeAll(widgets);
+    }
+
+    private void removeButton(Widget widget) {
+        this.buttons.remove(widget);
+        this.children.remove(widget);
     }
 
     @Override
@@ -365,7 +388,7 @@ public class SignGui extends Screen {
                         new SmallWideSign(
                             Angle.fromDegrees(0),
                             wideSignInputBox.getText(),
-                            false,
+                            wideSignInputBox.isFlipped(),
                             modelType.mainTexture,
                             modelType.secondaryTexture,
                             colorInputBox.getCurrentColor(),
@@ -383,7 +406,7 @@ public class SignGui extends Screen {
                         new SmallShortSign(
                             Angle.fromDegrees(0),
                             shortSignInputBox.getText(),
-                            false,
+                            shortSignInputBox.isFlipped(),
                             modelType.mainTexture,
                             modelType.secondaryTexture,
                             colorInputBox.getCurrentColor(),
@@ -406,7 +429,7 @@ public class SignGui extends Screen {
                                 largeSignInputBoxes.get(2).getText(),
                                 largeSignInputBoxes.get(3).getText(),
                             },
-                            false,
+                            currentSignInputBox.isFlipped(),
                             modelType.mainTexture,
                             modelType.secondaryTexture,
                             colorInputBox.getCurrentColor(),

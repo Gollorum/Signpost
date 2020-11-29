@@ -17,9 +17,7 @@
             "down":  { "uv": [ 0, 0, 16, 16 ], "texture": "#dirtyFixPaint" },
             "up":    { "uv": [ 0, 0, 16, 16 ], "texture": "#dirtyFixGrass" },
             "north": { "uv": [ 0, 0, 16, 16 ], "texture": "#dirtyFixSnow" },
-            "south": { "uv": [ 0, 0, 16, 16 ], "texture": "#dirtyFixVine" },
-            "east": { "uv": [ 0, 0, 16, 16 ], "texture": "#dirtyFixSign" },
-            "west": { "uv": [ 0, 0, 16, 16 ], "texture": "#dirtyFixSignDark" }
+            "south": { "uv": [ 0, 0, 16, 16 ], "texture": "#dirtyFixVine" }
         }
     }, {
         "from": [ -1, 10, 5 ],

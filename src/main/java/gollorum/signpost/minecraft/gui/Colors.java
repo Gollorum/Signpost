@@ -14,16 +14,22 @@ public class Colors {
     public static final int invalid = 0xff4444;
     public static final int invalidInactive = 0xdd6666;
 
+    public static int withAlpha(int color, int alpha) {
+        return (color & 0x00ffffff) + alpha << 24;
+    }
     public static int withRed(int color, int red) {
-        return (color & 0xff0000) + red << 16;
+        return (color & 0xff00ffff) + red << 16;
     }
     public static int withGreen(int color, int green) {
-        return (color & 0x00ff00) + green << 8;
+        return (color & 0xffff00ff) + green << 8;
     }
     public static int withBlue(int color, int blue) {
-        return (color & 0x0000ff) + blue;
+        return (color & 0xffffff00) + blue;
     }
 
+    public static int withAlpha(int color, Function<Integer, Integer> alphaMapping) {
+        return withAlpha(color, alphaMapping.apply(getAlpha(color)));
+    }
     public static int withRed(int color, Function<Integer, Integer> redMapping) {
         return withRed(color, redMapping.apply(getRed(color)));
     }
@@ -42,6 +48,7 @@ public class Colors {
         return (red << 16) + (green << 8) + blue;
     }
 
+    public static int getAlpha(int color) { return (color >>> 24) & 0xff; }
     public static int getRed(int color) { return (color >>> 16) & 0xff; }
     public static int getGreen(int color) { return (color >>> 8) & 0xff; }
     public static int getBlue(int color) { return color & 0xff; }

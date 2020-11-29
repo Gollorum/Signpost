@@ -7,7 +7,7 @@ import net.minecraft.client.gui.FontRenderer;
 public final class ImageInputBox extends InputBox {
 
     private final TextureResource texture;
-    private final Rect backgroundRect;
+    private Rect backgroundRect;
 
     public final Rect bounds;
 
@@ -49,8 +49,19 @@ public final class ImageInputBox extends InputBox {
     public void renderButton(int p_render_1_, int p_render_2_, float p_render_3_) {
         RenderSystem.color4f(1.0f, 1.0f, 1.0f, 1.0f);
         Minecraft.getInstance().getTextureManager().bindTexture(texture.location);
-        blit(backgroundRect.point.x, backgroundRect.point.y, 0, 0, backgroundRect.width, backgroundRect.height, backgroundRect.width, backgroundRect.height);
+        blit(backgroundRect.point.x, backgroundRect.point.y, 0, 0, backgroundRect.width, backgroundRect.height, isFlipped ? -backgroundRect.width : backgroundRect.width, backgroundRect.height);
         super.renderButton(p_render_1_, p_render_2_, p_render_3_);
+    }
+
+    private boolean isFlipped = false;
+
+    public boolean isFlipped() {
+        return isFlipped;
+    }
+
+    public void flip() {
+        isFlipped = !isFlipped;
+        backgroundRect = backgroundRect.withPoint(p -> p.withX(oldX -> x + (x + width) - (backgroundRect.point.x + backgroundRect.width)));
     }
 
 }
