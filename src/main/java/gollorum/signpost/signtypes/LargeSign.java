@@ -143,12 +143,7 @@ public class LargeSign extends Sign<LargeSign> {
             matrix.translate(0, 3.5f * VoxelSize, -3.005 * VoxelSize);
 
             matrix.push();
-            render(fontRenderer, text[0], matrix, buffer, combinedLights, false);
-            matrix.pop();
-            matrix.translate(0, -7 / 3f * VoxelSize, 0);
-
-            matrix.push();
-            render(fontRenderer, text[1], matrix, buffer, combinedLights, true);
+            render(fontRenderer, text[3], matrix, buffer, combinedLights, false);
             matrix.pop();
             matrix.translate(0, -7 / 3f * VoxelSize, 0);
 
@@ -158,7 +153,12 @@ public class LargeSign extends Sign<LargeSign> {
             matrix.translate(0, -7 / 3f * VoxelSize, 0);
 
             matrix.push();
-            render(fontRenderer, text[3], matrix, buffer, combinedLights, false);
+            render(fontRenderer, text[1], matrix, buffer, combinedLights, true);
+            matrix.pop();
+            matrix.translate(0, -7 / 3f * VoxelSize, 0);
+
+            matrix.push();
+            render(fontRenderer, text[0], matrix, buffer, combinedLights, false);
             matrix.pop();
         });
     }

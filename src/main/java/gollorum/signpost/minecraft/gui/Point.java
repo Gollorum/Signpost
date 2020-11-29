@@ -32,4 +32,7 @@ public class Point {
     public Point withX(Function<Integer, Integer> mapping) { return new Point(mapping.apply(x), y); }
     public Point withY(Function<Integer, Integer> mapping) { return new Point(x, mapping.apply(y)); }
 
+    public Point withX(int x) { return new Point(x, y); }
+    public Point withY(int y) { return new Point(x, y); }
+
 }

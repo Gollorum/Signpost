@@ -133,7 +133,7 @@ public class SignGui extends Screen {
         waystoneInputBox = new ImageInputBox(font,
             new Rect(
                 new Point(waystoneDropdown.x - 10, waystoneDropdown.y + waystoneDropdown.getHeight() / 2),
-                new TextureSize((int)((waystoneNameTexture.size.width - 6) * waystoneBoxScale), font.FONT_HEIGHT),
+                new TextureSize((int)((waystoneNameTexture.size.width - 4) * waystoneBoxScale), (int)((waystoneNameTexture.size.height - 4) * waystoneBoxScale)),
                 Rect.XAlignment.Right, Rect.YAlignment.Center),
             new Rect(
                 Point.zero,
@@ -152,8 +152,8 @@ public class SignGui extends Screen {
             Rect.XAlignment.Left,
             Rect.YAlignment.Top);
         wideSignInputBox = new ImageInputBox(font,
-            wideRect.offset(new Point(5, 3).mul(inputSignsScale), new Point(-2, -11).mul(inputSignsScale)),
-            wideRect.withPoint(new Point(-5, -3).mul(inputSignsScale)),
+            wideRect.offset(new Point(5, 2).mul(inputSignsScale), new Point(-2, -10).mul(inputSignsScale)),
+            wideRect.withPoint(new Point(-5, -2).mul(inputSignsScale)),
             Rect.XAlignment.Left, Rect.YAlignment.Top,
             modelType.wideGuiTexture,
             false);
@@ -163,8 +163,8 @@ public class SignGui extends Screen {
             Rect.XAlignment.Left,
             Rect.YAlignment.Top);
         shortSignInputBox = new ImageInputBox(font,
-            shortRect.offset(new Point(5, 3).mul(inputSignsScale), new Point(-5, -11).mul(inputSignsScale)),
-            shortRect.withPoint(new Point(-5, -3).mul(inputSignsScale)),
+            shortRect.offset(new Point(5, 2).mul(inputSignsScale), new Point(-5, -10).mul(inputSignsScale)),
+            shortRect.withPoint(new Point(-5, -2).mul(inputSignsScale)),
             Rect.XAlignment.Left, Rect.YAlignment.Top,
             modelType.shortGuiTexture,
             false);
@@ -174,10 +174,10 @@ public class SignGui extends Screen {
             Rect.XAlignment.Left,
             Rect.YAlignment.Top);
         Rect largeInputRect = largeRect.withPoint(p -> p.add(
-            new Point(4 * inputSignsScale, (int) (2.75f * inputSignsScale)))
+            new Point(4 * inputSignsScale, 2 * inputSignsScale))
         ).withSize(
                 width -> width - 6 * inputSignsScale,
-                height -> font.FONT_HEIGHT
+                height -> (int)(2.5f * inputSignsScale)
         );
         ImageInputBox firstLarge = new ImageInputBox(font,
             largeInputRect,
@@ -186,14 +186,13 @@ public class SignGui extends Screen {
             modelType.largeGuiTexture,
             false
         );
-        final int largeYSpace = (int) (2.5f * inputSignsScale);
-        largeInputRect = largeInputRect.withPoint(p -> p.withY(y -> y + largeYSpace));
+        largeInputRect = largeInputRect.withPoint(p -> p.withY(Math.round(largeRect.point.y + (12 - 3 * 2.5f) * inputSignsScale)));
         InputBox secondLarge = new InputBox(font, largeInputRect, false, false);
         secondLarge.setTextColor(Colors.black);
-        largeInputRect = largeInputRect.withPoint(p -> p.withY(y -> y + largeYSpace));
+        largeInputRect = largeInputRect.withPoint(p -> p.withY(Math.round(largeRect.point.y + (12 - 2 * 2.5f) * inputSignsScale)));
         InputBox thirdLarge = new InputBox(font, largeInputRect, false, false);
         thirdLarge.setTextColor(Colors.black);
-        largeInputRect = largeInputRect.withPoint(p -> p.withY(y -> y + largeYSpace));
+        largeInputRect = largeInputRect.withPoint(p -> p.withY(Math.round(largeRect.point.y + (12 - 1 * 2.5f) * inputSignsScale)));
         InputBox fourthLarge = new InputBox(font, largeInputRect, false, false);
         fourthLarge.setTextColor(Colors.black);
 
@@ -282,13 +281,15 @@ public class SignGui extends Screen {
     @Override
     public void render(int p_render_1_, int p_render_2_, float p_render_3_) {
         renderBackground();
+        String hint = I18n.format("gui.new_sign_hint");
+        font.drawStringWithShadow(hint, (width - font.getStringWidth(hint)) / 2f, (doneButton.y + doneButton.getHeight() + height - font.FONT_HEIGHT) / 2f, Colors.white);
         super.render(p_render_1_, p_render_2_, p_render_3_);
     }
 
     private int getCenterX() { return this.width / 2; }
     private int getCenterY() { return this.height / 2; }
 
-    private List<Widget> selectionDependentWidgets = Lists.newArrayList();
+    private final List<Widget> selectionDependentWidgets = Lists.newArrayList();
 
     private void switchToWide(){
         if(selectedType == SignType.Wide) return;

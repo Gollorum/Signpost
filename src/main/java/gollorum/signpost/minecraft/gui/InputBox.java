@@ -470,7 +470,7 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener {
             boolean flag = j >= 0 && j <= s.length();
             boolean flag1 = this.isFocused() && this.cursorCounter / 6 % 2 == 0 && flag;
             int l = this.enableBackgroundDrawing ? this.x + 4 : this.x;
-            int i1 = this.enableBackgroundDrawing ? this.y + (this.height - 8) / 2 : this.y;
+            int textY = y + (height - fontRenderer.FONT_HEIGHT) / 2;
             int j1 = l;
             if (k > s.length()) {
                 k = s.length();
@@ -478,7 +478,7 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener {
 
             if (!s.isEmpty()) {
                 String s1 = flag ? s.substring(0, j) : s;
-                j1 = drawString(this.textFormatter.apply(s1, this.lineScrollOffset), l, i1, color);
+                j1 = drawString(this.textFormatter.apply(s1, this.lineScrollOffset), l, textY, color);
             }
 
             boolean flag2 = this.cursorPosition < this.text.length() || this.text.length() >= this.getMaxStringLength();
@@ -491,24 +491,24 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener {
             }
 
             if (!s.isEmpty() && flag && j < s.length()) {
-                drawString(this.textFormatter.apply(s.substring(j), this.cursorPosition), j1, i1, color);
+                drawString(this.textFormatter.apply(s.substring(j), this.cursorPosition), j1, textY, color);
             }
 
             if (!flag2 && this.suggestion != null) {
-                drawString(this.suggestion, k1 - 1, i1, -8355712);
+                drawString(this.suggestion, k1 - 1, textY, -8355712);
             }
 
             if (flag1) {
                 if (flag2) {
-                    AbstractGui.fill(k1, i1 - 1, k1 + 1, i1 + 1 + 9, -3092272);
+                    AbstractGui.fill(k1, textY - 1, k1 + 1, textY + 1 + 9, -3092272);
                 } else {
-                    drawString("_", k1, i1, color);
+                    drawString("_", k1, textY, color);
                 }
             }
 
             if (k != j) {
                 int l1 = l + this.fontRenderer.getStringWidth(s.substring(0, k));
-                this.drawSelectionBox(k1, i1 - 1, l1 - 1, i1 + 1 + 9);
+                this.drawSelectionBox(k1, textY - 1, l1 - 1, textY + 1 + 9);
             }
 
         }
