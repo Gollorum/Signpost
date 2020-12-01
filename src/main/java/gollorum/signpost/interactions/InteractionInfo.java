@@ -1,7 +1,6 @@
 package gollorum.signpost.interactions;
 
 import gollorum.signpost.minecraft.block.tiles.PostTile;
-import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.Hand;
@@ -18,16 +17,16 @@ public class InteractionInfo {
     public final PlayerEntity player;
     public final Hand hand;
     public final PostTile tile;
-    public final Vector3 localHitPos;
+    public final PostTile.TraceResult traceResult;
     public final Consumer<CompoundNBT> mutationDistributor;
     public final boolean isRemote;
 
-    public InteractionInfo(Type type, PlayerEntity player, Hand hand, PostTile tile, Vector3 localHitPos, Consumer<CompoundNBT> mutationDistributor, boolean isRemote) {
+    public InteractionInfo(Type type, PlayerEntity player, Hand hand, PostTile tile, PostTile.TraceResult traceResult, Consumer<CompoundNBT> mutationDistributor, boolean isRemote) {
         this.type = type;
         this.player = player;
         this.hand = hand;
         this.tile = tile;
-        this.localHitPos = localHitPos;
+        this.traceResult = traceResult;
         this.mutationDistributor = mutationDistributor;
         this.isRemote = isRemote;
     }

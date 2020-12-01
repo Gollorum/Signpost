@@ -63,7 +63,7 @@ public class WaystoneGui extends Screen {
     @Override
     protected void init() {
         super.init();
-        WaystoneLibrary.getInstance().requestAllWaystoneNames(names -> allWaystoneNames = Optional.of(new HashSet<>(names)));
+        WaystoneLibrary.getInstance().requestAllWaystoneNames(names -> allWaystoneNames = Optional.of(new HashSet<>(names.values())));
         WaystoneLibrary.getInstance().updateEventDispatcher.addListener(waystoneUpdateListener);
         inputBox = new ImageInputBox(font,
             new Rect(
@@ -83,7 +83,7 @@ public class WaystoneGui extends Screen {
             getCenterY() - buttonsSize.height / 2 + buttonsYOffset,
             buttonsSize.width,
             buttonsSize.height,
-            I18n.format(LangKeys.Done),
+            I18n.format(LangKeys.done),
             b -> onClose()
         );
         addButton(doneButton);

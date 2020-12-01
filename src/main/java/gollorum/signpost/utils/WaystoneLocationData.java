@@ -27,6 +27,12 @@ public class WaystoneLocationData {
         }
 
         @Override
+        public boolean isContainedIn(CompoundNBT compound, String keyPrefix) {
+            return WorldLocation.SERIALIZER.isContainedIn(compound, keyPrefix + "Block") &&
+                Vector3.SERIALIZER.isContainedIn(compound, keyPrefix + "Spawn");
+        }
+
+        @Override
         public WaystoneLocationData read(CompoundNBT compound, String keyPrefix) {
             return new WaystoneLocationData(
                 WorldLocation.SERIALIZER.read(compound, keyPrefix + "Block"),

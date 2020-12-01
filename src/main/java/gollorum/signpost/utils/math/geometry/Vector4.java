@@ -109,6 +109,14 @@ public final class Vector4 {
         }
 
         @Override
+        public boolean isContainedIn(CompoundNBT compound, String keyPrefix) {
+            return compound.contains(keyPrefix + "X") &&
+                compound.contains(keyPrefix + "Y") &&
+                compound.contains(keyPrefix + "Z") &&
+                compound.contains(keyPrefix + "W");
+        }
+
+        @Override
         public Vector4 read(CompoundNBT compound, String keyPrefix) {
             return new Vector4(
                 compound.getFloat(keyPrefix + "X"),

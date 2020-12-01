@@ -40,28 +40,49 @@ import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
+import net.minecraft.world.storage.loot.LootContext;
+import net.minecraft.world.storage.loot.LootParameters;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 public class Post extends Block implements IWaterLoggable {
 
     public static enum ModelType implements IStringSerializable {
-        Acacia(new ResourceLocation("acacia_log"), new ResourceLocation(Signpost.MOD_ID, "acacia"), new ResourceLocation(Signpost.MOD_ID, "acacia_dark"),
+        Acacia(new ResourceLocation("acacia_log"),
+            new ResourceLocation(Signpost.MOD_ID, "acacia"),
+            new ResourceLocation(Signpost.MOD_ID, "acacia_dark"),
             TextureResource.SignGui.Wide.Acacia, TextureResource.SignGui.Short.Acacia, TextureResource.SignGui.Large.Acacia),
-        Birch(new ResourceLocation("birch_log"), new ResourceLocation(Signpost.MOD_ID, "birch"), new ResourceLocation("birch_log"),
+        Birch(new ResourceLocation("birch_log"),
+            new ResourceLocation(Signpost.MOD_ID, "birch"),
+            new ResourceLocation("birch_log"),
             TextureResource.SignGui.Wide.Birch, TextureResource.SignGui.Short.Birch, TextureResource.SignGui.Large.Birch),
-        Iron(new ResourceLocation("iron_block"), new ResourceLocation(Signpost.MOD_ID, "iron"), new ResourceLocation(Signpost.MOD_ID, "iron_dark"),
+        Iron(new ResourceLocation("iron_block"),
+            new ResourceLocation(Signpost.MOD_ID, "iron"),
+            new ResourceLocation(Signpost.MOD_ID, "iron_dark"),
             TextureResource.SignGui.Wide.Iron, TextureResource.SignGui.Short.Iron, TextureResource.SignGui.Large.Iron),
-        Jungle(new ResourceLocation("jungle_log"), new ResourceLocation(Signpost.MOD_ID, "jungle"), new ResourceLocation("jungle_log"),
+        Jungle(new ResourceLocation("jungle_log"),
+            new ResourceLocation(Signpost.MOD_ID, "jungle"),
+            new ResourceLocation("jungle_log"),
             TextureResource.SignGui.Wide.Jungle, TextureResource.SignGui.Short.Jungle, TextureResource.SignGui.Large.Jungle),
-        Oak(new ResourceLocation("oak_log"), new ResourceLocation(Signpost.MOD_ID, "oak"), new ResourceLocation(Signpost.MOD_ID, "oak_dark"),
+        Oak(new ResourceLocation("oak_log"),
+            new ResourceLocation(Signpost.MOD_ID, "oak"),
+            new ResourceLocation(Signpost.MOD_ID, "oak_dark"),
             TextureResource.SignGui.Wide.Oak, TextureResource.SignGui.Short.Oak, TextureResource.SignGui.Large.Oak),
-        DarkOak(new ResourceLocation("dark_oak_log"), new ResourceLocation(Signpost.MOD_ID, "dark_oak"), new ResourceLocation(Signpost.MOD_ID, "dark_oak_dark"),
+        DarkOak(new ResourceLocation("dark_oak_log"),
+            new ResourceLocation(Signpost.MOD_ID, "dark_oak"),
+            new ResourceLocation(Signpost.MOD_ID, "dark_oak_dark"),
             TextureResource.SignGui.Wide.DarkOak, TextureResource.SignGui.Short.DarkOak, TextureResource.SignGui.Large.DarkOak),
-        Spruce(new ResourceLocation("spruce_log"), new ResourceLocation(Signpost.MOD_ID, "spruce"), new ResourceLocation(Signpost.MOD_ID, "spruce_dark"),
+        Spruce(new ResourceLocation("spruce_log"),
+            new ResourceLocation(Signpost.MOD_ID, "spruce"),
+            new ResourceLocation(Signpost.MOD_ID, "spruce_dark"),
             TextureResource.SignGui.Wide.Spruce, TextureResource.SignGui.Short.Spruce, TextureResource.SignGui.Large.Spruce),
-        Stone(new ResourceLocation("stone"), new ResourceLocation("stone"), new ResourceLocation(Signpost.MOD_ID, "stone_dark"),
+        Stone(new ResourceLocation("stone"),
+            new ResourceLocation("stone"),
+            new ResourceLocation(Signpost.MOD_ID, "stone_dark"),
             TextureResource.SignGui.Wide.Stone, TextureResource.SignGui.Short.Stone, TextureResource.SignGui.Large.Stone);
 
         public final ResourceLocation postLocation;
@@ -162,7 +183,7 @@ public class Post extends Block implements IWaterLoggable {
             () -> {
                 PostTile tile = TileEntityUtils.findTileEntity(world, pos, PostTile.class).get();
                 if (world.isRemote) {
-                    Minecraft.getInstance().displayGuiScreen(new SignGui(tile, tile.modelType, new Vector3(0, 1, 0)));
+                    Minecraft.getInstance().displayGuiScreen(new SignGui(tile, tile.modelType, new Vector3(0, 1, 0), Optional.empty()));
                 } else {
                     tile.addPart(new BlockPartInstance(new gollorum.signpost.signtypes.Post(type.postLocation), Vector3.ZERO));
                     tile.markDirty();
@@ -172,8 +193,14 @@ public class Post extends Block implements IWaterLoggable {
     }
 
     @Override
-    public void onPlayerDestroy(IWorld world, BlockPos pos, BlockState state) {
-        super.onPlayerDestroy(world, pos, state);
+    public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
+        TileEntity tileentity = builder.get(LootParameters.BLOCK_ENTITY);
+        List<ItemStack> result = new ArrayList<>();
+        result.add(new ItemStack(asItem()));
+        if(tileentity instanceof PostTile) {
+            result.addAll(((PostTile) tileentity).getDrops());
+        }
+        return result;
     }
 
     @SuppressWarnings("deprecation")
@@ -237,8 +264,8 @@ public class Post extends Block implements IWaterLoggable {
                 player,
                 hand,
                 tile,
-                p.hitPos,
-                data -> tile.notifyMutation(p.id, data),
+                p,
+                data -> tile.notifyMutation(p.id, data, p.part.getMeta().identifier),
                 world.isRemote
             )))
             .orElse(Interactable.InteractionResult.Ignored)

@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.function.Consumer;
 
 public class ColorInputBox extends InputBox {
@@ -61,7 +62,6 @@ public class ColorInputBox extends InputBox {
         int green = Colors.getGreen(currentResult);
         int blue = Colors.getBlue(currentResult);
         RenderSystem.color4f(1, 1, 1, 1);
-        int brightness = 255;
         bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
         bufferbuilder.pos(x - height, y + height, 0.0D).tex(0, 1).color(red, green, blue, 255).endVertex();
         bufferbuilder.pos(x, y + height, 0.0D).tex(1, 1).color(red, green, blue, 255).endVertex();
@@ -73,5 +73,13 @@ public class ColorInputBox extends InputBox {
 
     public void setColorResponder(@Nullable Consumer<Integer> responder) {
         this.responder = responder;
+    }
+
+    public void setSelectedColor(int color) {
+        String text = Integer.toHexString(color);
+        if(text.length() < 6) {
+            text = String.join("", Collections.nCopies(6 - text.length(), "0")) + text;
+        }
+        setText("#" + text);
     }
 }

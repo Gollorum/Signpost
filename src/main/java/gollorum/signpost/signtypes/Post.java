@@ -1,7 +1,9 @@
 package gollorum.signpost.signtypes;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import gollorum.signpost.Signpost;
 import gollorum.signpost.interactions.InteractionInfo;
+import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.SignGui;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.utils.BlockPart;
@@ -26,6 +28,9 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.Lazy;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Optional;
 import java.util.Random;
 
 public class Post implements BlockPart<Post> {
@@ -60,11 +65,17 @@ public class Post implements BlockPart<Post> {
 
     @Override
     public InteractionResult interact(InteractionInfo info) {
-        if(isValidSign(info.player.getHeldItem(info.hand))) {
+        ItemStack heldItem = info.player.getHeldItem(info.hand);
+        if(isValidSign(heldItem)) {
             if (info.isRemote) {
-                Minecraft.getInstance().displayGuiScreen(new SignGui(info.tile, gollorum.signpost.minecraft.block.Post.ModelType.from(info.player.getHeldItem(info.hand).getItem()), info.localHitPos));
+                Minecraft.getInstance().displayGuiScreen(new SignGui(
+                    info.tile,
+                    gollorum.signpost.minecraft.block.Post.ModelType.from(info.player.getHeldItem(info.hand).getItem()),
+                    info.traceResult.hitPos,
+                    Optional.of(new ItemStack(heldItem.getItem(), 1))
+                ));
             }
-            info.player.inventory.clearMatchingItems(i -> i.getItem() instanceof SignItem, 1);
+            info.player.inventory.clearMatchingItems(i -> i.getItem().equals(heldItem.getItem()), 1);
             return InteractionResult.Accepted;
         } else return InteractionResult.Ignored;
     }
@@ -109,5 +120,11 @@ public class Post implements BlockPart<Post> {
     @Override
     public void readMutationUpdate(CompoundNBT compound, TileEntity tile) {
         setTexture(new ResourceLocation(compound.getString("texture")));
+    }
+
+    @Override
+    public Collection<ItemStack> getDrops(PostTile tile) {
+        Signpost.LOGGER.error("Sign post only was broken. This should not happen.");
+        return Collections.emptySet();
     }
 }

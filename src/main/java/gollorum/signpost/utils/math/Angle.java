@@ -60,16 +60,23 @@ public final class Angle {
 
     public static final class Serializer implements CompoundSerializable<Angle> {
 
+        private static final String key = "Radians";
+
         private Serializer(){}
 
         @Override
         public void writeTo(Angle angle, CompoundNBT compound, String keyPrefix) {
-            compound.putFloat(keyPrefix + "angle_radians", angle.radians);
+            compound.putFloat(keyPrefix + key, angle.radians);
+        }
+
+        @Override
+        public boolean isContainedIn(CompoundNBT compound, String keyPrefix) {
+            return compound.contains(keyPrefix + key);
         }
 
         @Override
         public Angle read(CompoundNBT compound, String keyPrefix) {
-            return Angle.fromRadians(compound.getFloat(keyPrefix + "angle_radians"));
+            return Angle.fromRadians(compound.getFloat(keyPrefix + key));
         }
     }
 

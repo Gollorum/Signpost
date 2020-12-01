@@ -1,5 +1,6 @@
 package gollorum.signpost;
 
+import gollorum.signpost.minecraft.block.BlockEventListener;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.registry.BlockRegistry;
 import gollorum.signpost.minecraft.registry.ItemRegistry;
@@ -44,9 +45,11 @@ public class Signpost {
     }
 
     public Signpost() {
-        MinecraftForge.EVENT_BUS.register(this);
+        IEventBus forgeBus = MinecraftForge.EVENT_BUS;
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
+        forgeBus.register(this);
         modBus.register(this);
+        BlockEventListener.register(forgeBus);
         BlockRegistry.register(modBus);
         ItemRegistry.register(modBus);
         TileEntityRegistry.register(modBus);

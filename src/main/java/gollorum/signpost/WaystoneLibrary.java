@@ -55,10 +55,6 @@ public class WaystoneLibrary {
         return allWaystones.get(waystoneId).locationData;
     }
 
-    public String getName(UUID waystoneId) {
-        return allWaystones.get(waystoneId).name;
-    }
-
     private static class WaystoneEntry {
         public final String name;
         public final WaystoneLocationData locationData;
@@ -71,7 +67,7 @@ public class WaystoneLibrary {
     private final Map<UUID, WaystoneEntry> allWaystones = new ConcurrentHashMap<>();
     private final Map<UUID, Set<UUID>> playerMemory = new ConcurrentHashMap<>();
 
-    private final EventDispatcher.Impl.WithPublicDispatch<Set<String>> requestedAllNamesEventDispatcher =
+    private final EventDispatcher.Impl.WithPublicDispatch<Map<UUID, String>> requestedAllNamesEventDispatcher =
         new EventDispatcher.Impl.WithPublicDispatch<>();
 
     private final EventDispatcher.Impl.WithPublicDispatch<Optional<UUID>> requestedIdEventDispatcher =
@@ -165,7 +161,7 @@ public class WaystoneLibrary {
             .filter(e -> e.getValue().locationData.blockLocation.equals(location)).findFirst();
     }
 
-    public void requestAllWaystoneNames(Consumer<Set<String>> onReply) {
+    public void requestAllWaystoneNames(Consumer<Map<UUID, String>> onReply) {
         if(Signpost.getServerType().isServer){
             onReply.accept(getAllWaystoneNames());
         } else {
@@ -190,9 +186,9 @@ public class WaystoneLibrary {
             .findFirst();
     }
 
-    private Set<String> getAllWaystoneNames(){
+    private Map<UUID, String> getAllWaystoneNames(){
         assert Signpost.getServerType().isServer;
-        return getInstance().allWaystones.values().stream().map(e -> e.name).collect(Collectors.toSet());
+        return getInstance().allWaystones.entrySet().stream().collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue().name));
     }
 
     private Optional<WaystoneData> tryGetWaystoneDataAt(WorldLocation location) {
@@ -246,10 +242,10 @@ public class WaystoneLibrary {
     private static final class DeliverAllWaystoneNamesEvent implements PacketHandler.Event<DeliverAllWaystoneNamesEvent.Packet> {
 
         public static final class Packet {
-            public final Set<String> Names;
+            public final Map<UUID, String> names;
 
-            private Packet(Set<String> names) {
-                Names = names;
+            private Packet(Map<UUID, String> names) {
+                this.names = names;
             }
         }
 
@@ -258,24 +254,25 @@ public class WaystoneLibrary {
 
         @Override
         public void encode(Packet message, PacketBuffer buffer) {
-            buffer.writeInt(message.Names.size());
-            for (String name: message.Names) {
-                buffer.writeString(name);
+            buffer.writeInt(message.names.size());
+            for (Map.Entry<UUID, String> name: message.names.entrySet()) {
+                buffer.writeUniqueId(name.getKey());
+                buffer.writeString(name.getValue());
             }
         }
 
         @Override
         public Packet decode(PacketBuffer buffer) {
-            Set<String> names = new HashSet<>();
+            Map<UUID, String> names = new HashMap<>();
             int count = buffer.readInt();
             for(int i = 0; i < count; i++)
-                names.add(buffer.readString());
+                names.put(buffer.readUniqueId(), buffer.readString());
             return new Packet(names);
         }
 
         @Override
         public void handle(Packet message, Supplier<NetworkEvent.Context> context) {
-            context.get().enqueueWork(() -> getInstance().requestedAllNamesEventDispatcher.dispatch(message.Names, true));
+            context.get().enqueueWork(() -> getInstance().requestedAllNamesEventDispatcher.dispatch(message.names, true));
         }
     }
 

@@ -1,24 +1,55 @@
 package gollorum.signpost.utils.serialization;
 
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.INBT;
 import net.minecraft.network.PacketBuffer;
 
 import java.util.Optional;
 
 public final class OptionalSerializer<T> implements CompoundSerializable<Optional<T>> {
 
+    public static final String key = "Value";
+
     public static final OptionalSerializer<java.util.UUID> UUID = new OptionalSerializer<>(
         new CompoundSerializable<java.util.UUID>() {
             @Override
             public void writeTo(java.util.UUID uuid, CompoundNBT compound, String keyPrefix) {
-                compound.putUniqueId(keyPrefix + "Id", uuid);
+                compound.putUniqueId(keyPrefix, uuid);
+            }
+
+            @Override
+            public boolean isContainedIn(CompoundNBT compound, String keyPrefix) {
+                return compound.hasUniqueId(keyPrefix);
             }
 
             @Override
             public java.util.UUID read(CompoundNBT compound, String keyPrefix) {
-                return compound.getUniqueId(keyPrefix + "Id");
+                return compound.getUniqueId(keyPrefix);
             }
         });
+
+    public static final OptionalSerializer<ItemStack> ItemStack = new OptionalSerializer<>(
+        new CompoundSerializable<net.minecraft.item.ItemStack>() {
+            @Override
+            public void writeTo(net.minecraft.item.ItemStack itemStack, CompoundNBT compound, String keyPrefix) {
+                compound.put(keyPrefix, itemStack.write(new CompoundNBT()));
+            }
+
+            @Override
+            public boolean isContainedIn(CompoundNBT compound, String keyPrefix) {
+                return compound.contains(keyPrefix);
+            }
+
+            @Override
+            public net.minecraft.item.ItemStack read(CompoundNBT compound, String keyPrefix) {
+                INBT readCompound = compound.get(keyPrefix);
+                if(readCompound instanceof CompoundNBT)
+                    return net.minecraft.item.ItemStack.read((CompoundNBT) readCompound);
+                else return null;
+            }
+        }
+    );
 
     private final CompoundSerializable<T> valueSerializer;
 
@@ -33,9 +64,14 @@ public final class OptionalSerializer<T> implements CompoundSerializable<Optiona
     }
 
     @Override
+    public boolean isContainedIn(CompoundNBT compound, String keyPrefix) {
+        return valueSerializer.isContainedIn(compound, keyPrefix + "Value");
+    }
+
+    @Override
     public Optional<T> read(CompoundNBT compound, String keyPrefix) {
         if(compound.getBoolean(keyPrefix + "IsPresent"))
-            return Optional.of(valueSerializer.read(compound, keyPrefix + "Value"));
+            return Optional.ofNullable(valueSerializer.read(compound, keyPrefix + "Value"));
         else return Optional.empty();
     }
 
@@ -50,7 +86,7 @@ public final class OptionalSerializer<T> implements CompoundSerializable<Optiona
     @Override
     public Optional<T> readFrom(PacketBuffer buffer) {
         if(buffer.readBoolean())
-            return Optional.of(valueSerializer.readFrom(buffer));
+            return Optional.ofNullable(valueSerializer.readFrom(buffer));
         else return Optional.empty();
     }
 

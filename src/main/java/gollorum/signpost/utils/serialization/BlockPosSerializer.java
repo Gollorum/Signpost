@@ -18,6 +18,13 @@ public class BlockPosSerializer implements CompoundSerializable<BlockPos> {
     }
 
     @Override
+    public boolean isContainedIn(CompoundNBT compound, String keyPrefix) {
+        return compound.contains(keyPrefix + "X") &&
+            compound.contains(keyPrefix + "Y") &&
+            compound.contains(keyPrefix + "Z");
+    }
+
+    @Override
     public BlockPos read(CompoundNBT compound, String keyPrefix) {
         return new BlockPos(
             compound.getInt(keyPrefix + "X"),

@@ -4,6 +4,7 @@ import gollorum.signpost.Signpost;
 import net.minecraft.client.Minecraft;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.common.DimensionManager;
@@ -12,7 +13,7 @@ import java.util.Optional;
 
 public class TileEntityUtils {
 
-    public static <T extends TileEntity> Optional<T> findTileEntity(World world, BlockPos pos, Class<T> c){
+    public static <T extends TileEntity> Optional<T> findTileEntity(IWorld world, BlockPos pos, Class<T> c){
         TileEntity tileEntity = world.getTileEntity(pos);
         if(tileEntity != null && tileEntity.getClass() == c){
             return Optional.of((T) tileEntity);

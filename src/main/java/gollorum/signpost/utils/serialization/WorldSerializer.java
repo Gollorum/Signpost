@@ -22,6 +22,11 @@ public class WorldSerializer implements CompoundSerializable<Either<World, Integ
     }
 
     @Override
+    public boolean isContainedIn(CompoundNBT compound, String keyPrefix) {
+        return compound.contains(keyPrefix + "DimensionId");
+    }
+
+    @Override
     public void writeTo(Either<World, Integer> world, PacketBuffer buffer) {
         buffer.writeInt(world.rightOr(w -> w.dimension.getType().getId()));
     }

@@ -9,6 +9,7 @@ import gollorum.signpost.minecraft.events.WaystoneRenamedEvent;
 import gollorum.signpost.minecraft.events.WaystoneUpdatedEvent;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.signtypes.LargeSign;
+import gollorum.signpost.signtypes.Sign;
 import gollorum.signpost.signtypes.SmallShortSign;
 import gollorum.signpost.signtypes.SmallWideSign;
 import gollorum.signpost.utils.math.Angle;
@@ -18,6 +19,8 @@ import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.gui.widget.button.ImageButton;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.text.StringTextComponent;
 
 import javax.annotation.Nullable;
@@ -48,6 +51,8 @@ public class SignGui extends Screen {
     private ImageInputBox waystoneInputBox;
     private DropDownSelection waystoneDropdown;
 
+    private final Optional<ItemStack> itemToDropOnBreak;
+
     private final Consumer<WaystoneUpdatedEvent> waystoneUpdateListener = event -> {
         switch(event.getType()) {
             case Added:
@@ -71,11 +76,27 @@ public class SignGui extends Screen {
     private final Post.ModelType modelType;
     private final Vector3 localHitPos;
 
-    public SignGui(PostTile tile, Post.ModelType modelType, Vector3 localHitPos) {
+    private final Optional<Sign> oldSign;
+    private final Optional<PostTile.TilePartInfo> oldTilePartInfo;
+
+    public SignGui(PostTile tile, Post.ModelType modelType, Vector3 localHitPos, Optional<ItemStack> itemToDropOnBreak) {
         super(new StringTextComponent("Sign"));
         this.tile = tile;
         this.modelType = modelType;
         this.localHitPos = localHitPos;
+        this.itemToDropOnBreak = itemToDropOnBreak;
+        oldSign = Optional.empty();
+        oldTilePartInfo = Optional.empty();
+    }
+
+    public SignGui(PostTile tile, Post.ModelType modelType, Sign oldSign, PostTile.TilePartInfo oldTilePartInfo) {
+        super(new StringTextComponent("Sign"));
+        this.tile = tile;
+        this.modelType = modelType;
+        this.localHitPos = Vector3.ZERO;
+        this.itemToDropOnBreak = oldSign.itemToDropOnBreak;
+        this.oldSign = Optional.of(oldSign);
+        this.oldTilePartInfo = Optional.of(oldTilePartInfo);
     }
 
     @Override
@@ -108,11 +129,27 @@ public class SignGui extends Screen {
             this::switchToLarge
         ));
         Rect doneRect = new Rect(new Point(getCenterX(), height - typeSelectionButtonsY), buttonsSize, Rect.XAlignment.Center, Rect.YAlignment.Bottom);
-        doneButton = new Button(
-            doneRect.point.x, doneRect.point.y, doneRect.width, doneRect.height,
-            I18n.format(LangKeys.Done),
-            b -> done()
-        );
+        if(oldSign.isPresent()){
+            int buttonsWidth = (int) (doneRect.width * 0.75);
+            doneButton = new Button(
+                getCenterX() + centerGap / 2, doneRect.point.y, buttonsWidth, doneRect.height,
+                I18n.format(LangKeys.done),
+                b -> done()
+            );
+            Button removeSignButton = new Button(
+                getCenterX() - centerGap / 2 - buttonsWidth, doneRect.point.y, buttonsWidth, doneRect.height,
+                I18n.format(LangKeys.removeSign),
+                b -> removeSign()
+            );
+            removeSignButton.setFGColor(Colors.invalid);
+            addButton(removeSignButton);
+        } else {
+            doneButton = new Button(
+                doneRect.point.x, doneRect.point.y, doneRect.width, doneRect.height,
+                I18n.format(LangKeys.done),
+                b -> done()
+            );
+        }
         addButton(doneButton);
         waystoneDropdown = new DropDownSelection(font,
             new Point(getCenterX() - centerGap, getCenterY() - centralAreaHeight / 2 + 4 * inputSignsScale),
@@ -211,15 +248,45 @@ public class SignGui extends Screen {
             new Point(colorInputBox.x + colorInputBox.getWidth() + 10, colorInputBox.y + colorInputBox.getHeight() / 2),
             1,
             Rect.XAlignment.Left, Rect.YAlignment.Center,
-            () -> allImageInputBoxes.forEach(ImageInputBox::flip)
+            this::flip
         );
         addButton(switchDirectionButton);
 
-        switchToWide();
+        if(oldSign.isPresent()) {
+            if(oldSign.get() instanceof LargeSign) {
+                switchToLarge();
+                LargeSign sign = (LargeSign) oldSign.get();
+                for(int i = 0; i < largeSignInputBoxes.size(); i++) {
+                    largeSignInputBoxes.get(i).setText(sign.getText()[i]);
+                }
+            }
+            else if(oldSign.get() instanceof SmallShortSign) {
+                switchToShort();
+                shortSignInputBox.setText(((SmallShortSign) oldSign.get()).getText());
+            }
+            else {
+                switchToWide();
+                wideSignInputBox.setText(((SmallWideSign) oldSign.get()).getText());
+            }
+            if(oldSign.get().isFlipped())
+                flip();
+            colorInputBox.setSelectedColor(oldSign.get().getColor());
+        } else switchToWide();
 
 
-        WaystoneLibrary.getInstance().requestAllWaystoneNames(waystoneDropdown::setEntries);
+        WaystoneLibrary.getInstance().requestAllWaystoneNames(n -> {
+            waystoneDropdown.setEntries(n.values());
+            oldSign.flatMap(s -> (Optional<UUID>) s.getDestination()).ifPresent(id -> {
+                String name = n.get(id);
+                if(name != null && !name.equals(""))
+                    waystoneInputBox.setText(name);
+            });
+        });
         WaystoneLibrary.getInstance().updateEventDispatcher.addListener(waystoneUpdateListener);
+    }
+
+    private void flip() {
+        allImageInputBoxes.forEach(ImageInputBox::flip);
     }
 
     private ImageInputBox wideSignInputBox;
@@ -281,7 +348,7 @@ public class SignGui extends Screen {
     @Override
     public void render(int p_render_1_, int p_render_2_, float p_render_3_) {
         renderBackground();
-        String hint = I18n.format("gui.new_sign_hint");
+        String hint = I18n.format(LangKeys.newSignHint);
         font.drawStringWithShadow(hint, (width - font.getStringWidth(hint)) / 2f, (doneButton.y + doneButton.getHeight() + height - font.FONT_HEIGHT) / 2f, Colors.white);
         super.render(p_render_1_, p_render_2_, p_render_3_);
     }
@@ -371,6 +438,14 @@ public class SignGui extends Screen {
         WaystoneLibrary.getInstance().updateEventDispatcher.removeListener(waystoneUpdateListener);
     }
 
+    private void removeSign() {
+        assert oldSign.isPresent();
+        PacketHandler.sendToServer(new PostTile.PartRemovedEvent.Packet(
+            oldTilePartInfo.get(), true
+        ));
+        getMinecraft().displayGuiScreen(null);
+    }
+
     private void done() {
         if(isValidWaystone(waystoneInputBox.getText()))
             WaystoneLibrary.getInstance().requestIdFor(waystoneInputBox.getText(), this::apply);
@@ -379,66 +454,94 @@ public class SignGui extends Screen {
     }
 
     private void apply(Optional<UUID> destinationId) {
-        PostTile.TilePartInfo tilePartInfo = new PostTile.TilePartInfo(tile.getWorld().dimension.getType().getId(), tile.getPos(), UUID.randomUUID());
+        PostTile.TilePartInfo tilePartInfo = oldTilePartInfo.orElseGet(() ->
+            new PostTile.TilePartInfo(tile.getWorld().dimension.getType().getId(), tile.getPos(), UUID.randomUUID()));
+        CompoundNBT data;
         switch (selectedType) {
             case Wide:
-                PacketHandler.sendToServer(new PostTile.PartAddedEvent.Packet(
-                    tilePartInfo,
-                    SmallWideSign.METADATA.identifier,
-                    SmallWideSign.METADATA.write(
-                        new SmallWideSign(
-                            Angle.fromDegrees(0),
-                            wideSignInputBox.getText(),
-                            wideSignInputBox.isFlipped(),
-                            modelType.mainTexture,
-                            modelType.secondaryTexture,
-                            colorInputBox.getCurrentColor(),
-                            destinationId
-                        )
-                    ),
-                    new Vector3(0, localHitPos.y > 0.5f ? 0.75f : 0.25f, 0))
+                data = SmallWideSign.METADATA.write(
+                    new SmallWideSign(
+                        Angle.fromDegrees(0),
+                        wideSignInputBox.getText(),
+                        wideSignInputBox.isFlipped(),
+                        modelType.mainTexture,
+                        modelType.secondaryTexture,
+                        colorInputBox.getCurrentColor(),
+                        destinationId,
+                        itemToDropOnBreak,
+                        modelType
+                    )
                 );
+                if(oldSign.isPresent()) {
+                    PacketHandler.sendToServer(new PostTile.PartMutatedEvent.Packet(
+                        tilePartInfo, data,
+                        SmallWideSign.METADATA.identifier));
+                } else {
+                    PacketHandler.sendToServer(new PostTile.PartAddedEvent.Packet(
+                        tilePartInfo,
+                        SmallWideSign.METADATA.identifier,
+                        data,
+                        new Vector3(0, localHitPos.y > 0.5f ? 0.75f : 0.25f, 0))
+                    );
+                }
                 break;
             case Short:
-                PacketHandler.sendToServer(new PostTile.PartAddedEvent.Packet(
-                    tilePartInfo,
-                    SmallShortSign.METADATA.identifier,
-                    SmallShortSign.METADATA.write(
-                        new SmallShortSign(
-                            Angle.fromDegrees(0),
-                            shortSignInputBox.getText(),
-                            shortSignInputBox.isFlipped(),
-                            modelType.mainTexture,
-                            modelType.secondaryTexture,
-                            colorInputBox.getCurrentColor(),
-                            destinationId
-                        )
-                    ),
-                    new Vector3(0, localHitPos.y > 0.5f ? 0.75f : 0.25f, 0))
+                data = SmallShortSign.METADATA.write(
+                    new SmallShortSign(
+                        Angle.fromDegrees(0),
+                        shortSignInputBox.getText(),
+                        shortSignInputBox.isFlipped(),
+                        modelType.mainTexture,
+                        modelType.secondaryTexture,
+                        colorInputBox.getCurrentColor(),
+                        destinationId,
+                        itemToDropOnBreak,
+                        modelType
+                    )
                 );
+                if(oldSign.isPresent()) {
+                    PacketHandler.sendToServer(new PostTile.PartMutatedEvent.Packet(
+                        tilePartInfo, data,
+                        SmallShortSign.METADATA.identifier));
+                } else {
+                    PacketHandler.sendToServer(new PostTile.PartAddedEvent.Packet(
+                        tilePartInfo,
+                        SmallShortSign.METADATA.identifier,
+                        data,
+                        new Vector3(0, localHitPos.y > 0.5f ? 0.75f : 0.25f, 0))
+                    );
+                }
                 break;
             case Large:
-                PacketHandler.sendToServer(new PostTile.PartAddedEvent.Packet(
-                    tilePartInfo,
-                    LargeSign.METADATA.identifier,
-                    LargeSign.METADATA.write(
-                        new LargeSign(
-                            Angle.fromDegrees(0),
-                            new String[] {
-                                largeSignInputBoxes.get(0).getText(),
-                                largeSignInputBoxes.get(1).getText(),
-                                largeSignInputBoxes.get(2).getText(),
-                                largeSignInputBoxes.get(3).getText(),
-                            },
-                            currentSignInputBox.isFlipped(),
-                            modelType.mainTexture,
-                            modelType.secondaryTexture,
-                            colorInputBox.getCurrentColor(),
-                            destinationId
-                        )
-                    ),
-                    new Vector3(0, 0.5f, 0))
+                data = LargeSign.METADATA.write(
+                    new LargeSign(
+                        Angle.fromDegrees(0),
+                        new String[] {
+                            largeSignInputBoxes.get(0).getText(),
+                            largeSignInputBoxes.get(1).getText(),
+                            largeSignInputBoxes.get(2).getText(),
+                            largeSignInputBoxes.get(3).getText(),
+                        },
+                        currentSignInputBox.isFlipped(),
+                        modelType.mainTexture,
+                        modelType.secondaryTexture,
+                        colorInputBox.getCurrentColor(),
+                        destinationId,
+                        itemToDropOnBreak,
+                        modelType)
                 );
+                if(oldSign.isPresent()) {
+                    PacketHandler.sendToServer(new PostTile.PartMutatedEvent.Packet(
+                        tilePartInfo, data,
+                        LargeSign.METADATA.identifier));
+                } else {
+                    PacketHandler.sendToServer(new PostTile.PartAddedEvent.Packet(
+                        tilePartInfo,
+                        LargeSign.METADATA.identifier,
+                        data,
+                        new Vector3(0, 0.5f, 0))
+                    );
+                }
                 break;
         }
     }

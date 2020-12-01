@@ -36,6 +36,12 @@ public class WaystoneData {
         }
 
         @Override
+        public boolean isContainedIn(CompoundNBT compound, String keyPrefix) {
+            return compound.contains(keyPrefix + "Name") &&
+                Vector3.SERIALIZER.isContainedIn(compound, keyPrefix + "SpawnLocation");
+        }
+
+        @Override
         public void writeTo(WaystoneData data, PacketBuffer buffer) {
             buffer.writeString(data.name);
             Vector3.SERIALIZER.writeTo(data.localSpawnLocation, buffer);

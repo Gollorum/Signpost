@@ -66,6 +66,12 @@ public class WorldLocation {
         }
 
         @Override
+        public boolean isContainedIn(CompoundNBT compound, String keyPrefix) {
+            return BlockPosSerializer.INSTANCE.isContainedIn(compound, keyPrefix + "Pos") &&
+                WorldSerializer.INSTANCE.isContainedIn(compound, keyPrefix + "World");
+        }
+
+        @Override
         public WorldLocation read(CompoundNBT compound, String keyPrefix) {
             return new WorldLocation(
                 BlockPosSerializer.INSTANCE.read(compound, keyPrefix + "Pos"),

@@ -2,6 +2,7 @@ package gollorum.signpost.signtypes;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import gollorum.signpost.interactions.InteractionInfo;
+import gollorum.signpost.minecraft.block.Post;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.utils.BlockPartMetadata;
 import gollorum.signpost.utils.math.Angle;
@@ -14,6 +15,7 @@ import gollorum.signpost.utils.serialization.OptionalSerializer;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
@@ -42,33 +44,39 @@ public class SmallShortSign extends Sign<SmallShortSign> {
     public static final BlockPartMetadata<SmallShortSign> METADATA = new BlockPartMetadata<>(
         "small_short_sign",
         (sign, keyPrefix, compound) -> {
-            Angle.SERIALIZER.writeTo(sign.angle, compound, keyPrefix);
+            Angle.SERIALIZER.writeTo(sign.angle, compound, keyPrefix + "Angle");
             compound.putString(keyPrefix + "Text", sign.text);
             compound.putBoolean(keyPrefix + "Flip", sign.flip);
             compound.putString(keyPrefix + "Texture", sign.mainTexture.toString());
             compound.putString(keyPrefix + "TextureDark", sign.secondaryTexture.toString());
             compound.putInt(keyPrefix + "Color", sign.color);
             OptionalSerializer.UUID.writeTo(sign.destination, compound, "Destination");
+            OptionalSerializer.ItemStack.writeTo(sign.itemToDropOnBreak, compound, "ItemToDropOnBreak");
+            compound.putString(keyPrefix + "ModelType", sign.modelType.name());
         },
         (compound, keyPrefix) -> new SmallShortSign(
-            Angle.SERIALIZER.read(compound, keyPrefix),
+            Angle.SERIALIZER.read(compound, keyPrefix + "Angle"),
             compound.getString(keyPrefix + "Text"),
             compound.getBoolean(keyPrefix + "Flip"),
             new ResourceLocation(compound.getString(keyPrefix + "Texture")),
             new ResourceLocation(compound.getString(keyPrefix + "TextureDark")),
             compound.getInt(keyPrefix + "Color"),
-            OptionalSerializer.UUID.read(compound, "Destination")
+            OptionalSerializer.UUID.read(compound, "Destination"),
+            OptionalSerializer.ItemStack.read(compound, "ItemToDropOnBreak"),
+            Post.ModelType.valueOf(compound.getString(keyPrefix + "ModelType"))
         )
     );
 
     private String text;
 
-    public SmallShortSign(Angle angle, String text, boolean flip, ResourceLocation mainTexture, ResourceLocation secondaryTexture, int color, Optional<UUID> destination){
-        super(angle, flip, mainTexture, secondaryTexture, color, destination);
+    public SmallShortSign(Angle angle, String text, boolean flip, ResourceLocation mainTexture, ResourceLocation secondaryTexture, int color, Optional<UUID> destination, Optional<ItemStack> itemToDropOnBreak, Post.ModelType modelType){
+        super(angle, flip, mainTexture, secondaryTexture, color, destination, modelType, itemToDropOnBreak);
         this.text = text;
     }
 
     public void setText(String text) { this.text = text; }
+
+    public String getText() { return text; }
 
     @Override
     protected ResourceLocation getModel() {
@@ -83,16 +91,14 @@ public class SmallShortSign extends Sign<SmallShortSign> {
 
     private void notifyTextChanged(InteractionInfo info) {
         CompoundNBT compound = new CompoundNBT();
-        compound.putString("type", "text");
-        compound.putString("text", text);
+        compound.putString("Text", text);
         info.mutationDistributor.accept(compound);
     }
 
     @Override
     public void readMutationUpdate(CompoundNBT compound, TileEntity tile) {
-        if (compound.getString("type").equals("text")) {
-            text = compound.getString("text");
-            return;
+        if (compound.contains("Text")) {
+            setText(compound.getString("Text"));
         }
         super.readMutationUpdate(compound, tile);
     }

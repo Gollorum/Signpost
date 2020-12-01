@@ -19,6 +19,9 @@ public interface CompoundSerializable<T> extends BufferSerializable<T> {
         return ret;
     }
 
+    boolean isContainedIn(CompoundNBT compound, String keyPrefix);
+    default boolean isContainedIn(CompoundNBT compound) { return isContainedIn(compound, ""); }
+
     T read(CompoundNBT compound, String keyPrefix);
 
     default T read(CompoundNBT compound){ return read(compound, ""); }
