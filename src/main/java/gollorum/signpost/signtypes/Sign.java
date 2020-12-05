@@ -218,7 +218,7 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
             @Override
             public List<BakedQuad> getQuads(BlockState state, Direction side, Random rand) {
                 return original.getQuads(state, directionMapping.get(side), rand)
-                    .stream().map(q -> new BakedQuad(q.getVertexData(), q.getTintIndex(), directionMapping.get(q.getFace()), q.func_187508_a(), q.shouldApplyDiffuseLighting()))
+                    .stream().map(q -> new BakedQuad(q.getVertexData(), q.getTintIndex(), directionMapping.get(q.getFace()), q.getSprite(), q.applyDiffuseLighting()))
                     .collect(Collectors.toList());
             }
 
@@ -233,8 +233,8 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
             }
 
             @Override
-            public boolean func_230044_c_() {
-                return original.func_230044_c_();
+            public boolean isSideLit() {
+                return original.isSideLit();
             }
 
             @Override

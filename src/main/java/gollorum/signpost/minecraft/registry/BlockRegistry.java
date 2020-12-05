@@ -16,7 +16,7 @@ import static gollorum.signpost.Signpost.MOD_ID;
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class BlockRegistry {
 
-    private static final DeferredRegister<Block> REGISTER = new DeferredRegister<>(ForgeRegistries.BLOCKS, MOD_ID);
+    private static final DeferredRegister<Block> REGISTER = DeferredRegister.create(ForgeRegistries.BLOCKS, MOD_ID);
 
     private static final RegistryObject<Block> WAYSTONE_BLOCK =
         REGISTER.register(Waystone.REGISTRY_NAME, () -> Waystone.INSTANCE);

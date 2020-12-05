@@ -1,5 +1,6 @@
 package gollorum.signpost.minecraft.gui;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
@@ -32,17 +33,17 @@ public class DropDownSelection extends ImageButton {
     private boolean isListVisible;
     private final List list;
 
-    private int selectedIndex = -1;
-
     private final java.util.List<String> allEntries = new ArrayList<>();
     private Predicate<String> filter = b -> true;
+    private int selectedIndex;
 
     public Collection<String> getAllEntries() { return allEntries; }
 
     public Optional<String> getSelectedEntry() {
-        if(selectedIndex < 0 || selectedIndex >= list.children().size())
+        List.Entry selectedEntry = list.getSelected();
+        if(selectedEntry == null)
             return Optional.empty();
-        else return Optional.of(list.children().get(selectedIndex).text);
+        else return Optional.of(selectedEntry.text);
     }
 
     public void setFilter(Predicate<String> filter) {
@@ -107,13 +108,13 @@ public class DropDownSelection extends ImageButton {
     }
 
     @Override
-    public void render(int p_render_1_, int p_render_2_, float p_render_3_) {
-        super.render(p_render_1_, p_render_2_, p_render_3_);
-        if(isListVisible) list.render(p_render_1_, p_render_2_, p_render_3_);
+    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+        super.render(matrixStack, mouseX, mouseY, partialTicks);
+        if(isListVisible) list.render(matrixStack, mouseX, mouseY, partialTicks);
     }
 
     @Override
-    public void renderButton(int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
+    public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         // Copied from super with varying xTexStart.
         Minecraft minecraft = Minecraft.getInstance();
         minecraft.getTextureManager().bindTexture(texture.location);
@@ -121,7 +122,7 @@ public class DropDownSelection extends ImageButton {
         int yTexStart = this.isHovered() ? texture.size.height : 0;
         int xTexStart = this.isListVisible ? texture.size.width : 0;
 
-        blit(this.x, this.y, xTexStart, yTexStart, this.width, this.height, texture.fileSize.width, texture.fileSize.height);
+        blit(matrixStack, this.x, this.y, xTexStart, yTexStart, this.width, this.height, texture.fileSize.width, texture.fileSize.height);
         RenderSystem.enableDepthTest();
     }
 
@@ -137,15 +138,13 @@ public class DropDownSelection extends ImageButton {
             super(minecraft, width, height, topRight.y + rimHeight, topRight.y + height - rimHeight, 14);
             x0 = topRight.x - width;
             x1 = topRight.x;
-            renderHeader = false;
-            headerHeight = 0;
+            this.setRenderHeader(false, 0);
             this.rimHeight = rimHeight;
             updateContent();
         }
 
         public void updateContent() {
-            children().clear();
-            children().addAll(allEntries.stream().filter(filter).map(Entry::new).collect(Collectors.toList()));
+            this.replaceEntries(allEntries.stream().filter(filter).map(Entry::new).collect(Collectors.toList()));
             setScrollAmount(getScrollAmount());
         }
 
@@ -155,9 +154,9 @@ public class DropDownSelection extends ImageButton {
         }
 
         @Override
-        public void render(int mouseX, int mouseY, float p_render_3_) {
-            //Copied from super with different texture and hole and an additional left vertical stripe.
-            this.renderBackground();
+        public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+            // Copied from super with different texture and hole and an additional left vertical stripe.
+            this.renderBackground(matrixStack);
             int i = this.getScrollbarPosition();
             int j = i + 6;
             Tessellator tessellator = Tessellator.getInstance();
@@ -173,11 +172,8 @@ public class DropDownSelection extends ImageButton {
             tessellator.draw();
             int k = this.getRowLeft();
             int l = this.y0 + 4 - (int)this.getScrollAmount();
-            if (this.renderHeader) {
-                this.renderHeader(k, l, tessellator);
-            }
 
-            this.renderList(k, l, mouseX, mouseY, p_render_3_);
+            this.renderList(matrixStack, k, l, mouseX, mouseY, partialTicks);
             RenderSystem.disableDepthTest();
             this.renderStripe(new Point(x0 - 2, y0 - rimHeight), new Point(x0, y1 + rimHeight));
             this.renderStripe(new Point(x0, y0 - rimHeight), new Point(x1, y0));
@@ -228,7 +224,7 @@ public class DropDownSelection extends ImageButton {
                 tessellator.draw();
             }
 
-            this.renderDecorations(mouseX, mouseY);
+            this.renderDecorations(matrixStack, mouseX, mouseY);
             RenderSystem.enableTexture();
             RenderSystem.shadeModel(7424);
             RenderSystem.enableAlphaTest();
@@ -251,7 +247,7 @@ public class DropDownSelection extends ImageButton {
         }
 
         @Override
-        protected void renderList(int p_renderList_1_, int p_renderList_2_, int mouseX, int mouseY, float p_renderList_5_) {
+        protected void renderList(MatrixStack matrixStack, int p_renderList_1_, int p_renderList_2_, int mouseX, int mouseY, float p_renderList_5_) {
             // Copied from super with better font culling.
             int i = this.getItemCount();
             Tessellator tessellator = Tessellator.getInstance();
@@ -265,30 +261,30 @@ public class DropDownSelection extends ImageButton {
                     int j1 = this.itemHeight - 4;
                     Entry e = this.getEntry(j);
                     int k1 = this.getRowWidth();
-                    if (this.renderSelection && this.isSelectedItem(j)) {
-                        int l1 = this.x0 + this.width / 2 - k1 / 2;
-                        int i2 = this.x0 + this.width / 2 + k1 / 2;
-                        RenderSystem.disableTexture();
-                        float f = this.isFocused() ? 1.0F : 0.5F;
-                        RenderSystem.color4f(f, f, f, 1.0F);
-                        bufferbuilder.begin(7, DefaultVertexFormats.POSITION);
-                        bufferbuilder.pos(l1, i1 + j1 + 2, 0.0D).endVertex();
-                        bufferbuilder.pos(i2, i1 + j1 + 2, 0.0D).endVertex();
-                        bufferbuilder.pos(i2, i1 - 2, 0.0D).endVertex();
-                        bufferbuilder.pos(l1, i1 - 2, 0.0D).endVertex();
-                        tessellator.draw();
-                        RenderSystem.color4f(0.0F, 0.0F, 0.0F, 1.0F);
-                        bufferbuilder.begin(7, DefaultVertexFormats.POSITION);
-                        bufferbuilder.pos(l1 + 1, i1 + j1 + 1, 0.0D).endVertex();
-                        bufferbuilder.pos(i2 - 1, i1 + j1 + 1, 0.0D).endVertex();
-                        bufferbuilder.pos(i2 - 1, i1 - 1, 0.0D).endVertex();
-                        bufferbuilder.pos(l1 + 1, i1 - 1, 0.0D).endVertex();
-                        tessellator.draw();
-                        RenderSystem.enableTexture();
-                    }
+//                    if (this.renderSelection && this.isSelectedItem(j)) {
+//                        int l1 = this.x0 + this.width / 2 - k1 / 2;
+//                        int i2 = this.x0 + this.width / 2 + k1 / 2;
+//                        RenderSystem.disableTexture();
+//                        float f = this.isFocused() ? 1.0F : 0.5F;
+//                        RenderSystem.color4f(f, f, f, 1.0F);
+//                        bufferbuilder.begin(7, DefaultVertexFormats.POSITION);
+//                        bufferbuilder.pos(l1, i1 + j1 + 2, 0.0D).endVertex();
+//                        bufferbuilder.pos(i2, i1 + j1 + 2, 0.0D).endVertex();
+//                        bufferbuilder.pos(i2, i1 - 2, 0.0D).endVertex();
+//                        bufferbuilder.pos(l1, i1 - 2, 0.0D).endVertex();
+//                        tessellator.draw();
+//                        RenderSystem.color4f(0.0F, 0.0F, 0.0F, 1.0F);
+//                        bufferbuilder.begin(7, DefaultVertexFormats.POSITION);
+//                        bufferbuilder.pos(l1 + 1, i1 + j1 + 1, 0.0D).endVertex();
+//                        bufferbuilder.pos(i2 - 1, i1 + j1 + 1, 0.0D).endVertex();
+//                        bufferbuilder.pos(i2 - 1, i1 - 1, 0.0D).endVertex();
+//                        bufferbuilder.pos(l1 + 1, i1 - 1, 0.0D).endVertex();
+//                        tessellator.draw();
+//                        RenderSystem.enableTexture();
+//                    }
 
                     int j2 = this.getRowLeft();
-                    e.render(j, k, j2, k1, j1, mouseX, mouseY, this.isMouseOver(mouseX, mouseY) && Objects.equals(this.getEntryAtPosition(mouseX, mouseY), e), p_renderList_5_);
+                    e.render(matrixStack, j, k, j2, k1, j1, mouseX, mouseY, this.isMouseOver(mouseX, mouseY) && Objects.equals(this.getEntryAtPosition(mouseX, mouseY), e), p_renderList_5_);
                 }
             }
 
@@ -308,11 +304,11 @@ public class DropDownSelection extends ImageButton {
             }
 
             @Override
-            public void render(int i, int p_render_2_, int p_render_3_, int p_render_4_, int p_render_5_, int mouseX, int mouseY, boolean p_render_8_, float p_render_9_) {
+            public void render(MatrixStack matrixStack, int i, int p_render_2_, int p_render_3_, int p_render_4_, int p_render_5_, int mouseX, int mouseY, boolean p_render_8_, float p_render_9_) {
                 int brightness = 255;
                 if(this.isMouseOver(mouseX, mouseY))
                     brightness = (int) (brightness * 0.8f);
-                if(allEntries.indexOf(children().get(i).text) == selectedIndex)
+                if(allEntries.indexOf(List.this.getEntry(i).text) == selectedIndex)
                     brightness = (int) (brightness * 0.6f);
                 RenderSystem.enableAlphaTest();
                 RenderingUtil.drawString(

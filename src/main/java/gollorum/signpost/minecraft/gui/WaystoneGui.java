@@ -1,5 +1,6 @@
 package gollorum.signpost.minecraft.gui;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.events.WaystoneRenamedEvent;
 import gollorum.signpost.minecraft.events.WaystoneUpdatedEvent;
@@ -11,6 +12,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -83,12 +85,11 @@ public class WaystoneGui extends Screen {
             getCenterY() - buttonsSize.height / 2 + buttonsYOffset,
             buttonsSize.width,
             buttonsSize.height,
-            I18n.format(LangKeys.done),
-            b -> onClose()
+            new TranslationTextComponent(LangKeys.done),
+            b -> getMinecraft().displayGuiScreen(null)
         );
+        addButton(inputBox);
         addButton(doneButton);
-        inputBox.setCanLoseFocus(false);
-        inputBox.changeFocus(true);
         inputBox.setTextColor(Colors.valid);
         inputBox.setDisabledTextColour(Colors.validInactive);
         inputBox.setMaxStringLength(200);
@@ -103,7 +104,6 @@ public class WaystoneGui extends Screen {
                 doneButton.active = false;
             }
         });
-        addButton(inputBox);
         setFocusedDefault(inputBox);
     }
 
@@ -113,14 +113,9 @@ public class WaystoneGui extends Screen {
     }
 
     @Override
-    public void render(int p_render_1_, int p_render_2_, float p_render_3_) {
-        renderBackground();
-        super.render(p_render_1_, p_render_2_, p_render_3_);
-    }
-
-    @Override
-    public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
-        return inputBox.keyReleased(keyCode, scanCode, modifiers);
+    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+        renderBackground(matrixStack);
+        super.render(matrixStack, mouseX, mouseY, partialTicks);
     }
 
     @Override

@@ -5,7 +5,7 @@ import gollorum.signpost.utils.serialization.CompoundSerializable;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 
 import java.util.Objects;
 import java.util.function.Function;
@@ -14,12 +14,12 @@ public final class Vector3 {
 
     public static final Vector3 ZERO = new Vector3(0,0,0);
 
-    public static Vector3 fromVec3d(Vec3d vec){
+    public static Vector3 fromVec3d(Vector3d vec){
         return new Vector3((float)vec.x, (float)vec.y, (float)vec.z);
     }
 
-    public Vec3d asVec3d() {
-        return new Vec3d(x, y, z);
+    public Vector3d asVec3d() {
+        return new Vector3d(x, y, z);
     }
 
     public static Vector3 fromBlockPos(BlockPos vec){

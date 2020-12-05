@@ -14,7 +14,7 @@ import static gollorum.signpost.Signpost.MOD_ID;
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class TileEntityRegistry {
 
-    private static final DeferredRegister<TileEntityType<?>> REGISTER = new DeferredRegister<>(ForgeRegistries.TILE_ENTITIES, MOD_ID);
+    private static final DeferredRegister<TileEntityType<?>> REGISTER = DeferredRegister.create(ForgeRegistries.TILE_ENTITIES, MOD_ID);
 
     private static final RegistryObject<TileEntityType<PostTile>> POST =
         REGISTER.register(PostTile.REGISTRY_NAME, () -> PostTile.type);

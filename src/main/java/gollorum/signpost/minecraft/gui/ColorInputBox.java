@@ -1,5 +1,6 @@
 package gollorum.signpost.minecraft.gui;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -54,7 +55,7 @@ public class ColorInputBox extends InputBox {
     }
 
     @Override
-    public void renderButton(int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
+    public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferbuilder = tessellator.getBuffer();
         Minecraft.getInstance().getTextureManager().bindTexture(TextureResource.background.location);
@@ -68,7 +69,7 @@ public class ColorInputBox extends InputBox {
         bufferbuilder.pos(x, y, 0.0D).tex(1, 0).color(red, green, blue, 255).endVertex();
         bufferbuilder.pos(x - height, y, 0.0D).tex(0, 0).color(red, green, blue, 255).endVertex();
         tessellator.draw();
-        super.renderButton(p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
+        super.renderButton(matrixStack, mouseX, mouseY, partialTicks);
     }
 
     public void setColorResponder(@Nullable Consumer<Integer> responder) {

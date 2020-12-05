@@ -3,11 +3,12 @@ package gollorum.signpost.utils;
 import gollorum.signpost.Signpost;
 import net.minecraft.client.Minecraft;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.RegistryKey;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
-import net.minecraftforge.common.DimensionManager;
 
 import java.util.Optional;
 
@@ -20,23 +21,23 @@ public class TileEntityUtils {
         } else return Optional.empty();
     }
 
-    public static <T extends TileEntity> Optional<T> findTileEntity(int dimension, boolean isRemote, BlockPos blockPos, Class<T> c){
-        return findWorld(dimension, isRemote).flatMap(world -> findTileEntity(world, blockPos, c));
+    public static <T extends TileEntity> Optional<T> findTileEntity(ResourceLocation dimensionKeyLocation, boolean isRemote, BlockPos blockPos, Class<T> c){
+        return findWorld(dimensionKeyLocation, isRemote).flatMap(world -> findTileEntity(world, blockPos, c));
     }
 
-    public static Optional<World> findWorld(int dimension, boolean isRemote) {
-        DimensionType dimensionType = DimensionType.getById(dimension);
+    public static Optional<World> findWorld(ResourceLocation dimensionKeyLocation, boolean isRemote) {
         return isRemote
-            ? (Minecraft.getInstance().world.getDimension().getType().equals(dimensionType)
+            ? (Minecraft.getInstance().world.getDimensionKey().getLocation().equals(dimensionKeyLocation)
                 ? Optional.of(Minecraft.getInstance().world)
                 : Optional.empty())
-            : (Signpost.getServerType().isServer && dimensionType != null
-                ? Optional.ofNullable(DimensionManager.getWorld(Signpost.getServerInstance(), dimensionType, true, false))
+            : (Signpost.getServerType().isServer
+                ? Optional.ofNullable(Signpost.getServerInstance()
+                    .getWorld(RegistryKey.getOrCreateKey(Registry.WORLD_KEY, dimensionKeyLocation)))
                 : Optional.empty());
     }
 
-    public static <T extends TileEntity> Optional<T> findTileEntityClient(DimensionType dimension, BlockPos pos, Class<T> c){
-        return Minecraft.getInstance().world.getDimension().getType().equals(dimension)
+    public static <T extends TileEntity> Optional<T> findTileEntityClient(ResourceLocation dimensionKeyLocation, BlockPos pos, Class<T> c){
+        return Minecraft.getInstance().world.getDimensionKey().getLocation().equals(dimensionKeyLocation)
             ? findTileEntity(Minecraft.getInstance().world, pos, c)
             : Optional.empty();
     }

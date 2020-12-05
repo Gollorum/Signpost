@@ -18,7 +18,7 @@ public class ItemRegistry {
 
     public static final ItemGroup ITEM_GROUP = ItemGroup.TRANSPORTATION;
 
-    private static final DeferredRegister<Item> REGISTER = new DeferredRegister<>(ForgeRegistries.ITEMS, MOD_ID);
+    private static final DeferredRegister<Item> REGISTER = DeferredRegister.create(ForgeRegistries.ITEMS, MOD_ID);
 
     private static final RegistryObject<Item> WAYSTONE_ITEM =
         REGISTER.register(Waystone.REGISTRY_NAME,

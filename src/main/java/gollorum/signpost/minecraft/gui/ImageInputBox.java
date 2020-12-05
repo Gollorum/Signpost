@@ -1,5 +1,6 @@
 package gollorum.signpost.minecraft.gui;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -46,11 +47,11 @@ public final class ImageInputBox extends InputBox {
     }
 
     @Override
-    public void renderButton(int p_render_1_, int p_render_2_, float p_render_3_) {
+    public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         RenderSystem.color4f(1.0f, 1.0f, 1.0f, 1.0f);
         Minecraft.getInstance().getTextureManager().bindTexture(texture.location);
-        blit(backgroundRect.point.x, backgroundRect.point.y, 0, 0, backgroundRect.width, backgroundRect.height, isFlipped ? -backgroundRect.width : backgroundRect.width, backgroundRect.height);
-        super.renderButton(p_render_1_, p_render_2_, p_render_3_);
+        blit(matrixStack, backgroundRect.point.x, backgroundRect.point.y, 0, 0, backgroundRect.width, backgroundRect.height, isFlipped ? -backgroundRect.width : backgroundRect.width, backgroundRect.height);
+        super.renderButton(matrixStack, mouseX, mouseY, partialTicks);
     }
 
     private boolean isFlipped = false;

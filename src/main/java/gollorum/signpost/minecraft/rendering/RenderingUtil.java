@@ -9,10 +9,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.client.renderer.model.Material;
+import net.minecraft.client.renderer.model.RenderMaterial;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.util.math.vector.TransformationMatrix;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.SimpleModelTransform;
 import net.minecraftforge.common.util.Lazy;
@@ -32,7 +34,7 @@ public class RenderingUtil {
         return ModelLoader.instance().getBakedModel(
             location,
             new SimpleModelTransform(TransformationMatrix.identity()),
-            Material::getSprite);
+            RenderMaterial::getSprite);
     }
 
     private static final Map<ResourceLocation, Map<ResourceLocation, Lazy<IBakedModel>>> cachedModels = new ConcurrentHashMap<>();

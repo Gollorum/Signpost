@@ -18,8 +18,9 @@ public class Teleport {
         WaystoneLocationData waystoneData = WaystoneLibrary.getInstance().getLocationData(waystoneId);
         waystoneData.blockLocation.world.mapLeft(Optional::of)
             .leftOr(i -> TileEntityUtils.findWorld(i, false))
-        .ifPresent(world -> {
-            if(!(world instanceof ServerWorld)) return;
+        .ifPresent(unspecificWorld -> {
+            if(!(unspecificWorld instanceof ServerWorld)) return;
+            ServerWorld world = (ServerWorld) unspecificWorld;
             Vector3 location = waystoneData.spawnPosition;
             Vector3 diff = Vector3.fromBlockPos(waystoneData.blockLocation.blockPos).add(new Vector3(0.5f, 0.5f, 0.5f))
                 .subtract(location.withY(y -> y + player.getEyeHeight()));
@@ -28,8 +29,8 @@ public class Teleport {
                 diff.x, diff.z
             );
             Angle pitch = Angle.fromRadians((float) (Math.PI / 2 + Math.atan(Math.sqrt(diff.x * diff.x + diff.z * diff.z) / diff.y)));
-            if(!player.dimension.equals(world.dimension.getType()))
-                player.changeDimension(world.dimension.getType(), new ITeleporter() {});
+            if(!player.world.getDimensionType().equals(world.getDimensionType()))
+                player.changeDimension(world, new ITeleporter() {});
             player.rotationYaw = yaw.degrees();
             player.rotationPitch = pitch.degrees();
             player.setPositionAndUpdate(location.x, location.y, location.z);

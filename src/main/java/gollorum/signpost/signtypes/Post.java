@@ -14,8 +14,6 @@ import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.Matrix4f;
-import net.minecraft.client.renderer.Quaternion;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
@@ -26,6 +24,8 @@ import net.minecraft.item.SignItem;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.util.math.vector.Quaternion;
 import net.minecraftforge.common.util.Lazy;
 
 import java.util.Collection;
@@ -75,7 +75,7 @@ public class Post implements BlockPart<Post> {
                     Optional.of(new ItemStack(heldItem.getItem(), 1))
                 ));
             }
-            info.player.inventory.clearMatchingItems(i -> i.getItem().equals(heldItem.getItem()), 1);
+            info.player.inventory.func_234564_a_(i -> i.getItem().equals(heldItem.getItem()), 1, info.player.container.func_234641_j_());
             return InteractionResult.Accepted;
         } else return InteractionResult.Ignored;
     }

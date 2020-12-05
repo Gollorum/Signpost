@@ -6,9 +6,9 @@ import gollorum.signpost.utils.serialization.WorldSerializer;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -23,9 +23,9 @@ public class WorldLocation {
     }
 
     public final BlockPos blockPos;
-    public final Either<World, Integer> world;
+    public final Either<World, ResourceLocation> world;
 
-    public WorldLocation(BlockPos blockPos, Either<World, Integer> world) {
+    public WorldLocation(BlockPos blockPos, Either<World, ResourceLocation> world) {
         this.blockPos = blockPos;
         this.world = world;
     }
@@ -35,9 +35,9 @@ public class WorldLocation {
         this.world = Either.left(world);
     }
 
-    public WorldLocation(BlockPos blockPos, DimensionType dimension) {
+    public WorldLocation(BlockPos blockPos, ResourceLocation dimensionKeyLocation) {
         this.blockPos = blockPos;
-        this.world = Either.right(dimension.getId());
+        this.world = Either.right(dimensionKeyLocation);
     }
 
     @Override
@@ -46,13 +46,13 @@ public class WorldLocation {
         if (o == null || getClass() != o.getClass()) return false;
         WorldLocation that = (WorldLocation) o;
         return blockPos.equals(that.blockPos) &&
-            world.rightOr(w -> w.dimension.getType().getId())
-                .equals(that.world.rightOr(w -> w.dimension.getType().getId()));
+            world.rightOr(w -> w.getDimensionKey().getLocation())
+                .equals(that.world.rightOr(w -> w.getDimensionKey().getLocation()));
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(blockPos, world.rightOr(w -> w.dimension.getType().getId()));
+        return Objects.hash(blockPos, world.rightOr(w -> w.getDimensionKey().getLocation()));
     }
 
     public static final Serializer SERIALIZER = new Serializer();

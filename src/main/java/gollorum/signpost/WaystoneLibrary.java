@@ -471,7 +471,7 @@ public class WaystoneLibrary {
                 CompoundNBT entryCompound = new CompoundNBT();
                 entryCompound.putUniqueId("Player", entry.getKey());
                 ListNBT known = new ListNBT();
-                known.addAll(entry.getValue().stream().map(NBTUtil::writeUniqueId).collect(Collectors.toSet()));
+                known.addAll(entry.getValue().stream().map(NBTUtil::func_240626_a_).collect(Collectors.toSet()));
                 entryCompound.put("DiscoveredWaystones", known);
                 return entryCompound;
             }).collect(Collectors.toSet())

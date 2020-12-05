@@ -16,6 +16,7 @@ import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.BlockPosSerializer;
 import gollorum.signpost.utils.serialization.BufferSerializable;
 import io.netty.util.internal.ConcurrentSet;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.AxeItem;
@@ -27,13 +28,14 @@ import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.shapes.IBooleanFunction;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.fml.network.NetworkEvent;
 
@@ -129,11 +131,11 @@ public class PostTile extends TileEntity {
     }
 
     public Optional<TraceResult> trace(PlayerEntity player){
-        Vec3d head = player.getPositionVector();
+        Vector3d head = player.getPositionVec();
         head = head.add(0, player.getEyeHeight(), 0);
         if (player.isCrouching())
             head = head.subtract(0, 0.08, 0);
-        Vec3d look = player.getLookVec();
+        Vector3d look = player.getLookVec();
         Ray ray = new Ray(Vector3.fromVec3d(head).subtract(Vector3.fromBlockPos(pos)), Vector3.fromVec3d(look));
 
         Optional<Tuple<UUID, Float>> closestTrace = Optional.empty();
@@ -171,8 +173,8 @@ public class PostTile extends TileEntity {
     }
 
     @Override
-    public void read(CompoundNBT compound) {
-        super.read(compound);
+    public void read(BlockState blockState, CompoundNBT compound) {
+        super.read(blockState, compound);
         readSelf(compound);
     }
 
@@ -200,8 +202,8 @@ public class PostTile extends TileEntity {
     }
 
     @Override
-    public void handleUpdateTag(CompoundNBT compound) {
-        super.handleUpdateTag(compound);
+    public void handleUpdateTag(BlockState blockState, CompoundNBT compound) {
+        super.handleUpdateTag(blockState, compound);
         readSelf(compound);
     }
 
@@ -239,18 +241,18 @@ public class PostTile extends TileEntity {
     }
 
     public static class TilePartInfo {
-        public final int dimensionId;
+        public final ResourceLocation dimensionKey;
         public final BlockPos pos;
         public final UUID identifier;
 
         public TilePartInfo(TileEntity tile, UUID identifier) {
-            this.dimensionId = tile.getWorld().dimension.getType().getId();
+            this.dimensionKey = tile.getWorld().getDimensionKey().getLocation();
             this.pos = tile.getPos();
             this.identifier = identifier;
         }
 
-        public TilePartInfo(int dimensionId, BlockPos pos, UUID identifier) {
-            this.dimensionId = dimensionId;
+        public TilePartInfo(ResourceLocation dimensionKey, BlockPos pos, UUID identifier) {
+            this.dimensionKey = dimensionKey;
             this.pos = pos;
             this.identifier = identifier;
         }
@@ -261,7 +263,7 @@ public class PostTile extends TileEntity {
 
             @Override
             public void writeTo(TilePartInfo tilePartInfo, PacketBuffer buffer) {
-                buffer.writeInt(tilePartInfo.dimensionId);
+                buffer.writeResourceLocation(tilePartInfo.dimensionKey);
                 BlockPosSerializer.INSTANCE.writeTo(tilePartInfo.pos, buffer);
                 buffer.writeUniqueId(tilePartInfo.identifier);
             }
@@ -269,7 +271,7 @@ public class PostTile extends TileEntity {
             @Override
             public TilePartInfo readFrom(PacketBuffer buffer) {
                 return new TilePartInfo(
-                    buffer.readInt(),
+                    buffer.readResourceLocation(),
                     BlockPosSerializer.INSTANCE.readFrom(buffer),
                     buffer.readUniqueId()
                 );
@@ -333,7 +335,7 @@ public class PostTile extends TileEntity {
             boolean isRemote = context.getDirection().getReceptionSide().isClient();
             context.enqueueWork(() ->
                 TileEntityUtils.findTileEntity(
-                    message.info.dimensionId,
+                    message.info.dimensionKey,
                     isRemote,
                     message.info.pos,
                     PostTile.class
@@ -381,7 +383,7 @@ public class PostTile extends TileEntity {
         public void handle(Packet message, Supplier<NetworkEvent.Context> context) {
             context.get().enqueueWork(() ->
                 TileEntityUtils.findTileEntity(
-                    message.info.dimensionId,
+                    message.info.dimensionKey,
                     context.get().getDirection().getReceptionSide().isClient(),
                     message.info.pos,
                     PostTile.class
@@ -450,7 +452,7 @@ public class PostTile extends TileEntity {
         public void handle(Packet message, Supplier<NetworkEvent.Context> context) {
             context.get().enqueueWork(() ->
                 TileEntityUtils.findTileEntity(
-                    message.info.dimensionId,
+                    message.info.dimensionKey,
                     context.get().getDirection().getReceptionSide().isClient(),
                     message.info.pos,
                     PostTile.class

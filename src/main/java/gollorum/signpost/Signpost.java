@@ -10,7 +10,7 @@ import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.Delay;
 import gollorum.signpost.utils.ServerType;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.Dimension;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;
@@ -47,46 +47,54 @@ public class Signpost {
     public Signpost() {
         IEventBus forgeBus = MinecraftForge.EVENT_BUS;
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
-        forgeBus.register(this);
-        modBus.register(this);
+        forgeBus.register(new ForgeEvents());
+        modBus.register(new ModBusEvents());
         BlockEventListener.register(forgeBus);
         BlockRegistry.register(modBus);
         ItemRegistry.register(modBus);
         TileEntityRegistry.register(modBus);
-        Delay.register(modBus);
+        Delay.register(forgeBus);
     }
 
-    @SubscribeEvent
-    public void setup(final FMLCommonSetupEvent event) {
-        PacketHandler.initialize();
+    private class ModBusEvents {
+
+        @SubscribeEvent
+        public void setup(final FMLCommonSetupEvent event) {
+            PacketHandler.initialize();
+        }
+
+        @SubscribeEvent
+        public void doClientStuff(final FMLClientSetupEvent event) {
+            LOGGER.info("Got game settings {}", event.getMinecraftSupplier().get().gameSettings);
+            ClientRegistry.bindTileEntityRenderer(PostTile.type, PostRenderer::new);
+        }
     }
 
-    @SubscribeEvent
-    public void serverAboutToStart(FMLServerAboutToStartEvent e) {
-        serverInstance = e.getServer();
-        WaystoneLibrary.initialize();
-    }
+    private class ForgeEvents {
 
-    @SubscribeEvent
-    public void doClientStuff(final FMLClientSetupEvent event) {
-        LOGGER.info("Got game settings {}", event.getMinecraftSupplier().get().gameSettings);
-        ClientRegistry.bindTileEntityRenderer(PostTile.type, PostRenderer::new);
-    }
+        @SubscribeEvent
+        public void serverAboutToStart(FMLServerAboutToStartEvent e) {
+            serverInstance = e.getServer();
+            WaystoneLibrary.initialize();
+        }
 
-    @SubscribeEvent
-    public void onServerStarting(FMLServerStartingEvent event) { }
+        @SubscribeEvent
+        public void onServerStarting(FMLServerStartingEvent event) {
+        }
 
-    @SubscribeEvent
-    public void onServerStopped(FMLServerStoppedEvent event) {
-        serverInstance = null;
-    }
+        @SubscribeEvent
+        public void onServerStopped(FMLServerStoppedEvent event) {
+            serverInstance = null;
+        }
 
-    @SubscribeEvent
-    public void onWorldLoad(WorldEvent.Load event) {
-        if(event.getWorld() instanceof ServerWorld &&
-            event.getWorld().getDimension().getType().equals(DimensionType.OVERWORLD) &&
-            !WaystoneLibrary.getInstance().hasStorageBeenSetup()
-        ) WaystoneLibrary.getInstance().setupStorage((ServerWorld) event.getWorld());
+        @SubscribeEvent
+        public void onWorldLoad(WorldEvent.Load event) {
+            if (event.getWorld() instanceof ServerWorld &&
+                ((ServerWorld) event.getWorld()).getDimensionKey().equals(Dimension.OVERWORLD) &&
+                !WaystoneLibrary.getInstance().hasStorageBeenSetup()
+            ) WaystoneLibrary.getInstance().setupStorage((ServerWorld) event.getWorld());
+        }
+
     }
 
 }

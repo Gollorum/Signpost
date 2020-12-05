@@ -2,6 +2,8 @@ package gollorum.signpost.minecraft.gui;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.mojang.blaze3d.matrix.MatrixStack;
+import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.block.Post;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
@@ -22,6 +24,7 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -133,12 +136,12 @@ public class SignGui extends Screen {
             int buttonsWidth = (int) (doneRect.width * 0.75);
             doneButton = new Button(
                 getCenterX() + centerGap / 2, doneRect.point.y, buttonsWidth, doneRect.height,
-                I18n.format(LangKeys.done),
+                new TranslationTextComponent(LangKeys.done),
                 b -> done()
             );
             Button removeSignButton = new Button(
                 getCenterX() - centerGap / 2 - buttonsWidth, doneRect.point.y, buttonsWidth, doneRect.height,
-                I18n.format(LangKeys.removeSign),
+                new TranslationTextComponent(LangKeys.removeSign),
                 b -> removeSign()
             );
             removeSignButton.setFGColor(Colors.invalid);
@@ -146,7 +149,7 @@ public class SignGui extends Screen {
         } else {
             doneButton = new Button(
                 doneRect.point.x, doneRect.point.y, doneRect.width, doneRect.height,
-                I18n.format(LangKeys.done),
+                new TranslationTextComponent(LangKeys.done),
                 b -> done()
             );
         }
@@ -169,7 +172,7 @@ public class SignGui extends Screen {
         addButton(waystoneDropdown);
         waystoneInputBox = new ImageInputBox(font,
             new Rect(
-                new Point(waystoneDropdown.x - 10, waystoneDropdown.y + waystoneDropdown.getHeight() / 2),
+                new Point(waystoneDropdown.x - 10, waystoneDropdown.y + waystoneDropdown.getHeightRealms() / 2),
                 new TextureSize((int)((waystoneNameTexture.size.width - 4) * waystoneBoxScale), (int)((waystoneNameTexture.size.height - 4) * waystoneBoxScale)),
                 Rect.XAlignment.Right, Rect.YAlignment.Center),
             new Rect(
@@ -346,11 +349,11 @@ public class SignGui extends Screen {
     }
 
     @Override
-    public void render(int p_render_1_, int p_render_2_, float p_render_3_) {
-        renderBackground();
+    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+        renderBackground(matrixStack);
         String hint = I18n.format(LangKeys.newSignHint);
-        font.drawStringWithShadow(hint, (width - font.getStringWidth(hint)) / 2f, (doneButton.y + doneButton.getHeight() + height - font.FONT_HEIGHT) / 2f, Colors.white);
-        super.render(p_render_1_, p_render_2_, p_render_3_);
+        font.drawStringWithShadow(matrixStack, hint, (width - font.getStringWidth(hint)) / 2f, (doneButton.y + doneButton.getHeightRealms() + height - font.FONT_HEIGHT) / 2f, Colors.white);
+        super.render(matrixStack, mouseX, mouseY, partialTicks);
     }
 
     private int getCenterX() { return this.width / 2; }
@@ -434,15 +437,15 @@ public class SignGui extends Screen {
     @Override
     public void onClose() {
         super.onClose();
-        done();
         WaystoneLibrary.getInstance().updateEventDispatcher.removeListener(waystoneUpdateListener);
     }
 
     private void removeSign() {
-        assert oldSign.isPresent();
-        PacketHandler.sendToServer(new PostTile.PartRemovedEvent.Packet(
-            oldTilePartInfo.get(), true
-        ));
+        if(oldSign.isPresent())
+            PacketHandler.sendToServer(new PostTile.PartRemovedEvent.Packet(
+                oldTilePartInfo.get(), true
+            ));
+        else Signpost.LOGGER.error("Tried to remove a sign, but the necessary information was missing.");
         getMinecraft().displayGuiScreen(null);
     }
 
@@ -455,7 +458,7 @@ public class SignGui extends Screen {
 
     private void apply(Optional<UUID> destinationId) {
         PostTile.TilePartInfo tilePartInfo = oldTilePartInfo.orElseGet(() ->
-            new PostTile.TilePartInfo(tile.getWorld().dimension.getType().getId(), tile.getPos(), UUID.randomUUID()));
+            new PostTile.TilePartInfo(tile.getWorld().getDimensionKey().getLocation(), tile.getPos(), UUID.randomUUID()));
         CompoundNBT data;
         switch (selectedType) {
             case Wide:
