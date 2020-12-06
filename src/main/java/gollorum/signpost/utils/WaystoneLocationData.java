@@ -6,24 +6,24 @@ import net.minecraft.nbt.CompoundNBT;
 
 public class WaystoneLocationData {
 
-    public final WorldLocation blockLocation;
-    public final Vector3 spawnPosition;
+    public final WorldLocation block;
+    public final Vector3 spawn;
 
-    public WaystoneLocationData(WorldLocation blockLocation, Vector3 spawnPosition) {
-        this.blockLocation = blockLocation;
-        this.spawnPosition = spawnPosition;
+    public WaystoneLocationData(WorldLocation block, Vector3 spawn) {
+        this.block = block;
+        this.spawn = spawn;
     }
 
-    public static class Serializer implements CompoundSerializable<WaystoneLocationData> {
+    public static final Serializer SERIALIZER = new Serializer();
 
-        public static final Serializer INSTANCE = new Serializer();
+    public static class Serializer implements CompoundSerializable<WaystoneLocationData> {
 
         private Serializer() {}
 
         @Override
         public void writeTo(WaystoneLocationData data, CompoundNBT compound, String keyPrefix) {
-            WorldLocation.SERIALIZER.writeTo(data.blockLocation, compound, keyPrefix + "Block");
-            Vector3.SERIALIZER.writeTo(data.spawnPosition, compound, keyPrefix + "Spawn");
+            WorldLocation.SERIALIZER.writeTo(data.block, compound, keyPrefix + "Block");
+            Vector3.SERIALIZER.writeTo(data.spawn, compound, keyPrefix + "Spawn");
         }
 
         @Override

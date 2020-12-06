@@ -11,24 +11,6 @@ public final class OptionalSerializer<T> implements CompoundSerializable<Optiona
 
     public static final String key = "Value";
 
-    public static final OptionalSerializer<java.util.UUID> UUID = new OptionalSerializer<>(
-        new CompoundSerializable<java.util.UUID>() {
-            @Override
-            public void writeTo(java.util.UUID uuid, CompoundNBT compound, String keyPrefix) {
-                compound.putUniqueId(keyPrefix, uuid);
-            }
-
-            @Override
-            public boolean isContainedIn(CompoundNBT compound, String keyPrefix) {
-                return compound.hasUniqueId(keyPrefix);
-            }
-
-            @Override
-            public java.util.UUID read(CompoundNBT compound, String keyPrefix) {
-                return compound.getUniqueId(keyPrefix);
-            }
-        });
-
     public static final OptionalSerializer<ItemStack> ItemStack = new OptionalSerializer<>(
         new CompoundSerializable<net.minecraft.item.ItemStack>() {
             @Override

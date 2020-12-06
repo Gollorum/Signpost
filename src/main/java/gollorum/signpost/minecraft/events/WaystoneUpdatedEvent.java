@@ -40,7 +40,7 @@ public abstract class WaystoneUpdatedEvent {
         @Override
         public void writeTo(WaystoneUpdatedEvent event, PacketBuffer buffer) {
             buffer.writeEnumValue(event.getType());
-            WaystoneLocationData.Serializer.INSTANCE.writeTo(event.location, buffer);
+            WaystoneLocationData.SERIALIZER.writeTo(event.location, buffer);
             buffer.writeString(event.name);
             if(event instanceof WaystoneRenamedEvent)
                 buffer.writeString(((WaystoneRenamedEvent)event).oldName);
@@ -51,7 +51,7 @@ public abstract class WaystoneUpdatedEvent {
         @Override
         public WaystoneUpdatedEvent readFrom(PacketBuffer buffer) {
             Type type = buffer.readEnumValue(Type.class);
-            WaystoneLocationData location = WaystoneLocationData.Serializer.INSTANCE.readFrom(buffer);
+            WaystoneLocationData location = WaystoneLocationData.SERIALIZER.readFrom(buffer);
             String name = buffer.readString();
             switch (type){
                 case Added: return new WaystoneAddedEvent(location, name);

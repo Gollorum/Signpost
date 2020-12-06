@@ -1,12 +1,14 @@
 package gollorum.signpost.signtypes;
 
-import gollorum.signpost.Teleport;
+import gollorum.signpost.*;
 import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.Post;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.gui.LangKeys;
 import gollorum.signpost.minecraft.gui.SignGui;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.utils.BlockPart;
+import gollorum.signpost.utils.WaystoneData;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Intersectable;
 import gollorum.signpost.utils.math.geometry.Ray;
@@ -19,12 +21,15 @@ import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.model.ItemOverrideList;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Lazy;
 
@@ -38,16 +43,16 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
     protected boolean flip;
     protected ResourceLocation mainTexture;
     protected ResourceLocation secondaryTexture;
-    protected Optional<UUID> destination;
+    protected Optional<WaystoneHandle> destination;
     protected Post.ModelType modelType;
-    public Optional<UUID> getDestination() { return destination; }
+    public Optional<WaystoneHandle> getDestination() { return destination; }
 
     protected TransformedBox transformedBounds;
     protected Lazy<IBakedModel> model;
 
     public Optional<ItemStack> itemToDropOnBreak;
 
-    public Sign(Angle angle, boolean flip, ResourceLocation mainTexture, ResourceLocation secondaryTexture, int color, Optional<UUID> destination, Post.ModelType modelType, Optional<ItemStack> itemToDropOnBreak) {
+    public Sign(Angle angle, boolean flip, ResourceLocation mainTexture, ResourceLocation secondaryTexture, int color, Optional<WaystoneHandle> destination, Post.ModelType modelType, Optional<ItemStack> itemToDropOnBreak) {
         this.color = color;
         this.destination = destination;
         this.modelType = modelType;
@@ -71,7 +76,7 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
         this.color = color;
     }
 
-    public void setDestination(Optional<UUID> destination) {
+    public void setDestination(Optional<WaystoneHandle> destination) {
         this.destination = destination;
     }
 
@@ -104,17 +109,29 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
 
     @Override
     public InteractionResult interact(InteractionInfo info) {
-        // TODO Implement.
         if (!info.isRemote) {
             if(holdsAngleTool(info)) {
                 setAngle(angle.add(Angle.fromDegrees(15)));
                 notifyAngleChanged(info);
             } else if(!holdsEditTool(info))
-                destination.ifPresent(uuid -> Teleport.toWaystone(uuid, info.player));
+                tryTeleport(info.player);
         } else if(holdsEditTool(info)) {
-            Minecraft.getInstance().displayGuiScreen(new SignGui(info.tile, modelType, this, new PostTile.TilePartInfo(info.tile, info.traceResult.id)));
+            Minecraft.getInstance().displayGuiScreen(
+                new SignGui(info.tile, modelType, this, new PostTile.TilePartInfo(info.tile, info.traceResult.id)));
         }
         return InteractionResult.Accepted;
+    }
+
+    private void tryTeleport(PlayerEntity player) {
+        if(destination.isPresent())
+            if(WaystoneLibrary.getInstance().isDiscovered(new PlayerHandle(player), destination.get()))
+                Teleport.toWaystone(destination.get(), player);
+            else player.sendMessage(
+                new TranslationTextComponent(LangKeys.notDiscovered, WaystoneLibrary.getInstance().getData(destination.get()).name),
+                Util.DUMMY_UUID);
+        else {
+            player.sendMessage(new TranslationTextComponent(LangKeys.noTeleport), Util.DUMMY_UUID);
+        }
     }
 
     private boolean holdsAngleTool(InteractionInfo info) {
@@ -164,8 +181,9 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
 
         if(compound.contains("Flip")) setFlip(compound.getBoolean("Flip"));
         if(compound.contains("Color")) setColor(compound.getInt("Color"));
-        if(OptionalSerializer.UUID.isContainedIn(compound, "Destination"))
-            setDestination(OptionalSerializer.UUID.read(compound, "Destination"));
+        OptionalSerializer<WaystoneHandle> destinationSerializer = new OptionalSerializer<>(WaystoneHandle.SERIALIZER);
+        if(destinationSerializer.isContainedIn(compound, "Destination"))
+            setDestination(destinationSerializer.read(compound, "Destination"));
         if(OptionalSerializer.ItemStack.isContainedIn(compound, "ItemToDropOnBreak")) {
             setItemToDropOnBreak(OptionalSerializer.ItemStack.read(compound, "ItemToDropOnBreak"));
         }

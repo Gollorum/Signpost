@@ -9,6 +9,10 @@
   "block.signpost.post_spruce": "Spruce Signpost",
   "block.signpost.post_stone": "Stone Signpost",
 
-  "gui.new_sign_hint": "Use a sign item on the post to attach it. This will open this screen.",
-  "gui.remove_sign": "Remove sign"
+  "gui.signpost.new_sign_hint": "Use a sign item on the post to attach it. This will open this screen.",
+  "gui.signpost.remove_sign": "Remove sign",
+
+  "signpost.discovered": "You discovered {0}",
+  "signpost.notDiscovered": "You have not yet discovered {0}",
+  "signpost.noTeleport": "This sign has no destination"
 }

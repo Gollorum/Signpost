@@ -13,16 +13,16 @@ import java.util.UUID;
 
 public class Teleport {
 
-    public static void toWaystone(UUID waystoneId, PlayerEntity player){
+    public static void toWaystone(WaystoneHandle waystone, PlayerEntity player){
         assert Signpost.getServerType().isServer;
-        WaystoneLocationData waystoneData = WaystoneLibrary.getInstance().getLocationData(waystoneId);
-        waystoneData.blockLocation.world.mapLeft(Optional::of)
+        WaystoneLocationData waystoneData = WaystoneLibrary.getInstance().getLocationData(waystone);
+        waystoneData.block.world.mapLeft(Optional::of)
             .leftOr(i -> TileEntityUtils.findWorld(i, false))
         .ifPresent(unspecificWorld -> {
             if(!(unspecificWorld instanceof ServerWorld)) return;
             ServerWorld world = (ServerWorld) unspecificWorld;
-            Vector3 location = waystoneData.spawnPosition;
-            Vector3 diff = Vector3.fromBlockPos(waystoneData.blockLocation.blockPos).add(new Vector3(0.5f, 0.5f, 0.5f))
+            Vector3 location = waystoneData.spawn;
+            Vector3 diff = Vector3.fromBlockPos(waystoneData.block.blockPos).add(new Vector3(0.5f, 0.5f, 0.5f))
                 .subtract(location.withY(y -> y + player.getEyeHeight()));
             Angle yaw = Angle.between(
                 0, 1,

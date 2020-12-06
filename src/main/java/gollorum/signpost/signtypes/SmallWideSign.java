@@ -1,6 +1,7 @@
 package gollorum.signpost.signtypes;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.Post;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
@@ -52,7 +53,7 @@ public class SmallWideSign extends Sign<SmallWideSign> {
             compound.putString(keyPrefix + "Texture", sign.mainTexture.toString());
             compound.putString(keyPrefix + "TextureDark", sign.secondaryTexture.toString());
             compound.putInt(keyPrefix + "Color", sign.color);
-            OptionalSerializer.UUID.writeTo(sign.destination, compound, "Destination");
+            new OptionalSerializer(WaystoneHandle.SERIALIZER).writeTo(sign.destination, compound, "Destination");
             OptionalSerializer.ItemStack.writeTo(sign.itemToDropOnBreak, compound, "ItemToDropOnBreak");
             compound.putString(keyPrefix + "ModelType", sign.modelType.name());
         },
@@ -63,7 +64,7 @@ public class SmallWideSign extends Sign<SmallWideSign> {
             new ResourceLocation(compound.getString(keyPrefix + "Texture")),
             new ResourceLocation(compound.getString(keyPrefix + "TextureDark")),
             compound.getInt(keyPrefix + "Color"),
-            OptionalSerializer.UUID.read(compound, "Destination"),
+            new OptionalSerializer(WaystoneHandle.SERIALIZER).read(compound, "Destination"),
             OptionalSerializer.ItemStack.read(compound, "ItemToDropOnBreak"),
             Post.ModelType.valueOf(compound.getString(keyPrefix + "ModelType"))
         )
@@ -71,7 +72,17 @@ public class SmallWideSign extends Sign<SmallWideSign> {
 
     private String text;
 
-    public SmallWideSign(Angle angle, String text, boolean flip, ResourceLocation mainTexture, ResourceLocation secondaryTexture, int color, Optional<UUID> destination, Optional<ItemStack> itemToDropOnBreak, Post.ModelType modelType){
+    public SmallWideSign(
+        Angle angle,
+        String text,
+        boolean flip,
+        ResourceLocation mainTexture,
+        ResourceLocation secondaryTexture,
+        int color,
+        Optional<WaystoneHandle> destination,
+        Optional<ItemStack> itemToDropOnBreak,
+        Post.ModelType modelType
+    ){
         super(angle, flip, mainTexture, secondaryTexture, color, destination, modelType, itemToDropOnBreak);
         this.text = text;
     }

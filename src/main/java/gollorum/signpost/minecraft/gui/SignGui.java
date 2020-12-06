@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import gollorum.signpost.Signpost;
+import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.block.Post;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
@@ -279,7 +280,7 @@ public class SignGui extends Screen {
 
         WaystoneLibrary.getInstance().requestAllWaystoneNames(n -> {
             waystoneDropdown.setEntries(n.values());
-            oldSign.flatMap(s -> (Optional<UUID>) s.getDestination()).ifPresent(id -> {
+            oldSign.flatMap(s -> (Optional<WaystoneHandle>) s.getDestination()).ifPresent(id -> {
                 String name = n.get(id);
                 if(name != null && !name.equals(""))
                     waystoneInputBox.setText(name);
@@ -456,7 +457,7 @@ public class SignGui extends Screen {
         getMinecraft().displayGuiScreen(null);
     }
 
-    private void apply(Optional<UUID> destinationId) {
+    private void apply(Optional<WaystoneHandle> destinationId) {
         PostTile.TilePartInfo tilePartInfo = oldTilePartInfo.orElseGet(() ->
             new PostTile.TilePartInfo(tile.getWorld().getDimensionKey().getLocation(), tile.getPos(), UUID.randomUUID()));
         CompoundNBT data;
