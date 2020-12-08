@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "Signpost",
+  "pattern": [
+    "s",
+    "s",
+    "b"
+  ],
+  "key": {
+    "s": {
+      "item": "minecraft:oak_sign"
+    },
+    "b": {
+      "tag": "minecraft:oak_logs"
+    }
+  },
+  "result": {
+    "item": "signpost:post_oak",
+    "count": 2
+  }
+}

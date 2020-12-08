@@ -167,8 +167,8 @@ public class SignGui extends Screen {
             textIn -> {
                 waystoneInputBox.setText(textIn);
                 waystoneDropdown.toggle();
-            }
-        );
+            },
+            false);
         waystoneDropdown.setEntries(new HashSet<>());
         addButton(waystoneDropdown);
         waystoneInputBox = new ImageInputBox(font,

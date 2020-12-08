@@ -36,6 +36,7 @@ public class DropDownSelection extends ImageButton {
     private final java.util.List<String> allEntries = new ArrayList<>();
     private Predicate<String> filter = b -> true;
     private int selectedIndex;
+    private final boolean shouldHighlightSelected;
 
     public Collection<String> getAllEntries() { return allEntries; }
 
@@ -60,16 +61,26 @@ public class DropDownSelection extends ImageButton {
         int yOffset,
         Consumer<List> onShow,
         Consumer<List> onHide,
-        Consumer<String> onSelectionChanged
-    ) { this(fontRenderer, new Rect(position, size, xAlignment, yAlignment), width, height, yOffset, onShow, onHide, onSelectionChanged); }
+        Consumer<String> onSelectionChanged,
+        boolean shouldHighlightSelected
+    ) { this(
+        fontRenderer,
+        new Rect(position, size, xAlignment, yAlignment),
+        width, height,
+        yOffset,
+        onShow, onHide, onSelectionChanged,
+        shouldHighlightSelected
+    ); }
 
     private DropDownSelection(
         FontRenderer fontRenderer,
         Rect rect, int width, int height, int yOffset,
-        Consumer<List> onShow, Consumer<List> onHide, Consumer<String> onSelectionChanged
+        Consumer<List> onShow, Consumer<List> onHide, Consumer<String> onSelectionChanged,
+        boolean shouldHighlightSelected
     ){
         super(rect.point.x, rect.point.y, rect.width, rect.height, 0, 0, texture.size.height, texture.location, texture.fileSize.width, texture.fileSize.height, b -> ((DropDownSelection)b).toggle());
         this.fontRenderer = fontRenderer;
+        this.shouldHighlightSelected = shouldHighlightSelected;
         list = new List(Minecraft.getInstance(), new Point(rect.point.x + size.width, rect.point.y + size.height + yOffset), width, height);
         this.onSelectionChanged = onSelectionChanged;
         this.onShow = onShow;
@@ -308,7 +319,7 @@ public class DropDownSelection extends ImageButton {
                 int brightness = 255;
                 if(this.isMouseOver(mouseX, mouseY))
                     brightness = (int) (brightness * 0.8f);
-                if(allEntries.indexOf(List.this.getEntry(i).text) == selectedIndex)
+                if(shouldHighlightSelected && allEntries.indexOf(List.this.getEntry(i).text) == selectedIndex)
                     brightness = (int) (brightness * 0.6f);
                 RenderSystem.enableAlphaTest();
                 RenderingUtil.drawString(

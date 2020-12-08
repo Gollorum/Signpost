@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "Signpost",
+  "pattern": [
+    "s",
+    "s",
+    "b"
+  ],
+  "key": {
+    "s": {
+      "item": "minecraft:spruce_sign"
+    },
+    "b": {
+      "tag": "minecraft:spruce_logs"
+    }
+  },
+  "result": {
+    "item": "signpost:post_spruce",
+    "count": 2
+  }
+}

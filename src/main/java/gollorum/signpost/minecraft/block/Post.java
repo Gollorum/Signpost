@@ -165,7 +165,7 @@ public class Post extends Block implements IWaterLoggable {
     public static final Info JUNGLE =new Info(PropertiesUtil.wood(PropertiesUtil.WoodType.Jungle), ModelType.Jungle, "jungle");
     public static final Info ACACIA = new Info(PropertiesUtil.wood(PropertiesUtil.WoodType.Acacia), ModelType.Acacia, "acacia");
 
-    public static final Info[] All_INFOS = new Info[]{STONE, IRON, DARK_OAK, OAK, SPRUCE, BIRCH, JUNGLE, ACACIA};
+    public static final Info[] All_INFOS = new Info[]{OAK, BIRCH, SPRUCE, JUNGLE, DARK_OAK, ACACIA, STONE, IRON};
     public static final Block[] ALL = Arrays.stream(All_INFOS).map(i -> i.post).toArray(Block[]::new);
 
     public final ModelType type;

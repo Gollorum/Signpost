@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "Signpost",
+  "pattern": [
+    "s",
+    "s",
+    "b"
+  ],
+  "key": {
+    "s": {
+      "tag": "minecraft:signs"
+    },
+    "b": {
+      "item": "minecraft:stone"
+    }
+  },
+  "result": {
+    "item": "signpost:post_stone",
+    "count": 2
+  }
+}

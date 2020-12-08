@@ -5,18 +5,26 @@ import gollorum.signpost.minecraft.block.Waystone;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static gollorum.signpost.Signpost.MOD_ID;
 
 public class ItemRegistry {
 
-    public static final ItemGroup ITEM_GROUP = ItemGroup.TRANSPORTATION;
+    public static final ItemGroup ITEM_GROUP = new ItemGroup("signpost") {
+        @Override
+        public ItemStack createIcon() {
+            return new ItemStack(POSTS_ITEMS.get(0).get());
+        }
+    };
 
     private static final DeferredRegister<Item> REGISTER = DeferredRegister.create(ForgeRegistries.ITEMS, MOD_ID);
 
@@ -24,10 +32,10 @@ public class ItemRegistry {
         REGISTER.register(Waystone.REGISTRY_NAME,
             () -> new BlockItem(Waystone.INSTANCE, new Item.Properties().group(ITEM_GROUP)));
 
-    private static final Object[] POSTS_ITEMS =
+    private static final List<RegistryObject<Item>> POSTS_ITEMS =
         Arrays.stream(Post.All_INFOS)
             .map(ItemRegistry::registerPostItem)
-            .toArray();
+            .collect(Collectors.toList());
 
     private static RegistryObject<Item> registerPostItem(Post.Info postInfo){
         return REGISTER.register(postInfo.registryName,

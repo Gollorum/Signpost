@@ -12,7 +12,9 @@
   "gui.signpost.new_sign_hint": "Use a sign item on the post to attach it. This will open this screen.",
   "gui.signpost.remove_sign": "Remove sign",
 
-  "signpost.discovered": "You discovered {0}",
+  "signpost.discovered": "You can now travel to {0} using sign posts",
   "signpost.notDiscovered": "You have not yet discovered {0}",
-  "signpost.noTeleport": "This sign has no destination"
+  "signpost.noTeleport": "This sign has no destination",
+
+  "itemGroup.signpost": "Signpost"
 }

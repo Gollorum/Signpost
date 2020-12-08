@@ -2,6 +2,9 @@ package gollorum.signpost;
 
 import gollorum.signpost.minecraft.block.BlockEventListener;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.data.PostRecipe;
+import gollorum.signpost.minecraft.data.PostTag;
+import gollorum.signpost.minecraft.data.WaystoneRecipe;
 import gollorum.signpost.minecraft.registry.BlockRegistry;
 import gollorum.signpost.minecraft.registry.ItemRegistry;
 import gollorum.signpost.minecraft.registry.TileEntityRegistry;
@@ -9,6 +12,7 @@ import gollorum.signpost.minecraft.rendering.PostRenderer;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.Delay;
 import gollorum.signpost.utils.ServerType;
+import net.minecraft.data.DataGenerator;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.Dimension;
 import net.minecraft.world.server.ServerWorld;
@@ -20,6 +24,7 @@ import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
 import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.event.server.FMLServerStoppedEvent;
@@ -56,7 +61,7 @@ public class Signpost {
         Delay.register(forgeBus);
     }
 
-    private class ModBusEvents {
+    private static class ModBusEvents {
 
         @SubscribeEvent
         public void setup(final FMLCommonSetupEvent event) {
@@ -68,9 +73,23 @@ public class Signpost {
             LOGGER.info("Got game settings {}", event.getMinecraftSupplier().get().gameSettings);
             ClientRegistry.bindTileEntityRenderer(PostTile.type, PostRenderer::new);
         }
+
+        @SubscribeEvent
+        public void gatherData(GatherDataEvent event) {
+            DataGenerator datagenerator = event.getGenerator();
+
+            if (event.includeServer()) {
+                PostTag.Blocks blocksTagProvider = new PostTag.Blocks(datagenerator);
+                datagenerator.addProvider(blocksTagProvider);
+                datagenerator.addProvider(new PostTag(datagenerator, blocksTagProvider));
+                datagenerator.addProvider(new PostRecipe(datagenerator));
+                datagenerator.addProvider(new WaystoneRecipe(datagenerator));
+            }
+        }
+
     }
 
-    private class ForgeEvents {
+    private static class ForgeEvents {
 
         @SubscribeEvent
         public void serverAboutToStart(FMLServerAboutToStartEvent e) {
