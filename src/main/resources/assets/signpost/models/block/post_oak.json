@@ -1,8 +1,0 @@
-{
-    "parent": "signpost:block/post_preview",
-    "textures": {
-        "post": "block/oak_log",
-        "sign": "signpost:block/oak",
-        "sign_dark": "signpost:block/oak_dark"
-    }
-}

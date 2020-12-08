@@ -272,7 +272,7 @@ public class SignGui extends Screen {
                 switchToWide();
                 wideSignInputBox.setText(((SmallWideSign) oldSign.get()).getText());
             }
-            if(oldSign.get().isFlipped())
+            if(!oldSign.get().isFlipped())
                 flip();
             colorInputBox.setSelectedColor(oldSign.get().getColor());
         } else switchToWide();
@@ -467,7 +467,7 @@ public class SignGui extends Screen {
                     new SmallWideSign(
                         Angle.fromDegrees(0),
                         wideSignInputBox.getText(),
-                        wideSignInputBox.isFlipped(),
+                        !wideSignInputBox.isFlipped(),
                         modelType.mainTexture,
                         modelType.secondaryTexture,
                         colorInputBox.getCurrentColor(),
@@ -494,7 +494,7 @@ public class SignGui extends Screen {
                     new SmallShortSign(
                         Angle.fromDegrees(0),
                         shortSignInputBox.getText(),
-                        shortSignInputBox.isFlipped(),
+                        !shortSignInputBox.isFlipped(),
                         modelType.mainTexture,
                         modelType.secondaryTexture,
                         colorInputBox.getCurrentColor(),
@@ -526,7 +526,7 @@ public class SignGui extends Screen {
                             largeSignInputBoxes.get(2).getText(),
                             largeSignInputBoxes.get(3).getText(),
                         },
-                        currentSignInputBox.isFlipped(),
+                        !currentSignInputBox.isFlipped(),
                         modelType.mainTexture,
                         modelType.secondaryTexture,
                         colorInputBox.getCurrentColor(),

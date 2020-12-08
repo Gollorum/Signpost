@@ -1,0 +1,9 @@
+{
+  "parent": "signpost:block/post_preview",
+  "textures": {
+    "particle": "minecraft:block/oak_log",
+    "post": "minecraft:block/oak_log",
+    "texture": "signpost:block/oak",
+    "secondary_texture": "signpost:block/oak_dark"
+  }
+}

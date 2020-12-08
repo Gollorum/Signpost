@@ -85,7 +85,7 @@ public class Post extends Block implements IWaterLoggable {
             new ResourceLocation(Signpost.MOD_ID, "stone_dark"),
             TextureResource.SignGui.Wide.Stone, TextureResource.SignGui.Short.Stone, TextureResource.SignGui.Large.Stone);
 
-        public final ResourceLocation postLocation;
+        public final ResourceLocation postTexture;
         public final ResourceLocation mainTexture;
         public final ResourceLocation secondaryTexture;
 
@@ -93,8 +93,8 @@ public class Post extends Block implements IWaterLoggable {
         public final TextureResource shortGuiTexture;
         public final TextureResource largeGuiTexture;
 
-        ModelType(ResourceLocation postLocation, ResourceLocation mainTexture, ResourceLocation secondaryTexture, TextureResource wideGuiTexture, TextureResource shortGuiTexture, TextureResource largeGuiTexture) {
-            this.postLocation = expand(postLocation);
+        ModelType(ResourceLocation postTexture, ResourceLocation mainTexture, ResourceLocation secondaryTexture, TextureResource wideGuiTexture, TextureResource shortGuiTexture, TextureResource largeGuiTexture) {
+            this.postTexture = expand(postTexture);
             this.mainTexture = expand(mainTexture);
             this.secondaryTexture = expand(secondaryTexture);
             this.wideGuiTexture = wideGuiTexture;
@@ -102,8 +102,8 @@ public class Post extends Block implements IWaterLoggable {
             this.largeGuiTexture = largeGuiTexture;
         }
 
-        private ResourceLocation expand(ResourceLocation loc){
-            return new ResourceLocation(loc.getNamespace(), "textures/block/"+loc.getPath()+".png");
+        public ResourceLocation expand(ResourceLocation loc){
+            return new ResourceLocation(loc.getNamespace(), "block/"+loc.getPath());
         }
 
         @Override
@@ -185,7 +185,7 @@ public class Post extends Block implements IWaterLoggable {
                 if (world.isRemote) {
                     Minecraft.getInstance().displayGuiScreen(new SignGui(tile, tile.modelType, new Vector3(0, 1, 0), Optional.empty()));
                 } else {
-                    tile.addPart(new BlockPartInstance(new gollorum.signpost.signtypes.Post(type.postLocation), Vector3.ZERO));
+                    tile.addPart(new BlockPartInstance(new gollorum.signpost.signtypes.Post(type.postTexture), Vector3.ZERO));
                     tile.markDirty();
                 }
             }, 100

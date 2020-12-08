@@ -10,6 +10,7 @@ import net.minecraft.item.Item;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ITag;
 import net.minecraft.tags.ItemTags;
+import net.minecraftforge.common.data.ExistingFileHelper;
 
 import java.util.Arrays;
 
@@ -19,8 +20,8 @@ public class PostTag extends ItemTagsProvider {
 
     public static final ITag.INamedTag<Item> Tag = ItemTags.makeWrapperTag(Id);
 
-    public PostTag(DataGenerator dataGenerator, Blocks blockTagProvider) {
-        super(dataGenerator, blockTagProvider, Signpost.MOD_ID, null);
+    public PostTag(DataGenerator dataGenerator, Blocks blockTagProvider, ExistingFileHelper fileHelper) {
+        super(dataGenerator, blockTagProvider, Signpost.MOD_ID, fileHelper);
     }
 
     @Override
@@ -33,8 +34,8 @@ public class PostTag extends ItemTagsProvider {
 
         public static final ITag.INamedTag<Block> Tag = BlockTags.makeWrapperTag(Id);
 
-        public Blocks(DataGenerator generatorIn) {
-            super(generatorIn, Signpost.MOD_ID, null);
+        public Blocks(DataGenerator generatorIn, ExistingFileHelper fileHelper) {
+            super(generatorIn, Signpost.MOD_ID, fileHelper);
         }
 
         @Override

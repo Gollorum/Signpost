@@ -1,8 +1,0 @@
-{
-  "variants": {
-    "facing=north": { "model": "signpost:block/waystone" },
-    "facing=east": { "model": "signpost:block/waystone", "y":  90 },
-    "facing=south": { "model": "signpost:block/waystone", "y":  180 },
-    "facing=west": { "model": "signpost:block/waystone", "y":  270 }
-  }
-}

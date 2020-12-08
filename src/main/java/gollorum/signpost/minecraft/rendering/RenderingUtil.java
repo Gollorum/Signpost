@@ -53,7 +53,7 @@ public class RenderingUtil {
     }
 
     private static final Map<ResourceLocation, Map<ResourceLocation, Map<ResourceLocation, Lazy<IBakedModel>>>> cachedTwoTexturedModels = new ConcurrentHashMap<>();
-    private static final ResourceLocation texture1Marker = new ResourceLocation(Signpost.MOD_ID, "block/oak_wood");
+    private static final ResourceLocation texture1Marker = new ResourceLocation(Signpost.MOD_ID, "block/oak");
 
     public static Lazy<IBakedModel> loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation1, ResourceLocation textureLocation2) {
         final ResourceLocation textLoc1 = trim(textureLocation1);

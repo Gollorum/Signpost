@@ -22,6 +22,7 @@ import net.minecraft.client.renderer.model.ItemOverrideList;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
@@ -114,7 +115,7 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
                 setAngle(angle.add(Angle.fromDegrees(15)));
                 notifyAngleChanged(info);
             } else if(!holdsEditTool(info))
-                tryTeleport(info.player);
+                tryTeleport((ServerPlayerEntity) info.player);
         } else if(holdsEditTool(info)) {
             Minecraft.getInstance().displayGuiScreen(
                 new SignGui(info.tile, modelType, this, new PostTile.TilePartInfo(info.tile, info.traceResult.id)));
@@ -122,8 +123,8 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
         return InteractionResult.Accepted;
     }
 
-    private void tryTeleport(PlayerEntity player) {
-        if(destination.isPresent())
+    private void tryTeleport(ServerPlayerEntity player) {
+        if(destination.isPresent() && WaystoneLibrary.getInstance().contains(destination.get()))
             if(WaystoneLibrary.getInstance().isDiscovered(new PlayerHandle(player), destination.get()))
                 Teleport.toWaystone(destination.get(), player);
             else player.sendMessage(

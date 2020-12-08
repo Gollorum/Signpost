@@ -1,0 +1,9 @@
+{
+  "parent": "signpost:block/post_preview",
+  "textures": {
+    "particle": "minecraft:block/birch_log",
+    "post": "minecraft:block/birch_log",
+    "texture": "signpost:block/birch",
+    "secondary_texture": "minecraft:block/birch_log"
+  }
+}

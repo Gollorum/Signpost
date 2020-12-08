@@ -5,6 +5,7 @@ import gollorum.signpost.minecraft.events.WaystoneRemovedEvent;
 import gollorum.signpost.minecraft.events.WaystoneUpdatedEvent;
 import gollorum.signpost.minecraft.storage.WaystoneLibraryStorage;
 import gollorum.signpost.networking.PacketHandler;
+import gollorum.signpost.signtypes.Sign;
 import gollorum.signpost.utils.EventDispatcher;
 import gollorum.signpost.utils.WaystoneData;
 import gollorum.signpost.utils.WaystoneLocationData;
@@ -236,6 +237,11 @@ public class WaystoneLibrary {
         if(!playerMemory.containsKey(player))
             playerMemory.put(player, new HashSet<>());
         return playerMemory.get(player).contains(waystone);
+    }
+
+    public boolean contains(WaystoneHandle waystone) {
+        assert Signpost.getServerType().isServer;
+        return allWaystones.containsKey(waystone);
     }
 
     private void markDirty(){ savedData.markDirty(); }

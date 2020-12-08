@@ -33,8 +33,8 @@ import static gollorum.signpost.minecraft.rendering.RenderingUtil.VoxelSize;
 public class LargeSign extends Sign<LargeSign> {
 
     private static final AABB LOCAL_BOUNDS = new AABB(
-        new Vector3(-9, -13, -2),
-        new Vector3(13, -1, -3)
+        new Vector3(-9, -12, 2),
+        new Vector3(13, -2, 3)
     ).map(RenderingUtil::voxelToLocal);
 
     private static final float TEXT_OFFSET_RIGHT = 7f * VoxelSize;
@@ -162,7 +162,7 @@ public class LargeSign extends Sign<LargeSign> {
             matrix.pop();
             matrix.rotate(Vector3f.ZP.rotationDegrees(180));
             FontRenderer fontRenderer = renderDispatcher.fontRenderer;
-            matrix.rotate(Vector3f.YP.rotation(-angle.radians()));
+            matrix.rotate(Vector3f.YP.rotation((float) (Math.PI-angle.radians())));
             matrix.translate(0, 3.5f * VoxelSize, -3.005 * VoxelSize);
 
             matrix.push();
@@ -192,7 +192,7 @@ public class LargeSign extends Sign<LargeSign> {
         scale /= Math.max(1, MAX_WIDTH_FRAC);
         float offset = TEXT_OFFSET_RIGHT * Math.min(1, MAX_WIDTH_FRAC);
         matrix.translate(
-            flip ? -offset : offset - fontRenderer.getStringWidth(text) * scale,
+            flip ? offset - fontRenderer.getStringWidth(text) * scale : -offset,
             -scale * 4 * TEXT_RATIO,
             0);
         matrix.scale(scale, scale * TEXT_RATIO, scale);

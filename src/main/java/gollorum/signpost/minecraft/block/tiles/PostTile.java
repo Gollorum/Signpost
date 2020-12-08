@@ -190,7 +190,7 @@ public class PostTile extends TileEntity {
             }
         }
         if(parts.isEmpty()) addPart(
-            new BlockPartInstance(new Post(gollorum.signpost.minecraft.block.Post.ModelType.Oak.postLocation), Vector3.ZERO)
+            new BlockPartInstance(new Post(gollorum.signpost.minecraft.block.Post.ModelType.Oak.postTexture), Vector3.ZERO)
         );
     }
 

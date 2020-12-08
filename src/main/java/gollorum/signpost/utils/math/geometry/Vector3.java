@@ -50,6 +50,12 @@ public final class Vector3 {
     public Vector3 subtract(Vector3 other) {
         return new Vector3(x - other.x, y - other.y, z - other.z);
     }
+    public Vector3 add(float otherX, float otherY, float otherZ) {
+        return new Vector3(x + otherX, y + otherY, z + otherZ);
+    }
+    public Vector3 subtract(float otherX, float otherY, float otherZ) {
+        return new Vector3(x - otherX, y - otherY, z - otherZ);
+    }
     public Vector3 div(Float other) { return new Vector3(x / other, y / other, z / other); }
 
     public Vector3 negated() { return new Vector3(-x, -y, -z); }

@@ -143,10 +143,10 @@ public class SmallShortSign extends Sign<SmallShortSign> {
             float scale = FONT_SIZE_VOXELS * FontToVoxelSize;
             float MAX_WIDTH_FRAC = fontRenderer.getStringWidth(text) * scale / MAXIMUM_TEXT_WIDTH;
             scale /= Math.max(1, MAX_WIDTH_FRAC);
-            matrix.rotate(Vector3f.YP.rotation(-angle.radians()));
+            matrix.rotate(Vector3f.YP.rotation((float) (Math.PI-angle.radians())));
             float offset = MathUtils.lerp(TEXT_OFFSET_RIGHT, (TEXT_OFFSET_RIGHT - TEXT_OFFSET_LEFT) / 2f, 1 - Math.min(1, MAX_WIDTH_FRAC));
             matrix.translate(
-                flip ? -offset : offset - fontRenderer.getStringWidth(text) * scale,
+                flip ? offset - fontRenderer.getStringWidth(text) * scale : -offset,
                 -scale * 4 * TEXT_RATIO,
                 -0.505 * VoxelSize);
             matrix.scale(scale, scale * TEXT_RATIO, scale);
