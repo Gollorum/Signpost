@@ -17,6 +17,9 @@ public class Point {
     public Point add(Point other) { return new Point(x + other.x, y + other.y); }
     public Point subtract(Point other) { return new Point(x - other.x, y - other.y); }
 
+    public Point add(int x, int y) { return new Point(this.x + x, this.y + y); }
+    public Point subtract(int x, int y) { return new Point(this.x - x, this.y - y); }
+
     public Point mul(int waystoneBoxScale) {
         return new Point(x * waystoneBoxScale, y * waystoneBoxScale);
     }

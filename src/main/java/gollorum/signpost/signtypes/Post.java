@@ -60,6 +60,10 @@ public class Post implements BlockPart<Post> {
         this.texture = texture;
     }
 
+    public ResourceLocation getTexture() {
+        return texture;
+    }
+
     @Override
     public Intersectable<Ray, Float> getIntersection() { return BOUNDS; }
 
@@ -75,7 +79,8 @@ public class Post implements BlockPart<Post> {
                     Optional.of(new ItemStack(heldItem.getItem(), 1))
                 ));
             }
-            info.player.inventory.func_234564_a_(i -> i.getItem().equals(heldItem.getItem()), 1, info.player.container.func_234641_j_());
+            if(!info.player.isCreative())
+                info.player.inventory.func_234564_a_(i -> i.getItem().equals(heldItem.getItem()), 1, info.player.container.func_234641_j_());
             return InteractionResult.Accepted;
         } else return InteractionResult.Ignored;
     }

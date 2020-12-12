@@ -3,7 +3,7 @@
   "textures": {
     "particle": "minecraft:block/stone",
     "post": "minecraft:block/stone",
-    "texture": "minecraft:block/stone",
+    "texture": "signpost:block/stone",
     "secondary_texture": "signpost:block/stone_dark"
   }
 }

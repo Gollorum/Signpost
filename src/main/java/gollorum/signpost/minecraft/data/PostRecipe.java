@@ -56,6 +56,10 @@ public class PostRecipe extends RecipeProvider {
                 return Ingredient.fromItems(Items.DARK_OAK_SIGN);
             case Spruce:
                 return Ingredient.fromItems(Items.SPRUCE_SIGN);
+            case Warped:
+                return Ingredient.fromItems(Items.WARPED_SIGN);
+            case Crimson:
+                return Ingredient.fromItems(Items.CRIMSON_SIGN);
             default: throw new RuntimeException("Signpost type " + type + " is not supported");
         }
     }
@@ -78,6 +82,10 @@ public class PostRecipe extends RecipeProvider {
                 return Ingredient.fromTag(ItemTags.DARK_OAK_LOGS);
             case Spruce:
                 return Ingredient.fromTag(ItemTags.SPRUCE_LOGS);
+            case Warped:
+                return Ingredient.fromTag(ItemTags.WARPED_STEMS);
+            case Crimson:
+                return Ingredient.fromTag(ItemTags.CRIMSON_STEMS);
             default: throw new RuntimeException("Signpost type " + type + " is not supported");
         }
     }

@@ -4,6 +4,6 @@
     "particle": "minecraft:block/jungle_log",
     "post": "minecraft:block/jungle_log",
     "texture": "signpost:block/jungle",
-    "secondary_texture": "minecraft:block/jungle_log"
+    "secondary_texture": "signpost:block/jungle_dark"
   }
 }

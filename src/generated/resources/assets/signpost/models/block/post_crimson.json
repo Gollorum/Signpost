@@ -1,0 +1,9 @@
+{
+  "parent": "signpost:block/post_preview",
+  "textures": {
+    "particle": "minecraft:block/crimson_stem",
+    "post": "minecraft:block/crimson_stem",
+    "texture": "signpost:block/crimson",
+    "secondary_texture": "signpost:block/crimson_dark"
+  }
+}

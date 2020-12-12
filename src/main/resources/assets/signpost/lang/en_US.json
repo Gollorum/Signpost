@@ -8,6 +8,8 @@
   "block.signpost.post_dark_oak": "Dark Oak Signpost",
   "block.signpost.post_spruce": "Spruce Signpost",
   "block.signpost.post_stone": "Stone Signpost",
+  "block.signpost.post_warped": "Warped Signpost",
+  "block.signpost.post_crimson": "Crimson Signpost",
 
   "gui.signpost.new_sign_hint": "Use a sign item on the post to attach it. This will open this screen.",
   "gui.signpost.remove_sign": "Remove sign",

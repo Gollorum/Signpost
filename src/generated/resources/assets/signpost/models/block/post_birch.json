@@ -4,6 +4,6 @@
     "particle": "minecraft:block/birch_log",
     "post": "minecraft:block/birch_log",
     "texture": "signpost:block/birch",
-    "secondary_texture": "minecraft:block/birch_log"
+    "secondary_texture": "signpost:block/birch_dark"
   }
 }

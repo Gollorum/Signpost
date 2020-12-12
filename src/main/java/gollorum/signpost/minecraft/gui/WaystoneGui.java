@@ -10,7 +10,6 @@ import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 
@@ -78,7 +77,7 @@ public class WaystoneGui extends Screen {
                 Rect.XAlignment.Center, Rect.YAlignment.Center),
             Rect.XAlignment.Center, Rect.YAlignment.Center,
             texture,
-            true);
+            true, 0);
         oldData.ifPresent(data -> inputBox.setText(data.name));
         doneButton = new Button(
             getCenterX() - buttonsSize.width / 2,

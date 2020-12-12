@@ -33,7 +33,7 @@ import static gollorum.signpost.minecraft.rendering.RenderingUtil.VoxelSize;
 public class LargeSign extends Sign<LargeSign> {
 
     private static final AABB LOCAL_BOUNDS = new AABB(
-        new Vector3(-9, -12, 2),
+        new Vector3(-9, -14, 2),
         new Vector3(13, -2, 3)
     ).map(RenderingUtil::voxelToLocal);
 

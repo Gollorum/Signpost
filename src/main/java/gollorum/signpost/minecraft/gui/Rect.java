@@ -76,6 +76,29 @@ public class Rect {
 
     public Point min() { return point; }
     public Point max() { return new Point(point.x + width, point.y + height); }
+    public Point center() { return new Point(point.x + width / 2, point.y + height / 2); }
+    public Point at(XAlignment xAlignment, YAlignment yAlignment) {
+        int x, y;
+        switch (xAlignment) {
+            case Left: x = this.point.x;
+                break;
+            case Center: x = this.point.x + width / 2;
+                break;
+            case Right: x = this.point.x + width;
+                break;
+            default: throw new RuntimeException(String.format("Alignment %s not supported", xAlignment));
+        }
+        switch (yAlignment) {
+            case Top: y = this.point.y;
+                break;
+            case Center: y = this.point.y + height / 2;
+                break;
+            case Bottom: y = this.point.y + height;
+                break;
+            default: throw new RuntimeException(String.format("Alignment %s not supported", yAlignment));
+        }
+        return new Point(x, y);
+    }
 
     public Rect offset(Point minOffset, Point maxOffset) {
         return new Rect(min().add(minOffset), max().add(maxOffset));
@@ -91,6 +114,15 @@ public class Rect {
 
     public Rect withSize(Function<Integer, Integer> widthMapping, Function<Integer, Integer> heightMapping){
         return new Rect(point, widthMapping.apply(width), heightMapping.apply(height));
+    }
+
+    public Rect withHeight(Function<Integer, Integer> heightMapping){
+        return new Rect(point, width, heightMapping.apply(height));
+    }
+
+    public Rect scaleCenter(float scale) {
+        Point center = center();
+        return new Rect(center, (int)(width * scale), (int)(height * scale), XAlignment.Center, YAlignment.Center);
     }
 
 }

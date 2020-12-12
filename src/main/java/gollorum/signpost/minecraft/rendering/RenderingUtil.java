@@ -107,7 +107,6 @@ public class RenderingUtil {
         matrix.push();
         inner.accept((model, tileEntity, buffer, checkSides, random, rand, combinedOverlay, rotationMatrix) -> {
             if(!tileEntity.hasWorld()) throw new RuntimeException("TileEntity without world cannot be rendered.");
-            BufferBuilder.get().begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
             Renderer.get().renderModel(
                 tileEntity.getWorld(),
                 model,
@@ -121,7 +120,6 @@ public class RenderingUtil {
                 combinedOverlay,
                 tileEntity.getModelData()
             );
-            Tesselator.get().draw();
         });
         matrix.pop();
     }

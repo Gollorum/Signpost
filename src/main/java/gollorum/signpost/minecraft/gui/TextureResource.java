@@ -26,7 +26,7 @@ public class TextureResource {
     );
 
     public static final TextureResource signTypeSelection = new TextureResource(
-        "textures/gui/sign_type_selection.png", new TextureSize(58, 44), new TextureSize(174, 88)
+        "textures/gui/sign_type_selection.png", new TextureSize(58, 44), new TextureSize(58, 88)
     );
 
     public static final class SignGui {

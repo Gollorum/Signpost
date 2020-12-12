@@ -58,7 +58,7 @@ public class Post extends Block implements IWaterLoggable {
             TextureResource.SignGui.Wide.Acacia, TextureResource.SignGui.Short.Acacia, TextureResource.SignGui.Large.Acacia),
         Birch(new ResourceLocation("birch_log"),
             new ResourceLocation(Signpost.MOD_ID, "birch"),
-            new ResourceLocation("birch_log"),
+            new ResourceLocation(Signpost.MOD_ID, "birch_dark"),
             TextureResource.SignGui.Wide.Birch, TextureResource.SignGui.Short.Birch, TextureResource.SignGui.Large.Birch),
         Iron(new ResourceLocation("iron_block"),
             new ResourceLocation(Signpost.MOD_ID, "iron"),
@@ -66,7 +66,7 @@ public class Post extends Block implements IWaterLoggable {
             TextureResource.SignGui.Wide.Iron, TextureResource.SignGui.Short.Iron, TextureResource.SignGui.Large.Iron),
         Jungle(new ResourceLocation("jungle_log"),
             new ResourceLocation(Signpost.MOD_ID, "jungle"),
-            new ResourceLocation("jungle_log"),
+            new ResourceLocation(Signpost.MOD_ID, "jungle_dark"),
             TextureResource.SignGui.Wide.Jungle, TextureResource.SignGui.Short.Jungle, TextureResource.SignGui.Large.Jungle),
         Oak(new ResourceLocation("oak_log"),
             new ResourceLocation(Signpost.MOD_ID, "oak"),
@@ -81,9 +81,19 @@ public class Post extends Block implements IWaterLoggable {
             new ResourceLocation(Signpost.MOD_ID, "spruce_dark"),
             TextureResource.SignGui.Wide.Spruce, TextureResource.SignGui.Short.Spruce, TextureResource.SignGui.Large.Spruce),
         Stone(new ResourceLocation("stone"),
-            new ResourceLocation("stone"),
+            new ResourceLocation(Signpost.MOD_ID, "stone"),
             new ResourceLocation(Signpost.MOD_ID, "stone_dark"),
-            TextureResource.SignGui.Wide.Stone, TextureResource.SignGui.Short.Stone, TextureResource.SignGui.Large.Stone);
+            TextureResource.SignGui.Wide.Stone, TextureResource.SignGui.Short.Stone, TextureResource.SignGui.Large.Stone),
+        Warped(
+            new ResourceLocation("warped_stem"),
+            new ResourceLocation(Signpost.MOD_ID, "warped"),
+            new ResourceLocation(Signpost.MOD_ID, "warped_dark"),
+            TextureResource.SignGui.Wide.Oak, TextureResource.SignGui.Short.Oak, TextureResource.SignGui.Large.Oak),
+        Crimson(
+            new ResourceLocation("crimson_stem"),
+            new ResourceLocation(Signpost.MOD_ID, "crimson"),
+            new ResourceLocation(Signpost.MOD_ID, "crimson_dark"),
+            TextureResource.SignGui.Wide.Oak, TextureResource.SignGui.Short.Oak, TextureResource.SignGui.Large.Oak);
 
         public final ResourceLocation postTexture;
         public final ResourceLocation mainTexture;
@@ -126,6 +136,10 @@ public class Post extends Block implements IWaterLoggable {
                 return Oak;
             else if(signItem.equals(Items.SPRUCE_SIGN))
                 return Spruce;
+            else if(signItem.equals(Items.WARPED_SIGN))
+                return Warped;
+            else if(signItem.equals(Items.CRIMSON_SIGN))
+                return Crimson;
             else if(signItem.equals(Items.STONE))
                 return Stone;
             else
@@ -164,8 +178,10 @@ public class Post extends Block implements IWaterLoggable {
     public static final Info BIRCH = new Info(PropertiesUtil.wood(PropertiesUtil.WoodType.Birch), ModelType.Birch, "birch");
     public static final Info JUNGLE =new Info(PropertiesUtil.wood(PropertiesUtil.WoodType.Jungle), ModelType.Jungle, "jungle");
     public static final Info ACACIA = new Info(PropertiesUtil.wood(PropertiesUtil.WoodType.Acacia), ModelType.Acacia, "acacia");
+    public static final Info WARPED =new Info(PropertiesUtil.wood(PropertiesUtil.WoodType.Warped), ModelType.Warped, "warped");
+    public static final Info CRIMSON = new Info(PropertiesUtil.wood(PropertiesUtil.WoodType.Crimson), ModelType.Crimson, "crimson");
 
-    public static final Info[] All_INFOS = new Info[]{OAK, BIRCH, SPRUCE, JUNGLE, DARK_OAK, ACACIA, STONE, IRON};
+    public static final Info[] All_INFOS = new Info[]{OAK, BIRCH, SPRUCE, JUNGLE, DARK_OAK, ACACIA, STONE, IRON, WARPED, CRIMSON};
     public static final Block[] ALL = Arrays.stream(All_INFOS).map(i -> i.post).toArray(Block[]::new);
 
     public final ModelType type;

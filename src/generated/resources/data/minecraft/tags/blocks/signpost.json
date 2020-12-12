@@ -8,6 +8,8 @@
     "signpost:post_dark_oak",
     "signpost:post_acacia",
     "signpost:post_stone",
-    "signpost:post_iron"
+    "signpost:post_iron",
+    "signpost:post_warped",
+    "signpost:post_crimson"
   ]
 }

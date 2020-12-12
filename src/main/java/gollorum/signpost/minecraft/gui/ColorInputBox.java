@@ -19,11 +19,11 @@ public class ColorInputBox extends InputBox {
 
     private int currentResult;
 
-    public ColorInputBox(FontRenderer fontRenderer, Rect inputFieldRect) {
+    public ColorInputBox(FontRenderer fontRenderer, Rect inputFieldRect, double zOffset) {
         super(fontRenderer, new Rect(
             new Point(inputFieldRect.point.x + inputFieldRect.height, inputFieldRect.point.y),
             inputFieldRect.width - inputFieldRect.height, inputFieldRect.height
-        ), true, true);
+        ), true, true, zOffset);
         setValidator(text -> text.startsWith("#") && text.length() <= 7 && canParse(text.substring(1)));
         setText("#000000");
     }

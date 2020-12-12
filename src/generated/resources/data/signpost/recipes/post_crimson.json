@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "Signpost",
+  "pattern": [
+    "s",
+    "s",
+    "b"
+  ],
+  "key": {
+    "s": {
+      "item": "minecraft:crimson_sign"
+    },
+    "b": {
+      "tag": "minecraft:crimson_stems"
+    }
+  },
+  "result": {
+    "item": "signpost:post_crimson",
+    "count": 2
+  }
+}

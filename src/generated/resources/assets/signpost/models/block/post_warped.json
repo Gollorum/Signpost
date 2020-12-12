@@ -1,0 +1,9 @@
+{
+  "parent": "signpost:block/post_preview",
+  "textures": {
+    "particle": "minecraft:block/warped_stem",
+    "post": "minecraft:block/warped_stem",
+    "texture": "signpost:block/warped",
+    "secondary_texture": "signpost:block/warped_dark"
+  }
+}

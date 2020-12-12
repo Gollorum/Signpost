@@ -5,7 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 
-public final class ImageInputBox extends InputBox {
+public final class ImageInputBox extends InputBox implements Flippable {
 
     private final TextureResource texture;
     private Rect backgroundRect;
@@ -19,13 +19,13 @@ public final class ImageInputBox extends InputBox {
         Rect.XAlignment backXAlignment,
         Rect.YAlignment backYAlignment,
         TextureResource texture,
-        boolean shouldDropShadow
-    ) {
+        boolean shouldDropShadow,
+        double zOffset) {
         super(fontRenderer,
             inputFieldRect,
             shouldDropShadow,
-            false
-        );
+            false,
+            zOffset);
         this.texture = texture;
         setEnableBackgroundDrawing(false);
         setTextColor(Colors.black);
@@ -51,6 +51,7 @@ public final class ImageInputBox extends InputBox {
         RenderSystem.color4f(1.0f, 1.0f, 1.0f, 1.0f);
         Minecraft.getInstance().getTextureManager().bindTexture(texture.location);
         blit(matrixStack, backgroundRect.point.x, backgroundRect.point.y, 0, 0, backgroundRect.width, backgroundRect.height, isFlipped ? -backgroundRect.width : backgroundRect.width, backgroundRect.height);
+
         super.renderButton(matrixStack, mouseX, mouseY, partialTicks);
     }
 
@@ -60,9 +61,10 @@ public final class ImageInputBox extends InputBox {
         return isFlipped;
     }
 
-    public void flip() {
-        isFlipped = !isFlipped;
-        backgroundRect = backgroundRect.withPoint(p -> p.withX(oldX -> x + (x + width) - (backgroundRect.point.x + backgroundRect.width)));
+    public void setFlipped(boolean isFlipped) {
+        if(isFlipped != this.isFlipped)
+            backgroundRect = backgroundRect.withPoint(p -> p.withX(oldX -> x + (x + width) - (backgroundRect.point.x + backgroundRect.width)));
+        this.isFlipped = isFlipped;
     }
 
 }

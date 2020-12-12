@@ -8,7 +8,7 @@ import net.minecraft.block.material.MaterialColor;
 public class PropertiesUtil {
 
     public enum WoodType{
-        Oak, DarkOak, Spruce, Birch, Jungle, Acacia
+        Oak, DarkOak, Spruce, Birch, Jungle, Acacia, Warped, Crimson
     }
 
     public static Block.Properties STONE = Block.Properties.create(Material.ROCK, MaterialColor.STONE)
@@ -30,6 +30,8 @@ public class PropertiesUtil {
             case Birch: return MaterialColor.SAND;
             case Jungle: return MaterialColor.DIRT;
             case Acacia: return MaterialColor.ADOBE;
+            case Warped: return MaterialColor.WARPED_STEM;
+            case Crimson: return MaterialColor.CRIMSON_STEM;
             default: throw new RuntimeException("Wood type " + type + "is not supported.");
         }
     }

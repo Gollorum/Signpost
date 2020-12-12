@@ -14,7 +14,6 @@ import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.util.IReorderingProcessor;
 import net.minecraft.util.SharedConstants;
 import net.minecraft.util.Util;
@@ -28,7 +27,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 // Copied from TextFieldWidget but with the option to toggle the shadow on the font.
-public class InputBox extends Widget implements IRenderable, IGuiEventListener {
+public class InputBox extends Widget implements IRenderable, IGuiEventListener, WithMutableX {
     private final FontRenderer fontRenderer;
     /** Has the current text being edited on the textbox. */
     private String text = "";
@@ -39,7 +38,7 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener {
     private boolean canLoseFocus = true;
     /** If this value is true along with isFocused, keyTyped will process the keys. */
     private boolean isEnabled = true;
-    private boolean field_212956_h;
+    private boolean isShiftDown;
     /** The current character index that should be used as start of the rendered text. */
     private int lineScrollOffset;
     private int cursorPosition;
@@ -60,29 +59,31 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener {
     private BiFunction<String, Integer, IReorderingProcessor> textFormatter = (p_195610_0_, p_195610_1_) -> {
         return IReorderingProcessor.fromString(p_195610_0_, Style.EMPTY);
     };
+    private final double zOffset;
 
     public InputBox(
         FontRenderer fontRenderer,
         Rect inputFieldRect,
         boolean shouldDropShadow,
-        boolean shouldRenderBackGround
-    ) {
+        boolean shouldRenderBackGround,
+        double zOffset) {
         this(fontRenderer,
             inputFieldRect.point.x, inputFieldRect.point.y,
             inputFieldRect.width, inputFieldRect.height,
             shouldDropShadow,
-            new StringTextComponent("")
-        );
+            new StringTextComponent(""),
+            zOffset);
         this.setEnableBackgroundDrawing(shouldRenderBackGround);
     }
-    public InputBox(FontRenderer fontIn, int xIn, int yIn, int widthIn, int heightIn, boolean shouldDropShadow, ITextComponent msg) {
-        this(fontIn, xIn, yIn, widthIn, heightIn, null, msg);
+    public InputBox(FontRenderer fontIn, int xIn, int yIn, int widthIn, int heightIn, boolean shouldDropShadow, ITextComponent msg, double zOffset) {
+        this(fontIn, xIn, yIn, widthIn, heightIn, null, msg, zOffset);
         this.shouldDropShadow = shouldDropShadow;
     }
 
-    public InputBox(FontRenderer fontIn, int xIn, int yIn, int widthIn, int heightIn, @Nullable TextFieldWidget p_i51138_6_, ITextComponent msg) {
+    public InputBox(FontRenderer fontIn, int xIn, int yIn, int widthIn, int heightIn, @Nullable TextFieldWidget p_i51138_6_, ITextComponent msg, double zOffset) {
         super(xIn, yIn, widthIn, heightIn, msg);
         this.fontRenderer = fontIn;
+        this.zOffset = zOffset;
         if (p_i51138_6_ != null) {
             this.setText(p_i51138_6_.getText());
         }
@@ -289,7 +290,7 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener {
      */
     public void setCursorPosition(int pos) {
         this.clampCursorPosition(pos);
-        if (!this.field_212956_h) {
+        if (!this.isShiftDown) {
             this.setSelectionPos(this.cursorPosition);
         }
 
@@ -318,7 +319,7 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener {
         if (!this.canWrite()) {
             return false;
         } else {
-            this.field_212956_h = Screen.hasShiftDown();
+            this.isShiftDown = Screen.hasShiftDown();
             if (Screen.isSelectAll(keyCode)) {
                 this.setCursorPositionEnd();
                 this.setSelectionPos(0);
@@ -343,9 +344,9 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener {
                 switch(keyCode) {
                     case 259:
                         if (this.isEnabled) {
-                            this.field_212956_h = false;
+                            this.isShiftDown = false;
                             this.delete(-1);
-                            this.field_212956_h = Screen.hasShiftDown();
+                            this.isShiftDown = Screen.hasShiftDown();
                         }
 
                         return true;
@@ -358,9 +359,9 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener {
                         return false;
                     case 261:
                         if (this.isEnabled) {
-                            this.field_212956_h = false;
+                            this.isShiftDown = false;
                             this.delete(1);
-                            this.field_212956_h = Screen.hasShiftDown();
+                            this.isShiftDown = Screen.hasShiftDown();
                         }
 
                         return true;
@@ -441,6 +442,9 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener {
     }
 
     public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+        matrixStack.push();
+        matrixStack.translate(0, 0, zOffset);
+
         if (this.getVisible()) {
             if (this.getEnableBackgroundDrawing()) {
                 int i = this.isFocused() ? -1 : -6250336;
@@ -500,6 +504,8 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener {
             }
 
         }
+
+        matrixStack.pop();
     }
 
     private int drawString(MatrixStack matrixStack, String text, int x, int y, int color){
@@ -545,10 +551,10 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener {
         RenderSystem.enableColorLogicOp();
         RenderSystem.logicOp(GlStateManager.LogicOp.OR_REVERSE);
         bufferbuilder.begin(7, DefaultVertexFormats.POSITION);
-        bufferbuilder.pos((double)startX, (double)endY, 0.0D).endVertex();
-        bufferbuilder.pos((double)endX, (double)endY, 0.0D).endVertex();
-        bufferbuilder.pos((double)endX, (double)startY, 0.0D).endVertex();
-        bufferbuilder.pos((double)startX, (double)startY, 0.0D).endVertex();
+        bufferbuilder.pos(startX, endY, 0.0D).endVertex();
+        bufferbuilder.pos(endX, endY, 0.0D).endVertex();
+        bufferbuilder.pos(endX, startY, 0.0D).endVertex();
+        bufferbuilder.pos(startX, startY, 0.0D).endVertex();
         tessellator.draw();
         RenderSystem.disableColorLogicOp();
         RenderSystem.enableTexture();
@@ -698,23 +704,26 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener {
         this.suggestion = suggestion;
     }
 
-    public int func_195611_j(int p_195611_1_) {
-        return p_195611_1_ > this.text.length() ? this.x : this.x + this.fontRenderer.getStringWidth(this.text.substring(0, p_195611_1_));
-    }
-
-    public void setX(int xIn) {
-        this.x = xIn;
-    }
-
-    public void setY(int y) {
-        this.y = y;
-    }
-
     public boolean shouldDropShadow() {
         return shouldDropShadow;
     }
 
     public void setShouldDropShadow(boolean shouldDropShadow) {
         this.shouldDropShadow = shouldDropShadow;
+    }
+
+    @Override
+    public int getX() {
+        return x;
+    }
+
+    @Override
+    public int getWidth() {
+        return width;
+    }
+
+    @Override
+    public void setX(int x) {
+        this.x = x;
     }
 }

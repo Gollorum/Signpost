@@ -10,6 +10,7 @@ import gollorum.signpost.minecraft.block.Post;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.events.WaystoneRenamedEvent;
 import gollorum.signpost.minecraft.events.WaystoneUpdatedEvent;
+import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.signtypes.LargeSign;
 import gollorum.signpost.signtypes.Sign;
@@ -17,10 +18,12 @@ import gollorum.signpost.signtypes.SmallShortSign;
 import gollorum.signpost.signtypes.SmallWideSign;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
+import net.minecraft.client.gui.IRenderable;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.gui.widget.button.ImageButton;
+import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
@@ -83,6 +86,9 @@ public class SignGui extends Screen {
     private final Optional<Sign> oldSign;
     private final Optional<PostTile.TilePartInfo> oldTilePartInfo;
 
+    private final List<Flippable> widgetsToFlip = new ArrayList<>();
+    private final Set<IRenderable> additionallyRenderables = new HashSet<>();
+
     public SignGui(PostTile tile, Post.ModelType modelType, Vector3 localHitPos, Optional<ItemStack> itemToDropOnBreak) {
         super(new StringTextComponent("Sign"));
         this.tile = tile;
@@ -108,30 +114,86 @@ public class SignGui extends Screen {
         super.init();
         int signTypeSelectionTopY = typeSelectionButtonsY;
         int centerOffset = (typeSelectionButtonsSize.width + typeSelectionButtonsSpace) / 2;
-        addButton(newImageButton(
+
+        IBakedModel postModel = RenderingUtil.loadModel(RenderingUtil.ModelPost, tile.getParts().stream().filter(p -> p.blockPart instanceof gollorum.signpost.signtypes.Post).map(p -> ((gollorum.signpost.signtypes.Post)p.blockPart).getTexture()).findFirst().orElse(tile.modelType.postTexture)).get();
+        IBakedModel wideModel = RenderingUtil.loadModel(RenderingUtil.ModelWideSign, modelType.mainTexture, modelType.secondaryTexture).get();
+        IBakedModel shortModel = RenderingUtil.loadModel(RenderingUtil.ModelShortSign, modelType.mainTexture, modelType.secondaryTexture).get();
+        IBakedModel largeModel = RenderingUtil.loadModel(RenderingUtil.ModelLargeSign, modelType.mainTexture, modelType.secondaryTexture).get();
+
+        ItemStack itemStack = new ItemStack(tile.getBlockState().getBlock().asItem());
+
+        ImageButton wideSelectionButton = newImageButton(
             TextureResource.signTypeSelection,
             0,
             new Point(getCenterX() - centerOffset, signTypeSelectionTopY),
             typeSelectionButtonsScale,
             Rect.XAlignment.Center, Rect.YAlignment.Top,
             this::switchToWide
+        );
+        addButton(wideSelectionButton);
+        Rect wideSelectionRect = new Rect(new Point(wideSelectionButton.x - 4, wideSelectionButton.y), wideSelectionButton.getWidth(), wideSelectionButton.getHeightRealms())
+            .scaleCenter(0.75f);
+        additionallyRenderables.add(new GuiModelRenderer(
+            wideSelectionRect,
+            postModel,
+            0, -0.5f,
+            itemStack
         ));
-        addButton(newImageButton(
+        additionallyRenderables.add(new GuiModelRenderer(
+            wideSelectionRect,
+            wideModel,
+            0, 0.25f,
+            itemStack
+        ));
+
+        ImageButton shortSelectionButton = newImageButton(
             TextureResource.signTypeSelection,
             1,
             new Point(getCenterX(), signTypeSelectionTopY),
             typeSelectionButtonsScale,
             Rect.XAlignment.Center, Rect.YAlignment.Top,
             this::switchToShort
+        );
+        addButton(shortSelectionButton);
+        Rect shortSelectionRect = new Rect(new Point(shortSelectionButton.x - 11, shortSelectionButton.y), shortSelectionButton.getWidth(), shortSelectionButton.getHeightRealms())
+            .scaleCenter(0.75f);
+        additionallyRenderables.add(new GuiModelRenderer(
+            shortSelectionRect,
+            postModel,
+            0, -0.5f,
+            itemStack
         ));
-        addButton(newImageButton(
+        additionallyRenderables.add(new GuiModelRenderer(
+            shortSelectionRect,
+            shortModel,
+            0, 0.25f,
+            itemStack
+        ));
+
+        ImageButton largeSelectionButton = newImageButton(
             TextureResource.signTypeSelection,
             2,
             new Point(getCenterX() + centerOffset, signTypeSelectionTopY),
             typeSelectionButtonsScale,
             Rect.XAlignment.Center, Rect.YAlignment.Top,
             this::switchToLarge
+        );
+        addButton(largeSelectionButton);
+        Rect largeSelectionRect = new Rect(new Point(largeSelectionButton.x - 3, largeSelectionButton.y), largeSelectionButton.getWidth(), largeSelectionButton.getHeightRealms())
+            .scaleCenter(0.75f);
+        additionallyRenderables.add(new GuiModelRenderer(
+            largeSelectionRect,
+            postModel,
+            0, -0.5f,
+            itemStack
         ));
+        additionallyRenderables.add(new GuiModelRenderer(
+            largeSelectionRect,
+            largeModel,
+            0, 0,
+            itemStack
+        ));
+
         Rect doneRect = new Rect(new Point(getCenterX(), height - typeSelectionButtonsY), buttonsSize, Rect.XAlignment.Center, Rect.YAlignment.Bottom);
         if(oldSign.isPresent()){
             int buttonsWidth = (int) (doneRect.width * 0.75);
@@ -182,67 +244,90 @@ public class SignGui extends Screen {
                 Rect.XAlignment.Center, Rect.YAlignment.Center),
             Rect.XAlignment.Center, Rect.YAlignment.Center,
             waystoneNameTexture,
-            true);
+            true, 100);
         waystoneInputBox.setMaxStringLength(200);
         waystoneInputBox.setResponder(this::onWaystoneSelected);
         addButton(waystoneInputBox);
 
-        Rect wideRect = new Rect(
-            new Point(getCenterX() + centerGap + 2 * inputSignsScale, getCenterY() - centralAreaHeight / 2),
-            modelType.wideGuiTexture.size.scale(inputSignsScale),
-            Rect.XAlignment.Left,
-            Rect.YAlignment.Top);
-        wideSignInputBox = new ImageInputBox(font,
-            wideRect.offset(new Point(5, 2).mul(inputSignsScale), new Point(-2, -10).mul(inputSignsScale)),
-            wideRect.withPoint(new Point(-5, -2).mul(inputSignsScale)),
-            Rect.XAlignment.Left, Rect.YAlignment.Top,
-            modelType.wideGuiTexture,
-            false);
-        Rect shortRect = new Rect(
-            wideRect.min().withX(x -> x - 2 * inputSignsScale),
-            modelType.shortGuiTexture.size.scale(inputSignsScale),
-            Rect.XAlignment.Left,
-            Rect.YAlignment.Top);
-        shortSignInputBox = new ImageInputBox(font,
-            shortRect.offset(new Point(5, 2).mul(inputSignsScale), new Point(-5, -10).mul(inputSignsScale)),
-            shortRect.withPoint(new Point(-5, -2).mul(inputSignsScale)),
-            Rect.XAlignment.Left, Rect.YAlignment.Top,
-            modelType.shortGuiTexture,
-            false);
-        Rect largeRect = new Rect(
-            wideRect.min().withX(x -> x + 3 * inputSignsScale),
+        Rect modelRect = new Rect(
+            new Point(getCenterX() + centerGap + 3 * inputSignsScale, getCenterY() - centralAreaHeight / 2),
             modelType.largeGuiTexture.size.scale(inputSignsScale),
             Rect.XAlignment.Left,
             Rect.YAlignment.Top);
-        Rect largeInputRect = largeRect.withPoint(p -> p.add(
-            new Point(4 * inputSignsScale, 2 * inputSignsScale))
-        ).withSize(
-                width -> width - 6 * inputSignsScale,
-                height -> (int)(2.5f * inputSignsScale)
-        );
-        ImageInputBox firstLarge = new ImageInputBox(font,
-            largeInputRect,
-            largeRect.withPoint(largeRect.point.subtract(largeInputRect.point)),
-            Rect.XAlignment.Left, Rect.YAlignment.Top,
-            modelType.largeGuiTexture,
-            false
-        );
-        largeInputRect = largeInputRect.withPoint(p -> p.withY(Math.round(largeRect.point.y + (12 - 3 * 2.5f) * inputSignsScale)));
-        InputBox secondLarge = new InputBox(font, largeInputRect, false, false);
+        GuiModelRenderer postRenderer = new GuiModelRenderer(
+            modelRect,
+            postModel,
+            0, -0.5f,
+            new ItemStack(Post.OAK.post.asItem()));
+        additionallyRenderables.add(postRenderer);
+        Point modelRectTop = modelRect.at(Rect.XAlignment.Center, Rect.YAlignment.Top);
+
+        Rect wideInputRect = new Rect(
+            modelRectTop.add(-7 * inputSignsScale, 2 * inputSignsScale),
+            modelRectTop.add(11 * inputSignsScale, 6 * inputSignsScale));
+        wideSignInputBox = new InputBox(font,
+            wideInputRect,
+            false, false, 100);
+        wideSignInputBox.setTextColor(Colors.black);
+        widgetsToFlip.add(new FlippableAtPivot(wideSignInputBox, modelRectTop.x));
+
+        wideSignRenderer = new GuiModelRenderer(
+            modelRect,
+            wideModel,
+            0, 0.25f,
+            itemStack);
+        widgetsToFlip.add(wideSignRenderer);
+
+        Rect shortInputRect = new Rect(
+            modelRectTop.add(3 * inputSignsScale, 2 * inputSignsScale),
+            modelRectTop.add(14 * inputSignsScale, 6 * inputSignsScale));
+        shortSignInputBox = new InputBox(font,
+            shortInputRect,
+            false, false, 100);
+        shortSignInputBox.setTextColor(Colors.black);
+        widgetsToFlip.add(new FlippableAtPivot(shortSignInputBox, modelRectTop.x));
+
+        shortSignRenderer = new GuiModelRenderer(
+            modelRect,
+            shortModel,
+            0, 0.25f,
+            itemStack);
+        widgetsToFlip.add(shortSignRenderer);
+
+        Rect largeInputRect = new Rect(
+            modelRectTop.add(-7 * inputSignsScale, 3 * inputSignsScale),
+            modelRectTop.add(11 * inputSignsScale, 14 * inputSignsScale))
+            .withHeight(height -> height / 4 - 1);
+        InputBox firstLarge = new InputBox(font, largeInputRect, false, false, 100);
+        firstLarge.setTextColor(Colors.black);
+        largeInputRect = largeInputRect.withPoint(p -> p.withY(Math.round(modelRectTop.y + (13 - 3 * 2.5f) * inputSignsScale)));
+        InputBox secondLarge = new InputBox(font, largeInputRect, false, false, 100);
         secondLarge.setTextColor(Colors.black);
-        largeInputRect = largeInputRect.withPoint(p -> p.withY(Math.round(largeRect.point.y + (12 - 2 * 2.5f) * inputSignsScale)));
-        InputBox thirdLarge = new InputBox(font, largeInputRect, false, false);
+        largeInputRect = largeInputRect.withPoint(p -> p.withY(Math.round(modelRectTop.y + (13 - 2 * 2.5f) * inputSignsScale)));
+        InputBox thirdLarge = new InputBox(font, largeInputRect, false, false, 100);
         thirdLarge.setTextColor(Colors.black);
-        largeInputRect = largeInputRect.withPoint(p -> p.withY(Math.round(largeRect.point.y + (12 - 1 * 2.5f) * inputSignsScale)));
-        InputBox fourthLarge = new InputBox(font, largeInputRect, false, false);
+        largeInputRect = largeInputRect.withPoint(p -> p.withY(Math.round(modelRectTop.y + (13 - 1 * 2.5f) * inputSignsScale)));
+        InputBox fourthLarge = new InputBox(font, largeInputRect, false, false, 100);
         fourthLarge.setTextColor(Colors.black);
+        widgetsToFlip.add(new FlippableAtPivot(firstLarge, modelRectTop.x));
+        widgetsToFlip.add(new FlippableAtPivot(secondLarge, modelRectTop.x));
+        widgetsToFlip.add(new FlippableAtPivot(thirdLarge, modelRectTop.x));
+        widgetsToFlip.add(new FlippableAtPivot(fourthLarge, modelRectTop.x));
+
+        largeSignRenderer = new GuiModelRenderer(
+            modelRect,
+            largeModel,
+            0, 0,
+            itemStack);
+        widgetsToFlip.add(largeSignRenderer);
+
+
 
         largeSignInputBoxes = ImmutableList.of(firstLarge, secondLarge, thirdLarge, fourthLarge);
         allSignInputBoxes = ImmutableList.of(wideSignInputBox, shortSignInputBox, firstLarge, secondLarge, thirdLarge, fourthLarge);
-        allImageInputBoxes = ImmutableList.of(wideSignInputBox, shortSignInputBox, firstLarge);
 
         colorInputBox = new ColorInputBox(font,
-            new Rect(new Point(wideRect.point.x + wideRect.width / 2, wideRect.point.y + wideRect.height + centerGap), 80, 20, Rect.XAlignment.Center, Rect.YAlignment.Top));
+            new Rect(new Point(modelRect.point.x + modelRect.width / 2, modelRect.point.y + modelRect.height + centerGap), 80, 20, Rect.XAlignment.Center, Rect.YAlignment.Top), 0);
         colorInputBox.setColorResponder(color -> allSignInputBoxes.forEach(b -> b.setTextColor(color)));
         addButton(colorInputBox);
 
@@ -272,10 +357,13 @@ public class SignGui extends Screen {
                 switchToWide();
                 wideSignInputBox.setText(((SmallWideSign) oldSign.get()).getText());
             }
-            if(!oldSign.get().isFlipped())
+            if(oldSign.get().isFlipped())
                 flip();
             colorInputBox.setSelectedColor(oldSign.get().getColor());
-        } else switchToWide();
+        } else {
+            switchToWide();
+            flip();
+        }
 
 
         WaystoneLibrary.getInstance().requestAllWaystoneNames(n -> {
@@ -290,19 +378,23 @@ public class SignGui extends Screen {
     }
 
     private void flip() {
-        allImageInputBoxes.forEach(ImageInputBox::flip);
+        widgetsToFlip.forEach(Flippable::flip);
     }
 
-    private ImageInputBox wideSignInputBox;
-    private ImageInputBox shortSignInputBox;
+    private InputBox wideSignInputBox;
+    private InputBox shortSignInputBox;
 
     private List<InputBox> largeSignInputBoxes;
 
     private List<InputBox> allSignInputBoxes;
-    private List<ImageInputBox> allImageInputBoxes;
+
+    private GuiModelRenderer wideSignRenderer;
+    private GuiModelRenderer shortSignRenderer;
+    private GuiModelRenderer largeSignRenderer;
+    private GuiModelRenderer currentSignRenderer;
 
     @Nullable
-    private ImageInputBox currentSignInputBox;
+    private InputBox currentSignInputBox;
     private ColorInputBox colorInputBox;
 
     private String lastWaystone = "";
@@ -354,6 +446,9 @@ public class SignGui extends Screen {
         renderBackground(matrixStack);
         String hint = I18n.format(LangKeys.newSignHint);
         font.drawStringWithShadow(matrixStack, hint, (width - font.getStringWidth(hint)) / 2f, (doneButton.y + doneButton.getHeightRealms() + height - font.FONT_HEIGHT) / 2f, Colors.white);
+        for(IRenderable toRender : additionallyRenderables) {
+            toRender.render(matrixStack, mouseX, mouseY, partialTicks);
+        }
         super.render(matrixStack, mouseX, mouseY, partialTicks);
     }
 
@@ -370,7 +465,8 @@ public class SignGui extends Screen {
         switchSignInputBoxTo(wideSignInputBox);
 
         addTypeDependentChild(wideSignInputBox);
-        updateColorBoxPosition(wideSignInputBox.bounds.max().y);
+        additionallyRenderables.add(wideSignRenderer);
+        currentSignRenderer = wideSignRenderer;
     }
 
     private void switchToShort(){
@@ -381,7 +477,8 @@ public class SignGui extends Screen {
         switchSignInputBoxTo(shortSignInputBox);
 
         addTypeDependentChild(shortSignInputBox);
-        updateColorBoxPosition(shortSignInputBox.bounds.max().y);
+        additionallyRenderables.add(shortSignRenderer);
+        currentSignRenderer = shortSignRenderer;
     }
 
     private void switchToLarge(){
@@ -389,24 +486,22 @@ public class SignGui extends Screen {
         clearTypeDependentChildren();
         selectedType = SignType.Large;
 
-        switchSignInputBoxTo((ImageInputBox) largeSignInputBoxes.get(0));
+        switchSignInputBoxTo(largeSignInputBoxes.get(0));
 
         addTypeDependentChildren(largeSignInputBoxes);
-        updateColorBoxPosition(((ImageInputBox) largeSignInputBoxes.get(0)).bounds.max().y);
+        additionallyRenderables.add(largeSignRenderer);
+        currentSignRenderer = largeSignRenderer;
     }
 
-    private void switchSignInputBoxTo(ImageInputBox box) {
+    private void switchSignInputBoxTo(InputBox box) {
         if(currentSignInputBox != null)
             box.setText(currentSignInputBox.getText());
         currentSignInputBox = box;
     }
 
-    private void updateColorBoxPosition(int otherStuffBottom) {
-        colorInputBox.setY(otherStuffBottom + centerGap);
-    }
-
     private void clearTypeDependentChildren(){
         removeButtons(selectionDependentWidgets);
+        additionallyRenderables.remove(currentSignRenderer);
         selectionDependentWidgets.clear();
     }
 
@@ -467,7 +562,7 @@ public class SignGui extends Screen {
                     new SmallWideSign(
                         Angle.fromDegrees(0),
                         wideSignInputBox.getText(),
-                        !wideSignInputBox.isFlipped(),
+                        wideSignRenderer.isFlipped(),
                         modelType.mainTexture,
                         modelType.secondaryTexture,
                         colorInputBox.getCurrentColor(),
@@ -494,7 +589,7 @@ public class SignGui extends Screen {
                     new SmallShortSign(
                         Angle.fromDegrees(0),
                         shortSignInputBox.getText(),
-                        !shortSignInputBox.isFlipped(),
+                        shortSignRenderer.isFlipped(),
                         modelType.mainTexture,
                         modelType.secondaryTexture,
                         colorInputBox.getCurrentColor(),
@@ -526,7 +621,7 @@ public class SignGui extends Screen {
                             largeSignInputBoxes.get(2).getText(),
                             largeSignInputBoxes.get(3).getText(),
                         },
-                        !currentSignInputBox.isFlipped(),
+                        currentSignRenderer.isFlipped(),
                         modelType.mainTexture,
                         modelType.secondaryTexture,
                         colorInputBox.getCurrentColor(),

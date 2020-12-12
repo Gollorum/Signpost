@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "Signpost",
+  "pattern": [
+    "s",
+    "s",
+    "b"
+  ],
+  "key": {
+    "s": {
+      "item": "minecraft:warped_sign"
+    },
+    "b": {
+      "tag": "minecraft:warped_stems"
+    }
+  },
+  "result": {
+    "item": "signpost:post_warped",
+    "count": 2
+  }
+}
