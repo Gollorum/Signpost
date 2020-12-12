@@ -1,5 +1,6 @@
 package gollorum.signpost.signtypes;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import gollorum.signpost.*;
 import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.Post;
@@ -16,10 +17,14 @@ import gollorum.signpost.utils.math.geometry.TransformedBox;
 import gollorum.signpost.utils.serialization.OptionalSerializer;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.model.BakedQuad;
 import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.model.ItemOverrideList;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -30,12 +35,18 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.util.math.vector.Quaternion;
+import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Lazy;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static gollorum.signpost.minecraft.rendering.RenderingUtil.FontToVoxelSize;
+import static gollorum.signpost.minecraft.rendering.RenderingUtil.VoxelSize;
 
 public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
 
@@ -272,5 +283,37 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
             }
         };
     }
+
+    @Override
+    public void render(TileEntity tileEntity, TileEntityRendererDispatcher renderDispatcher, MatrixStack matrix, IRenderTypeBuffer buffer, int combinedLights, int combinedOverlay, Random random, long randomSeed) {
+        RenderingUtil.render(matrix, renderModel -> {
+            matrix.push();
+            Quaternion rotation = new Quaternion(Vector3f.YP,
+                flip
+                    ? angle.radians() + (float)Math.PI
+                    : angle.radians(),
+                false);
+            matrix.rotate(rotation);
+            Matrix4f rotationMatrix = new Matrix4f(rotation);
+            if (flip) {
+                matrix.rotate(Vector3f.ZP.rotationDegrees(180));
+                rotationMatrix.mul(Vector3f.ZP.rotationDegrees(180));
+            }
+            renderModel.render(
+                withTransformedDirections(model.get(), flip, angle.degrees()),
+                tileEntity,
+                buffer.getBuffer(RenderType.getSolid()),
+                false,
+                random,
+                randomSeed,
+                combinedOverlay,
+                rotationMatrix
+            );
+            matrix.pop();
+            renderText(matrix, renderDispatcher.getFontRenderer(), buffer, combinedLights);
+        });
+    }
+
+    protected abstract void renderText(MatrixStack matrix, FontRenderer fontRenderer, IRenderTypeBuffer buffer, int combinedLights);
 
 }

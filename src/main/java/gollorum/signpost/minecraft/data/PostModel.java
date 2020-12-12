@@ -20,20 +20,22 @@ public class PostModel extends BlockModelProvider {
     private static class FaceData {
         public final Direction direction;
         public final String texture;
+        public final ModelBuilder.FaceRotation rotation;
 
-        private FaceData(Direction direction, String texture) {
+        private FaceData(Direction direction, String texture, ModelBuilder.FaceRotation rotation) {
             this.direction = direction;
             this.texture = texture;
+            this.rotation = rotation;
         }
 
-        public static FaceData[] uniform(String texture, Direction... directions) {
-            return Arrays.stream(directions).map(d -> new FaceData(d, texture)).toArray(FaceData[]::new);
+        public static FaceData[] uniform(String texture, ModelBuilder.FaceRotation rotation, Direction... directions) {
+            return Arrays.stream(directions).map(d -> new FaceData(d, texture, rotation)).toArray(FaceData[]::new);
         }
 
-        public static FaceData[] all(String texture, Predicate<Direction> where) {
+        public static FaceData[] all(String texture, ModelBuilder.FaceRotation rotation, Predicate<Direction> where) {
             return Arrays.stream(Direction.values())
                 .filter(where)
-                .map(d -> new FaceData(d, texture))
+                .map(d -> new FaceData(d, texture, rotation))
                 .toArray(FaceData[]::new);
         }
     }
@@ -49,6 +51,9 @@ public class PostModel extends BlockModelProvider {
 
     public final Map<Post.Info, BlockModelBuilder> allModels;
     public final BlockModelBuilder waystoneModel;
+
+    private static final ModelBuilder.FaceRotation mainTextureRotation = ModelBuilder.FaceRotation.CLOCKWISE_90;
+    private static final ModelBuilder.FaceRotation secondaryTextureRotation = ModelBuilder.FaceRotation.CLOCKWISE_90;
 
     private final BlockModelBuilder previewModel;
 
@@ -130,7 +135,7 @@ public class PostModel extends BlockModelProvider {
             center.add(-widthLeft - 1, -height / 2 + 1, -0.5f),
             new Vector3(1, height - 2, 1),
             15, textureCenterY - height / 2 + 1,
-            FaceData.uniform(secondaryTexture, Direction.UP, Direction.DOWN, Direction.WEST, Direction.NORTH, Direction.SOUTH)
+            FaceData.uniform(secondaryTexture, secondaryTextureRotation, Direction.UP, Direction.DOWN, Direction.WEST, Direction.NORTH, Direction.SOUTH)
         );
         if(widthLeft + widthRight > 16){
             makeSliceWithRim(
@@ -176,7 +181,7 @@ public class PostModel extends BlockModelProvider {
             center.add(widthRight + stairsWidth * lastI, -height / 2 + 1 + stairStep * lastI, -0.5f),
             new Vector3(stairsWidth, height - 2 * (1 + stairStep * lastI), 1),
             (widthLeft + widthRight + Math.round(stairsWidth) * lastI) % 16, textureCenterY - height / 2 + 1 + stairStep * lastI,
-            FaceData.uniform(secondaryTexture, Direction.UP, Direction.DOWN, Direction.EAST, Direction.NORTH, Direction.SOUTH)
+            FaceData.uniform(secondaryTexture, secondaryTextureRotation, Direction.UP, Direction.DOWN, Direction.EAST, Direction.NORTH, Direction.SOUTH)
         );
         return builder;
     }
@@ -191,21 +196,21 @@ public class PostModel extends BlockModelProvider {
             min,
             new Vector3(size.x, rimHeight, size.z),
             uMin, vMin + size.y - rimHeight,
-            FaceData.all(secondaryTexture, d -> sideNotCulled.test(d) && !d.equals(Direction.UP))
+            FaceData.all(secondaryTexture, secondaryTextureRotation, d -> sideNotCulled.test(d) && !d.equals(Direction.UP))
         );
         makePartialCube(
             builder,
             min.withY(y -> y + size.y - rimHeight),
             new Vector3(size.x, rimHeight, size.z),
             uMin, vMin,
-            FaceData.all(secondaryTexture, d -> sideNotCulled.test(d) && !d.equals(Direction.DOWN))
+            FaceData.all(secondaryTexture, secondaryTextureRotation, d -> sideNotCulled.test(d) && !d.equals(Direction.DOWN))
         );
         makePartialCube(
             builder,
             min.withY(y -> y + rimHeight),
             new Vector3(size.x, size.y - 2 * rimHeight, size.z),
             uMin, vMin + rimHeight,
-            new FaceData(Direction.SOUTH, textureSign), new FaceData(Direction.NORTH, secondaryTexture)
+            new FaceData(Direction.SOUTH, textureSign, mainTextureRotation), new FaceData(Direction.NORTH, secondaryTexture, secondaryTextureRotation)
         );
     }
 
@@ -219,36 +224,43 @@ public class PostModel extends BlockModelProvider {
             ModelBuilder<BlockModelBuilder>.ElementBuilder.FaceBuilder faceBuilder = elementBuilder
                 .face(faceData.direction)
                 .texture("#" + faceData.texture);
-            TextureSegment uCoords;
-            TextureSegment vCoords;
+            TextureArea texCoords;
             switch (faceData.direction) {
                 case DOWN:
-                    uCoords = new TextureSegment(minU, maxFrontU);
-                    vCoords = new TextureSegment(minV - size.z, minV);
+                    texCoords = new TextureArea(
+                        new TextureSegment(minU, maxFrontU),
+                        new TextureSegment(minV - size.z, minV));
                     break;
                 case UP:
-                    uCoords = new TextureSegment(minU, maxFrontU);
-                    vCoords = new TextureSegment(maxFrontV, maxFrontV + size.z);
+                    texCoords = new TextureArea(
+                        new TextureSegment(minU, maxFrontU),
+                        new TextureSegment(maxFrontV, maxFrontV + size.z));
                     break;
                 case SOUTH:
-                    uCoords = new TextureSegment(minU, maxFrontU);
-                    vCoords = new TextureSegment(minV, maxFrontV);
+                    texCoords = new TextureArea(
+                        new TextureSegment(minU, maxFrontU),
+                        new TextureSegment(minV, maxFrontV));
                     break;
                 case NORTH:
-                    uCoords = new TextureSegment(maxFrontU, minU);
-                    vCoords = new TextureSegment(minV, maxFrontV);
+                    texCoords = new TextureArea(
+                        new TextureSegment(maxFrontU, minU),
+                        new TextureSegment(minV, maxFrontV));
                     break;
                 case WEST:
-                    uCoords = new TextureSegment(maxFrontU, maxFrontU + size.z);
-                    vCoords = new TextureSegment(minV, maxFrontV);
+                    texCoords = new TextureArea(
+                        new TextureSegment(maxFrontU, maxFrontU + size.z),
+                        new TextureSegment(minV, maxFrontV));
                     break;
                 case EAST:
-                    uCoords = new TextureSegment(minU - size.z, minU);
-                    vCoords = new TextureSegment(minV, maxFrontV);
+                    texCoords = new TextureArea(
+                        new TextureSegment(minU - size.z, minU),
+                        new TextureSegment(minV, maxFrontV));
                     break;
                 default: throw new RuntimeException("Direction " + faceData.direction + " is not supported");
             }
-            faceBuilder.uvs(uCoords.from, vCoords.from, uCoords.to, vCoords.to);
+            texCoords = texCoords.rotate(faceData.rotation);
+            faceBuilder.uvs(texCoords.u.from, texCoords.v.from, texCoords.u.to, texCoords.v.to)
+                .rotation(faceData.rotation);
         }
     }
 
@@ -276,6 +288,31 @@ public class PostModel extends BlockModelProvider {
             return i >= 0 && i <= 16;
         }
 
+    }
+
+    private static class TextureArea {
+        public final TextureSegment u;
+        public final TextureSegment v;
+
+        private TextureArea(TextureSegment u, TextureSegment v) {
+            this.u = u;
+            this.v = v;
+        }
+
+        public TextureArea rotate(ModelBuilder.FaceRotation rotation) {
+            switch (rotation) {
+                case ZERO:
+                    return this;
+                case CLOCKWISE_90:
+                    return new TextureArea(v, new TextureSegment(u.to, u.from));
+                case UPSIDE_DOWN:
+                    return new TextureArea(new TextureSegment(u.to, u.from), new TextureSegment(v.to, v.from));
+                case COUNTERCLOCKWISE_90:
+                    return new TextureArea(new TextureSegment(v.to, v.from), u);
+                default:
+                    throw new RuntimeException("Rotation type " + rotation + " is not supported");
+            }
+        }
     }
 
     private static BlockModelBuilder makePostAt(Vector3 center, BlockModelBuilder builder) {

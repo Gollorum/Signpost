@@ -251,7 +251,7 @@ public class SignGui extends Screen {
 
         Rect modelRect = new Rect(
             new Point(getCenterX() + centerGap + 3 * inputSignsScale, getCenterY() - centralAreaHeight / 2),
-            modelType.largeGuiTexture.size.scale(inputSignsScale),
+            new TextureSize(22, 16).scale(inputSignsScale),
             Rect.XAlignment.Left,
             Rect.YAlignment.Top);
         GuiModelRenderer postRenderer = new GuiModelRenderer(
@@ -577,9 +577,8 @@ public class SignGui extends Screen {
                         SmallWideSign.METADATA.identifier));
                 } else {
                     PacketHandler.sendToServer(new PostTile.PartAddedEvent.Packet(
-                        tilePartInfo,
+                        tilePartInfo, data,
                         SmallWideSign.METADATA.identifier,
-                        data,
                         new Vector3(0, localHitPos.y > 0.5f ? 0.75f : 0.25f, 0))
                     );
                 }
@@ -604,9 +603,8 @@ public class SignGui extends Screen {
                         SmallShortSign.METADATA.identifier));
                 } else {
                     PacketHandler.sendToServer(new PostTile.PartAddedEvent.Packet(
-                        tilePartInfo,
+                        tilePartInfo, data,
                         SmallShortSign.METADATA.identifier,
-                        data,
                         new Vector3(0, localHitPos.y > 0.5f ? 0.75f : 0.25f, 0))
                     );
                 }
@@ -635,9 +633,8 @@ public class SignGui extends Screen {
                         LargeSign.METADATA.identifier));
                 } else {
                     PacketHandler.sendToServer(new PostTile.PartAddedEvent.Packet(
-                        tilePartInfo,
+                        tilePartInfo, data,
                         LargeSign.METADATA.identifier,
-                        data,
                         new Vector3(0, 0.5f, 0))
                     );
                 }

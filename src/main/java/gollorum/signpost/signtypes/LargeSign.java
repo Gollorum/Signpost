@@ -110,7 +110,7 @@ public class LargeSign extends Sign<LargeSign> {
     @Override
     protected void regenerateTransformedBox() {
         transformedBounds = new TransformedBox(LOCAL_BOUNDS).rotateAlong(Matrix4x4.Axis.Y, angle);
-        if (flip) transformedBounds = transformedBounds.scale(new Vector3(-1, 1, 1));
+        if(flip) transformedBounds = transformedBounds.scale(new Vector3(1, 1, -1));
     }
 
     private void notifyTextChanged(InteractionInfo info) {
@@ -140,50 +140,32 @@ public class LargeSign extends Sign<LargeSign> {
     }
 
     @Override
-    public void render(TileEntity tileEntity, TileEntityRendererDispatcher renderDispatcher, MatrixStack matrix, IRenderTypeBuffer buffer, int combinedLights, int combinedOverlay, Random random, long randomSeed) {
-        RenderingUtil.render(matrix, renderModel -> {
-            matrix.push();
-            Matrix4f rotationMatrix = new Matrix4f(new Quaternion(Vector3f.YP, angle.radians(), false));
-            matrix.rotate(new Quaternion(Vector3f.YP, angle.radians(), false));
-            if (flip) {
-                matrix.rotate(Vector3f.ZP.rotationDegrees(180));
-                rotationMatrix.mul(Vector3f.ZP.rotationDegrees(180));
-            }
-            renderModel.render(
-                withTransformedDirections(model.get(), flip, angle.degrees()),
-                tileEntity,
-                buffer.getBuffer(RenderType.getSolid()),
-                false,
-                random,
-                randomSeed,
-                combinedOverlay,
-                rotationMatrix
-            );
-            matrix.pop();
-            matrix.rotate(Vector3f.ZP.rotationDegrees(180));
-            FontRenderer fontRenderer = renderDispatcher.fontRenderer;
-            matrix.rotate(Vector3f.YP.rotation((float) (Math.PI-angle.radians())));
-            matrix.translate(0, 3.5f * VoxelSize, -3.005 * VoxelSize);
+    public void renderText(MatrixStack matrix, FontRenderer fontRenderer, IRenderTypeBuffer buffer, int combinedLights) {
+        matrix.rotate(Vector3f.ZP.rotationDegrees(180));
+        matrix.rotate(Vector3f.YP.rotation((float) (
+            flip
+                ? angle.radians()
+                : Math.PI - angle.radians())));
+        matrix.translate(0, 3.5f * VoxelSize, -3.005 * VoxelSize);
 
-            matrix.push();
-            render(fontRenderer, text[3], matrix, buffer, combinedLights, false);
-            matrix.pop();
-            matrix.translate(0, -7 / 3f * VoxelSize, 0);
+        matrix.push();
+        render(fontRenderer, text[3], matrix, buffer, combinedLights, false);
+        matrix.pop();
+        matrix.translate(0, -7 / 3f * VoxelSize, 0);
 
-            matrix.push();
-            render(fontRenderer, text[2], matrix, buffer, combinedLights, true);
-            matrix.pop();
-            matrix.translate(0, -7 / 3f * VoxelSize, 0);
+        matrix.push();
+        render(fontRenderer, text[2], matrix, buffer, combinedLights, true);
+        matrix.pop();
+        matrix.translate(0, -7 / 3f * VoxelSize, 0);
 
-            matrix.push();
-            render(fontRenderer, text[1], matrix, buffer, combinedLights, true);
-            matrix.pop();
-            matrix.translate(0, -7 / 3f * VoxelSize, 0);
+        matrix.push();
+        render(fontRenderer, text[1], matrix, buffer, combinedLights, true);
+        matrix.pop();
+        matrix.translate(0, -7 / 3f * VoxelSize, 0);
 
-            matrix.push();
-            render(fontRenderer, text[0], matrix, buffer, combinedLights, false);
-            matrix.pop();
-        });
+        matrix.push();
+        render(fontRenderer, text[0], matrix, buffer, combinedLights, false);
+        matrix.pop();
     }
 
     private void render(FontRenderer fontRenderer, String text, MatrixStack matrix, IRenderTypeBuffer buffer, int combinedLights, boolean isLong) {

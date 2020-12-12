@@ -84,8 +84,8 @@ public class PostTile extends TileEntity {
         parts.put(identifier, part);
         if(hasWorld() && !world.isRemote) sendToTracing(() -> new PartAddedEvent.Packet(
             new TilePartInfo(this, identifier),
-            part.blockPart.getMeta().identifier,
             part.blockPart.write(),
+            part.blockPart.getMeta().identifier,
             part.offset
         ));
         return identifier;
@@ -288,7 +288,7 @@ public class PostTile extends TileEntity {
             public final CompoundNBT partData;
             public final Vector3 offset;
 
-            public Packet(TilePartInfo info, String partMetaIdentifier, CompoundNBT partData, Vector3 offset) {
+            public Packet(TilePartInfo info, CompoundNBT partData, String partMetaIdentifier, Vector3 offset) {
                 this.info = info;
                 this.partMetaIdentifier = partMetaIdentifier;
                 this.partData = partData;
@@ -309,8 +309,8 @@ public class PostTile extends TileEntity {
         @Override
         public void encode(Packet message, PacketBuffer buffer) {
             TilePartInfo.SERIALIZER.writeTo(message.info, buffer);
-            buffer.writeString(message.partMetaIdentifier);
             buffer.writeString(message.partData.getString());
+            buffer.writeString(message.partMetaIdentifier);
             Vector3.SERIALIZER.writeTo(message.offset, buffer);
         }
 
@@ -319,8 +319,8 @@ public class PostTile extends TileEntity {
             try {
                 return new Packet(
                     TilePartInfo.SERIALIZER.readFrom(buffer),
-                    buffer.readString(),
                     JsonToNBT.getTagFromJson(buffer.readString()),
+                    buffer.readString(),
                     Vector3.SERIALIZER.readFrom(buffer)
                 );
             } catch (CommandSyntaxException e) {

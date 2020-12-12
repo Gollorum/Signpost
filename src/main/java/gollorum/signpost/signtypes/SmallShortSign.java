@@ -100,7 +100,6 @@ public class SmallShortSign extends Sign<SmallShortSign> {
     @Override
     protected void regenerateTransformedBox() {
         transformedBounds = new TransformedBox(LOCAL_BOUNDS).rotateAlong(Matrix4x4.Axis.Y, angle);
-        if(flip) transformedBounds = transformedBounds.scale(new Vector3(-1, 1, 1));
     }
 
     private void notifyTextChanged(InteractionInfo info) {
@@ -118,40 +117,22 @@ public class SmallShortSign extends Sign<SmallShortSign> {
     }
 
     @Override
-    public void render(TileEntity tileEntity, TileEntityRendererDispatcher renderDispatcher, MatrixStack matrix, IRenderTypeBuffer buffer, int combinedLights, int combinedOverlay, Random random, long randomSeed) {
-        RenderingUtil.render(matrix, renderModel -> {
-            matrix.push();
-            matrix.rotate(new Quaternion(Vector3f.YP, angle.radians(), false));
-            Matrix4f rotationMatrix = new Matrix4f(new Quaternion(Vector3f.YP, angle.radians(), false));
-            if (flip) {
-                matrix.rotate(Vector3f.ZP.rotationDegrees(180));
-                rotationMatrix.mul(Vector3f.ZP.rotationDegrees(180));
-            }
-            renderModel.render(
-                withTransformedDirections(model.get(), flip, angle.degrees()),
-                tileEntity,
-                buffer.getBuffer(RenderType.getSolid()),
-                false,
-                random,
-                randomSeed,
-                combinedOverlay,
-                rotationMatrix
-            );
-            matrix.pop();
-            matrix.rotate(Vector3f.ZP.rotationDegrees(180));
-            FontRenderer fontRenderer = renderDispatcher.fontRenderer;
-            float scale = FONT_SIZE_VOXELS * FontToVoxelSize;
-            float MAX_WIDTH_FRAC = fontRenderer.getStringWidth(text) * scale / MAXIMUM_TEXT_WIDTH;
-            scale /= Math.max(1, MAX_WIDTH_FRAC);
-            matrix.rotate(Vector3f.YP.rotation((float) (Math.PI-angle.radians())));
-            float offset = MathUtils.lerp(TEXT_OFFSET_RIGHT, (TEXT_OFFSET_RIGHT - TEXT_OFFSET_LEFT) / 2f, 1 - Math.min(1, MAX_WIDTH_FRAC));
-            matrix.translate(
-                flip ? offset - fontRenderer.getStringWidth(text) * scale : -offset,
-                -scale * 4 * TEXT_RATIO,
-                -0.505 * VoxelSize);
-            matrix.scale(scale, scale * TEXT_RATIO, scale);
-            fontRenderer.renderString(text, 0, 0, color, false, matrix.getLast().getMatrix(), buffer, false, 0, combinedLights);
-        });
+    protected void renderText(MatrixStack matrix, FontRenderer fontRenderer, IRenderTypeBuffer buffer, int combinedLights) {
+        matrix.rotate(Vector3f.ZP.rotationDegrees(180));
+        float scale = FONT_SIZE_VOXELS * FontToVoxelSize;
+        float MAX_WIDTH_FRAC = fontRenderer.getStringWidth(text) * scale / MAXIMUM_TEXT_WIDTH;
+        scale /= Math.max(1, MAX_WIDTH_FRAC);
+        matrix.rotate(Vector3f.YP.rotation((float) (
+            flip
+                ? angle.radians()
+                : Math.PI - angle.radians())));
+        float offset = MathUtils.lerp(TEXT_OFFSET_RIGHT, (TEXT_OFFSET_RIGHT - TEXT_OFFSET_LEFT) / 2f, 1 - Math.min(1, MAX_WIDTH_FRAC));
+        matrix.translate(
+            flip ? offset - fontRenderer.getStringWidth(text) * scale : -offset,
+            -scale * 4 * TEXT_RATIO,
+            -0.505 * VoxelSize);
+        matrix.scale(scale, scale * TEXT_RATIO, scale);
+        fontRenderer.renderString(text, 0, 0, color, false, matrix.getLast().getMatrix(), buffer, false, 0, combinedLights);
     }
 
     @Override

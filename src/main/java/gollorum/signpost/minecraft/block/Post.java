@@ -5,7 +5,6 @@ import gollorum.signpost.interactions.Interactable;
 import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.SignGui;
-import gollorum.signpost.minecraft.gui.TextureResource;
 import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.utils.Delay;
 import gollorum.signpost.utils.TileEntityUtils;
@@ -53,63 +52,56 @@ public class Post extends Block implements IWaterLoggable {
 
     public static enum ModelType implements IStringSerializable {
         Acacia(new ResourceLocation("acacia_log"),
-            new ResourceLocation(Signpost.MOD_ID, "acacia"),
-            new ResourceLocation(Signpost.MOD_ID, "acacia_dark"),
-            TextureResource.SignGui.Wide.Acacia, TextureResource.SignGui.Short.Acacia, TextureResource.SignGui.Large.Acacia),
+            new ResourceLocation("acacia_log"),
+            new ResourceLocation("stripped_acacia_log")
+        ),
         Birch(new ResourceLocation("birch_log"),
-            new ResourceLocation(Signpost.MOD_ID, "birch"),
-            new ResourceLocation(Signpost.MOD_ID, "birch_dark"),
-            TextureResource.SignGui.Wide.Birch, TextureResource.SignGui.Short.Birch, TextureResource.SignGui.Large.Birch),
+            new ResourceLocation("birch_log"),
+            new ResourceLocation("stripped_birch_log")
+        ),
         Iron(new ResourceLocation("iron_block"),
             new ResourceLocation(Signpost.MOD_ID, "iron"),
-            new ResourceLocation(Signpost.MOD_ID, "iron_dark"),
-            TextureResource.SignGui.Wide.Iron, TextureResource.SignGui.Short.Iron, TextureResource.SignGui.Large.Iron),
+            new ResourceLocation(Signpost.MOD_ID, "iron_dark")
+        ),
         Jungle(new ResourceLocation("jungle_log"),
-            new ResourceLocation(Signpost.MOD_ID, "jungle"),
-            new ResourceLocation(Signpost.MOD_ID, "jungle_dark"),
-            TextureResource.SignGui.Wide.Jungle, TextureResource.SignGui.Short.Jungle, TextureResource.SignGui.Large.Jungle),
+            new ResourceLocation("jungle_log"),
+            new ResourceLocation("stripped_jungle_log")
+        ),
         Oak(new ResourceLocation("oak_log"),
-            new ResourceLocation(Signpost.MOD_ID, "oak"),
-            new ResourceLocation(Signpost.MOD_ID, "oak_dark"),
-            TextureResource.SignGui.Wide.Oak, TextureResource.SignGui.Short.Oak, TextureResource.SignGui.Large.Oak),
+            new ResourceLocation("oak_log"),
+            new ResourceLocation("stripped_oak_log")
+        ),
         DarkOak(new ResourceLocation("dark_oak_log"),
-            new ResourceLocation(Signpost.MOD_ID, "dark_oak"),
-            new ResourceLocation(Signpost.MOD_ID, "dark_oak_dark"),
-            TextureResource.SignGui.Wide.DarkOak, TextureResource.SignGui.Short.DarkOak, TextureResource.SignGui.Large.DarkOak),
+            new ResourceLocation("dark_oak_log"),
+            new ResourceLocation("stripped_dark_oak_log")
+        ),
         Spruce(new ResourceLocation("spruce_log"),
-            new ResourceLocation(Signpost.MOD_ID, "spruce"),
-            new ResourceLocation(Signpost.MOD_ID, "spruce_dark"),
-            TextureResource.SignGui.Wide.Spruce, TextureResource.SignGui.Short.Spruce, TextureResource.SignGui.Large.Spruce),
+            new ResourceLocation("spruce_log"),
+            new ResourceLocation("stripped_spruce_log")
+        ),
         Stone(new ResourceLocation("stone"),
-            new ResourceLocation(Signpost.MOD_ID, "stone"),
-            new ResourceLocation(Signpost.MOD_ID, "stone_dark"),
-            TextureResource.SignGui.Wide.Stone, TextureResource.SignGui.Short.Stone, TextureResource.SignGui.Large.Stone),
+            new ResourceLocation("stone"),
+            new ResourceLocation(Signpost.MOD_ID, "stone_dark")
+        ),
         Warped(
             new ResourceLocation("warped_stem"),
-            new ResourceLocation(Signpost.MOD_ID, "warped"),
-            new ResourceLocation(Signpost.MOD_ID, "warped_dark"),
-            TextureResource.SignGui.Wide.Oak, TextureResource.SignGui.Short.Oak, TextureResource.SignGui.Large.Oak),
+            new ResourceLocation("warped_stem"),
+            new ResourceLocation("stripped_warped_stem")
+        ),
         Crimson(
             new ResourceLocation("crimson_stem"),
-            new ResourceLocation(Signpost.MOD_ID, "crimson"),
-            new ResourceLocation(Signpost.MOD_ID, "crimson_dark"),
-            TextureResource.SignGui.Wide.Oak, TextureResource.SignGui.Short.Oak, TextureResource.SignGui.Large.Oak);
+            new ResourceLocation("crimson_stem"),
+            new ResourceLocation("stripped_crimson_stem")
+        );
 
         public final ResourceLocation postTexture;
         public final ResourceLocation mainTexture;
         public final ResourceLocation secondaryTexture;
 
-        public final TextureResource wideGuiTexture;
-        public final TextureResource shortGuiTexture;
-        public final TextureResource largeGuiTexture;
-
-        ModelType(ResourceLocation postTexture, ResourceLocation mainTexture, ResourceLocation secondaryTexture, TextureResource wideGuiTexture, TextureResource shortGuiTexture, TextureResource largeGuiTexture) {
+        ModelType(ResourceLocation postTexture, ResourceLocation mainTexture, ResourceLocation secondaryTexture) {
             this.postTexture = expand(postTexture);
             this.mainTexture = expand(mainTexture);
             this.secondaryTexture = expand(secondaryTexture);
-            this.wideGuiTexture = wideGuiTexture;
-            this.shortGuiTexture = shortGuiTexture;
-            this.largeGuiTexture = largeGuiTexture;
         }
 
         public ResourceLocation expand(ResourceLocation loc){
