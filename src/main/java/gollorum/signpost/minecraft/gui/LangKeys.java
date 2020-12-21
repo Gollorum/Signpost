@@ -12,4 +12,7 @@ public class LangKeys {
     public static final String notDiscovered = "signpost.notDiscovered";
     public static final String noTeleport = "signpost.noTeleport";
 
+    public static final String rotationLabel = "gui.signpost.rotation_label";
+    public static final String rotationWaystone = "gui.signpost.rotation_waystone";
+    public static final String rotationPlayer = "gui.signpost.rotation_player";
 }

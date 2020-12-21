@@ -14,6 +14,7 @@ import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Intersectable;
 import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.TransformedBox;
+import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.OptionalSerializer;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
@@ -123,7 +124,10 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
     public InteractionResult interact(InteractionInfo info) {
         if (!info.isRemote) {
             if(holdsAngleTool(info)) {
-                setAngle(angle.add(Angle.fromDegrees(15)));
+                Vector3 diff = info.traceResult.ray.start.negated().add(0.5f, 0.5f, 0.5f).withY(0).normalized();
+                Vector3 rayDir = info.traceResult.ray.dir.withY(0).normalized();
+                Angle angleToPost = Angle.between(rayDir.x, rayDir.z, diff.x, diff.z).normalized();
+                setAngle(angle.add(Angle.fromDegrees(angleToPost.radians() < 0 ? 15 : -15)));
                 notifyAngleChanged(info);
             } else if(!holdsEditTool(info))
                 tryTeleport((ServerPlayerEntity) info.player);
@@ -316,4 +320,7 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
 
     protected abstract void renderText(MatrixStack matrix, FontRenderer fontRenderer, IRenderTypeBuffer buffer, int combinedLights);
 
+    public Angle getAngle() {
+        return angle;
+    }
 }

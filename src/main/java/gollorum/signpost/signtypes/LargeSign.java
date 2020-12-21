@@ -49,7 +49,7 @@ public class LargeSign extends Sign<LargeSign> {
     public static final BlockPartMetadata<LargeSign> METADATA = new BlockPartMetadata<>(
         "large_sign",
         (sign, keyPrefix, compound) -> {
-            Angle.SERIALIZER.writeTo(sign.angle, compound, keyPrefix);
+            Angle.SERIALIZER.writeTo(sign.angle, compound, keyPrefix + "Angle");
             compound.putString(keyPrefix + "Text0", sign.text[0]);
             compound.putString(keyPrefix + "Text1", sign.text[1]);
             compound.putString(keyPrefix + "Text2", sign.text[2]);
@@ -63,7 +63,7 @@ public class LargeSign extends Sign<LargeSign> {
             compound.putString(keyPrefix + "ModelType", sign.modelType.name());
         },
         (compound, keyPrefix) -> new LargeSign(
-            Angle.SERIALIZER.read(compound, keyPrefix),
+            Angle.SERIALIZER.read(compound, keyPrefix + "Angle"),
             new String[]{
                 compound.getString(keyPrefix + "Text0"),
                 compound.getString(keyPrefix + "Text1"),

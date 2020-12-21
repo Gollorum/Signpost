@@ -47,7 +47,7 @@ public class SmallWideSign extends Sign<SmallWideSign> {
     public static final BlockPartMetadata<SmallWideSign> METADATA = new BlockPartMetadata<>(
         "small_wide_sign",
         (sign, keyPrefix, compound) -> {
-            Angle.SERIALIZER.writeTo(sign.angle, compound, keyPrefix);
+            Angle.SERIALIZER.writeTo(sign.angle, compound, keyPrefix + "Angle");
             compound.putString(keyPrefix + "Text", sign.text);
             compound.putBoolean(keyPrefix + "Flip", sign.flip);
             compound.putString(keyPrefix + "Texture", sign.mainTexture.toString());
@@ -58,7 +58,7 @@ public class SmallWideSign extends Sign<SmallWideSign> {
             compound.putString(keyPrefix + "ModelType", sign.modelType.name());
         },
         (compound, keyPrefix) -> new SmallWideSign(
-            Angle.SERIALIZER.read(compound, keyPrefix),
+            Angle.SERIALIZER.read(compound, keyPrefix + "Angle"),
             compound.getString(keyPrefix + "Text"),
             compound.getBoolean(keyPrefix + "Flip"),
             new ResourceLocation(compound.getString(keyPrefix + "Texture")),
@@ -124,7 +124,7 @@ public class SmallWideSign extends Sign<SmallWideSign> {
         scale /= Math.max(1, MAX_WIDTH_FRAC);
         matrix.rotate(Vector3f.YP.rotation((float) (
             flip
-                ? angle.radians()
+                ? -angle.radians()
                 : Math.PI - angle.radians())));
         float offset = TEXT_OFFSET_RIGHT * Math.min(1, MAX_WIDTH_FRAC);
         matrix.translate(

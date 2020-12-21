@@ -29,6 +29,7 @@ public final class DataGeneration {
         if(event.includeClient()) {
             PostModel postModel = new PostModel(datagenerator, fileHelper);
             datagenerator.addProvider(postModel);
+            datagenerator.addProvider(new WrenchModel(datagenerator, fileHelper));
             datagenerator.addProvider(new PostBlockState(datagenerator, fileHelper, postModel));
         }
     }

@@ -1,5 +1,6 @@
 package gollorum.signpost.minecraft.registry;
 
+import gollorum.signpost.minecraft.Wrench;
 import gollorum.signpost.minecraft.block.Post;
 import gollorum.signpost.minecraft.block.Waystone;
 import net.minecraft.item.BlockItem;
@@ -19,7 +20,7 @@ import static gollorum.signpost.Signpost.MOD_ID;
 
 public class ItemRegistry {
 
-    public static final ItemGroup ITEM_GROUP = new ItemGroup("signpost") {
+    private static final ItemGroup ITEM_GROUP = new ItemGroup("signpost") {
         @Override
         public ItemStack createIcon() {
             return new ItemStack(POSTS_ITEMS.get(0).get());
@@ -36,6 +37,8 @@ public class ItemRegistry {
         Arrays.stream(Post.All_INFOS)
             .map(ItemRegistry::registerPostItem)
             .collect(Collectors.toList());
+
+    private static final RegistryObject<Item> WRENCH = REGISTER.register(Wrench.registryName, () -> new Wrench(ITEM_GROUP));
 
     private static RegistryObject<Item> registerPostItem(Post.Info postInfo){
         return REGISTER.register(postInfo.registryName,

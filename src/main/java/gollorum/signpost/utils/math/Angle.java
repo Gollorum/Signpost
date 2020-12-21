@@ -43,6 +43,14 @@ public final class Angle {
         return radians * RADIANS_TO_DEGREES;
     }
 
+    public Angle normalized() {
+        float pi = (float) Math.PI;
+        float r = radians % (2 * pi);
+        if(r < -pi) r += 2 * pi;
+        if(r > pi) r -= 2 * pi;
+        return fromRadians(r);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

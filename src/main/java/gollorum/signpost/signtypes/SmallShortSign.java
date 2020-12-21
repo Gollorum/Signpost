@@ -124,7 +124,7 @@ public class SmallShortSign extends Sign<SmallShortSign> {
         scale /= Math.max(1, MAX_WIDTH_FRAC);
         matrix.rotate(Vector3f.YP.rotation((float) (
             flip
-                ? angle.radians()
+                ? -angle.radians()
                 : Math.PI - angle.radians())));
         float offset = MathUtils.lerp(TEXT_OFFSET_RIGHT, (TEXT_OFFSET_RIGHT - TEXT_OFFSET_LEFT) / 2f, 1 - Math.min(1, MAX_WIDTH_FRAC));
         matrix.translate(

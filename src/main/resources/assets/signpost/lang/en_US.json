@@ -1,22 +1,27 @@
 {
   "block.signpost.waystone": "Waystone",
-  "block.signpost.post_acacia": "Acacia Signpost",
-  "block.signpost.post_birch": "Birch Signpost",
-  "block.signpost.post_iron": "Iron Signpost",
-  "block.signpost.post_jungle": "Jungle Signpost",
-  "block.signpost.post_oak": "Oak Signpost",
-  "block.signpost.post_dark_oak": "Dark Oak Signpost",
-  "block.signpost.post_spruce": "Spruce Signpost",
-  "block.signpost.post_stone": "Stone Signpost",
-  "block.signpost.post_warped": "Warped Signpost",
-  "block.signpost.post_crimson": "Crimson Signpost",
+  "block.signpost.post_acacia": "Acacia sign post",
+  "block.signpost.post_birch": "Birch sign post",
+  "block.signpost.post_iron": "Iron sign post",
+  "block.signpost.post_jungle": "Jungle sign post",
+  "block.signpost.post_oak": "Oak sign post",
+  "block.signpost.post_dark_oak": "Dark Oak sign post",
+  "block.signpost.post_spruce": "Spruce sign post",
+  "block.signpost.post_stone": "Stone sign post",
+  "block.signpost.post_warped": "Warped sign post",
+  "block.signpost.post_crimson": "Crimson sign post",
+
+  "item.signpost.tool": "Sign post tool",
 
   "gui.signpost.new_sign_hint": "Use a sign item on the post to attach it. This will open this screen.",
   "gui.signpost.remove_sign": "Remove sign",
+  "gui.signpost.rotation_label": "Rotation:",
+  "gui.signpost.rotation_waystone": "%d (point at waystone)",
+  "gui.signpost.rotation_player": "%d (face the player)",
 
   "signpost.discovered": "You can now travel to {0} using sign posts",
   "signpost.notDiscovered": "You have not yet discovered {0}",
   "signpost.noTeleport": "This sign has no destination",
 
-  "itemGroup.signpost": "Signpost"
+  "itemGroup.signpost": "Sign post"
 }

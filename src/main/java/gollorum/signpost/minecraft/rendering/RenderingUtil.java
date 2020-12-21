@@ -53,7 +53,7 @@ public class RenderingUtil {
     }
 
     private static final Map<ResourceLocation, Map<ResourceLocation, Map<ResourceLocation, Lazy<IBakedModel>>>> cachedTwoTexturedModels = new ConcurrentHashMap<>();
-    private static final ResourceLocation texture1Marker = new ResourceLocation("block/oak_log");
+    private static final ResourceLocation texture1Marker = new ResourceLocation("block/stripped_oak_log");
 
     public static Lazy<IBakedModel> loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation1, ResourceLocation textureLocation2) {
         final ResourceLocation textLoc1 = trim(textureLocation1);
@@ -129,13 +129,13 @@ public class RenderingUtil {
     }
 
     public static int drawString(FontRenderer fontRenderer, String text, Point point, Rect.XAlignment xAlignment, Rect.YAlignment yAlignment, int color, int maxWidth, boolean dropShadow){
-        IRenderTypeBuffer.Impl buffer = IRenderTypeBuffer.getImpl(Tessellator.getInstance().getBuffer()); // copied from fontRenderer
+        IRenderTypeBuffer.Impl buffer = IRenderTypeBuffer.getImpl(Tessellator.getInstance().getBuffer());
         int textWidth = fontRenderer.getStringWidth(text);
         float scale = Math.min(1f, maxWidth / (float) textWidth);
         Matrix4f matrix = Matrix4f.makeTranslate(
             Rect.xCoordinateFor(point.x, maxWidth, xAlignment) + maxWidth * 0.5f,
             Rect.yCoordinateFor(point.y, fontRenderer.FONT_HEIGHT, yAlignment) + fontRenderer.FONT_HEIGHT * 0.5f,
-            0
+            100
         );
         if(scale < 1) matrix.mul(Matrix4f.makeScale(scale, scale, scale));
         int i = fontRenderer.renderString(
@@ -148,7 +148,7 @@ public class RenderingUtil {
             buffer,
             false,
             0,
-            15728880 // copied from fontRenderer
+            0xf000f0
         );
         buffer.finish();
         return i;

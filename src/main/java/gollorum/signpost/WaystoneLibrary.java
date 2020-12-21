@@ -87,6 +87,9 @@ public class WaystoneLibrary {
     private final EventDispatcher.Impl.WithPublicDispatch<DeliverWaystoneAtLocationEvent.Packet> requestedWaystoneAtLocationEventDispatcher =
         new EventDispatcher.Impl.WithPublicDispatch<>();
 
+    private final EventDispatcher.Impl.WithPublicDispatch<DeliverWaystoneLocationEvent.Packet> requestedWaystoneLocationEventDispatcher =
+        new EventDispatcher.Impl.WithPublicDispatch<>();
+
     public Optional<String> update(String newName, WaystoneLocationData location) {
         if(!Signpost.getServerType().isServer || location.block.world.match(w -> !(w instanceof ServerWorld), i -> false)) {
             PacketHandler.sendToServer(new WaystoneUpdatedEventEvent.Packet(WaystoneUpdatedEvent.fromUpdated(location, newName)));
@@ -223,6 +226,23 @@ public class WaystoneLibrary {
                 }
             });
             PacketHandler.sendToServer(new RequestWaystoneAtLocationEvent.Packet(location));
+        }
+    }
+
+    public void requestWaystoneLocationData(String waystoneName, Consumer<Optional<WaystoneLocationData>> onReply) {
+        if(Signpost.getServerType().isServer) {
+            onReply.accept(getByName(waystoneName).map(e -> e.getValue().locationData));
+        } else {
+            requestedWaystoneLocationEventDispatcher.addListener(new Consumer<DeliverWaystoneLocationEvent.Packet>() {
+                @Override
+                public void accept(DeliverWaystoneLocationEvent.Packet packet) {
+                    if (packet.name.equals(waystoneName)) {
+                        requestedWaystoneLocationEventDispatcher.removeListener(this);
+                        onReply.accept(packet.data);
+                    }
+                }
+            });
+            PacketHandler.sendToServer(new RequestWaystoneLocationEvent.Packet(waystoneName));
         }
     }
 
@@ -418,6 +438,80 @@ public class WaystoneLibrary {
         @Override
         public void handle(Packet message, Supplier<NetworkEvent.Context> context) {
             context.get().enqueueWork(() -> getInstance().requestedWaystoneAtLocationEventDispatcher.dispatch(message, false));
+        }
+
+    }
+
+    private static final class RequestWaystoneLocationEvent implements PacketHandler.Event<RequestWaystoneLocationEvent.Packet> {
+
+        public static final class Packet {
+            public final String name;
+
+            public Packet(String name) { this.name = name; }
+        }
+
+        @Override
+        public Class<Packet> getMessageClass() {
+            return Packet.class;
+        }
+
+        @Override
+        public void encode(Packet message, PacketBuffer buffer) {
+            buffer.writeString(message.name);
+        }
+
+        @Override
+        public Packet decode(PacketBuffer buffer) {
+            return new Packet(buffer.readString());
+        }
+
+        @Override
+        public void handle(Packet message, Supplier<NetworkEvent.Context> context) {
+            Optional<WaystoneLocationData> dataAt = getInstance().getByName(message.name).map(e -> e.getValue().locationData);
+            PacketHandler.send(
+                PacketDistributor.PLAYER.with(() -> context.get().getSender()),
+                new DeliverWaystoneLocationEvent.Packet(
+                    message.name,
+                    dataAt
+                ));
+        }
+
+    }
+
+    private static final class DeliverWaystoneLocationEvent implements PacketHandler.Event<DeliverWaystoneLocationEvent.Packet> {
+
+        private static final class Packet {
+            private final String name;
+            private final Optional<WaystoneLocationData> data;
+
+            public Packet(String name, Optional<WaystoneLocationData> data) {
+                this.name = name;
+                this.data = data;
+            }
+        }
+
+        @Override
+        public Class<Packet> getMessageClass() { return Packet.class; }
+
+        @Override
+        public void encode(Packet message, PacketBuffer buffer) {
+            buffer.writeString(message.name);
+            new OptionalSerializer<>(WaystoneLocationData.SERIALIZER)
+                .writeTo(message.data, buffer);
+        }
+
+        @Override
+        public Packet decode(PacketBuffer buffer) {
+            return new Packet(
+                buffer.readString(),
+                new OptionalSerializer<>(WaystoneLocationData.SERIALIZER).
+                    readFrom(buffer)
+            );
+        }
+
+        @Override
+        public void handle(Packet message, Supplier<NetworkEvent.Context> context) {
+            context.get().enqueueWork(() -> getInstance().requestedWaystoneLocationEventDispatcher.dispatch(message, false));
         }
 
     }

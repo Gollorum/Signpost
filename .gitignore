@@ -25,3 +25,5 @@ run
 forge*changelog.txt
 
 logs
+
+src/generated/resources/.cache

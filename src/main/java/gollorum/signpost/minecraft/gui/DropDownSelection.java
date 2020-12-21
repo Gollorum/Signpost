@@ -21,33 +21,33 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class DropDownSelection extends ImageButton {
+public class DropDownSelection<EntryType> extends ImageButton {
 
     private static final TextureResource texture = TextureResource.expandContract;
     public static final TextureSize size = new TextureSize(11, 11);
     private final Consumer<List> onShow;
     private final Consumer<List> onHide;
-    private final Consumer<String> onSelectionChanged;
+    private final Consumer<EntryType> onSelectionChanged;
     private final FontRenderer fontRenderer;
 
     private boolean isListVisible;
     private final List list;
 
-    private final java.util.List<String> allEntries = new ArrayList<>();
-    private Predicate<String> filter = b -> true;
+    private final java.util.List<EntryType> allEntries = new ArrayList<>();
+    private Predicate<EntryType> filter = b -> true;
     private int selectedIndex;
     private final boolean shouldHighlightSelected;
 
-    public Collection<String> getAllEntries() { return allEntries; }
+    public Collection<EntryType> getAllEntries() { return allEntries; }
 
-    public Optional<String> getSelectedEntry() {
+    public Optional<EntryType> getSelectedEntry() {
         List.Entry selectedEntry = list.getSelected();
         if(selectedEntry == null)
             return Optional.empty();
-        else return Optional.of(selectedEntry.text);
+        else return Optional.of(selectedEntry.content);
     }
 
-    public void setFilter(Predicate<String> filter) {
+    public void setFilter(Predicate<EntryType> filter) {
         this.filter = filter;
         list.updateContent();
     }
@@ -61,7 +61,7 @@ public class DropDownSelection extends ImageButton {
         int yOffset,
         Consumer<List> onShow,
         Consumer<List> onHide,
-        Consumer<String> onSelectionChanged,
+        Consumer<EntryType> onSelectionChanged,
         boolean shouldHighlightSelected
     ) { this(
         fontRenderer,
@@ -75,7 +75,7 @@ public class DropDownSelection extends ImageButton {
     private DropDownSelection(
         FontRenderer fontRenderer,
         Rect rect, int width, int height, int yOffset,
-        Consumer<List> onShow, Consumer<List> onHide, Consumer<String> onSelectionChanged,
+        Consumer<List> onShow, Consumer<List> onHide, Consumer<EntryType> onSelectionChanged,
         boolean shouldHighlightSelected
     ){
         super(rect.point.x, rect.point.y, rect.width, rect.height, 0, 0, texture.size.height, texture.location, texture.fileSize.width, texture.fileSize.height, b -> ((DropDownSelection)b).toggle());
@@ -87,21 +87,21 @@ public class DropDownSelection extends ImageButton {
         this.onHide = onHide;
     }
 
-    public void addEntry(String text) {
+    public void addEntry(EntryType text) {
         if(!allEntries.contains(text)) {
             allEntries.add(text);
             list.updateContent();
         }
     }
 
-    public void removeEntry(String text) {
+    public void removeEntry(EntryType text) {
         if(allEntries.contains(text)) {
             allEntries.remove(text);
             list.updateContent();
         }
     }
 
-    public void setEntries(Collection<String> entries) {
+    public void setEntries(Collection<EntryType> entries) {
         allEntries.clear();
         allEntries.addAll(entries);
         list.updateContent();
@@ -111,29 +111,44 @@ public class DropDownSelection extends ImageButton {
         if(isListVisible) {
             isListVisible = false;
             onHide.accept(list);
-
         } else {
             isListVisible = true;
             onShow.accept(list);
         }
     }
 
+    public void showList(){
+        if(!isListVisible) {
+            isListVisible = true;
+            onShow.accept(list);
+        }
+    }
+
+    public void hideList(){
+        if(isListVisible) {
+            isListVisible = false;
+            onHide.accept(list);
+        }
+    }
+
     @Override
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+        matrixStack.push();
+        matrixStack.translate(0, 0, 100);
         super.render(matrixStack, mouseX, mouseY, partialTicks);
         if(isListVisible) list.render(matrixStack, mouseX, mouseY, partialTicks);
+        matrixStack.pop();
     }
 
     @Override
     public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        // Copied from super with varying xTexStart.
         Minecraft minecraft = Minecraft.getInstance();
         minecraft.getTextureManager().bindTexture(texture.location);
         RenderSystem.disableDepthTest();
         int yTexStart = this.isHovered() ? texture.size.height : 0;
         int xTexStart = this.isListVisible ? texture.size.width : 0;
 
-        blit(matrixStack, this.x, this.y, xTexStart, yTexStart, this.width, this.height, texture.fileSize.width, texture.fileSize.height);
+        blit(matrixStack, this.x, this.y, 100, xTexStart, yTexStart, this.width, this.height, texture.fileSize.height, texture.fileSize.width);
         RenderSystem.enableDepthTest();
     }
 
@@ -166,7 +181,6 @@ public class DropDownSelection extends ImageButton {
 
         @Override
         public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-            // Copied from super with different texture and hole and an additional left vertical stripe.
             this.renderBackground(matrixStack);
             int i = this.getScrollbarPosition();
             int j = i + 6;
@@ -243,59 +257,30 @@ public class DropDownSelection extends ImageButton {
         }
 
         protected void renderStripe(Point min, Point max) {
-            // Copied from super with different texture.
             Tessellator tessellator = Tessellator.getInstance();
             BufferBuilder bufferbuilder = tessellator.getBuffer();
             this.minecraft.getTextureManager().bindTexture(TextureResource.background.location);
             RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-            int brightness = 255;
             bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-            bufferbuilder.pos(min.x, max.y, 0.0D).tex(min.x / 32f, max.y / 32.0f).color(brightness, brightness, brightness, 255).endVertex();
-            bufferbuilder.pos(max.x, max.y, 0.0D).tex(max.x / 32f, max.y / 32.0f).color(brightness, brightness, brightness, 255).endVertex();
-            bufferbuilder.pos(max.x, min.y, 0.0D).tex(max.x / 32f, min.y / 32.0f).color(brightness, brightness, brightness, 255).endVertex();
-            bufferbuilder.pos(min.x, min.y, 0.0D).tex(min.x / 32f, min.y / 32.0f).color(brightness, brightness, brightness, 255).endVertex();
+            bufferbuilder.pos(min.x, max.y, 0.0D).tex(min.x / 32f, max.y / 32.0f).color(255, 255, 255, 255).endVertex();
+            bufferbuilder.pos(max.x, max.y, 0.0D).tex(max.x / 32f, max.y / 32.0f).color(255, 255, 255, 255).endVertex();
+            bufferbuilder.pos(max.x, min.y, 0.0D).tex(max.x / 32f, min.y / 32.0f).color(255, 255, 255, 255).endVertex();
+            bufferbuilder.pos(min.x, min.y, 0.0D).tex(min.x / 32f, min.y / 32.0f).color(255, 255, 255, 255).endVertex();
             tessellator.draw();
         }
 
         @Override
         protected void renderList(MatrixStack matrixStack, int p_renderList_1_, int p_renderList_2_, int mouseX, int mouseY, float p_renderList_5_) {
-            // Copied from super with better font culling.
-            int i = this.getItemCount();
-            Tessellator tessellator = Tessellator.getInstance();
-            BufferBuilder bufferbuilder = tessellator.getBuffer();
-
-            for(int j = 0; j < i; ++j) {
-                int k = this.getRowTop(j);
-                int l = k + fontRenderer.FONT_HEIGHT;
-                if (l >= this.y0 && k <= this.y1) {
-                    int i1 = p_renderList_2_ + j * this.itemHeight + this.headerHeight;
-                    int j1 = this.itemHeight - 4;
-                    Entry e = this.getEntry(j);
-                    int k1 = this.getRowWidth();
-//                    if (this.renderSelection && this.isSelectedItem(j)) {
-//                        int l1 = this.x0 + this.width / 2 - k1 / 2;
-//                        int i2 = this.x0 + this.width / 2 + k1 / 2;
-//                        RenderSystem.disableTexture();
-//                        float f = this.isFocused() ? 1.0F : 0.5F;
-//                        RenderSystem.color4f(f, f, f, 1.0F);
-//                        bufferbuilder.begin(7, DefaultVertexFormats.POSITION);
-//                        bufferbuilder.pos(l1, i1 + j1 + 2, 0.0D).endVertex();
-//                        bufferbuilder.pos(i2, i1 + j1 + 2, 0.0D).endVertex();
-//                        bufferbuilder.pos(i2, i1 - 2, 0.0D).endVertex();
-//                        bufferbuilder.pos(l1, i1 - 2, 0.0D).endVertex();
-//                        tessellator.draw();
-//                        RenderSystem.color4f(0.0F, 0.0F, 0.0F, 1.0F);
-//                        bufferbuilder.begin(7, DefaultVertexFormats.POSITION);
-//                        bufferbuilder.pos(l1 + 1, i1 + j1 + 1, 0.0D).endVertex();
-//                        bufferbuilder.pos(i2 - 1, i1 + j1 + 1, 0.0D).endVertex();
-//                        bufferbuilder.pos(i2 - 1, i1 - 1, 0.0D).endVertex();
-//                        bufferbuilder.pos(l1 + 1, i1 - 1, 0.0D).endVertex();
-//                        tessellator.draw();
-//                        RenderSystem.enableTexture();
-//                    }
-
-                    int j2 = this.getRowLeft();
-                    e.render(matrixStack, j, k, j2, k1, j1, mouseX, mouseY, this.isMouseOver(mouseX, mouseY) && Objects.equals(this.getEntryAtPosition(mouseX, mouseY), e), p_renderList_5_);
+            int itemCount = this.getItemCount();
+            for(int i = 0; i < itemCount; ++i) {
+                int rowTop = this.getRowTop(i);
+                int rowBottom = rowTop + fontRenderer.FONT_HEIGHT;
+                if (rowBottom >= this.y0 && rowTop <= this.y1) {
+                    int height = this.itemHeight - 4;
+                    Entry e = this.getEntry(i);
+                    int width = this.getRowWidth();
+                    int left = this.getRowLeft();
+                    e.render(matrixStack, i, rowTop, left, width, height, mouseX, mouseY, this.isMouseOver(mouseX, mouseY) && Objects.equals(this.getEntryAtPosition(mouseX, mouseY), e), p_renderList_5_);
                 }
             }
 
@@ -308,10 +293,10 @@ public class DropDownSelection extends ImageButton {
 
         public class Entry extends ExtendedList.AbstractListEntry<Entry> {
 
-            private final String text;
+            private final EntryType content;
 
-            public Entry(String text) {
-                this.text = text;
+            public Entry(EntryType content) {
+                this.content = content;
             }
 
             @Override
@@ -319,12 +304,12 @@ public class DropDownSelection extends ImageButton {
                 int brightness = 255;
                 if(this.isMouseOver(mouseX, mouseY))
                     brightness = (int) (brightness * 0.8f);
-                if(shouldHighlightSelected && allEntries.indexOf(List.this.getEntry(i).text) == selectedIndex)
+                if(shouldHighlightSelected && allEntries.indexOf(List.this.getEntry(i).content) == selectedIndex)
                     brightness = (int) (brightness * 0.6f);
                 RenderSystem.enableAlphaTest();
                 RenderingUtil.drawString(
                     fontRenderer,
-                    text,
+                    content.toString(),
                     new Point(List.this.x0, p_render_2_ + 1),
                     Rect.XAlignment.Center, Rect.YAlignment.Top,
                     Colors.from(brightness, brightness, brightness),
@@ -335,8 +320,8 @@ public class DropDownSelection extends ImageButton {
 
             @Override
             public boolean mouseClicked(double p_mouseClicked_1_, double p_mouseClicked_3_, int p_mouseClicked_5_) {
-                DropDownSelection.this.selectedIndex = allEntries.indexOf(this.text);
-                onSelectionChanged.accept(this.text);
+                DropDownSelection.this.selectedIndex = allEntries.indexOf(this.content);
+                onSelectionChanged.accept(this.content);
                 return true;
             }
 

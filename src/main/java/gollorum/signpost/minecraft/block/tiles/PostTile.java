@@ -2,6 +2,7 @@ package gollorum.signpost.minecraft.block.tiles;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import gollorum.signpost.Signpost;
+import gollorum.signpost.minecraft.Wrench;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.signtypes.LargeSign;
 import gollorum.signpost.signtypes.Post;
@@ -22,7 +23,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.AxeItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.network.PacketBuffer;
@@ -64,10 +64,12 @@ public class PostTile extends TileEntity {
         public final BlockPart part;
         public final UUID id;
         public final Vector3 hitPos;
-        public TraceResult(BlockPart part, UUID id, Vector3 hitPos) {
+        public final Ray ray;
+        public TraceResult(BlockPart part, UUID id, Vector3 hitPos, Ray ray) {
             this.part = part;
             this.id = id;
             this.hitPos = hitPos;
+            this.ray = ray;
         }
     }
 
@@ -96,18 +98,6 @@ public class PostTile extends TileEntity {
         if(getWorld() != null && !getWorld().isRemote)
             sendToTracing(() -> new PartRemovedEvent.Packet(new TilePartInfo(this, id), false));
         return oldPart;
-    }
-
-    public void removePart(BlockPart part) {
-        Optional<UUID> id = parts.entrySet().stream()
-            .filter(e -> e.getValue().blockPart.equals(part))
-            .map(Map.Entry::getKey)
-            .findFirst();
-        if(id.isPresent()){
-            removePart(id.get());
-        } else {
-            Signpost.LOGGER.error("Tried to remove block part " + part + " that wasn't attached");
-        }
     }
 
     public Collection<BlockPartInstance> getParts(){ return parts.values(); }
@@ -145,7 +135,7 @@ public class PostTile extends TileEntity {
                 closestTrace = Optional.of(new Tuple<>(t.getKey(), now.get()));
         }
 
-        return closestTrace.map(trace -> new TraceResult(parts.get(trace.getA()).blockPart, trace.getA(), ray.atDistance(trace.getB())));
+        return closestTrace.map(trace -> new TraceResult(parts.get(trace.getA()).blockPart, trace.getA(), ray.atDistance(trace.getB()), ray));
     }
 
     @Override
@@ -227,17 +217,15 @@ public class PostTile extends TileEntity {
     }
 
     public static boolean isAngleTool(Item item) {
-        return item.equals(Items.STICK);
+        return item instanceof Wrench;
     }
 
     public static boolean isEditTool(Item item) {
         return item instanceof AxeItem;
     }
 
-    private Optional<BlockPartInstance> getPart(UUID id) {
-        if(parts.containsKey(id))
-            return Optional.of(parts.get(id));
-        else return Optional.empty();
+    public Optional<BlockPartInstance> getPart(UUID id) {
+        return parts.containsKey(id) ? Optional.of(parts.get(id)) : Optional.empty();
     }
 
     public static class TilePartInfo {

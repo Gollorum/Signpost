@@ -52,32 +52,32 @@ public class Post extends Block implements IWaterLoggable {
 
     public static enum ModelType implements IStringSerializable {
         Acacia(new ResourceLocation("acacia_log"),
-            new ResourceLocation("acacia_log"),
-            new ResourceLocation("stripped_acacia_log")
+            new ResourceLocation("stripped_acacia_log"),
+            new ResourceLocation("acacia_log")
         ),
         Birch(new ResourceLocation("birch_log"),
-            new ResourceLocation("birch_log"),
-            new ResourceLocation("stripped_birch_log")
+            new ResourceLocation("stripped_birch_log"),
+            new ResourceLocation("birch_log")
         ),
         Iron(new ResourceLocation("iron_block"),
             new ResourceLocation(Signpost.MOD_ID, "iron"),
             new ResourceLocation(Signpost.MOD_ID, "iron_dark")
         ),
         Jungle(new ResourceLocation("jungle_log"),
-            new ResourceLocation("jungle_log"),
-            new ResourceLocation("stripped_jungle_log")
+            new ResourceLocation("stripped_jungle_log"),
+            new ResourceLocation("jungle_log")
         ),
         Oak(new ResourceLocation("oak_log"),
-            new ResourceLocation("oak_log"),
-            new ResourceLocation("stripped_oak_log")
+            new ResourceLocation("stripped_oak_log"),
+            new ResourceLocation("oak_log")
         ),
         DarkOak(new ResourceLocation("dark_oak_log"),
-            new ResourceLocation("dark_oak_log"),
-            new ResourceLocation("stripped_dark_oak_log")
+            new ResourceLocation("stripped_dark_oak_log"),
+            new ResourceLocation("dark_oak_log")
         ),
         Spruce(new ResourceLocation("spruce_log"),
-            new ResourceLocation("spruce_log"),
-            new ResourceLocation("stripped_spruce_log")
+            new ResourceLocation("stripped_spruce_log"),
+            new ResourceLocation("spruce_log")
         ),
         Stone(new ResourceLocation("stone"),
             new ResourceLocation("stone"),
@@ -85,13 +85,13 @@ public class Post extends Block implements IWaterLoggable {
         ),
         Warped(
             new ResourceLocation("warped_stem"),
-            new ResourceLocation("warped_stem"),
-            new ResourceLocation("stripped_warped_stem")
+            new ResourceLocation("stripped_warped_stem"),
+            new ResourceLocation("warped_stem")
         ),
         Crimson(
             new ResourceLocation("crimson_stem"),
-            new ResourceLocation("crimson_stem"),
-            new ResourceLocation("stripped_crimson_stem")
+            new ResourceLocation("stripped_crimson_stem"),
+            new ResourceLocation("crimson_stem")
         );
 
         public final ResourceLocation postTexture;
