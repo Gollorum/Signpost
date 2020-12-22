@@ -25,6 +25,7 @@ public final class DataGeneration {
             datagenerator.addProvider(new PostTag(datagenerator, blocksTagProvider, fileHelper));
             datagenerator.addProvider(new PostRecipe(datagenerator));
             datagenerator.addProvider(new WaystoneRecipe(datagenerator));
+            datagenerator.addProvider(new WrenchRecipe(datagenerator));
         }
         if(event.includeClient()) {
             PostModel postModel = new PostModel(datagenerator, fileHelper);

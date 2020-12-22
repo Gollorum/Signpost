@@ -38,7 +38,7 @@ public class ItemRegistry {
             .map(ItemRegistry::registerPostItem)
             .collect(Collectors.toList());
 
-    private static final RegistryObject<Item> WRENCH = REGISTER.register(Wrench.registryName, () -> new Wrench(ITEM_GROUP));
+    public static final RegistryObject<Item> WRENCH = REGISTER.register(Wrench.registryName, () -> new Wrench(ITEM_GROUP));
 
     private static RegistryObject<Item> registerPostItem(Post.Info postInfo){
         return REGISTER.register(postInfo.registryName,
