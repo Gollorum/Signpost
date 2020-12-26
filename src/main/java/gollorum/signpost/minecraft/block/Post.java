@@ -139,6 +139,24 @@ public class Post extends Block implements IWaterLoggable {
         }
     }
 
+    public static final class OverlayTextures {
+        public static final ResourceLocation[] All = {
+            Wide.Gras,
+            Short.Gras,
+            Large.Gras,
+        };
+
+        public static final class Wide {
+            public static final ResourceLocation Gras = new ResourceLocation(Signpost.MOD_ID, "block/sign_overlay_grass");
+        }
+        public static final class Short {
+            public static final ResourceLocation Gras = new ResourceLocation(Signpost.MOD_ID, "block/sign_overlay_grass_short");
+        }
+        public static final class Large {
+            public static final ResourceLocation Gras = new ResourceLocation(Signpost.MOD_ID, "block/sign_overlay_grass_large");
+        }
+    }
+
     private static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
     private static final VoxelShape SHAPE = Block.makeCuboidShape(6.0D, 0.0D, 6.0D, 10.0D, 16.0D, 10.0D);
 

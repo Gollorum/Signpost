@@ -12,6 +12,7 @@ import gollorum.signpost.utils.math.geometry.AABB;
 import gollorum.signpost.utils.math.geometry.Intersectable;
 import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.Vector3;
+import gollorum.signpost.utils.modelGeneration.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.RenderType;
@@ -48,7 +49,7 @@ public class Post implements BlockPart<Post> {
         (compound, keyPrefix) -> new Post(new ResourceLocation(compound.getString(keyPrefix + "texture")))
     );
 
-    private Lazy<IBakedModel> model;
+    private Lazy<SignModel> model;
     private ResourceLocation texture;
 
     public Post(ResourceLocation texture) {
@@ -56,7 +57,12 @@ public class Post implements BlockPart<Post> {
     }
 
     public void setTexture(ResourceLocation texture){
-        model = RenderingUtil.loadModel(RenderingUtil.ModelPost, texture);
+        model = () -> new SignModelFactory<ResourceLocation>().makePartialCube(
+            new Vector3(-2, 0, -2),
+            new Vector3(4, 16, 4),
+            0, 0, true,
+            CubeFacesData.all(texture, FaceRotation.Zero, d -> true))
+            .build(new SignModel(), SignModel::addCube);
         this.texture = texture;
     }
 
@@ -93,16 +99,17 @@ public class Post implements BlockPart<Post> {
 
     @Override
     public void render(TileEntity tileEntity, TileEntityRendererDispatcher renderDispatcher, MatrixStack matrix, IRenderTypeBuffer buffer, int combinedLights, int combinedOverlay, Random random, long randomSeed) {
-        RenderingUtil.render(matrix, renderModel -> renderModel.render(
-            model.get(),
-            tileEntity,
-            buffer.getBuffer(RenderType.getSolid()),
-            false,
-            random,
-            randomSeed,
-            combinedOverlay,
-            new Matrix4f(Quaternion.ONE)
-        ));
+        model.get().render(matrix.getLast(), buffer, RenderType.getSolid(), combinedLights, combinedOverlay, 1, 1, 1);
+//        RenderingUtil.render(matrix, renderModel -> renderModel.render(
+//            model.get(),
+//            tileEntity,
+//            buffer.getBuffer(RenderType.getSolid()),
+//            false,
+//            random,
+//            randomSeed,
+//            combinedOverlay,
+//            new Matrix4f(Quaternion.ONE)
+//        ));
     }
 
     @Override

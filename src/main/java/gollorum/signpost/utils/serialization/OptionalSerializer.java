@@ -4,6 +4,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.ResourceLocation;
 
 import java.util.Optional;
 
@@ -29,6 +30,25 @@ public final class OptionalSerializer<T> implements CompoundSerializable<Optiona
                 if(readCompound instanceof CompoundNBT)
                     return net.minecraft.item.ItemStack.read((CompoundNBT) readCompound);
                 else return null;
+            }
+        }
+    );
+
+    public static final OptionalSerializer<net.minecraft.util.ResourceLocation> ResourceLocation = new OptionalSerializer<>(
+        new CompoundSerializable<net.minecraft.util.ResourceLocation>() {
+            @Override
+            public void writeTo(net.minecraft.util.ResourceLocation location, CompoundNBT compound, String keyPrefix) {
+                compound.putString(keyPrefix, location.toString());
+            }
+
+            @Override
+            public boolean isContainedIn(CompoundNBT compound, String keyPrefix) {
+                return compound.contains(keyPrefix);
+            }
+
+            @Override
+            public net.minecraft.util.ResourceLocation read(CompoundNBT compound, String keyPrefix) {
+                return new net.minecraft.util.ResourceLocation(compound.getString(keyPrefix));
             }
         }
     );

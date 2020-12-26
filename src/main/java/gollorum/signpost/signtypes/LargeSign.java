@@ -11,6 +11,9 @@ import gollorum.signpost.utils.math.geometry.AABB;
 import gollorum.signpost.utils.math.geometry.Matrix4x4;
 import gollorum.signpost.utils.math.geometry.TransformedBox;
 import gollorum.signpost.utils.math.geometry.Vector3;
+import gollorum.signpost.utils.modelGeneration.FaceRotation;
+import gollorum.signpost.utils.modelGeneration.SignModel;
+import gollorum.signpost.utils.modelGeneration.SignModelFactory;
 import gollorum.signpost.utils.serialization.OptionalSerializer;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.*;
@@ -34,7 +37,7 @@ public class LargeSign extends Sign<LargeSign> {
 
     private static final AABB LOCAL_BOUNDS = new AABB(
         new Vector3(-9, -14, 2),
-        new Vector3(13, -2, 3)
+        new Vector3(12, -2, 3)
     ).map(RenderingUtil::voxelToLocal);
 
     private static final float TEXT_OFFSET_RIGHT = 7f * VoxelSize;
@@ -57,6 +60,7 @@ public class LargeSign extends Sign<LargeSign> {
             compound.putBoolean(keyPrefix + "Flip", sign.flip);
             compound.putString(keyPrefix + "Texture", sign.mainTexture.toString());
             compound.putString(keyPrefix + "TextureDark", sign.secondaryTexture.toString());
+            OptionalSerializer.ResourceLocation.writeTo(sign.overlayTexture, compound, "Overlay");
             compound.putInt(keyPrefix + "Color", sign.color);
             new OptionalSerializer(WaystoneHandle.SERIALIZER).writeTo(sign.destination, compound, "Destination");
             OptionalSerializer.ItemStack.writeTo(sign.itemToDropOnBreak, compound, "ItemToDropOnBreak");
@@ -72,6 +76,7 @@ public class LargeSign extends Sign<LargeSign> {
             compound.getBoolean(keyPrefix + "Flip"),
             new ResourceLocation(compound.getString(keyPrefix + "Texture")),
             new ResourceLocation(compound.getString(keyPrefix + "TextureDark")),
+            OptionalSerializer.ResourceLocation.read(compound, "Overlay"),
             compound.getInt(keyPrefix + "Color"),
             new OptionalSerializer(WaystoneHandle.SERIALIZER).read(compound, "Destination"),
             OptionalSerializer.ItemStack.read(compound, "ItemToDropOnBreak"),
@@ -86,12 +91,13 @@ public class LargeSign extends Sign<LargeSign> {
         boolean flip,
         ResourceLocation mainTexture,
         ResourceLocation secondaryTexture,
+        Optional<ResourceLocation> overlayTexture,
         int color,
         Optional<WaystoneHandle> destination,
         Optional<ItemStack> itemToDropOnBreak,
         Post.ModelType modelType
     ) {
-        super(angle, flip, mainTexture, secondaryTexture, color, destination, modelType, itemToDropOnBreak);
+        super(angle, flip, mainTexture, secondaryTexture, overlayTexture, color, destination, modelType, itemToDropOnBreak);
         assert text.length == 4;
         this.text = text;
     }
@@ -103,8 +109,17 @@ public class LargeSign extends Sign<LargeSign> {
     public String[] getText() { return text; }
 
     @Override
-    protected ResourceLocation getModel() {
-        return RenderingUtil.ModelLargeSign;
+    protected SignModel makeModel() {
+        return new SignModelFactory<ResourceLocation>()
+            .makeLargeSign(mainTexture, secondaryTexture)
+            .build(new SignModel(), SignModel::addCube);
+    }
+
+    @Override
+    protected SignModel makeOverlayModel(ResourceLocation texture) {
+        return new SignModelFactory<ResourceLocation>()
+            .makeLargeSignOverlay(texture)
+            .build(new SignModel(), SignModel::addCube);
     }
 
     @Override

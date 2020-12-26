@@ -52,6 +52,7 @@ public class Signpost {
         BlockRegistry.register(modBus);
         ItemRegistry.register(modBus);
         TileEntityRegistry.register(modBus);
+        ResourceRegistry.register(modBus);
         DataGeneration.register(modBus);
         Delay.register(forgeBus);
     }

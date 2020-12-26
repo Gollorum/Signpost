@@ -11,6 +11,9 @@ import gollorum.signpost.utils.math.geometry.AABB;
 import gollorum.signpost.utils.math.geometry.Matrix4x4;
 import gollorum.signpost.utils.math.geometry.TransformedBox;
 import gollorum.signpost.utils.math.geometry.Vector3;
+import gollorum.signpost.utils.modelGeneration.FaceRotation;
+import gollorum.signpost.utils.modelGeneration.SignModel;
+import gollorum.signpost.utils.modelGeneration.SignModelFactory;
 import gollorum.signpost.utils.serialization.OptionalSerializer;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.*;
@@ -52,6 +55,7 @@ public class SmallWideSign extends Sign<SmallWideSign> {
             compound.putBoolean(keyPrefix + "Flip", sign.flip);
             compound.putString(keyPrefix + "Texture", sign.mainTexture.toString());
             compound.putString(keyPrefix + "TextureDark", sign.secondaryTexture.toString());
+            OptionalSerializer.ResourceLocation.writeTo(sign.overlayTexture, compound, "Overlay");
             compound.putInt(keyPrefix + "Color", sign.color);
             new OptionalSerializer(WaystoneHandle.SERIALIZER).writeTo(sign.destination, compound, "Destination");
             OptionalSerializer.ItemStack.writeTo(sign.itemToDropOnBreak, compound, "ItemToDropOnBreak");
@@ -63,6 +67,7 @@ public class SmallWideSign extends Sign<SmallWideSign> {
             compound.getBoolean(keyPrefix + "Flip"),
             new ResourceLocation(compound.getString(keyPrefix + "Texture")),
             new ResourceLocation(compound.getString(keyPrefix + "TextureDark")),
+            OptionalSerializer.ResourceLocation.read(compound, "Overlay"),
             compound.getInt(keyPrefix + "Color"),
             new OptionalSerializer(WaystoneHandle.SERIALIZER).read(compound, "Destination"),
             OptionalSerializer.ItemStack.read(compound, "ItemToDropOnBreak"),
@@ -78,12 +83,13 @@ public class SmallWideSign extends Sign<SmallWideSign> {
         boolean flip,
         ResourceLocation mainTexture,
         ResourceLocation secondaryTexture,
+        Optional<ResourceLocation> overlayTexture,
         int color,
         Optional<WaystoneHandle> destination,
         Optional<ItemStack> itemToDropOnBreak,
         Post.ModelType modelType
     ){
-        super(angle, flip, mainTexture, secondaryTexture, color, destination, modelType, itemToDropOnBreak);
+        super(angle, flip, mainTexture, secondaryTexture, overlayTexture, color, destination, modelType, itemToDropOnBreak);
         this.text = text;
     }
 
@@ -92,8 +98,17 @@ public class SmallWideSign extends Sign<SmallWideSign> {
     public String getText() { return text; }
 
     @Override
-    protected ResourceLocation getModel() {
-        return RenderingUtil.ModelWideSign;
+    protected SignModel makeModel() {
+        return new SignModelFactory<ResourceLocation>()
+            .makeWideSign(mainTexture, secondaryTexture)
+            .build(new SignModel(), SignModel::addCube);
+    }
+
+    @Override
+    protected SignModel makeOverlayModel(ResourceLocation texture) {
+        return new SignModelFactory<ResourceLocation>()
+            .makeWideSignOverlay(texture)
+            .build(new SignModel(), SignModel::addCube);
     }
 
     @Override

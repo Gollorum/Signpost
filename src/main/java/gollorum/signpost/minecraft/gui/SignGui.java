@@ -18,6 +18,8 @@ import gollorum.signpost.signtypes.SmallShortSign;
 import gollorum.signpost.signtypes.SmallWideSign;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
+import gollorum.signpost.utils.modelGeneration.SignModel;
+import gollorum.signpost.utils.modelGeneration.SignModelFactory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.IRenderable;
 import net.minecraft.client.gui.screen.Screen;
@@ -28,6 +30,7 @@ import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
@@ -181,9 +184,9 @@ public class SignGui extends Screen {
         int centerOffset = (typeSelectionButtonsSize.width + typeSelectionButtonsSpace) / 2;
 
         IBakedModel postModel = RenderingUtil.loadModel(RenderingUtil.ModelPost, tile.getParts().stream().filter(p -> p.blockPart instanceof gollorum.signpost.signtypes.Post).map(p -> ((gollorum.signpost.signtypes.Post)p.blockPart).getTexture()).findFirst().orElse(tile.modelType.postTexture)).get();
-        IBakedModel wideModel = RenderingUtil.loadModel(RenderingUtil.ModelWideSign, modelType.mainTexture, modelType.secondaryTexture).get();
-        IBakedModel shortModel = RenderingUtil.loadModel(RenderingUtil.ModelShortSign, modelType.mainTexture, modelType.secondaryTexture).get();
-        IBakedModel largeModel = RenderingUtil.loadModel(RenderingUtil.ModelLargeSign, modelType.mainTexture, modelType.secondaryTexture).get();
+        SignModel wideModel = new SignModelFactory<ResourceLocation>().makeWideSign(modelType.mainTexture, modelType.secondaryTexture).build(new SignModel(), SignModel::addCube);
+        SignModel shortModel = new SignModelFactory<ResourceLocation>().makeShortSign(modelType.mainTexture, modelType.secondaryTexture).build(new SignModel(), SignModel::addCube);
+        SignModel largeModel = new SignModelFactory<ResourceLocation>().makeLargeSign(modelType.mainTexture, modelType.secondaryTexture).build(new SignModel(), SignModel::addCube);
 
         ItemStack itemStack = new ItemStack(tile.getBlockState().getBlock().asItem());
 
@@ -206,7 +209,8 @@ public class SignGui extends Screen {
         ));
         additionallyRenderables.add(new GuiModelRenderer(
             wideSelectionRect,
-            wideModel,
+            postModel,
+//            wideModel,
             0, 0.25f,
             itemStack
         ));
@@ -230,7 +234,8 @@ public class SignGui extends Screen {
         ));
         additionallyRenderables.add(new GuiModelRenderer(
             shortSelectionRect,
-            shortModel,
+//            shortModel,
+            postModel,
             0, 0.25f,
             itemStack
         ));
@@ -254,7 +259,8 @@ public class SignGui extends Screen {
         ));
         additionallyRenderables.add(new GuiModelRenderer(
             largeSelectionRect,
-            largeModel,
+//            largeModel,
+            postModel,
             0, 0,
             itemStack
         ));
@@ -382,7 +388,8 @@ public class SignGui extends Screen {
 
         wideSignRenderer = new GuiModelRenderer(
             modelRect,
-            wideModel,
+//            wideModel,
+            postModel,
             0, 0.25f,
             itemStack);
         widgetsToFlip.add(wideSignRenderer);
@@ -398,7 +405,8 @@ public class SignGui extends Screen {
 
         shortSignRenderer = new GuiModelRenderer(
             modelRect,
-            shortModel,
+//            shortModel,
+            postModel,
             0, 0.25f,
             itemStack);
         widgetsToFlip.add(shortSignRenderer);
@@ -425,7 +433,8 @@ public class SignGui extends Screen {
 
         largeSignRenderer = new GuiModelRenderer(
             modelRect,
-            largeModel,
+            postModel,
+//            largeModel,
             0, 0,
             itemStack);
         widgetsToFlip.add(largeSignRenderer);
@@ -720,6 +729,7 @@ public class SignGui extends Screen {
                         wideSignRenderer.isFlipped(),
                         modelType.mainTexture,
                         modelType.secondaryTexture,
+                        Optional.of(new ResourceLocation(Signpost.MOD_ID, "block/sign_overlay_grass")),
                         colorInputBox.getCurrentColor(),
                         destinationId,
                         itemToDropOnBreak,
@@ -746,6 +756,7 @@ public class SignGui extends Screen {
                         shortSignRenderer.isFlipped(),
                         modelType.mainTexture,
                         modelType.secondaryTexture,
+                        Optional.of(new ResourceLocation(Signpost.MOD_ID, "block/sign_overlay_grass_short")),
                         colorInputBox.getCurrentColor(),
                         destinationId,
                         itemToDropOnBreak,
@@ -777,6 +788,7 @@ public class SignGui extends Screen {
                         currentSignRenderer.isFlipped(),
                         modelType.mainTexture,
                         modelType.secondaryTexture,
+                        Optional.of(new ResourceLocation(Signpost.MOD_ID, "block/sign_overlay_grass_large")),
                         colorInputBox.getCurrentColor(),
                         destinationId,
                         itemToDropOnBreak,

@@ -3,8 +3,11 @@ package gollorum.signpost.minecraft.rendering;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import gollorum.signpost.Signpost;
+import gollorum.signpost.minecraft.data.PostModel;
 import gollorum.signpost.minecraft.gui.Point;
 import gollorum.signpost.minecraft.gui.Rect;
+import gollorum.signpost.utils.modelGeneration.SignModel;
+import gollorum.signpost.utils.modelGeneration.SignModelFactory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.*;
@@ -53,6 +56,7 @@ public class RenderingUtil {
     }
 
     private static final Map<ResourceLocation, Map<ResourceLocation, Map<ResourceLocation, Lazy<IBakedModel>>>> cachedTwoTexturedModels = new ConcurrentHashMap<>();
+//    private static final ResourceLocation texture1Marker = new ResourceLocation(PostModel.textureSign);
     private static final ResourceLocation texture1Marker = new ResourceLocation("block/stripped_oak_log");
 
     public static Lazy<IBakedModel> loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation1, ResourceLocation textureLocation2) {
@@ -73,9 +77,12 @@ public class RenderingUtil {
             );
     }
 
-    public static final ResourceLocation ModelWideSign = new ResourceLocation(Signpost.MOD_ID, "block/small_wide_sign");
-    public static final ResourceLocation ModelShortSign = new ResourceLocation(Signpost.MOD_ID, "block/small_short_sign");
-    public static final ResourceLocation ModelLargeSign = new ResourceLocation(Signpost.MOD_ID, "block/large_sign");
+//    public static final ResourceLocation ModelWideSign = new ResourceLocation(Signpost.MOD_ID, "block/small_wide_sign");
+//    public static final ResourceLocation ModelShortSign = new ResourceLocation(Signpost.MOD_ID, "block/small_short_sign");
+//    public static final ResourceLocation ModelLargeSign = new ResourceLocation(Signpost.MOD_ID, "block/large_sign");
+//    public static final ResourceLocation ModelWideSignOverlay = new ResourceLocation(Signpost.MOD_ID, "block/small_wide_sign_overlay");
+//    public static final ResourceLocation ModelShortSignOverlay = new ResourceLocation(Signpost.MOD_ID, "block/small_short_sign_overlay");
+//    public static final ResourceLocation ModelLargeSignOverlay = new ResourceLocation(Signpost.MOD_ID, "block/large_sign_overlay");
     public static final ResourceLocation ModelPost = new ResourceLocation(Signpost.MOD_ID, "block/post_only");
 
     private static final Lazy<BlockModelRenderer> Renderer = Lazy.of(() -> Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelRenderer());

@@ -5,16 +5,17 @@ import gollorum.signpost.*;
 import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.Post;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.gui.Colors;
 import gollorum.signpost.minecraft.gui.LangKeys;
 import gollorum.signpost.minecraft.gui.SignGui;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.utils.BlockPart;
-import gollorum.signpost.utils.WaystoneData;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Intersectable;
 import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.TransformedBox;
 import gollorum.signpost.utils.math.geometry.Vector3;
+import gollorum.signpost.utils.modelGeneration.SignModel;
 import gollorum.signpost.utils.serialization.OptionalSerializer;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
@@ -24,10 +25,10 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.model.BakedQuad;
 import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.model.ItemOverrideList;
+import net.minecraft.client.renderer.model.RenderMaterial;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.entity.item.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
@@ -41,13 +42,12 @@ import net.minecraft.util.math.vector.Quaternion;
 import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.BiomeColors;
 import net.minecraftforge.common.util.Lazy;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static gollorum.signpost.minecraft.rendering.RenderingUtil.FontToVoxelSize;
-import static gollorum.signpost.minecraft.rendering.RenderingUtil.VoxelSize;
 
 public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
 
@@ -56,22 +56,25 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
     protected boolean flip;
     protected ResourceLocation mainTexture;
     protected ResourceLocation secondaryTexture;
+    protected Optional<ResourceLocation> overlayTexture;
     protected Optional<WaystoneHandle> destination;
     protected Post.ModelType modelType;
     public Optional<WaystoneHandle> getDestination() { return destination; }
 
     protected TransformedBox transformedBounds;
-    protected Lazy<IBakedModel> model;
+    protected Lazy<SignModel> model;
+    protected Optional<Lazy<SignModel>> overlayModel;
 
     public Optional<ItemStack> itemToDropOnBreak;
 
-    public Sign(Angle angle, boolean flip, ResourceLocation mainTexture, ResourceLocation secondaryTexture, int color, Optional<WaystoneHandle> destination, Post.ModelType modelType, Optional<ItemStack> itemToDropOnBreak) {
+    public Sign(Angle angle, boolean flip, ResourceLocation mainTexture, ResourceLocation secondaryTexture, Optional<ResourceLocation> overlayTexture, int color, Optional<WaystoneHandle> destination, Post.ModelType modelType, Optional<ItemStack> itemToDropOnBreak) {
         this.color = color;
         this.destination = destination;
         this.modelType = modelType;
         this.itemToDropOnBreak = itemToDropOnBreak;
         setAngle(angle);
         setTextures(mainTexture, secondaryTexture);
+        setOverlayTexture(overlayTexture);
         setFlip(flip);
     }
 
@@ -103,14 +106,20 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
 
     public boolean isFlipped() { return flip; }
 
-    protected abstract ResourceLocation getModel();
+    protected abstract SignModel makeModel();
+    protected abstract SignModel makeOverlayModel(ResourceLocation texture);
 
     public int getColor() { return color; }
 
-    public void setTextures(ResourceLocation texture, ResourceLocation textureDark) {
-        model = RenderingUtil.loadModel(getModel(), texture, textureDark);
+    private void setTextures(ResourceLocation texture, ResourceLocation textureDark) {
         this.mainTexture = texture;
         this.secondaryTexture = textureDark;
+        model = Lazy.of(this::makeModel);
+    }
+
+    private void setOverlayTexture(Optional<ResourceLocation> overlayTexture) {
+        this.overlayTexture = overlayTexture;
+        overlayModel = overlayTexture.map(t -> Lazy.of(() -> makeOverlayModel(t)));
     }
 
     protected abstract void regenerateTransformedBox();
@@ -227,6 +236,46 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
         }
     }
 
+    public static IBakedModel withTintIndex(IBakedModel original, int tintIndex) {
+        return new IBakedModel() {
+            @Override
+            public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, Random rand) {
+                return original.getQuads(state, side, rand)
+                    .stream().map(q -> new BakedQuad(q.getVertexData(), tintIndex, q.getFace(), q.getSprite(), q.applyDiffuseLighting()))
+                    .collect(Collectors.toList());
+            }
+
+            @Override
+            public boolean isAmbientOcclusion() {
+                return original.isAmbientOcclusion();
+            }
+
+            @Override
+            public boolean isGui3d() {
+                return original.isGui3d();
+            }
+
+            @Override
+            public boolean isSideLit() {
+                return original.isSideLit();
+            }
+
+            @Override
+            public boolean isBuiltInRenderer() {
+                return original.isBuiltInRenderer();
+            }
+
+            @Override
+            public TextureAtlasSprite getParticleTexture() {
+                return original.getParticleTexture();
+            }
+
+            @Override
+            public ItemOverrideList getOverrides() {
+                return original.getOverrides();
+            }
+        };
+    }
     public static IBakedModel withTransformedDirections(IBakedModel original, boolean isFlipped, float yaw) {
         Map<Direction, Direction> directionMapping = new HashMap<>();
         if(isFlipped){
@@ -303,16 +352,11 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
                 matrix.rotate(Vector3f.ZP.rotationDegrees(180));
                 rotationMatrix.mul(Vector3f.ZP.rotationDegrees(180));
             }
-            renderModel.render(
-                withTransformedDirections(model.get(), flip, angle.degrees()),
-                tileEntity,
-                buffer.getBuffer(RenderType.getSolid()),
-                false,
-                random,
-                randomSeed,
-                combinedOverlay,
-                rotationMatrix
-            );
+            model.get().render(matrix.getLast(), buffer, RenderType.getSolid(), combinedLights, combinedOverlay, 1, 1, 1);
+            overlayModel.ifPresent(m -> {
+                int tint = tileEntity.getWorld().getBlockColor(tileEntity.getPos(), BiomeColors.GRASS_COLOR);
+                m.get().render(matrix.getLast(), buffer, RenderType.getCutout(), combinedLights, combinedOverlay, Colors.getRed(tint) / 255f, Colors.getGreen(tint) / 255f, Colors.getBlue(tint) / 255f);
+            });
             matrix.pop();
             renderText(matrix, renderDispatcher.getFontRenderer(), buffer, combinedLights);
         });

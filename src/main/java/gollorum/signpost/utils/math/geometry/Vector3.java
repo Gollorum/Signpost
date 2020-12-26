@@ -6,6 +6,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3f;
 
 import java.util.Objects;
 import java.util.function.Function;
@@ -20,6 +21,10 @@ public final class Vector3 {
 
     public Vector3d asVec3d() {
         return new Vector3d(x, y, z);
+    }
+
+    public Vector3f asVec3f() {
+        return new Vector3f(x, y, z);
     }
 
     public static Vector3 fromBlockPos(BlockPos vec){
@@ -139,7 +144,7 @@ public final class Vector3 {
         return (float) Math.sqrt(x * x + y * y + z * z);
     }
 
-    public static final class Serializer implements CompoundSerializable<Vector3> {
+	public static final class Serializer implements CompoundSerializable<Vector3> {
 
         private Serializer(){}
 

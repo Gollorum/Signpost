@@ -108,6 +108,10 @@ public class Rect {
         return new Rect(point, width, height);
     }
 
+    public Rect withPoint(Point point, XAlignment xAlignment, YAlignment yAlignment) {
+        return new Rect(point, width, height, xAlignment, yAlignment);
+    }
+
     public Rect withPoint(Function<Point, Point> mapping) {
         return new Rect(mapping.apply(point), width, height);
     }
