@@ -120,7 +120,7 @@ public class WaystoneGui extends Screen {
     @Override
     public void onClose() {
         super.onClose();
-        if(!inputBox.getText().equals("") && isValid(inputBox.getText()))
+        if(inputBox != null && !inputBox.getText().equals("") && isValid(inputBox.getText()))
             WaystoneLibrary.getInstance().update(inputBox.getText(), new WaystoneLocationData(location, Vector3.fromVec3d(getMinecraft().player.getPositionVec())));
         WaystoneLibrary.getInstance().updateEventDispatcher.removeListener(waystoneUpdateListener);
     }

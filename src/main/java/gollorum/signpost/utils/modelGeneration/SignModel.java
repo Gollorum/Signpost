@@ -27,7 +27,8 @@ public class SignModel {
 				Arrays.stream(q.vertices).map(v -> new Quad.Vertex(
 					v.pos.mul(pixelToWorld).asVec3f(),
 					v.u * pixelToWorld,
-					v.v * pixelToWorld
+					v.v * pixelToWorld,
+					q.faceData.rotation
 				)).toArray(Quad.Vertex[]::new)
 			);
 			quads.computeIfAbsent(q.faceData.texture, k -> new ArrayList<>())
@@ -43,6 +44,9 @@ public class SignModel {
 			for(Quad quad : entry.getValue()) {
 				Vector3f normal = quad.normal.copy();
 				normal.transform(matrixNormal);
+				float normalX = normal.getX();
+				float normalY = normal.getY();
+				float normalZ = normal.getZ();
 
 				IVertexBuilder vertexBuilder = new RenderMaterial(PlayerContainer.LOCATION_BLOCKS_TEXTURE, entry.getKey())
 					.getBuffer(buffer, x -> renderType);
@@ -57,7 +61,7 @@ public class SignModel {
 						vertex.v,
 						packedOverlay,
 						packedLight,
-						normal.getX(), normal.getY(), normal.getZ()
+							normalX, normalY, normalZ
 	                );
 				}
 			}
@@ -79,10 +83,28 @@ public class SignModel {
 			public final float u;
 			public final float v;
 
-			public Vertex(Vector3f pos, float u, float v) {
+			public Vertex(Vector3f pos, float u, float v, FaceRotation rotation) {
 				this.pos = pos;
-				this.u = u;
-				this.v = v;
+//				switch (FaceRotation.Zero) {
+				switch (rotation) {
+					case Clockwise90:
+						this.u = 1 - v;
+						this.v = u;
+						break;
+					case CounterClockwise90:
+						this.u = v;
+						this.v = 1 - u;
+						break;
+					case UpsideDown:
+						this.u = 1 - u;
+						this.v = 1 - v;
+						break;
+					case Zero:
+					default:
+						this.u = u;
+						this.v = v;
+						break;
+				}
 			}
 		}
 

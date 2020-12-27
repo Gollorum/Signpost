@@ -16,7 +16,7 @@ public class SignModelFactory<TextureIdentifier> {
 
     private final List<Cube<TextureIdentifier>> cubes = new ArrayList<>();
 
-    private static final float overlayOffset = 0.2f;
+    private static final float overlayOffset = 0.1f;
 
     public SignModelFactory<TextureIdentifier> addCube(Vector3 min, Vector3 max, Map<Direction, FaceData<TextureIdentifier>> sides) {
         cubes.add(new Cube<>(min, max, sides));
@@ -72,7 +72,6 @@ public class SignModelFactory<TextureIdentifier> {
                         break;
                     default: throw new RuntimeException("Direction " + cubeFacesData.direction + " is not supported");
                 }
-                texCoords = texCoords.rotate(cubeFacesData.rotation, clampCoords);
                 return new FaceData<>(texCoords, cubeFacesData.rotation, cubeFacesData.texture);
             })));
         return this;
@@ -156,6 +155,8 @@ public class SignModelFactory<TextureIdentifier> {
         return this;
     }
 
+    private static final FaceRotation signTextureRotation = FaceRotation.Clockwise90;
+
     public SignModelFactory<TextureIdentifier> makeSignAt(
         Vector3 center,
         float height,
@@ -170,7 +171,7 @@ public class SignModelFactory<TextureIdentifier> {
             center.add(-widthLeft - 1, -height / 2 + 1, -0.5f),
             new Vector3(1, height - 2, 1),
             15, 8 - height / 2 + 1, true,
-            CubeFacesData.uniform(secondaryTexture, FaceRotation.Clockwise90, Direction.UP, Direction.DOWN, Direction.WEST, Direction.NORTH, Direction.SOUTH)
+            CubeFacesData.uniform(secondaryTexture, signTextureRotation, Direction.UP, Direction.DOWN, Direction.WEST, Direction.NORTH, Direction.SOUTH)
         );
         if(widthLeft + widthRight > 16){
             makeSliceWithRim(
@@ -179,7 +180,7 @@ public class SignModelFactory<TextureIdentifier> {
                 1,
                 0, 8 - height / 2,
                 true, false,
-                mainTexture, FaceRotation.Clockwise90, secondaryTexture, FaceRotation.Clockwise90
+                mainTexture, signTextureRotation, secondaryTexture, signTextureRotation
             );
             makeSliceWithRim(
                 center.add(16 - widthLeft, -height / 2, -0.5f),
@@ -187,7 +188,7 @@ public class SignModelFactory<TextureIdentifier> {
                 1,
                 0, 8 - height / 2,
                 false, true,
-                mainTexture, FaceRotation.Clockwise90, secondaryTexture, FaceRotation.Clockwise90
+                mainTexture, signTextureRotation, secondaryTexture, signTextureRotation
             );
         } else makeSliceWithRim(
             center.add(-widthLeft, -height / 2, -0.5f),
@@ -195,7 +196,7 @@ public class SignModelFactory<TextureIdentifier> {
             1,
             0, 8 - height / 2,
             true, true,
-            mainTexture, FaceRotation.Clockwise90, secondaryTexture, FaceRotation.Clockwise90
+            mainTexture, signTextureRotation, secondaryTexture, signTextureRotation
         );
         int stairsCount = Math.round(Math.min((height - 2) / 2, arrowWidth));
         int stairStep = Math.round((height - 2) / (2 * stairsCount));
@@ -207,7 +208,7 @@ public class SignModelFactory<TextureIdentifier> {
                 stairStep,
                 (widthLeft + widthRight + Math.round(stairsWidth) * i) % 16, 8 - height / 2 + 1 + stairStep * i,
                 false, true,
-                mainTexture, FaceRotation.Clockwise90, secondaryTexture, FaceRotation.Clockwise90
+                mainTexture, signTextureRotation, secondaryTexture, signTextureRotation
             );
         }
         int lastI = stairsCount - 1;
@@ -215,7 +216,7 @@ public class SignModelFactory<TextureIdentifier> {
             center.add(widthRight + stairsWidth * lastI, -height / 2 + 1 + stairStep * lastI, -0.5f),
             new Vector3(stairsWidth, height - 2 * (1 + stairStep * lastI), 1),
             (widthLeft + widthRight + Math.round(stairsWidth) * lastI) % 16, 8 - height / 2 + 1 + stairStep * lastI, true,
-            CubeFacesData.uniform(secondaryTexture, FaceRotation.Clockwise90, Direction.UP, Direction.DOWN, Direction.EAST, Direction.NORTH, Direction.SOUTH)
+            CubeFacesData.uniform(secondaryTexture, signTextureRotation, Direction.UP, Direction.DOWN, Direction.EAST, Direction.NORTH, Direction.SOUTH)
         );
         return this;
     }
@@ -283,12 +284,12 @@ public class SignModelFactory<TextureIdentifier> {
     public static class Builder {
         public static final BiConsumer<BlockModelBuilder, Cube<String>> BlockModel = (b, cube) -> {
             BlockModelBuilder.ElementBuilder builder = b.element()
-                .from(cube.min.x, cube.min.y, cube.min.z)
-                .to(cube.max.x, cube.max.y, cube.max.z);
+                .from(cube.from.x, cube.from.y, cube.from.z)
+                .to(cube.to.x, cube.to.y, cube.to.z);
             for(Map.Entry<Direction, FaceData<String>> face: cube.sides.entrySet()) {
                 Direction dir = face.getKey();
                 FaceData<String> faceData = face.getValue();
-                TextureArea textureArea = faceData.textureArea;
+                TextureArea textureArea = faceData.textureArea.rotate(faceData.rotation, true);
                 ModelBuilder<BlockModelBuilder>.ElementBuilder.FaceBuilder faceBuilder = builder.face(dir)
                     .texture(faceData.texture)
                     .uvs(textureArea.u.from, textureArea.v.from, textureArea.u.to, textureArea.v.to);
