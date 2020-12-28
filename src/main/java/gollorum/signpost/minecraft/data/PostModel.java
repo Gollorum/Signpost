@@ -23,12 +23,20 @@ public class PostModel extends BlockModelProvider {
     public static final String secondaryTexture = "secondary_texture";
 
     private static final ResourceLocation previewLocation = new ResourceLocation(Signpost.MOD_ID, "post_preview");
+
     private static final ResourceLocation wideLocation = new ResourceLocation(Signpost.MOD_ID, "small_wide_sign");
+    private static final ResourceLocation wideFlippedLocation = new ResourceLocation(Signpost.MOD_ID, wideLocation.getPath() + "_flipped");
     private static final ResourceLocation shortLocation = new ResourceLocation(Signpost.MOD_ID, "small_short_sign");
+    private static final ResourceLocation shortFlippedLocation = new ResourceLocation(Signpost.MOD_ID, shortLocation.getPath() + "_flipped");
     private static final ResourceLocation largeLocation = new ResourceLocation(Signpost.MOD_ID, "large_sign");
+    private static final ResourceLocation largeFlippedLocation = new ResourceLocation(Signpost.MOD_ID, largeLocation.getPath() + "_flipped");
+
     private static final ResourceLocation wideOverlayLocation = new ResourceLocation(Signpost.MOD_ID, "small_wide_sign_overlay");
+    private static final ResourceLocation wideOverlayFlippedLocation = new ResourceLocation(Signpost.MOD_ID, wideOverlayLocation.getPath() + "_flipped");
     private static final ResourceLocation shortOverlayLocation = new ResourceLocation(Signpost.MOD_ID, "small_short_sign_overlay");
+    private static final ResourceLocation shortOverlayFlippedLocation = new ResourceLocation(Signpost.MOD_ID, shortOverlayLocation.getPath() + "_flipped");
     private static final ResourceLocation largeOverlayLocation = new ResourceLocation(Signpost.MOD_ID, "large_sign_overlay");
+    private static final ResourceLocation largeOverlayFlippedLocation = new ResourceLocation(Signpost.MOD_ID, largeOverlayLocation.getPath() + "_flipped");
 
     public final Map<Post.Info, BlockModelBuilder> allModels;
     public final BlockModelBuilder waystoneModel;
@@ -90,24 +98,34 @@ public class PostModel extends BlockModelProvider {
 
         makePostAt(new Vector3(0, 8, 0), getBuilder("post_only"))
             .texture(texturePost, Post.ModelType.Oak.postTexture);
-        new SignModelFactory<String>().makeWideSign("#" + textureSign, "#" + secondaryTexture)
-            .build(getBuilder(wideLocation.toString()), SignModelFactory.Builder.BlockModel)
-            .texture(textureSign, Post.ModelType.Oak.mainTexture)
-            .texture(secondaryTexture, Post.ModelType.Oak.secondaryTexture);
-        new SignModelFactory<String>().makeShortSign("#" + textureSign, "#" + secondaryTexture)
-            .build(getBuilder(shortLocation.toString()), SignModelFactory.Builder.BlockModel)
-            .texture(textureSign, Post.ModelType.Oak.mainTexture)
-            .texture(secondaryTexture, Post.ModelType.Oak.secondaryTexture);
-        new SignModelFactory<String>().makeLargeSign("#" + textureSign, "#" + secondaryTexture)
-            .build(getBuilder(largeLocation.toString()), SignModelFactory.Builder.BlockModel)
-            .texture(textureSign, Post.ModelType.Oak.mainTexture)
-            .texture(secondaryTexture, Post.ModelType.Oak.secondaryTexture);
 
-        new SignModelFactory<String>().makeWideSignOverlay("#" + textureSign).build(getBuilder(wideOverlayLocation.toString()), SignModelFactory.Builder.BlockModel)
+        buildDefaultAndFlipped(
+            new SignModelFactory<String>().makeWideSign("#" + textureSign, "#" + secondaryTexture),
+            wideLocation,
+            wideFlippedLocation
+        );
+
+        buildDefaultAndFlipped(
+            new SignModelFactory<String>().makeShortSign("#" + textureSign, "#" + secondaryTexture),
+            shortLocation,
+            shortFlippedLocation
+        );
+
+        buildDefaultAndFlipped(
+            new SignModelFactory<String>().makeLargeSign("#" + textureSign, "#" + secondaryTexture),
+            largeLocation,
+            largeFlippedLocation
+        );
+
+        buildDefaultAndFlipped(
+            new SignModelFactory<String>().makeWideSignOverlay("#" + textureSign),
+            wideOverlayLocation,
             .texture(textureSign, Post.OverlayTextures.Wide.Gras);
-        new SignModelFactory<String>().makeShortSignOverlay("#" + textureSign).build(getBuilder(shortOverlayLocation.toString()), SignModelFactory.Builder.BlockModel)
+        buildDefaultAndFlipped(
+            new SignModelFactory<String>().makeShortSignOverlay("#" + textureSign).build(getBuilder(shortOverlayLocation.toString()), SignModelFactory.Builder.BlockModel)
             .texture(textureSign, Post.OverlayTextures.Short.Gras);
-        new SignModelFactory<String>().makeLargeSignOverlay("#" + textureSign).build(getBuilder(largeOverlayLocation.toString()), SignModelFactory.Builder.BlockModel)
+        buildDefaultAndFlipped(
+            new SignModelFactory<String>().makeLargeSignOverlay("#" + textureSign).build(getBuilder(largeOverlayLocation.toString()), SignModelFactory.Builder.BlockModel)
             .texture(textureSign, Post.OverlayTextures.Large.Gras);
 
         for(Post.Info info : Post.All_INFOS) {
@@ -119,6 +137,24 @@ public class PostModel extends BlockModelProvider {
                 .texture(secondaryTexture, info.type.secondaryTexture);
         }
         cubeAll(Waystone.REGISTRY_NAME, new ResourceLocation(Signpost.MOD_ID, "block/waystone"));
+    }
+
+    private void buildDefaultAndFlipped(SignModelFactory<String> factory, ResourceLocation main, ResourceLocation flipped) {
+        factory.build(getBuilder(main.toString()), SignModelFactory.Builder.BlockModel)
+            .texture(textureSign, Post.ModelType.Oak.mainTexture)
+            .texture(secondaryTexture, Post.ModelType.Oak.secondaryTexture);
+        factory.build(getBuilder(flipped.toString()), SignModelFactory.Builder.BlockModelFlipped)
+            .texture(textureSign, Post.ModelType.Oak.mainTexture)
+            .texture(secondaryTexture, Post.ModelType.Oak.secondaryTexture);
+    }
+
+    private void buildDefaultAndFlippedOverlay(SignModelFactory<String> factory, ResourceLocation main, ResourceLocation flipped) {
+        factory.build(getBuilder(main.toString()), SignModelFactory.Builder.BlockModel)
+            .texture(textureSign, Post.ModelType.Oak.mainTexture)
+            .texture(secondaryTexture, Post.ModelType.Oak.secondaryTexture);
+        factory.build(getBuilder(flipped.toString()), SignModelFactory.Builder.BlockModelFlipped)
+            .texture(textureSign, Post.ModelType.Oak.mainTexture)
+            .texture(secondaryTexture, Post.ModelType.Oak.secondaryTexture);
     }
 
     private static BlockModelBuilder makePostAt(Vector3 center, BlockModelBuilder builder) {
