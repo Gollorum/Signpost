@@ -1,9 +1,10 @@
-package gollorum.signpost.signtypes;
+package gollorum.signpost.signdata.types;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.data.PostModel;
 import gollorum.signpost.minecraft.gui.SignGui;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.utils.BlockPart;
@@ -12,7 +13,6 @@ import gollorum.signpost.utils.math.geometry.AABB;
 import gollorum.signpost.utils.math.geometry.Intersectable;
 import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import gollorum.signpost.utils.modelGeneration.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.RenderType;
@@ -49,7 +49,7 @@ public class Post implements BlockPart<Post> {
         (compound, keyPrefix) -> new Post(new ResourceLocation(compound.getString(keyPrefix + "texture")))
     );
 
-    private Lazy<SignModel> model;
+    private Lazy<IBakedModel> model;
     private ResourceLocation texture;
 
     public Post(ResourceLocation texture) {
@@ -57,12 +57,7 @@ public class Post implements BlockPart<Post> {
     }
 
     public void setTexture(ResourceLocation texture){
-        model = () -> new SignModelFactory<ResourceLocation>().makePartialCube(
-            new Vector3(-2, 0, -2),
-            new Vector3(4, 16, 4),
-            0, 0, true,
-            CubeFacesData.all(texture, FaceRotation.Zero, d -> true))
-            .build(new SignModel(), SignModel::addCube);
+        model = RenderingUtil.loadModel(PostModel.postLocation, texture);
         this.texture = texture;
     }
 
@@ -82,11 +77,9 @@ public class Post implements BlockPart<Post> {
                     info.tile,
                     gollorum.signpost.minecraft.block.Post.ModelType.from(info.player.getHeldItem(info.hand).getItem()),
                     info.traceResult.hitPos,
-                    Optional.of(new ItemStack(heldItem.getItem(), 1))
+                    new ItemStack(heldItem.getItem(), 1)
                 ));
             }
-            if(!info.player.isCreative())
-                info.player.inventory.func_234564_a_(i -> i.getItem().equals(heldItem.getItem()), 1, info.player.container.func_234641_j_());
             return InteractionResult.Accepted;
         } else return InteractionResult.Ignored;
     }
@@ -99,17 +92,16 @@ public class Post implements BlockPart<Post> {
 
     @Override
     public void render(TileEntity tileEntity, TileEntityRendererDispatcher renderDispatcher, MatrixStack matrix, IRenderTypeBuffer buffer, int combinedLights, int combinedOverlay, Random random, long randomSeed) {
-        model.get().render(matrix.getLast(), buffer, RenderType.getSolid(), combinedLights, combinedOverlay, 1, 1, 1);
-//        RenderingUtil.render(matrix, renderModel -> renderModel.render(
-//            model.get(),
-//            tileEntity,
-//            buffer.getBuffer(RenderType.getSolid()),
-//            false,
-//            random,
-//            randomSeed,
-//            combinedOverlay,
-//            new Matrix4f(Quaternion.ONE)
-//        ));
+        RenderingUtil.render(matrix, renderModel -> renderModel.render(
+            model.get(),
+            tileEntity,
+            buffer.getBuffer(RenderType.getSolid()),
+            false,
+            random,
+            randomSeed,
+            combinedOverlay,
+            new Matrix4f(Quaternion.ONE)
+        ));
     }
 
     @Override

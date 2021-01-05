@@ -1,0 +1,60 @@
+package gollorum.signpost.minecraft.registry;
+
+import gollorum.signpost.minecraft.block.Post;
+import gollorum.signpost.signdata.Overlay;
+import net.minecraft.block.BlockState;
+import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockDisplayReader;
+import net.minecraft.world.World;
+import net.minecraft.world.biome.BiomeColors;
+import net.minecraftforge.client.event.ColorHandlerEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+
+import javax.annotation.Nullable;
+
+public class ColorRegistry {
+
+    @SubscribeEvent
+    static void onBlockColor(ColorHandlerEvent.Block event) {
+        for(Post.Info info: Post.All_INFOS) {
+            event.getBlockColors().register(ColorRegistry::getOverlayBlockColor, info.post);
+        }
+    }
+
+    @SubscribeEvent
+    static void onItemColor(ColorHandlerEvent.Item event) {
+        for(Post.Info info: Post.All_INFOS) {
+            event.getItemColors().register(ColorRegistry::getOverlayItemColor, info.post);
+            event.getBlockColors().register(ColorRegistry::getOverlayBlockColor, info.post);
+        }
+    }
+
+    private static int getOverlayBlockColor(BlockState blockState, @Nullable IBlockDisplayReader world, @Nullable BlockPos blockPos, int tintIndex) {
+        if(world == null || blockPos == null) return -1;
+        switch(tintIndex) {
+            case Overlay.GrasTint: return BiomeColors.getGrassColor(world, blockPos);
+            case Overlay.FoliageTint: return BiomeColors.getFoliageColor(world, blockPos);
+            case Overlay.WaterTint: return BiomeColors.getWaterColor(world, blockPos);
+            default: return -1;
+        }
+    }
+
+    private static int getOverlayItemColor(ItemStack itemStack, int tintIndex) {
+        World world = Minecraft.getInstance().world;
+        PlayerEntity player = Minecraft.getInstance().player;
+        if(world == null || player == null) return -1;
+        switch(tintIndex) {
+            case Overlay.GrasTint: return BiomeColors.getGrassColor(world, player.getPosition());
+            case Overlay.FoliageTint: return BiomeColors.getFoliageColor(world, player.getPosition());
+            case Overlay.WaterTint: return BiomeColors.getWaterColor(world, player.getPosition());
+            default: return -1;
+        }
+    }
+
+    public static void register(IEventBus bus) { bus.register(ColorRegistry.class); }
+
+}

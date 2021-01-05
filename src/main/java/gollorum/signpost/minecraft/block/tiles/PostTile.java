@@ -1,13 +1,11 @@
 package gollorum.signpost.minecraft.block.tiles;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.Wrench;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.signtypes.LargeSign;
-import gollorum.signpost.signtypes.Post;
-import gollorum.signpost.signtypes.SmallShortSign;
-import gollorum.signpost.signtypes.SmallWideSign;
+import gollorum.signpost.signdata.types.*;
 import gollorum.signpost.utils.BlockPart;
 import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.utils.BlockPartMetadata;
@@ -18,6 +16,7 @@ import gollorum.signpost.utils.serialization.BlockPosSerializer;
 import gollorum.signpost.utils.serialization.BufferSerializable;
 import io.netty.util.internal.ConcurrentSet;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.AxeItem;
@@ -80,15 +79,16 @@ public class PostTile extends TileEntity {
         this.modelType = modelType;
     }
 
-    public UUID addPart(BlockPartInstance part){ return addPart(UUID.randomUUID(), part); }
+    public UUID addPart(BlockPartInstance part, ItemStack cost, PlayerHandle player){ return addPart(UUID.randomUUID(), part, cost, player); }
 
-    public UUID addPart(UUID identifier, BlockPartInstance part){
+    public UUID addPart(UUID identifier, BlockPartInstance part, ItemStack cost, PlayerHandle player){
         parts.put(identifier, part);
         if(hasWorld() && !world.isRemote) sendToTracing(() -> new PartAddedEvent.Packet(
             new TilePartInfo(this, identifier),
             part.blockPart.write(),
             part.blockPart.getMeta().identifier,
-            part.offset
+            part.offset,
+            cost, player
         ));
         return identifier;
     }
@@ -173,14 +173,21 @@ public class PostTile extends TileEntity {
         for(BlockPartMetadata<?> meta : partsMetadata){
             for(int i = 0; i < compound.getInt(meta.identifier); i++){
                 CompoundNBT comp = compound.getCompound(meta.identifier + "_" + i);
-                addPart(comp.getUniqueId("PartId"), new BlockPartInstance(
-                    meta.read(comp),
-                    Vector3.SERIALIZER.read(comp, "Offset")
-                ));
+                addPart(
+                    comp.getUniqueId("PartId"),
+                    new BlockPartInstance(
+                        meta.read(comp),
+                        Vector3.SERIALIZER.read(comp, "Offset")
+                    ),
+                    ItemStack.EMPTY,
+                    new PlayerHandle(UUID.randomUUID())
+                );
             }
         }
         if(parts.isEmpty()) addPart(
-            new BlockPartInstance(new Post(gollorum.signpost.minecraft.block.Post.ModelType.Oak.postTexture), Vector3.ZERO)
+            new BlockPartInstance(new Post(gollorum.signpost.minecraft.block.Post.ModelType.Oak.postTexture), Vector3.ZERO),
+            ItemStack.EMPTY,
+            new PlayerHandle(UUID.randomUUID())
         );
     }
 
@@ -275,19 +282,23 @@ public class PostTile extends TileEntity {
             public final String partMetaIdentifier;
             public final CompoundNBT partData;
             public final Vector3 offset;
+            public final ItemStack cost;
+            public final PlayerHandle player;
 
-            public Packet(TilePartInfo info, CompoundNBT partData, String partMetaIdentifier, Vector3 offset) {
+            public Packet(
+                TilePartInfo info,
+                CompoundNBT partData,
+                String partMetaIdentifier,
+                Vector3 offset,
+                ItemStack cost,
+                PlayerHandle player
+            ) {
                 this.info = info;
                 this.partMetaIdentifier = partMetaIdentifier;
                 this.partData = partData;
                 this.offset = offset;
-            }
-
-            public Packet(TilePartInfo info, BlockPartInstance instance) {
-                this.info = info;
-                this.partMetaIdentifier = instance.blockPart.getMeta().identifier;
-                this.partData = instance.blockPart.write();
-                this.offset = instance.offset;
+                this.cost = cost;
+                this.player = player;
             }
         }
 
@@ -300,6 +311,8 @@ public class PostTile extends TileEntity {
             buffer.writeString(message.partData.getString());
             buffer.writeString(message.partMetaIdentifier);
             Vector3.SERIALIZER.writeTo(message.offset, buffer);
+            buffer.writeItemStack(message.cost);
+            PlayerHandle.SERIALIZER.writeTo(message.player, buffer);
         }
 
         @Override
@@ -309,7 +322,9 @@ public class PostTile extends TileEntity {
                     TilePartInfo.SERIALIZER.readFrom(buffer),
                     JsonToNBT.getTagFromJson(buffer.readString()),
                     buffer.readString(),
-                    Vector3.SERIALIZER.readFrom(buffer)
+                    Vector3.SERIALIZER.readFrom(buffer),
+                    buffer.readItemStack(),
+                    PlayerHandle.SERIALIZER.readFrom(buffer)
                 );
             } catch (CommandSyntaxException e) {
                 e.printStackTrace();
@@ -331,7 +346,30 @@ public class PostTile extends TileEntity {
                 Optional<BlockPartMetadata<?>> meta = partsMetadata.stream().filter(m -> m.identifier.equals(message.partMetaIdentifier)).findFirst();
                 if (meta.isPresent()) {
                     tile.addPart(message.info.identifier,
-                        new BlockPartInstance(meta.get().read(message.partData), message.offset));
+                        new BlockPartInstance(meta.get().read(message.partData), message.offset),
+                        message.cost,
+                        message.player
+                    );
+                    if(message.cost.getCount() > 0 &&
+                           (!isRemote ||
+                                (Minecraft.getInstance().player != null
+                                     && Minecraft.getInstance().player.getUniqueID().equals(message.player.id)))) {
+                        PlayerEntity player = isRemote ? Minecraft.getInstance().player : context.getSender();
+                        if (player.getUniqueID().equals(message.player.id)) {
+                            if (!player.isCreative())
+                                player.inventory.func_234564_a_(
+                                    i -> i.getItem().equals(message.cost.getItem()),
+                                    message.cost.getCount(),
+                                    player.container.func_234641_j_()
+                                );
+                        } else {
+                            Signpost.LOGGER.error(
+                                "Tried to apply cost but the player was not the expected one (expected {}, got {})",
+                                message.player.id,
+                                player.getUniqueID()
+                            );
+                        }
+                    }
                     tile.markDirty();
                 } else {
                     Signpost.LOGGER.warn("Could not find meta for part " + message.partMetaIdentifier);
@@ -377,7 +415,7 @@ public class PostTile extends TileEntity {
                     PostTile.class
                 ).ifPresent(tile -> {
                     BlockPartInstance oldPart = tile.removePart(message.info.identifier);
-                    if(oldPart != null && !tile.world.isRemote && message.shouldDropItem){
+                    if(oldPart != null && !tile.world.isRemote && !context.get().getSender().isCreative() && message.shouldDropItem){
                         for(ItemStack item : (Collection<ItemStack>) oldPart.blockPart.getDrops(tile)) {
                             if(!context.get().getSender().inventory.addItemStackToInventory(item))
                                 if(tile.world instanceof ServerWorld) {

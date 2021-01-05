@@ -1,5 +1,6 @@
 package gollorum.signpost.minecraft.block;
 
+import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.interactions.Interactable;
 import gollorum.signpost.interactions.InteractionInfo;
@@ -139,26 +140,7 @@ public class Post extends Block implements IWaterLoggable {
         }
     }
 
-    public static final class OverlayTextures {
-        public static final ResourceLocation[] All = {
-            Wide.Gras,
-            Short.Gras,
-            Large.Gras,
-        };
-
-        public static final class Wide {
-            public static final ResourceLocation Gras = new ResourceLocation(Signpost.MOD_ID, "block/sign_overlay_grass");
-        }
-        public static final class Short {
-            public static final ResourceLocation Gras = new ResourceLocation(Signpost.MOD_ID, "block/sign_overlay_grass_short");
-        }
-        public static final class Large {
-            public static final ResourceLocation Gras = new ResourceLocation(Signpost.MOD_ID, "block/sign_overlay_grass_large");
-        }
-    }
-
     private static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
-    private static final VoxelShape SHAPE = Block.makeCuboidShape(6.0D, 0.0D, 6.0D, 10.0D, 16.0D, 10.0D);
 
     public static class Info {
         public final Post post;
@@ -209,9 +191,18 @@ public class Post extends Block implements IWaterLoggable {
             () -> {
                 PostTile tile = TileEntityUtils.findTileEntity(world, pos, PostTile.class).get();
                 if (world.isRemote) {
-                    Minecraft.getInstance().displayGuiScreen(new SignGui(tile, tile.modelType, new Vector3(0, 1, 0), Optional.empty()));
+                    Minecraft.getInstance().displayGuiScreen(new SignGui(
+                        tile,
+                        tile.modelType,
+                        new Vector3(0, 1, 0),
+                        ItemStack.EMPTY
+                    ));
                 } else {
-                    tile.addPart(new BlockPartInstance(new gollorum.signpost.signtypes.Post(type.postTexture), Vector3.ZERO));
+                    tile.addPart(
+                        new BlockPartInstance(new gollorum.signpost.signdata.types.Post(type.postTexture), Vector3.ZERO),
+                        ItemStack.EMPTY,
+                        PlayerHandle.from(placer)
+                    );
                     tile.markDirty();
                 }
             }, 100

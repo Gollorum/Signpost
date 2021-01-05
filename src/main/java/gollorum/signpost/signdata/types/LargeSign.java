@@ -1,34 +1,31 @@
-package gollorum.signpost.signtypes;
+package gollorum.signpost.signdata.types;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.Post;
+import gollorum.signpost.minecraft.data.PostModel;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
+import gollorum.signpost.signdata.Overlay;
 import gollorum.signpost.utils.BlockPartMetadata;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.AABB;
 import gollorum.signpost.utils.math.geometry.Matrix4x4;
 import gollorum.signpost.utils.math.geometry.TransformedBox;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import gollorum.signpost.utils.modelGeneration.FaceRotation;
-import gollorum.signpost.utils.modelGeneration.SignModel;
-import gollorum.signpost.utils.modelGeneration.SignModelFactory;
+import gollorum.signpost.utils.serialization.ItemStackSerializer;
 import gollorum.signpost.utils.serialization.OptionalSerializer;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.*;
-import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
+import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.vector.Matrix4f;
-import net.minecraft.util.math.vector.Quaternion;
 import net.minecraft.util.math.vector.Vector3f;
+import net.minecraftforge.common.util.Lazy;
 
 import java.util.Optional;
-import java.util.Random;
-import java.util.UUID;
 
 import static gollorum.signpost.minecraft.rendering.RenderingUtil.FontToVoxelSize;
 import static gollorum.signpost.minecraft.rendering.RenderingUtil.VoxelSize;
@@ -60,10 +57,10 @@ public class LargeSign extends Sign<LargeSign> {
             compound.putBoolean(keyPrefix + "Flip", sign.flip);
             compound.putString(keyPrefix + "Texture", sign.mainTexture.toString());
             compound.putString(keyPrefix + "TextureDark", sign.secondaryTexture.toString());
-            OptionalSerializer.ResourceLocation.writeTo(sign.overlayTexture, compound, "Overlay");
+            new OptionalSerializer<>(Overlay.Serializer).writeTo(sign.overlay, compound, "Overlay");
             compound.putInt(keyPrefix + "Color", sign.color);
-            new OptionalSerializer(WaystoneHandle.SERIALIZER).writeTo(sign.destination, compound, "Destination");
-            OptionalSerializer.ItemStack.writeTo(sign.itemToDropOnBreak, compound, "ItemToDropOnBreak");
+            new OptionalSerializer<>(WaystoneHandle.SERIALIZER).writeTo(sign.destination, compound, "Destination");
+            ItemStackSerializer.Instance.writeTo(sign.itemToDropOnBreak, compound, "ItemToDropOnBreak");
             compound.putString(keyPrefix + "ModelType", sign.modelType.name());
         },
         (compound, keyPrefix) -> new LargeSign(
@@ -76,10 +73,10 @@ public class LargeSign extends Sign<LargeSign> {
             compound.getBoolean(keyPrefix + "Flip"),
             new ResourceLocation(compound.getString(keyPrefix + "Texture")),
             new ResourceLocation(compound.getString(keyPrefix + "TextureDark")),
-            OptionalSerializer.ResourceLocation.read(compound, "Overlay"),
+            new OptionalSerializer<>(Overlay.Serializer).read(compound, "Overlay"),
             compound.getInt(keyPrefix + "Color"),
-            new OptionalSerializer(WaystoneHandle.SERIALIZER).read(compound, "Destination"),
-            OptionalSerializer.ItemStack.read(compound, "ItemToDropOnBreak"),
+            new OptionalSerializer<>(WaystoneHandle.SERIALIZER).read(compound, "Destination"),
+            ItemStackSerializer.Instance.read(compound, "ItemToDropOnBreak"),
             Post.ModelType.valueOf(compound.getString(keyPrefix + "ModelType"))
         ));
 
@@ -91,13 +88,13 @@ public class LargeSign extends Sign<LargeSign> {
         boolean flip,
         ResourceLocation mainTexture,
         ResourceLocation secondaryTexture,
-        Optional<ResourceLocation> overlayTexture,
+        Optional<Overlay> overlay,
         int color,
         Optional<WaystoneHandle> destination,
-        Optional<ItemStack> itemToDropOnBreak,
+        ItemStack itemToDropOnBreak,
         Post.ModelType modelType
     ) {
-        super(angle, flip, mainTexture, secondaryTexture, overlayTexture, color, destination, modelType, itemToDropOnBreak);
+        super(angle, flip, mainTexture, secondaryTexture, overlay, color, destination, modelType, itemToDropOnBreak);
         assert text.length == 4;
         this.text = text;
     }
@@ -109,17 +106,19 @@ public class LargeSign extends Sign<LargeSign> {
     public String[] getText() { return text; }
 
     @Override
-    protected SignModel makeModel() {
-        return new SignModelFactory<ResourceLocation>()
-            .makeLargeSign(mainTexture, secondaryTexture)
-            .build(new SignModel(), SignModel::addCube);
+    protected Lazy<IBakedModel> makeModel() {
+        return RenderingUtil.loadModel(
+            isFlipped() ? PostModel.largeFlippedLocation : PostModel.largeLocation,
+            mainTexture, secondaryTexture
+        );
     }
 
     @Override
-    protected SignModel makeOverlayModel(ResourceLocation texture) {
-        return new SignModelFactory<ResourceLocation>()
-            .makeLargeSignOverlay(texture)
-            .build(new SignModel(), SignModel::addCube);
+    protected Lazy<IBakedModel> makeOverlayModel(Overlay texture) {
+        return RenderingUtil.loadModel(
+            isFlipped() ? PostModel.largeOverlayFlippedLocation : PostModel.largeOverlayLocation,
+            texture.textureFor(LargeSign.class)
+        );
     }
 
     @Override

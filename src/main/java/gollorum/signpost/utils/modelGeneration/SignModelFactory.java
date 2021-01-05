@@ -299,12 +299,12 @@ public class SignModelFactory<TextureIdentifier> {
             }
         };
 
-        private static Direction flipXAxis(Direction dir) {
+        private static Direction flipZAxis(Direction dir) {
             switch (dir) {
-                case EAST:
-                    return Direction.WEST;
-                case WEST:
-                    return Direction.EAST;
+                case NORTH:
+                    return Direction.SOUTH;
+                case SOUTH:
+                    return Direction.NORTH;
                 default:
                     return dir;
             }
@@ -315,22 +315,17 @@ public class SignModelFactory<TextureIdentifier> {
                 .from(cube.from.x, cube.from.y, -cube.to.z)
                 .to(cube.to.x, cube.to.y, -cube.from.z);
             for(Map.Entry<Direction, FaceData<String>> face: cube.sides.entrySet()) {
-                Direction dir = flipXAxis(face.getKey());
+                Direction dir = face.getKey();
                 FaceData<String> faceData = face.getValue();
                 TextureArea textureArea = faceData.textureArea.rotate(faceData.rotation, true);
                 float uFrom = textureArea.u.from;
                 float uTo = textureArea.u.to;
                 float vFrom = textureArea.v.from;
                 float vTo = textureArea.v.to;
-                switch (dir.getAxis()) {
-                    case X:
-                        uFrom = textureArea.u.to;
-                        uTo = textureArea.u.from;
-                        break;
-                    case Y:
-                        vFrom = textureArea.v.to;
-                        vTo = textureArea.v.from;
-                        break;
+                if(dir.getAxis().equals(Direction.Axis.Z)) {
+                    uFrom = textureArea.u.to;
+                    uTo = textureArea.u.from;
+                    dir = dir.getOpposite();
                 }
                 ModelBuilder<BlockModelBuilder>.ElementBuilder.FaceBuilder faceBuilder = builder.face(dir)
                     .texture(faceData.texture)

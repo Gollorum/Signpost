@@ -5,7 +5,6 @@ import gollorum.signpost.minecraft.events.WaystoneRemovedEvent;
 import gollorum.signpost.minecraft.events.WaystoneUpdatedEvent;
 import gollorum.signpost.minecraft.storage.WaystoneLibraryStorage;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.signtypes.Sign;
 import gollorum.signpost.utils.EventDispatcher;
 import gollorum.signpost.utils.WaystoneData;
 import gollorum.signpost.utils.WaystoneLocationData;

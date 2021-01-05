@@ -3,6 +3,7 @@ package gollorum.signpost.minecraft.gui;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import gollorum.signpost.minecraft.rendering.FlippableModel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.IRenderable;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
@@ -14,20 +15,24 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.item.ItemStack;
 
 import javax.annotation.Nonnull;
+import java.util.function.Function;
 
 public class GuiModelRenderer implements IRenderable, Flippable {
 
-    private final IBakedModel model;
+    private final FlippableModel model;
     private final float modelSpaceXOffset;
     private final float modelSpaceYOffset;
     private final ItemStack stack;
     private boolean isFlipped = false;
 
-    private Point center;
+    private final Point center;
     private final int width;
     private final int height;
 
-    public GuiModelRenderer(Rect rect, IBakedModel model, float modelSpaceXOffset, float modelSpaceYOffset, ItemStack stack) {
+    public final Rect rect;
+
+    public GuiModelRenderer(Rect rect, FlippableModel model, float modelSpaceXOffset, float modelSpaceYOffset, ItemStack stack) {
+        this.rect = rect;
         center = rect.center();
         width = rect.width;
         height = rect.height;
@@ -57,14 +62,12 @@ public class GuiModelRenderer implements IRenderable, Flippable {
         RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
         RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
         matrixStack.translate(center.x, center.y, 100);
-//        RenderSystem.translatef(8.0F, 8.0F, 0.0F);
-//        RenderSystem.scalef(1.0F, -1.0F, 1.0F);
         float scale = Math.min(width, height);
         matrixStack.scale(scale, -scale, scale);
         matrixStack.translate(modelSpaceXOffset, modelSpaceYOffset, 0);
         if(isFlipped) {
-//            matrixStack.translate(-0.5f, -0.5f, -0.5f);
-            matrixStack.scale(-1, -1, 1);
+            matrixStack.translate(0, 0, -1f);
+            matrixStack.scale(-1, 1, -1);
         }
         matrixStack.translate(0.5f, 0.5f, 0);
         IRenderTypeBuffer.Impl renderTypeBuffer = Minecraft.getInstance().getRenderTypeBuffers().getBufferSource();
@@ -78,7 +81,7 @@ public class GuiModelRenderer implements IRenderable, Flippable {
             renderTypeBuffer,
             0xf000f0,
             OverlayTexture.NO_OVERLAY,
-            model
+            model.get(isFlipped)
         );
         renderTypeBuffer.finish();
         RenderSystem.enableDepthTest();
@@ -87,4 +90,5 @@ public class GuiModelRenderer implements IRenderable, Flippable {
         RenderSystem.disableAlphaTest();
         RenderSystem.disableRescaleNormal();
     }
+
 }

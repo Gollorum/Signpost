@@ -26,7 +26,7 @@ public class BlockRegistry {
             .map(BlockRegistry::registerPostBlock)
             .toArray();
 
-    private static RegistryObject<Block> registerPostBlock(Post.Info postInfo){
+    private static RegistryObject<Block> registerPostBlock(Post.Info postInfo) {
         return REGISTER.register(postInfo.registryName, () -> postInfo.post);
     }
 

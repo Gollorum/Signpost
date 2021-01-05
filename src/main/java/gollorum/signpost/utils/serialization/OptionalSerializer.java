@@ -12,28 +12,6 @@ public final class OptionalSerializer<T> implements CompoundSerializable<Optiona
 
     public static final String key = "Value";
 
-    public static final OptionalSerializer<ItemStack> ItemStack = new OptionalSerializer<>(
-        new CompoundSerializable<net.minecraft.item.ItemStack>() {
-            @Override
-            public void writeTo(net.minecraft.item.ItemStack itemStack, CompoundNBT compound, String keyPrefix) {
-                compound.put(keyPrefix, itemStack.write(new CompoundNBT()));
-            }
-
-            @Override
-            public boolean isContainedIn(CompoundNBT compound, String keyPrefix) {
-                return compound.contains(keyPrefix);
-            }
-
-            @Override
-            public net.minecraft.item.ItemStack read(CompoundNBT compound, String keyPrefix) {
-                INBT readCompound = compound.get(keyPrefix);
-                if(readCompound instanceof CompoundNBT)
-                    return net.minecraft.item.ItemStack.read((CompoundNBT) readCompound);
-                else return null;
-            }
-        }
-    );
-
     public static final OptionalSerializer<net.minecraft.util.ResourceLocation> ResourceLocation = new OptionalSerializer<>(
         new CompoundSerializable<net.minecraft.util.ResourceLocation>() {
             @Override

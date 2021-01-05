@@ -53,6 +53,7 @@ public class Signpost {
         ItemRegistry.register(modBus);
         TileEntityRegistry.register(modBus);
         ResourceRegistry.register(modBus);
+        ColorRegistry.register(modBus);
         DataGeneration.register(modBus);
         Delay.register(forgeBus);
     }
@@ -78,10 +79,6 @@ public class Signpost {
         public void serverAboutToStart(FMLServerAboutToStartEvent e) {
             serverInstance = e.getServer();
             WaystoneLibrary.initialize();
-        }
-
-        @SubscribeEvent
-        public void onServerStarting(FMLServerStartingEvent event) {
         }
 
         @SubscribeEvent

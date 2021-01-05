@@ -8,13 +8,18 @@ import gollorum.signpost.minecraft.gui.Point;
 import gollorum.signpost.minecraft.gui.Rect;
 import gollorum.signpost.utils.modelGeneration.SignModel;
 import gollorum.signpost.utils.modelGeneration.SignModelFactory;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.model.BakedQuad;
 import net.minecraft.client.renderer.model.IBakedModel;
+import net.minecraft.client.renderer.model.ItemOverrideList;
 import net.minecraft.client.renderer.model.RenderMaterial;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.math.vector.TransformationMatrix;
@@ -23,10 +28,14 @@ import net.minecraftforge.client.model.SimpleModelTransform;
 import net.minecraftforge.common.util.Lazy;
 import org.lwjgl.opengl.GL11;
 
+import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class RenderingUtil {
 
@@ -56,8 +65,6 @@ public class RenderingUtil {
     }
 
     private static final Map<ResourceLocation, Map<ResourceLocation, Map<ResourceLocation, Lazy<IBakedModel>>>> cachedTwoTexturedModels = new ConcurrentHashMap<>();
-//    private static final ResourceLocation texture1Marker = new ResourceLocation(PostModel.textureSign);
-    private static final ResourceLocation texture1Marker = new ResourceLocation("block/stripped_oak_log");
 
     public static Lazy<IBakedModel> loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation1, ResourceLocation textureLocation2) {
         final ResourceLocation textLoc1 = trim(textureLocation1);
@@ -68,7 +75,7 @@ public class RenderingUtil {
             .computeIfAbsent(textLoc2,
                 x -> Lazy.of(() -> ModelLoader.instance().getUnbakedModel(modelLocation).bakeModel(ModelLoader.instance(),
                     m -> Minecraft.getInstance().getAtlasSpriteGetter(m.getAtlasLocation()).apply(
-                        m.getTextureLocation().equals(texture1Marker)
+                        m.getTextureLocation().equals(PostModel.mainTextureMarker)
                             ? textLoc1 : textLoc2
                     ),
                     new SimpleModelTransform(TransformationMatrix.identity()),
@@ -76,14 +83,6 @@ public class RenderingUtil {
                 ))
             );
     }
-
-//    public static final ResourceLocation ModelWideSign = new ResourceLocation(Signpost.MOD_ID, "block/small_wide_sign");
-//    public static final ResourceLocation ModelShortSign = new ResourceLocation(Signpost.MOD_ID, "block/small_short_sign");
-//    public static final ResourceLocation ModelLargeSign = new ResourceLocation(Signpost.MOD_ID, "block/large_sign");
-//    public static final ResourceLocation ModelWideSignOverlay = new ResourceLocation(Signpost.MOD_ID, "block/small_wide_sign_overlay");
-//    public static final ResourceLocation ModelShortSignOverlay = new ResourceLocation(Signpost.MOD_ID, "block/small_short_sign_overlay");
-//    public static final ResourceLocation ModelLargeSignOverlay = new ResourceLocation(Signpost.MOD_ID, "block/large_sign_overlay");
-    public static final ResourceLocation ModelPost = new ResourceLocation(Signpost.MOD_ID, "block/post_only");
 
     private static final Lazy<BlockModelRenderer> Renderer = Lazy.of(() -> Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelRenderer());
     private static final Lazy<Tessellator> Tesselator = Lazy.of(Tessellator::getInstance);
@@ -124,8 +123,8 @@ public class RenderingUtil {
                 checkSides,
                 random,
                 rand,
-                combinedOverlay,
-                tileEntity.getModelData()
+                combinedOverlay//,
+//                tileEntity.getModelData()
             );
         });
         matrix.pop();
@@ -159,6 +158,108 @@ public class RenderingUtil {
         );
         buffer.finish();
         return i;
+    }
+
+    public static IBakedModel withTintIndex(IBakedModel original, int tintIndex) {
+        return new IBakedModel() {
+            @Override
+            public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, Random rand) {
+                return original.getQuads(state, side, rand)
+                           .stream().map(q -> new BakedQuad(q.getVertexData(), tintIndex, q.getFace(), q.getSprite(), q.applyDiffuseLighting()))
+                           .collect(Collectors.toList());
+            }
+
+            @Override
+            public boolean isAmbientOcclusion() {
+                return original.isAmbientOcclusion();
+            }
+
+            @Override
+            public boolean isGui3d() {
+                return original.isGui3d();
+            }
+
+            @Override
+            public boolean isSideLit() {
+                return original.isSideLit();
+            }
+
+            @Override
+            public boolean isBuiltInRenderer() {
+                return original.isBuiltInRenderer();
+            }
+
+            @Override
+            public TextureAtlasSprite getParticleTexture() {
+                return original.getParticleTexture();
+            }
+
+            @Override
+            public ItemOverrideList getOverrides() {
+                return original.getOverrides();
+            }
+        };
+    }
+
+    public static IBakedModel withTransformedDirections(IBakedModel original, boolean isFlipped, float yaw) {
+        Map<Direction, Direction> directionMapping = new HashMap<>();
+        if(isFlipped){
+            directionMapping.put(Direction.UP, Direction.DOWN);
+            directionMapping.put(Direction.DOWN, Direction.UP);
+        } else {
+            directionMapping.put(Direction.UP, Direction.UP);
+            directionMapping.put(Direction.DOWN, Direction.DOWN);
+        }
+        Direction[] dir = new Direction[]{
+            Direction.NORTH,
+            isFlipped ? Direction.WEST : Direction.EAST,
+            Direction.SOUTH,
+            isFlipped ? Direction.EAST : Direction.WEST
+        };
+        int indexOffset = Math.round((yaw / 360) * dir.length) % dir.length;
+        if (indexOffset < 0) indexOffset += dir.length;
+        directionMapping.put(Direction.NORTH, dir[indexOffset]);
+        directionMapping.put(Direction.EAST, dir[(indexOffset + 1) % dir.length]);
+        directionMapping.put(Direction.SOUTH, dir[(indexOffset + 2) % dir.length]);
+        directionMapping.put(Direction.WEST, dir[(indexOffset + 3) % dir.length]);
+        return new IBakedModel() {
+            @Override
+            public List<BakedQuad> getQuads(BlockState state, Direction side, Random rand) {
+                return original.getQuads(state, directionMapping.get(side), rand)
+                           .stream().map(q -> new BakedQuad(q.getVertexData(), q.getTintIndex(), directionMapping.get(q.getFace()), q.getSprite(), q.applyDiffuseLighting()))
+                           .collect(Collectors.toList());
+            }
+
+            @Override
+            public boolean isAmbientOcclusion() {
+                return original.isAmbientOcclusion();
+            }
+
+            @Override
+            public boolean isGui3d() {
+                return original.isGui3d();
+            }
+
+            @Override
+            public boolean isSideLit() {
+                return original.isSideLit();
+            }
+
+            @Override
+            public boolean isBuiltInRenderer() {
+                return original.isBuiltInRenderer();
+            }
+
+            @Override
+            public TextureAtlasSprite getParticleTexture() {
+                return original.getParticleTexture();
+            }
+
+            @Override
+            public ItemOverrideList getOverrides() {
+                return original.getOverrides();
+            }
+        };
     }
 
 }

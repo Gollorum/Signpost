@@ -1,0 +1,376 @@
+{
+  "textures": {
+    "texture": "minecraft:block/stripped_oak_log",
+    "secondary_texture": "minecraft:block/oak_log"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        -3,
+        -0.5
+      ],
+      "to": [
+        14,
+        -2,
+        0.5
+      ],
+      "faces": {
+        "down": {
+          "texture": "#secondary_texture",
+          "uv": [
+            11.0,
+            12.0,
+            12.0,
+            0.0
+          ],
+          "rotation": 90
+        },
+        "north": {
+          "texture": "#secondary_texture",
+          "uv": [
+            11.0,
+            12.0,
+            10.0,
+            0.0
+          ],
+          "rotation": 90
+        },
+        "south": {
+          "texture": "#secondary_texture",
+          "uv": [
+            11.0,
+            0.0,
+            10.0,
+            12.0
+          ],
+          "rotation": 90
+        },
+        "west": {
+          "texture": "#secondary_texture",
+          "uv": [
+            10.0,
+            16.0,
+            11.0,
+            15.0
+          ],
+          "rotation": 90
+        },
+        "east": {
+          "texture": "#secondary_texture",
+          "uv": [
+            10.0,
+            13.0,
+            11.0,
+            12.0
+          ],
+          "rotation": 90
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        2,
+        -0.5
+      ],
+      "to": [
+        14,
+        3,
+        0.5
+      ],
+      "faces": {
+        "up": {
+          "texture": "#secondary_texture",
+          "uv": [
+            4.0,
+            12.0,
+            5.0,
+            0.0
+          ],
+          "rotation": 90
+        },
+        "north": {
+          "texture": "#secondary_texture",
+          "uv": [
+            6.0,
+            12.0,
+            5.0,
+            0.0
+          ],
+          "rotation": 90
+        },
+        "south": {
+          "texture": "#secondary_texture",
+          "uv": [
+            6.0,
+            0.0,
+            5.0,
+            12.0
+          ],
+          "rotation": 90
+        },
+        "west": {
+          "texture": "#secondary_texture",
+          "uv": [
+            5.0,
+            16.0,
+            6.0,
+            15.0
+          ],
+          "rotation": 90
+        },
+        "east": {
+          "texture": "#secondary_texture",
+          "uv": [
+            5.0,
+            13.0,
+            6.0,
+            12.0
+          ],
+          "rotation": 90
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        -2,
+        -0.5
+      ],
+      "to": [
+        14,
+        2,
+        0.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#texture",
+          "uv": [
+            10.0,
+            12.0,
+            6.0,
+            0.0
+          ],
+          "rotation": 90
+        },
+        "south": {
+          "texture": "#secondary_texture",
+          "uv": [
+            10.0,
+            0.0,
+            6.0,
+            12.0
+          ],
+          "rotation": 90
+        }
+      }
+    },
+    {
+      "from": [
+        14,
+        -2,
+        -0.5
+      ],
+      "to": [
+        16,
+        -1,
+        0.5
+      ],
+      "faces": {
+        "down": {
+          "texture": "#secondary_texture",
+          "uv": [
+            10.0,
+            14.0,
+            11.0,
+            12.0
+          ],
+          "rotation": 90
+        },
+        "north": {
+          "texture": "#secondary_texture",
+          "uv": [
+            10.0,
+            14.0,
+            9.0,
+            12.0
+          ],
+          "rotation": 90
+        },
+        "south": {
+          "texture": "#secondary_texture",
+          "uv": [
+            10.0,
+            12.0,
+            9.0,
+            14.0
+          ],
+          "rotation": 90
+        },
+        "east": {
+          "texture": "#secondary_texture",
+          "uv": [
+            9.0,
+            15.0,
+            10.0,
+            14.0
+          ],
+          "rotation": 90
+        }
+      }
+    },
+    {
+      "from": [
+        14,
+        1,
+        -0.5
+      ],
+      "to": [
+        16,
+        2,
+        0.5
+      ],
+      "faces": {
+        "up": {
+          "texture": "#secondary_texture",
+          "uv": [
+            5.0,
+            14.0,
+            6.0,
+            12.0
+          ],
+          "rotation": 90
+        },
+        "north": {
+          "texture": "#secondary_texture",
+          "uv": [
+            7.0,
+            14.0,
+            6.0,
+            12.0
+          ],
+          "rotation": 90
+        },
+        "south": {
+          "texture": "#secondary_texture",
+          "uv": [
+            7.0,
+            12.0,
+            6.0,
+            14.0
+          ],
+          "rotation": 90
+        },
+        "east": {
+          "texture": "#secondary_texture",
+          "uv": [
+            6.0,
+            15.0,
+            7.0,
+            14.0
+          ],
+          "rotation": 90
+        }
+      }
+    },
+    {
+      "from": [
+        14,
+        -1,
+        -0.5
+      ],
+      "to": [
+        16,
+        1,
+        0.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#texture",
+          "uv": [
+            9.0,
+            14.0,
+            7.0,
+            12.0
+          ],
+          "rotation": 90
+        },
+        "south": {
+          "texture": "#secondary_texture",
+          "uv": [
+            9.0,
+            12.0,
+            7.0,
+            14.0
+          ],
+          "rotation": 90
+        }
+      }
+    },
+    {
+      "from": [
+        16,
+        -1,
+        -0.5
+      ],
+      "to": [
+        18,
+        1,
+        0.5
+      ],
+      "faces": {
+        "down": {
+          "texture": "#secondary_texture",
+          "uv": [
+            9.0,
+            16.0,
+            10.0,
+            14.0
+          ],
+          "rotation": 90
+        },
+        "up": {
+          "texture": "#secondary_texture",
+          "uv": [
+            6.0,
+            16.0,
+            7.0,
+            14.0
+          ],
+          "rotation": 90
+        },
+        "north": {
+          "texture": "#secondary_texture",
+          "uv": [
+            9.0,
+            16.0,
+            7.0,
+            14.0
+          ],
+          "rotation": 90
+        },
+        "south": {
+          "texture": "#secondary_texture",
+          "uv": [
+            9.0,
+            14.0,
+            7.0,
+            16.0
+          ],
+          "rotation": 90
+        },
+        "east": {
+          "texture": "#secondary_texture",
+          "uv": [
+            7.0,
+            1.0,
+            9.0,
+            0.0
+          ],
+          "rotation": 90
+        }
+      }
+    }
+  ]
+}

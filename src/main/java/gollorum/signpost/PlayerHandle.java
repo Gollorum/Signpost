@@ -1,11 +1,13 @@
 package gollorum.signpost;
 
 import gollorum.signpost.utils.serialization.CompoundSerializable;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -16,8 +18,12 @@ public class PlayerHandle {
         this.id = id;
     }
 
-    public PlayerHandle(@Nonnull PlayerEntity player) {
-        this.id = player.getUniqueID();
+    public PlayerHandle(@Nullable LivingEntity player) {
+        this.id = player == null ? UUID.randomUUID() : player.getUniqueID();
+    }
+
+    public static PlayerHandle from(@Nullable LivingEntity player) {
+        return new PlayerHandle(player);
     }
 
     @Override
