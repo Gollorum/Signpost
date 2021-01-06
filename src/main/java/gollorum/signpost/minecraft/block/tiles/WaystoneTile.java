@@ -1,5 +1,6 @@
 package gollorum.signpost.minecraft.block.tiles;
 
+import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.block.Waystone;
@@ -25,7 +26,7 @@ public class WaystoneTile extends TileEntity {
         if(Signpost.getServerType().isServer) {
             Optional<WorldLocation> location = WorldLocation.from(this);
             if(location.isPresent())
-                WaystoneLibrary.getInstance().removeAt(location.get());
+                WaystoneLibrary.getInstance().removeAt(location.get(), PlayerHandle.Invalid);
             else Signpost.LOGGER.error("Waystone tile at "+ pos +"  was removed but world was null. " +
                 "This means that the waystone has not been cleaned up correctly.");
         }
@@ -35,7 +36,11 @@ public class WaystoneTile extends TileEntity {
     public void setWorldAndPos(World world, BlockPos pos) {
         if(!world.isRemote) {
             Optional<WorldLocation> oldLocation = WorldLocation.from(this);
-            oldLocation.ifPresent(worldLocation -> WaystoneLibrary.getInstance().updateLocation(worldLocation, new WorldLocation(pos, world)));
+            oldLocation.ifPresent(worldLocation -> WaystoneLibrary.getInstance().updateLocation(
+                worldLocation,
+                new WorldLocation(pos, world),
+	            PlayerHandle.Invalid
+            ));
         }
         super.setWorldAndPos(world, pos);
     }
@@ -46,7 +51,7 @@ public class WaystoneTile extends TileEntity {
         super.setPos(pos);
         Optional<WorldLocation> newLocation = WorldLocation.from(this);
         if(oldLocation.isPresent() && newLocation.isPresent() && !world.isRemote)
-            WaystoneLibrary.getInstance().updateLocation(oldLocation.get(), newLocation.get());
+            WaystoneLibrary.getInstance().updateLocation(oldLocation.get(), newLocation.get(), PlayerHandle.Invalid);
     }
 
 }

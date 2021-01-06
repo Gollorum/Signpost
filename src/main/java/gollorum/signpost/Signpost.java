@@ -56,6 +56,7 @@ public class Signpost {
         ColorRegistry.register(modBus);
         DataGeneration.register(modBus);
         Delay.register(forgeBus);
+        CommandRegistry.register(forgeBus);
     }
 
     private static class ModBusEvents {

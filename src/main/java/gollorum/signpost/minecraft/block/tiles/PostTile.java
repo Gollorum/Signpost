@@ -180,14 +180,14 @@ public class PostTile extends TileEntity {
                         Vector3.SERIALIZER.read(comp, "Offset")
                     ),
                     ItemStack.EMPTY,
-                    new PlayerHandle(UUID.randomUUID())
+                    PlayerHandle.Invalid
                 );
             }
         }
         if(parts.isEmpty()) addPart(
             new BlockPartInstance(new Post(gollorum.signpost.minecraft.block.Post.ModelType.Oak.postTexture), Vector3.ZERO),
             ItemStack.EMPTY,
-            new PlayerHandle(UUID.randomUUID())
+            PlayerHandle.Invalid
         );
     }
 

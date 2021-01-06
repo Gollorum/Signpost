@@ -2,7 +2,6 @@ package gollorum.signpost;
 
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 
@@ -12,7 +11,9 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class PlayerHandle {
-    public final UUID id;
+
+	public static final PlayerHandle Invalid = new PlayerHandle(new UUID(0, 0));
+	public final UUID id;
 
     public PlayerHandle(@Nonnull UUID id) {
         this.id = id;

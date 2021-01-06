@@ -22,6 +22,8 @@
   "signpost.discovered": "You can now travel to {0} using sign posts",
   "signpost.notDiscovered": "You have not yet discovered {0}",
   "signpost.noTeleport": "This sign has no destination",
+  "signpost.waystoneNotFound": "The waystone {0} does not exist",
+  "signpost.noWaystones": "There are no waystones yet",
 
   "itemGroup.signpost": "Sign post"
 }

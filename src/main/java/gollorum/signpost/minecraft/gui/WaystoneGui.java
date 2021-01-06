@@ -1,6 +1,7 @@
 package gollorum.signpost.minecraft.gui;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.events.WaystoneRenamedEvent;
 import gollorum.signpost.minecraft.events.WaystoneUpdatedEvent;
@@ -121,7 +122,11 @@ public class WaystoneGui extends Screen {
     public void onClose() {
         super.onClose();
         if(inputBox != null && !inputBox.getText().equals("") && isValid(inputBox.getText()))
-            WaystoneLibrary.getInstance().update(inputBox.getText(), new WaystoneLocationData(location, Vector3.fromVec3d(getMinecraft().player.getPositionVec())));
+            WaystoneLibrary.getInstance().update(
+                inputBox.getText(),
+                new WaystoneLocationData(location, Vector3.fromVec3d(getMinecraft().player.getPositionVec())),
+                new PlayerHandle(getMinecraft().player)
+            );
         WaystoneLibrary.getInstance().updateEventDispatcher.removeListener(waystoneUpdateListener);
     }
 }
