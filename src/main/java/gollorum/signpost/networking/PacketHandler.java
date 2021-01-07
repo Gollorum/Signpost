@@ -1,6 +1,7 @@
 package gollorum.signpost.networking;
 
 import gollorum.signpost.Signpost;
+import gollorum.signpost.Teleport;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketBuffer;
@@ -24,6 +25,7 @@ public class PacketHandler {
         new PostTile.PartAddedEvent(),
         new PostTile.PartMutatedEvent(),
         new PostTile.PartRemovedEvent(),
+        new Teleport.Request(),
     };
 
     private static final String PROTOCOL_VERSION = "1";

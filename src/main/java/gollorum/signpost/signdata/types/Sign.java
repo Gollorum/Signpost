@@ -8,6 +8,7 @@ import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.LangKeys;
 import gollorum.signpost.minecraft.gui.SignGui;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
+import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.signdata.Overlay;
 import gollorum.signpost.utils.BlockPart;
 import gollorum.signpost.utils.math.Angle;
@@ -42,6 +43,8 @@ import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Lazy;
+import net.minecraftforge.fml.network.NetworkDirection;
+import net.minecraftforge.fml.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -157,7 +160,10 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
     private void tryTeleport(ServerPlayerEntity player) {
         if(destination.isPresent() && WaystoneLibrary.getInstance().contains(destination.get()))
             if(WaystoneLibrary.getInstance().isDiscovered(new PlayerHandle(player), destination.get()))
-                Teleport.toWaystone(destination.get(), player);
+                PacketHandler.send(
+                    PacketDistributor.PLAYER.with(() -> player),
+                    new Teleport.Request.Package(WaystoneLibrary.getInstance().getData(destination.get()).name)
+                );
             else player.sendMessage(
                 new TranslationTextComponent(LangKeys.notDiscovered, WaystoneLibrary.getInstance().getData(destination.get()).name),
                 Util.DUMMY_UUID);

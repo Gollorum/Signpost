@@ -13,6 +13,10 @@
 
   "item.signpost.tool": "Sign post tool",
 
+  "gui.signpost.sign_gui_title": "Add or edit sign",
+  "gui.signpost.confirm_teleport_gui_title": "Confirm teleport",
+  "gui.signpost.confirm_teleport": "Do you want to travel to {0}?",
+  "gui.signpost.cost": "Cost:",
   "gui.signpost.new_sign_hint": "Use a sign item on the post to attach it. This will open this screen.",
   "gui.signpost.remove_sign": "Remove sign",
   "gui.signpost.rotation_label": "Rotation:",

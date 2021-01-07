@@ -128,7 +128,7 @@ public class SignGui extends Screen {
     private boolean hasBeenInitialized = false;
 
     public SignGui(PostTile tile, Post.ModelType modelType, Vector3 localHitPos, ItemStack itemToDropOnBreak) {
-        super(new StringTextComponent("Sign"));
+        super(new TranslationTextComponent(LangKeys.signGuiTitle));
         this.tile = tile;
         this.modelType = modelType;
         this.localHitPos = localHitPos;
@@ -139,7 +139,7 @@ public class SignGui extends Screen {
     }
 
     public SignGui(PostTile tile, Post.ModelType modelType, Sign oldSign, PostTile.TilePartInfo oldTilePartInfo) {
-        super(new StringTextComponent("Sign"));
+        super(new TranslationTextComponent(LangKeys.signGuiTitle));
         this.tile = tile;
         this.modelType = modelType;
         this.localHitPos = Vector3.ZERO;

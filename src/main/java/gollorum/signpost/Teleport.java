@@ -1,15 +1,23 @@
 package gollorum.signpost;
 
+import gollorum.signpost.minecraft.gui.ConfirmTeleportGui;
+import gollorum.signpost.minecraft.gui.LangKeys;
+import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.TileEntityUtils;
 import gollorum.signpost.utils.WaystoneLocationData;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.Util;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.util.ITeleporter;
+import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.Optional;
-import java.util.UUID;
+import java.util.function.Supplier;
 
 public class Teleport {
 
@@ -35,6 +43,56 @@ public class Teleport {
             player.rotationPitch = pitch.degrees();
             player.setPositionAndUpdate(location.x, location.y, location.z);
         });
+    }
+
+    public static void requestOnClient(String waystoneName) {
+        Minecraft.getInstance().displayGuiScreen(new ConfirmTeleportGui(waystoneName));
+    }
+
+    public static final class Request implements PacketHandler.Event<Request.Package> {
+
+        @Override
+        public Class<Package> getMessageClass() {
+            return Package.class;
+        }
+
+        @Override
+        public void encode(Package message, PacketBuffer buffer) {
+            buffer.writeString(message.waystoneName);
+        }
+
+        @Override
+        public Package decode(PacketBuffer buffer) {
+            return new Package(buffer.readString());
+        }
+
+        @Override
+        public void handle(
+            Package message, Supplier<NetworkEvent.Context> contextGetter
+        ) {
+            NetworkEvent.Context context = contextGetter.get();
+            context.enqueueWork(() -> {
+                if(context.getDirection().getReceptionSide().isServer()) {
+                    Optional<WaystoneHandle> waystone = WaystoneLibrary.getInstance().getHandleByName(message.waystoneName);
+                    if(waystone.isPresent()){
+                        Teleport.toWaystone(waystone.get(), context.getSender());
+                    } else context.getSender().sendMessage(
+                        new TranslationTextComponent(LangKeys.waystoneNotFound, message.waystoneName),
+                        Util.DUMMY_UUID
+                    );
+                } else {
+                    requestOnClient(message.waystoneName);
+                }
+            });
+        }
+
+        public static final class Package {
+            public final String waystoneName;
+            public Package(String waystoneName) {
+                this.waystoneName = waystoneName;
+            }
+        }
+
     }
 
 }
