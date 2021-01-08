@@ -1,5 +1,6 @@
 package gollorum.signpost.minecraft.registry;
 
+import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.block.Post;
 import gollorum.signpost.signdata.Overlay;
 import net.minecraft.block.BlockState;
@@ -10,12 +11,17 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockDisplayReader;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeColors;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ColorHandlerEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
 import javax.annotation.Nullable;
 
+import static net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus.MOD;
+
+@Mod.EventBusSubscriber(value = Dist.CLIENT, modid = Signpost.MOD_ID, bus = MOD)
 public class ColorRegistry {
 
     @SubscribeEvent
@@ -54,7 +60,5 @@ public class ColorRegistry {
             default: return -1;
         }
     }
-
-    public static void register(IEventBus bus) { bus.register(ColorRegistry.class); }
 
 }

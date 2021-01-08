@@ -9,6 +9,7 @@ import gollorum.signpost.utils.WaystoneData;
 import gollorum.signpost.utils.WaystoneLocationData;
 import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.math.geometry.Vector3;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.text.StringTextComponent;
@@ -59,13 +60,19 @@ public class WaystoneGui extends Screen {
         this.oldData = oldData;
     }
 
-    private int getCenterX() { return this.width / 2; }
+	public static void display(WorldLocation location, Optional<WaystoneData> oldData) {
+        Minecraft.getInstance().displayGuiScreen(new WaystoneGui(location, oldData));
+	}
+
+	private int getCenterX() { return this.width / 2; }
     private int getCenterY() { return this.height / 2; }
 
     @Override
     protected void init() {
         super.init();
-        WaystoneLibrary.getInstance().requestAllWaystoneNames(names -> allWaystoneNames = Optional.of(new HashSet<>(names.values())));
+        WaystoneLibrary.getInstance()
+            .requestAllWaystoneNames(names -> allWaystoneNames = Optional.of(
+                new HashSet<>(names.values())));
         WaystoneLibrary.getInstance().updateEventDispatcher.addListener(waystoneUpdateListener);
         inputBox = new ImageInputBox(font,
             new Rect(

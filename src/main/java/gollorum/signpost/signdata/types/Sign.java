@@ -1,13 +1,12 @@
 package gollorum.signpost.signdata.types;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import gollorum.signpost.*;
 import gollorum.signpost.interactions.InteractionInfo;
+import gollorum.signpost.minecraft.Config;
 import gollorum.signpost.minecraft.block.Post;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.LangKeys;
 import gollorum.signpost.minecraft.gui.SignGui;
-import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.signdata.Overlay;
 import gollorum.signpost.utils.BlockPart;
@@ -18,39 +17,19 @@ import gollorum.signpost.utils.math.geometry.TransformedBox;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.ItemStackSerializer;
 import gollorum.signpost.utils.serialization.OptionalSerializer;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.model.BakedQuad;
-import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.client.renderer.model.ItemOverrideList;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Matrix4f;
-import net.minecraft.util.math.vector.Quaternion;
-import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.Lazy;
-import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.PacketDistributor;
 
-import javax.annotation.Nullable;
 import java.util.*;
-import java.util.stream.Collectors;
-
-import static gollorum.signpost.minecraft.rendering.RenderingUtil.withTintIndex;
 
 public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
 
@@ -65,12 +44,20 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
     public Optional<WaystoneHandle> getDestination() { return destination; }
 
     protected TransformedBox transformedBounds;
-    protected Lazy<IBakedModel> model;
-    protected Optional<Lazy<IBakedModel>> overlayModel;
 
     public ItemStack itemToDropOnBreak;
 
-    public Sign(Angle angle, boolean flip, ResourceLocation mainTexture, ResourceLocation secondaryTexture, Optional<Overlay> overlay, int color, Optional<WaystoneHandle> destination, Post.ModelType modelType, ItemStack itemToDropOnBreak) {
+    public Sign(
+        Angle angle,
+        boolean flip,
+        ResourceLocation mainTexture,
+        ResourceLocation secondaryTexture,
+        Optional<Overlay> overlay,
+        int color,
+        Optional<WaystoneHandle> destination,
+        Post.ModelType modelType,
+        ItemStack itemToDropOnBreak
+    ) {
         this.color = color;
         this.destination = destination;
         this.modelType = modelType;
@@ -111,15 +98,11 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
 
     public boolean isFlipped() { return flip; }
 
-    protected abstract Lazy<IBakedModel> makeModel();
-    protected abstract Lazy<IBakedModel> makeOverlayModel(Overlay texture);
-
     public int getColor() { return color; }
 
     private void setTextures(ResourceLocation texture, ResourceLocation textureDark) {
         this.mainTexture = texture;
         this.secondaryTexture = textureDark;
-        model = makeModel();
     }
 
     public ResourceLocation getMainTexture() { return mainTexture; }
@@ -127,7 +110,6 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
 
     private void setOverlay(Optional<Overlay> overlay) {
         this.overlay = overlay;
-        overlayModel = overlay.map(this::makeOverlayModel);
     }
 
     public Optional<Overlay> getOverlay() { return overlay; }
@@ -148,18 +130,17 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
                 Angle angleToPost = Angle.between(rayDir.x, rayDir.z, diff.x, diff.z).normalized();
                 setAngle(angle.add(Angle.fromDegrees(angleToPost.radians() < 0 ? 15 : -15)));
                 notifyAngleChanged(info);
-            } else if(!holdsEditTool(info))
+            } else if(!holdsEditTool(info) && Config.Server.enableTeleport.get())
                 tryTeleport((ServerPlayerEntity) info.player);
         } else if(holdsEditTool(info)) {
-            Minecraft.getInstance().displayGuiScreen(
-                new SignGui(info.tile, modelType, this, new PostTile.TilePartInfo(info.tile, info.traceResult.id)));
+            SignGui.display(info.tile, modelType, this, new PostTile.TilePartInfo(info.tile, info.traceResult.id));
         }
         return InteractionResult.Accepted;
     }
 
     private void tryTeleport(ServerPlayerEntity player) {
         if(destination.isPresent() && WaystoneLibrary.getInstance().contains(destination.get()))
-            if(WaystoneLibrary.getInstance().isDiscovered(new PlayerHandle(player), destination.get()))
+            if(WaystoneLibrary.getInstance().isDiscovered(new PlayerHandle(player), destination.get()) || !Config.Server.enforceDiscovery.get())
                 PacketHandler.send(
                     PacketDistributor.PLAYER.with(() -> player),
                     new Teleport.Request.Package(WaystoneLibrary.getInstance().getData(destination.get()).name)
@@ -253,43 +234,8 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
         }
     }
 
-    @Override
-    public void render(TileEntity tileEntity, TileEntityRendererDispatcher renderDispatcher, MatrixStack matrix, IRenderTypeBuffer buffer, int combinedLights, int combinedOverlay, Random random, long randomSeed) {
-        RenderingUtil.render(matrix, renderModel -> {
-            matrix.push();
-            Quaternion rotation = new Quaternion(Vector3f.YP, angle.radians(), false);
-            matrix.rotate(rotation);
-            Matrix4f rotationMatrix = new Matrix4f(rotation);
-            renderModel.render(
-                model.get(),
-                tileEntity,
-                buffer.getBuffer(RenderType.getSolid()),
-                false,
-                random,
-                randomSeed,
-                combinedOverlay,
-                rotationMatrix
-            );
-            overlayModel.ifPresent(m -> {
-                renderModel.render(
-                    withTintIndex(m.get(), overlay.map(o -> o.tintIndex).orElse(0)),
-                    tileEntity,
-                    buffer.getBuffer(RenderType.getCutoutMipped()),
-                    true,
-                    random,
-                    randomSeed,
-                    combinedOverlay,
-                    rotationMatrix
-                );
-            });
-            matrix.pop();
-            renderText(matrix, renderDispatcher.getFontRenderer(), buffer, combinedLights);
-        });
-    }
-
-    protected abstract void renderText(MatrixStack matrix, FontRenderer fontRenderer, IRenderTypeBuffer buffer, int combinedLights);
-
     public Angle getAngle() {
         return angle;
     }
+
 }

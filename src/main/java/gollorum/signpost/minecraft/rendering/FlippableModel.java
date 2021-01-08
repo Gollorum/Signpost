@@ -24,25 +24,25 @@ public class FlippableModel {
 
 	public static FlippableModel loadFrom(ResourceLocation modelLocation, ResourceLocation modelLocationFlipped, ResourceLocation texture) {
 		return new FlippableModel(
-			RenderingUtil.loadModel(modelLocation, texture).get(),
-			RenderingUtil.loadModel(modelLocationFlipped, texture).get()
+			RenderingUtil.loadModel(modelLocation, texture),
+			RenderingUtil.loadModel(modelLocationFlipped, texture)
 		);
 	}
 
 	public static FlippableModel loadFrom(ResourceLocation modelLocation, ResourceLocation modelLocationFlipped, ResourceLocation mainTexture, ResourceLocation secondaryTexture) {
 		return new FlippableModel(
-			RenderingUtil.loadModel(modelLocation, mainTexture, secondaryTexture).get(),
-			RenderingUtil.loadModel(modelLocationFlipped, mainTexture, secondaryTexture).get()
+			RenderingUtil.loadModel(modelLocation, mainTexture, secondaryTexture),
+			RenderingUtil.loadModel(modelLocationFlipped, mainTexture, secondaryTexture)
 		);
 	}
 
 	public static FlippableModel loadSymmetrical(ResourceLocation modelLocation, ResourceLocation texture) {
-		IBakedModel model = RenderingUtil.loadModel(modelLocation, texture).get();
+		IBakedModel model = RenderingUtil.loadModel(modelLocation, texture);
 		return new FlippableModel(model, model);
 	}
 
 	public static FlippableModel loadSymmetrical(ResourceLocation modelLocation, ResourceLocation mainTexture, ResourceLocation secondaryTexture) {
-		IBakedModel model = RenderingUtil.loadModel(modelLocation, mainTexture, secondaryTexture).get();
+		IBakedModel model = RenderingUtil.loadModel(modelLocation, mainTexture, secondaryTexture);
 		return new FlippableModel(model, model);
 	}
 

@@ -1,5 +1,6 @@
 package gollorum.signpost;
 
+import gollorum.signpost.minecraft.Config;
 import gollorum.signpost.minecraft.gui.ConfirmTeleportGui;
 import gollorum.signpost.minecraft.gui.LangKeys;
 import gollorum.signpost.networking.PacketHandler;
@@ -7,7 +8,6 @@ import gollorum.signpost.utils.TileEntityUtils;
 import gollorum.signpost.utils.WaystoneLocationData;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.Util;
@@ -46,7 +46,7 @@ public class Teleport {
     }
 
     public static void requestOnClient(String waystoneName) {
-        Minecraft.getInstance().displayGuiScreen(new ConfirmTeleportGui(waystoneName));
+        ConfirmTeleportGui.display(waystoneName);
     }
 
     public static final class Request implements PacketHandler.Event<Request.Package> {
@@ -63,7 +63,7 @@ public class Teleport {
 
         @Override
         public Package decode(PacketBuffer buffer) {
-            return new Package(buffer.readString());
+            return new Package(buffer.readString(32767));
         }
 
         @Override
@@ -81,7 +81,8 @@ public class Teleport {
                         Util.DUMMY_UUID
                     );
                 } else {
-                    requestOnClient(message.waystoneName);
+                    if(Config.Client.enableConfirmationScreen.get()) requestOnClient(message.waystoneName);
+                    else PacketHandler.sendToServer(new Teleport.Request.Package(message.waystoneName));
                 }
             });
         }

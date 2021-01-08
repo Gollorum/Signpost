@@ -22,6 +22,7 @@ import gollorum.signpost.signdata.types.SmallWideSign;
 import gollorum.signpost.utils.Delay;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.IRenderable;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.Widget;
@@ -32,7 +33,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 
 import javax.annotation.Nullable;
@@ -126,6 +126,14 @@ public class SignGui extends Screen {
     private Set<ModelButton> overlaySelectionButtons = new HashSet<>();
 
     private boolean hasBeenInitialized = false;
+
+    public static void display(PostTile tile, Post.ModelType modelType, Vector3 localHitPos, ItemStack itemToDropOnBreak) {
+        Minecraft.getInstance().displayGuiScreen(new SignGui(tile, modelType, localHitPos, itemToDropOnBreak));
+    }
+
+    public static void display(PostTile tile, Post.ModelType modelType, Sign oldSign, PostTile.TilePartInfo oldTilePartInfo) {
+        Minecraft.getInstance().displayGuiScreen(new SignGui(tile, modelType, oldSign, oldTilePartInfo));
+    }
 
     public SignGui(PostTile tile, Post.ModelType modelType, Vector3 localHitPos, ItemStack itemToDropOnBreak) {
         super(new TranslationTextComponent(LangKeys.signGuiTitle));

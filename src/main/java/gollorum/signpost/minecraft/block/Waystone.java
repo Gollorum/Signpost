@@ -12,7 +12,6 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.material.MaterialColor;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItemUseContext;
@@ -61,8 +60,7 @@ public class Waystone extends Block {
     }
 
     private void openWaystoneGui(WorldLocation location, Optional<WaystoneData> oldData) {
-        assert Signpost.getServerType().isClient;
-        Minecraft.getInstance().displayGuiScreen(new WaystoneGui(location, oldData));
+        WaystoneGui.display(location, oldData);
     }
 
     private static void discover(PlayerEntity player, WaystoneData data) {
@@ -103,6 +101,6 @@ public class Waystone extends Block {
     @Override
     public void onBlockPlacedBy(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
         super.onBlockPlacedBy(world, pos, state, placer, stack);
-        openWaystoneGui(new WorldLocation(pos, world), Optional.empty());
+        if(world.isRemote) openWaystoneGui(new WorldLocation(pos, world), Optional.empty());
     }
 }

@@ -32,7 +32,7 @@ public interface CompoundSerializable<T> extends BufferSerializable<T> {
     @Override
     default T readFrom(PacketBuffer buffer){
         try {
-            return read(JsonToNBT.getTagFromJson(buffer.readString()));
+            return read(JsonToNBT.getTagFromJson(buffer.readString(32767)));
         } catch (CommandSyntaxException e) {
             throw new RuntimeException(e);
         }

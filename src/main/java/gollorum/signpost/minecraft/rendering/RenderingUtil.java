@@ -39,9 +39,6 @@ import java.util.stream.Collectors;
 
 public class RenderingUtil {
 
-    public static final float VoxelSize = 1f / 16f;
-    public static final float FontToVoxelSize = VoxelSize / 8f;
-
     public static IBakedModel loadModel(ResourceLocation location) {
         return ModelLoader.instance().getBakedModel(
             location,
@@ -49,39 +46,27 @@ public class RenderingUtil {
             RenderMaterial::getSprite);
     }
 
-    private static final Map<ResourceLocation, Map<ResourceLocation, Lazy<IBakedModel>>> cachedModels = new ConcurrentHashMap<>();
-
-    public static Lazy<IBakedModel> loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation) {
+    public static IBakedModel loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation) {
         final ResourceLocation textLoc = trim(textureLocation);
-        return cachedModels.computeIfAbsent(modelLocation, x -> new ConcurrentHashMap<>())
-            .computeIfAbsent(
-                textLoc,
-                x -> Lazy.of(() -> ModelLoader.instance().getUnbakedModel(modelLocation).bakeModel(ModelLoader.instance(),
-                    m -> Minecraft.getInstance().getAtlasSpriteGetter(m.getAtlasLocation()).apply(textLoc),
-                    new SimpleModelTransform(TransformationMatrix.identity()),
-                    modelLocation
-                ))
-            );
+        return ModelLoader.instance().getUnbakedModel(modelLocation).bakeModel(ModelLoader.instance(),
+            m -> Minecraft.getInstance().getAtlasSpriteGetter(m.getAtlasLocation()).apply(textLoc),
+            new SimpleModelTransform(TransformationMatrix.identity()),
+            modelLocation
+        );
     }
 
-    private static final Map<ResourceLocation, Map<ResourceLocation, Map<ResourceLocation, Lazy<IBakedModel>>>> cachedTwoTexturedModels = new ConcurrentHashMap<>();
-
-    public static Lazy<IBakedModel> loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation1, ResourceLocation textureLocation2) {
+    public static IBakedModel loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation1, ResourceLocation textureLocation2) {
         final ResourceLocation textLoc1 = trim(textureLocation1);
         final ResourceLocation textLoc2 = trim(textureLocation2);
-        return cachedTwoTexturedModels
-            .computeIfAbsent(modelLocation, x -> new ConcurrentHashMap<>())
-            .computeIfAbsent(textLoc1, x -> new ConcurrentHashMap<>())
-            .computeIfAbsent(textLoc2,
-                x -> Lazy.of(() -> ModelLoader.instance().getUnbakedModel(modelLocation).bakeModel(ModelLoader.instance(),
-                    m -> Minecraft.getInstance().getAtlasSpriteGetter(m.getAtlasLocation()).apply(
-                        m.getTextureLocation().equals(PostModel.mainTextureMarker)
-                            ? textLoc1 : textLoc2
-                    ),
-                    new SimpleModelTransform(TransformationMatrix.identity()),
-                    modelLocation
-                ))
-            );
+        return ModelLoader.instance().getUnbakedModel(modelLocation).bakeModel(
+            ModelLoader.instance(),
+            m -> Minecraft.getInstance().getAtlasSpriteGetter(m.getAtlasLocation()).apply(
+                m.getTextureLocation().equals(PostModel.mainTextureMarker)
+                    ? textLoc1 : textLoc2
+            ),
+            new SimpleModelTransform(TransformationMatrix.identity()),
+            modelLocation
+        );
     }
 
     private static final Lazy<BlockModelRenderer> Renderer = Lazy.of(() -> Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelRenderer());
@@ -128,10 +113,6 @@ public class RenderingUtil {
             );
         });
         matrix.pop();
-    }
-
-    public static float voxelToLocal(float voxelPos) {
-        return voxelPos * VoxelSize + 0.5f;
     }
 
     public static int drawString(FontRenderer fontRenderer, String text, Point point, Rect.XAlignment xAlignment, Rect.YAlignment yAlignment, int color, int maxWidth, boolean dropShadow){

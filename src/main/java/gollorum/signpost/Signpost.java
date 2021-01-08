@@ -1,17 +1,20 @@
 package gollorum.signpost;
 
-import gollorum.signpost.minecraft.block.BlockEventListener;
+import gollorum.signpost.minecraft.Config;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
-import gollorum.signpost.minecraft.data.DataGeneration;
-import gollorum.signpost.minecraft.registry.*;
+import gollorum.signpost.minecraft.registry.BlockRegistry;
+import gollorum.signpost.minecraft.registry.ItemRegistry;
+import gollorum.signpost.minecraft.registry.TileEntityRegistry;
 import gollorum.signpost.minecraft.rendering.PostRenderer;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.utils.Delay;
 import gollorum.signpost.utils.ServerType;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.Dimension;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -20,11 +23,14 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
-import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.event.server.FMLServerStoppedEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.fml.network.PacketDistributor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.function.Supplier;
 
 @Mod(Signpost.MOD_ID)
 public class Signpost {
@@ -48,15 +54,12 @@ public class Signpost {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         forgeBus.register(new ForgeEvents());
         modBus.register(new ModBusEvents());
-        BlockEventListener.register(forgeBus);
+
         BlockRegistry.register(modBus);
         ItemRegistry.register(modBus);
         TileEntityRegistry.register(modBus);
-        ResourceRegistry.register(modBus);
-        ColorRegistry.register(modBus);
-        DataGeneration.register(modBus);
-        Delay.register(forgeBus);
-        CommandRegistry.register(forgeBus);
+
+        Config.register();
     }
 
     private static class ModBusEvents {
@@ -64,11 +67,12 @@ public class Signpost {
         @SubscribeEvent
         public void setup(final FMLCommonSetupEvent event) {
             PacketHandler.initialize();
+            PacketHandler.register(new JoinServerEvent());
+            WaystoneLibrary.registerNetworkPackets();
         }
 
         @SubscribeEvent
         public void doClientStuff(final FMLClientSetupEvent event) {
-            LOGGER.info("Got game settings {}", event.getMinecraftSupplier().get().gameSettings);
             ClientRegistry.bindTileEntityRenderer(PostTile.type, PostRenderer::new);
         }
 
@@ -83,6 +87,15 @@ public class Signpost {
         }
 
         @SubscribeEvent
+        public void joinServer(PlayerEvent.PlayerLoggedInEvent e) {
+            if(!e.getPlayer().world.isRemote)
+                PacketHandler.send(
+                    PacketDistributor.PLAYER.with((() -> (ServerPlayerEntity) e.getPlayer())),
+                    new JoinServerEvent.Package()
+                );
+        }
+
+        @SubscribeEvent
         public void onServerStopped(FMLServerStoppedEvent event) {
             serverInstance = null;
         }
@@ -93,6 +106,28 @@ public class Signpost {
                 ((ServerWorld) event.getWorld()).getDimensionKey().equals(Dimension.OVERWORLD) &&
                 !WaystoneLibrary.getInstance().hasStorageBeenSetup()
             ) WaystoneLibrary.getInstance().setupStorage((ServerWorld) event.getWorld());
+        }
+
+    }
+
+    private static final class JoinServerEvent implements PacketHandler.Event<JoinServerEvent.Package> {
+
+        public static final class Package {}
+
+        @Override
+        public Class<Package> getMessageClass() { return Package.class; }
+
+        @Override
+        public void encode(Package message, PacketBuffer buffer) { }
+
+        @Override
+        public Package decode(PacketBuffer buffer) { return new Package(); }
+
+        @Override
+        public void handle(
+            Package message, Supplier<NetworkEvent.Context> context
+        ) {
+            WaystoneLibrary.initialize();
         }
 
     }

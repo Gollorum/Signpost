@@ -4,15 +4,17 @@ import gollorum.signpost.Signpost;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
-public class Delay {
+import static net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus.FORGE;
 
-    public static void register(IEventBus bus) { bus.register(Delay.class); }
+@Mod.EventBusSubscriber(modid = Signpost.MOD_ID, bus = FORGE)
+public class Delay {
 
     private static class Task {
         private final Supplier<Boolean> canRun;

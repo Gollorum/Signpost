@@ -14,7 +14,6 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.IWaterLoggable;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
@@ -47,7 +46,6 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 public class Post extends Block implements IWaterLoggable {
 
@@ -191,12 +189,12 @@ public class Post extends Block implements IWaterLoggable {
             () -> {
                 PostTile tile = TileEntityUtils.findTileEntity(world, pos, PostTile.class).get();
                 if (world.isRemote) {
-                    Minecraft.getInstance().displayGuiScreen(new SignGui(
+                    SignGui.display(
                         tile,
                         tile.modelType,
                         new Vector3(0, 1, 0),
                         ItemStack.EMPTY
-                    ));
+                    );
                 } else {
                     tile.addPart(
                         new BlockPartInstance(new gollorum.signpost.signdata.types.Post(type.postTexture), Vector3.ZERO),

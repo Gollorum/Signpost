@@ -60,12 +60,12 @@ public abstract class WaystoneUpdatedEvent {
         public WaystoneUpdatedEvent readFrom(PacketBuffer buffer) {
             Type type = buffer.readEnumValue(Type.class);
             WaystoneLocationData location = WaystoneLocationData.SERIALIZER.readFrom(buffer);
-            String name = buffer.readString();
+            String name = buffer.readString(32767);
             PlayerHandle playerHandle = PlayerHandle.SERIALIZER.readFrom(buffer);
             switch (type){
                 case Added: return new WaystoneAddedEvent(location, name, playerHandle);
                 case Removed: return new WaystoneRemovedEvent(location, name, playerHandle);
-                case Renamed: return new WaystoneRenamedEvent(location, name, buffer.readString(), playerHandle);
+                case Renamed: return new WaystoneRenamedEvent(location, name, buffer.readString(32767), playerHandle);
                 case Moved: return new WaystoneMovedEvent(location, WorldLocation.SERIALIZER.readFrom(buffer), name, playerHandle);
                 default: throw new RuntimeException("Type " + type + " is not supported");
             }

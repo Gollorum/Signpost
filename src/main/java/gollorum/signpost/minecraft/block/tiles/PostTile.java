@@ -4,8 +4,12 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.Wrench;
+import gollorum.signpost.minecraft.utils.SideUtils;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.signdata.types.*;
+import gollorum.signpost.signdata.types.LargeSign;
+import gollorum.signpost.signdata.types.Post;
+import gollorum.signpost.signdata.types.SmallShortSign;
+import gollorum.signpost.signdata.types.SmallWideSign;
 import gollorum.signpost.utils.BlockPart;
 import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.utils.BlockPartMetadata;
@@ -16,7 +20,6 @@ import gollorum.signpost.utils.serialization.BlockPosSerializer;
 import gollorum.signpost.utils.serialization.BufferSerializable;
 import io.netty.util.internal.ConcurrentSet;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.AxeItem;
@@ -320,8 +323,8 @@ public class PostTile extends TileEntity {
             try {
                 return new Packet(
                     TilePartInfo.SERIALIZER.readFrom(buffer),
-                    JsonToNBT.getTagFromJson(buffer.readString()),
-                    buffer.readString(),
+                    JsonToNBT.getTagFromJson(buffer.readString(32767)),
+                    buffer.readString(32767),
                     Vector3.SERIALIZER.readFrom(buffer),
                     buffer.readItemStack(),
                     PlayerHandle.SERIALIZER.readFrom(buffer)
@@ -352,9 +355,8 @@ public class PostTile extends TileEntity {
                     );
                     if(message.cost.getCount() > 0 &&
                            (!isRemote ||
-                                (Minecraft.getInstance().player != null
-                                     && Minecraft.getInstance().player.getUniqueID().equals(message.player.id)))) {
-                        PlayerEntity player = isRemote ? Minecraft.getInstance().player : context.getSender();
+                                (SideUtils.getClientPlayer().map(player -> player.getUniqueID().equals(message.player.id)).orElse(false)))) {
+                        PlayerEntity player = isRemote ? SideUtils.getClientPlayer().get() : context.getSender();
                         if (player.getUniqueID().equals(message.player.id)) {
                             if (!player.isCreative())
                                 player.inventory.func_234564_a_(
@@ -467,8 +469,8 @@ public class PostTile extends TileEntity {
             try {
                 return new Packet(
                     TilePartInfo.SERIALIZER.readFrom(buffer),
-                    JsonToNBT.getTagFromJson(buffer.readString()),
-                    buffer.readString());
+                    JsonToNBT.getTagFromJson(buffer.readString(32767)),
+                    buffer.readString(32767));
             } catch (CommandSyntaxException e) {
                 throw new RuntimeException(e);
             }

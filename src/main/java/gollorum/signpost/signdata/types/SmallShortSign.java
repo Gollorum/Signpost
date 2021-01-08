@@ -1,49 +1,32 @@
 package gollorum.signpost.signdata.types;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.Post;
-import gollorum.signpost.minecraft.data.PostModel;
-import gollorum.signpost.minecraft.rendering.RenderingUtil;
+import gollorum.signpost.minecraft.utils.CoordinatesUtil;
 import gollorum.signpost.signdata.Overlay;
+import gollorum.signpost.signdata.types.renderers.ShortSignRenderer;
 import gollorum.signpost.utils.BlockPartMetadata;
 import gollorum.signpost.utils.math.Angle;
-import gollorum.signpost.utils.math.MathUtils;
 import gollorum.signpost.utils.math.geometry.AABB;
 import gollorum.signpost.utils.math.geometry.Matrix4x4;
 import gollorum.signpost.utils.math.geometry.TransformedBox;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.ItemStackSerializer;
 import gollorum.signpost.utils.serialization.OptionalSerializer;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.*;
-import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.vector.Vector3f;
-import net.minecraftforge.common.util.Lazy;
 
 import java.util.Optional;
-
-import static gollorum.signpost.minecraft.rendering.RenderingUtil.FontToVoxelSize;
-import static gollorum.signpost.minecraft.rendering.RenderingUtil.VoxelSize;
 
 public class SmallShortSign extends Sign<SmallShortSign> {
 
     private static final AABB LOCAL_BOUNDS = new AABB(
         new Vector3(2, -11, 0.5f),
         new Vector3(18, -5, -0.5f)
-    ).map(RenderingUtil::voxelToLocal);
-
-    private static final float TEXT_OFFSET_RIGHT = -3f * VoxelSize;
-    private static final float TEXT_OFFSET_LEFT = 13.5f * VoxelSize;
-    private static final float MAXIMUM_TEXT_WIDTH = TEXT_OFFSET_RIGHT + TEXT_OFFSET_LEFT;
-
-    private static final float TEXT_RATIO = 1.3f;
-    private static final float FONT_SIZE_VOXELS = 2 / TEXT_RATIO;
+    ).map(CoordinatesUtil::voxelToLocal);
 
     public static final BlockPartMetadata<SmallShortSign> METADATA = new BlockPartMetadata<>(
         "small_short_sign",
@@ -96,22 +79,6 @@ public class SmallShortSign extends Sign<SmallShortSign> {
     public String getText() { return text; }
 
     @Override
-    protected Lazy<IBakedModel> makeModel() {
-        return RenderingUtil.loadModel(
-            isFlipped() ? PostModel.shortFlippedLocation : PostModel.shortLocation,
-            mainTexture, secondaryTexture
-        );
-    }
-
-    @Override
-    protected Lazy<IBakedModel> makeOverlayModel(Overlay overlay) {
-        return RenderingUtil.loadModel(
-            isFlipped() ? PostModel.shortOverlayFlippedLocation : PostModel.shortOverlayLocation,
-            overlay.textureFor(SmallShortSign.class)
-        );
-    }
-
-    @Override
     protected void regenerateTransformedBox() {
         transformedBounds = new TransformedBox(LOCAL_BOUNDS).rotateAlong(Matrix4x4.Axis.Y, angle);
     }
@@ -128,25 +95,6 @@ public class SmallShortSign extends Sign<SmallShortSign> {
             setText(compound.getString("Text"));
         }
         super.readMutationUpdate(compound, tile);
-    }
-
-    @Override
-    protected void renderText(MatrixStack matrix, FontRenderer fontRenderer, IRenderTypeBuffer buffer, int combinedLights) {
-        matrix.rotate(Vector3f.ZP.rotationDegrees(180));
-        float scale = FONT_SIZE_VOXELS * FontToVoxelSize;
-        float MAX_WIDTH_FRAC = fontRenderer.getStringWidth(text) * scale / MAXIMUM_TEXT_WIDTH;
-        scale /= Math.max(1, MAX_WIDTH_FRAC);
-        matrix.rotate(Vector3f.YP.rotation((float) (
-            flip
-                ? -angle.radians()
-                : Math.PI - angle.radians())));
-        float offset = MathUtils.lerp(TEXT_OFFSET_RIGHT, (TEXT_OFFSET_RIGHT - TEXT_OFFSET_LEFT) / 2f, 1 - Math.min(1, MAX_WIDTH_FRAC));
-        matrix.translate(
-            flip ? offset - fontRenderer.getStringWidth(text) * scale : -offset,
-            -scale * 4 * TEXT_RATIO,
-            -0.505 * VoxelSize);
-        matrix.scale(scale, scale * TEXT_RATIO, scale);
-        fontRenderer.renderString(text, 0, 0, color, false, matrix.getLast().getMatrix(), buffer, false, 0, combinedLights);
     }
 
     @Override

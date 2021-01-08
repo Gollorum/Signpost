@@ -3,6 +3,7 @@ package gollorum.signpost.minecraft.gui;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import gollorum.signpost.Teleport;
 import gollorum.signpost.networking.PacketHandler;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.IRenderable;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
@@ -21,6 +22,10 @@ public class ConfirmTeleportGui extends Screen {
 	public ConfirmTeleportGui(String waystoneName) {
 		super(new TranslationTextComponent(LangKeys.confirmTeleportGuiTitle));
 		this.waystoneName = waystoneName;
+	}
+
+	public static void display(String waystoneName) {
+		Minecraft.getInstance().displayGuiScreen(new ConfirmTeleportGui(waystoneName));
 	}
 
 	@Override

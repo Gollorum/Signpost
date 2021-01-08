@@ -61,7 +61,7 @@ public class WaystoneData {
         public WaystoneData readFrom(PacketBuffer buffer) {
             return new WaystoneData(
                 WaystoneHandle.SERIALIZER.readFrom(buffer),
-                buffer.readString(),
+                buffer.readString(32767),
                 WaystoneLocationData.SERIALIZER.readFrom(buffer)
             );
         }

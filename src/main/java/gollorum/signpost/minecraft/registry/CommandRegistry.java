@@ -8,7 +8,11 @@ import net.minecraft.command.CommandSource;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
+import static net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus.FORGE;
+
+@Mod.EventBusSubscriber(modid = Signpost.MOD_ID, bus = FORGE)
 public class CommandRegistry {
 
 	@SubscribeEvent
@@ -21,7 +25,5 @@ public class CommandRegistry {
 				.then(Teleport.register(dispatcher))
 		);
 	}
-
-	public static void register(IEventBus bus) { bus.register(CommandRegistry.class); }
 
 }

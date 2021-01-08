@@ -1,16 +1,17 @@
 package gollorum.signpost.minecraft.data;
 
+import gollorum.signpost.Signpost;
 import net.minecraft.data.DataGenerator;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
 
-public final class DataGeneration {
+import static net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus.MOD;
 
-    public static void register(IEventBus modBus){
-        modBus.register(new DataGeneration());
-    }
+@Mod.EventBusSubscriber(modid = Signpost.MOD_ID, bus = MOD)
+public final class DataGeneration {
 
     private DataGeneration() {}
 

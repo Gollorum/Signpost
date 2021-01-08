@@ -2,13 +2,14 @@ package gollorum.signpost.utils;
 
 import gollorum.signpost.interactions.Interactable;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.signdata.types.renderers.BlockPartRenderer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 
 import java.util.Collection;
 
-public interface BlockPart<T extends BlockPart<T>> extends Interactable, Renderable {
+public interface BlockPart<T extends BlockPart<T>> extends Interactable {
 
     BlockPartMetadata<T> getMeta();
 
@@ -25,4 +26,5 @@ public interface BlockPart<T extends BlockPart<T>> extends Interactable, Rendera
     void readMutationUpdate(CompoundNBT compound, TileEntity tile);
 
     Collection<ItemStack> getDrops(PostTile tile);
+
 }

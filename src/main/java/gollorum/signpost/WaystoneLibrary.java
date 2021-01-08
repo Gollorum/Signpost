@@ -45,9 +45,18 @@ public class WaystoneLibrary {
 
     public static void initialize() {
         instance = new WaystoneLibrary();
+    }
+
+    public static void registerNetworkPackets() {
         PacketHandler.register(new RequestAllWaystoneNamesEvent());
         PacketHandler.register(new DeliverAllWaystoneNamesEvent());
         PacketHandler.register(new WaystoneUpdatedEventEvent());
+        PacketHandler.register(new RequestWaystoneLocationEvent());
+        PacketHandler.register(new DeliverWaystoneLocationEvent());
+        PacketHandler.register(new RequestWaystoneAtLocationEvent());
+        PacketHandler.register(new DeliverWaystoneAtLocationEvent());
+        PacketHandler.register(new DeliverIdEvent());
+        PacketHandler.register(new RequestIdEvent());
     }
 
     public void setupStorage(ServerWorld world){
@@ -362,7 +371,7 @@ public class WaystoneLibrary {
             Map<WaystoneHandle, String> names = new HashMap<>();
             int count = buffer.readInt();
             for(int i = 0; i < count; i++)
-                names.put(new WaystoneHandle(buffer.readUniqueId()), buffer.readString());
+                names.put(new WaystoneHandle(buffer.readUniqueId()), buffer.readString(32767));
             return new Packet(names);
         }
 
@@ -516,7 +525,7 @@ public class WaystoneLibrary {
 
         @Override
         public Packet decode(PacketBuffer buffer) {
-            return new Packet(buffer.readString());
+            return new Packet(buffer.readString(32767));
         }
 
         @Override
@@ -557,7 +566,7 @@ public class WaystoneLibrary {
         @Override
         public Packet decode(PacketBuffer buffer) {
             return new Packet(
-                buffer.readString(),
+                buffer.readString(32767),
                 new OptionalSerializer<>(WaystoneLocationData.SERIALIZER).
                     readFrom(buffer)
             );
@@ -591,7 +600,7 @@ public class WaystoneLibrary {
 
         @Override
         public Packet decode(PacketBuffer buffer) {
-            return new Packet(buffer.readString());
+            return new Packet(buffer.readString(32767));
         }
 
         @Override
