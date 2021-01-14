@@ -29,14 +29,28 @@ public class TextureResource {
         "textures/gui/sign_type_selection.png", new TextureSize(58, 44), new TextureSize(58, 88)
     );
 
+    public static final TextureResource itemBackground = new TextureResource(
+        new ResourceLocation("textures/gui/widgets.png"), new TextureSize(22, 22),
+        new TextureSize(256, 256), new TextureSize(60, 23)
+    );
+
     public final ResourceLocation location;
     public final TextureSize size;
     public final TextureSize fileSize;
+    public final TextureSize offset;
 
     public TextureResource(ResourceLocation location, TextureSize size, TextureSize fileSize) {
         this.location = location;
         this.size = size;
         this.fileSize = fileSize;
+        offset = TextureSize.zero;
+    }
+
+    public TextureResource(ResourceLocation location, TextureSize size, TextureSize fileSize, TextureSize offset) {
+        this.location = location;
+        this.size = size;
+        this.fileSize = fileSize;
+        this.offset = offset;
     }
 
     public TextureResource(String relativeLocation, TextureSize size, TextureSize fileSize) {

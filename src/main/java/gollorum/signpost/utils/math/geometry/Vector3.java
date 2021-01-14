@@ -82,6 +82,11 @@ public final class Vector3 {
         );
     }
 
+    public float distanceTo(Vector3 other) {
+        Vector3 distance = other.subtract(this);
+        return (float) Math.sqrt(distance.x * distance.x + distance.y * distance.y + distance.z * distance.z);
+    }
+
     public Vector3 map(Function<Float, Float> f){
         return new Vector3(f.apply(x), f.apply(y), f.apply(z));
     }

@@ -16,7 +16,7 @@ import net.minecraft.util.text.TranslationTextComponent;
 
 public class Teleport {
 
-	public static ArgumentBuilder<CommandSource, ?> register (CommandDispatcher<CommandSource> dispatcher) {
+	public static ArgumentBuilder<CommandSource, ?> register() {
 		return Commands.literal("teleport")
 			.requires(source -> source.hasPermissionLevel(3))
 			.then(Commands.argument("waystone", new WaystoneArgument())

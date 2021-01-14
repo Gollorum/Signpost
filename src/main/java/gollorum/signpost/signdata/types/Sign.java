@@ -10,6 +10,7 @@ import gollorum.signpost.minecraft.gui.SignGui;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.signdata.Overlay;
 import gollorum.signpost.utils.BlockPart;
+import gollorum.signpost.utils.WaystoneData;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Intersectable;
 import gollorum.signpost.utils.math.geometry.Ray;
@@ -139,15 +140,22 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
     }
 
     private void tryTeleport(ServerPlayerEntity player) {
-        if(destination.isPresent() && WaystoneLibrary.getInstance().contains(destination.get()))
-            if(WaystoneLibrary.getInstance().isDiscovered(new PlayerHandle(player), destination.get()) || !Config.Server.enforceDiscovery.get())
+        if(destination.isPresent() && WaystoneLibrary.getInstance().contains(destination.get())) {
+            WaystoneData data = WaystoneLibrary.getInstance().getData(destination.get());
+            if (WaystoneLibrary.getInstance()
+                .isDiscovered(new PlayerHandle(player), destination.get()) || !Config.Server.enforceDiscovery.get())
                 PacketHandler.send(
                     PacketDistributor.PLAYER.with(() -> player),
-                    new Teleport.Request.Package(WaystoneLibrary.getInstance().getData(destination.get()).name)
+                    new Teleport.Request.Package(
+                        WaystoneLibrary.getInstance().getData(destination.get()).name,
+                        Teleport.getCost(player, Vector3.fromBlockPos(data.location.block.blockPos), data.location.spawn)
+                    )
                 );
             else player.sendMessage(
-                new TranslationTextComponent(LangKeys.notDiscovered, WaystoneLibrary.getInstance().getData(destination.get()).name),
-                Util.DUMMY_UUID);
+                new TranslationTextComponent(LangKeys.notDiscovered, data.name),
+                Util.DUMMY_UUID
+            );
+        }
         else {
             player.sendMessage(new TranslationTextComponent(LangKeys.noTeleport), Util.DUMMY_UUID);
         }

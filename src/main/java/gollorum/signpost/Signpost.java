@@ -88,7 +88,7 @@ public class Signpost {
 
         @SubscribeEvent
         public void joinServer(PlayerEvent.PlayerLoggedInEvent e) {
-            if(!e.getPlayer().world.isRemote)
+            if(!e.getPlayer().world.isRemote && serverInstance.isDedicatedServer())
                 PacketHandler.send(
                     PacketDistributor.PLAYER.with((() -> (ServerPlayerEntity) e.getPlayer())),
                     new JoinServerEvent.Package()

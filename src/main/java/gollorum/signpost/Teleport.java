@@ -3,14 +3,21 @@ package gollorum.signpost;
 import gollorum.signpost.minecraft.Config;
 import gollorum.signpost.minecraft.gui.ConfirmTeleportGui;
 import gollorum.signpost.minecraft.gui.LangKeys;
+import gollorum.signpost.minecraft.utils.Inventory;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.TileEntityUtils;
 import gollorum.signpost.utils.WaystoneLocationData;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.util.ITeleporter;
@@ -21,9 +28,14 @@ import java.util.function.Supplier;
 
 public class Teleport {
 
-    public static void toWaystone(WaystoneHandle waystone, PlayerEntity player){
+    public static void toWaystone(WaystoneHandle waystone, PlayerEntity player) {
         assert Signpost.getServerType().isServer;
         WaystoneLocationData waystoneData = WaystoneLibrary.getInstance().getLocationData(waystone);
+        toWaystone(waystoneData, player);
+    }
+
+    public static void toWaystone(WaystoneLocationData waystoneData, PlayerEntity player){
+        assert Signpost.getServerType().isServer;
         waystoneData.block.world.mapLeft(Optional::of)
             .leftOr(i -> TileEntityUtils.findWorld(i, false))
         .ifPresent(unspecificWorld -> {
@@ -45,8 +57,18 @@ public class Teleport {
         });
     }
 
-    public static void requestOnClient(String waystoneName) {
-        ConfirmTeleportGui.display(waystoneName);
+    public static void requestOnClient(String waystoneName, ItemStack cost) {
+        ConfirmTeleportGui.display(waystoneName, cost);
+    }
+
+    public static ItemStack getCost(PlayerEntity player, Vector3 from, Vector3 to) {
+        Item item = Registry.ITEM.getOrDefault(new ResourceLocation(Config.Server.costItem.get()));
+        if(item.equals(Items.AIR) || player.isCreative() || player.isSpectator()) return ItemStack.EMPTY;
+        int distancePerPayment = Config.Server.distancePerPayment.get();
+        int distanceDependentCost = distancePerPayment < 0
+            ? 0
+            : (int)(from.distanceTo(to) / distancePerPayment);
+        return new ItemStack(item, Config.Server.constantPayment.get() + distanceDependentCost);
     }
 
     public static final class Request implements PacketHandler.Event<Request.Package> {
@@ -59,11 +81,12 @@ public class Teleport {
         @Override
         public void encode(Package message, PacketBuffer buffer) {
             buffer.writeString(message.waystoneName);
+            buffer.writeItemStack(message.cost);
         }
 
         @Override
         public Package decode(PacketBuffer buffer) {
-            return new Package(buffer.readString(32767));
+            return new Package(buffer.readString(32767), buffer.readItemStack());
         }
 
         @Override
@@ -73,24 +96,34 @@ public class Teleport {
             NetworkEvent.Context context = contextGetter.get();
             context.enqueueWork(() -> {
                 if(context.getDirection().getReceptionSide().isServer()) {
+                    ServerPlayerEntity player = context.getSender();
                     Optional<WaystoneHandle> waystone = WaystoneLibrary.getInstance().getHandleByName(message.waystoneName);
-                    if(waystone.isPresent()){
-                        Teleport.toWaystone(waystone.get(), context.getSender());
-                    } else context.getSender().sendMessage(
+                    if(waystone.isPresent()) {
+                        WaystoneHandle handle = waystone.get();
+                        WaystoneLocationData waystoneData = WaystoneLibrary.getInstance().getLocationData(handle);
+                        Inventory.tryPay(
+                            player,
+                            Teleport.getCost(player, Vector3.fromBlockPos(waystoneData.block.blockPos), waystoneData.spawn),
+                            p -> Teleport.toWaystone(waystoneData, p)
+                        );
+                    } else player.sendMessage(
                         new TranslationTextComponent(LangKeys.waystoneNotFound, message.waystoneName),
                         Util.DUMMY_UUID
                     );
                 } else {
-                    if(Config.Client.enableConfirmationScreen.get()) requestOnClient(message.waystoneName);
-                    else PacketHandler.sendToServer(new Teleport.Request.Package(message.waystoneName));
+                    if(Config.Client.enableConfirmationScreen.get()) requestOnClient(message.waystoneName, message.cost);
+                    else PacketHandler.sendToServer(new Teleport.Request.Package(message.waystoneName, message.cost));
                 }
             });
+            context.setPacketHandled(true);
         }
 
         public static final class Package {
             public final String waystoneName;
-            public Package(String waystoneName) {
+            public final ItemStack cost;
+            public Package(String waystoneName, ItemStack cost) {
                 this.waystoneName = waystoneName;
+                this.cost = cost;
             }
         }
 

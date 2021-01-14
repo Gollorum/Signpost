@@ -18,7 +18,7 @@ import net.minecraft.util.text.TranslationTextComponent;
 
 public class DiscoverWaystone {
 
-	public static ArgumentBuilder<CommandSource, ?> register (CommandDispatcher<CommandSource> dispatcher) {
+	public static ArgumentBuilder<CommandSource, ?> register() {
 		return Commands.literal("discover")
 			.requires(source -> source.hasPermissionLevel(3))
 			.then(Commands.argument("waystone", new WaystoneArgument())

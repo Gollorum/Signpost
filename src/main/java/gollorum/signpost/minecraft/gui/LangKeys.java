@@ -22,4 +22,5 @@ public class LangKeys {
     public static final String noTeleport = "signpost.noTeleport";
 	public static final String waystoneNotFound = "signpost.waystoneNotFound";
 	public static final String noWaystones = "signpost.noWaystones";
+	public static final String tooExpensive = "signpost.tooExpensive";
 }

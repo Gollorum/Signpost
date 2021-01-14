@@ -2,6 +2,8 @@ package gollorum.signpost.minecraft.gui;
 
 public final class TextureSize {
 
+    public static final TextureSize zero = new TextureSize(0, 0);
+
     public final int width;
     public final int height;
 

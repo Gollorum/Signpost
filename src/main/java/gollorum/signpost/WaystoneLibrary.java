@@ -39,9 +39,9 @@ public class WaystoneLibrary {
     private WorldSavedData savedData;
     public boolean hasStorageBeenSetup() { return savedData != null; }
 
-    private EventDispatcher.Impl.WithPublicDispatch<WaystoneUpdatedEvent> _updateEventDispatcher = new EventDispatcher.Impl.WithPublicDispatch<>();
+    private final EventDispatcher.Impl.WithPublicDispatch<WaystoneUpdatedEvent> _updateEventDispatcher = new EventDispatcher.Impl.WithPublicDispatch<>();
 
-    public EventDispatcher<WaystoneUpdatedEvent> updateEventDispatcher = _updateEventDispatcher;
+    public final EventDispatcher<WaystoneUpdatedEvent> updateEventDispatcher = _updateEventDispatcher;
 
     public static void initialize() {
         instance = new WaystoneLibrary();

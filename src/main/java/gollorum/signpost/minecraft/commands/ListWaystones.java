@@ -12,7 +12,7 @@ import net.minecraft.util.text.TranslationTextComponent;
 
 public class ListWaystones {
 
-	public static ArgumentBuilder<CommandSource, ?> register(CommandDispatcher<CommandSource> dispatcher) {
+	public static ArgumentBuilder<CommandSource, ?> register() {
 		return Commands.literal("list")
 			.requires(source -> source.hasPermissionLevel(3))
 			.executes(context -> {

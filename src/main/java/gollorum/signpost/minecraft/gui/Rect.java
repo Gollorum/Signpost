@@ -29,13 +29,7 @@ public class Rect {
     }
 
     public Rect(Point referencePoint, int width, int height, XAlignment xAlignment, YAlignment yAlignment){
-        this.width = width;
-        this.height = height;
-        point = new Point(
-            xCoordinateFor(referencePoint.x, width, xAlignment),
-            yCoordinateFor(referencePoint.y, height, yAlignment)
-        );
-        size = new TextureSize(width, height);
+        this(referencePoint, new TextureSize(width, height), xAlignment, yAlignment);
     }
 
     public Rect(Point a, Point b) {

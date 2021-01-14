@@ -99,7 +99,7 @@ public class SignGui extends Screen {
     private final Optional<PostTile.TilePartInfo> oldTilePartInfo;
 
     private final List<Flippable> widgetsToFlip = new ArrayList<>();
-    private final Set<IRenderable> additionallyRenderables = new HashSet<>();
+    private final List<IRenderable> additionallyRenderables = new ArrayList<>();
 
     private InputBox wideSignInputBox;
     private InputBox shortSignInputBox;
