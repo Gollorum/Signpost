@@ -1,19 +1,18 @@
 package gollorum.signpost.minecraft.data;
 
-import gollorum.signpost.Signpost;
 import net.minecraft.data.DataGenerator;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
 
-import static net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus.MOD;
-
-@Mod.EventBusSubscriber(modid = Signpost.MOD_ID, bus = MOD)
 public final class DataGeneration {
 
     private DataGeneration() {}
+
+    public static void register(IEventBus modBus){
+        modBus.register(new DataGeneration());
+    }
 
     @SubscribeEvent
     public void gatherData(GatherDataEvent event) {
@@ -31,8 +30,10 @@ public final class DataGeneration {
         if(event.includeClient()) {
             PostModel postModel = new PostModel(datagenerator, fileHelper);
             datagenerator.addProvider(postModel);
+            WaystoneModel waystoneModel = new WaystoneModel(datagenerator, fileHelper);
+            datagenerator.addProvider(waystoneModel);
             datagenerator.addProvider(new WrenchModel(datagenerator, fileHelper));
-            datagenerator.addProvider(new PostBlockState(datagenerator, fileHelper, postModel));
+            datagenerator.addProvider(new PostBlockState(datagenerator, fileHelper, postModel, waystoneModel));
         }
     }
 

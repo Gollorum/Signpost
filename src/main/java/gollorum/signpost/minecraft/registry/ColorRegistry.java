@@ -2,7 +2,7 @@ package gollorum.signpost.minecraft.registry;
 
 import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.block.Post;
-import gollorum.signpost.signdata.Overlay;
+import gollorum.signpost.blockpartdata.Overlay;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
@@ -13,7 +13,6 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeColors;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ColorHandlerEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 

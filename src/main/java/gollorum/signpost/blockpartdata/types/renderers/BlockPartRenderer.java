@@ -1,11 +1,8 @@
-package gollorum.signpost.signdata.types.renderers;
+package gollorum.signpost.blockpartdata.types.renderers;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import gollorum.signpost.Signpost;
-import gollorum.signpost.signdata.types.LargeSign;
-import gollorum.signpost.signdata.types.Post;
-import gollorum.signpost.signdata.types.SmallShortSign;
-import gollorum.signpost.signdata.types.SmallWideSign;
+import gollorum.signpost.blockpartdata.types.*;
 import gollorum.signpost.utils.BlockPart;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
@@ -35,6 +32,7 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
         register(SmallWideSign.class, new WideSignRenderer());
         register(SmallShortSign.class, new ShortSignRenderer());
         register(LargeSign.class, new LargeSignRenderer());
+        register(Waystone.class, new WaystoneRenderer());
     }
 
     public static <T extends BlockPart<T>> void renderDynamic(

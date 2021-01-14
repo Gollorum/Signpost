@@ -11,7 +11,7 @@
   "block.signpost.post_warped": "Warped sign post",
   "block.signpost.post_crimson": "Crimson sign post",
 
-  "item.signpost.tool": "Sign post tool",
+  "item.signpost.tool": "Sign angle wrench",
 
   "gui.signpost.sign_gui_title": "Add or edit sign",
   "gui.signpost.confirm_teleport_gui_title": "Confirm teleport",
@@ -28,7 +28,7 @@
   "signpost.noTeleport": "This sign has no destination",
   "signpost.waystoneNotFound": "The waystone %s does not exist",
   "signpost.noWaystones": "There are no waystones yet",
-  "signpost.tooExpensive": "You don't have the requirement items (%d x %s)",
+  "signpost.tooExpensive": "You don't have the requirement items (%d %s)",
 
   "itemGroup.signpost": "Sign post"
 }

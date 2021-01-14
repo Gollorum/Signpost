@@ -46,21 +46,21 @@ public class Waystone extends Block {
 
     @Override
     public ActionResultType onBlockActivated(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
+        onRightClick(world, pos, player);
+        return ActionResultType.CONSUME;
+    }
+
+    public static void onRightClick(World world, BlockPos pos, PlayerEntity player) {
         if(world.isRemote) {
             WorldLocation location = new WorldLocation(pos, world);
             WaystoneLibrary.getInstance().requestWaystoneDataAtLocation(location, data -> {
                 if(player.isSneaking() || !data.isPresent()){
-                    openWaystoneGui(location, data);
+                    WaystoneGui.display(location, data);
                 } else {
                     discover(player, data.get());
                 }
             });
         }
-        return ActionResultType.CONSUME;
-    }
-
-    private void openWaystoneGui(WorldLocation location, Optional<WaystoneData> oldData) {
-        WaystoneGui.display(location, oldData);
     }
 
     private static void discover(PlayerEntity player, WaystoneData data) {
@@ -101,6 +101,6 @@ public class Waystone extends Block {
     @Override
     public void onBlockPlacedBy(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
         super.onBlockPlacedBy(world, pos, state, placer, stack);
-        if(world.isRemote) openWaystoneGui(new WorldLocation(pos, world), Optional.empty());
+        if(world.isRemote) WaystoneGui.display(new WorldLocation(pos, world), Optional.empty());
     }
 }

@@ -1,0 +1,75 @@
+{
+  "textures": {
+    "texture": "signpost:block/waystone"
+  },
+  "elements": [
+    {
+      "from": [
+        -3,
+        0,
+        -3
+      ],
+      "to": [
+        3,
+        6,
+        3
+      ],
+      "faces": {
+        "down": {
+          "texture": "#texture",
+          "uv": [
+            5.0,
+            5.0,
+            11.0,
+            11.0
+          ]
+        },
+        "up": {
+          "texture": "#texture",
+          "uv": [
+            5.0,
+            5.0,
+            11.0,
+            11.0
+          ]
+        },
+        "north": {
+          "texture": "#texture",
+          "uv": [
+            5.0,
+            5.0,
+            11.0,
+            11.0
+          ]
+        },
+        "south": {
+          "texture": "#texture",
+          "uv": [
+            5.0,
+            5.0,
+            11.0,
+            11.0
+          ]
+        },
+        "west": {
+          "texture": "#texture",
+          "uv": [
+            5.0,
+            5.0,
+            11.0,
+            11.0
+          ]
+        },
+        "east": {
+          "texture": "#texture",
+          "uv": [
+            5.0,
+            5.0,
+            11.0,
+            11.0
+          ]
+        }
+      }
+    }
+  ]
+}

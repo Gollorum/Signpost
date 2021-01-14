@@ -1,16 +1,15 @@
 package gollorum.signpost.minecraft.registry;
 
 import gollorum.signpost.Signpost;
-import gollorum.signpost.signdata.Overlay;
-import gollorum.signpost.signdata.types.LargeSign;
-import gollorum.signpost.signdata.types.Sign;
-import gollorum.signpost.signdata.types.SmallShortSign;
-import gollorum.signpost.signdata.types.SmallWideSign;
+import gollorum.signpost.blockpartdata.Overlay;
+import gollorum.signpost.blockpartdata.types.LargeSign;
+import gollorum.signpost.blockpartdata.types.Sign;
+import gollorum.signpost.blockpartdata.types.SmallShortSign;
+import gollorum.signpost.blockpartdata.types.SmallWideSign;
 import net.minecraft.inventory.container.PlayerContainer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.TextureStitchEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 

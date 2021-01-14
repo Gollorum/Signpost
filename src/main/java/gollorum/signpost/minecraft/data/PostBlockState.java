@@ -14,10 +14,17 @@ import java.util.Map;
 public class PostBlockState extends BlockStateProvider {
 
     private final PostModel postModel;
+    private final WaystoneModel waystoneModel;
 
-    public PostBlockState(DataGenerator gen, ExistingFileHelper fileHelper, PostModel postModel) {
+    public PostBlockState(
+        DataGenerator gen,
+        ExistingFileHelper fileHelper,
+        PostModel postModel,
+        WaystoneModel waystoneModel
+    ) {
         super(gen, Signpost.MOD_ID, fileHelper);
         this.postModel = postModel;
+        this.waystoneModel = waystoneModel;
     }
 
     @Override
@@ -27,7 +34,7 @@ public class PostBlockState extends BlockStateProvider {
                 .partialState().setModels(new ConfiguredModel(entry.getValue()));
         }
         getVariantBuilder(Waystone.INSTANCE)
-            .partialState().setModels(new ConfiguredModel(postModel.waystoneModel));
+            .partialState().setModels(new ConfiguredModel(waystoneModel.waystoneModel));
     }
 
 }

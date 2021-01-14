@@ -1,4 +1,4 @@
-package gollorum.signpost.signdata.types;
+package gollorum.signpost.blockpartdata.types;
 
 import gollorum.signpost.*;
 import gollorum.signpost.interactions.InteractionInfo;
@@ -8,7 +8,7 @@ import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.LangKeys;
 import gollorum.signpost.minecraft.gui.SignGui;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.signdata.Overlay;
+import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.utils.BlockPart;
 import gollorum.signpost.utils.WaystoneData;
 import gollorum.signpost.utils.math.Angle;

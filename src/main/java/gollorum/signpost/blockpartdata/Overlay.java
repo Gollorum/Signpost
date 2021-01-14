@@ -1,10 +1,10 @@
-package gollorum.signpost.signdata;
+package gollorum.signpost.blockpartdata;
 
 import gollorum.signpost.Signpost;
-import gollorum.signpost.signdata.types.LargeSign;
-import gollorum.signpost.signdata.types.Sign;
-import gollorum.signpost.signdata.types.SmallShortSign;
-import gollorum.signpost.signdata.types.SmallWideSign;
+import gollorum.signpost.blockpartdata.types.LargeSign;
+import gollorum.signpost.blockpartdata.types.Sign;
+import gollorum.signpost.blockpartdata.types.SmallShortSign;
+import gollorum.signpost.blockpartdata.types.SmallWideSign;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ResourceLocation;

@@ -197,7 +197,7 @@ public class Post extends Block implements IWaterLoggable {
                     );
                 } else {
                     tile.addPart(
-                        new BlockPartInstance(new gollorum.signpost.signdata.types.Post(type.postTexture), Vector3.ZERO),
+                        new BlockPartInstance(new gollorum.signpost.blockpartdata.types.Post(type.postTexture), Vector3.ZERO),
                         ItemStack.EMPTY,
                         PlayerHandle.from(placer)
                     );

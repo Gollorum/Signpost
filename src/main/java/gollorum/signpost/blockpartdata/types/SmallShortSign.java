@@ -1,11 +1,10 @@
-package gollorum.signpost.signdata.types;
+package gollorum.signpost.blockpartdata.types;
 
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.Post;
 import gollorum.signpost.minecraft.utils.CoordinatesUtil;
-import gollorum.signpost.signdata.Overlay;
-import gollorum.signpost.signdata.types.renderers.ShortSignRenderer;
+import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.utils.BlockPartMetadata;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.AABB;

@@ -14,11 +14,11 @@ import gollorum.signpost.minecraft.events.WaystoneRenamedEvent;
 import gollorum.signpost.minecraft.events.WaystoneUpdatedEvent;
 import gollorum.signpost.minecraft.rendering.FlippableModel;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.signdata.Overlay;
-import gollorum.signpost.signdata.types.LargeSign;
-import gollorum.signpost.signdata.types.Sign;
-import gollorum.signpost.signdata.types.SmallShortSign;
-import gollorum.signpost.signdata.types.SmallWideSign;
+import gollorum.signpost.blockpartdata.Overlay;
+import gollorum.signpost.blockpartdata.types.LargeSign;
+import gollorum.signpost.blockpartdata.types.Sign;
+import gollorum.signpost.blockpartdata.types.SmallShortSign;
+import gollorum.signpost.blockpartdata.types.SmallWideSign;
 import gollorum.signpost.utils.Delay;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
@@ -220,8 +220,8 @@ public class SignGui extends Screen {
         int centerOffset = (typeSelectionButtonsSize.width + typeSelectionButtonsSpace) / 2;
 
         ResourceLocation postTexture = tile.getParts().stream()
-            .filter(p -> p.blockPart instanceof gollorum.signpost.signdata.types.Post)
-            .map(p -> ((gollorum.signpost.signdata.types.Post)p.blockPart).getTexture())
+            .filter(p -> p.blockPart instanceof gollorum.signpost.blockpartdata.types.Post)
+            .map(p -> ((gollorum.signpost.blockpartdata.types.Post)p.blockPart).getTexture())
             .findFirst().orElse(tile.modelType.postTexture);
         ResourceLocation mainTexture = modelType.mainTexture;
         ResourceLocation secondaryTexture = modelType.secondaryTexture;

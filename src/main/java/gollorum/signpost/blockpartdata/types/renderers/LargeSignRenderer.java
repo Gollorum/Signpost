@@ -1,11 +1,10 @@
-package gollorum.signpost.signdata.types.renderers;
+package gollorum.signpost.blockpartdata.types.renderers;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import gollorum.signpost.minecraft.data.PostModel;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
-import gollorum.signpost.signdata.Overlay;
-import gollorum.signpost.signdata.types.LargeSign;
-import gollorum.signpost.signdata.types.SmallWideSign;
+import gollorum.signpost.blockpartdata.Overlay;
+import gollorum.signpost.blockpartdata.types.LargeSign;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.model.IBakedModel;

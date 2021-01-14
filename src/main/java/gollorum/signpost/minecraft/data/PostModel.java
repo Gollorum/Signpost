@@ -1,12 +1,11 @@
 package gollorum.signpost.minecraft.data;
 
 import gollorum.signpost.Signpost;
+import gollorum.signpost.blockpartdata.Overlay;
+import gollorum.signpost.blockpartdata.types.LargeSign;
+import gollorum.signpost.blockpartdata.types.SmallShortSign;
+import gollorum.signpost.blockpartdata.types.SmallWideSign;
 import gollorum.signpost.minecraft.block.Post;
-import gollorum.signpost.minecraft.block.Waystone;
-import gollorum.signpost.signdata.Overlay;
-import gollorum.signpost.signdata.types.LargeSign;
-import gollorum.signpost.signdata.types.SmallShortSign;
-import gollorum.signpost.signdata.types.SmallWideSign;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.modelGeneration.SignModelFactory;
 import net.minecraft.data.DataGenerator;
@@ -45,7 +44,6 @@ public class PostModel extends BlockModelProvider {
     public static final ResourceLocation largeOverlayFlippedLocation = new ResourceLocation(Signpost.MOD_ID, largeOverlayLocation.getPath() + "_flipped");
 
     public final Map<Post.Info, BlockModelBuilder> allModels;
-    public final BlockModelBuilder waystoneModel;
 
     private static final ModelBuilder.FaceRotation mainTextureRotation = ModelBuilder.FaceRotation.CLOCKWISE_90;
     private static final ModelBuilder.FaceRotation secondaryTextureRotation = ModelBuilder.FaceRotation.CLOCKWISE_90;
@@ -59,7 +57,6 @@ public class PostModel extends BlockModelProvider {
             i -> i,
             i -> new BlockModelBuilder(new ResourceLocation(Signpost.MOD_ID, "block/" + i.registryName), fileHelper)
         ));
-        waystoneModel = new BlockModelBuilder(new ResourceLocation(Signpost.MOD_ID, "block/" + Waystone.REGISTRY_NAME), fileHelper);
         generator.addProvider(new Item(generator, fileHelper));
     }
 
@@ -74,7 +71,6 @@ public class PostModel extends BlockModelProvider {
             for (Map.Entry<Post.Info, BlockModelBuilder> entry : allModels.entrySet()) {
                 getBuilder(entry.getKey().registryName).parent(entry.getValue());
             }
-            getBuilder(Waystone.REGISTRY_NAME).parent(waystoneModel);
         }
     }
 
@@ -145,7 +141,6 @@ public class PostModel extends BlockModelProvider {
                 .texture(textureSign, info.type.mainTexture)
                 .texture(secondaryTexture, info.type.secondaryTexture);
         }
-        cubeAll(Waystone.REGISTRY_NAME, new ResourceLocation(Signpost.MOD_ID, "block/waystone"));
     }
 
     private void buildDefaultAndFlipped(SignModelFactory<String> factory, ResourceLocation main, ResourceLocation flipped) {

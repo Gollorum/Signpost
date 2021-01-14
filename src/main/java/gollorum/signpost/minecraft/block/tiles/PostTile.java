@@ -3,13 +3,10 @@ package gollorum.signpost.minecraft.block.tiles;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
+import gollorum.signpost.blockpartdata.types.*;
 import gollorum.signpost.minecraft.Wrench;
 import gollorum.signpost.minecraft.utils.SideUtils;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.signdata.types.LargeSign;
-import gollorum.signpost.signdata.types.Post;
-import gollorum.signpost.signdata.types.SmallShortSign;
-import gollorum.signpost.signdata.types.SmallWideSign;
 import gollorum.signpost.utils.BlockPart;
 import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.utils.BlockPartMetadata;
@@ -60,6 +57,7 @@ public class PostTile extends TileEntity {
         partsMetadata.add(SmallWideSign.METADATA);
         partsMetadata.add(SmallShortSign.METADATA);
         partsMetadata.add(LargeSign.METADATA);
+        partsMetadata.add(Waystone.METADATA);
     }
 
     public static class TraceResult {
@@ -100,7 +98,14 @@ public class PostTile extends TileEntity {
         BlockPartInstance oldPart = parts.remove(id);
         if(getWorld() != null && !getWorld().isRemote)
             sendToTracing(() -> new PartRemovedEvent.Packet(new TilePartInfo(this, id), false));
+        oldPart.blockPart.removeFrom(this);
         return oldPart;
+    }
+
+    @Override
+    public void remove() {
+        for (BlockPartInstance part: parts.values()) part.blockPart.removeFrom(this);
+        super.remove();
     }
 
     public Collection<BlockPartInstance> getParts(){ return parts.values(); }

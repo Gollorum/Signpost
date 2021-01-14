@@ -2,6 +2,7 @@ package gollorum.signpost;
 
 import gollorum.signpost.minecraft.Config;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.data.DataGeneration;
 import gollorum.signpost.minecraft.registry.BlockRegistry;
 import gollorum.signpost.minecraft.registry.ItemRegistry;
 import gollorum.signpost.minecraft.registry.TileEntityRegistry;
@@ -58,6 +59,7 @@ public class Signpost {
         BlockRegistry.register(modBus);
         ItemRegistry.register(modBus);
         TileEntityRegistry.register(modBus);
+        DataGeneration.register(modBus);
 
         Config.register();
     }

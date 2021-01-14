@@ -1,15 +1,13 @@
 package gollorum.signpost.minecraft.rendering;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
-import gollorum.signpost.signdata.types.renderers.BlockPartRenderer;
+import gollorum.signpost.blockpartdata.types.renderers.BlockPartRenderer;
 import gollorum.signpost.utils.BlockPartInstance;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 
-import java.util.Optional;
 import java.util.Random;
 
 public class PostRenderer extends TileEntityRenderer<PostTile> {
