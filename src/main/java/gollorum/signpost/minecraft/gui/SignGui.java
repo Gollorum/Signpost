@@ -390,7 +390,7 @@ public class SignGui extends Screen {
         GuiModelRenderer postRenderer = new GuiModelRenderer(
             modelRect, postModel,
             0, -0.5f,
-            new ItemStack(Post.OAK.post.asItem())
+            new ItemStack(Post.OAK.block.asItem())
         );
         additionallyRenderables.add(postRenderer);
         Point modelRectTop = modelRect.at(Rect.XAlignment.Center, Rect.YAlignment.Top);

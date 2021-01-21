@@ -21,8 +21,8 @@ public class PostRecipe extends RecipeProvider {
 
     @Override
     protected void registerRecipes(Consumer<IFinishedRecipe> consumer) {
-        for(Post.Info info : Post.All_INFOS) {
-            postBuilder(info.post, info.type).build(consumer);
+        for(Post.Variant variant : Post.AllVariants) {
+            postBuilder(variant.block, variant.type).build(consumer);
         }
     }
 

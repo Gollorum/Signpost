@@ -140,16 +140,16 @@ public class Post extends Block implements IWaterLoggable {
 
     private static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
-    public static class Info {
-        public final Post post;
+    public static class Variant {
+        public final Post block;
         public final String registryName;
         public final Properties properties;
         public final ModelType type;
 
-        public Info(Properties properties, ModelType type, String registryName) {
+        public Variant(Properties properties, ModelType type, String registryName) {
             this.properties = properties;
             this.type = type;
-            this.post = newPost();
+            this.block = newPost();
             this.registryName = REGISTRY_NAME + "_" + registryName;
         }
 
@@ -160,19 +160,19 @@ public class Post extends Block implements IWaterLoggable {
 
     public static final String REGISTRY_NAME = "post";
 
-    public static final Info STONE = new Info(PropertiesUtil.STONE, ModelType.Stone, "stone");
-    public static final Info IRON = new Info(PropertiesUtil.IRON, ModelType.Iron, "iron");
-    public static final Info OAK = new Info(PropertiesUtil.wood(PropertiesUtil.WoodType.Oak), ModelType.Oak, "oak");
-    public static final Info DARK_OAK = new Info(PropertiesUtil.wood(PropertiesUtil.WoodType.DarkOak), ModelType.DarkOak, "dark_oak");
-    public static final Info SPRUCE = new Info(PropertiesUtil.wood(PropertiesUtil.WoodType.Spruce), ModelType.Spruce, "spruce");
-    public static final Info BIRCH = new Info(PropertiesUtil.wood(PropertiesUtil.WoodType.Birch), ModelType.Birch, "birch");
-    public static final Info JUNGLE =new Info(PropertiesUtil.wood(PropertiesUtil.WoodType.Jungle), ModelType.Jungle, "jungle");
-    public static final Info ACACIA = new Info(PropertiesUtil.wood(PropertiesUtil.WoodType.Acacia), ModelType.Acacia, "acacia");
-    public static final Info WARPED =new Info(PropertiesUtil.wood(PropertiesUtil.WoodType.Warped), ModelType.Warped, "warped");
-    public static final Info CRIMSON = new Info(PropertiesUtil.wood(PropertiesUtil.WoodType.Crimson), ModelType.Crimson, "crimson");
+    public static final Variant STONE = new Variant(PropertiesUtil.STONE, ModelType.Stone, "stone");
+    public static final Variant IRON = new Variant(PropertiesUtil.IRON, ModelType.Iron, "iron");
+    public static final Variant OAK = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Oak), ModelType.Oak, "oak");
+    public static final Variant DARK_OAK = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.DarkOak), ModelType.DarkOak, "dark_oak");
+    public static final Variant SPRUCE = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Spruce), ModelType.Spruce, "spruce");
+    public static final Variant BIRCH = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Birch), ModelType.Birch, "birch");
+    public static final Variant JUNGLE = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Jungle), ModelType.Jungle, "jungle");
+    public static final Variant ACACIA = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Acacia), ModelType.Acacia, "acacia");
+    public static final Variant WARPED = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Warped), ModelType.Warped, "warped");
+    public static final Variant CRIMSON = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Crimson), ModelType.Crimson, "crimson");
 
-    public static final Info[] All_INFOS = new Info[]{OAK, BIRCH, SPRUCE, JUNGLE, DARK_OAK, ACACIA, STONE, IRON, WARPED, CRIMSON};
-    public static final Block[] ALL = Arrays.stream(All_INFOS).map(i -> i.post).toArray(Block[]::new);
+    public static final Variant[] AllVariants = new Variant[]{OAK, BIRCH, SPRUCE, JUNGLE, DARK_OAK, ACACIA, STONE, IRON, WARPED, CRIMSON};
+    public static final Block[] ALL = Arrays.stream(AllVariants).map(i -> i.block).toArray(Block[]::new);
 
     public final ModelType type;
 
@@ -259,7 +259,7 @@ public class Post extends Block implements IWaterLoggable {
 
     @Override
     public BlockRenderType getRenderType(BlockState state) {
-        return BlockRenderType.INVISIBLE;
+        return BlockRenderType.ENTITYBLOCK_ANIMATED;
     }
 
     @Override
@@ -298,4 +298,10 @@ public class Post extends Block implements IWaterLoggable {
         return super.getStateForPlacement(context)
             .with(WATERLOGGED, context.getWorld().getFluidState(context.getPos()).getFluid() == Fluids.WATER);
     }
+
+    @Override
+    public boolean propagatesSkylightDown(BlockState state, IBlockReader reader, BlockPos pos) {
+        return !state.get(WATERLOGGED);
+    }
+
 }

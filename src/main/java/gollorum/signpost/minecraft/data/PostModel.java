@@ -43,7 +43,7 @@ public class PostModel extends BlockModelProvider {
     public static final ResourceLocation largeOverlayLocation = new ResourceLocation(Signpost.MOD_ID, "block/large_sign_overlay");
     public static final ResourceLocation largeOverlayFlippedLocation = new ResourceLocation(Signpost.MOD_ID, largeOverlayLocation.getPath() + "_flipped");
 
-    public final Map<Post.Info, BlockModelBuilder> allModels;
+    public final Map<Post.Variant, BlockModelBuilder> allModels;
 
     private static final ModelBuilder.FaceRotation mainTextureRotation = ModelBuilder.FaceRotation.CLOCKWISE_90;
     private static final ModelBuilder.FaceRotation secondaryTextureRotation = ModelBuilder.FaceRotation.CLOCKWISE_90;
@@ -53,7 +53,7 @@ public class PostModel extends BlockModelProvider {
     public PostModel(DataGenerator generator, ExistingFileHelper fileHelper) {
         super(generator, Signpost.MOD_ID, fileHelper);
         previewModel = new BlockModelBuilder(previewLocation, fileHelper);
-        allModels = Arrays.stream(Post.All_INFOS).collect(Collectors.<Post.Info, Post.Info, BlockModelBuilder>toMap(
+        allModels = Arrays.stream(Post.AllVariants).collect(Collectors.<Post.Variant, Post.Variant, BlockModelBuilder>toMap(
             i -> i,
             i -> new BlockModelBuilder(new ResourceLocation(Signpost.MOD_ID, "block/" + i.registryName), fileHelper)
         ));
@@ -68,7 +68,7 @@ public class PostModel extends BlockModelProvider {
 
         @Override
         protected void registerModels() {
-            for (Map.Entry<Post.Info, BlockModelBuilder> entry : allModels.entrySet()) {
+            for (Map.Entry<Post.Variant, BlockModelBuilder> entry : allModels.entrySet()) {
                 getBuilder(entry.getKey().registryName).parent(entry.getValue());
             }
         }
@@ -133,13 +133,13 @@ public class PostModel extends BlockModelProvider {
             Overlay.Gras.textureFor(LargeSign.class)
         );
 
-        for(Post.Info info : Post.All_INFOS) {
-            getBuilder(info.registryName)
+        for(Post.Variant variant : Post.AllVariants) {
+            getBuilder(variant.registryName)
                 .parent(previewModel)
-                .texture("particle", info.type.postTexture)
-                .texture(texturePost, info.type.postTexture)
-                .texture(textureSign, info.type.mainTexture)
-                .texture(secondaryTexture, info.type.secondaryTexture);
+                .texture("particle", variant.type.postTexture)
+                .texture(texturePost, variant.type.postTexture)
+                .texture(textureSign, variant.type.mainTexture)
+                .texture(secondaryTexture, variant.type.secondaryTexture);
         }
     }
 

@@ -5,15 +5,19 @@ import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.data.DataGeneration;
 import gollorum.signpost.minecraft.registry.BlockRegistry;
 import gollorum.signpost.minecraft.registry.ItemRegistry;
+import gollorum.signpost.minecraft.registry.RecipeRegistry;
 import gollorum.signpost.minecraft.registry.TileEntityRegistry;
 import gollorum.signpost.minecraft.rendering.PostRenderer;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.ServerType;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.Dimension;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.client.model.generators.loaders.OBJLoaderBuilder;
+import net.minecraftforge.client.model.obj.OBJLoader;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.world.WorldEvent;
@@ -51,6 +55,8 @@ public class Signpost {
     }
 
     public Signpost() {
+        Config.register();
+
         IEventBus forgeBus = MinecraftForge.EVENT_BUS;
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         forgeBus.register(new ForgeEvents());
@@ -58,10 +64,10 @@ public class Signpost {
 
         BlockRegistry.register(modBus);
         ItemRegistry.register(modBus);
+        RecipeRegistry.register(modBus);
         TileEntityRegistry.register(modBus);
         DataGeneration.register(modBus);
 
-        Config.register();
     }
 
     private static class ModBusEvents {

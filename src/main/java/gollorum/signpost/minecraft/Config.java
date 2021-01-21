@@ -1,12 +1,13 @@
 package gollorum.signpost.minecraft;
 
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
+import gollorum.signpost.minecraft.block.ModelWaystone;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
 import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Config {
 
@@ -39,6 +40,7 @@ public class Config {
 		public final ForgeConfigSpec.ConfigValue<String> costItem;
 		public final ForgeConfigSpec.ConfigValue<Integer> constantPayment;
 		public final ForgeConfigSpec.ConfigValue<Integer> distancePerPayment;
+		public final ForgeConfigSpec.ConfigValue<List<? extends String>> allowedWaystones;
 
 		public Server(ForgeConfigSpec.Builder builder) {
 			builder.push("teleport");
@@ -56,6 +58,17 @@ public class Config {
 			distancePerPayment = builder.define("distance_per_payment", -1);
 			builder.pop();
 			builder.pop();
+			builder.comment("You can define which waystone models are enabled.",
+				"Disabled types are still in the game but cannot be crafted, disappear from the creative menu and will not be generated in villages.",
+				"The available variants are: " +
+					ModelWaystone.variants.stream()
+						.map(v -> "\"" + v.name + "\"")
+						.collect(Collectors.joining(", ")),
+				"Check out the curseforge page to see what they look like: https://www.curseforge.com/minecraft/mc-mods/signpost/pages/waystone-models"
+			);
+			allowedWaystones = builder.defineList("allowed_waystone_models", ModelWaystone.variants.stream().map(v -> v.name).collect(
+				Collectors.toList()), n -> n instanceof String && ModelWaystone.variants.contains(new ModelWaystone.Variant((String) n, null, 0
+			)));
 		}
 
 	}

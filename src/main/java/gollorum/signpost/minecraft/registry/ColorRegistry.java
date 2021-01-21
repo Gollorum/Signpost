@@ -25,16 +25,16 @@ public class ColorRegistry {
 
     @SubscribeEvent
     static void onBlockColor(ColorHandlerEvent.Block event) {
-        for(Post.Info info: Post.All_INFOS) {
-            event.getBlockColors().register(ColorRegistry::getOverlayBlockColor, info.post);
+        for(Post.Variant variant : Post.AllVariants) {
+            event.getBlockColors().register(ColorRegistry::getOverlayBlockColor, variant.block);
         }
     }
 
     @SubscribeEvent
     static void onItemColor(ColorHandlerEvent.Item event) {
-        for(Post.Info info: Post.All_INFOS) {
-            event.getItemColors().register(ColorRegistry::getOverlayItemColor, info.post);
-            event.getBlockColors().register(ColorRegistry::getOverlayBlockColor, info.post);
+        for(Post.Variant variant : Post.AllVariants) {
+            event.getItemColors().register(ColorRegistry::getOverlayItemColor, variant.block);
+            event.getBlockColors().register(ColorRegistry::getOverlayBlockColor, variant.block);
         }
     }
 

@@ -1,6 +1,7 @@
 package gollorum.signpost.minecraft.registry;
 
 import gollorum.signpost.minecraft.Wrench;
+import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.block.Post;
 import gollorum.signpost.minecraft.block.Waystone;
 import net.minecraft.item.BlockItem;
@@ -20,7 +21,7 @@ import static gollorum.signpost.Signpost.MOD_ID;
 
 public class ItemRegistry {
 
-    private static final ItemGroup ITEM_GROUP = new ItemGroup("signpost") {
+    public static final ItemGroup ITEM_GROUP = new ItemGroup("signpost") {
         @Override
         public ItemStack createIcon() {
             return new ItemStack(POSTS_ITEMS.get(0).get());
@@ -33,16 +34,28 @@ public class ItemRegistry {
         REGISTER.register(Waystone.REGISTRY_NAME,
             () -> new BlockItem(Waystone.INSTANCE, new Item.Properties().group(ITEM_GROUP)));
 
+    private static final List<RegistryObject<Item>> ModelWaystoneItems =
+        ModelWaystone.variants.stream()
+            .map(ItemRegistry::registerModelWaystoneItem)
+            .collect(Collectors.toList());
+
     private static final List<RegistryObject<Item>> POSTS_ITEMS =
-        Arrays.stream(Post.All_INFOS)
+        Arrays.stream(Post.AllVariants)
             .map(ItemRegistry::registerPostItem)
             .collect(Collectors.toList());
 
     public static final RegistryObject<Item> WRENCH = REGISTER.register(Wrench.registryName, () -> new Wrench(ITEM_GROUP));
 
-    private static RegistryObject<Item> registerPostItem(Post.Info postInfo){
-        return REGISTER.register(postInfo.registryName,
-            () -> new BlockItem(postInfo.post, new Item.Properties().group(ITEM_GROUP)));
+    private static RegistryObject<Item> registerPostItem(Post.Variant postVariant){
+        return REGISTER.register(
+            postVariant.registryName,
+            () -> new BlockItem(postVariant.block, new Item.Properties().group(ITEM_GROUP)));
+    }
+
+    private static RegistryObject<Item> registerModelWaystoneItem(ModelWaystone.Variant variant){
+        return REGISTER.register(
+            variant.registryName,
+            () -> new BlockItem(variant.block, new Item.Properties().group(ITEM_GROUP)));
     }
 
     public static void register(IEventBus bus){
