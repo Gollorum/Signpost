@@ -3,13 +3,13 @@ package gollorum.signpost.minecraft.gui;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import gollorum.signpost.Signpost;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.IGuiEventListener;
 import net.minecraft.client.gui.IRenderable;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
@@ -21,21 +21,21 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.*;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
-// Copied from TextFieldWidget but with the option to toggle the shadow on the font.
-public class InputBox extends Widget implements IRenderable, IGuiEventListener, WithMutableX {
+public class InputBox extends Widget implements IRenderable, IGuiEventListener, WithMutableX, Ticking {
     private final FontRenderer fontRenderer;
     /** Has the current text being edited on the textbox. */
     private String text = "";
     private int maxStringLength = 200;
     private int cursorCounter;
     private boolean enableBackgroundDrawing = true;
-    /** if true the textbox can lose focus by clicking elsewhere on the screen */
-    private boolean canLoseFocus = true;
     /** If this value is true along with isFocused, keyTyped will process the keys. */
     private boolean isEnabled = true;
     private boolean isShiftDown;
@@ -44,22 +44,23 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener, 
     private int cursorPosition;
     /** other selection position, maybe the same as the cursor */
     private int selectionEnd;
-    private int enabledColor = 14737632;
-    private int disabledColor = 7368816;
+    private int enabledColor = Colors.lightGrey;
+    private int disabledColor = Colors.darkGrey;
 
     public int backgroundHoverColor = 0x60ffffff;
     public boolean hintBackgroundOnHover = true;
 
-    private boolean shouldDropShadow = true;
+    private boolean shouldDropShadow;
 
     private String suggestion;
-    private Consumer<String> guiResponder;
+    private Consumer<String> onTextChanged;
     /** Called to check if the text is valid */
     private Predicate<String> validator = Objects::nonNull;
-    private BiFunction<String, Integer, IReorderingProcessor> textFormatter = (p_195610_0_, p_195610_1_) -> {
-        return IReorderingProcessor.fromString(p_195610_0_, Style.EMPTY);
-    };
+    private BiFunction<String, Integer, IReorderingProcessor> textFormatter = (text, offset) ->
+        IReorderingProcessor.fromString(text, Style.EMPTY);
     private final double zOffset;
+
+    private final List<Function<Integer, Boolean>> keyCodeConsumers = new ArrayList<>();
 
     public InputBox(
         FontRenderer fontRenderer,
@@ -67,49 +68,32 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener, 
         boolean shouldDropShadow,
         boolean shouldRenderBackGround,
         double zOffset) {
-        this(fontRenderer,
+        this(
+            fontRenderer,
             inputFieldRect.point.x, inputFieldRect.point.y,
             inputFieldRect.width, inputFieldRect.height,
             shouldDropShadow,
             new StringTextComponent(""),
-            zOffset);
+            zOffset
+        );
         this.setEnableBackgroundDrawing(shouldRenderBackGround);
     }
     public InputBox(FontRenderer fontIn, int xIn, int yIn, int widthIn, int heightIn, boolean shouldDropShadow, ITextComponent msg, double zOffset) {
-        this(fontIn, xIn, yIn, widthIn, heightIn, null, msg, zOffset);
-        this.shouldDropShadow = shouldDropShadow;
-    }
-
-    public InputBox(FontRenderer fontIn, int xIn, int yIn, int widthIn, int heightIn, @Nullable TextFieldWidget p_i51138_6_, ITextComponent msg, double zOffset) {
         super(xIn, yIn, widthIn, heightIn, msg);
         this.fontRenderer = fontIn;
         this.zOffset = zOffset;
-        if (p_i51138_6_ != null) {
-            this.setText(p_i51138_6_.getText());
-        }
-
+        this.shouldDropShadow = shouldDropShadow;
     }
 
     public int getHeight() { return height; }
 
-    public void setResponder(Consumer<String> responderIn) {
-        this.guiResponder = responderIn;
+    public void setTextChangedCallback(Consumer<String> onTextChanged) {
+        this.onTextChanged = onTextChanged;
     }
 
-    public void setTextFormatter(BiFunction<String, Integer, IReorderingProcessor> textFormatterIn) {
-        this.textFormatter = textFormatterIn;
-    }
-
-    /**
-     * Increments the cursor counter
-     */
+    @Override
     public void tick() {
         ++this.cursorCounter;
-    }
-
-    protected IFormattableTextComponent getNarrationMessage() {
-        ITextComponent itextcomponent = this.getMessage();
-        return new TranslationTextComponent("gui.narrate.editBox", itextcomponent, this.text);
     }
 
     /**
@@ -154,38 +138,34 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener, 
      * Adds the given text after the cursor, or replaces the currently selected text if there is a selection.
      */
     public void writeText(String textToWrite) {
-        int i = Math.min(this.cursorPosition, this.selectionEnd);
-        int j = Math.max(this.cursorPosition, this.selectionEnd);
-        int k = this.maxStringLength - this.text.length() - (i - j);
-        String s = SharedConstants.filterAllowedCharacters(textToWrite);
-        int l = s.length();
-        if (k < l) {
-            s = s.substring(0, k);
-            l = k;
+        int selectionFrom = Math.min(this.cursorPosition, this.selectionEnd);
+        int selectionTo = Math.max(this.cursorPosition, this.selectionEnd);
+        int availableSpace = this.maxStringLength - this.text.length() - (selectionFrom - selectionTo);
+        String text = SharedConstants.filterAllowedCharacters(textToWrite);
+        int usedUpSpace = text.length();
+        if (availableSpace < usedUpSpace) {
+            text = text.substring(0, availableSpace);
+            usedUpSpace = availableSpace;
         }
 
-        String s1 = (new StringBuilder(this.text)).replace(i, j, s).toString();
-        if (this.validator.test(s1)) {
-            this.text = s1;
-            this.clampCursorPosition(i + l);
+        String newText = (new StringBuilder(this.text)).replace(selectionFrom, selectionTo, text).toString();
+        if (this.validator.test(newText)) {
+            this.text = newText;
+            this.clampCursorPosition(selectionFrom + usedUpSpace);
             this.setSelectionPos(this.cursorPosition);
             this.onTextChanged();
         }
     }
 
     protected void onTextChanged() {
-        if (this.guiResponder != null) {
-            this.guiResponder.accept(this.text);
-        }
-
-        this.nextNarration = Util.milliTime() + 500L;
+        if (this.onTextChanged != null) this.onTextChanged.accept(this.text);
     }
 
-    private void delete(int p_212950_1_) {
+    private void delete(int chars) {
         if (Screen.hasControlDown()) {
-            this.deleteWords(p_212950_1_);
+            this.deleteWords(chars);
         } else {
-            this.deleteFromCursor(p_212950_1_);
+            this.deleteFromCursor(chars);
         }
 
     }
@@ -208,19 +188,19 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener, 
      * Deletes the given number of characters from the current cursor's position, unless there is currently a selection,
      * in which case the selection is deleted instead.
      */
-    public void deleteFromCursor(int num) {
+    public void deleteFromCursor(int count) {
         if (!this.text.isEmpty()) {
             if (this.selectionEnd != this.cursorPosition) {
                 this.writeText("");
             } else {
-                int i = this.func_238516_r_(num);
-                int j = Math.min(i, this.cursorPosition);
-                int k = Math.max(i, this.cursorPosition);
-                if (j != k) {
-                    String s = (new StringBuilder(this.text)).delete(j, k).toString();
+                int i = this.nThCharFromCursor(count);
+                int min = Math.min(i, this.cursorPosition);
+                int max = Math.max(i, this.cursorPosition);
+                if (min != max) {
+                    String s = (new StringBuilder(this.text)).delete(min, max).toString();
                     if (this.validator.test(s)) {
                         this.text = s;
-                        this.setCursorPosition(j);
+                        this.setCursorPosition(min);
                     }
                 }
             }
@@ -277,12 +257,12 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener, 
     /**
      * Moves the text cursor by a specified number of characters and clears the selection
      */
-    public void moveCursorBy(int num) {
-        this.setCursorPosition(this.func_238516_r_(num));
+    public void moveCursorBy(int chars) {
+        this.setCursorPosition(this.nThCharFromCursor(chars));
     }
 
-    private int func_238516_r_(int p_238516_1_) {
-        return Util.func_240980_a_(this.text, this.cursorPosition, p_238516_1_);
+    private int nThCharFromCursor(int n) {
+        return Util.func_240980_a_(this.text, this.cursorPosition, n);
     }
 
     /**
@@ -293,6 +273,7 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener, 
         if (!this.isShiftDown) {
             this.setSelectionPos(this.cursorPosition);
         }
+        cursorCounter = 0;
 
         this.onTextChanged();
     }
@@ -315,7 +296,19 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener, 
         this.setCursorPosition(this.text.length());
     }
 
+    public void addKeyCodeListener(int keyCode, Runnable action) {
+        keyCodeConsumers.add(i -> {
+            if(i == keyCode) {
+                action.run();
+                return true;
+            } else return false;
+        });
+    }
+
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        for(Function<Integer, Boolean> consumer : keyCodeConsumers) {
+            if(consumer.apply(keyCode)) return true;
+        }
         if (!this.canWrite()) {
             return false;
         } else {
@@ -342,7 +335,7 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener, 
                 return true;
             } else {
                 switch(keyCode) {
-                    case 259:
+                    case KeyCodes.Del:
                         if (this.isEnabled) {
                             this.isShiftDown = false;
                             this.delete(-1);
@@ -357,7 +350,7 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener, 
                     case 267:
                     default:
                         return false;
-                    case 261:
+                    case KeyCodes.Return:
                         if (this.isEnabled) {
                             this.isShiftDown = false;
                             this.delete(1);
@@ -365,7 +358,7 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener, 
                         }
 
                         return true;
-                    case 262:
+                    case KeyCodes.Right:
                         if (Screen.hasControlDown()) {
                             this.setCursorPosition(this.getNthWordFromCursor(1));
                         } else {
@@ -373,7 +366,7 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener, 
                         }
 
                         return true;
-                    case 263:
+                    case KeyCodes.Left:
                         if (Screen.hasControlDown()) {
                             this.setCursorPosition(this.getNthWordFromCursor(-1));
                         } else {
@@ -414,12 +407,10 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener, 
         if (!this.getVisible()) {
             return false;
         } else {
-            boolean flag = mouseX >= (double)this.x && mouseX < (double)(this.x + this.width) && mouseY >= (double)this.y && mouseY < (double)(this.y + this.height);
-            if (this.canLoseFocus) {
-                this.setFocused2(flag);
-            }
+            boolean wasClickedInsideBounds = mouseX >= (double)this.x && mouseX < (double)(this.x + this.width) && mouseY >= (double)this.y && mouseY < (double)(this.y + this.height);
+            this.setFocused(wasClickedInsideBounds);
 
-            if (this.isFocused() && flag && button == 0) {
+            if (this.isFocused() && wasClickedInsideBounds && button == 0) {
                 int i = MathHelper.floor(mouseX) - this.x;
                 if (this.enableBackgroundDrawing) {
                     i -= 4;
@@ -434,72 +425,63 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener, 
         }
     }
 
-    /**
-     * Sets focus to this gui element
-     */
-    public void setFocused2(boolean isFocusedIn) {
-        super.setFocused(isFocusedIn);
-    }
-
     public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         matrixStack.push();
         matrixStack.translate(0, 0, zOffset);
 
         if (this.getVisible()) {
             if (this.getEnableBackgroundDrawing()) {
-                int i = this.isFocused() ? -1 : -6250336;
-                fill(matrixStack, this.x - 1, this.y - 1, this.x + this.width + 1, this.y + this.height + 1, i);
-                fill(matrixStack, this.x, this.y, this.x + this.width, this.y + this.height, -16777216);
+                fill(matrixStack, this.x - 1, this.y - 1, this.x + this.width + 1, this.y + this.height + 1, this.isFocused() ? 0xffffffff : 0xffa0a0a0);
+                fill(matrixStack, this.x, this.y, this.x + this.width, this.y + this.height, 0xff000000);
             }
             if (hintBackgroundOnHover && isHovered) {
                 fill(matrixStack, this.x, this.y, this.x + this.width, this.y + this.height, backgroundHoverColor);
             }
 
             int color = this.isEnabled ? this.enabledColor : this.disabledColor;
-            int j = this.cursorPosition - this.lineScrollOffset;
-            int k = this.selectionEnd - this.lineScrollOffset;
-            String s = this.fontRenderer.func_238412_a_(this.text.substring(this.lineScrollOffset), this.getAdjustedWidth());
-            boolean flag = j >= 0 && j <= s.length();
-            boolean flag1 = this.isFocused() && this.cursorCounter / 6 % 2 == 0 && flag;
-            int l = this.enableBackgroundDrawing ? this.x + 4 : this.x;
+            int charsBeforeCursor = this.cursorPosition - this.lineScrollOffset;
+            int charsBeforeSelectionEnd = this.selectionEnd - this.lineScrollOffset;
+            String trimmedText = this.fontRenderer.func_238412_a_(this.text.substring(this.lineScrollOffset), this.getAdjustedWidth());
+            boolean isCursorInsideText = charsBeforeCursor >= 0 && charsBeforeCursor <= trimmedText.length();
+            boolean shouldRenderCursorBar = this.isFocused() && this.cursorCounter / 6 % 2 == 0 && isCursorInsideText;
+            int textStartX = this.enableBackgroundDrawing ? this.x + 4 : this.x;
             int textY = y + (height - fontRenderer.FONT_HEIGHT) / 2;
-            int j1 = l;
-            if (k > s.length()) {
-                k = s.length();
+            int currentXOffset = textStartX;
+            if (charsBeforeSelectionEnd > trimmedText.length()) {
+                charsBeforeSelectionEnd = trimmedText.length();
             }
 
-            if (!s.isEmpty()) {
-                String s1 = flag ? s.substring(0, j) : s;
-                j1 = drawString(matrixStack, this.textFormatter.apply(s1, this.lineScrollOffset), l, textY, color);
+            if (!trimmedText.isEmpty()) {
+                String textBeforeCursor = isCursorInsideText ? trimmedText.substring(0, charsBeforeCursor) : trimmedText;
+                currentXOffset = drawString(matrixStack, this.textFormatter.apply(textBeforeCursor, this.lineScrollOffset), textStartX, textY, color);
             }
 
-            boolean flag2 = this.cursorPosition < this.text.length() || this.text.length() >= this.getMaxStringLength();
-            int k1 = j1;
-            if (!flag) {
-                k1 = j > 0 ? l + this.width : l;
-            } else if (flag2) {
-                k1 = j1 - 1;
-                --j1;
+            boolean isCursorBeforeEndOrTextTooLong = this.cursorPosition < this.text.length() || this.text.length() >= this.getMaxStringLength();
+            int k1 = currentXOffset;
+            if (!isCursorInsideText) {
+                k1 = charsBeforeCursor > 0 ? textStartX + this.width : textStartX;
+            } else if (isCursorBeforeEndOrTextTooLong) {
+                k1 = --currentXOffset;
             }
 
-            if (!s.isEmpty() && flag && j < s.length()) {
-                drawString(matrixStack, this.textFormatter.apply(s.substring(j), this.cursorPosition), j1, textY, color);
+            if (!trimmedText.isEmpty() && isCursorInsideText && charsBeforeCursor < trimmedText.length()) {
+                drawString(matrixStack, this.textFormatter.apply(trimmedText.substring(charsBeforeCursor), this.cursorPosition), currentXOffset, textY, color);
             }
 
-            if (!flag2 && this.suggestion != null) {
-                drawString(matrixStack, this.suggestion, k1 - 1, textY, -8355712);
+            if (!isCursorBeforeEndOrTextTooLong && this.suggestion != null) {
+                drawString(matrixStack, this.suggestion, k1 - 1, textY, 0xff808080);
             }
 
-            if (flag1) {
-                if (flag2) {
-                    AbstractGui.fill(matrixStack, k1, textY - 1, k1 + 1, textY + 1 + 9, -3092272);
+            if (shouldRenderCursorBar) {
+                if (isCursorBeforeEndOrTextTooLong) {
+                    AbstractGui.fill(matrixStack, k1, textY - 1, k1 + 1, textY + 1 + 9, 0xffd0d0d0);
                 } else {
                     drawString(matrixStack, "_", k1, textY, color);
                 }
             }
 
-            if (k != j) {
-                int l1 = l + this.fontRenderer.getStringWidth(s.substring(0, k));
+            if (charsBeforeSelectionEnd != charsBeforeCursor) {
+                int l1 = textStartX + this.fontRenderer.getStringWidth(trimmedText.substring(0, charsBeforeSelectionEnd));
                 this.drawSelectionBox(k1, textY - 1, l1 - 1, textY + 1 + 9);
             }
 
@@ -517,7 +499,7 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener, 
     private int drawString(MatrixStack matrixStack, IReorderingProcessor processor, int x, int y, int color){
         return shouldDropShadow
             ? this.fontRenderer.func_238407_a_(matrixStack, processor, x, y, color)
-            : this.fontRenderer.func_238422_b_(matrixStack, processor, x, y, color);
+            : this.fontRenderer.func_238422_b_(matrixStack, processor, x, y, color) + 1;
     }
 
     /**
@@ -617,7 +599,7 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener, 
     }
 
     public boolean changeFocus(boolean focus) {
-        return this.visible && this.isEnabled && super.changeFocus(focus);
+        return this.isEnabled & super.changeFocus(focus);
     }
 
     public boolean isMouseOver(double mouseX, double mouseY) {
@@ -677,13 +659,6 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener, 
             this.lineScrollOffset = MathHelper.clamp(this.lineScrollOffset, 0, i);
         }
 
-    }
-
-    /**
-     * Sets whether this text box loses focus when something other than it is clicked.
-     */
-    public void setCanLoseFocus(boolean canLoseFocusIn) {
-        this.canLoseFocus = canLoseFocusIn;
     }
 
     /**

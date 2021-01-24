@@ -4,6 +4,7 @@ import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
+import gollorum.signpost.minecraft.gui.Colors;
 import gollorum.signpost.minecraft.gui.LangKeys;
 import gollorum.signpost.minecraft.gui.WaystoneGui;
 import gollorum.signpost.utils.WaystoneData;
@@ -69,7 +70,7 @@ public class Waystone extends Block {
     private static void discover(PlayerEntity player, WaystoneData data) {
         assert Signpost.getServerType().isServer;
         if(WaystoneLibrary.getInstance().addDiscovered(new PlayerHandle(player.getUniqueID()), data.handle))
-            player.sendMessage(new TranslationTextComponent(LangKeys.discovered, data.name), Util.DUMMY_UUID);
+            player.sendMessage(new TranslationTextComponent(LangKeys.discovered, Colors.wrap(data.name, Colors.highlight)), Util.DUMMY_UUID);
     }
 
     public static void discover(PlayerHandle player, WaystoneData data) {
@@ -77,7 +78,7 @@ public class Waystone extends Block {
         if(WaystoneLibrary.getInstance().addDiscovered(player, data.handle)) {
             PlayerEntity playerEntity = Signpost.getServerInstance().getPlayerList().getPlayerByUUID(player.id);
             if(playerEntity != null)
-                playerEntity.sendMessage(new TranslationTextComponent(LangKeys.discovered, data.name), Util.DUMMY_UUID);
+                playerEntity.sendMessage(new TranslationTextComponent(LangKeys.discovered, Colors.wrap(data.name, Colors.highlight)), Util.DUMMY_UUID);
         }
     }
 

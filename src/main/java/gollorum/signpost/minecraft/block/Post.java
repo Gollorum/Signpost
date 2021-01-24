@@ -272,15 +272,16 @@ public class Post extends Block implements IWaterLoggable {
         TileEntity tileEntity = world.getTileEntity(pos);
         if(!(tileEntity instanceof PostTile)) return ActionResultType.SUCCESS;
         PostTile tile = (PostTile) tileEntity;
+        return onActivate(tile, world, player, hand);
+    }
+
+    public static ActionResultType onActivate(PostTile tile, World world, PlayerEntity player, Hand hand) {
         switch (tile
             .trace(player)
-            .map(p -> p.part.interact(new InteractionInfo(
+            .map(p -> p.part.blockPart.interact(new InteractionInfo(
                 InteractionInfo.Type.RightClick,
-                player,
-                hand,
-                tile,
-                p,
-                data -> tile.notifyMutation(p.id, data, p.part.getMeta().identifier),
+                player, hand, tile, p,
+                data -> tile.notifyMutation(p.id, data, p.part.blockPart.getMeta().identifier),
                 world.isRemote
             )))
             .orElse(Interactable.InteractionResult.Ignored)

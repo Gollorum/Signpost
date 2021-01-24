@@ -8,12 +8,14 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
+import gollorum.signpost.minecraft.gui.Colors;
 import gollorum.signpost.minecraft.gui.LangKeys;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.command.arguments.EntityArgument;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Util;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 
 public class DiscoverWaystone {
@@ -44,9 +46,9 @@ public class DiscoverWaystone {
 
 	private static int execute(String name, PlayerEntity player) throws CommandSyntaxException {
 		WaystoneHandle handle = WaystoneLibrary.getInstance().getHandleByName(name)
-			.orElseThrow(() -> new SimpleCommandExceptionType(new TranslationTextComponent(LangKeys.waystoneNotFound, name)).create());
+			.orElseThrow(() -> new SimpleCommandExceptionType(new TranslationTextComponent(LangKeys.waystoneNotFound, Colors.wrap(name, Colors.highlight))).create());
 		if(WaystoneLibrary.getInstance().addDiscovered(new PlayerHandle(player), handle)) {
-			player.sendMessage(new TranslationTextComponent(LangKeys.discovered, name), Util.DUMMY_UUID);
+			player.sendMessage(new TranslationTextComponent(LangKeys.discovered, Colors.wrap(name, Colors.highlight)), Util.DUMMY_UUID);
 		}
 		return Command.SINGLE_SUCCESS;
 	}

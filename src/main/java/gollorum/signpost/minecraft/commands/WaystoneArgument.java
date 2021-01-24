@@ -9,10 +9,12 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneLibrary;
+import gollorum.signpost.minecraft.gui.Colors;
 import gollorum.signpost.minecraft.gui.LangKeys;
 import net.minecraft.command.ISuggestionProvider;
 import net.minecraft.command.arguments.ArgumentSerializer;
 import net.minecraft.command.arguments.ArgumentTypes;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 
 import java.util.HashSet;
@@ -30,7 +32,7 @@ public class WaystoneArgument implements ArgumentType<String> {
 		String name = reader.readString();
 		if(WaystoneLibrary.hasInstance() && WaystoneLibrary.getInstance().getAllWaystoneNames().map(n -> n.contains(name)).orElse(true))
 			return name;
-		else throw new SimpleCommandExceptionType(new TranslationTextComponent(LangKeys.waystoneNotFound, name)).create();
+		else throw new SimpleCommandExceptionType(new TranslationTextComponent(LangKeys.waystoneNotFound, Colors.wrap(name, Colors.highlight))).create();
 	}
 
 	@Override

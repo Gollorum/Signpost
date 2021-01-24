@@ -39,7 +39,7 @@ public class ShortSignRenderer extends SignRenderer<SmallShortSign> {
 			.computeIfAbsent(sign.getMainTexture(), x -> new ConcurrentHashMap<>())
 			.computeIfAbsent(sign.getSecondaryTexture(),
 				x -> RenderingUtil.loadModel(
-					sign.isFlipped() ? PostModel.largeFlippedLocation : PostModel.largeLocation,
+					sign.isFlipped() ? PostModel.shortFlippedLocation : PostModel.shortLocation,
 					sign.getMainTexture(), sign.getSecondaryTexture()
 				)
 			);
@@ -51,7 +51,7 @@ public class ShortSignRenderer extends SignRenderer<SmallShortSign> {
 		return (sign.isFlipped() ? cachedFlippedOverlayModels : cachedOverlayModels)
 			.computeIfAbsent(texture,
 				x -> RenderingUtil.loadModel(
-					sign.isFlipped() ? PostModel.largeOverlayFlippedLocation : PostModel.largeOverlayLocation,
+					sign.isFlipped() ? PostModel.shortOverlayFlippedLocation : PostModel.shortOverlayLocation,
 					texture
 				));
 	}

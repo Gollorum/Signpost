@@ -20,12 +20,15 @@ public final class ImageInputBox extends InputBox implements Flippable {
         Rect.YAlignment backYAlignment,
         TextureResource texture,
         boolean shouldDropShadow,
-        double zOffset) {
-        super(fontRenderer,
+        double zOffset
+    ) {
+        super(
+            fontRenderer,
             inputFieldRect,
             shouldDropShadow,
             false,
-            zOffset);
+            zOffset
+        );
         this.texture = texture;
         setEnableBackgroundDrawing(false);
         setTextColor(Colors.black);

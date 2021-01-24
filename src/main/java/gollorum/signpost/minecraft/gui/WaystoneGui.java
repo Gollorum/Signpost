@@ -100,7 +100,7 @@ public class WaystoneGui extends Screen {
         inputBox.setTextColor(Colors.valid);
         inputBox.setDisabledTextColour(Colors.validInactive);
         inputBox.setMaxStringLength(200);
-        inputBox.setResponder(name -> {
+        inputBox.setTextChangedCallback(name -> {
             if(isValid(name)){
                 inputBox.setTextColor(Colors.valid);
                 inputBox.setDisabledTextColour(Colors.validInactive);

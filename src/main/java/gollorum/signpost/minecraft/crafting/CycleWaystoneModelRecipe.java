@@ -4,6 +4,7 @@ import gollorum.signpost.minecraft.Config;
 import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.block.Waystone;
 import gollorum.signpost.minecraft.registry.ItemRegistry;
+import gollorum.signpost.minecraft.registry.RecipeRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.item.BlockItem;
@@ -65,16 +66,16 @@ public class CycleWaystoneModelRecipe extends SpecialRecipe {
 
 	@Override
 	public String getGroup() {
-		return ItemRegistry.ITEM_GROUP.getPath();
+		return Waystone.REGISTRY_NAME;
 	}
 
 	@Override
 	public ItemStack getIcon() {
-		return ItemRegistry.ITEM_GROUP.getIcon();
+		return new ItemStack(Waystone.INSTANCE);
 	}
 
 	@Override
 	public IRecipeSerializer<?> getSerializer() {
-		return null;
+		return RecipeRegistry.CycleWaystoneModelSerializer.get();
 	}
 }

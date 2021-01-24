@@ -30,4 +30,6 @@ public class InteractionInfo {
         this.mutationDistributor = mutationDistributor;
         this.isRemote = isRemote;
     }
+
+    public PostTile.TilePartInfo getTilePartInfo() { return new PostTile.TilePartInfo(tile, traceResult.id); }
 }

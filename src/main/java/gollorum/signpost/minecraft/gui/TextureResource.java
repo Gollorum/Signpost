@@ -34,6 +34,10 @@ public class TextureResource {
         new TextureSize(256, 256), new TextureSize(60, 23)
     );
 
+    public static final TextureResource edit = new TextureResource(
+        "textures/gui/edit.png", new TextureSize(15, 15), new TextureSize(15, 30)
+    );
+
     public final ResourceLocation location;
     public final TextureSize size;
     public final TextureSize fileSize;

@@ -6,6 +6,7 @@ import gollorum.signpost.minecraft.Config;
 import gollorum.signpost.minecraft.block.Post;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.LangKeys;
+import gollorum.signpost.minecraft.gui.RequestSignGui;
 import gollorum.signpost.minecraft.gui.SignGui;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.blockpartdata.Overlay;
@@ -41,7 +42,7 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
     protected ResourceLocation secondaryTexture;
     protected Optional<Overlay> overlay;
     protected Optional<WaystoneHandle> destination;
-    protected Post.ModelType modelType;
+    public Post.ModelType modelType;
     public Optional<WaystoneHandle> getDestination() { return destination; }
 
     protected TransformedBox transformedBounds;
@@ -126,49 +127,42 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
     public InteractionResult interact(InteractionInfo info) {
         if (!info.isRemote) {
             if(holdsAngleTool(info)) {
-                Vector3 diff = info.traceResult.ray.start.negated().add(0.5f, 0.5f, 0.5f).withY(0).normalized();
-                Vector3 rayDir = info.traceResult.ray.dir.withY(0).normalized();
-                Angle angleToPost = Angle.between(rayDir.x, rayDir.z, diff.x, diff.z).normalized();
-                setAngle(angle.add(Angle.fromDegrees(angleToPost.radians() < 0 ? 15 : -15)));
-                notifyAngleChanged(info);
-            } else if(!holdsEditTool(info) && Config.Server.enableTeleport.get())
-                tryTeleport((ServerPlayerEntity) info.player);
-        } else if(holdsEditTool(info)) {
-            SignGui.display(info.tile, modelType, this, new PostTile.TilePartInfo(info.tile, info.traceResult.id));
+                if(info.player.isSneaking()) {
+                    setFlip(!isFlipped());
+                    notifyFlipChanged(info);
+                } else {
+                    Vector3 diff = info.traceResult.ray.start.negated().add(0.5f, 0.5f, 0.5f).withY(0).normalized();
+                    Vector3 rayDir = info.traceResult.ray.dir.withY(0).normalized();
+                    Angle angleToPost = Angle.between(rayDir.x, rayDir.z, diff.x, diff.z).normalized();
+                    setAngle(angle.add(Angle.fromDegrees(angleToPost.radians() < 0 ? 15 : -15)));
+                    notifyAngleChanged(info);
+                }
+            } else tryTeleport((ServerPlayerEntity) info.player, info.getTilePartInfo());
         }
         return InteractionResult.Accepted;
     }
 
-    private void tryTeleport(ServerPlayerEntity player) {
-        if(destination.isPresent() && WaystoneLibrary.getInstance().contains(destination.get())) {
+    private void tryTeleport(ServerPlayerEntity player, PostTile.TilePartInfo tilePartInfo) {
+        if(Config.Server.enableTeleport.get() && destination.isPresent() && WaystoneLibrary.getInstance().contains(destination.get())) {
             WaystoneData data = WaystoneLibrary.getInstance().getData(destination.get());
-            if (WaystoneLibrary.getInstance()
-                .isDiscovered(new PlayerHandle(player), destination.get()) || !Config.Server.enforceDiscovery.get())
-                PacketHandler.send(
-                    PacketDistributor.PLAYER.with(() -> player),
-                    new Teleport.Request.Package(
-                        WaystoneLibrary.getInstance().getData(destination.get()).name,
-                        Teleport.getCost(player, Vector3.fromBlockPos(data.location.block.blockPos), data.location.spawn)
-                    )
-                );
-            else player.sendMessage(
-                new TranslationTextComponent(LangKeys.notDiscovered, data.name),
-                Util.DUMMY_UUID
+            boolean isDiscovered = WaystoneLibrary.getInstance()
+                .isDiscovered(new PlayerHandle(player), destination.get()) || !Config.Server.enforceDiscovery.get();
+            PacketHandler.send(
+                PacketDistributor.PLAYER.with(() -> player),
+                new Teleport.Request.Package(
+                    WaystoneLibrary.getInstance().getData(destination.get()).name,
+                    isDiscovered, Teleport.getCost(player, Vector3.fromBlockPos(data.location.block.blockPos), data.location.spawn),
+                    Optional.of(tilePartInfo)
+                )
             );
-        }
-        else {
-            player.sendMessage(new TranslationTextComponent(LangKeys.noTeleport), Util.DUMMY_UUID);
+        } else {
+            PacketHandler.send(PacketDistributor.PLAYER.with(() -> player), new RequestSignGui.Package(tilePartInfo));
         }
     }
 
     private boolean holdsAngleTool(InteractionInfo info) {
         ItemStack itemStack = info.player.getHeldItem(info.hand);
         return !itemStack.isEmpty() && PostTile.isAngleTool(itemStack.getItem());
-    }
-
-    private boolean holdsEditTool(InteractionInfo info) {
-        ItemStack itemStack = info.player.getHeldItem(info.hand);
-        return !itemStack.isEmpty() && PostTile.isEditTool(itemStack.getItem());
     }
 
     protected void notifyAngleChanged(InteractionInfo info) {

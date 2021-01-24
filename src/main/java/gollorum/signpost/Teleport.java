@@ -1,6 +1,9 @@
 package gollorum.signpost;
 
+import gollorum.signpost.blockpartdata.types.Sign;
 import gollorum.signpost.minecraft.Config;
+import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.gui.Colors;
 import gollorum.signpost.minecraft.gui.ConfirmTeleportGui;
 import gollorum.signpost.minecraft.gui.LangKeys;
 import gollorum.signpost.minecraft.utils.Inventory;
@@ -9,6 +12,7 @@ import gollorum.signpost.utils.TileEntityUtils;
 import gollorum.signpost.utils.WaystoneLocationData;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
+import gollorum.signpost.utils.serialization.OptionalSerializer;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.Item;
@@ -57,8 +61,13 @@ public class Teleport {
         });
     }
 
-    public static void requestOnClient(String waystoneName, ItemStack cost) {
-        ConfirmTeleportGui.display(waystoneName, cost);
+    public static void requestOnClient(
+        String waystoneName,
+        ItemStack cost,
+        boolean isDiscovered,
+        Optional<ConfirmTeleportGui.SignInfo> signInfo
+    ) {
+        ConfirmTeleportGui.display(waystoneName, cost, isDiscovered, signInfo);
     }
 
     public static ItemStack getCost(PlayerEntity player, Vector3 from, Vector3 to) {
@@ -81,12 +90,19 @@ public class Teleport {
         @Override
         public void encode(Package message, PacketBuffer buffer) {
             buffer.writeString(message.waystoneName);
+            buffer.writeBoolean(message.isDiscovered);
             buffer.writeItemStack(message.cost);
+            new OptionalSerializer<>(PostTile.TilePartInfo.SERIALIZER).writeTo(message.tilePartInfo, buffer);
         }
 
         @Override
         public Package decode(PacketBuffer buffer) {
-            return new Package(buffer.readString(32767), buffer.readItemStack());
+            return new Package(
+                buffer.readString(32767),
+                buffer.readBoolean(),
+                buffer.readItemStack(),
+                new OptionalSerializer<>(PostTile.TilePartInfo.SERIALIZER).readFrom(buffer)
+            );
         }
 
         @Override
@@ -107,12 +123,29 @@ public class Teleport {
                             p -> Teleport.toWaystone(waystoneData, p)
                         );
                     } else player.sendMessage(
-                        new TranslationTextComponent(LangKeys.waystoneNotFound, message.waystoneName),
+                        new TranslationTextComponent(LangKeys.waystoneNotFound, Colors.wrap(message.waystoneName, Colors.highlight)),
                         Util.DUMMY_UUID
                     );
                 } else {
-                    if(Config.Client.enableConfirmationScreen.get()) requestOnClient(message.waystoneName, message.cost);
-                    else PacketHandler.sendToServer(new Teleport.Request.Package(message.waystoneName, message.cost));
+                    if(Config.Client.enableConfirmationScreen.get()) requestOnClient(
+                        message.waystoneName,
+                        message.cost,
+                        message.isDiscovered,
+                        message.tilePartInfo.flatMap(info -> TileEntityUtils.findTileEntity(
+                            info.dimensionKey,
+                            true,
+                            info.pos,
+                            PostTile.class
+                        ).flatMap(tile -> tile.getPart(info.identifier)
+                            .flatMap(part -> part.blockPart instanceof Sign
+                                ? Optional.of(new ConfirmTeleportGui.SignInfo(tile, (Sign) part.blockPart, info, part.offset)) : Optional.empty()
+                            ))));
+                    else PacketHandler.sendToServer(new Teleport.Request.Package(
+                        message.waystoneName,
+                        message.isDiscovered,
+                        message.cost,
+                        message.tilePartInfo
+                    ));
                 }
             });
             context.setPacketHandled(true);
@@ -120,10 +153,18 @@ public class Teleport {
 
         public static final class Package {
             public final String waystoneName;
+            public final boolean isDiscovered;
             public final ItemStack cost;
-            public Package(String waystoneName, ItemStack cost) {
+            public final Optional<PostTile.TilePartInfo> tilePartInfo;
+            public Package(
+                String waystoneName,
+                boolean isDiscovered, ItemStack cost,
+                Optional<PostTile.TilePartInfo> tilePartInfo
+            ) {
                 this.waystoneName = waystoneName;
+                this.isDiscovered = isDiscovered;
                 this.cost = cost;
+                this.tilePartInfo = tilePartInfo;
             }
         }
 

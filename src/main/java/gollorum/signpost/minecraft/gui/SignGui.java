@@ -2,7 +2,6 @@ package gollorum.signpost.minecraft.gui;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.matrix.MatrixStack;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneHandle;
@@ -23,8 +22,6 @@ import gollorum.signpost.utils.Delay;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.IRenderable;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.gui.widget.button.ImageButton;
@@ -41,7 +38,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class SignGui extends Screen {
+public class SignGui extends ExtendedScreen {
 
     private enum SignType {
         Wide, Short, Large
@@ -54,7 +51,7 @@ public class SignGui extends Screen {
 
     private static final int typeSelectionButtonsY = 15;
     private static final float typeSelectionButtonsScale = 0.66f;
-    private static final float overlayButtonsScale = 0.4f;
+    private static final float overlayButtonsScale = 0.5f;
 
     private static final int centralAreaHeight = 110;
     private static final int centerGap = 15;
@@ -99,7 +96,6 @@ public class SignGui extends Screen {
     private final Optional<PostTile.TilePartInfo> oldTilePartInfo;
 
     private final List<Flippable> widgetsToFlip = new ArrayList<>();
-    private final List<IRenderable> additionallyRenderables = new ArrayList<>();
 
     private InputBox wideSignInputBox;
     private InputBox shortSignInputBox;
@@ -123,7 +119,7 @@ public class SignGui extends Screen {
     private AngleSelectionEntry waystoneRotationEntry;
 
     private Optional<Overlay> selectedOverlay;
-    private Set<ModelButton> overlaySelectionButtons = new HashSet<>();
+    private List<ModelButton> overlaySelectionButtons = new ArrayList<>();
 
     private boolean hasBeenInitialized = false;
 
@@ -131,8 +127,8 @@ public class SignGui extends Screen {
         Minecraft.getInstance().displayGuiScreen(new SignGui(tile, modelType, localHitPos, itemToDropOnBreak));
     }
 
-    public static void display(PostTile tile, Post.ModelType modelType, Sign oldSign, PostTile.TilePartInfo oldTilePartInfo) {
-        Minecraft.getInstance().displayGuiScreen(new SignGui(tile, modelType, oldSign, oldTilePartInfo));
+    public static void display(PostTile tile, Sign oldSign, Vector3 oldOffset, PostTile.TilePartInfo oldTilePartInfo) {
+        Minecraft.getInstance().displayGuiScreen(new SignGui(tile, oldSign, oldOffset, oldTilePartInfo));
     }
 
     public SignGui(PostTile tile, Post.ModelType modelType, Vector3 localHitPos, ItemStack itemToDropOnBreak) {
@@ -146,11 +142,11 @@ public class SignGui extends Screen {
         itemStack = new ItemStack(tile.getBlockState().getBlock().asItem());
     }
 
-    public SignGui(PostTile tile, Post.ModelType modelType, Sign oldSign, PostTile.TilePartInfo oldTilePartInfo) {
+    public SignGui(PostTile tile, Sign oldSign, Vector3 oldOffset, PostTile.TilePartInfo oldTilePartInfo) {
         super(new TranslationTextComponent(LangKeys.signGuiTitle));
         this.tile = tile;
-        this.modelType = modelType;
-        this.localHitPos = Vector3.ZERO;
+        this.modelType = oldSign.modelType;
+        this.localHitPos = oldOffset;
         this.itemToDropOnBreak = oldSign.itemToDropOnBreak;
         this.oldSign = Optional.of(oldSign);
         this.oldTilePartInfo = Optional.of(oldTilePartInfo);
@@ -213,7 +209,7 @@ public class SignGui extends Screen {
             }
         }
 
-        additionallyRenderables.clear();
+        additionalRenderables.clear();
         selectedType = null;
 
         int signTypeSelectionTopY = typeSelectionButtonsY;
@@ -339,7 +335,7 @@ public class SignGui extends Screen {
             waystoneNameTexture,
             true, 100);
         waystoneInputBox.setMaxStringLength(200);
-        waystoneInputBox.setResponder(this::onWaystoneSelected);
+        waystoneInputBox.setTextChangedCallback(this::onWaystoneSelected);
         addButton(waystoneInputBox);
 
         int rotationLabelStringWidth = font.getStringWidth(I18n.format(LangKeys.rotationLabel));
@@ -380,7 +376,7 @@ public class SignGui extends Screen {
             Rect.XAlignment.Right, Rect.YAlignment.Center,
             font
         );
-        additionallyRenderables.add(rotationLabel);
+        additionalRenderables.add(rotationLabel);
 
         Rect modelRect = new Rect(
             new Point(getCenterX() + centerGap + 3 * inputSignsScale, getCenterY() - centralAreaHeight / 2),
@@ -392,7 +388,7 @@ public class SignGui extends Screen {
             0, -0.5f,
             new ItemStack(Post.OAK.block.asItem())
         );
-        additionallyRenderables.add(postRenderer);
+        additionalRenderables.add(postRenderer);
         Point modelRectTop = modelRect.at(Rect.XAlignment.Center, Rect.YAlignment.Top);
 
         Rect wideInputRect = new Rect(
@@ -444,6 +440,12 @@ public class SignGui extends Screen {
         largeInputRect = largeInputRect.withPoint(p -> p.withY(Math.round(modelRectTop.y + (13 - 1 * 2.5f) * inputSignsScale)));
         InputBox fourthLarge = new InputBox(font, largeInputRect, false, false, 100);
         fourthLarge.setTextColor(Colors.black);
+        firstLarge.addKeyCodeListener(KeyCodes.Down, () -> setFocusedDefault(secondLarge));
+        secondLarge.addKeyCodeListener(KeyCodes.Up, () -> setFocusedDefault(firstLarge));
+        secondLarge.addKeyCodeListener(KeyCodes.Down, () -> setFocusedDefault(thirdLarge));
+        thirdLarge.addKeyCodeListener(KeyCodes.Up, () -> setFocusedDefault(secondLarge));
+        thirdLarge.addKeyCodeListener(KeyCodes.Down, () -> setFocusedDefault(fourthLarge));
+        fourthLarge.addKeyCodeListener(KeyCodes.Up, () -> setFocusedDefault(thirdLarge));
         widgetsToFlip.add(new FlippableAtPivot(firstLarge, modelRectTop.x));
         widgetsToFlip.add(new FlippableAtPivot(secondLarge, modelRectTop.x));
         widgetsToFlip.add(new FlippableAtPivot(thirdLarge, modelRectTop.x));
@@ -485,7 +487,7 @@ public class SignGui extends Screen {
                 PostModel.wideOverlayLocation, PostModel.wideOverlayFlippedLocation, overlay.textureFor(SmallWideSign.class)
             ).withTintIndex(overlay.tintIndex);
             overlaySelectionButtons.add(new ModelButton(
-                TextureResource.signTypeSelection, rotationInputBoxRect.max().add(-i * 30, 15),
+                TextureResource.signTypeSelection, new Point(getCenterX() - centerGap - i * 37, rotationInputBoxRect.max().y + 15),
                 overlayButtonsScale, Rect.XAlignment.Right, Rect.YAlignment.Top,
                 rect -> rect.withPoint(p -> p.add(Math.round(-4 / typeSelectionButtonsScale * overlayButtonsScale), 0)).scaleCenter(0.75f),
                 () -> switchOverlay(Optional.of(overlay)),
@@ -497,7 +499,7 @@ public class SignGui extends Screen {
         }
         if(i > 0)
             overlaySelectionButtons.add(new ModelButton(
-                TextureResource.signTypeSelection, rotationInputBoxRect.max().add(-i * 30, 15),
+                TextureResource.signTypeSelection, new Point(getCenterX() - centerGap - i * 37, rotationInputBoxRect.max().y + 15),
                 overlayButtonsScale, Rect.XAlignment.Right, Rect.YAlignment.Top,
                 rect -> rect.withPoint(p -> p.add(Math.round(-4 / typeSelectionButtonsScale * overlayButtonsScale), 0)).scaleCenter(0.75f),
                 () -> switchOverlay(Optional.empty()),
@@ -540,7 +542,7 @@ public class SignGui extends Screen {
             WaystoneLibrary.getInstance().updateEventDispatcher.addListener(waystoneUpdateListener);
         }
 
-        additionallyRenderables.add(new TextDisplay(
+        additionalRenderables.add(new TextDisplay(
             I18n.format(LangKeys.newSignHint),
             new Point(getCenterX(), (int) ((doneButton.y + doneButton.getHeightRealms() + height) / 2f)),
             Rect.XAlignment.Center, Rect.YAlignment.Center,
@@ -607,15 +609,6 @@ public class SignGui extends Screen {
         );
     }
 
-    @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        renderBackground(matrixStack);
-        for(IRenderable toRender : additionallyRenderables) {
-            toRender.render(matrixStack, mouseX, mouseY, partialTicks);
-        }
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
-    }
-
     private int getCenterX() { return this.width / 2; }
     private int getCenterY() { return this.height / 2; }
 
@@ -635,7 +628,6 @@ public class SignGui extends Screen {
             default:
                 throw new RuntimeException("Sign type " + type + " is not supported");
         }
-        switchOverlay(selectedOverlay);
     }
 
     private void switchToWide(){
@@ -646,8 +638,9 @@ public class SignGui extends Screen {
         switchSignInputBoxTo(wideSignInputBox);
 
         addTypeDependentChild(wideSignInputBox);
-        additionallyRenderables.add(wideSignRenderer);
+        additionalRenderables.add(wideSignRenderer);
         currentSignRenderer = wideSignRenderer;
+        switchOverlay(selectedOverlay);
     }
 
     private void switchToShort(){
@@ -658,8 +651,9 @@ public class SignGui extends Screen {
         switchSignInputBoxTo(shortSignInputBox);
 
         addTypeDependentChild(shortSignInputBox);
-        additionallyRenderables.add(shortSignRenderer);
+        additionalRenderables.add(shortSignRenderer);
         currentSignRenderer = shortSignRenderer;
+        switchOverlay(selectedOverlay);
     }
 
     private void switchToLarge(){
@@ -670,15 +664,16 @@ public class SignGui extends Screen {
         switchSignInputBoxTo(largeSignInputBoxes.get(0));
 
         addTypeDependentChildren(largeSignInputBoxes);
-        additionallyRenderables.add(largeSignRenderer);
+        additionalRenderables.add(largeSignRenderer);
         currentSignRenderer = largeSignRenderer;
+        switchOverlay(selectedOverlay);
     }
 
     private GuiModelRenderer currentOverlay;
 
     private void switchOverlay(Optional<Overlay> overlay) {
         if(currentOverlay != null) {
-            additionallyRenderables.remove(currentOverlay);
+            additionalRenderables.remove(currentOverlay);
             widgetsToFlip.remove(currentOverlay);
         }
         this.selectedOverlay = overlay;
@@ -710,13 +705,13 @@ public class SignGui extends Screen {
                 );
                 break;
         }
-        additionallyRenderables.add(currentOverlay);
+        additionalRenderables.add(currentOverlay);
         if(currentSignRenderer.isFlipped()) currentOverlay.flip();
         widgetsToFlip.add(currentOverlay);
     }
 
     private void hideStuffOccludedByWaystoneDropdown() {
-        additionallyRenderables.remove(rotationLabel);
+        additionalRenderables.remove(rotationLabel);
         removeButton(rotationInputField);
         angleDropDown.hideList();
         removeButton(angleDropDown);
@@ -724,7 +719,7 @@ public class SignGui extends Screen {
     }
 
     private void showStuffOccludedByWaystoneDropdown() {
-        additionallyRenderables.add(rotationLabel);
+        additionalRenderables.add(rotationLabel);
         addButton(rotationInputField);
         addButton(angleDropDown);
         addButtons(overlaySelectionButtons);
@@ -738,7 +733,7 @@ public class SignGui extends Screen {
 
     private void clearTypeDependentChildren(){
         removeButtons(selectionDependentWidgets);
-        additionallyRenderables.remove(currentSignRenderer);
+        additionalRenderables.remove(currentSignRenderer);
         selectionDependentWidgets.clear();
     }
 
@@ -750,21 +745,6 @@ public class SignGui extends Screen {
     private void addTypeDependentChild(Widget widget){
         selectionDependentWidgets.add(widget);
         addButton(widget);
-    }
-
-    private void addButtons(Collection<? extends Widget> widgets) {
-        this.buttons.addAll(widgets);
-        this.children.addAll(widgets);
-    }
-
-    private void removeButtons(Collection<? extends Widget> widgets) {
-        this.buttons.removeAll(widgets);
-        this.children.removeAll(widgets);
-    }
-
-    private void removeButton(Widget widget) {
-        this.buttons.remove(widget);
-        this.children.remove(widget);
     }
 
     @Override
@@ -812,7 +792,9 @@ public class SignGui extends Screen {
                 if(oldSign.isPresent()) {
                     PacketHandler.sendToServer(new PostTile.PartMutatedEvent.Packet(
                         tilePartInfo, data,
-                        SmallWideSign.METADATA.identifier));
+                        SmallWideSign.METADATA.identifier,
+                        new Vector3(0, localHitPos.y > 0.5f ? 0.75f : 0.25f, 0)
+                    ));
                 } else {
                     PacketHandler.sendToServer(new PostTile.PartAddedEvent.Packet(
                         tilePartInfo, data,
@@ -839,7 +821,9 @@ public class SignGui extends Screen {
                 if(oldSign.isPresent()) {
                     PacketHandler.sendToServer(new PostTile.PartMutatedEvent.Packet(
                         tilePartInfo, data,
-                        SmallShortSign.METADATA.identifier));
+                        SmallShortSign.METADATA.identifier,
+                        new Vector3(0, localHitPos.y > 0.5f ? 0.75f : 0.25f, 0)
+                    ));
                 } else {
                     PacketHandler.sendToServer(new PostTile.PartAddedEvent.Packet(
                         tilePartInfo, data,
@@ -865,12 +849,15 @@ public class SignGui extends Screen {
                         colorInputBox.getCurrentColor(),
                         destinationId,
                         itemToDropOnBreak,
-                        modelType)
+                        modelType
+                    )
                 );
                 if(oldSign.isPresent()) {
                     PacketHandler.sendToServer(new PostTile.PartMutatedEvent.Packet(
                         tilePartInfo, data,
-                        LargeSign.METADATA.identifier));
+                        LargeSign.METADATA.identifier,
+                        new Vector3(0, localHitPos.y >= 0.5f ? 0.501f : 0.499f, 0)
+                    ));
                 } else {
                     PacketHandler.sendToServer(new PostTile.PartAddedEvent.Packet(
                         tilePartInfo, data,

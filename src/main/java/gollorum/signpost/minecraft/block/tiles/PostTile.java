@@ -7,19 +7,18 @@ import gollorum.signpost.blockpartdata.types.*;
 import gollorum.signpost.minecraft.Wrench;
 import gollorum.signpost.minecraft.utils.SideUtils;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.utils.BlockPart;
 import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.utils.BlockPartMetadata;
 import gollorum.signpost.utils.TileEntityUtils;
 import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.BlockPosSerializer;
-import gollorum.signpost.utils.serialization.BufferSerializable;
+import gollorum.signpost.utils.serialization.CompoundSerializable;
+import gollorum.signpost.utils.serialization.OptionalSerializer;
 import io.netty.util.internal.ConcurrentSet;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.AxeItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
@@ -61,11 +60,11 @@ public class PostTile extends TileEntity {
     }
 
     public static class TraceResult {
-        public final BlockPart part;
+        public final BlockPartInstance part;
         public final UUID id;
         public final Vector3 hitPos;
         public final Ray ray;
-        public TraceResult(BlockPart part, UUID id, Vector3 hitPos, Ray ray) {
+        public TraceResult(BlockPartInstance part, UUID id, Vector3 hitPos, Ray ray) {
             this.part = part;
             this.id = id;
             this.hitPos = hitPos;
@@ -143,7 +142,7 @@ public class PostTile extends TileEntity {
                 closestTrace = Optional.of(new Tuple<>(t.getKey(), now.get()));
         }
 
-        return closestTrace.map(trace -> new TraceResult(parts.get(trace.getA()).blockPart, trace.getA(), ray.atDistance(trace.getB()), ray));
+        return closestTrace.map(trace -> new TraceResult(parts.get(trace.getA()), trace.getA(), ray.atDistance(trace.getB()), ray));
     }
 
     @Override
@@ -235,10 +234,6 @@ public class PostTile extends TileEntity {
         return item instanceof Wrench;
     }
 
-    public static boolean isEditTool(Item item) {
-        return item instanceof AxeItem;
-    }
-
     public Optional<BlockPartInstance> getPart(UUID id) {
         return parts.containsKey(id) ? Optional.of(parts.get(id)) : Optional.empty();
     }
@@ -262,7 +257,31 @@ public class PostTile extends TileEntity {
 
         public static final Serializer SERIALIZER = new Serializer();
 
-        public static final class Serializer implements BufferSerializable<TilePartInfo> {
+        public static final class Serializer implements CompoundSerializable<TilePartInfo> {
+
+            @Override
+            public void writeTo(TilePartInfo tilePartInfo, CompoundNBT compound, String keyPrefix) {
+                CompoundNBT inner = new CompoundNBT();
+                inner.putString("Dimension", tilePartInfo.dimensionKey.toString());
+                BlockPosSerializer.INSTANCE.writeTo(tilePartInfo.pos, compound, "Pos");
+                inner.putUniqueId("Id", tilePartInfo.identifier);
+                compound.put(keyPrefix + "TilePartInfo", inner);
+            }
+
+            @Override
+            public boolean isContainedIn(CompoundNBT compound, String keyPrefix) {
+                return compound.contains(keyPrefix + "TilePartInfo");
+            }
+
+            @Override
+            public TilePartInfo read(CompoundNBT compound, String keyPrefix) {
+                CompoundNBT inner = compound.getCompound(keyPrefix + "TilePartInfo");
+                return new TilePartInfo(
+                    new ResourceLocation(inner.getString("Dimension")),
+                    BlockPosSerializer.INSTANCE.read(compound, "Pos"),
+                    inner.getUniqueId("Id")
+                );
+            }
 
             @Override
             public void writeTo(TilePartInfo tilePartInfo, PacketBuffer buffer) {
@@ -452,12 +471,23 @@ public class PostTile extends TileEntity {
             public final TilePartInfo info;
             public final CompoundNBT data;
             public final String partMetaIdentifier;
+            public final Optional<Vector3> offset;
 
             public Packet(TilePartInfo info, CompoundNBT data, String partMetaIdentifier) {
+                this(info, data, partMetaIdentifier, Optional.empty());
+            }
+
+            public Packet(TilePartInfo info, CompoundNBT data, String partMetaIdentifier, Vector3 offset) {
+                this(info, data, partMetaIdentifier, Optional.of(offset));
+            }
+
+            public Packet(TilePartInfo info, CompoundNBT data, String partMetaIdentifier, Optional<Vector3> offset) {
                 this.info = info;
                 this.data = data;
                 this.partMetaIdentifier = partMetaIdentifier;
+                this.offset = offset;
             }
+
         }
         @Override
         public Class<Packet> getMessageClass() { return Packet.class; }
@@ -467,6 +497,7 @@ public class PostTile extends TileEntity {
             TilePartInfo.SERIALIZER.writeTo(message.info, buffer);
             buffer.writeString(message.data.toString());
             buffer.writeString(message.partMetaIdentifier);
+            new OptionalSerializer<>(Vector3.SERIALIZER).writeTo(message.offset, buffer);
         }
 
         @Override
@@ -475,7 +506,9 @@ public class PostTile extends TileEntity {
                 return new Packet(
                     TilePartInfo.SERIALIZER.readFrom(buffer),
                     JsonToNBT.getTagFromJson(buffer.readString(32767)),
-                    buffer.readString(32767));
+                    buffer.readString(32767),
+                    new OptionalSerializer<>(Vector3.SERIALIZER).readFrom(buffer)
+                );
             } catch (CommandSyntaxException e) {
                 throw new RuntimeException(e);
             }
@@ -494,17 +527,21 @@ public class PostTile extends TileEntity {
                     if(part.isPresent()) {
                         if(part.get().blockPart.getMeta().identifier.equals(message.partMetaIdentifier)) {
                             part.get().blockPart.readMutationUpdate(message.data, tile);
+                            if(message.offset.isPresent()) {
+                                tile.parts.remove(message.info.identifier);
+                                tile.parts.put(message.info.identifier, new BlockPartInstance(part.get().blockPart, message.offset.get()));
+                            }
                         } else {
                             Optional<BlockPartMetadata<?>> meta = partsMetadata.stream().filter(m -> m.identifier.equals(message.partMetaIdentifier)).findFirst();
                             if (meta.isPresent()) {
                                 tile.parts.remove(message.info.identifier);
                                 tile.parts.put(message.info.identifier,
-                                    new BlockPartInstance(meta.get().read(message.data), part.get().offset));
-                                tile.markDirty();
+                                    new BlockPartInstance(meta.get().read(message.data), message.offset.orElse(part.get().offset)));
                             } else {
                                 Signpost.LOGGER.warn("Could not find meta for part " + message.partMetaIdentifier);
                             }
                         }
+                        tile.markDirty();
                         if(context.get().getDirection().getReceptionSide().isServer())
                             tile.sendToTracing(() -> message);
                     }
