@@ -5,7 +5,7 @@ import gollorum.signpost.minecraft.Config;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.Colors;
 import gollorum.signpost.minecraft.gui.ConfirmTeleportGui;
-import gollorum.signpost.minecraft.gui.LangKeys;
+import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.minecraft.utils.Inventory;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.TileEntityUtils;

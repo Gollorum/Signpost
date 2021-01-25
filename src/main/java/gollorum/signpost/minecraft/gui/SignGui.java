@@ -12,6 +12,7 @@ import gollorum.signpost.minecraft.data.PostModel;
 import gollorum.signpost.minecraft.events.WaystoneRenamedEvent;
 import gollorum.signpost.minecraft.events.WaystoneUpdatedEvent;
 import gollorum.signpost.minecraft.rendering.FlippableModel;
+import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.blockpartdata.types.LargeSign;
@@ -72,9 +73,11 @@ public class SignGui extends ExtendedScreen {
         switch(event.getType()) {
             case Added:
                 waystoneDropdown.addEntry(event.name);
+                onWaystoneCountChanged();
                 break;
             case Removed:
                 waystoneDropdown.removeEntry(event.name);
+                onWaystoneCountChanged();
                 break;
             case Renamed:
                 waystoneDropdown.removeEntry(((WaystoneRenamedEvent)event).oldName);
@@ -122,6 +125,8 @@ public class SignGui extends ExtendedScreen {
     private List<ModelButton> overlaySelectionButtons = new ArrayList<>();
 
     private boolean hasBeenInitialized = false;
+
+    private TextDisplay noWaystonesInfo;
 
     public static void display(PostTile tile, Post.ModelType modelType, Vector3 localHitPos, ItemStack itemToDropOnBreak) {
         Minecraft.getInstance().displayGuiScreen(new SignGui(tile, modelType, localHitPos, itemToDropOnBreak));
@@ -320,7 +325,6 @@ public class SignGui extends ExtendedScreen {
             },
             false);
         waystoneDropdown.setEntries(waystoneDropdownEntry);
-        addButton(waystoneDropdown);
         Rect waystoneInputRect = new Rect(
             new Point(waystoneDropdown.x - 10, waystoneDropdown.y + waystoneDropdown.getHeightRealms() / 2),
             new TextureSize((int)((waystoneNameTexture.size.width - 4) * waystoneBoxScale), (int)((waystoneNameTexture.size.height - 4) * waystoneBoxScale)),
@@ -336,7 +340,12 @@ public class SignGui extends ExtendedScreen {
             true, 100);
         waystoneInputBox.setMaxStringLength(200);
         waystoneInputBox.setTextChangedCallback(this::onWaystoneSelected);
-        addButton(waystoneInputBox);
+        noWaystonesInfo = new TextDisplay(
+            I18n.format(LangKeys.noWaystones),
+            waystoneDropdown.rect.max(),
+            Rect.XAlignment.Right, Rect.YAlignment.Bottom,
+            font
+        );
 
         int rotationLabelStringWidth = font.getStringWidth(I18n.format(LangKeys.rotationLabel));
         int rotationLabelWidth = Math.min(rotationLabelStringWidth, waystoneInputBox.getWidth() / 2);
@@ -530,7 +539,9 @@ public class SignGui extends ExtendedScreen {
         rotationInputField.setSelectedAngle(Angle.fromDegrees(Math.round(currentAngle.degrees())));
 
 
-        if(!hasBeenInitialized) {
+        if(hasBeenInitialized) {
+            onWaystoneCountChanged();
+        } else {
             WaystoneLibrary.getInstance().requestAllWaystoneNames(n -> {
                 waystoneDropdown.setEntries(n.values());
                 oldSign.flatMap(s -> (Optional<WaystoneHandle>) s.getDestination()).ifPresent(id -> {
@@ -538,6 +549,7 @@ public class SignGui extends ExtendedScreen {
                     if (name != null && !name.equals(""))
                         waystoneInputBox.setText(name);
                 });
+                onWaystoneCountChanged();
             });
             WaystoneLibrary.getInstance().updateEventDispatcher.addListener(waystoneUpdateListener);
         }
@@ -550,6 +562,15 @@ public class SignGui extends ExtendedScreen {
         ));
 
         hasBeenInitialized = true;
+    }
+
+    private void onWaystoneCountChanged() {
+        if(waystoneDropdown.getAllEntries().isEmpty()){
+            additionalRenderables.add(noWaystonesInfo);
+        } else {
+            addButton(waystoneDropdown);
+            addButton(waystoneInputBox);
+        }
     }
 
     private void flip() {

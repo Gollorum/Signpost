@@ -1,10 +1,9 @@
 package gollorum.signpost.minecraft.commands;
 
 import com.mojang.brigadier.Command;
-import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import gollorum.signpost.WaystoneLibrary;
-import gollorum.signpost.minecraft.gui.LangKeys;
+import gollorum.signpost.minecraft.utils.LangKeys;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.util.text.StringTextComponent;

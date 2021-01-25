@@ -17,18 +17,18 @@
   "gui.signpost.confirm_teleport_gui_title": "Confirm teleport",
   "gui.signpost.confirm_teleport": "Do you want to travel to %s?",
   "gui.signpost.cost": "Cost:",
-  "gui.signpost.new_sign_hint": "Use a sign item on the post to attach it. This will open this screen.",
+  "gui.signpost.new_sign_hint": "To attach another sign, right click the post with a normal sign item.",
   "gui.signpost.remove_sign": "Remove sign",
   "gui.signpost.rotation_label": "Rotation:",
   "gui.signpost.rotation_waystone": "%d (point at waystone)",
   "gui.signpost.rotation_player": "%d (face the player)",
 
-  "signpost.discovered": "You can now travel to %s using sign posts",
+  "signpost.discovered": "You can now travel to %s using sign posts.",
   "signpost.notDiscovered": "You have not yet discovered %s",
-  "signpost.noTeleport": "This sign has no destination",
-  "signpost.waystoneNotFound": "The waystone %s does not exist",
-  "signpost.noWaystones": "There are no waystones yet",
-  "signpost.tooExpensive": "You don't have the requirement items (%d %s)",
+  "signpost.noTeleport": "This sign has no destination.",
+  "signpost.waystoneNotFound": "The waystone %s does not exist.",
+  "signpost.noWaystones": "There are no waystones yet.",
+  "signpost.tooExpensive": "You don't have the requirement items (%d %s).",
 
   "itemGroup.signpost": "Sign post"
 }

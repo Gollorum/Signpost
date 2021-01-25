@@ -1,7 +1,6 @@
 package gollorum.signpost.minecraft.utils;
 
 import gollorum.signpost.Signpost;
-import gollorum.signpost.minecraft.gui.LangKeys;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;

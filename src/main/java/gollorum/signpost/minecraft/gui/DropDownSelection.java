@@ -23,6 +23,8 @@ import java.util.stream.Collectors;
 
 public class DropDownSelection<EntryType> extends ImageButton {
 
+    public final Rect rect;
+
     private static final TextureResource texture = TextureResource.expandContract;
     public static final TextureSize size = new TextureSize(11, 11);
     private final Consumer<List> onShow;
@@ -79,6 +81,7 @@ public class DropDownSelection<EntryType> extends ImageButton {
         boolean shouldHighlightSelected
     ){
         super(rect.point.x, rect.point.y, rect.width, rect.height, 0, 0, texture.size.height, texture.location, texture.fileSize.width, texture.fileSize.height, b -> ((DropDownSelection)b).toggle());
+        this.rect = rect;
         this.fontRenderer = fontRenderer;
         this.shouldHighlightSelected = shouldHighlightSelected;
         list = new List(Minecraft.getInstance(), new Point(rect.point.x + size.width, rect.point.y + size.height + yOffset), width, height);
