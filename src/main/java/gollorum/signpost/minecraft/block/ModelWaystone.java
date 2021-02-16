@@ -1,9 +1,7 @@
 package gollorum.signpost.minecraft.block;
 
-import com.google.common.collect.Lists;
 import gollorum.signpost.minecraft.Config;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
-import gollorum.signpost.minecraft.gui.WaystoneGui;
 import gollorum.signpost.utils.WorldLocation;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -12,6 +10,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.material.MaterialColor;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.BlockItemUseContext;
@@ -23,13 +22,9 @@ import net.minecraft.state.DirectionProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Hand;
-import net.minecraft.util.NonNullList;
+import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
@@ -40,7 +35,6 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 public class ModelWaystone extends Block implements IWaterLoggable  {
 
@@ -68,8 +62,9 @@ public class ModelWaystone extends Block implements IWaterLoggable  {
 		public int hashCode() { return name.hashCode(); }
 	}
 	public static final List<Variant> variants = new ArrayList<>();
+	public static final Variant generationMarker;
 	static {
-		variants.add(new Variant("simple0", VoxelShapes.create(0.25f, 0, 0.25f, 0.75f, 0.5f, 0.75f), 1));
+		variants.add(generationMarker = new Variant("simple0", VoxelShapes.create(0.25f, 0, 0.25f, 0.75f, 0.5f, 0.75f), 1));
 		variants.add(new Variant("simple1", VoxelShapes.create(0.25f, 0, 0.25f, 0.75f, 0.5f, 0.75f), 1));
 		variants.add(new Variant("simple2", VoxelShapes.create(0.3125f, 0, 0.3125f, 0.75f, 0.6875f, 0.6875f), 0));
 		variants.add(new Variant("detailed0", VoxelShapes.create(0.25f, 0, 0.25f, 0.75f, 0.5f, 0.75f), 2));
@@ -82,7 +77,7 @@ public class ModelWaystone extends Block implements IWaterLoggable  {
 	public final Variant variant;
 
 	private ModelWaystone(Variant variant) {
-		super(Properties.create(Material.ROCK, MaterialColor.STONE)
+		super(Properties.create(Material.PISTON, MaterialColor.STONE)
 			.hardnessAndResistance(1.5F, 6.0F)
 			.notSolid()
 			.setOpaque((x, y, z) -> false));
@@ -118,6 +113,24 @@ public class ModelWaystone extends Block implements IWaterLoggable  {
 	}
 
 	@Override
+	public BlockState rotate(BlockState state, Rotation rot) {
+		if(!state.hasProperty(Facing)) return state;
+		Direction dir = state.get(Facing);
+		switch (rot) {
+			case CLOCKWISE_90: return state.with(Facing, dir.rotateY());
+			case CLOCKWISE_180: return state.with(Facing, dir.rotateY().rotateY());
+			case COUNTERCLOCKWISE_90: return state.with(Facing, dir.rotateYCCW());
+			default: return state;
+		}
+	}
+
+	@Override
+	public BlockState mirror(BlockState state, Mirror mirrorIn) {
+		if(!state.hasProperty(Facing)) return state;
+		return state.with(Facing, state.get(Facing).getOpposite());
+	}
+
+	@Override
 	public boolean hasTileEntity(BlockState state) { return true; }
 
 	@Nullable
@@ -127,9 +140,10 @@ public class ModelWaystone extends Block implements IWaterLoggable  {
 	}
 
 	@Override
-	public void onBlockPlacedBy(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
-		super.onBlockPlacedBy(world, pos, state, placer, stack);
-		if(world.isRemote) WaystoneGui.display(new WorldLocation(pos, world), Optional.empty());
+	public void onBlockPlacedBy(World world, BlockPos pos, BlockState state, LivingEntity player, ItemStack stack) {
+		super.onBlockPlacedBy(world, pos, state, player, stack);
+		if(!world.isRemote && player instanceof ServerPlayerEntity)
+			Waystone.openGuiIfHasPermission((ServerPlayerEntity) player, new WorldLocation(pos, world));
 	}
 
 	@Override

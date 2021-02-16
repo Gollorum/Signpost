@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "signpost:block/village_waystone"
+    },
+    "facing=south": {
+      "model": "signpost:block/village_waystone"
+    },
+    "facing=west": {
+      "model": "signpost:block/village_waystone"
+    },
+    "facing=east": {
+      "model": "signpost:block/village_waystone"
+    }
+  }
+}

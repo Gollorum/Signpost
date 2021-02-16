@@ -1,9 +1,7 @@
 package gollorum.signpost.minecraft.data;
 
 import gollorum.signpost.Signpost;
-import gollorum.signpost.minecraft.block.ModelWaystone;
-import gollorum.signpost.minecraft.block.Post;
-import gollorum.signpost.minecraft.block.Waystone;
+import gollorum.signpost.minecraft.block.*;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.util.Direction;
 import net.minecraftforge.client.model.generators.*;
@@ -35,6 +33,19 @@ public class PostBlockState extends BlockStateProvider {
         }
         getVariantBuilder(Waystone.INSTANCE)
             .partialState().setModels(new ConfiguredModel(waystoneModel.waystoneModel));
+
+        VariantBlockStateBuilder villageWaystoneBuilder = getVariantBuilder(VillageWaystone.INSTANCE);
+        villageWaystoneBuilder.forAllStates(state -> villageWaystoneBuilder.partialState()
+            .modelForState()
+            .modelFile(waystoneModel.villageWaystoneModel)
+            .build());
+
+        VariantBlockStateBuilder villagePostBuilder = getVariantBuilder(VillagePost.INSTANCE);
+        villagePostBuilder.forAllStates(state -> villagePostBuilder.partialState()
+            .modelForState()
+            .modelFile(waystoneModel.villagePostModel)
+            .build());
+
         for(Map.Entry<ModelWaystone.Variant, ModelFile> entry : waystoneModel.variantModels.entrySet()) {
             VariantBlockStateBuilder builder = getVariantBuilder(entry.getKey().block);
             builder.forAllStatesExcept(

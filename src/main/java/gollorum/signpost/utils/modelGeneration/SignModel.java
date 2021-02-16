@@ -5,7 +5,6 @@ import com.mojang.blaze3d.vertex.IVertexBuilder;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.model.RenderMaterial;
-import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.inventory.container.PlayerContainer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.vector.Matrix3f;
@@ -17,7 +16,7 @@ import java.util.*;
 
 public class SignModel {
 
-	private final Map<ResourceLocation, List<Quad>> quads = new HashMap<>();
+	private final Map<RenderMaterial, List<Quad>> quads = new HashMap<>();
 
 	private static final float pixelToWorld = 1 / 16f;
 	public void addCube(Cube<ResourceLocation> cube) {
@@ -31,7 +30,7 @@ public class SignModel {
 					q.faceData.rotation
 				)).toArray(Quad.Vertex[]::new)
 			);
-			quads.computeIfAbsent(q.faceData.texture, k -> new ArrayList<>())
+			quads.computeIfAbsent(new RenderMaterial(PlayerContainer.LOCATION_BLOCKS_TEXTURE, q.faceData.texture), k -> new ArrayList<>())
 				.add(quad);
 		}
 	}
@@ -40,7 +39,7 @@ public class SignModel {
 		Matrix4f matrix4f = matrixEntry.getMatrix();
 		Matrix3f matrixNormal = matrixEntry.getNormal();
 
-		for(Map.Entry<ResourceLocation, List<Quad>> entry : quads.entrySet()) {
+		for(Map.Entry<RenderMaterial, List<Quad>> entry : quads.entrySet()) {
 			for(Quad quad : entry.getValue()) {
 				Vector3f normal = quad.normal.copy();
 				normal.transform(matrixNormal);
@@ -48,8 +47,7 @@ public class SignModel {
 				float normalY = normal.getY();
 				float normalZ = normal.getZ();
 
-				IVertexBuilder vertexBuilder = new RenderMaterial(PlayerContainer.LOCATION_BLOCKS_TEXTURE, entry.getKey())
-					.getBuffer(buffer, x -> renderType);
+				IVertexBuilder vertexBuilder = entry.getKey().getBuffer(buffer, x -> renderType);
 
 				for(Quad.Vertex vertex: quad.vertices) {
 					Vector4f pos = new Vector4f(vertex.pos.getX(), vertex.pos.getY(), vertex.pos.getZ(), 1.0F);
@@ -61,7 +59,7 @@ public class SignModel {
 						vertex.v,
 						packedOverlay,
 						packedLight,
-							normalX, normalY, normalZ
+						normalX, normalY, normalZ
 	                );
 				}
 			}
@@ -85,7 +83,6 @@ public class SignModel {
 
 			public Vertex(Vector3f pos, float u, float v, FaceRotation rotation) {
 				this.pos = pos;
-//				switch (FaceRotation.Zero) {
 				switch (rotation) {
 					case Clockwise90:
 						this.u = 1 - v;

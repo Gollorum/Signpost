@@ -3,10 +3,13 @@ package gollorum.signpost.minecraft.block;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneLibrary;
+import gollorum.signpost.minecraft.Config;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
 import gollorum.signpost.minecraft.gui.Colors;
+import gollorum.signpost.minecraft.gui.RequestWaystoneGui;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.minecraft.gui.WaystoneGui;
+import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.WaystoneData;
 import gollorum.signpost.utils.WorldLocation;
 import net.minecraft.block.Block;
@@ -15,6 +18,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.material.MaterialColor;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.LootContext;
@@ -30,6 +34,7 @@ import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -44,27 +49,35 @@ public class Waystone extends Block {
     public static final Waystone INSTANCE = new Waystone();
 
     private Waystone() {
-        super(Properties.create(Material.ROCK, MaterialColor.STONE)
+        super(Properties.create(Material.PISTON, MaterialColor.STONE)
             .hardnessAndResistance(1.5F, 6.0F));
     }
 
-    @Override
+	public static void openGuiIfHasPermission(ServerPlayerEntity player, WorldLocation worldLocation) {
+        assert Signpost.getServerType().isServer;
+        Optional<WaystoneData> data = WaystoneLibrary.getInstance()
+            .getHandleByLocation(worldLocation)
+            .map(WaystoneLibrary.getInstance()::getData);
+        Optional<PlayerHandle> owner = data.flatMap(d -> d.owner);
+        boolean wantsToOpenGui = player.isSneaking() || !data.isPresent();
+        boolean mayOpenGui = !owner.isPresent() || owner.get().equals(PlayerHandle.from(player)) || player.getCommandSource().hasPermissionLevel(
+            Config.Server.editLockedWaystoneCommandPermissionLevel.get());
+        if(wantsToOpenGui && mayOpenGui){
+            PacketHandler.send(PacketDistributor.PLAYER.with(() -> player), new RequestWaystoneGui.Package(worldLocation, data));
+        } else {
+            discover(player, data.get());
+        }
+	}
+
+	@Override
     public ActionResultType onBlockActivated(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
         onRightClick(world, pos, player);
         return ActionResultType.CONSUME;
     }
 
     public static void onRightClick(World world, BlockPos pos, PlayerEntity player) {
-        if(world.isRemote) {
-            WorldLocation location = new WorldLocation(pos, world);
-            WaystoneLibrary.getInstance().requestWaystoneDataAtLocation(location, data -> {
-                if(player.isSneaking() || !data.isPresent()){
-                    WaystoneGui.display(location, data);
-                } else {
-                    discover(player, data.get());
-                }
-            });
-        }
+        if(!world.isRemote && player instanceof ServerPlayerEntity)
+            openGuiIfHasPermission((ServerPlayerEntity) player, new WorldLocation(pos, world));
     }
 
     private static void discover(PlayerEntity player, WaystoneData data) {

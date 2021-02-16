@@ -30,8 +30,12 @@ public final class OptionalSerializer<T> implements CompoundSerializable<Optiona
 
     private final CompoundSerializable<T> valueSerializer;
 
-    public OptionalSerializer(CompoundSerializable<T> valueSerializer) {
+    private OptionalSerializer(CompoundSerializable<T> valueSerializer) {
         this.valueSerializer = valueSerializer;
+    }
+
+    public static <T> OptionalSerializer<T> from(CompoundSerializable<T> valueSerializer) {
+        return new OptionalSerializer<>(valueSerializer);
     }
 
     @Override

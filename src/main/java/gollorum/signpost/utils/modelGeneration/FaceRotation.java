@@ -10,6 +10,16 @@ public enum FaceRotation {
 
     public final ModelBuilder.FaceRotation asMinecraft;
 
+    public static FaceRotation inverseOf(FaceRotation rot) {
+        switch(rot) {
+            case Zero: return Zero;
+            case Clockwise90: return CounterClockwise90;
+            case CounterClockwise90: return Clockwise90;
+            case UpsideDown: return UpsideDown;
+            default: throw new RuntimeException("Face rotation " + rot + " is not supported");
+        }
+    }
+
     FaceRotation(ModelBuilder.FaceRotation asMinecraft) {
         this.asMinecraft = asMinecraft;
     }

@@ -1,8 +1,6 @@
 package gollorum.signpost.minecraft.registry;
 
-import gollorum.signpost.minecraft.block.ModelWaystone;
-import gollorum.signpost.minecraft.block.Post;
-import gollorum.signpost.minecraft.block.Waystone;
+import gollorum.signpost.minecraft.block.*;
 import net.minecraft.block.Block;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.RegistryObject;
@@ -19,6 +17,12 @@ public class BlockRegistry {
 
     private static final RegistryObject<Block> WaystoneBlock =
         Register.register(Waystone.REGISTRY_NAME, () -> Waystone.INSTANCE);
+
+    private static final RegistryObject<Block> GeneratedWaystoneBlock =
+        Register.register(VillageWaystone.REGISTRY_NAME, () -> VillageWaystone.INSTANCE);
+
+    private static final RegistryObject<Block> GeneratedPostBlock =
+        Register.register(VillagePost.REGISTRY_NAME, () -> VillagePost.INSTANCE);
 
     private static final Object[] ModelWaystoneBlocks =
         ModelWaystone.variants.stream()

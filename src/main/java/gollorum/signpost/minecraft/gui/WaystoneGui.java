@@ -13,6 +13,7 @@ import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
+import net.minecraft.client.gui.widget.button.LockIconButton;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 
@@ -21,7 +22,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public class WaystoneGui extends Screen {
+public class WaystoneGui extends ExtendedScreen {
 
     private final WorldLocation location;
     private final Optional<WaystoneData> oldData;
@@ -36,6 +37,7 @@ public class WaystoneGui extends Screen {
     private static final int buttonsYOffset = -inputBoxYOffset;
     private static final TextureSize buttonsSize = new TextureSize(98, 20);
 
+    private LockIconButton lockButton;
 
     private Button doneButton;
 
@@ -87,7 +89,14 @@ public class WaystoneGui extends Screen {
             Rect.XAlignment.Center, Rect.YAlignment.Center,
             texture,
             true, 0);
-        oldData.ifPresent(data -> inputBox.setText(data.name));
+        lockButton = new LockIconButton(inputBox.x + inputBox.getWidth() + 10, inputBox.y + inputBox.getHeight() / 2 - 10, b -> {
+            lockButton.setLocked(!lockButton.isLocked());
+        });
+        addButton(lockButton);
+        oldData.ifPresent(data -> {
+            inputBox.setText(data.name);
+            lockButton.setLocked(data.owner.isPresent());
+        });
         doneButton = new Button(
             getCenterX() - buttonsSize.width / 2,
             getCenterY() - buttonsSize.height / 2 + buttonsYOffset,
@@ -133,7 +142,8 @@ public class WaystoneGui extends Screen {
             WaystoneLibrary.getInstance().update(
                 inputBox.getText(),
                 new WaystoneLocationData(location, Vector3.fromVec3d(getMinecraft().player.getPositionVec())),
-                new PlayerHandle(getMinecraft().player)
+                new PlayerHandle(getMinecraft().player),
+                lockButton.isLocked()
             );
         WaystoneLibrary.getInstance().updateEventDispatcher.removeListener(waystoneUpdateListener);
     }

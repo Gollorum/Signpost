@@ -31,6 +31,11 @@ import java.util.*;
 
 public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
 
+    public static Angle pointingAt(BlockPos block, BlockPos target) {
+        BlockPos diff = target.subtract(block);
+        return Angle.between(diff.getX(), diff.getZ(), 1, 0);
+    }
+
     protected Angle angle;
     protected int color;
     protected boolean flip;
@@ -198,16 +203,16 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
 
         if(compound.contains("Flip")) setFlip(compound.getBoolean("Flip"));
         if(compound.contains("Color")) setColor(compound.getInt("Color"));
-        OptionalSerializer<WaystoneHandle> destinationSerializer = new OptionalSerializer<>(WaystoneHandle.SERIALIZER);
+        OptionalSerializer<WaystoneHandle> destinationSerializer = WaystoneHandle.SERIALIZER.optional();
         if(destinationSerializer.isContainedIn(compound, "Destination"))
             setDestination(destinationSerializer.read(compound, "Destination"));
         if(ItemStackSerializer.Instance.isContainedIn(compound, "ItemToDropOnBreak")) {
             setItemToDropOnBreak(ItemStackSerializer.Instance.read(compound, "ItemToDropOnBreak"));
         }
         if(compound.contains("ModelType"))
-            setModelType(Post.ModelType.valueOf(compound.getString("ModelType")));
+            Post.ModelType.getByName(compound.getString("ModelType"), true).ifPresent(this::setModelType);
 
-        OptionalSerializer<Overlay> overlaySerializer = new OptionalSerializer<>(Overlay.Serializer);
+        OptionalSerializer<Overlay> overlaySerializer = Overlay.Serializer.optional();
         if(overlaySerializer.isContainedIn(compound, "Overlay"))
             setOverlay(overlaySerializer.read(compound, "Overlay"));
         tile.markDirty();

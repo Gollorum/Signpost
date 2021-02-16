@@ -40,54 +40,15 @@ public class PostRecipe extends RecipeProvider {
     }
 
     private static Ingredient signFor(Post.ModelType type) {
-        switch (type) {
-            case Acacia:
-                return Ingredient.fromItems(Items.ACACIA_SIGN);
-            case Birch:
-                return Ingredient.fromItems(Items.BIRCH_SIGN);
-            case Iron:
-            case Stone:
-                return Ingredient.fromTag(ItemTags.SIGNS);
-            case Jungle:
-                return Ingredient.fromItems(Items.JUNGLE_SIGN);
-            case Oak:
-                return Ingredient.fromItems(Items.OAK_SIGN);
-            case DarkOak:
-                return Ingredient.fromItems(Items.DARK_OAK_SIGN);
-            case Spruce:
-                return Ingredient.fromItems(Items.SPRUCE_SIGN);
-            case Warped:
-                return Ingredient.fromItems(Items.WARPED_SIGN);
-            case Crimson:
-                return Ingredient.fromItems(Items.CRIMSON_SIGN);
-            default: throw new RuntimeException("Signpost type " + type + " is not supported");
-        }
+        if(Post.ModelType.signIngredientForType.containsKey(type))
+            return Post.ModelType.signIngredientForType.get(type).get();
+        else throw new RuntimeException("Signpost type " + type + " is not supported");
     }
 
     private static Ingredient baseFor(Post.ModelType type) {
-        switch (type) {
-            case Acacia:
-                return Ingredient.fromTag(ItemTags.ACACIA_LOGS);
-            case Birch:
-                return Ingredient.fromTag(ItemTags.BIRCH_LOGS);
-            case Iron:
-                return Ingredient.fromItems(Items.IRON_INGOT);
-            case Stone:
-                return Ingredient.fromItems(Items.STONE);
-            case Jungle:
-                return Ingredient.fromTag(ItemTags.JUNGLE_LOGS);
-            case Oak:
-                return Ingredient.fromTag(ItemTags.OAK_LOGS);
-            case DarkOak:
-                return Ingredient.fromTag(ItemTags.DARK_OAK_LOGS);
-            case Spruce:
-                return Ingredient.fromTag(ItemTags.SPRUCE_LOGS);
-            case Warped:
-                return Ingredient.fromTag(ItemTags.WARPED_STEMS);
-            case Crimson:
-                return Ingredient.fromTag(ItemTags.CRIMSON_STEMS);
-            default: throw new RuntimeException("Signpost type " + type + " is not supported");
-        }
+        if(Post.ModelType.baseIngredientForType.containsKey(type))
+            return Post.ModelType.baseIngredientForType.get(type).get();
+        else throw new RuntimeException("Signpost type " + type + " is not supported");
     }
 
 }

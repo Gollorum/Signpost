@@ -2,7 +2,10 @@ package gollorum.signpost.minecraft.storage;
 
 import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneLibrary;
+import gollorum.signpost.minecraft.block.VillageWaystone;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.INBT;
+import net.minecraft.nbt.ListNBT;
 import net.minecraft.world.storage.WorldSavedData;
 
 public class WaystoneLibraryStorage extends WorldSavedData {
@@ -13,12 +16,17 @@ public class WaystoneLibraryStorage extends WorldSavedData {
 
     @Override
     public CompoundNBT write(CompoundNBT compound) {
-        return WaystoneLibrary.getInstance().saveTo(compound);
+        WaystoneLibrary.getInstance().saveTo(compound);
+        compound.put("villageWaystones", VillageWaystone.serialize());
+        return compound;
     }
 
     @Override
     public void read(CompoundNBT compound) {
         WaystoneLibrary.getInstance().readFrom(compound);
+        INBT villageWaystones = compound.get("villageWaystones");
+        if(villageWaystones instanceof ListNBT)
+            VillageWaystone.deserialize((ListNBT) villageWaystones);
     }
 
 }

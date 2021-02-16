@@ -4,6 +4,7 @@ import gollorum.signpost.Signpost;
 import gollorum.signpost.Teleport;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.RequestSignGui;
+import gollorum.signpost.minecraft.gui.RequestWaystoneGui;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
@@ -28,6 +29,7 @@ public class PacketHandler {
         new PostTile.PartRemovedEvent(),
         new Teleport.Request(),
         new RequestSignGui(),
+        new RequestWaystoneGui()
     };
 
     private static final String PROTOCOL_VERSION = "1";

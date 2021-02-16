@@ -470,24 +470,24 @@ public class SignGui extends ExtendedScreen {
         largeSignInputBoxes = ImmutableList.of(firstLarge, secondLarge, thirdLarge, fourthLarge);
         allSignInputBoxes = ImmutableList.of(wideSignInputBox, shortSignInputBox, firstLarge, secondLarge, thirdLarge, fourthLarge);
 
-        colorInputBox = new ColorInputBox(font,
-            new Rect(
-                    new Point(modelRect.point.x + modelRect.width / 2, modelRect.point.y + modelRect.height + centerGap),
-                    80, 20,
-                    Rect.XAlignment.Center, Rect.YAlignment.Top
-            ), 0);
-        colorInputBox.setColorResponder(color -> allSignInputBoxes.forEach(b -> b.setTextColor(color)));
-        addButton(colorInputBox);
-
         Button switchDirectionButton = newImageButton(
             TextureResource.flipDirection,
             0,
-            new Point(colorInputBox.x + colorInputBox.getWidth() + 10, colorInputBox.y + colorInputBox.getHeight() / 2),
+            new Point(modelRect.point.x, modelRect.max().y + centerGap),
             1,
-            Rect.XAlignment.Left, Rect.YAlignment.Center,
+            Rect.XAlignment.Left, Rect.YAlignment.Top,
             this::flip
         );
         addButton(switchDirectionButton);
+
+        colorInputBox = new ColorInputBox(font,
+            new Rect(
+                new Point(switchDirectionButton.x + switchDirectionButton.getWidth() + 20, switchDirectionButton.y + switchDirectionButton.getHeightRealms() / 2),
+                80, 20,
+                Rect.XAlignment.Left, Rect.YAlignment.Center
+            ), 0);
+        colorInputBox.setColorResponder(color -> allSignInputBoxes.forEach(b -> b.setTextColor(color)));
+        addButton(colorInputBox);
 
         overlaySelectionButtons.clear();
         int i = 0;
@@ -894,8 +894,7 @@ public class SignGui extends ExtendedScreen {
         AtomicReference<Angle> angle = new AtomicReference<>(Angle.fromDegrees(404));
         WaystoneLibrary.getInstance().requestWaystoneLocationData(waystoneName, loc -> {
             if(loc.isPresent()) {
-                BlockPos diff = loc.get().block.blockPos.subtract(tile.getPos());
-                angle.set(Angle.between(diff.getX(), diff.getZ(), 1, 0));
+                angle.set(Sign.pointingAt(tile.getPos(), loc.get().block.blockPos));
             } else {
                 angleDropDown.removeEntry(waystoneRotationEntry);
                 waystoneRotationEntry = null;

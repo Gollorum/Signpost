@@ -275,6 +275,36 @@ public class SignModelFactory<TextureIdentifier> {
         return ret;
     }
 
+    public SignModelFactory<TextureIdentifier> flipZ() {
+        return this.map(cube -> {
+            Map<Direction, FaceData<TextureIdentifier>> sides = new HashMap<>();
+            for(Map.Entry<Direction, FaceData<TextureIdentifier>> face : cube.sides.entrySet()) {
+                Direction dir = face.getKey();
+                FaceData<TextureIdentifier> faceData = face.getValue();
+                TextureArea textureArea = faceData.textureArea.rotate(faceData.rotation, false);
+                float uFrom = textureArea.u.from;
+                float uTo = textureArea.u.to;
+                float vFrom = textureArea.v.from;
+                float vTo = textureArea.v.to;
+                if(dir.getAxis().equals(Direction.Axis.Z)) {
+                    uFrom = textureArea.u.to;
+                    uTo = textureArea.u.from;
+                    dir = dir.getOpposite();
+                }
+                textureArea = new TextureArea(
+                    new TextureSegment(uFrom, uTo, false),
+                    new TextureSegment(vFrom, vTo, false)
+                ).rotate(FaceRotation.inverseOf(faceData.rotation), false);
+                sides.put(dir, new FaceData<>(textureArea, faceData.rotation, faceData.texture));
+            }
+            return new Cube<>(
+                cube.from.withZ(-cube.to.z),
+                cube.to.withZ(-cube.from.z),
+                sides
+            );
+        });
+    }
+
     public <Result> Result build(Result builder, BiConsumer<Result, Cube<TextureIdentifier>> mkCube) {
         for(Cube<TextureIdentifier> cube: cubes) {
             mkCube.accept(builder, cube);

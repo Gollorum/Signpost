@@ -1,6 +1,8 @@
 package gollorum.signpost;
 
 import gollorum.signpost.minecraft.Config;
+import gollorum.signpost.minecraft.block.VillagePost;
+import gollorum.signpost.minecraft.block.VillageWaystone;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.data.DataGeneration;
 import gollorum.signpost.minecraft.registry.BlockRegistry;
@@ -10,6 +12,7 @@ import gollorum.signpost.minecraft.registry.TileEntityRegistry;
 import gollorum.signpost.minecraft.rendering.PostRenderer;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.ServerType;
+import gollorum.signpost.worldgen.Villages;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
@@ -68,6 +71,7 @@ public class Signpost {
         TileEntityRegistry.register(modBus);
         DataGeneration.register(modBus);
 
+        Villages.instance.registerWaystones();
     }
 
     private static class ModBusEvents {
@@ -92,6 +96,8 @@ public class Signpost {
         public void serverAboutToStart(FMLServerAboutToStartEvent e) {
             serverInstance = e.getServer();
             WaystoneLibrary.initialize();
+            VillagePost.reset();
+            VillageWaystone.reset();
         }
 
         @SubscribeEvent

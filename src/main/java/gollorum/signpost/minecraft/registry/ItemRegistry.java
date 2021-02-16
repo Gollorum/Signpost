@@ -1,9 +1,7 @@
 package gollorum.signpost.minecraft.registry;
 
 import gollorum.signpost.minecraft.Wrench;
-import gollorum.signpost.minecraft.block.ModelWaystone;
-import gollorum.signpost.minecraft.block.Post;
-import gollorum.signpost.minecraft.block.Waystone;
+import gollorum.signpost.minecraft.block.*;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
@@ -33,6 +31,14 @@ public class ItemRegistry {
     private static final RegistryObject<Item> WAYSTONE_ITEM =
         REGISTER.register(Waystone.REGISTRY_NAME,
             () -> new BlockItem(Waystone.INSTANCE, new Item.Properties().group(ITEM_GROUP)));
+
+    private static final RegistryObject<Item> GENERATED_WAYSTONE_ITEM =
+        REGISTER.register(VillageWaystone.REGISTRY_NAME,
+            () -> new BlockItem(VillageWaystone.INSTANCE, new Item.Properties()));
+
+    private static final RegistryObject<Item> GENERATED_POST_ITEM =
+        REGISTER.register(VillagePost.REGISTRY_NAME,
+            () -> new BlockItem(VillagePost.INSTANCE, new Item.Properties()));
 
     private static final List<RegistryObject<Item>> ModelWaystoneItems =
         ModelWaystone.variants.stream()

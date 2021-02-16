@@ -92,7 +92,7 @@ public class Teleport {
             buffer.writeString(message.waystoneName);
             buffer.writeBoolean(message.isDiscovered);
             buffer.writeItemStack(message.cost);
-            new OptionalSerializer<>(PostTile.TilePartInfo.SERIALIZER).writeTo(message.tilePartInfo, buffer);
+            PostTile.TilePartInfo.SERIALIZER.optional().writeTo(message.tilePartInfo, buffer);
         }
 
         @Override
@@ -101,7 +101,7 @@ public class Teleport {
                 buffer.readString(32767),
                 buffer.readBoolean(),
                 buffer.readItemStack(),
-                new OptionalSerializer<>(PostTile.TilePartInfo.SERIALIZER).readFrom(buffer)
+                PostTile.TilePartInfo.SERIALIZER.optional().readFrom(buffer)
             );
         }
 

@@ -48,7 +48,8 @@ public class RenderingUtil {
 
     public static IBakedModel loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation) {
         final ResourceLocation textLoc = trim(textureLocation);
-        return ModelLoader.instance().getUnbakedModel(modelLocation).bakeModel(ModelLoader.instance(),
+        return ModelLoader.instance().getUnbakedModel(modelLocation).bakeModel(
+            ModelLoader.instance(),
             m -> Minecraft.getInstance().getAtlasSpriteGetter(m.getAtlasLocation()).apply(textLoc),
             new SimpleModelTransform(TransformationMatrix.identity()),
             modelLocation
@@ -108,8 +109,7 @@ public class RenderingUtil {
                 checkSides,
                 random,
                 rand,
-                combinedOverlay//,
-//                tileEntity.getModelData()
+                combinedOverlay
             );
         });
         matrix.pop();

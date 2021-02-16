@@ -23,11 +23,13 @@ import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.loot.LootContext;
 import net.minecraft.loot.LootParameters;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.state.properties.BlockStateProperties;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
@@ -41,75 +43,124 @@ import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
+import net.minecraftforge.common.util.Lazy;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
-public class Post extends Block implements IWaterLoggable {
+public class  Post extends Block implements IWaterLoggable {
 
-    public static enum ModelType implements IStringSerializable {
-        Acacia(new ResourceLocation("acacia_log"),
+    public static class ModelType implements IStringSerializable {
+
+        public static final Map<ModelType, Lazy<Ingredient>> signIngredientForType = new HashMap<>();
+        public static final Map<ModelType, Lazy<Ingredient>> baseIngredientForType = new HashMap<>();
+
+        private static final Map<String, ModelType> allTypes = new HashMap<>();
+
+        public static void register(ModelType modelType, String name) { allTypes.put(name, modelType); }
+        public static Optional<ModelType> getByName(String name, boolean logErrorIfNotPresent) {
+            if (allTypes.containsKey(name)) return Optional.of(allTypes.get(name));
+            else {
+                if(logErrorIfNotPresent) Signpost.LOGGER.error("Tried to get invalid model type " + name);
+                return Optional.empty();
+            }
+        }
+
+        public static final ModelType Acacia = new ModelType("acacia",
+            new ResourceLocation("acacia_log"),
             new ResourceLocation("stripped_acacia_log"),
             new ResourceLocation("acacia_log")
-        ),
-        Birch(new ResourceLocation("birch_log"),
+        );
+        public static final ModelType Birch = new ModelType("birch",
+            new ResourceLocation("birch_log"),
             new ResourceLocation("stripped_birch_log"),
             new ResourceLocation("birch_log")
-        ),
-        Iron(new ResourceLocation("iron_block"),
+        );
+        public static final ModelType Iron = new ModelType("iron",
+            new ResourceLocation("iron_block"),
             new ResourceLocation(Signpost.MOD_ID, "iron"),
             new ResourceLocation(Signpost.MOD_ID, "iron_dark")
-        ),
-        Jungle(new ResourceLocation("jungle_log"),
+        );
+        public static final ModelType Jungle = new ModelType("jungle",
+            new ResourceLocation("jungle_log"),
             new ResourceLocation("stripped_jungle_log"),
             new ResourceLocation("jungle_log")
-        ),
-        Oak(new ResourceLocation("oak_log"),
+        );
+        public static final ModelType Oak = new ModelType("oak",
+            new ResourceLocation("oak_log"),
             new ResourceLocation("stripped_oak_log"),
             new ResourceLocation("oak_log")
-        ),
-        DarkOak(new ResourceLocation("dark_oak_log"),
+        );
+        public static final ModelType DarkOak = new ModelType("darkoak",
+            new ResourceLocation("dark_oak_log"),
             new ResourceLocation("stripped_dark_oak_log"),
             new ResourceLocation("dark_oak_log")
-        ),
-        Spruce(new ResourceLocation("spruce_log"),
+        );
+        public static final ModelType Spruce = new ModelType("spruce",
+            new ResourceLocation("spruce_log"),
             new ResourceLocation("stripped_spruce_log"),
             new ResourceLocation("spruce_log")
-        ),
-        Stone(new ResourceLocation("stone"),
+        );
+        public static final ModelType Stone = new ModelType("stone",
+            new ResourceLocation("stone"),
             new ResourceLocation("stone"),
             new ResourceLocation(Signpost.MOD_ID, "stone_dark")
-        ),
-        Warped(
+        );
+        public static final ModelType Warped = new ModelType("warped",
             new ResourceLocation("warped_stem"),
             new ResourceLocation("stripped_warped_stem"),
             new ResourceLocation("warped_stem")
-        ),
-        Crimson(
+        );
+        public static final ModelType Crimson = new ModelType("crimson",
             new ResourceLocation("crimson_stem"),
             new ResourceLocation("stripped_crimson_stem"),
             new ResourceLocation("crimson_stem")
         );
 
+        static {
+            signIngredientForType.put(Acacia, Lazy.of(() -> Ingredient.fromItems(Items.ACACIA_SIGN)));
+            signIngredientForType.put(Birch, Lazy.of(() -> Ingredient.fromItems(Items.BIRCH_SIGN)));
+            signIngredientForType.put(Iron, Lazy.of(() -> Ingredient.fromTag(ItemTags.SIGNS)));
+            signIngredientForType.put(Stone, Lazy.of(() -> Ingredient.fromTag(ItemTags.SIGNS)));
+            signIngredientForType.put(Jungle, Lazy.of(() -> Ingredient.fromItems(Items.JUNGLE_SIGN)));
+            signIngredientForType.put(Oak, Lazy.of(() -> Ingredient.fromItems(Items.OAK_SIGN)));
+            signIngredientForType.put(DarkOak, Lazy.of(() -> Ingredient.fromItems(Items.DARK_OAK_SIGN)));
+            signIngredientForType.put(Spruce, Lazy.of(() -> Ingredient.fromItems(Items.SPRUCE_SIGN)));
+            signIngredientForType.put(Warped, Lazy.of(() -> Ingredient.fromItems(Items.WARPED_SIGN)));
+            signIngredientForType.put(Crimson, Lazy.of(() -> Ingredient.fromItems(Items.CRIMSON_SIGN)));
+
+            baseIngredientForType.put(Acacia, Lazy.of(() -> Ingredient.fromTag(ItemTags.ACACIA_LOGS)));
+            baseIngredientForType.put(Birch, Lazy.of(() -> Ingredient.fromTag(ItemTags.BIRCH_LOGS)));
+            baseIngredientForType.put(Iron, Lazy.of(() -> Ingredient.fromItems(Items.IRON_INGOT)));
+            baseIngredientForType.put(Stone, Lazy.of(() -> Ingredient.fromItems(Items.STONE)));
+            baseIngredientForType.put(Jungle, Lazy.of(() -> Ingredient.fromTag(ItemTags.JUNGLE_LOGS)));
+            baseIngredientForType.put(Oak, Lazy.of(() -> Ingredient.fromTag(ItemTags.OAK_LOGS)));
+            baseIngredientForType.put(DarkOak, Lazy.of(() -> Ingredient.fromTag(ItemTags.DARK_OAK_LOGS)));
+            baseIngredientForType.put(Spruce, Lazy.of(() -> Ingredient.fromTag(ItemTags.SPRUCE_LOGS)));
+            baseIngredientForType.put(Warped, Lazy.of(() -> Ingredient.fromTag(ItemTags.WARPED_STEMS)));
+            baseIngredientForType.put(Crimson, Lazy.of(() -> Ingredient.fromTag(ItemTags.CRIMSON_STEMS)));
+        }
+
+        public final String name;
         public final ResourceLocation postTexture;
         public final ResourceLocation mainTexture;
         public final ResourceLocation secondaryTexture;
 
-        ModelType(ResourceLocation postTexture, ResourceLocation mainTexture, ResourceLocation secondaryTexture) {
+        ModelType(String name, ResourceLocation postTexture, ResourceLocation mainTexture, ResourceLocation secondaryTexture) {
+            this.name = name;
             this.postTexture = expand(postTexture);
             this.mainTexture = expand(mainTexture);
             this.secondaryTexture = expand(secondaryTexture);
         }
 
-        public ResourceLocation expand(ResourceLocation loc){
+        private static ResourceLocation expand(ResourceLocation loc){
             return new ResourceLocation(loc.getNamespace(), "block/"+loc.getPath());
         }
 
         @Override
         public String getString() {
-            return name().toLowerCase();
+            return name;
         }
 
         public static ModelType from(Item signItem) {
@@ -149,13 +200,10 @@ public class Post extends Block implements IWaterLoggable {
         public Variant(Properties properties, ModelType type, String registryName) {
             this.properties = properties;
             this.type = type;
-            this.block = newPost();
+            this.block = new Post(properties, type);
             this.registryName = REGISTRY_NAME + "_" + registryName;
         }
 
-        public Post newPost(){
-            return new Post(properties, type);
-        }
     }
 
     public static final String REGISTRY_NAME = "post";
@@ -174,6 +222,24 @@ public class Post extends Block implements IWaterLoggable {
     public static final Variant[] AllVariants = new Variant[]{OAK, BIRCH, SPRUCE, JUNGLE, DARK_OAK, ACACIA, STONE, IRON, WARPED, CRIMSON};
     public static final Block[] ALL = Arrays.stream(AllVariants).map(i -> i.block).toArray(Block[]::new);
 
+    public static final Map<Biome.Category, Variant> variantForBiome = new HashMap<>();
+
+    static {
+        variantForBiome.put(Biome.Category.TAIGA, SPRUCE);
+        variantForBiome.put(Biome.Category.JUNGLE, JUNGLE);
+        variantForBiome.put(Biome.Category.MESA, ACACIA);
+        variantForBiome.put(Biome.Category.SAVANNA, ACACIA);
+        variantForBiome.put(Biome.Category.ICY, SPRUCE);
+        variantForBiome.put(Biome.Category.THEEND, STONE);
+        variantForBiome.put(Biome.Category.BEACH, BIRCH);
+        variantForBiome.put(Biome.Category.DESERT, STONE);
+        variantForBiome.put(Biome.Category.NETHER, CRIMSON);
+    }
+
+    public static Variant forBiome(Biome.Category category) {
+        return variantForBiome.getOrDefault(category, OAK);
+    }
+
     public final ModelType type;
 
     private Post(Properties properties, ModelType type) {
@@ -185,9 +251,8 @@ public class Post extends Block implements IWaterLoggable {
     @Override
     public void onBlockPlacedBy(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.onBlockPlacedBy(world, pos, state, placer, stack);
-        Delay.until(() -> TileEntityUtils.findTileEntity(world, pos, PostTile.class).isPresent(),
-            () -> {
-                PostTile tile = TileEntityUtils.findTileEntity(world, pos, PostTile.class).get();
+        TileEntityUtils.delayUntilTileEntityExists(world, pos, PostTile.class,
+            tile -> {
                 if (world.isRemote) {
                     SignGui.display(
                         tile,

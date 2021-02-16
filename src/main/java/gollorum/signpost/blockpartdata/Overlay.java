@@ -5,9 +5,12 @@ import gollorum.signpost.blockpartdata.types.LargeSign;
 import gollorum.signpost.blockpartdata.types.Sign;
 import gollorum.signpost.blockpartdata.types.SmallShortSign;
 import gollorum.signpost.blockpartdata.types.SmallWideSign;
+import gollorum.signpost.minecraft.registry.ColorRegistry;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -34,6 +37,10 @@ public abstract class Overlay {
     }
 
     public abstract ResourceLocation textureFor(Class<? extends Sign> signClass);
+
+    public int getTintAt(World world, BlockPos pos) {
+        return ColorRegistry.getOverlayColor(tintIndex, world, pos);
+    }
 
     private static <T> T logErrorAndReturn(String error, T t) {
         Signpost.LOGGER.error(error);

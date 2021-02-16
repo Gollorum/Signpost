@@ -11,6 +11,7 @@ import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class TileEntityUtils {
 
@@ -19,6 +20,10 @@ public class TileEntityUtils {
         if(tileEntity != null && tileEntity.getClass() == c){
             return Optional.of((T) tileEntity);
         } else return Optional.empty();
+    }
+
+    public static <T extends TileEntity> void delayUntilTileEntityExists(IWorld world, BlockPos pos, Class<T> c, Consumer<T> action, int timeout) {
+        Delay.untilIsPresent(() -> findTileEntity(world, pos, c), action, timeout);
     }
 
     public static <T extends TileEntity> Optional<T> findTileEntity(ResourceLocation dimensionKeyLocation, boolean isRemote, BlockPos blockPos, Class<T> c){

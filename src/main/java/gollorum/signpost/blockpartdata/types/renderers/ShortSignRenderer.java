@@ -1,11 +1,15 @@
 package gollorum.signpost.blockpartdata.types.renderers;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import gollorum.signpost.blockpartdata.types.LargeSign;
+import gollorum.signpost.blockpartdata.types.SmallWideSign;
 import gollorum.signpost.minecraft.data.PostModel;
+import gollorum.signpost.minecraft.rendering.ModelRegistry;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.blockpartdata.types.SmallShortSign;
 import gollorum.signpost.utils.math.MathUtils;
+import gollorum.signpost.utils.modelGeneration.SignModel;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.model.IBakedModel;
@@ -27,33 +31,24 @@ public class ShortSignRenderer extends SignRenderer<SmallShortSign> {
 	private static final float TEXT_RATIO = 1.3f;
 	private static final float FONT_SIZE_VOXELS = 2 / TEXT_RATIO;
 
-	private static final Map<ResourceLocation, Map<ResourceLocation, IBakedModel>> cachedModels = new ConcurrentHashMap<>();
-	private static final Map<ResourceLocation, Map<ResourceLocation, IBakedModel>> cachedFlippedModels = new ConcurrentHashMap<>();
-
-	private static final Map<ResourceLocation, IBakedModel> cachedOverlayModels = new ConcurrentHashMap<>();
-	private static final Map<ResourceLocation, IBakedModel> cachedFlippedOverlayModels = new ConcurrentHashMap<>();
-
 	@Override
-	protected IBakedModel makeModel(SmallShortSign sign) {
-		return (sign.isFlipped() ? cachedFlippedModels : cachedModels)
-			.computeIfAbsent(sign.getMainTexture(), x -> new ConcurrentHashMap<>())
-			.computeIfAbsent(sign.getSecondaryTexture(),
-				x -> RenderingUtil.loadModel(
-					sign.isFlipped() ? PostModel.shortFlippedLocation : PostModel.shortLocation,
-					sign.getMainTexture(), sign.getSecondaryTexture()
-				)
-			);
+	protected IBakedModel makeBakedModel(SmallShortSign sign) {
+		return ModelRegistry.ShortBakedSign.makeModel(sign);
 	}
 
 	@Override
-	protected IBakedModel makeOverlayModel(SmallShortSign sign, Overlay overlay) {
-		ResourceLocation texture = overlay.textureFor(SmallShortSign.class);
-		return (sign.isFlipped() ? cachedFlippedOverlayModels : cachedOverlayModels)
-			.computeIfAbsent(texture,
-				x -> RenderingUtil.loadModel(
-					sign.isFlipped() ? PostModel.shortOverlayFlippedLocation : PostModel.shortOverlayLocation,
-					texture
-				));
+	protected IBakedModel makeBakedOverlayModel(SmallShortSign sign, Overlay overlay) {
+		return ModelRegistry.ShortBakedSign.makeOverlayModel(sign, overlay);
+	}
+
+	@Override
+	protected SignModel makeModel(SmallShortSign sign) {
+		return ModelRegistry.ShortSign.makeModel(sign);
+	}
+
+	@Override
+	protected SignModel makeOverlayModel(SmallShortSign sign, Overlay overlay) {
+		return ModelRegistry.ShortSign.makeOverlayModel(sign, overlay);
 	}
 
 	@Override

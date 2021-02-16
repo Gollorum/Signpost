@@ -60,4 +60,13 @@ public class ColorRegistry {
         }
     }
 
+    public static int getOverlayColor(int tintIndex, World world, BlockPos pos) {
+        switch(tintIndex) {
+            case Overlay.GrasTint: return BiomeColors.getGrassColor(world, pos);
+            case Overlay.FoliageTint: return BiomeColors.getFoliageColor(world, pos);
+            case Overlay.WaterTint: return BiomeColors.getWaterColor(world, pos);
+            default: return -1;
+        }
+    }
+
 }

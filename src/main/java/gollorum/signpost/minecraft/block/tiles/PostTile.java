@@ -497,7 +497,7 @@ public class PostTile extends TileEntity {
             TilePartInfo.SERIALIZER.writeTo(message.info, buffer);
             buffer.writeString(message.data.toString());
             buffer.writeString(message.partMetaIdentifier);
-            new OptionalSerializer<>(Vector3.SERIALIZER).writeTo(message.offset, buffer);
+            Vector3.SERIALIZER.optional().writeTo(message.offset, buffer);
         }
 
         @Override
@@ -507,7 +507,7 @@ public class PostTile extends TileEntity {
                     TilePartInfo.SERIALIZER.readFrom(buffer),
                     JsonToNBT.getTagFromJson(buffer.readString(32767)),
                     buffer.readString(32767),
-                    new OptionalSerializer<>(Vector3.SERIALIZER).readFrom(buffer)
+                    Vector3.SERIALIZER.optional().readFrom(buffer)
                 );
             } catch (CommandSyntaxException e) {
                 throw new RuntimeException(e);

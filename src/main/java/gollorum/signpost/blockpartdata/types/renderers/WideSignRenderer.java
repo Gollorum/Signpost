@@ -1,10 +1,13 @@
 package gollorum.signpost.blockpartdata.types.renderers;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import gollorum.signpost.blockpartdata.types.LargeSign;
 import gollorum.signpost.minecraft.data.PostModel;
+import gollorum.signpost.minecraft.rendering.ModelRegistry;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.blockpartdata.types.SmallWideSign;
+import gollorum.signpost.utils.modelGeneration.SignModel;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.model.IBakedModel;
@@ -26,33 +29,24 @@ public class WideSignRenderer extends SignRenderer<SmallWideSign> {
 	private static final float TEXT_RATIO = 1.3f;
 	private static final float FONT_SIZE_VOXELS = 2 / TEXT_RATIO;
 
-	private static final Map<ResourceLocation, Map<ResourceLocation, IBakedModel>> cachedModels = new ConcurrentHashMap<>();
-	private static final Map<ResourceLocation, Map<ResourceLocation, IBakedModel>> cachedFlippedModels = new ConcurrentHashMap<>();
-
-	private static final Map<ResourceLocation, IBakedModel> cachedOverlayModels = new ConcurrentHashMap<>();
-	private static final Map<ResourceLocation, IBakedModel> cachedFlippedOverlayModels = new ConcurrentHashMap<>();
-
 	@Override
-	protected IBakedModel makeModel(SmallWideSign sign) {
-		return (sign.isFlipped() ? cachedFlippedModels : cachedModels)
-			.computeIfAbsent(sign.getMainTexture(), x -> new ConcurrentHashMap<>())
-			.computeIfAbsent(sign.getSecondaryTexture(),
-				x -> RenderingUtil.loadModel(
-					sign.isFlipped() ? PostModel.wideFlippedLocation : PostModel.wideLocation,
-					sign.getMainTexture(), sign.getSecondaryTexture()
-				)
-		);
+	protected IBakedModel makeBakedModel(SmallWideSign sign) {
+		return ModelRegistry.WideBakedSign.makeModel(sign);
 	}
 
 	@Override
-	protected IBakedModel makeOverlayModel(SmallWideSign sign, Overlay overlay) {
-		ResourceLocation texture = overlay.textureFor(SmallWideSign.class);
-		return (sign.isFlipped() ? cachedFlippedOverlayModels : cachedOverlayModels)
-			.computeIfAbsent(texture,
-				x -> RenderingUtil.loadModel(
-					sign.isFlipped() ? PostModel.wideOverlayFlippedLocation : PostModel.wideOverlayLocation,
-					texture
-		));
+	protected IBakedModel makeBakedOverlayModel(SmallWideSign sign, Overlay overlay) {
+		return ModelRegistry.WideBakedSign.makeOverlayModel(sign, overlay);
+	}
+
+	@Override
+	protected SignModel makeModel(SmallWideSign sign) {
+		return ModelRegistry.WideSign.makeModel(sign);
+	}
+
+	@Override
+	protected SignModel makeOverlayModel(SmallWideSign sign, Overlay overlay) {
+		return ModelRegistry.WideSign.makeOverlayModel(sign, overlay);
 	}
 
 	@Override

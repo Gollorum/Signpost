@@ -35,11 +35,11 @@ public class SmallShortSign extends Sign<SmallShortSign> {
             compound.putBoolean(keyPrefix + "Flip", sign.flip);
             compound.putString(keyPrefix + "Texture", sign.mainTexture.toString());
             compound.putString(keyPrefix + "TextureDark", sign.secondaryTexture.toString());
-            new OptionalSerializer<>(Overlay.Serializer).writeTo(sign.overlay, compound, "Overlay");
+            Overlay.Serializer.optional().writeTo(sign.overlay, compound, "Overlay");
             compound.putInt(keyPrefix + "Color", sign.color);
-            new OptionalSerializer<>(WaystoneHandle.SERIALIZER).writeTo(sign.destination, compound, "Destination");
+            WaystoneHandle.SERIALIZER.optional().writeTo(sign.destination, compound, "Destination");
             ItemStackSerializer.Instance.writeTo(sign.itemToDropOnBreak, compound, "ItemToDropOnBreak");
-            compound.putString(keyPrefix + "ModelType", sign.modelType.name());
+            compound.putString(keyPrefix + "ModelType", sign.modelType.name);
         },
         (compound, keyPrefix) -> new SmallShortSign(
             Angle.SERIALIZER.read(compound, keyPrefix + "Angle"),
@@ -47,11 +47,11 @@ public class SmallShortSign extends Sign<SmallShortSign> {
             compound.getBoolean(keyPrefix + "Flip"),
             new ResourceLocation(compound.getString(keyPrefix + "Texture")),
             new ResourceLocation(compound.getString(keyPrefix + "TextureDark")),
-            new OptionalSerializer<>(Overlay.Serializer).read(compound, "Overlay"),
+            Overlay.Serializer.optional().read(compound, "Overlay"),
             compound.getInt(keyPrefix + "Color"),
-            new OptionalSerializer<>(WaystoneHandle.SERIALIZER).read(compound, "Destination"),
+            WaystoneHandle.SERIALIZER.optional().read(compound, "Destination"),
             ItemStackSerializer.Instance.read(compound, "ItemToDropOnBreak"),
-            Post.ModelType.valueOf(compound.getString(keyPrefix + "ModelType"))
+            Post.ModelType.getByName(compound.getString(keyPrefix + "ModelType"), true).orElse(Post.ModelType.Oak)
         )
     );
 

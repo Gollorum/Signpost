@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "signpost:block/village_signpost"
+    },
+    "facing=south": {
+      "model": "signpost:block/village_signpost"
+    },
+    "facing=west": {
+      "model": "signpost:block/village_signpost"
+    },
+    "facing=east": {
+      "model": "signpost:block/village_signpost"
+    }
+  }
+}

@@ -37,4 +37,6 @@ public interface CompoundSerializable<T> extends BufferSerializable<T> {
             throw new RuntimeException(e);
         }
     }
+
+    default OptionalSerializer<T> optional() { return OptionalSerializer.from(this); }
 }
