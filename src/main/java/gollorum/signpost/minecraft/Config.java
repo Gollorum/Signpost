@@ -51,9 +51,9 @@ public class Config {
 		public final ForgeConfigSpec.ConfigValue<List<? extends String>> villageNameInfixes;
 		public final ForgeConfigSpec.ConfigValue<List<? extends String>> villageNamePostfixes;
 
-		private static final List<String> generalNamePrefixes = Lists.newArrayList("ak", "dev", "dol ", "ed", "il", "og", "por", "rov", "tek ", "tar", "tol ", "ves", "");
-		private static final List<String> generalNameInfixes = Lists.newArrayList("do ", "en", "go", "na", "nah ", "ker", "ol", "ora", "ra", "rem", "ro");
-		private static final List<String> generalNamePostfixes = Lists.newArrayList("ar", "blo", "bo", "bro", "do", "dra", "er", "ker", "lia", "tek");
+		private static final List<String> genericNamePrefixes = Lists.newArrayList("ak", "dev", "dol ", "ed", "il", "og", "por", "rov", "tek ", "tar", "tol ", "ves", "");
+		private static final List<String> genericNameInfixes = Lists.newArrayList("do ", "en", "go", "na", "nah ", "ker", "ol", "ora", "ra", "rem", "ro");
+		private static final List<String> genericNamePostfixes = Lists.newArrayList("ar", "blo", "bo", "bro", "do", "dra", "er", "ker", "lia", "tek");
 
 		private static final List<String> germanNamePrefixes = Lists.newArrayList("", "", "", "", "Klein", "Gro\u00df", "Nieder", "Ober", "Bad ", "Gau-");
 		private static final List<String> germanNameInfixes = Lists.newArrayList("", "sege", "m\u00fchl", "s\u00e4ngers", "bach", "stein", "holz", "w\u00fcrz", "h\u00f6ch", "wolfs", "katz", "lauter", "hildes", "heides", "ochsen", "k\u00f6nigs", "neu", "schaf", "rotten");
@@ -103,32 +103,30 @@ public class Config {
 					)));
 
 				builder.comment("", "The names of waystones generated in villages will consist of a prefix, an infix and a postfix, each randomly selected from these lists.",
-					"e.g.: If \"tol \", \"ker\" and \"dra\" are selected, the name will be \"Tol Kerdra\""
-				);
-				builder.comment(
+					"e.g.: If \"tol \", \"ker\" and \"dra\" are selected, the name will be \"Tol Kerdra\"",
 					"Here are some language-specific examples:",
-					"german:",
-					"\tvillage_name_prefixes = [\"" + String.join("\", \"", germanNamePrefixes) + "\"]",
-					"\tvillage_name_infixes = [\"" + String.join("\", \"", germanNameInfixes) + "\"]",
-					"\tvillage_name_postfixes = [\"" + String.join("\", \"", germanNamePostfixes) + "\"]",
 					"english:",
 					"\tvillage_name_prefixes = [\"" + String.join("\", \"", englishNamePrefixes) + "\"]",
 					"\tvillage_name_infixes = [\"" + String.join("\", \"", englishNameInfixes) + "\"]",
-					"\tvillage_name_postfixes = [\"" + String.join("\", \"", englishNamePostfixes) + "\"]"
+					"\tvillage_name_postfixes = [\"" + String.join("\", \"", englishNamePostfixes) + "\"]",
+					"german:",
+					"\tvillage_name_prefixes = [\"" + String.join("\", \"", germanNamePrefixes) + "\"]",
+					"\tvillage_name_infixes = [\"" + String.join("\", \"", germanNameInfixes) + "\"]",
+					"\tvillage_name_postfixes = [\"" + String.join("\", \"", germanNamePostfixes) + "\"]"
 				);
 				villageNamePrefixes = builder.defineList(
 					"village_name_prefixes",
-					englishNamePrefixes,
+					genericNamePrefixes,
 					x -> x instanceof String
 				);
 				villageNameInfixes = builder.defineList(
 					"village_name_infixes",
-					englishNameInfixes,
+					genericNameInfixes,
 					x -> x instanceof String
 				);
 				villageNamePostfixes = builder.defineList(
 					"village_name_postfixes",
-					englishNamePostfixes,
+					genericNamePostfixes,
 					x -> x instanceof String
 				);
 			builder.pop();
