@@ -1,8 +1,6 @@
 package gollorum.signpost;
 
 import gollorum.signpost.minecraft.Config;
-import gollorum.signpost.minecraft.block.VillagePost;
-import gollorum.signpost.minecraft.block.VillageWaystone;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.data.DataGeneration;
 import gollorum.signpost.minecraft.registry.BlockRegistry;
@@ -13,14 +11,11 @@ import gollorum.signpost.minecraft.rendering.PostRenderer;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.ServerType;
 import gollorum.signpost.worldgen.Villages;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.Dimension;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.client.model.generators.loaders.OBJLoaderBuilder;
-import net.minecraftforge.client.model.obj.OBJLoader;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.world.WorldEvent;
@@ -96,8 +91,7 @@ public class Signpost {
         public void serverAboutToStart(FMLServerAboutToStartEvent e) {
             serverInstance = e.getServer();
             WaystoneLibrary.initialize();
-            VillagePost.reset();
-            VillageWaystone.reset();
+            Villages.reset();
         }
 
         @SubscribeEvent

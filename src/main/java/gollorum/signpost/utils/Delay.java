@@ -2,7 +2,6 @@ package gollorum.signpost.utils;
 
 import gollorum.signpost.Signpost;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -76,17 +75,17 @@ public class Delay {
             clientTasks.add(new Task(canRun, run));
     }
 
-    public static void onServerUntil(Supplier<Boolean> canRun, Runnable run, int timeoutFrames) {
+    public static void onServerUntil(Supplier<Boolean> canRun, Runnable run, int timeoutFrames, Optional<Runnable> onTimeOut) {
         if(canRun.get()) run.run();
-        else delayUntil(canRun, run, timeoutFrames, serverTasks);
+        else delayUntil(canRun, run, timeoutFrames, serverTasks, onTimeOut);
     }
 
-    public static void onClientUntil(Supplier<Boolean> canRun, Runnable run, int timeoutFrames) {
+    public static void onClientUntil(Supplier<Boolean> canRun, Runnable run, int timeoutFrames, Optional<Runnable> onTimeOut) {
         if(canRun.get()) run.run();
-        else delayUntil(canRun, run, timeoutFrames, clientTasks);
+        else delayUntil(canRun, run, timeoutFrames, clientTasks, onTimeOut);
     }
 
-    public static <T> void onServerUntil(Supplier<Optional<T>> supplier, Consumer<T> run, int timeoutFrames) {
+    public static <T> void onServerUntilIsPresent(Supplier<Optional<T>> supplier, Consumer<T> run, int timeoutFrames, Optional<Runnable> onTimeOut) {
         AtomicReference<Optional<T>> result = new AtomicReference<>(supplier.get());
         if(result.get().isPresent()) run.accept(result.get().get());
         else delayUntil(
@@ -96,11 +95,12 @@ public class Delay {
             },
             () -> run.accept(result.get().get()),
             timeoutFrames,
-            serverTasks
+            serverTasks,
+            onTimeOut
         );
     }
 
-    public static <T> void onClientUntil(Supplier<Optional<T>> supplier, Consumer<T> run, int timeoutFrames) {
+    public static <T> void onClientUntilIsPresent(Supplier<Optional<T>> supplier, Consumer<T> run, int timeoutFrames, Optional<Runnable> onTimeOut) {
         AtomicReference<Optional<T>> result = new AtomicReference<>(supplier.get());
         if(result.get().isPresent()) run.accept(result.get().get());
         else delayUntil(
@@ -110,34 +110,35 @@ public class Delay {
             },
             () -> run.accept(result.get().get()),
             timeoutFrames,
-            clientTasks
+            clientTasks,
+            onTimeOut
         );
     }
 
-    public static void until(Supplier<Boolean> canRun, Runnable run, int timeoutFrames, boolean onClient) {
+    public static void until(Supplier<Boolean> canRun, Runnable run, int timeoutFrames, boolean onClient, Optional<Runnable> onTimeOut) {
         if(onClient)
-            onClientUntil(canRun, run, timeoutFrames);
+            onClientUntil(canRun, run, timeoutFrames, onTimeOut);
         else
-            onServerUntil(canRun, run, timeoutFrames);
+            onServerUntil(canRun, run, timeoutFrames, onTimeOut);
     }
 
-    public static void until(Supplier<Boolean> canRun, Runnable run, int timeoutFrames) {
+    public static void until(Supplier<Boolean> canRun, Runnable run, int timeoutFrames, Optional<Runnable> onTimeOut) {
         if(canRun.get()) run.run();
-        else delayUntil(canRun, run, timeoutFrames, Signpost.getServerType().isServer ? serverTasks : clientTasks);
+        else delayUntil(canRun, run, timeoutFrames, Signpost.getServerType().isServer ? serverTasks : clientTasks, onTimeOut);
     }
 
-    public static <T> void untilIsPresent(Supplier<Optional<T>> supplier, Consumer<T> run, int timeoutFrames, boolean onClient) {
+    public static <T> void untilIsPresent(Supplier<Optional<T>> supplier, Consumer<T> run, int timeoutFrames, boolean onClient, Optional<Runnable> onTimeOut) {
         if(onClient)
-            onClientUntil(supplier, run, timeoutFrames);
+            onClientUntilIsPresent(supplier, run, timeoutFrames, onTimeOut);
         else
-            onServerUntil(supplier, run, timeoutFrames);
+            onServerUntilIsPresent(supplier, run, timeoutFrames, onTimeOut);
     }
 
-    public static <T> void untilIsPresent(Supplier<Optional<T>> supplier, Consumer<T> run, int timeoutFrames) {
-        untilIsPresent(supplier, run, timeoutFrames, !Signpost.getServerType().isServer);
+    public static <T> void untilIsPresent(Supplier<Optional<T>> supplier, Consumer<T> run, int timeoutFrames, Optional<Runnable> onTimeOut) {
+        untilIsPresent(supplier, run, timeoutFrames, !Signpost.getServerType().isServer, onTimeOut);
     }
 
-    private static void delayUntil(Supplier<Boolean> canRun, Runnable run, int timeoutFrames, List<Task> taskList) {
+    private static void delayUntil(Supplier<Boolean> canRun, Runnable run, int timeoutFrames, List<Task> taskList, Optional<Runnable> onTimeOut) {
         AtomicInteger framesLeft = new AtomicInteger(timeoutFrames);
         taskList.add(new Task(
             () -> {
@@ -146,6 +147,7 @@ public class Delay {
             },
             () -> {
                 if(framesLeft.get() >= 0) run.run();
+                else onTimeOut.ifPresent(Runnable::run);
             }
         ));
     }

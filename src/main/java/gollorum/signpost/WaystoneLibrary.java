@@ -230,12 +230,8 @@ public class WaystoneLibrary {
     }
 
     public void requestAllWaystoneNames(Consumer<Map<WaystoneHandle, String>> onReply) {
-        if(Signpost.getServerType().isServer){
-            cachedWaystoneNames.clear();
-            Map<WaystoneHandle, String> map = getAllWaystoneNamesAndHandles();
-            cachedWaystoneNames.addAll(map.values());
-            isWaystoneNameCacheDirty = false;
-            onReply.accept(map);
+        if(Signpost.getServerType().isServer) {
+            onReply.accept(getAllWaystoneNamesAndHandles());
         } else {
             requestedAllNamesEventDispatcher.addListener(onReply);
             PacketHandler.sendToServer(new RequestAllWaystoneNamesEvent.Packet());
@@ -260,7 +256,14 @@ public class WaystoneLibrary {
 
     private Map<WaystoneHandle, String> getAllWaystoneNamesAndHandles() {
         assert Signpost.getServerType().isServer;
-        return getInstance().allWaystones.entrySet().stream().collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue().name));
+        Map<WaystoneHandle, String> ret = getInstance().allWaystones.entrySet().stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().name));
+        if(isWaystoneNameCacheDirty) {
+            cachedWaystoneNames.clear();
+            cachedWaystoneNames.addAll(ret.values());
+            isWaystoneNameCacheDirty = false;
+        }
+        return ret;
     }
 
     public Optional<Set<String>> getAllWaystoneNames() {

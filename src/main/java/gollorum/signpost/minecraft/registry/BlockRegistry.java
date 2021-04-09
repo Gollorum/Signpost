@@ -18,12 +18,6 @@ public class BlockRegistry {
     private static final RegistryObject<Block> WaystoneBlock =
         Register.register(Waystone.REGISTRY_NAME, () -> Waystone.INSTANCE);
 
-    private static final RegistryObject<Block> GeneratedWaystoneBlock =
-        Register.register(VillageWaystone.REGISTRY_NAME, () -> VillageWaystone.INSTANCE);
-
-    private static final RegistryObject<Block> GeneratedPostBlock =
-        Register.register(VillagePost.REGISTRY_NAME, () -> VillagePost.INSTANCE);
-
     private static final Object[] ModelWaystoneBlocks =
         ModelWaystone.variants.stream()
             .map(BlockRegistry::registerModelWaystone)

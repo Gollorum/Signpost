@@ -18,6 +18,7 @@ import net.minecraft.util.text.TranslationTextComponent;
 
 import java.util.HashSet;
 import java.util.concurrent.CompletableFuture;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class WaystoneArgument implements ArgumentType<String> {
@@ -25,6 +26,8 @@ public class WaystoneArgument implements ArgumentType<String> {
 	static {
 		ArgumentTypes.register(Signpost.MOD_ID + ":waystone", WaystoneArgument.class, new ArgumentSerializer<>(WaystoneArgument::new));
 	}
+
+	private static final Pattern nonLiteralPattern = Pattern.compile("[^a-z0-9]", Pattern.CASE_INSENSITIVE);
 
 	@Override
 	public String parse(StringReader reader) throws CommandSyntaxException {
@@ -41,7 +44,7 @@ public class WaystoneArgument implements ArgumentType<String> {
 		return ISuggestionProvider.suggest(
 			WaystoneLibrary.hasInstance()
 				? WaystoneLibrary.getInstance().getAllWaystoneNames()
-					.map(set -> set.stream().map(s -> s.contains(" ") ? "\"" + s + "\"" : s).collect(Collectors.toSet()))
+					.map(set -> set.stream().map(s -> nonLiteralPattern.matcher(s).find() ? "\"" + s + "\"" : s).collect(Collectors.toSet()))
 					.orElse(new HashSet<>())
 				: new HashSet<>(),
 			builder

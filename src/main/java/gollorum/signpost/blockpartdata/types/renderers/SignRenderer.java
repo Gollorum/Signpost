@@ -6,6 +6,7 @@ import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.blockpartdata.types.Sign;
 import gollorum.signpost.utils.modelGeneration.SignModel;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.RenderType;
@@ -22,6 +23,8 @@ import static gollorum.signpost.minecraft.rendering.RenderingUtil.withTintIndex;
 
 public abstract class SignRenderer<T extends Sign<T>> extends BlockPartRenderer<T> {
 
+	private final boolean shouldRenderBaked = false;
+
 	protected abstract IBakedModel makeBakedModel(T sign);
 	protected abstract IBakedModel makeBakedOverlayModel(T sign, Overlay overlay);
 	protected abstract SignModel makeModel(T sign);
@@ -34,7 +37,12 @@ public abstract class SignRenderer<T extends Sign<T>> extends BlockPartRenderer<
 			Quaternion rotation = new Quaternion(Vector3f.YP, sign.getAngle().radians(), false);
 			matrix.rotate(rotation);
 			Matrix4f rotationMatrix = new Matrix4f(rotation);
-			makeModel(sign).render(
+			if(shouldRenderBaked)
+				renderModel.render(
+					makeBakedModel(sign),
+					tileEntity, buffer.getBuffer(RenderType.getSolid()), false, random, randomSeed, combinedOverlay, rotationMatrix
+				);
+			else makeModel(sign).render(
 				matrix.getLast(),
 				buffer,
 				RenderType.getSolid(),
@@ -43,15 +51,22 @@ public abstract class SignRenderer<T extends Sign<T>> extends BlockPartRenderer<
 				1, 1, 1
 			);
 			sign.getOverlay().ifPresent(o -> {
-				int tint = o.getTintAt(tileEntity.getWorld(), tileEntity.getPos());
-				makeOverlayModel(sign, o).render(
-					matrix.getLast(),
-					buffer,
-					RenderType.getCutoutMipped(),
-					combinedLights,
-					combinedOverlay,
-					Colors.getRed(tint) / 255f, Colors.getGreen(tint) / 255f, Colors.getBlue(tint) / 255f
-				);
+				if(shouldRenderBaked)
+					renderModel.render(
+						makeBakedOverlayModel(sign, o),
+						tileEntity, buffer.getBuffer(RenderType.getCutoutMipped()), false, random, randomSeed, combinedOverlay, rotationMatrix
+					);
+				else {
+					int tint = o.getTintAt(tileEntity.getWorld(), tileEntity.getPos());
+					makeOverlayModel(sign, o).render(
+						matrix.getLast(),
+						buffer,
+						RenderType.getCutoutMipped(),
+						combinedLights,
+						combinedOverlay,
+						Colors.getRed(tint) / 255f, Colors.getGreen(tint) / 255f, Colors.getBlue(tint) / 255f
+					);
+				}
 			});
 			matrix.pop();
 			renderText(sign, matrix, renderDispatcher.getFontRenderer(), buffer, combinedLights);

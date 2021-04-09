@@ -2,8 +2,6 @@ package gollorum.signpost.minecraft.data;
 
 import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.block.ModelWaystone;
-import gollorum.signpost.minecraft.block.VillagePost;
-import gollorum.signpost.minecraft.block.VillageWaystone;
 import gollorum.signpost.minecraft.block.Waystone;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.IDataProvider;
@@ -14,13 +12,10 @@ import net.minecraftforge.common.data.ExistingFileHelper;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 public class WaystoneModel extends BlockModelProvider {
 
 	public final BlockModelBuilder waystoneModel;
-	public final BlockModelBuilder villageWaystoneModel;
-	public final BlockModelBuilder villagePostModel;
 	public static final ResourceLocation inPostLocation = new ResourceLocation(Signpost.MOD_ID, "block/in_post_waystone");
 	public final Map<ModelWaystone.Variant, ModelFile> variantModels = new HashMap<>();
 
@@ -34,16 +29,12 @@ public class WaystoneModel extends BlockModelProvider {
 	private WaystoneModel(DataGenerator generator, ExistingFileHelper fileHelper) {
 		super(generator, Signpost.MOD_ID, fileHelper);
 		waystoneModel = new BlockModelBuilder(new ResourceLocation(Signpost.MOD_ID, "block/" + Waystone.REGISTRY_NAME), fileHelper);
-		villageWaystoneModel = new BlockModelBuilder(new ResourceLocation(Signpost.MOD_ID, "block/" + VillageWaystone.REGISTRY_NAME), fileHelper);
-		villagePostModel = new BlockModelBuilder(new ResourceLocation(Signpost.MOD_ID, "block/" + VillagePost.REGISTRY_NAME), fileHelper);
 	}
 
 	@Override
 	protected void registerModels() {
 		ResourceLocation waystoneTexture = new ResourceLocation(Signpost.MOD_ID, "block/waystone");
 		cubeAll(Waystone.REGISTRY_NAME, waystoneTexture);
-		cubeAll(VillageWaystone.REGISTRY_NAME, waystoneTexture);
-		cubeAll(VillagePost.REGISTRY_NAME, waystoneTexture);
 
         getBuilder(inPostLocation.toString())
             .element()
@@ -100,8 +91,6 @@ public class WaystoneModel extends BlockModelProvider {
 		@Override
 		protected void registerModels() {
 			getBuilder(Waystone.REGISTRY_NAME).parent(waystoneModel);
-			getBuilder(VillageWaystone.REGISTRY_NAME).parent(villageWaystoneModel);
-			getBuilder(VillagePost.REGISTRY_NAME).parent(villagePostModel);
 			for(Map.Entry<ModelWaystone.Variant, ModelFile> variant : variantModels.entrySet()) {
 				getBuilder(variant.getKey().registryName).parent(variant.getValue());
 			}

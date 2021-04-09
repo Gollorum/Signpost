@@ -32,14 +32,6 @@ public class ItemRegistry {
         REGISTER.register(Waystone.REGISTRY_NAME,
             () -> new BlockItem(Waystone.INSTANCE, new Item.Properties().group(ITEM_GROUP)));
 
-    private static final RegistryObject<Item> GENERATED_WAYSTONE_ITEM =
-        REGISTER.register(VillageWaystone.REGISTRY_NAME,
-            () -> new BlockItem(VillageWaystone.INSTANCE, new Item.Properties()));
-
-    private static final RegistryObject<Item> GENERATED_POST_ITEM =
-        REGISTER.register(VillagePost.REGISTRY_NAME,
-            () -> new BlockItem(VillagePost.INSTANCE, new Item.Properties()));
-
     private static final List<RegistryObject<Item>> ModelWaystoneItems =
         ModelWaystone.variants.stream()
             .map(ItemRegistry::registerModelWaystoneItem)

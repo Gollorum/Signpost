@@ -49,7 +49,7 @@ import net.minecraftforge.common.util.Lazy;
 import javax.annotation.Nullable;
 import java.util.*;
 
-public class  Post extends Block implements IWaterLoggable {
+public class Post extends Block implements IWaterLoggable {
 
     public static class ModelType implements IStringSerializable {
 
@@ -59,6 +59,7 @@ public class  Post extends Block implements IWaterLoggable {
         private static final Map<String, ModelType> allTypes = new HashMap<>();
 
         public static void register(ModelType modelType, String name) { allTypes.put(name, modelType); }
+        public static void register(ModelType modelType) { register(modelType, modelType.name); }
         public static Optional<ModelType> getByName(String name, boolean logErrorIfNotPresent) {
             if (allTypes.containsKey(name)) return Optional.of(allTypes.get(name));
             else {
@@ -140,6 +141,17 @@ public class  Post extends Block implements IWaterLoggable {
             baseIngredientForType.put(Spruce, Lazy.of(() -> Ingredient.fromTag(ItemTags.SPRUCE_LOGS)));
             baseIngredientForType.put(Warped, Lazy.of(() -> Ingredient.fromTag(ItemTags.WARPED_STEMS)));
             baseIngredientForType.put(Crimson, Lazy.of(() -> Ingredient.fromTag(ItemTags.CRIMSON_STEMS)));
+
+            register(Acacia);
+            register(Birch);
+            register(Iron);
+            register(Stone);
+            register(Jungle);
+            register(Oak);
+            register(DarkOak);
+            register(Spruce);
+            register(Warped);
+            register(Crimson);
         }
 
         public final String name;
@@ -222,24 +234,6 @@ public class  Post extends Block implements IWaterLoggable {
     public static final Variant[] AllVariants = new Variant[]{OAK, BIRCH, SPRUCE, JUNGLE, DARK_OAK, ACACIA, STONE, IRON, WARPED, CRIMSON};
     public static final Block[] ALL = Arrays.stream(AllVariants).map(i -> i.block).toArray(Block[]::new);
 
-    public static final Map<Biome.Category, Variant> variantForBiome = new HashMap<>();
-
-    static {
-        variantForBiome.put(Biome.Category.TAIGA, SPRUCE);
-        variantForBiome.put(Biome.Category.JUNGLE, JUNGLE);
-        variantForBiome.put(Biome.Category.MESA, ACACIA);
-        variantForBiome.put(Biome.Category.SAVANNA, ACACIA);
-        variantForBiome.put(Biome.Category.ICY, SPRUCE);
-        variantForBiome.put(Biome.Category.THEEND, STONE);
-        variantForBiome.put(Biome.Category.BEACH, BIRCH);
-        variantForBiome.put(Biome.Category.DESERT, STONE);
-        variantForBiome.put(Biome.Category.NETHER, CRIMSON);
-    }
-
-    public static Variant forBiome(Biome.Category category) {
-        return variantForBiome.getOrDefault(category, OAK);
-    }
-
     public final ModelType type;
 
     private Post(Properties properties, ModelType type) {
@@ -268,18 +262,16 @@ public class  Post extends Block implements IWaterLoggable {
                     );
                     tile.markDirty();
                 }
-            }, 100
+            }, 100, Optional.of(() -> Signpost.LOGGER.error("Could not initialize placed signpost: TileEntity never appeared."))
         );
     }
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
         TileEntity tileentity = builder.get(LootParameters.BLOCK_ENTITY);
-        List<ItemStack> result = new ArrayList<>();
-        result.add(new ItemStack(asItem()));
-        if(tileentity instanceof PostTile) {
-            result.addAll(((PostTile) tileentity).getDrops());
-        }
+        List<ItemStack> result = (tileentity instanceof PostTile)
+            ? new ArrayList<>(((PostTile) tileentity).getDrops())
+            : Collections.singletonList(new ItemStack(this));
         return result;
     }
 
@@ -314,7 +306,7 @@ public class  Post extends Block implements IWaterLoggable {
     @Nullable
     @Override
     public TileEntity createTileEntity(BlockState state, IBlockReader world) {
-        return new PostTile(type);
+        return new PostTile(type, new ItemStack(this));
     }
 
     @Override

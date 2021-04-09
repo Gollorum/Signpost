@@ -14,6 +14,7 @@ import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.BlockPosSerializer;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
+import gollorum.signpost.utils.serialization.ItemStackSerializer;
 import gollorum.signpost.utils.serialization.OptionalSerializer;
 import io.netty.util.internal.ConcurrentSet;
 import net.minecraft.block.BlockState;
@@ -47,7 +48,7 @@ public class PostTile extends TileEntity {
 
     public static final String REGISTRY_NAME = "post";
 
-    public static final TileEntityType<PostTile> type = TileEntityType.Builder.create(() -> new PostTile(gollorum.signpost.minecraft.block.Post.ModelType.Oak), gollorum.signpost.minecraft.block.Post.ALL).build(null);
+    public static final TileEntityType<PostTile> type = TileEntityType.Builder.create(() -> new PostTile(gollorum.signpost.minecraft.block.Post.ModelType.Oak, ItemStack.EMPTY), gollorum.signpost.minecraft.block.Post.ALL).build(null);
 
     private final Map<UUID, BlockPartInstance> parts = new ConcurrentHashMap<>();
     public static final Set<BlockPartMetadata<?>> partsMetadata = new ConcurrentSet<>();
@@ -73,10 +74,12 @@ public class PostTile extends TileEntity {
     }
 
     public final gollorum.signpost.minecraft.block.Post.ModelType modelType;
+    private ItemStack drop;
 
-    public PostTile(gollorum.signpost.minecraft.block.Post.ModelType modelType) {
+    public PostTile(gollorum.signpost.minecraft.block.Post.ModelType modelType, ItemStack drop) {
         super(type);
         this.modelType = modelType;
+        this.drop = drop;
     }
 
     public UUID addPart(BlockPartInstance part, ItemStack cost, PlayerHandle player){ return addPart(UUID.randomUUID(), part, cost, player); }
@@ -167,6 +170,7 @@ public class PostTile extends TileEntity {
                 subComp.putUniqueId("PartId", e.getKey());
             }
         }
+        ItemStackSerializer.Instance.writeTo(drop, compound, "Drop");
     }
 
     @Override
@@ -196,6 +200,7 @@ public class PostTile extends TileEntity {
             ItemStack.EMPTY,
             PlayerHandle.Invalid
         );
+        drop = ItemStackSerializer.Instance.read(compound, "Drop");
     }
 
     @Override
@@ -224,10 +229,15 @@ public class PostTile extends TileEntity {
         PacketHandler.sendToTracing(this, t);
     }
 
-
     public Collection<ItemStack> getDrops() {
-        return parts.values().stream().flatMap(p -> (Stream<ItemStack>) p.blockPart.getDrops(this).stream())
+        List<ItemStack> ret = parts.values().stream().flatMap(p -> (Stream<ItemStack>) p.blockPart.getDrops(this).stream())
             .collect(Collectors.toList());
+        ret.add(drop);
+        return ret;
+    }
+
+    public void setMainDrop(ItemStack drop) {
+        this.drop = drop;
     }
 
     public static boolean isAngleTool(Item item) {
