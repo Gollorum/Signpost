@@ -13,6 +13,7 @@ import gollorum.signpost.blockpartdata.types.Post;
 import gollorum.signpost.blockpartdata.types.Sign;
 import gollorum.signpost.blockpartdata.types.SmallShortSign;
 import gollorum.signpost.blockpartdata.types.SmallWideSign;
+import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.Colors;
 import gollorum.signpost.utils.BlockPartInstance;
@@ -49,8 +50,10 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 
 	private static final float smallSignRatio = 0.5f;
 	private static Map<BlockPos, List<WaystoneHandle>> waystonesTargetedByVillage;
+	private static Map<BlockPos, Integer> signpostCountForVillage;
 	public static void reset() {
 		waystonesTargetedByVillage = new HashMap<>();
+		signpostCountForVillage = new HashMap<>();
 	}
 
 	public static final Codec<SignpostJigsawPiece> codec = RecordCodecBuilder.create((codecBuilder) ->
@@ -85,6 +88,9 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 		Random random,
 		boolean shouldUseJigsawReplacementStructureProcessor
 	) {
+		if(!Config.Server.worldGen.isVillageGenerationEnabled.get()) return false;
+		if(signpostCountForVillage.getOrDefault(villageLocation, 0) >= Config.Server.worldGen.maxSignpostsPerVillage.get())
+			return false;
 		Queue<Map.Entry<BlockPos, WaystoneHandle>> possibleTargets = fetchPossibleTargets(pieceLocation, villageLocation, random);
 		if(possibleTargets.isEmpty()) return false;
 
@@ -104,6 +110,7 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 				this.handleDataMarker(seedReader, blockInfo, pieceLocation, rotation, random, boundingBox);
 			}
 
+			signpostCountForVillage.put(villageLocation, signpostCountForVillage.getOrDefault(villageLocation, 0) + 1);
 			return true;
 		} else {
 			return false;

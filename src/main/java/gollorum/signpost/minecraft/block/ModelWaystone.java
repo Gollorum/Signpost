@@ -1,6 +1,6 @@
 package gollorum.signpost.minecraft.block;
 
-import gollorum.signpost.minecraft.Config;
+import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
 import gollorum.signpost.utils.WorldLocation;
 import net.minecraft.block.Block;

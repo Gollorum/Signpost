@@ -18,9 +18,7 @@ import net.minecraft.world.gen.feature.template.ProcessorLists;
 import net.minecraft.world.gen.feature.template.StructureProcessorList;
 import net.minecraft.world.gen.feature.template.Template;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -28,11 +26,6 @@ public class Villages {
 
 	public static final Villages instance = new Villages();
 	private Villages() { VillagesPools.func_244194_a(); }
-
-	public static void reset() {
-		WaystoneJigsawPiece.reset();
-		SignpostJigsawPiece.reset();
-	}
 
 	private enum VillageType {
 		Desert("desert", () -> instance.waystoneProcessorListDesert),
@@ -65,30 +58,41 @@ public class Villages {
 		waystoneProcessorListSnowyOrTaiga = ProcessorLists.field_244112_l;
 	}
 
-	public void registerWaystones() {
+	public void reset() {
+		WaystoneJigsawPiece.reset();
+		SignpostJigsawPiece.reset();
+	}
+
+	public void initialize() {
 		registerProcessorLists();
 		for(VillageType villageType : VillageType.values()) {
-			ResourceLocation pool = new ResourceLocation("village/" + villageType.name + "/houses");
-//			Template signpost = new SignpostTemplate(Either.right(
-//				new ResourceLocation(Signpost.MOD_ID, "village/" + villageType.name + "/signpost2")));
 			addToPool(
 				ImmutableList.of(
-					new WaystoneJigsawPiece(villageType.getStructureResourceLocation("waystone"),
-						villageType.processorList, JigsawPattern.PlacementBehaviour.TERRAIN_MATCHING),
-					new SignpostJigsawPiece(villageType.getStructureResourceLocation("signpost"),
-						villageType.processorList, JigsawPattern.PlacementBehaviour.TERRAIN_MATCHING)
+					Pair.of(
+						new WaystoneJigsawPiece(villageType.getStructureResourceLocation("waystone"),
+							villageType.processorList, JigsawPattern.PlacementBehaviour.TERRAIN_MATCHING),
+						5
+					),
+					Pair.of(
+						new SignpostJigsawPiece(villageType.getStructureResourceLocation("signpost"),
+							villageType.processorList, JigsawPattern.PlacementBehaviour.TERRAIN_MATCHING),
+						5
+					)
 				),
-				5,
-				pool
+				getVillagePool(villageType)
 			);
 		}
 	}
 
+	private static ResourceLocation getVillagePool(VillageType villageType) {
+		return  new ResourceLocation("village/" + villageType.name + "/houses");
+	}
+
 	private void addLocationsToPool(
-		Collection<ResourceLocation> houses, int weight, JigsawPattern.PlacementBehaviour placementBehaviour, StructureProcessorList processorList, ResourceLocation pool
+		Collection<Pair<ResourceLocation, Integer>> houses, JigsawPattern.PlacementBehaviour placementBehaviour, StructureProcessorList processorList, ResourceLocation pool
 	) {
-		addToPool(houses.stream().map(loc -> jigsawPieceFrom(loc, () -> processorList, placementBehaviour))
-			.collect(Collectors.toList()), weight, pool);
+		addToPool(houses.stream().map(loc -> Pair.of(jigsawPieceFrom(loc.getFirst(), () -> processorList, placementBehaviour), loc.getSecond()))
+			.collect(Collectors.toList()), pool);
 	}
 
 	private SingleJigsawPiece jigsawPieceFrom(ResourceLocation loc, Supplier<StructureProcessorList> processorList, JigsawPattern.PlacementBehaviour placementBehaviour) {
@@ -98,13 +102,15 @@ public class Villages {
 	private SingleJigsawPiece jigsawPieceFrom(Template template) { return new SingleJigsawPiece(template); }
 
 	private void addTemplatesToPool(
-		Collection<Template> houses, int weight, JigsawPattern.PlacementBehaviour placementBehaviour, StructureProcessorList processorList, ResourceLocation pool
+		Collection<Pair<Template, Integer>> houses, JigsawPattern.PlacementBehaviour placementBehaviour, StructureProcessorList processorList, ResourceLocation pool
 	) {
-		addToPool(houses.stream().map(this::jigsawPieceFrom).collect(Collectors.toList()), weight, pool);
+		addToPool(houses.stream()
+			.map(pair -> Pair.of(jigsawPieceFrom(pair.getFirst()), pair.getSecond()))
+			.collect(Collectors.toList()), pool);
 	}
 
 	private void addToPool(
-		Collection<SingleJigsawPiece> houses, int weight, ResourceLocation pool
+		Collection<Pair<SingleJigsawPiece, Integer>> houses, ResourceLocation pool
 	) {
 		JigsawPattern oldPattern = WorldGenRegistries.JIGSAW_POOL.getOrDefault(pool);
 		if(oldPattern == null) {
@@ -112,10 +118,27 @@ public class Villages {
 			return;
 		}
 		Map<JigsawPiece, Integer> allPieces = CollectionUtils.group(oldPattern.getShuffledPieces(new Random(0)));
-		for(SingleJigsawPiece house : houses) {
-			allPieces.put(house, weight);
+		for(Pair<SingleJigsawPiece, Integer> pair : houses) {
+			allPieces.put(pair.getFirst(), pair.getSecond());
 		}
-		Registry.register(WorldGenRegistries.JIGSAW_POOL, pool, new JigsawPattern(pool, oldPattern.getName(), allPieces.entrySet().stream().map(e -> Pair
+		registerPoolEntries(allPieces, pool, oldPattern.getName());
+	}
+
+	private void removeSignpostPiecesFromPool(ResourceLocation pool) {
+		JigsawPattern oldPattern = WorldGenRegistries.JIGSAW_POOL.getOrDefault(pool);
+		if(oldPattern == null) {
+			Signpost.LOGGER.error("Tried to remove elements from village pool " + pool + ", but it was not found in the registry.");
+			return;
+		}
+		Map<JigsawPiece, Integer> allPieces = CollectionUtils.group(
+			oldPattern.getShuffledPieces(new Random(0))
+				.stream().filter(piece -> !(piece instanceof SignpostJigsawPiece || piece instanceof WaystoneJigsawPiece))
+				.collect(Collectors.toCollection(ArrayList<JigsawPiece>::new)));
+		registerPoolEntries(allPieces, pool, oldPattern.getName());
+	}
+
+	private static void registerPoolEntries(Map<JigsawPiece, Integer> pieces, ResourceLocation pool, ResourceLocation patternName) {
+		Registry.register(WorldGenRegistries.JIGSAW_POOL, pool, new JigsawPattern(pool, patternName, pieces.entrySet().stream().map(e -> Pair
 			.of(e.getKey(), e.getValue())).collect(Collectors.toList())));
 	}
 

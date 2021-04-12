@@ -1,9 +1,8 @@
 package gollorum.signpost.minecraft.crafting;
 
-import gollorum.signpost.minecraft.Config;
+import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.block.Waystone;
-import gollorum.signpost.minecraft.registry.ItemRegistry;
 import gollorum.signpost.minecraft.registry.RecipeRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.inventory.CraftingInventory;

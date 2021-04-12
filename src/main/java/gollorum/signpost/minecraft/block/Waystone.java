@@ -3,7 +3,7 @@ package gollorum.signpost.minecraft.block;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneLibrary;
-import gollorum.signpost.minecraft.Config;
+import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
 import gollorum.signpost.minecraft.gui.Colors;
 import gollorum.signpost.minecraft.gui.RequestWaystoneGui;

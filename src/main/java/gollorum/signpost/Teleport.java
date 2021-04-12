@@ -1,7 +1,7 @@
 package gollorum.signpost;
 
 import gollorum.signpost.blockpartdata.types.Sign;
-import gollorum.signpost.minecraft.Config;
+import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.Colors;
 import gollorum.signpost.minecraft.gui.ConfirmTeleportGui;
@@ -12,7 +12,6 @@ import gollorum.signpost.utils.TileEntityUtils;
 import gollorum.signpost.utils.WaystoneLocationData;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import gollorum.signpost.utils.serialization.OptionalSerializer;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.Item;
@@ -71,13 +70,13 @@ public class Teleport {
     }
 
     public static ItemStack getCost(PlayerEntity player, Vector3 from, Vector3 to) {
-        Item item = Registry.ITEM.getOrDefault(new ResourceLocation(Config.Server.costItem.get()));
+        Item item = Registry.ITEM.getOrDefault(new ResourceLocation(Config.Server.teleport.costItem.get()));
         if(item.equals(Items.AIR) || player.isCreative() || player.isSpectator()) return ItemStack.EMPTY;
-        int distancePerPayment = Config.Server.distancePerPayment.get();
+        int distancePerPayment = Config.Server.teleport.distancePerPayment.get();
         int distanceDependentCost = distancePerPayment < 0
             ? 0
             : (int)(from.distanceTo(to) / distancePerPayment);
-        return new ItemStack(item, Config.Server.constantPayment.get() + distanceDependentCost);
+        return new ItemStack(item, Config.Server.teleport.constantPayment.get() + distanceDependentCost);
     }
 
     public static final class Request implements PacketHandler.Event<Request.Package> {

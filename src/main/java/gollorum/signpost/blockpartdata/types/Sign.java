@@ -2,7 +2,7 @@ package gollorum.signpost.blockpartdata.types;
 
 import gollorum.signpost.*;
 import gollorum.signpost.interactions.InteractionInfo;
-import gollorum.signpost.minecraft.Config;
+import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.block.Post;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.RequestSignGui;
@@ -144,10 +144,10 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
     }
 
     private void tryTeleport(ServerPlayerEntity player, PostTile.TilePartInfo tilePartInfo) {
-        if(Config.Server.enableTeleport.get() && destination.isPresent() && WaystoneLibrary.getInstance().contains(destination.get())) {
+        if(Config.Server.teleport.enableTeleport.get() && destination.isPresent() && WaystoneLibrary.getInstance().contains(destination.get())) {
             WaystoneData data = WaystoneLibrary.getInstance().getData(destination.get());
             boolean isDiscovered = WaystoneLibrary.getInstance()
-                .isDiscovered(new PlayerHandle(player), destination.get()) || !Config.Server.enforceDiscovery.get();
+                .isDiscovered(new PlayerHandle(player), destination.get()) || !Config.Server.teleport.enforceDiscovery.get();
             PacketHandler.send(
                 PacketDistributor.PLAYER.with(() -> player),
                 new Teleport.Request.Package(

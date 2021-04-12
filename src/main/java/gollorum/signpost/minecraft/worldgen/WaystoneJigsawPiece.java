@@ -7,7 +7,7 @@ import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
-import gollorum.signpost.minecraft.Config;
+import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.utils.WaystoneLocationData;
 import gollorum.signpost.utils.WorldLocation;
@@ -98,10 +98,9 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 		Random random,
 		boolean shouldUseJigsawReplacementStructureProcessor
 	) {
+		if(!Config.Server.worldGen.isVillageGenerationEnabled.get()) return false;
+		if(generatedWaystones.containsKey(villageLocation)) return false;
 
-		if(generatedWaystones.containsKey(villageLocation)) {
-			return false;
-		}
 		List<ModelWaystone> allowedWaystones = getAllowedWaystones();
 		if(allowedWaystones.size() == 0) {
 			Signpost.LOGGER.warn("Tried to generate a waystone, but the list of allowed waystones was empty.");
@@ -178,7 +177,7 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 
 	private static List<ModelWaystone> getAllowedWaystones() {
 		return ModelWaystone.variants.stream()
-			.filter(v -> Config.Server.allowedVillageWaystones.get().contains(v.name))
+			.filter(v -> Config.Server.worldGen.allowedVillageWaystones.get().contains(v.name))
 			.map(v -> v.block)
 			.collect(Collectors.toList());
 	}
