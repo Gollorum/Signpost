@@ -7,7 +7,6 @@ import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.SignGui;
 import gollorum.signpost.utils.BlockPartInstance;
-import gollorum.signpost.utils.Delay;
 import gollorum.signpost.utils.TileEntityUtils;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.block.Block;
@@ -43,7 +42,6 @@ import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.util.Lazy;
 
 import javax.annotation.Nullable;

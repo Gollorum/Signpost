@@ -7,7 +7,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
-import gollorum.signpost.minecraft.gui.Colors;
+import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;

@@ -16,6 +16,7 @@ import gollorum.signpost.utils.math.geometry.AABB;
 import gollorum.signpost.utils.math.geometry.Intersectable;
 import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.Vector3;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -37,10 +38,8 @@ public class Post implements BlockPart<Post> {
 
     public static final BlockPartMetadata<Post> METADATA = new BlockPartMetadata<>(
         "Post",
-        (post, keyPrefix, compound) -> {
-            compound.putString(keyPrefix + "texture", post.texture.toString());
-        },
-        (compound, keyPrefix) -> new Post(new ResourceLocation(compound.getString(keyPrefix + "texture")))
+        (post, compound) -> compound.putString("texture", post.texture.toString()),
+        (compound) -> new Post(new ResourceLocation(compound.getString("texture")))
     );
 
     private ResourceLocation texture;
@@ -106,8 +105,8 @@ public class Post implements BlockPart<Post> {
     }
 
     @Override
-    public void writeTo(CompoundNBT compound, String keyPrefix) {
-        METADATA.writeTo(this, compound, keyPrefix);
+    public void writeTo(CompoundNBT compound) {
+        METADATA.write(this, compound);
     }
 
     private void notifyTextureChanged(InteractionInfo info) {
@@ -118,9 +117,12 @@ public class Post implements BlockPart<Post> {
     }
 
     @Override
-    public void readMutationUpdate(CompoundNBT compound, TileEntity tile) {
+    public void readMutationUpdate(CompoundNBT compound, TileEntity tile, PlayerEntity editingPlayer) {
         setTexture(new ResourceLocation(compound.getString("texture")));
     }
+
+    @Override
+    public boolean hasThePermissionToEdit(PlayerEntity player) { return true; }
 
     @Override
     public Collection<ItemStack> getDrops(PostTile tile) {

@@ -1,10 +1,9 @@
-package gollorum.signpost.minecraft.gui;
+package gollorum.signpost.minecraft.gui.utils;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import gollorum.signpost.minecraft.rendering.FlippableModel;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.gui.widget.button.ImageButton;
-import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.item.ItemStack;
 
 import java.util.ArrayList;

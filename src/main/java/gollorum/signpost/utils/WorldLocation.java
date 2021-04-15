@@ -60,36 +60,39 @@ public class WorldLocation {
     public static final class Serializer implements CompoundSerializable<WorldLocation>{
 
         @Override
-        public void writeTo(WorldLocation worldLocation, CompoundNBT compound, String keyPrefix) {
-            BlockPosSerializer.INSTANCE.writeTo(worldLocation.blockPos, compound, keyPrefix + "Pos");
-            WorldSerializer.INSTANCE.writeTo(worldLocation.world, compound, keyPrefix + "World");
+        public CompoundNBT write(WorldLocation worldLocation, CompoundNBT compound) {
+            compound.put("Pos", BlockPosSerializer.INSTANCE.write(worldLocation.blockPos));
+            compound.put("World", WorldSerializer.INSTANCE.write(worldLocation.world));
+            return compound;
         }
 
         @Override
-        public boolean isContainedIn(CompoundNBT compound, String keyPrefix) {
-            return BlockPosSerializer.INSTANCE.isContainedIn(compound, keyPrefix + "Pos") &&
-                WorldSerializer.INSTANCE.isContainedIn(compound, keyPrefix + "World");
+        public boolean isContainedIn(CompoundNBT compound) {
+            return compound.contains("Pos")
+                && BlockPosSerializer.INSTANCE.isContainedIn(compound.getCompound("Pos"))
+                && compound.contains("World")
+                && WorldSerializer.INSTANCE.isContainedIn(compound.getCompound("World"));
         }
 
         @Override
-        public WorldLocation read(CompoundNBT compound, String keyPrefix) {
+        public WorldLocation read(CompoundNBT compound) {
             return new WorldLocation(
-                BlockPosSerializer.INSTANCE.read(compound, keyPrefix + "Pos"),
-                WorldSerializer.INSTANCE.read(compound, keyPrefix + "World")
+                BlockPosSerializer.INSTANCE.read(compound.getCompound("Pos")),
+                WorldSerializer.INSTANCE.read(compound.getCompound("World"))
             );
         }
 
         @Override
-        public void writeTo(WorldLocation worldLocation, PacketBuffer buffer) {
-            BlockPosSerializer.INSTANCE.writeTo(worldLocation.blockPos, buffer);
-            WorldSerializer.INSTANCE.writeTo(worldLocation.world, buffer);
+        public void write(WorldLocation worldLocation, PacketBuffer buffer) {
+            BlockPosSerializer.INSTANCE.write(worldLocation.blockPos, buffer);
+            WorldSerializer.INSTANCE.write(worldLocation.world, buffer);
         }
 
         @Override
-        public WorldLocation readFrom(PacketBuffer buffer) {
+        public WorldLocation read(PacketBuffer buffer) {
             return new WorldLocation(
-                BlockPosSerializer.INSTANCE.readFrom(buffer),
-                WorldSerializer.INSTANCE.readFrom(buffer)
+                BlockPosSerializer.INSTANCE.read(buffer),
+                WorldSerializer.INSTANCE.read(buffer)
             );
         }
     }

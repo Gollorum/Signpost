@@ -94,18 +94,19 @@ public abstract class Overlay {
 
     public static final CompoundSerializable<Overlay> Serializer = new CompoundSerializable<Overlay>() {
         @Override
-        public void writeTo(Overlay overlay, CompoundNBT compound, String keyPrefix) {
-            compound.putString(keyPrefix + "Id", overlay.id);
+        public CompoundNBT write(Overlay overlay, CompoundNBT compound) {
+            compound.putString("Id", overlay.id);
+            return compound;
         }
 
         @Override
-        public boolean isContainedIn(CompoundNBT compound, String keyPrefix) {
-            return compound.contains(keyPrefix + "Id");
+        public boolean isContainedIn(CompoundNBT compound) {
+            return compound.contains("Id");
         }
 
         @Override
-        public Overlay read(CompoundNBT compound, String keyPrefix) {
-            String id = compound.getString(keyPrefix + "Id");
+        public Overlay read(CompoundNBT compound) {
+            String id = compound.getString("Id");
             if(!overlayRegistry.containsKey(id)) {
                 Signpost.LOGGER.error("Tried to read overlay with id " + id + ", but it was not registered.");
                 return Gras;

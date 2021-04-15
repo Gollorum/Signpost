@@ -3,18 +3,19 @@ package gollorum.signpost.minecraft.events;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.utils.WaystoneLocationData;
 
+import java.util.Optional;
+
 public class WaystoneAddedOrRemovedEvent extends WaystoneUpdatedEvent {
 
-	public final boolean shouldLock;
+	public final Optional<PlayerHandle> owner;
 
 	public WaystoneAddedOrRemovedEvent(
 		WaystoneLocationData location,
 		String name,
-		PlayerHandle playerHandle,
-		boolean shouldLock
+		Optional<PlayerHandle> owner
 	) {
-		super(location, name, playerHandle);
-		this.shouldLock = shouldLock;
+		super(location, name);
+		this.owner = owner;
 	}
 
 	@Override

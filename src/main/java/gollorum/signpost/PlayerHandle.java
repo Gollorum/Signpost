@@ -1,18 +1,21 @@
 package gollorum.signpost;
 
 import gollorum.signpost.utils.serialization.CompoundSerializable;
+import gollorum.signpost.utils.serialization.OptionalSerializer;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.Util;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 public class PlayerHandle {
 
-	public static final PlayerHandle Invalid = new PlayerHandle(new UUID(0, 0));
+	public static final PlayerHandle Invalid = new PlayerHandle((LivingEntity) null);
 	public final UUID id;
 
     public PlayerHandle(@Nonnull UUID id) {
@@ -20,7 +23,7 @@ public class PlayerHandle {
     }
 
     public PlayerHandle(@Nullable LivingEntity player) {
-        this.id = player == null ? UUID.randomUUID() : player.getUniqueID();
+        this.id = player == null ? Util.DUMMY_UUID : player.getUniqueID();
     }
 
     public static PlayerHandle from(@Nullable LivingEntity player) {
@@ -40,34 +43,33 @@ public class PlayerHandle {
         return id.hashCode();
     }
 
-    public static final Serializer SERIALIZER  = new Serializer();
-
-    public static class Serializer implements CompoundSerializable<PlayerHandle> {
+    public static final CompoundSerializable<PlayerHandle> Serializer = new CompoundSerializable<PlayerHandle>() {
 
         @Override
-        public void writeTo(PlayerHandle playerHandle, CompoundNBT compound, String keyPrefix) {
-            compound.putUniqueId(keyPrefix + "Id", playerHandle.id);
+        public CompoundNBT write(PlayerHandle playerHandle, CompoundNBT compound) {
+            compound.putUniqueId("Id", playerHandle.id);
+            return compound;
         }
 
         @Override
-        public boolean isContainedIn(CompoundNBT compound, String keyPrefix) {
-            return compound.contains(keyPrefix + "Id");
+        public boolean isContainedIn(CompoundNBT compound) {
+            return compound.contains("Id");
         }
 
         @Override
-        public PlayerHandle read(CompoundNBT compound, String keyPrefix) {
-            return new PlayerHandle(compound.getUniqueId(keyPrefix + "Id"));
+        public PlayerHandle read(CompoundNBT compound) {
+            return new PlayerHandle(compound.getUniqueId("Id"));
         }
 
         @Override
-        public void writeTo(PlayerHandle playerHandle, PacketBuffer buffer) {
+        public void write(PlayerHandle playerHandle, PacketBuffer buffer) {
             buffer.writeUniqueId(playerHandle.id);
         }
 
         @Override
-        public PlayerHandle readFrom(PacketBuffer buffer) {
+        public PlayerHandle read(PacketBuffer buffer) {
             return new PlayerHandle(buffer.readUniqueId());
         }
-    }
+    };
 
 }

@@ -1,4 +1,4 @@
-package gollorum.signpost.minecraft.gui;
+package gollorum.signpost.minecraft.gui.utils;
 
 public interface WithMutableX {
 

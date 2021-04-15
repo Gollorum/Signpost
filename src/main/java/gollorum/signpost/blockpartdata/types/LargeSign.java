@@ -1,22 +1,25 @@
 package gollorum.signpost.blockpartdata.types;
 
+import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.WaystoneHandle;
+import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.Post;
 import gollorum.signpost.minecraft.utils.CoordinatesUtil;
-import gollorum.signpost.blockpartdata.Overlay;
+import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.utils.BlockPartMetadata;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.AABB;
 import gollorum.signpost.utils.math.geometry.Matrix4x4;
 import gollorum.signpost.utils.math.geometry.TransformedBox;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import gollorum.signpost.utils.serialization.ItemStackSerializer;
-import gollorum.signpost.utils.serialization.OptionalSerializer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Util;
+import net.minecraft.util.text.TranslationTextComponent;
 
 import java.util.Optional;
 
@@ -29,39 +32,32 @@ public class LargeSign extends Sign<LargeSign> {
 
     public static final BlockPartMetadata<LargeSign> METADATA = new BlockPartMetadata<>(
         "large_sign",
-        (sign, keyPrefix, compound) -> {
-            Angle.SERIALIZER.writeTo(sign.angle, compound, keyPrefix + "Angle");
-            compound.putString(keyPrefix + "Text0", sign.text[0]);
-            compound.putString(keyPrefix + "Text1", sign.text[1]);
-            compound.putString(keyPrefix + "Text2", sign.text[2]);
-            compound.putString(keyPrefix + "Text3", sign.text[3]);
-            compound.putBoolean(keyPrefix + "Flip", sign.flip);
-            compound.putString(keyPrefix + "Texture", sign.mainTexture.toString());
-            compound.putString(keyPrefix + "TextureDark", sign.secondaryTexture.toString());
-            Overlay.Serializer.optional().writeTo(sign.overlay, compound, "Overlay");
-            compound.putInt(keyPrefix + "Color", sign.color);
-            WaystoneHandle.SERIALIZER.optional().writeTo(sign.destination, compound, "Destination");
-            ItemStackSerializer.Instance.writeTo(sign.itemToDropOnBreak, compound, "ItemToDropOnBreak");
-            compound.putString(keyPrefix + "ModelType", sign.modelType.name);
+        (sign, compound) -> {
+            compound.put("CoreData", CoreData.SERIALIZER.write(sign.coreData));
+            compound.putString("Text0", sign.text[0]);
+            compound.putString("Text1", sign.text[1]);
+            compound.putString("Text2", sign.text[2]);
+            compound.putString("Text3", sign.text[3]);
         },
-        (compound, keyPrefix) -> new LargeSign(
-            Angle.SERIALIZER.read(compound, keyPrefix + "Angle"),
+        (compound) -> new LargeSign(
+            CoreData.SERIALIZER.read(compound.getCompound("CoreData")),
             new String[]{
-                compound.getString(keyPrefix + "Text0"),
-                compound.getString(keyPrefix + "Text1"),
-                compound.getString(keyPrefix + "Text2"),
-                compound.getString(keyPrefix + "Text3")},
-            compound.getBoolean(keyPrefix + "Flip"),
-            new ResourceLocation(compound.getString(keyPrefix + "Texture")),
-            new ResourceLocation(compound.getString(keyPrefix + "TextureDark")),
-            Overlay.Serializer.optional().read(compound, "Overlay"),
-            compound.getInt(keyPrefix + "Color"),
-            WaystoneHandle.SERIALIZER.optional().read(compound, "Destination"),
-            ItemStackSerializer.Instance.read(compound, "ItemToDropOnBreak"),
-            Post.ModelType.getByName(compound.getString(keyPrefix + "ModelType"), true).orElse(Post.ModelType.Oak)
+                compound.getString("Text0"),
+                compound.getString("Text1"),
+                compound.getString("Text2"),
+                compound.getString("Text3")}
         ));
 
     private String[] text;
+
+    public LargeSign(
+        CoreData coreData,
+        String[] text
+    ) {
+        super(coreData);
+        assert text.length == 4;
+        this.text = text;
+    }
 
     public LargeSign(
         Angle angle,
@@ -73,12 +69,13 @@ public class LargeSign extends Sign<LargeSign> {
         int color,
         Optional<WaystoneHandle> destination,
         ItemStack itemToDropOnBreak,
-        Post.ModelType modelType
-    ) {
-        super(angle, flip, mainTexture, secondaryTexture, overlay, color, destination, modelType, itemToDropOnBreak);
-        assert text.length == 4;
-        this.text = text;
-    }
+        Post.ModelType modelType,
+        Optional<PlayerHandle> owner
+    ) { this(
+        new CoreData(angle, flip, mainTexture, secondaryTexture, overlay,
+            color, destination, modelType, itemToDropOnBreak, owner),
+        text
+    ); }
 
     public void setText(String[] text) {
         this.text = text;
@@ -88,8 +85,8 @@ public class LargeSign extends Sign<LargeSign> {
 
     @Override
     protected void regenerateTransformedBox() {
-        transformedBounds = new TransformedBox(LOCAL_BOUNDS).rotateAlong(Matrix4x4.Axis.Y, angle);
-        if(flip) transformedBounds = transformedBounds.scale(new Vector3(1, 1, -1));
+        transformedBounds = new TransformedBox(LOCAL_BOUNDS).rotateAlong(Matrix4x4.Axis.Y, coreData.angle);
+        if(coreData.flip) transformedBounds = transformedBounds.scale(new Vector3(1, 1, -1));
     }
 
     private void notifyTextChanged(InteractionInfo info) {
@@ -102,7 +99,12 @@ public class LargeSign extends Sign<LargeSign> {
     }
 
     @Override
-    public void readMutationUpdate(CompoundNBT compound, TileEntity tile) {
+    public void readMutationUpdate(CompoundNBT compound, TileEntity tile, PlayerEntity editingPlayer) {
+        if(editingPlayer != null && editingPlayer.isServerWorld() && !hasThePermissionToEdit(editingPlayer)) {
+            // This should not happen unless a player tries to hacc
+            editingPlayer.sendMessage(new TranslationTextComponent(LangKeys.noPermissionSignpost), Util.DUMMY_UUID);
+            return;
+        }
         if (compound.contains("Text0")) {
             text[0] = compound.getString("Text0");
         }
@@ -115,7 +117,7 @@ public class LargeSign extends Sign<LargeSign> {
         if (compound.contains("Text3")) {
             text[3] = compound.getString("Text3");
         }
-        super.readMutationUpdate(compound, tile);
+        super.readMutationUpdate(compound.getCompound("CoreData"), tile, editingPlayer);
     }
 
     @Override
@@ -124,8 +126,8 @@ public class LargeSign extends Sign<LargeSign> {
     }
 
     @Override
-    public void writeTo(CompoundNBT compound, String keyPrefix) {
-        METADATA.writeTo(this, compound, keyPrefix);
+    public void writeTo(CompoundNBT compound) {
+        METADATA.write(this, compound);
     }
 
 }

@@ -50,8 +50,8 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 		ListNBT ret = new ListNBT();
 		ret.addAll(generatedWaystones.entrySet().stream().map(e -> {
 			CompoundNBT compound = new CompoundNBT();
-			BlockPosSerializer.INSTANCE.writeTo(e.getKey(), compound, "refPos");
-			WaystoneHandle.SERIALIZER.writeTo(e.getValue(), compound, "waystone");
+			compound.put("refPos", BlockPosSerializer.INSTANCE.write(e.getKey()));
+			compound.put("waystone", WaystoneHandle.Serializer.write(e.getValue()));
 			return compound;
 		}).collect(Collectors.toList()));
 		return ret;
@@ -61,8 +61,8 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 		generatedWaystones.clear();
 		generatedWaystones.putAll(
 			nbt.stream().collect(Collectors.toMap(
-				entry -> BlockPosSerializer.INSTANCE.read((CompoundNBT) entry, "refPos"),
-				entry -> WaystoneHandle.SERIALIZER.read((CompoundNBT) entry, "waystone")
+				entry -> BlockPosSerializer.INSTANCE.read(((CompoundNBT) entry).getCompound("refPos")),
+				entry -> WaystoneHandle.Serializer.read(((CompoundNBT) entry).getCompound("waystone"))
 			)));
 	}
 
@@ -125,8 +125,8 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 			WaystoneLibrary.getInstance().update(
 				name,
 				locationDataFor(pos, seedReader, facing),
-				PlayerHandle.Invalid,
-				false
+				null,
+				Optional.empty()
 			);
 			registerGenerated(name, villageLocation);
 

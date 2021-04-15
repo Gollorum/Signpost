@@ -35,9 +35,9 @@ public class Config {
 
 		public final TeleportConfig teleport;
 		public final WorldGenConfig worldGen;
+		public final PermissionConfig permissions;
 
 		public final ForgeConfigSpec.ConfigValue<List<? extends String>> allowedWaystones;
-		public final ForgeConfigSpec.ConfigValue<Integer> editLockedWaystoneCommandPermissionLevel;
 
 		public Server(ForgeConfigSpec.Builder builder) {
 			builder.push("teleport");
@@ -57,7 +57,10 @@ public class Config {
 				n -> n instanceof String &&
 					ModelWaystone.variants.contains(new ModelWaystone.Variant((String) n, null, 0
 			)));
-			editLockedWaystoneCommandPermissionLevel = builder.define("edit_locked_waystones_command_permission_level", 3);
+
+			builder.push("permissions");
+			permissions = new PermissionConfig(builder);
+			builder.pop();
 
 			builder.push("world_gen");
 			worldGen = new WorldGenConfig(builder);
@@ -72,11 +75,13 @@ public class Config {
 
 		public Client(ForgeConfigSpec.Builder builder) {
 			builder.push("teleport");
+
 			enableConfirmationScreen = builder
 				.comment(
 					"Defines whether the confirmation screen pops when using a sign to teleport.",
 					"CAUTION 1: The necessary items will be removed without notice if costs are involved.",
-					"CAUTION 2: The only way to edit a sign with destination is through this screen."
+					"CAUTION 2: The only way to edit a sign with destination is through this screen.",
+					"This should probably never be turned off. Why did I make it an option? No idea."
 				).define("enable_confirmation_screen", true);
 			builder.pop();
 		}

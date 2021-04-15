@@ -13,27 +13,28 @@ public class WorldSerializer implements CompoundSerializable<Either<World, Resou
     private WorldSerializer(){}
 
     @Override
-    public void writeTo(Either<World, ResourceLocation> world, CompoundNBT compound, String keyPrefix) {
-        compound.putString(keyPrefix + "DimensionId", world.rightOr(w -> w.getDimensionKey().getLocation()).toString());
+    public CompoundNBT write(Either<World, ResourceLocation> world, CompoundNBT compound) {
+        compound.putString("DimensionId", world.rightOr(w -> w.getDimensionKey().getLocation()).toString());
+        return compound;
     }
 
     @Override
-    public Either<World, ResourceLocation> read(CompoundNBT compound, String keyPrefix) {
-        return Either.right(new ResourceLocation(compound.getString(keyPrefix + "DimensionId")));
+    public Either<World, ResourceLocation> read(CompoundNBT compound) {
+        return Either.right(new ResourceLocation(compound.getString("DimensionId")));
     }
 
     @Override
-    public boolean isContainedIn(CompoundNBT compound, String keyPrefix) {
-        return compound.contains(keyPrefix + "DimensionId");
+    public boolean isContainedIn(CompoundNBT compound) {
+        return compound.contains("DimensionId");
     }
 
     @Override
-    public void writeTo(Either<World, ResourceLocation> world, PacketBuffer buffer) {
+    public void write(Either<World, ResourceLocation> world, PacketBuffer buffer) {
         buffer.writeResourceLocation(world.rightOr(w -> w.getDimensionKey().getLocation()));
     }
 
     @Override
-    public Either<World, ResourceLocation> readFrom(PacketBuffer buffer) {
+    public Either<World, ResourceLocation> read(PacketBuffer buffer) {
         return Either.right(buffer.readResourceLocation());
     }
 

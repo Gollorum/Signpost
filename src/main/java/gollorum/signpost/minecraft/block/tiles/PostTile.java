@@ -15,7 +15,6 @@ import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.BlockPosSerializer;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.ItemStackSerializer;
-import gollorum.signpost.utils.serialization.OptionalSerializer;
 import io.netty.util.internal.ConcurrentSet;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.item.ItemEntity;
@@ -165,12 +164,12 @@ public class PostTile extends TileEntity {
                 Map.Entry<UUID, BlockPartInstance> e = instances.get(i);
                 BlockPartInstance instance = e.getValue();
                 CompoundNBT subComp = instance.blockPart.write();
-                Vector3.SERIALIZER.writeTo(instance.offset, subComp, "Offset");
+                subComp.put("Offset", Vector3.Serializer.write(instance.offset));
                 compound.put(entry.getKey().identifier + "_" + i, subComp);
                 subComp.putUniqueId("PartId", e.getKey());
             }
         }
-        ItemStackSerializer.Instance.writeTo(drop, compound, "Drop");
+        compound.put("Drop", ItemStackSerializer.Instance.write(drop, new CompoundNBT()));
     }
 
     @Override
@@ -188,7 +187,7 @@ public class PostTile extends TileEntity {
                     comp.getUniqueId("PartId"),
                     new BlockPartInstance(
                         meta.read(comp),
-                        Vector3.SERIALIZER.read(comp, "Offset")
+                        Vector3.Serializer.read(comp.getCompound("Offset"))
                     ),
                     ItemStack.EMPTY,
                     PlayerHandle.Invalid
@@ -200,7 +199,7 @@ public class PostTile extends TileEntity {
             ItemStack.EMPTY,
             PlayerHandle.Invalid
         );
-        drop = ItemStackSerializer.Instance.read(compound, "Drop");
+        drop = ItemStackSerializer.Instance.read(compound.getCompound("Drop"));
     }
 
     @Override
@@ -265,50 +264,48 @@ public class PostTile extends TileEntity {
             this.identifier = identifier;
         }
 
-        public static final Serializer SERIALIZER = new Serializer();
-
-        public static final class Serializer implements CompoundSerializable<TilePartInfo> {
+        public static final CompoundSerializable<TilePartInfo> Serializer = new CompoundSerializable<TilePartInfo>() {
 
             @Override
-            public void writeTo(TilePartInfo tilePartInfo, CompoundNBT compound, String keyPrefix) {
-                CompoundNBT inner = new CompoundNBT();
-                inner.putString("Dimension", tilePartInfo.dimensionKey.toString());
-                BlockPosSerializer.INSTANCE.writeTo(tilePartInfo.pos, compound, "Pos");
-                inner.putUniqueId("Id", tilePartInfo.identifier);
-                compound.put(keyPrefix + "TilePartInfo", inner);
+            public CompoundNBT write(TilePartInfo tilePartInfo, CompoundNBT compound) {
+                compound.putString("Dimension", tilePartInfo.dimensionKey.toString());
+                compound.put("Pos", BlockPosSerializer.INSTANCE.write(tilePartInfo.pos, compound));
+                compound.putUniqueId("Id", tilePartInfo.identifier);
+                return compound;
             }
 
             @Override
-            public boolean isContainedIn(CompoundNBT compound, String keyPrefix) {
-                return compound.contains(keyPrefix + "TilePartInfo");
+            public boolean isContainedIn(CompoundNBT compound) {
+                return compound.contains("Dimension")
+                    && compound.contains("Pos")
+                    && compound.contains("Id");
             }
 
             @Override
-            public TilePartInfo read(CompoundNBT compound, String keyPrefix) {
-                CompoundNBT inner = compound.getCompound(keyPrefix + "TilePartInfo");
+            public TilePartInfo read(CompoundNBT compound) {
                 return new TilePartInfo(
-                    new ResourceLocation(inner.getString("Dimension")),
-                    BlockPosSerializer.INSTANCE.read(compound, "Pos"),
-                    inner.getUniqueId("Id")
+                    new ResourceLocation(compound.getString("Dimension")),
+                    BlockPosSerializer.INSTANCE.read(compound.getCompound("Pos")),
+                    compound.getUniqueId("Id")
                 );
             }
 
             @Override
-            public void writeTo(TilePartInfo tilePartInfo, PacketBuffer buffer) {
+            public void write(TilePartInfo tilePartInfo, PacketBuffer buffer) {
                 buffer.writeResourceLocation(tilePartInfo.dimensionKey);
-                BlockPosSerializer.INSTANCE.writeTo(tilePartInfo.pos, buffer);
+                BlockPosSerializer.INSTANCE.write(tilePartInfo.pos, buffer);
                 buffer.writeUniqueId(tilePartInfo.identifier);
             }
 
             @Override
-            public TilePartInfo readFrom(PacketBuffer buffer) {
+            public TilePartInfo read(PacketBuffer buffer) {
                 return new TilePartInfo(
                     buffer.readResourceLocation(),
-                    BlockPosSerializer.INSTANCE.readFrom(buffer),
+                    BlockPosSerializer.INSTANCE.read(buffer),
                     buffer.readUniqueId()
                 );
             }
-        }
+        };
 
     }
 
@@ -344,24 +341,24 @@ public class PostTile extends TileEntity {
 
         @Override
         public void encode(Packet message, PacketBuffer buffer) {
-            TilePartInfo.SERIALIZER.writeTo(message.info, buffer);
+            TilePartInfo.Serializer.write(message.info, buffer);
             buffer.writeString(message.partData.getString());
             buffer.writeString(message.partMetaIdentifier);
-            Vector3.SERIALIZER.writeTo(message.offset, buffer);
+            Vector3.Serializer.write(message.offset, buffer);
             buffer.writeItemStack(message.cost);
-            PlayerHandle.SERIALIZER.writeTo(message.player, buffer);
+            PlayerHandle.Serializer.write(message.player, buffer);
         }
 
         @Override
         public Packet decode(PacketBuffer buffer) {
             try {
                 return new Packet(
-                    TilePartInfo.SERIALIZER.readFrom(buffer),
+                    TilePartInfo.Serializer.read(buffer),
                     JsonToNBT.getTagFromJson(buffer.readString(32767)),
                     buffer.readString(32767),
-                    Vector3.SERIALIZER.readFrom(buffer),
+                    Vector3.Serializer.read(buffer),
                     buffer.readItemStack(),
-                    PlayerHandle.SERIALIZER.readFrom(buffer)
+                    PlayerHandle.Serializer.read(buffer)
                 );
             } catch (CommandSyntaxException e) {
                 e.printStackTrace();
@@ -432,13 +429,13 @@ public class PostTile extends TileEntity {
 
         @Override
         public void encode(Packet message, PacketBuffer buffer) {
-            TilePartInfo.SERIALIZER.writeTo(message.info, buffer);
+            TilePartInfo.Serializer.write(message.info, buffer);
             buffer.writeBoolean(message.shouldDropItem);
         }
 
         @Override
         public Packet decode(PacketBuffer buffer) {
-            return new Packet(TilePartInfo.SERIALIZER.readFrom(buffer), buffer.readBoolean());
+            return new Packet(TilePartInfo.Serializer.read(buffer), buffer.readBoolean());
         }
 
         @Override
@@ -504,20 +501,20 @@ public class PostTile extends TileEntity {
 
         @Override
         public void encode(Packet message, PacketBuffer buffer) {
-            TilePartInfo.SERIALIZER.writeTo(message.info, buffer);
+            TilePartInfo.Serializer.write(message.info, buffer);
             buffer.writeString(message.data.toString());
             buffer.writeString(message.partMetaIdentifier);
-            Vector3.SERIALIZER.optional().writeTo(message.offset, buffer);
+            Vector3.Serializer.optional().write(message.offset, buffer);
         }
 
         @Override
         public Packet decode(PacketBuffer buffer) {
             try {
                 return new Packet(
-                    TilePartInfo.SERIALIZER.readFrom(buffer),
+                    TilePartInfo.Serializer.read(buffer),
                     JsonToNBT.getTagFromJson(buffer.readString(32767)),
                     buffer.readString(32767),
-                    Vector3.SERIALIZER.optional().readFrom(buffer)
+                    Vector3.Serializer.optional().read(buffer)
                 );
             } catch (CommandSyntaxException e) {
                 throw new RuntimeException(e);
@@ -525,39 +522,42 @@ public class PostTile extends TileEntity {
         }
 
         @Override
-        public void handle(Packet message, Supplier<NetworkEvent.Context> context) {
-            context.get().enqueueWork(() ->
+        public void handle(Packet message, Supplier<NetworkEvent.Context> contextGetter) {
+            NetworkEvent.Context context = contextGetter.get();
+            boolean isServer = context.getDirection().getReceptionSide().isServer();
+            context.enqueueWork(() ->
                 TileEntityUtils.findTileEntity(
                     message.info.dimensionKey,
-                    context.get().getDirection().getReceptionSide().isClient(),
+                    !isServer,
                     message.info.pos,
                     PostTile.class
                 ).ifPresent(tile -> {
                     Optional<BlockPartInstance> part = tile.getPart(message.info.identifier);
                     if(part.isPresent()) {
-                        if(part.get().blockPart.getMeta().identifier.equals(message.partMetaIdentifier)) {
-                            part.get().blockPart.readMutationUpdate(message.data, tile);
+                        BlockPartInstance blockPartInstance = part.get();
+                        if(blockPartInstance.blockPart.getMeta().identifier.equals(message.partMetaIdentifier)) {
+                            blockPartInstance.blockPart.readMutationUpdate(message.data, tile, isServer ? context.getSender() : null);
                             if(message.offset.isPresent()) {
                                 tile.parts.remove(message.info.identifier);
-                                tile.parts.put(message.info.identifier, new BlockPartInstance(part.get().blockPart, message.offset.get()));
+                                tile.parts.put(message.info.identifier, new BlockPartInstance(blockPartInstance.blockPart, message.offset.get()));
                             }
                         } else {
                             Optional<BlockPartMetadata<?>> meta = partsMetadata.stream().filter(m -> m.identifier.equals(message.partMetaIdentifier)).findFirst();
                             if (meta.isPresent()) {
                                 tile.parts.remove(message.info.identifier);
                                 tile.parts.put(message.info.identifier,
-                                    new BlockPartInstance(meta.get().read(message.data), message.offset.orElse(part.get().offset)));
+                                    new BlockPartInstance(meta.get().read(message.data), message.offset.orElse(blockPartInstance.offset)));
                             } else {
                                 Signpost.LOGGER.warn("Could not find meta for part " + message.partMetaIdentifier);
                             }
                         }
                         tile.markDirty();
-                        if(context.get().getDirection().getReceptionSide().isServer())
+                        if(context.getDirection().getReceptionSide().isServer())
                             tile.sendToTracing(() -> message);
                     }
                     else Signpost.LOGGER.error("Tried to mutate a post part that wasn't present: " + message.info.identifier);
                 }));
-            context.get().setPacketHandled(true);
+            context.setPacketHandled(true);
         }
     }
 }

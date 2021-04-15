@@ -4,6 +4,7 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import gollorum.signpost.Teleport;
 import gollorum.signpost.blockpartdata.types.Sign;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.gui.utils.*;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.math.geometry.Vector3;
@@ -139,14 +140,16 @@ public class ConfirmTeleportGui extends Screen {
 		}
 		signInfo.ifPresent(info -> {
 			Rect editRect = new Rect(new Point(width / 2, editButtonTop), TextureResource.edit.size, Rect.XAlignment.Center, Rect.YAlignment.Top);
-			addButton(new ImageButton(
-				editRect.point.x, editRect.point.y,
-				editRect.width, editRect.height,
-				0, 0, TextureResource.edit.size.height,
-				TextureResource.edit.location,
-				TextureResource.edit.fileSize.width, TextureResource.edit.fileSize.height,
-				b -> SignGui.display(info.tile, info.sign, info.offset, info.tilePartInfo)
-			));
+			if(info.sign.hasThePermissionToEdit(getMinecraft().player)) {
+				addButton(new ImageButton(
+					editRect.point.x, editRect.point.y,
+					editRect.width, editRect.height,
+					0, 0, TextureResource.edit.size.height,
+					TextureResource.edit.location,
+					TextureResource.edit.fileSize.width, TextureResource.edit.fileSize.height,
+					b -> SignGui.display(info.tile, info.sign, info.offset, info.tilePartInfo)
+				));
+			}
 		});
 	}
 

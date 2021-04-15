@@ -8,7 +8,6 @@ import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.utils.TileEntityUtils;
 import javafx.util.Pair;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.Optional;
@@ -29,12 +28,12 @@ public class RequestSignGui implements PacketHandler.Event<RequestSignGui.Packag
 
 	@Override
 	public void encode(Package message, PacketBuffer buffer) {
-		PostTile.TilePartInfo.SERIALIZER.writeTo(message.tilePartInfo, buffer);
+		PostTile.TilePartInfo.Serializer.write(message.tilePartInfo, buffer);
 	}
 
 	@Override
 	public Package decode(PacketBuffer buffer) {
-		return new Package(PostTile.TilePartInfo.SERIALIZER.readFrom(buffer));
+		return new Package(PostTile.TilePartInfo.Serializer.read(buffer));
 	}
 
 	@Override

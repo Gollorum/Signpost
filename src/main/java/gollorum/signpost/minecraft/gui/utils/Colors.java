@@ -1,4 +1,4 @@
-package gollorum.signpost.minecraft.gui;
+package gollorum.signpost.minecraft.gui.utils;
 
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;

@@ -27,36 +27,33 @@ public class WaystoneHandle {
         return id.hashCode();
     }
 
-    public static final Serializer SERIALIZER  = new Serializer();
-
-    public static class Serializer implements CompoundSerializable<WaystoneHandle> {
-
-        private Serializer() {}
+    public static final CompoundSerializable<WaystoneHandle> Serializer = new CompoundSerializable<WaystoneHandle>() {
 
         @Override
-        public void writeTo(WaystoneHandle playerHandle, CompoundNBT compound, String keyPrefix) {
-            compound.putUniqueId(keyPrefix + "Id", playerHandle.id);
+        public CompoundNBT write(WaystoneHandle playerHandle, CompoundNBT compound) {
+            compound.putUniqueId("Id", playerHandle.id);
+            return compound;
         }
 
         @Override
-        public boolean isContainedIn(CompoundNBT compound, String keyPrefix) {
-            return compound.contains(keyPrefix + "Id");
+        public boolean isContainedIn(CompoundNBT compound) {
+            return compound.contains("Id");
         }
 
         @Override
-        public WaystoneHandle read(CompoundNBT compound, String keyPrefix) {
-            return new WaystoneHandle(compound.getUniqueId(keyPrefix + "Id"));
+        public WaystoneHandle read(CompoundNBT compound) {
+            return new WaystoneHandle(compound.getUniqueId("Id"));
         }
 
         @Override
-        public void writeTo(WaystoneHandle playerHandle, PacketBuffer buffer) {
+        public void write(WaystoneHandle playerHandle, PacketBuffer buffer) {
             buffer.writeUniqueId(playerHandle.id);
         }
 
         @Override
-        public WaystoneHandle readFrom(PacketBuffer buffer) {
+        public WaystoneHandle read(PacketBuffer buffer) {
             return new WaystoneHandle(buffer.readUniqueId());
         }
-    }
+    };
 
 }

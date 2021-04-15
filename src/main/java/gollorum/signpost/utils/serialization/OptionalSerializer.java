@@ -12,18 +12,19 @@ public final class OptionalSerializer<T> implements CompoundSerializable<Optiona
     public static final OptionalSerializer<net.minecraft.util.ResourceLocation> ResourceLocation = new OptionalSerializer<>(
         new CompoundSerializable<net.minecraft.util.ResourceLocation>() {
             @Override
-            public void writeTo(net.minecraft.util.ResourceLocation location, CompoundNBT compound, String keyPrefix) {
-                compound.putString(keyPrefix, location.toString());
+            public CompoundNBT write(net.minecraft.util.ResourceLocation location, CompoundNBT compound) {
+                compound.putString("ResourceLocation", location.toString());
+                return compound;
             }
 
             @Override
-            public boolean isContainedIn(CompoundNBT compound, String keyPrefix) {
-                return compound.contains(keyPrefix);
+            public boolean isContainedIn(CompoundNBT compound) {
+                return compound.contains("ResourceLocation");
             }
 
             @Override
-            public net.minecraft.util.ResourceLocation read(CompoundNBT compound, String keyPrefix) {
-                return new net.minecraft.util.ResourceLocation(compound.getString(keyPrefix));
+            public net.minecraft.util.ResourceLocation read(CompoundNBT compound) {
+                return new net.minecraft.util.ResourceLocation(compound.getString("ResourceLocation"));
             }
         }
     );
@@ -39,35 +40,36 @@ public final class OptionalSerializer<T> implements CompoundSerializable<Optiona
     }
 
     @Override
-    public void writeTo(Optional<T> t, CompoundNBT compound, String keyPrefix) {
-        compound.putBoolean(keyPrefix + "IsPresent", t.isPresent());
-        t.ifPresent(value -> valueSerializer.writeTo(value, compound, keyPrefix + "Value"));
+    public CompoundNBT write(Optional<T> t, CompoundNBT compound) {
+        compound.putBoolean("IsPresent", t.isPresent());
+        t.ifPresent(value -> compound.put("Value", valueSerializer.write(value)));
+        return compound;
     }
 
     @Override
-    public boolean isContainedIn(CompoundNBT compound, String keyPrefix) {
-        return valueSerializer.isContainedIn(compound, keyPrefix + "Value");
+    public boolean isContainedIn(CompoundNBT compound) {
+        return compound.contains("IsPresent");
     }
 
     @Override
-    public Optional<T> read(CompoundNBT compound, String keyPrefix) {
-        if(compound.getBoolean(keyPrefix + "IsPresent"))
-            return Optional.ofNullable(valueSerializer.read(compound, keyPrefix + "Value"));
+    public Optional<T> read(CompoundNBT compound) {
+        if(compound.getBoolean("IsPresent"))
+            return Optional.ofNullable(valueSerializer.read(compound.getCompound("Value")));
         else return Optional.empty();
     }
 
     @Override
-    public void writeTo(Optional<T> t, PacketBuffer buffer) {
+    public void write(Optional<T> t, PacketBuffer buffer) {
         if(t.isPresent()) {
             buffer.writeBoolean(true);
-            valueSerializer.writeTo(t.get(), buffer);
+            valueSerializer.write(t.get(), buffer);
         } else buffer.writeBoolean(false);
     }
 
     @Override
-    public Optional<T> readFrom(PacketBuffer buffer) {
+    public Optional<T> read(PacketBuffer buffer) {
         if(buffer.readBoolean())
-            return Optional.ofNullable(valueSerializer.readFrom(buffer));
+            return Optional.ofNullable(valueSerializer.read(buffer));
         else return Optional.empty();
     }
 

@@ -26,15 +26,15 @@ public class RequestWaystoneGui implements PacketHandler.Event<RequestWaystoneGu
 
 	@Override
 	public void encode(RequestWaystoneGui.Package message, PacketBuffer buffer) {
-		WorldLocation.SERIALIZER.writeTo(message.location, buffer);
-		WaystoneData.SERIALIZER.optional().writeTo(message.oldData, buffer);
+		WorldLocation.SERIALIZER.write(message.location, buffer);
+		WaystoneData.SERIALIZER.optional().write(message.oldData, buffer);
 	}
 
 	@Override
 	public RequestWaystoneGui.Package decode(PacketBuffer buffer) {
 		return new RequestWaystoneGui.Package(
-			WorldLocation.SERIALIZER.readFrom(buffer),
-			WaystoneData.SERIALIZER.optional().readFrom(buffer)
+			WorldLocation.SERIALIZER.read(buffer),
+			WaystoneData.SERIALIZER.optional().read(buffer)
 		);
 	}
 

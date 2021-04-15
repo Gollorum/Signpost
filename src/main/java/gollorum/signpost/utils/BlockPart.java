@@ -2,10 +2,12 @@ package gollorum.signpost.utils;
 
 import gollorum.signpost.interactions.Interactable;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 
 public interface BlockPart<T extends BlockPart<T>> extends Interactable {
@@ -17,12 +19,10 @@ public interface BlockPart<T extends BlockPart<T>> extends Interactable {
         writeTo(compound);
         return compound;
     }
-    void writeTo(CompoundNBT compound, String keyPrefix);
-    default void writeTo(CompoundNBT compound){
-        writeTo(compound, "");
-    }
+    void writeTo(CompoundNBT compound);
 
-    void readMutationUpdate(CompoundNBT compound, TileEntity tile);
+    void readMutationUpdate(CompoundNBT compound, TileEntity tile, @Nullable PlayerEntity editingPlayer);
+    boolean hasThePermissionToEdit(PlayerEntity player);
 
     Collection<ItemStack> getDrops(PostTile tile);
 

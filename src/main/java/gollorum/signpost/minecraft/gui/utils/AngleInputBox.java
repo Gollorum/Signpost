@@ -1,4 +1,4 @@
-package gollorum.signpost.minecraft.gui;
+package gollorum.signpost.minecraft.gui.utils;
 
 import gollorum.signpost.utils.math.Angle;
 import net.minecraft.client.gui.FontRenderer;

@@ -23,4 +23,7 @@ public class LangKeys {
 	public static final String waystoneNotFound = "signpost.waystoneNotFound";
 	public static final String noWaystones = "signpost.noWaystones";
 	public static final String tooExpensive = "signpost.tooExpensive";
+
+	public static final String noPermissionWaystone = "signpost:no_permission_to_edit_waystone";
+	public static final String noPermissionSignpost = "signpost:no_permission_to_edit_signpost";
 }

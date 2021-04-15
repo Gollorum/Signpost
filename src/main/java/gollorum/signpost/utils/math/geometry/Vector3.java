@@ -138,8 +138,6 @@ public final class Vector3 {
         return Objects.hash(x, y, z);
     }
 
-    public static final Serializer SERIALIZER = new Serializer();
-
     public Vector3 normalized() {
         float length = length();
         return new Vector3(x / length, y / length, z / length);
@@ -149,48 +147,47 @@ public final class Vector3 {
         return (float) Math.sqrt(x * x + y * y + z * z);
     }
 
-	public static final class Serializer implements CompoundSerializable<Vector3> {
-
-        private Serializer(){}
+    public static final CompoundSerializable<Vector3> Serializer = new CompoundSerializable<Vector3>() {
 
         @Override
-        public void writeTo(Vector3 vector3, CompoundNBT compound, String keyPrefix) {
-            compound.putFloat(keyPrefix + "X", vector3.x);
-            compound.putFloat(keyPrefix + "Y", vector3.y);
-            compound.putFloat(keyPrefix + "Z", vector3.z);
+        public CompoundNBT write(Vector3 vector3, CompoundNBT compound) {
+            compound.putFloat("X", vector3.x);
+            compound.putFloat("Y", vector3.y);
+            compound.putFloat("Z", vector3.z);
+            return compound;
         }
 
         @Override
-        public boolean isContainedIn(CompoundNBT compound, String keyPrefix) {
-            return compound.contains(keyPrefix + "X") &&
-                compound.contains(keyPrefix + "Y") &&
-                compound.contains(keyPrefix + "Z");
+        public boolean isContainedIn(CompoundNBT compound) {
+            return compound.contains("X")
+                && compound.contains("Y")
+                && compound.contains("Z");
         }
 
         @Override
-        public Vector3 read(CompoundNBT compound, String keyPrefix) {
+        public Vector3 read(CompoundNBT compound) {
             return new Vector3(
-                compound.getFloat(keyPrefix + "X"),
-                compound.getFloat(keyPrefix + "Y"),
-                compound.getFloat(keyPrefix + "Z")
+                compound.getFloat("X"),
+                compound.getFloat("Y"),
+                compound.getFloat("Z")
             );
         }
 
         @Override
-        public void writeTo(Vector3 vec, PacketBuffer buffer) {
+        public void write(Vector3 vec, PacketBuffer buffer) {
             buffer.writeFloat(vec.x);
             buffer.writeFloat(vec.y);
             buffer.writeFloat(vec.z);
         }
 
         @Override
-        public Vector3 readFrom(PacketBuffer buffer) {
+        public Vector3 read(PacketBuffer buffer) {
             return new Vector3(
                 buffer.readFloat(),
                 buffer.readFloat(),
                 buffer.readFloat()
             );
         }
-    }
+    };
 
 }

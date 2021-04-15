@@ -11,37 +11,38 @@ public class BlockPosSerializer implements CompoundSerializable<BlockPos> {
     private BlockPosSerializer(){}
 
     @Override
-    public void writeTo(BlockPos blockPos, CompoundNBT compound, String keyPrefix) {
-        compound.putInt(keyPrefix + "X", blockPos.getX());
-        compound.putInt(keyPrefix + "Y", blockPos.getY());
-        compound.putInt(keyPrefix + "Z", blockPos.getZ());
+    public CompoundNBT write(BlockPos blockPos, CompoundNBT compound) {
+        compound.putInt("X", blockPos.getX());
+        compound.putInt("Y", blockPos.getY());
+        compound.putInt("Z", blockPos.getZ());
+        return compound;
     }
 
     @Override
-    public boolean isContainedIn(CompoundNBT compound, String keyPrefix) {
-        return compound.contains(keyPrefix + "X") &&
-            compound.contains(keyPrefix + "Y") &&
-            compound.contains(keyPrefix + "Z");
+    public boolean isContainedIn(CompoundNBT compound) {
+        return compound.contains("X") &&
+            compound.contains("Y") &&
+            compound.contains("Z");
     }
 
     @Override
-    public BlockPos read(CompoundNBT compound, String keyPrefix) {
+    public BlockPos read(CompoundNBT compound) {
         return new BlockPos(
-            compound.getInt(keyPrefix + "X"),
-            compound.getInt(keyPrefix + "Y"),
-            compound.getInt(keyPrefix + "Z")
+            compound.getInt("X"),
+            compound.getInt("Y"),
+            compound.getInt("Z")
         );
     }
 
     @Override
-    public void writeTo(BlockPos blockPos, PacketBuffer buffer) {
+    public void write(BlockPos blockPos, PacketBuffer buffer) {
         buffer.writeInt(blockPos.getX());
         buffer.writeInt(blockPos.getY());
         buffer.writeInt(blockPos.getZ());
     }
 
     @Override
-    public BlockPos readFrom(PacketBuffer buffer) {
+    public BlockPos read(PacketBuffer buffer) {
         return new BlockPos(
             buffer.readInt(),
             buffer.readInt(),

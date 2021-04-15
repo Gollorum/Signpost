@@ -15,9 +15,11 @@ import gollorum.signpost.utils.math.geometry.Intersectable;
 import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.TransformedBox;
 import gollorum.signpost.utils.math.geometry.Vector3;
+import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.ItemStackSerializer;
 import gollorum.signpost.utils.serialization.OptionalSerializer;
 import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
@@ -27,95 +29,171 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.network.PacketDistributor;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
+
+    protected static final class CoreData {
+        public Angle angle;
+        public boolean flip;
+        public ResourceLocation mainTexture;
+        public ResourceLocation secondaryTexture;
+        public Optional<Overlay> overlay;
+        public int color;
+        public Optional<WaystoneHandle> destination;
+        public Post.ModelType modelType;
+        public ItemStack itemToDropOnBreak;
+        public Optional<PlayerHandle> owner;
+
+        public CoreData(
+            Angle angle,
+            boolean flip,
+            ResourceLocation mainTexture,
+            ResourceLocation secondaryTexture,
+            Optional<Overlay> overlay,
+            int color,
+            Optional<WaystoneHandle> destination,
+            Post.ModelType modelType,
+            ItemStack itemToDropOnBreak,
+            Optional<PlayerHandle> owner
+        ) {
+            this.angle = angle;
+            this.flip = flip;
+            this.mainTexture = mainTexture;
+            this.secondaryTexture = secondaryTexture;
+            this.overlay = overlay;
+            this.color = color;
+            this.destination = destination;
+            this.modelType = modelType;
+            this.itemToDropOnBreak = itemToDropOnBreak;
+            this.owner = owner;
+        }
+
+        public static final Serializer SERIALIZER = new Serializer();
+        public static final class Serializer implements CompoundSerializable<CoreData> {
+            private Serializer(){}
+            @Override
+            public CompoundNBT write(CoreData coreData, CompoundNBT compound) {
+                compound.put("Angle", Angle.Serializer.write(coreData.angle));
+                compound.putBoolean("Flip", coreData.flip);
+                compound.putString("Texture", coreData.mainTexture.toString());
+                compound.putString("TextureDark", coreData.secondaryTexture.toString());
+                compound.put("Overlay", Overlay.Serializer.optional().write(coreData.overlay));
+                compound.putInt("Color", coreData.color);
+                compound.put("Destination", WaystoneHandle.Serializer.optional().write(coreData.destination));
+                compound.put("ItemToDropOnBreak", ItemStackSerializer.Instance.write(coreData.itemToDropOnBreak));
+                compound.putString("ModelType", coreData.modelType.name);
+                compound.put("Owner", PlayerHandle.Serializer.optional().write(coreData.owner));
+                return compound;
+            }
+
+            @Override
+            public boolean isContainedIn(CompoundNBT compound) {
+                return compound.contains("Angle")
+                    && compound.contains("Flip")
+                    && compound.contains("Texture")
+                    && compound.contains("TextureDark")
+                    && compound.contains("Overlay")
+                    && compound.contains("Color")
+                    && compound.contains("Destination")
+                    && compound.contains("ItemToDropOnBreak")
+                    && compound.contains("Owner");
+            }
+
+            @Override
+            public CoreData read(CompoundNBT compound) {
+                return new CoreData(
+                    Angle.Serializer.read(compound.getCompound("Angle")),
+                    compound.getBoolean("Flip"),
+                    new ResourceLocation(compound.getString("Texture")),
+                    new ResourceLocation(compound.getString("TextureDark")),
+                    Overlay.Serializer.optional().read(compound.getCompound("Overlay")),
+                    compound.getInt("Color"),
+                    WaystoneHandle.Serializer.optional().read(compound.getCompound("Destination")),
+                    Post.ModelType.getByName(compound.getString("ModelType"), true).orElse(Post.ModelType.Oak),
+                    ItemStackSerializer.Instance.read(compound.getCompound("ItemToDropOnBreak")),
+                    PlayerHandle.Serializer.optional().read(compound.getCompound("Owner"))
+                );
+            }
+        }
+    }
 
     public static Angle pointingAt(BlockPos block, BlockPos target) {
         BlockPos diff = target.subtract(block);
         return Angle.between(diff.getX(), diff.getZ(), 1, 0);
     }
 
-    protected Angle angle;
-    protected int color;
-    protected boolean flip;
-    protected ResourceLocation mainTexture;
-    protected ResourceLocation secondaryTexture;
-    protected Optional<Overlay> overlay;
-    protected Optional<WaystoneHandle> destination;
-    public Post.ModelType modelType;
-    public Optional<WaystoneHandle> getDestination() { return destination; }
+    protected CoreData coreData;
+    public Optional<WaystoneHandle> getDestination() { return coreData.destination; }
 
     protected TransformedBox transformedBounds;
 
-    public ItemStack itemToDropOnBreak;
-
-    public Sign(
-        Angle angle,
-        boolean flip,
-        ResourceLocation mainTexture,
-        ResourceLocation secondaryTexture,
-        Optional<Overlay> overlay,
-        int color,
-        Optional<WaystoneHandle> destination,
-        Post.ModelType modelType,
-        ItemStack itemToDropOnBreak
-    ) {
-        this.color = color;
-        this.destination = destination;
-        this.modelType = modelType;
-        this.itemToDropOnBreak = itemToDropOnBreak;
-        setAngle(angle);
-        setTextures(mainTexture, secondaryTexture);
-        setOverlay(overlay);
-        setFlip(flip);
+    protected Sign(CoreData coreData) {
+        this.coreData = coreData;
+        setAngle(coreData.angle);
+        setTextures(coreData.mainTexture, coreData.secondaryTexture);
+        setOverlay(coreData.overlay);
+        setFlip(coreData.flip);
     }
 
     public void setAngle(Angle angle) {
-        this.angle = angle;
+        coreData.angle = angle;
         regenerateTransformedBox();
     }
 
     public void setFlip(boolean flip) {
-        this.flip = flip;
-        setTextures(mainTexture, secondaryTexture);
-        setOverlay(overlay);
+        coreData.flip = flip;
+        setTextures(coreData.mainTexture, coreData.secondaryTexture);
+        setOverlay(coreData.overlay);
         regenerateTransformedBox();
     }
 
     public void setColor(int color) {
-        this.color = color;
+        coreData.color = color;
     }
 
     public void setDestination(Optional<WaystoneHandle> destination) {
-        this.destination = destination;
+        coreData.destination = destination;
     }
 
     public void setItemToDropOnBreak(ItemStack itemToDropOnBreak) {
-        this.itemToDropOnBreak = itemToDropOnBreak;
+        coreData.itemToDropOnBreak = itemToDropOnBreak;
     }
 
     private void setModelType(Post.ModelType modelType) {
-        this.modelType = modelType;
+        coreData.modelType = modelType;
     }
 
-    public boolean isFlipped() { return flip; }
+    public ItemStack getItemToDropOnBreak() { return coreData.itemToDropOnBreak; }
 
-    public int getColor() { return color; }
+    public boolean isFlipped() { return coreData.flip; }
+
+    public int getColor() { return coreData.color; }
+
+    public Post.ModelType getModelType() { return coreData.modelType; }
+
+    public Optional<PlayerHandle> getOwner() { return coreData.owner; }
+
+    public boolean hasThePermissionToEdit(@Nullable PlayerEntity player) {
+        return !coreData.owner.isPresent() || player == null
+            || coreData.owner.get().id.equals(player.getUniqueID())
+            || !player.hasPermissionLevel(Config.Server.permissions.editLockedSignCommandPermissionLevel.get());
+    }
 
     private void setTextures(ResourceLocation texture, ResourceLocation textureDark) {
-        this.mainTexture = texture;
-        this.secondaryTexture = textureDark;
+        coreData.mainTexture = texture;
+        coreData.secondaryTexture = textureDark;
     }
 
-    public ResourceLocation getMainTexture() { return mainTexture; }
-    public ResourceLocation getSecondaryTexture() { return secondaryTexture; }
+    public ResourceLocation getMainTexture() { return coreData.mainTexture; }
+    public ResourceLocation getSecondaryTexture() { return coreData.secondaryTexture; }
 
     private void setOverlay(Optional<Overlay> overlay) {
-        this.overlay = overlay;
+        coreData.overlay = overlay;
     }
 
-    public Optional<Overlay> getOverlay() { return overlay; }
+    public Optional<Overlay> getOverlay() { return coreData.overlay; }
 
     protected abstract void regenerateTransformedBox();
 
@@ -135,7 +213,7 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
                     Vector3 diff = info.traceResult.ray.start.negated().add(0.5f, 0.5f, 0.5f).withY(0).normalized();
                     Vector3 rayDir = info.traceResult.ray.dir.withY(0).normalized();
                     Angle angleToPost = Angle.between(rayDir.x, rayDir.z, diff.x, diff.z).normalized();
-                    setAngle(angle.add(Angle.fromDegrees(angleToPost.radians() < 0 ? 15 : -15)));
+                    setAngle(coreData.angle.add(Angle.fromDegrees(angleToPost.radians() < 0 ? 15 : -15)));
                     notifyAngleChanged(info);
                 }
             } else tryTeleport((ServerPlayerEntity) info.player, info.getTilePartInfo());
@@ -144,14 +222,14 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
     }
 
     private void tryTeleport(ServerPlayerEntity player, PostTile.TilePartInfo tilePartInfo) {
-        if(Config.Server.teleport.enableTeleport.get() && destination.isPresent() && WaystoneLibrary.getInstance().contains(destination.get())) {
-            WaystoneData data = WaystoneLibrary.getInstance().getData(destination.get());
+        if(Config.Server.teleport.enableTeleport.get() && coreData.destination.isPresent() && WaystoneLibrary.getInstance().contains(coreData.destination.get())) {
+            WaystoneData data = WaystoneLibrary.getInstance().getData(coreData.destination.get());
             boolean isDiscovered = WaystoneLibrary.getInstance()
-                .isDiscovered(new PlayerHandle(player), destination.get()) || !Config.Server.teleport.enforceDiscovery.get();
+                .isDiscovered(new PlayerHandle(player), coreData.destination.get()) || !Config.Server.teleport.enforceDiscovery.get();
             PacketHandler.send(
                 PacketDistributor.PLAYER.with(() -> player),
                 new Teleport.Request.Package(
-                    WaystoneLibrary.getInstance().getData(destination.get()).name,
+                    WaystoneLibrary.getInstance().getData(coreData.destination.get()).name,
                     isDiscovered, Teleport.getCost(player, Vector3.fromBlockPos(data.location.block.blockPos), data.location.spawn),
                     Optional.of(tilePartInfo)
                 )
@@ -168,69 +246,73 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
 
     protected void notifyAngleChanged(InteractionInfo info) {
         CompoundNBT compound = new CompoundNBT();
-        Angle.SERIALIZER.writeTo(angle, compound, "Angle");
+        compound.put("Angle", Angle.Serializer.write(coreData.angle));
         info.mutationDistributor.accept(compound);
     }
 
     protected void notifyTextureChanged(InteractionInfo info) {
         CompoundNBT compound = new CompoundNBT();
-        compound.putString("Texture", mainTexture.toString());
-        compound.putString("TextureDark", secondaryTexture.toString());
+        compound.putString("Texture", coreData.mainTexture.toString());
+        compound.putString("TextureDark", coreData.secondaryTexture.toString());
         info.mutationDistributor.accept(compound);
     }
 
     protected void notifyFlipChanged(InteractionInfo info) {
         CompoundNBT compound = new CompoundNBT();
-        compound.putBoolean("Flip", flip);
+        compound.putBoolean("Flip", coreData.flip);
         info.mutationDistributor.accept(compound);
     }
 
     @Override
-    public void readMutationUpdate(CompoundNBT compound, TileEntity tile) {
-        if(Angle.SERIALIZER.isContainedIn(compound, "Angle"))
-            setAngle(Angle.SERIALIZER.read(compound, "Angle"));
+    public void readMutationUpdate(CompoundNBT compound, TileEntity tile, PlayerEntity editingPlayer) {
+        if(compound.contains("Angle"))
+            setAngle(Angle.Serializer.read(compound.getCompound("Angle")));
 
         boolean updateTextures = false;
         if(compound.contains("Texture")) {
-            mainTexture = new ResourceLocation(compound.getString("Texture"));
+            coreData.mainTexture = new ResourceLocation(compound.getString("Texture"));
             updateTextures = true;
         }
         if(compound.contains("TextureDark")){
-            secondaryTexture = new ResourceLocation(compound.getString("TextureDark"));
+            coreData.secondaryTexture = new ResourceLocation(compound.getString("TextureDark"));
             updateTextures = true;
         }
-        if(updateTextures) setTextures(mainTexture, secondaryTexture);
+        if(updateTextures) setTextures(coreData.mainTexture, coreData.secondaryTexture);
 
         if(compound.contains("Flip")) setFlip(compound.getBoolean("Flip"));
         if(compound.contains("Color")) setColor(compound.getInt("Color"));
-        OptionalSerializer<WaystoneHandle> destinationSerializer = WaystoneHandle.SERIALIZER.optional();
-        if(destinationSerializer.isContainedIn(compound, "Destination"))
-            setDestination(destinationSerializer.read(compound, "Destination"));
-        if(ItemStackSerializer.Instance.isContainedIn(compound, "ItemToDropOnBreak")) {
-            setItemToDropOnBreak(ItemStackSerializer.Instance.read(compound, "ItemToDropOnBreak"));
+        OptionalSerializer<WaystoneHandle> destinationSerializer = WaystoneHandle.Serializer.optional();
+        if(compound.contains("Destination"))
+            setDestination(destinationSerializer.read(compound.getCompound("Destination")));
+        if(compound.contains("ItemToDropOnBreak")) {
+            setItemToDropOnBreak(ItemStackSerializer.Instance.read(compound.getCompound("ItemToDropOnBreak")));
         }
         if(compound.contains("ModelType"))
             Post.ModelType.getByName(compound.getString("ModelType"), true).ifPresent(this::setModelType);
 
         OptionalSerializer<Overlay> overlaySerializer = Overlay.Serializer.optional();
-        if(overlaySerializer.isContainedIn(compound, "Overlay"))
-            setOverlay(overlaySerializer.read(compound, "Overlay"));
+        if(compound.contains("Overlay"))
+            setOverlay(overlaySerializer.read(compound.getCompound("Overlay")));
+
+        OptionalSerializer<PlayerHandle> playerSerializer = PlayerHandle.Serializer.optional();
+        if(compound.contains("Owner"))
+            coreData.owner = playerSerializer.read(compound.getCompound("Owner"));
         tile.markDirty();
     }
 
     @Override
     public Collection<ItemStack> getDrops(PostTile tile) {
-        return Collections.singleton(itemToDropOnBreak);
+        return Collections.singleton(coreData.itemToDropOnBreak);
     }
 
     private void dropOn(World world, BlockPos pos) {
-        if(!itemToDropOnBreak.isEmpty() && !world.isRemote) {
+        if(!coreData.itemToDropOnBreak.isEmpty() && !world.isRemote) {
             ItemEntity itementity = new ItemEntity(
                 world,
                 pos.getX() + world.rand.nextFloat() * 0.5 + 0.25,
                 pos.getY() + world.rand.nextFloat() * 0.5 + 0.25,
                 pos.getZ() + world.rand.nextFloat() * 0.5 + 0.25,
-                itemToDropOnBreak
+                coreData.itemToDropOnBreak
             );
             itementity.setDefaultPickupDelay();
             world.addEntity(itementity);
@@ -238,7 +320,7 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
     }
 
     public Angle getAngle() {
-        return angle;
+        return coreData.angle;
     }
 
 }

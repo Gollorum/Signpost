@@ -101,33 +101,34 @@ public final class Vector4 {
         private Serializer(){}
 
         @Override
-        public void writeTo(Vector4 Vector4, CompoundNBT compound, String keyPrefix) {
-            compound.putFloat(keyPrefix + "X", Vector4.x);
-            compound.putFloat(keyPrefix + "Y", Vector4.y);
-            compound.putFloat(keyPrefix + "Z", Vector4.z);
-            compound.putFloat(keyPrefix + "W", Vector4.w);
+        public CompoundNBT write(Vector4 Vector4, CompoundNBT compound) {
+            compound.putFloat("X", Vector4.x);
+            compound.putFloat("Y", Vector4.y);
+            compound.putFloat("Z", Vector4.z);
+            compound.putFloat("W", Vector4.w);
+            return compound;
         }
 
         @Override
-        public boolean isContainedIn(CompoundNBT compound, String keyPrefix) {
-            return compound.contains(keyPrefix + "X") &&
-                compound.contains(keyPrefix + "Y") &&
-                compound.contains(keyPrefix + "Z") &&
-                compound.contains(keyPrefix + "W");
+        public boolean isContainedIn(CompoundNBT compound) {
+            return compound.contains("X") &&
+                compound.contains("Y") &&
+                compound.contains("Z") &&
+                compound.contains("W");
         }
 
         @Override
-        public Vector4 read(CompoundNBT compound, String keyPrefix) {
+        public Vector4 read(CompoundNBT compound) {
             return new Vector4(
-                compound.getFloat(keyPrefix + "X"),
-                compound.getFloat(keyPrefix + "Y"),
-                compound.getFloat(keyPrefix + "Z"),
-                compound.getFloat(keyPrefix + "W")
+                compound.getFloat("X"),
+                compound.getFloat("Y"),
+                compound.getFloat("Z"),
+                compound.getFloat("W")
             );
         }
 
         @Override
-        public void writeTo(Vector4 vec, PacketBuffer buffer) {
+        public void write(Vector4 vec, PacketBuffer buffer) {
             buffer.writeFloat(vec.x);
             buffer.writeFloat(vec.y);
             buffer.writeFloat(vec.z);
@@ -135,7 +136,7 @@ public final class Vector4 {
         }
 
         @Override
-        public Vector4 readFrom(PacketBuffer buffer) {
+        public Vector4 read(PacketBuffer buffer) {
             return new Vector4(
                 buffer.readFloat(),
                 buffer.readFloat(),

@@ -30,5 +30,8 @@
   "signpost.noWaystones": "There are no waystones yet.",
   "signpost.tooExpensive": "You don't have the requirement items (%d %s).",
 
+  "signpost:no_permission_to_edit_waystone": "You do not have permission to edit this waystone.",
+  "signpost:no_permission_to_edit_signpost": "You do not have permission to edit this signpost.",
+
   "itemGroup.signpost": "Sign post"
 }

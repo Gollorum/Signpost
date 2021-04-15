@@ -40,8 +40,7 @@ public class WaystoneTile extends TileEntity {
             Optional<WorldLocation> oldLocation = WorldLocation.from(this);
             oldLocation.ifPresent(worldLocation -> WaystoneLibrary.getInstance().updateLocation(
                 worldLocation,
-                new WorldLocation(pos, world),
-	            PlayerHandle.Invalid
+                new WorldLocation(pos, world)
             ));
         }
         super.setWorldAndPos(world, pos);
@@ -53,7 +52,7 @@ public class WaystoneTile extends TileEntity {
         super.setPos(pos);
         Optional<WorldLocation> newLocation = WorldLocation.from(this);
         if(oldLocation.isPresent() && newLocation.isPresent() && !world.isRemote)
-            WaystoneLibrary.getInstance().updateLocation(oldLocation.get(), newLocation.get(), PlayerHandle.Invalid);
+            WaystoneLibrary.getInstance().updateLocation(oldLocation.get(), newLocation.get());
     }
 
 }

@@ -64,28 +64,25 @@ public final class Angle {
         return Float.hashCode(radians);
     }
 
-    public static final Serializer SERIALIZER = new Serializer();
-
-    public static final class Serializer implements CompoundSerializable<Angle> {
+    public static final CompoundSerializable<Angle> Serializer = new CompoundSerializable<Angle>() {
 
         private static final String key = "Radians";
 
-        private Serializer(){}
-
         @Override
-        public void writeTo(Angle angle, CompoundNBT compound, String keyPrefix) {
-            compound.putFloat(keyPrefix + key, angle.radians);
+        public CompoundNBT write(Angle angle, CompoundNBT compound) {
+            compound.putFloat(key, angle.radians);
+            return compound;
         }
 
         @Override
-        public boolean isContainedIn(CompoundNBT compound, String keyPrefix) {
-            return compound.contains(keyPrefix + key);
+        public boolean isContainedIn(CompoundNBT compound) {
+            return compound.contains(key);
         }
 
         @Override
-        public Angle read(CompoundNBT compound, String keyPrefix) {
-            return Angle.fromRadians(compound.getFloat(keyPrefix + key));
+        public Angle read(CompoundNBT compound) {
+            return Angle.fromRadians(compound.getFloat(key));
         }
-    }
+    };
 
 }

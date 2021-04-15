@@ -13,6 +13,7 @@ import gollorum.signpost.utils.math.geometry.AABB;
 import gollorum.signpost.utils.math.geometry.Intersectable;
 import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.Vector3;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
@@ -30,8 +31,8 @@ public class Waystone implements BlockPart<Waystone> {
 
 	public static final BlockPartMetadata<Waystone> METADATA = new BlockPartMetadata<>(
 		"Waystone",
-		(post, keyPrefix, compound) -> {},
-		(compound, keyPrefix) -> new Waystone()
+		(post, compound) -> {},
+		(compound) -> new Waystone()
 	);
 
 	@Override
@@ -47,10 +48,13 @@ public class Waystone implements BlockPart<Waystone> {
 	public BlockPartMetadata<Waystone> getMeta() { return METADATA; }
 
 	@Override
-	public void writeTo(CompoundNBT compound, String keyPrefix) { }
+	public void writeTo(CompoundNBT compound) { }
 
 	@Override
-	public void readMutationUpdate(CompoundNBT compound, TileEntity tile) { }
+	public void readMutationUpdate(CompoundNBT compound, TileEntity tile, PlayerEntity editingPlayer) { }
+
+	@Override
+	public boolean hasThePermissionToEdit(PlayerEntity player) { return true; }
 
 	@Override
 	public Collection<ItemStack> getDrops(PostTile tile) {

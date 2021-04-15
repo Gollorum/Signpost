@@ -3,7 +3,7 @@ package gollorum.signpost;
 import gollorum.signpost.blockpartdata.types.Sign;
 import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
-import gollorum.signpost.minecraft.gui.Colors;
+import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.gui.ConfirmTeleportGui;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.minecraft.utils.Inventory;
@@ -91,7 +91,7 @@ public class Teleport {
             buffer.writeString(message.waystoneName);
             buffer.writeBoolean(message.isDiscovered);
             buffer.writeItemStack(message.cost);
-            PostTile.TilePartInfo.SERIALIZER.optional().writeTo(message.tilePartInfo, buffer);
+            PostTile.TilePartInfo.Serializer.optional().write(message.tilePartInfo, buffer);
         }
 
         @Override
@@ -100,7 +100,7 @@ public class Teleport {
                 buffer.readString(32767),
                 buffer.readBoolean(),
                 buffer.readItemStack(),
-                PostTile.TilePartInfo.SERIALIZER.optional().readFrom(buffer)
+                PostTile.TilePartInfo.Serializer.optional().read(buffer)
             );
         }
 

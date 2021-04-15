@@ -2,12 +2,9 @@ package gollorum.signpost.minecraft.rendering;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
-import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.data.PostModel;
-import gollorum.signpost.minecraft.gui.Point;
-import gollorum.signpost.minecraft.gui.Rect;
-import gollorum.signpost.utils.modelGeneration.SignModel;
-import gollorum.signpost.utils.modelGeneration.SignModelFactory;
+import gollorum.signpost.minecraft.gui.utils.Point;
+import gollorum.signpost.minecraft.gui.utils.Rect;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -17,7 +14,6 @@ import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.model.ItemOverrideList;
 import net.minecraft.client.renderer.model.RenderMaterial;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
@@ -26,14 +22,12 @@ import net.minecraft.util.math.vector.TransformationMatrix;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.SimpleModelTransform;
 import net.minecraftforge.common.util.Lazy;
-import org.lwjgl.opengl.GL11;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 

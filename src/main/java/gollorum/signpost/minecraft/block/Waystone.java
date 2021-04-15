@@ -5,7 +5,7 @@ import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
-import gollorum.signpost.minecraft.gui.Colors;
+import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.gui.RequestWaystoneGui;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.minecraft.gui.WaystoneGui;
@@ -58,10 +58,9 @@ public class Waystone extends Block {
         Optional<WaystoneData> data = WaystoneLibrary.getInstance()
             .getHandleByLocation(worldLocation)
             .map(WaystoneLibrary.getInstance()::getData);
-        Optional<PlayerHandle> owner = data.flatMap(d -> d.owner);
-        boolean wantsToOpenGui = player.isSneaking() || !data.isPresent();
-        boolean mayOpenGui = !owner.isPresent() || owner.get().equals(PlayerHandle.from(player)) || player.getCommandSource().hasPermissionLevel(
-            Config.Server.editLockedWaystoneCommandPermissionLevel.get());
+        boolean wantsToOpenGui = !data.isPresent()
+            || WaystoneLibrary.getInstance().isDiscovered(PlayerHandle.from(player), data.get().handle);
+        boolean mayOpenGui = data.map(d -> d.hasThePermissionToEdit(player)).orElse(true);
         if(wantsToOpenGui && mayOpenGui){
             PacketHandler.send(PacketDistributor.PLAYER.with(() -> player), new RequestWaystoneGui.Package(worldLocation, data));
         } else {

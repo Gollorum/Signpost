@@ -12,30 +12,31 @@ public final class ItemStackSerializer implements CompoundSerializable<ItemStack
 	private ItemStackSerializer() {}
 
 	@Override
-	public void writeTo(net.minecraft.item.ItemStack itemStack, CompoundNBT compound, String keyPrefix) {
-		compound.put(keyPrefix, itemStack.write(new CompoundNBT()));
+	public CompoundNBT write(net.minecraft.item.ItemStack itemStack, CompoundNBT compound) {
+		compound.put("ItemStack", itemStack.write(new CompoundNBT()));
+		return compound;
 	}
 
 	@Override
-	public boolean isContainedIn(CompoundNBT compound, String keyPrefix) {
-		return compound.contains(keyPrefix);
+	public boolean isContainedIn(CompoundNBT compound) {
+		return compound.contains("ItemStack");
 	}
 
 	@Override
-	public net.minecraft.item.ItemStack read(CompoundNBT compound, String keyPrefix) {
-		INBT readCompound = compound.get(keyPrefix);
+	public net.minecraft.item.ItemStack read(CompoundNBT compound) {
+		INBT readCompound = compound.get("ItemStack");
 		if(readCompound instanceof CompoundNBT)
 			return net.minecraft.item.ItemStack.read((CompoundNBT) readCompound);
 		else return ItemStack.EMPTY;
 	}
 
 	@Override
-	public void writeTo(ItemStack itemStack, PacketBuffer buffer) {
+	public void write(ItemStack itemStack, PacketBuffer buffer) {
 		buffer.writeItemStack(itemStack);
 	}
 
 	@Override
-	public ItemStack readFrom(PacketBuffer buffer) {
+	public ItemStack read(PacketBuffer buffer) {
 		return buffer.readItemStack();
 	}
 

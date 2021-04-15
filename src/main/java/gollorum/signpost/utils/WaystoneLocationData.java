@@ -21,22 +21,23 @@ public class WaystoneLocationData {
         private Serializer() {}
 
         @Override
-        public void writeTo(WaystoneLocationData data, CompoundNBT compound, String keyPrefix) {
-            WorldLocation.SERIALIZER.writeTo(data.block, compound, keyPrefix + "Block");
-            Vector3.SERIALIZER.writeTo(data.spawn, compound, keyPrefix + "Spawn");
+        public CompoundNBT write(WaystoneLocationData data, CompoundNBT compound) {
+            compound.put("Block", WorldLocation.SERIALIZER.write(data.block));
+            compound.put("Spawn", Vector3.Serializer.write(data.spawn));
+            return compound;
         }
 
         @Override
-        public boolean isContainedIn(CompoundNBT compound, String keyPrefix) {
-            return WorldLocation.SERIALIZER.isContainedIn(compound, keyPrefix + "Block") &&
-                Vector3.SERIALIZER.isContainedIn(compound, keyPrefix + "Spawn");
+        public boolean isContainedIn(CompoundNBT compound) {
+            return compound.contains("Block") && WorldLocation.SERIALIZER.isContainedIn(compound.getCompound("Block"))
+                && compound.contains("Spawn") && Vector3.Serializer.isContainedIn(compound.getCompound("Spawn"));
         }
 
         @Override
-        public WaystoneLocationData read(CompoundNBT compound, String keyPrefix) {
+        public WaystoneLocationData read(CompoundNBT compound) {
             return new WaystoneLocationData(
-                WorldLocation.SERIALIZER.read(compound, keyPrefix + "Block"),
-                Vector3.SERIALIZER.read(compound, keyPrefix + "Spawn")
+                WorldLocation.SERIALIZER.read(compound.getCompound("Block")),
+                Vector3.Serializer.read(compound.getCompound("Spawn"))
             );
         }
     }

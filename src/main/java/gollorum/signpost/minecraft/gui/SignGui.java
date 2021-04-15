@@ -11,6 +11,7 @@ import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.data.PostModel;
 import gollorum.signpost.minecraft.events.WaystoneRenamedEvent;
 import gollorum.signpost.minecraft.events.WaystoneUpdatedEvent;
+import gollorum.signpost.minecraft.gui.utils.*;
 import gollorum.signpost.minecraft.rendering.FlippableModel;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.networking.PacketHandler;
@@ -26,11 +27,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.gui.widget.button.ImageButton;
+import net.minecraft.client.gui.widget.button.LockIconButton;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TranslationTextComponent;
 
 import javax.annotation.Nullable;
@@ -62,6 +63,7 @@ public class SignGui extends ExtendedScreen {
 
     private ImageInputBox waystoneInputBox;
     private DropDownSelection<String> waystoneDropdown;
+    private LockIconButton lockButton;
     private DropDownSelection<AngleSelectionEntry> angleDropDown;
 
     private TextDisplay rotationLabel;
@@ -122,7 +124,7 @@ public class SignGui extends ExtendedScreen {
     private AngleSelectionEntry waystoneRotationEntry;
 
     private Optional<Overlay> selectedOverlay;
-    private List<ModelButton> overlaySelectionButtons = new ArrayList<>();
+    private final List<ModelButton> overlaySelectionButtons = new ArrayList<>();
 
     private boolean hasBeenInitialized = false;
 
@@ -133,7 +135,8 @@ public class SignGui extends ExtendedScreen {
     }
 
     public static void display(PostTile tile, Sign oldSign, Vector3 oldOffset, PostTile.TilePartInfo oldTilePartInfo) {
-        Minecraft.getInstance().displayGuiScreen(new SignGui(tile, oldSign, oldOffset, oldTilePartInfo));
+        if(oldSign.hasThePermissionToEdit(Minecraft.getInstance().player))
+            Minecraft.getInstance().displayGuiScreen(new SignGui(tile, oldSign, oldOffset, oldTilePartInfo));
     }
 
     public SignGui(PostTile tile, Post.ModelType modelType, Vector3 localHitPos, ItemStack itemToDropOnBreak) {
@@ -150,9 +153,9 @@ public class SignGui extends ExtendedScreen {
     public SignGui(PostTile tile, Sign oldSign, Vector3 oldOffset, PostTile.TilePartInfo oldTilePartInfo) {
         super(new TranslationTextComponent(LangKeys.signGuiTitle));
         this.tile = tile;
-        this.modelType = oldSign.modelType;
+        this.modelType = oldSign.getModelType();
         this.localHitPos = oldOffset;
-        this.itemToDropOnBreak = oldSign.itemToDropOnBreak;
+        this.itemToDropOnBreak = oldSign.getItemToDropOnBreak();
         this.oldSign = Optional.of(oldSign);
         this.oldTilePartInfo = Optional.of(oldTilePartInfo);
         itemStack = new ItemStack(tile.getBlockState().getBlock().asItem());
@@ -301,6 +304,15 @@ public class SignGui extends ExtendedScreen {
             );
         }
         addButton(doneButton);
+
+        lockButton = new LockIconButton(
+            getCenterX() - 10,
+            doneRect.point.y - 30,
+            b -> lockButton.setLocked(!lockButton.isLocked())
+        );
+        lockButton.setLocked(oldSign.map(s -> s.getOwner().isPresent()).orElse(false));
+        addButton(lockButton);
+
         Collection<String> waystoneDropdownEntry = hasBeenInitialized
             ? waystoneDropdown.getAllEntries()
             : new HashSet<>();
@@ -794,6 +806,9 @@ public class SignGui extends ExtendedScreen {
         PostTile.TilePartInfo tilePartInfo = oldTilePartInfo.orElseGet(() ->
             new PostTile.TilePartInfo(tile.getWorld().getDimensionKey().getLocation(), tile.getPos(), UUID.randomUUID()));
         CompoundNBT data;
+        Optional<PlayerHandle> owner = lockButton.isLocked()
+            ? Optional.of(oldSign.flatMap(s -> (Optional<PlayerHandle>)s.getOwner()).orElseGet(() -> PlayerHandle.from(getMinecraft().player)))
+            : Optional.empty();
         switch (selectedType) {
             case Wide:
                 data = SmallWideSign.METADATA.write(
@@ -807,7 +822,8 @@ public class SignGui extends ExtendedScreen {
                         colorInputBox.getCurrentColor(),
                         destinationId,
                         itemToDropOnBreak,
-                        modelType
+                        modelType,
+                        owner
                     )
                 );
                 if(oldSign.isPresent()) {
@@ -836,7 +852,8 @@ public class SignGui extends ExtendedScreen {
                         colorInputBox.getCurrentColor(),
                         destinationId,
                         itemToDropOnBreak,
-                        modelType
+                        modelType,
+                        owner
                     )
                 );
                 if(oldSign.isPresent()) {
@@ -870,7 +887,8 @@ public class SignGui extends ExtendedScreen {
                         colorInputBox.getCurrentColor(),
                         destinationId,
                         itemToDropOnBreak,
-                        modelType
+                        modelType,
+                        owner
                     )
                 );
                 if(oldSign.isPresent()) {
@@ -906,8 +924,8 @@ public class SignGui extends ExtendedScreen {
     private AngleSelectionEntry angleEntryForPlayer() {
         AtomicReference<Angle> angleWhenFlipped = new AtomicReference<>(Angle.fromDegrees(404));
         AtomicReference<Angle> angleWhenNotFlipped = new AtomicReference<>(Angle.fromDegrees(404));
-        Delay.onClientUntil(() -> minecraft != null && minecraft.player != null, () -> {
-            angleWhenFlipped.set(Angle.fromDegrees(-minecraft.player.rotationYaw).normalized());
+        Delay.onClientUntil(() -> getMinecraft() != null && getMinecraft().player != null, () -> {
+            angleWhenFlipped.set(Angle.fromDegrees(-getMinecraft().player.rotationYaw).normalized());
             angleWhenNotFlipped.set(angleWhenFlipped.get().add(Angle.fromRadians((float) Math.PI)).normalized());
         });
         return new AngleSelectionEntry(LangKeys.rotationPlayer,
