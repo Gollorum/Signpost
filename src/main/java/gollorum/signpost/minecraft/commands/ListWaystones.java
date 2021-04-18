@@ -9,6 +9,8 @@ import net.minecraft.command.Commands;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 
+import java.util.Optional;
+
 public class ListWaystones {
 
 	public static ArgumentBuilder<CommandSource, ?> register() {
@@ -24,7 +26,7 @@ public class ListWaystones {
 								names.values()
 							)),
 						false
-					)
+					), Optional.empty()
 				);
 				return Command.SINGLE_SUCCESS;
 			});

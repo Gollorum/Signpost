@@ -243,12 +243,12 @@ public class WaystoneLibrary {
             .filter(e -> e.getValue().locationData.block.equals(location)).findFirst();
     }
 
-    public void requestAllWaystoneNames(Consumer<Map<WaystoneHandle, String>> onReply) {
+    public void requestAllWaystoneNames(Consumer<Map<WaystoneHandle, String>> onReply, Optional<PlayerHandle> onlyKnownBy) {
         if(Signpost.getServerType().isServer) {
-            onReply.accept(getAllWaystoneNamesAndHandles());
+            onReply.accept(getAllWaystoneNamesAndHandles(onlyKnownBy));
         } else {
             requestedAllNamesEventDispatcher.addListener(onReply);
-            PacketHandler.sendToServer(new RequestAllWaystoneNamesEvent.Packet());
+            PacketHandler.sendToServer(new RequestAllWaystoneNamesEvent.Packet(onlyKnownBy));
         }
     }
 
@@ -268,7 +268,7 @@ public class WaystoneLibrary {
             .findFirst();
     }
 
-    private Map<WaystoneHandle, String> getAllWaystoneNamesAndHandles() {
+    private Map<WaystoneHandle, String> getAllWaystoneNamesAndHandles(Optional<PlayerHandle> onlyKnownBy) {
         assert Signpost.getServerType().isServer;
         Map<WaystoneHandle, String> ret = getInstance().allWaystones.entrySet().stream()
             .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().name));
@@ -277,12 +277,18 @@ public class WaystoneLibrary {
             cachedWaystoneNames.addAll(ret.values());
             isWaystoneNameCacheDirty = false;
         }
+        if(onlyKnownBy.isPresent() && Config.Server.teleport.enforceDiscovery.get()) {
+            Set<WaystoneHandle> known = playerMemory.computeIfAbsent(onlyKnownBy.get(), h -> new HashSet<>());
+            return ret.entrySet().stream()
+                .filter(e -> known.contains(e.getKey()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        }
         return ret;
     }
 
     public Optional<Set<String>> getAllWaystoneNames() {
         if(isWaystoneNameCacheDirty) {
-            requestAllWaystoneNames(c -> {});
+            requestAllWaystoneNames(c -> {}, Optional.empty());
         }
         return isWaystoneNameCacheDirty
             ? Optional.empty()
@@ -354,22 +360,30 @@ public class WaystoneLibrary {
 
     private static final class RequestAllWaystoneNamesEvent implements PacketHandler.Event<RequestAllWaystoneNamesEvent.Packet> {
 
-        public static final class Packet {}
+        public static final class Packet {
+            public final Optional<PlayerHandle> onlyKnownBy;
+
+            public Packet(Optional<PlayerHandle> onlyKnownBy) { this.onlyKnownBy = onlyKnownBy; }
+        }
 
         @Override
         public Class<Packet> getMessageClass() { return Packet.class; }
 
         @Override
-        public void encode(Packet message, PacketBuffer buffer) { }
+        public void encode(Packet message, PacketBuffer buffer) {
+            PlayerHandle.Serializer.optional().write(message.onlyKnownBy, buffer);
+        }
 
         @Override
-        public Packet decode(PacketBuffer buffer) { return new Packet(); }
+        public Packet decode(PacketBuffer buffer) {
+            return new Packet(PlayerHandle.Serializer.optional().read(buffer));
+        }
 
         @Override
         public void handle(Packet message, Supplier<NetworkEvent.Context> context) {
             PacketHandler.send(
                 PacketDistributor.PLAYER.with(() -> context.get().getSender()),
-                new DeliverAllWaystoneNamesEvent.Packet(getInstance().getAllWaystoneNamesAndHandles()));
+                new DeliverAllWaystoneNamesEvent.Packet(getInstance().getAllWaystoneNamesAndHandles(message.onlyKnownBy)));
         }
 
     }

@@ -563,7 +563,7 @@ public class SignGui extends ExtendedScreen {
                         waystoneInputBox.setText(name);
                 });
                 onWaystoneCountChanged();
-            });
+            }, Optional.of(PlayerHandle.from(getMinecraft().player)));
             WaystoneLibrary.getInstance().updateEventDispatcher.addListener(waystoneUpdateListener);
         }
 
