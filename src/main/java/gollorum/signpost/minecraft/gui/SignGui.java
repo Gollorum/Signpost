@@ -21,6 +21,7 @@ import gollorum.signpost.blockpartdata.types.Sign;
 import gollorum.signpost.blockpartdata.types.SmallShortSign;
 import gollorum.signpost.blockpartdata.types.SmallWideSign;
 import gollorum.signpost.utils.Delay;
+import gollorum.signpost.utils.OwnershipData;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
@@ -310,7 +311,7 @@ public class SignGui extends ExtendedScreen {
             doneRect.point.y - 30,
             b -> lockButton.setLocked(!lockButton.isLocked())
         );
-        lockButton.setLocked(oldSign.map(s -> s.getOwner().isPresent()).orElse(false));
+        lockButton.setLocked(oldSign.map(s -> s.getOwnership().isLocked).orElse(false));
         addButton(lockButton);
 
         Collection<String> waystoneDropdownEntry = hasBeenInitialized
@@ -806,9 +807,9 @@ public class SignGui extends ExtendedScreen {
         PostTile.TilePartInfo tilePartInfo = oldTilePartInfo.orElseGet(() ->
             new PostTile.TilePartInfo(tile.getWorld().getDimensionKey().getLocation(), tile.getPos(), UUID.randomUUID()));
         CompoundNBT data;
-        Optional<PlayerHandle> owner = lockButton.isLocked()
-            ? Optional.of(oldSign.flatMap(s -> (Optional<PlayerHandle>)s.getOwner()).orElseGet(() -> PlayerHandle.from(getMinecraft().player)))
-            : Optional.empty();
+        OwnershipData owner = new OwnershipData(
+            oldSign.map(s -> s.getOwnership().owner).orElseGet(() -> PlayerHandle.from(getMinecraft().player)),
+            lockButton.isLocked());
         switch (selectedType) {
             case Wide:
                 data = SmallWideSign.METADATA.write(

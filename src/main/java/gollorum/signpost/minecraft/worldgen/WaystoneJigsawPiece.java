@@ -9,6 +9,7 @@ import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.block.ModelWaystone;
+import gollorum.signpost.utils.OwnershipData;
 import gollorum.signpost.utils.WaystoneLocationData;
 import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.math.geometry.Vector3;
@@ -126,7 +127,7 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 				name,
 				locationDataFor(pos, seedReader, facing),
 				null,
-				Optional.empty()
+				OwnershipData.empty
 			);
 			registerGenerated(name, villageLocation);
 

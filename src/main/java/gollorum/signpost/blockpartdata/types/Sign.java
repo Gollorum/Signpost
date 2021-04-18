@@ -9,6 +9,7 @@ import gollorum.signpost.minecraft.gui.RequestSignGui;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.utils.BlockPart;
+import gollorum.signpost.utils.OwnershipData;
 import gollorum.signpost.utils.WaystoneData;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Intersectable;
@@ -44,7 +45,7 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
         public Optional<WaystoneHandle> destination;
         public Post.ModelType modelType;
         public ItemStack itemToDropOnBreak;
-        public Optional<PlayerHandle> owner;
+        public OwnershipData ownership;
 
         public CoreData(
             Angle angle,
@@ -56,7 +57,7 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
             Optional<WaystoneHandle> destination,
             Post.ModelType modelType,
             ItemStack itemToDropOnBreak,
-            Optional<PlayerHandle> owner
+            OwnershipData ownership
         ) {
             this.angle = angle;
             this.flip = flip;
@@ -67,7 +68,7 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
             this.destination = destination;
             this.modelType = modelType;
             this.itemToDropOnBreak = itemToDropOnBreak;
-            this.owner = owner;
+            this.ownership = ownership;
         }
 
         public static final Serializer SERIALIZER = new Serializer();
@@ -84,7 +85,7 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
                 compound.put("Destination", WaystoneHandle.Serializer.optional().write(coreData.destination));
                 compound.put("ItemToDropOnBreak", ItemStackSerializer.Instance.write(coreData.itemToDropOnBreak));
                 compound.putString("ModelType", coreData.modelType.name);
-                compound.put("Owner", PlayerHandle.Serializer.optional().write(coreData.owner));
+                compound.put("Owner", OwnershipData.Serializer.write(coreData.ownership));
                 return compound;
             }
 
@@ -113,7 +114,7 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
                     WaystoneHandle.Serializer.optional().read(compound.getCompound("Destination")),
                     Post.ModelType.getByName(compound.getString("ModelType"), true).orElse(Post.ModelType.Oak),
                     ItemStackSerializer.Instance.read(compound.getCompound("ItemToDropOnBreak")),
-                    PlayerHandle.Serializer.optional().read(compound.getCompound("Owner"))
+                    OwnershipData.Serializer.read(compound.getCompound("Owner"))
                 );
             }
         }
@@ -173,12 +174,12 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
 
     public Post.ModelType getModelType() { return coreData.modelType; }
 
-    public Optional<PlayerHandle> getOwner() { return coreData.owner; }
+    public OwnershipData getOwnership() { return coreData.ownership; }
 
     public boolean hasThePermissionToEdit(@Nullable PlayerEntity player) {
-        return !coreData.owner.isPresent() || player == null
-            || coreData.owner.get().id.equals(player.getUniqueID())
-            || !player.hasPermissionLevel(Config.Server.permissions.editLockedSignCommandPermissionLevel.get());
+        return !coreData.ownership.isLocked || player == null
+            || coreData.ownership.owner.id.equals(player.getUniqueID())
+            || player.hasPermissionLevel(Config.Server.permissions.editLockedSignCommandPermissionLevel.get());
     }
 
     private void setTextures(ResourceLocation texture, ResourceLocation textureDark) {
@@ -294,9 +295,13 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
         if(compound.contains("Overlay"))
             setOverlay(overlaySerializer.read(compound.getCompound("Overlay")));
 
-        OptionalSerializer<PlayerHandle> playerSerializer = PlayerHandle.Serializer.optional();
-        if(compound.contains("Owner"))
-            coreData.owner = playerSerializer.read(compound.getCompound("Owner"));
+        if(compound.contains("Owner") && OwnershipData.Serializer.isContainedIn(compound.getCompound("Owner"))) {
+            OwnershipData newOwnership = OwnershipData.Serializer.read(compound.getCompound("Owner"));
+            if(editingPlayer == null || !editingPlayer.isServerWorld()
+                || editingPlayer.getUniqueID().equals(coreData.ownership.owner.id)
+                || editingPlayer.hasPermissionLevel(Config.Server.permissions.editLockedSignCommandPermissionLevel.get()))
+            coreData.ownership = newOwnership;
+        }
         tile.markDirty();
     }
 

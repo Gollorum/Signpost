@@ -7,6 +7,7 @@ import gollorum.signpost.minecraft.events.WaystoneRenamedEvent;
 import gollorum.signpost.minecraft.events.WaystoneUpdatedEvent;
 import gollorum.signpost.minecraft.gui.utils.*;
 import gollorum.signpost.minecraft.utils.LangKeys;
+import gollorum.signpost.utils.OwnershipData;
 import gollorum.signpost.utils.WaystoneData;
 import gollorum.signpost.utils.WaystoneLocationData;
 import gollorum.signpost.utils.WorldLocation;
@@ -97,7 +98,7 @@ public class WaystoneGui extends ExtendedScreen {
         addButton(lockButton);
         oldData.ifPresent(data -> {
             inputBox.setText(data.name);
-            lockButton.setLocked(data.owner.isPresent());
+            lockButton.setLocked(data.ownership.isLocked);
         });
         doneButton = new Button(
             getCenterX() - buttonsSize.width / 2,
@@ -145,7 +146,7 @@ public class WaystoneGui extends ExtendedScreen {
                 inputBox.getText(),
                 new WaystoneLocationData(location, Vector3.fromVec3d(getMinecraft().player.getPositionVec())),
                 getMinecraft().player,
-                lockButton.isLocked() ? Optional.of(oldData.flatMap(d -> d.owner).orElseGet(() -> new PlayerHandle(getMinecraft().player))) : Optional.empty()
+                new OwnershipData(oldData.map(d -> d.ownership.owner).orElseGet(() -> new PlayerHandle(getMinecraft().player)), lockButton.isLocked())
             );
         WaystoneLibrary.getInstance().updateEventDispatcher.removeListener(waystoneUpdateListener);
     }

@@ -8,6 +8,7 @@ import gollorum.signpost.minecraft.block.Post;
 import gollorum.signpost.minecraft.utils.CoordinatesUtil;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.utils.BlockPartMetadata;
+import gollorum.signpost.utils.OwnershipData;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.AABB;
 import gollorum.signpost.utils.math.geometry.Matrix4x4;
@@ -70,10 +71,10 @@ public class LargeSign extends Sign<LargeSign> {
         Optional<WaystoneHandle> destination,
         ItemStack itemToDropOnBreak,
         Post.ModelType modelType,
-        Optional<PlayerHandle> owner
+        OwnershipData ownership
     ) { this(
         new CoreData(angle, flip, mainTexture, secondaryTexture, overlay,
-            color, destination, modelType, itemToDropOnBreak, owner),
+            color, destination, modelType, itemToDropOnBreak, ownership),
         text
     ); }
 
