@@ -18,11 +18,12 @@ public class LangKeys {
     public static final String rotationPlayer = "gui.signpost.rotation_player";
 
     public static final String discovered = "signpost.discovered";
-    public static final String notDiscovered = "signpost.notDiscovered";
+    public static final String notDiscovered = "signpost.not_discovered";
+    public static final String tooFarAway = "signpost.too_far_away";
     public static final String noTeleport = "signpost.noTeleport";
-	public static final String waystoneNotFound = "signpost.waystoneNotFound";
-	public static final String noWaystones = "signpost.noWaystones";
-	public static final String tooExpensive = "signpost.tooExpensive";
+	public static final String waystoneNotFound = "signpost.waystone_not_found";
+	public static final String noWaystones = "signpost.no_waystones";
+	public static final String tooExpensive = "signpost.too_expensive";
 
 	public static final String noPermissionWaystone = "signpost:no_permission_to_edit_waystone";
 	public static final String noPermissionSignpost = "signpost:no_permission_to_edit_signpost";

@@ -31,6 +31,8 @@ import java.util.Optional;
 
 public class Post implements BlockPart<Post> {
 
+    private static final int maxSignCount = 10;
+
     private static final AABB BOUNDS = new AABB(
         new Vector3(-2, -8, -2),
         new Vector3(2, 8, 2)
@@ -63,7 +65,7 @@ public class Post implements BlockPart<Post> {
     public InteractionResult interact(InteractionInfo info) {
         ItemStack heldItem = info.player.getHeldItem(info.hand);
         if(isValidSign(heldItem)) {
-            if (info.isRemote) {
+            if (info.isRemote && info.tile.getParts().stream().filter(i -> i.blockPart instanceof Sign).count() < maxSignCount) {
                 SignGui.display(
                     info.tile,
                     gollorum.signpost.minecraft.block.Post.ModelType.from(info.player.getHeldItem(info.hand).getItem()),

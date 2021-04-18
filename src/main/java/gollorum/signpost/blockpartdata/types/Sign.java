@@ -227,11 +227,15 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
             WaystoneData data = WaystoneLibrary.getInstance().getData(coreData.destination.get());
             boolean isDiscovered = WaystoneLibrary.getInstance()
                 .isDiscovered(new PlayerHandle(player), coreData.destination.get()) || !Config.Server.teleport.enforceDiscovery.get();
+            int distance = (int) data.location.spawn.distanceTo(Vector3.fromVec3d(player.getPositionVec()));
             PacketHandler.send(
                 PacketDistributor.PLAYER.with(() -> player),
                 new Teleport.Request.Package(
                     WaystoneLibrary.getInstance().getData(coreData.destination.get()).name,
-                    isDiscovered, Teleport.getCost(player, Vector3.fromBlockPos(data.location.block.blockPos), data.location.spawn),
+                    isDiscovered,
+                    distance,
+                    Config.Server.teleport.maximumDistance.get(),
+                    Teleport.getCost(player, Vector3.fromBlockPos(data.location.block.blockPos), data.location.spawn),
                     Optional.of(tilePartInfo)
                 )
             );

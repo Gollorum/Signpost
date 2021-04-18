@@ -24,11 +24,12 @@
   "gui.signpost.rotation_player": "%d (face the player)",
 
   "signpost.discovered": "You can now travel to %s using sign posts.",
-  "signpost.notDiscovered": "You have not yet discovered %s",
-  "signpost.noTeleport": "This sign has no destination.",
-  "signpost.waystoneNotFound": "The waystone %s does not exist.",
-  "signpost.noWaystones": "There are no waystones yet.",
-  "signpost.tooExpensive": "You don't have the requirement items (%d %s).",
+  "signpost.not_discovered": "You have not yet discovered %s",
+  "signpost.too_far_away": "You cannot travel this far (distance: %s, maximum: %s)",
+  "signpost.no_teleport": "This sign has no destination.",
+  "signpost.waystone_not_found": "The waystone %s does not exist.",
+  "signpost.no_waystones": "You didn't discover any waystones yet.",
+  "signpost.too_expensive": "You don't have the requirement items (%d %s).",
 
   "signpost:no_permission_to_edit_waystone": "You do not have permission to edit this waystone.",
   "signpost:no_permission_to_edit_signpost": "You do not have permission to edit this signpost.",

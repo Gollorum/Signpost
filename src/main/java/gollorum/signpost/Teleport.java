@@ -64,9 +64,11 @@ public class Teleport {
         String waystoneName,
         ItemStack cost,
         boolean isDiscovered,
+        int distance,
+        int maxDistance,
         Optional<ConfirmTeleportGui.SignInfo> signInfo
     ) {
-        ConfirmTeleportGui.display(waystoneName, cost, isDiscovered, signInfo);
+        ConfirmTeleportGui.display(waystoneName, cost, isDiscovered, distance, maxDistance, signInfo);
     }
 
     public static ItemStack getCost(PlayerEntity player, Vector3 from, Vector3 to) {
@@ -90,6 +92,8 @@ public class Teleport {
         public void encode(Package message, PacketBuffer buffer) {
             buffer.writeString(message.waystoneName);
             buffer.writeBoolean(message.isDiscovered);
+            buffer.writeInt(message.distance);
+            buffer.writeInt(message.maxDistance);
             buffer.writeItemStack(message.cost);
             PostTile.TilePartInfo.Serializer.optional().write(message.tilePartInfo, buffer);
         }
@@ -99,6 +103,8 @@ public class Teleport {
             return new Package(
                 buffer.readString(32767),
                 buffer.readBoolean(),
+                buffer.readInt(),
+                buffer.readInt(),
                 buffer.readItemStack(),
                 PostTile.TilePartInfo.Serializer.optional().read(buffer)
             );
@@ -116,6 +122,16 @@ public class Teleport {
                     if(waystone.isPresent()) {
                         WaystoneHandle handle = waystone.get();
                         WaystoneLocationData waystoneData = WaystoneLibrary.getInstance().getLocationData(handle);
+
+                        boolean isDiscovered = WaystoneLibrary.getInstance().isDiscovered(PlayerHandle.from(player), handle)
+                            || !Config.Server.teleport.enforceDiscovery.get();
+                        int distance = (int) waystoneData.spawn.distanceTo(Vector3.fromVec3d(player.getPositionVec()));
+                        int maxDistance = Config.Server.teleport.maximumDistance.get();
+                        boolean isTooFarAway = maxDistance > 0 && distance > maxDistance;
+                        if(!isDiscovered) player.sendMessage(new TranslationTextComponent(LangKeys.notDiscovered, message.waystoneName), Util.DUMMY_UUID);
+                        if(isTooFarAway) player.sendMessage(new TranslationTextComponent(LangKeys.tooFarAway, Integer.toString(distance), Integer.toString(maxDistance)), Util.DUMMY_UUID);
+                        if(!isDiscovered || isTooFarAway) return;
+
                         Inventory.tryPay(
                             player,
                             Teleport.getCost(player, Vector3.fromBlockPos(waystoneData.block.blockPos), waystoneData.spawn),
@@ -130,6 +146,8 @@ public class Teleport {
                         message.waystoneName,
                         message.cost,
                         message.isDiscovered,
+                        message.distance,
+                        message.maxDistance,
                         message.tilePartInfo.flatMap(info -> TileEntityUtils.findTileEntity(
                             info.dimensionKey,
                             true,
@@ -139,12 +157,7 @@ public class Teleport {
                             .flatMap(part -> part.blockPart instanceof Sign
                                 ? Optional.of(new ConfirmTeleportGui.SignInfo(tile, (Sign) part.blockPart, info, part.offset)) : Optional.empty()
                             ))));
-                    else PacketHandler.sendToServer(new Teleport.Request.Package(
-                        message.waystoneName,
-                        message.isDiscovered,
-                        message.cost,
-                        message.tilePartInfo
-                    ));
+                    else PacketHandler.sendToServer(message);
                 }
             });
             context.setPacketHandled(true);
@@ -153,15 +166,22 @@ public class Teleport {
         public static final class Package {
             public final String waystoneName;
             public final boolean isDiscovered;
+            public final int distance;
+            public final int maxDistance;
             public final ItemStack cost;
             public final Optional<PostTile.TilePartInfo> tilePartInfo;
             public Package(
                 String waystoneName,
-                boolean isDiscovered, ItemStack cost,
+                boolean isDiscovered,
+                int distance,
+                int maxDistance,
+                ItemStack cost,
                 Optional<PostTile.TilePartInfo> tilePartInfo
             ) {
                 this.waystoneName = waystoneName;
                 this.isDiscovered = isDiscovered;
+                this.distance = distance;
+                this.maxDistance = maxDistance;
                 this.cost = cost;
                 this.tilePartInfo = tilePartInfo;
             }

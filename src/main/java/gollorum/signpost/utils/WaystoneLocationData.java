@@ -7,6 +7,7 @@ import net.minecraft.nbt.CompoundNBT;
 public class WaystoneLocationData {
 
     public final WorldLocation block;
+    /// Global.
     public final Vector3 spawn;
 
     public WaystoneLocationData(WorldLocation block, Vector3 spawn) {

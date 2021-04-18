@@ -4,6 +4,7 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import gollorum.signpost.Teleport;
 import gollorum.signpost.blockpartdata.types.Sign;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.gui.utils.*;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.networking.PacketHandler;
@@ -47,18 +48,24 @@ public class ConfirmTeleportGui extends Screen {
 	private final List<IRenderable> additionallyRenderables = new ArrayList<>();
 	private final ItemStack cost;
 	private final boolean isDiscovered;
+	private final int distance;
+	private final int maxDistance;
 	private final Optional<SignInfo> signInfo;
 
 	public ConfirmTeleportGui(
 		String waystoneName,
 		ItemStack cost,
 		boolean isDiscovered,
+		int distance,
+		int maxDistance,
 		Optional<SignInfo> signInfo
 	) {
 		super(new TranslationTextComponent(LangKeys.confirmTeleportGuiTitle));
 		this.waystoneName = waystoneName;
 		this.cost = cost;
 		this.isDiscovered = isDiscovered;
+		this.distance = distance;
+		this.maxDistance = maxDistance;
 		this.signInfo = signInfo;
 	}
 
@@ -66,16 +73,19 @@ public class ConfirmTeleportGui extends Screen {
 		String waystoneName,
 		ItemStack cost,
 		boolean isDiscovered,
+		int distance,
+		int maxDistance,
 		Optional<SignInfo> signInfo
 	) {
-		Minecraft.getInstance().displayGuiScreen(new ConfirmTeleportGui(waystoneName, cost, isDiscovered, signInfo));
+		Minecraft.getInstance().displayGuiScreen(new ConfirmTeleportGui(waystoneName, cost, isDiscovered, distance, maxDistance, signInfo));
 	}
 
 	@Override
 	protected void init() {
 		super.init();
 		int editButtonTop;
-		if(isDiscovered) {
+		boolean isTooFarAway = maxDistance > 0 && distance > maxDistance;
+		if(isDiscovered && !isTooFarAway) {
 			additionallyRenderables.add(new TextDisplay(
 				new Point(width / 2, height / 2 - 20),
 				Rect.XAlignment.Center, Rect.YAlignment.Bottom,
@@ -129,13 +139,23 @@ public class ConfirmTeleportGui extends Screen {
 			));
 			editButtonTop = cancelRect.max().y + 20;
 		} else {
-			additionallyRenderables.add(new TextDisplay(
-				new Point(width / 2, height / 2 - 20),
-				Rect.XAlignment.Center, Rect.YAlignment.Bottom,
-				font,
-				LangKeys.notDiscovered,
-				new Pair<>(waystoneName, Colors.highlight)
-			));
+			if(!isDiscovered)
+				additionallyRenderables.add(new TextDisplay(
+					new Point(width / 2, height / 2 - 20),
+					Rect.XAlignment.Center, Rect.YAlignment.Bottom,
+					font,
+					LangKeys.notDiscovered,
+					new Pair<>(waystoneName, Colors.highlight)
+				));
+			if(isTooFarAway)
+				additionallyRenderables.add(new TextDisplay(
+					new Point(width / 2, height / 2 - (isDiscovered ? 20 : 40)),
+					Rect.XAlignment.Center, Rect.YAlignment.Bottom,
+					font,
+					LangKeys.tooFarAway,
+					new Pair<>(Integer.toString(distance), Colors.highlight),
+					new Pair<>(Integer.toString(maxDistance), Colors.highlight)
+				));
 			editButtonTop = height / 2 + 20;
 		}
 		signInfo.ifPresent(info -> {
@@ -155,7 +175,7 @@ public class ConfirmTeleportGui extends Screen {
 
 	private void confirm() {
 		getMinecraft().displayGuiScreen(null);
-		PacketHandler.sendToServer(new Teleport.Request.Package(waystoneName, isDiscovered, cost, signInfo.map(i -> i.tilePartInfo)));
+		PacketHandler.sendToServer(new Teleport.Request.Package(waystoneName, isDiscovered, distance, maxDistance, cost, signInfo.map(i -> i.tilePartInfo)));
 	}
 
 	private void cancel() {

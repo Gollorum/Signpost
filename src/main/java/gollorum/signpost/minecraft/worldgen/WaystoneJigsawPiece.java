@@ -169,7 +169,10 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 	}
 
 	private static void registerGenerated(String name, BlockPos referencePos) {
-		WaystoneLibrary.getInstance().getHandleByName(name).ifPresent(handle -> generatedWaystones.put(referencePos, handle));
+		WaystoneLibrary.getInstance().getHandleByName(name).ifPresent(handle -> {
+			generatedWaystones.put(referencePos, handle);
+			WaystoneLibrary.getInstance().markDirty();
+		});
 	}
 
 	public static Set<Map.Entry<BlockPos, WaystoneHandle>> getAllEntries() {

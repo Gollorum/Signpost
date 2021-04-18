@@ -340,9 +340,10 @@ public class WaystoneLibrary {
 
     public boolean addDiscovered(PlayerHandle player, WaystoneHandle waystone) {
         assert Signpost.getServerType().isServer;
-        if(!playerMemory.containsKey(player))
-            playerMemory.put(player, new HashSet<>());
-        return playerMemory.get(player).add(waystone);
+        if(playerMemory.computeIfAbsent(player, p -> new HashSet<>()).add(waystone)) {
+            markDirty();
+            return true;
+        } return false;
     }
 
     public boolean isDiscovered(PlayerHandle player, WaystoneHandle waystone) {
@@ -356,7 +357,7 @@ public class WaystoneLibrary {
         return allWaystones.containsKey(waystone);
     }
 
-    private void markDirty(){ savedData.markDirty(); }
+    public void markDirty(){ savedData.markDirty(); }
 
     private static final class RequestAllWaystoneNamesEvent implements PacketHandler.Event<RequestAllWaystoneNamesEvent.Packet> {
 
@@ -702,7 +703,7 @@ public class WaystoneLibrary {
                 CompoundNBT entryCompound = new CompoundNBT();
                 entryCompound.putUniqueId("Player", entry.getKey().id);
                 ListNBT known = new ListNBT();
-                known.addAll(entry.getValue().stream().map(waystone -> NBTUtil.func_240626_a_(waystone.id)).collect(Collectors.toSet()));
+                known.addAll(entry.getValue().stream().map(WaystoneHandle.Serializer::write).collect(Collectors.toSet()));
                 entryCompound.put("DiscoveredWaystones", known);
                 return entryCompound;
             }).collect(Collectors.toSet())
@@ -738,7 +739,7 @@ public class WaystoneLibrary {
                     Set<WaystoneHandle> known = dynamicKnown instanceof ListNBT
                         ?  ((ListNBT) dynamicKnown).stream()
                             .filter(e -> e instanceof CompoundNBT)
-                            .map(e -> new WaystoneHandle(NBTUtil.readUniqueId(e)))
+                            .map(e -> WaystoneHandle.Serializer.read((CompoundNBT) e))
                             .collect(Collectors.toSet())
                         : new HashSet<>();
                     playerMemory.put(new PlayerHandle(player), known);
