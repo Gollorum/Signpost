@@ -2,7 +2,9 @@ package gollorum.signpost;
 
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.OptionalSerializer;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.Util;
@@ -22,11 +24,11 @@ public class PlayerHandle {
         this.id = id;
     }
 
-    public PlayerHandle(@Nullable LivingEntity player) {
+    public PlayerHandle(@Nullable Entity player) {
         this.id = player == null ? Util.DUMMY_UUID : player.getUniqueID();
     }
 
-    public static PlayerHandle from(@Nullable LivingEntity player) {
+    public static PlayerHandle from(@Nullable Entity player) {
         return new PlayerHandle(player);
     }
 
@@ -41,6 +43,10 @@ public class PlayerHandle {
     @Override
     public int hashCode() {
         return id.hashCode();
+    }
+
+    public PlayerEntity asEntity() {
+        return Signpost.getServerInstance().getPlayerList().getPlayerByUUID(id);
     }
 
     public static final CompoundSerializable<PlayerHandle> Serializer = new CompoundSerializable<PlayerHandle>() {

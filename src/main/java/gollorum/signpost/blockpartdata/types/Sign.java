@@ -1,15 +1,18 @@
 package gollorum.signpost.blockpartdata.types;
 
-import gollorum.signpost.*;
+import gollorum.signpost.PlayerHandle;
+import gollorum.signpost.Teleport;
+import gollorum.signpost.WaystoneHandle;
+import gollorum.signpost.WaystoneLibrary;
+import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.interactions.InteractionInfo;
-import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.block.Post;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.gui.RequestSignGui;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.blockpartdata.Overlay;
+import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.BlockPart;
-import gollorum.signpost.utils.OwnershipData;
 import gollorum.signpost.utils.WaystoneData;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Intersectable;
@@ -31,7 +34,9 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Optional;
 
 public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
 
@@ -45,7 +50,7 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
         public Optional<WaystoneHandle> destination;
         public Post.ModelType modelType;
         public ItemStack itemToDropOnBreak;
-        public OwnershipData ownership;
+        public boolean isLocked;
 
         public CoreData(
             Angle angle,
@@ -57,7 +62,7 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
             Optional<WaystoneHandle> destination,
             Post.ModelType modelType,
             ItemStack itemToDropOnBreak,
-            OwnershipData ownership
+            boolean isLocked
         ) {
             this.angle = angle;
             this.flip = flip;
@@ -68,7 +73,7 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
             this.destination = destination;
             this.modelType = modelType;
             this.itemToDropOnBreak = itemToDropOnBreak;
-            this.ownership = ownership;
+            this.isLocked = isLocked;
         }
 
         public static final Serializer SERIALIZER = new Serializer();
@@ -85,7 +90,7 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
                 compound.put("Destination", WaystoneHandle.Serializer.optional().write(coreData.destination));
                 compound.put("ItemToDropOnBreak", ItemStackSerializer.Instance.write(coreData.itemToDropOnBreak));
                 compound.putString("ModelType", coreData.modelType.name);
-                compound.put("Owner", OwnershipData.Serializer.write(coreData.ownership));
+                compound.putBoolean("IsLocked", coreData.isLocked);
                 return compound;
             }
 
@@ -99,7 +104,7 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
                     && compound.contains("Color")
                     && compound.contains("Destination")
                     && compound.contains("ItemToDropOnBreak")
-                    && compound.contains("Owner");
+                    && compound.contains("IsLocked");
             }
 
             @Override
@@ -114,7 +119,7 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
                     WaystoneHandle.Serializer.optional().read(compound.getCompound("Destination")),
                     Post.ModelType.getByName(compound.getString("ModelType"), true).orElse(Post.ModelType.Oak),
                     ItemStackSerializer.Instance.read(compound.getCompound("ItemToDropOnBreak")),
-                    OwnershipData.Serializer.read(compound.getCompound("Owner"))
+                   compound.getBoolean("IsLocked")
                 );
             }
         }
@@ -174,11 +179,11 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
 
     public Post.ModelType getModelType() { return coreData.modelType; }
 
-    public OwnershipData getOwnership() { return coreData.ownership; }
+    public boolean isLocked() { return coreData.isLocked; }
 
-    public boolean hasThePermissionToEdit(@Nullable PlayerEntity player) {
-        return !coreData.ownership.isLocked || player == null
-            || coreData.ownership.owner.id.equals(player.getUniqueID())
+    public boolean hasThePermissionToEdit(WithOwner tile, @Nullable PlayerEntity player) {
+        return !(tile instanceof WithOwner.OfSignpost) || !coreData.isLocked || player == null
+            || ((WithOwner.OfSignpost)tile).getSignpostOwner().map(o -> o.id.equals(player.getUniqueID())).orElse(true)
             || player.hasPermissionLevel(Config.Server.permissions.editLockedSignCommandPermissionLevel.get());
     }
 
@@ -299,12 +304,11 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
         if(compound.contains("Overlay"))
             setOverlay(overlaySerializer.read(compound.getCompound("Overlay")));
 
-        if(compound.contains("Owner") && OwnershipData.Serializer.isContainedIn(compound.getCompound("Owner"))) {
-            OwnershipData newOwnership = OwnershipData.Serializer.read(compound.getCompound("Owner"));
+        if(compound.contains("IsLocked")) {
             if(editingPlayer == null || !editingPlayer.isServerWorld()
-                || editingPlayer.getUniqueID().equals(coreData.ownership.owner.id)
+                || ((WithOwner.OfSignpost)tile).getSignpostOwner().map(owner -> editingPlayer.getUniqueID().equals(owner.id)).orElse(true)
                 || editingPlayer.hasPermissionLevel(Config.Server.permissions.editLockedSignCommandPermissionLevel.get()))
-            coreData.ownership = newOwnership;
+            coreData.isLocked = compound.getBoolean("IsLocked");
         }
         tile.markDirty();
     }

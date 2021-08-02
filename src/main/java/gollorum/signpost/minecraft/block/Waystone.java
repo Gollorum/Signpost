@@ -1,24 +1,27 @@
 package gollorum.signpost.minecraft.block;
 
-import gollorum.signpost.PlayerHandle;
-import gollorum.signpost.Signpost;
-import gollorum.signpost.WaystoneLibrary;
+import gollorum.signpost.*;
 import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
 import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.gui.RequestWaystoneGui;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.minecraft.gui.WaystoneGui;
+import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.networking.PacketHandler;
+import gollorum.signpost.security.WithCountRestriction;
+import gollorum.signpost.utils.Delay;
 import gollorum.signpost.utils.WaystoneData;
 import gollorum.signpost.utils.WorldLocation;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.material.MaterialColor;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.fluid.FluidState;
 import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.LootContext;
@@ -41,7 +44,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class Waystone extends Block {
+public class Waystone extends Block implements WithCountRestriction {
 
     private static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final String REGISTRY_NAME = "waystone";
@@ -88,7 +91,7 @@ public class Waystone extends Block {
     public static void discover(PlayerHandle player, WaystoneData data) {
         assert Signpost.getServerType().isServer;
         if(WaystoneLibrary.getInstance().addDiscovered(player, data.handle)) {
-            PlayerEntity playerEntity = Signpost.getServerInstance().getPlayerList().getPlayerByUUID(player.id);
+            PlayerEntity playerEntity = player.asEntity();
             if(playerEntity != null)
                 playerEntity.sendMessage(new TranslationTextComponent(LangKeys.discovered, Colors.wrap(data.name, Colors.highlight)), Util.DUMMY_UUID);
         }
@@ -117,12 +120,29 @@ public class Waystone extends Block {
     @Override
     public void onBlockPlacedBy(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
         super.onBlockPlacedBy(world, pos, state, placer, stack);
-        if(world.isRemote) WaystoneGui.display(new WorldLocation(pos, world), Optional.empty());
+        Delay.forFrames(6, world.isRemote, () ->
+            TileEntityUtils.delayUntilTileEntityExists(world, pos, WaystoneTile.class, t -> {
+                t.setWaystoneOwner(Optional.of(PlayerHandle.from(placer)));
+                if(placer instanceof ServerPlayerEntity) PacketHandler.send(
+                    PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) placer),
+                    new RequestWaystoneGui.Package(new WorldLocation(pos, world), Optional.empty())
+                );
+            }, 100, Optional.empty()));
+    }
+
+    @Override
+    public void onReplaced(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
+        super.onReplaced(state, worldIn, pos, newState, isMoving);
     }
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
         return Collections.singletonList(new ItemStack(this.asItem()));
+    }
+
+    @Override
+    public BlockRestrictions.Type getBlockRestrictionType() {
+        return BlockRestrictions.Type.Waystone;
     }
 
 }

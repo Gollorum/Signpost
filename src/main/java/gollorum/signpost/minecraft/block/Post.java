@@ -1,20 +1,30 @@
 package gollorum.signpost.minecraft.block;
 
+import gollorum.signpost.BlockRestrictions;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.interactions.Interactable;
 import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.gui.RequestSignGui;
+import gollorum.signpost.minecraft.gui.RequestWaystoneGui;
 import gollorum.signpost.minecraft.gui.SignGui;
+import gollorum.signpost.networking.PacketHandler;
+import gollorum.signpost.security.WithCountRestriction;
 import gollorum.signpost.utils.BlockPartInstance;
-import gollorum.signpost.utils.TileEntityUtils;
+import gollorum.signpost.minecraft.utils.TileEntityUtils;
+import gollorum.signpost.utils.Delay;
+import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.math.geometry.Vector3;
+import gollorum.signpost.utils.serialization.BufferSerializable;
+import gollorum.signpost.utils.serialization.CompoundSerializable;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.IWaterLoggable;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
@@ -25,6 +35,8 @@ import net.minecraft.item.Items;
 import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.loot.LootContext;
 import net.minecraft.loot.LootParameters;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.state.properties.BlockStateProperties;
@@ -43,11 +55,12 @@ import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Lazy;
+import net.minecraftforge.fml.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.*;
 
-public class Post extends Block implements IWaterLoggable {
+public class Post extends Block implements IWaterLoggable, WithCountRestriction {
 
     public static class ModelType implements IStringSerializable {
 
@@ -165,7 +178,10 @@ public class Post extends Block implements IWaterLoggable {
         }
 
         private static ResourceLocation expand(ResourceLocation loc){
-            return new ResourceLocation(loc.getNamespace(), "block/"+loc.getPath());
+            return new ResourceLocation(
+                loc.getNamespace(),
+                loc.getPath().startsWith("block/") ? loc.getPath() : "block/"+loc.getPath()
+            );
         }
 
         @Override
@@ -197,6 +213,27 @@ public class Post extends Block implements IWaterLoggable {
             else
                 return Oak;
         }
+
+        public static BufferSerializable<ModelType> Serializer = new BufferSerializable<ModelType>() {
+            @Override
+            public void write(ModelType modelType, PacketBuffer buffer) {
+                buffer.writeString(modelType.name);
+                buffer.writeResourceLocation(modelType.postTexture);
+                buffer.writeResourceLocation(modelType.mainTexture);
+                buffer.writeResourceLocation(modelType.secondaryTexture);
+            }
+
+            @Override
+            public ModelType read(PacketBuffer buffer) {
+                return new ModelType(
+                    buffer.readString(),
+                    buffer.readResourceLocation(),
+                    buffer.readResourceLocation(),
+                    buffer.readResourceLocation()
+                );
+            }
+        };
+
     }
 
     private static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
@@ -243,15 +280,16 @@ public class Post extends Block implements IWaterLoggable {
     @Override
     public void onBlockPlacedBy(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.onBlockPlacedBy(world, pos, state, placer, stack);
-        TileEntityUtils.delayUntilTileEntityExists(world, pos, PostTile.class,
-            tile -> {
+        Delay.forFrames(6, world.isRemote, () ->
+            TileEntityUtils.delayUntilTileEntityExists(world, pos, PostTile.class, tile -> {
+                tile.setSignpostOwner(Optional.of(PlayerHandle.from(placer)));
                 if (world.isRemote) {
-                    SignGui.display(
-                        tile,
-                        tile.modelType,
-                        new Vector3(0, 1, 0),
-                        ItemStack.EMPTY
-                    );
+//                    SignGui.display(
+//                        tile,
+//                        tile.modelType,
+//                        new Vector3(0, 1, 0),
+//                        ItemStack.EMPTY
+//                    );
                 } else {
                     tile.addPart(
                         new BlockPartInstance(new gollorum.signpost.blockpartdata.types.Post(type.postTexture), Vector3.ZERO),
@@ -259,9 +297,17 @@ public class Post extends Block implements IWaterLoggable {
                         PlayerHandle.from(placer)
                     );
                     tile.markDirty();
+                    PacketHandler.send(
+                        PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) placer),
+                        new RequestSignGui.ForNewSign.Package(
+                            new WorldLocation(pos, world),
+                            tile.modelType,
+                            new Vector3(0, 1, 0),
+                            ItemStack.EMPTY
+                        )
+                    );
                 }
-            }, 100, Optional.of(() -> Signpost.LOGGER.error("Could not initialize placed signpost: TileEntity never appeared."))
-        );
+            }, 100, Optional.of(() -> Signpost.LOGGER.error("Could not initialize placed signpost: TileEntity never appeared."))));
     }
 
     @Override
@@ -358,6 +404,11 @@ public class Post extends Block implements IWaterLoggable {
     @Override
     public boolean propagatesSkylightDown(BlockState state, IBlockReader reader, BlockPos pos) {
         return !state.get(WATERLOGGED);
+    }
+
+    @Override
+    public BlockRestrictions.Type getBlockRestrictionType() {
+        return BlockRestrictions.Type.Signpost;
     }
 
 }

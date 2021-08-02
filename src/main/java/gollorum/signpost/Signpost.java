@@ -1,5 +1,6 @@
 package gollorum.signpost;
 
+import gollorum.signpost.minecraft.block.BlockEventListener;
 import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.data.DataGeneration;
@@ -65,6 +66,7 @@ public class Signpost {
         RecipeRegistry.register(modBus);
         TileEntityRegistry.register(modBus);
         DataGeneration.register(modBus);
+        BlockEventListener.register(forgeBus);
 
         Villages.instance.initialize();
     }
@@ -91,6 +93,7 @@ public class Signpost {
         public void serverAboutToStart(FMLServerAboutToStartEvent e) {
             serverInstance = e.getServer();
             WaystoneLibrary.initialize();
+            BlockRestrictions.initialize();
             Villages.instance.reset();
         }
 
@@ -111,9 +114,13 @@ public class Signpost {
         @SubscribeEvent
         public void onWorldLoad(WorldEvent.Load event) {
             if (event.getWorld() instanceof ServerWorld &&
-                ((ServerWorld) event.getWorld()).getDimensionKey().equals(Dimension.OVERWORLD) &&
-                !WaystoneLibrary.getInstance().hasStorageBeenSetup()
-            ) WaystoneLibrary.getInstance().setupStorage((ServerWorld) event.getWorld());
+                ((ServerWorld) event.getWorld()).getDimensionKey().equals(Dimension.OVERWORLD)) {
+                ServerWorld world = (ServerWorld) event.getWorld();
+                if(!WaystoneLibrary.getInstance().hasStorageBeenSetup())
+                    WaystoneLibrary.getInstance().setupStorage(world);
+                if(!BlockRestrictions.getInstance().hasStorageBeenSetup())
+                    BlockRestrictions.getInstance().setupStorage(world);
+            }
         }
 
     }

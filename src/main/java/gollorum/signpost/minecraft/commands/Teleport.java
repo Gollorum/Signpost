@@ -20,19 +20,11 @@ public class Teleport {
 		return Commands.literal("teleport")
 			.requires(source -> source.hasPermissionLevel(3))
 			.then(Commands.argument("waystone", new WaystoneArgument())
-				.requires(source -> {
-					try {
-						source.asPlayer();
-						return true;
-					} catch (CommandSyntaxException e) {
-						return false;
-					}
-				})
+				.requires(CommandUtils::isPlayer)
 				.executes(context -> execute(
 					context.getArgument("waystone", String.class),
 					context.getSource().asPlayer()
-				)))
-			.then(Commands.argument("waystone", new WaystoneArgument())
+				))
 				.then(Commands.argument("player", EntityArgument.player())
 					.executes(context -> execute(
 						context.getArgument("waystone", String.class),

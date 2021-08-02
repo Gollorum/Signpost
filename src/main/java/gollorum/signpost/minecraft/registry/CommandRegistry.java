@@ -22,6 +22,7 @@ public class CommandRegistry {
 				.then(ListWaystones.register())
 				.then(DiscoverWaystone.register())
 				.then(Teleport.register())
+				.then(BlockRestrictions.register())
 		);
 	}
 

@@ -29,6 +29,7 @@ public class PacketHandler {
         new PostTile.PartRemovedEvent(),
         new Teleport.Request(),
         new RequestSignGui(),
+        new RequestSignGui.ForNewSign(),
         new RequestWaystoneGui()
     };
 

@@ -35,18 +35,18 @@ public class Delay {
     private static final List<Task> clientTasks = new ArrayList<>();
 
     public static void onClientForFrames(int frames, Runnable run) {
-        if(frames == 0) run.run();
-        else {
-            AtomicInteger framesLeft = new AtomicInteger(frames);
-            clientTasks.add(new Task(() -> framesLeft.decrementAndGet() <= 0, run));
-        }
+        Delay.forFrames(frames, true, run);
     }
 
     public static void onServerForFrames(int frames, Runnable run) {
+        Delay.forFrames(frames, false, run);
+    }
+
+    public static void forFrames(int frames, boolean onClient, Runnable run) {
         if(frames == 0) run.run();
         else {
             AtomicInteger framesLeft = new AtomicInteger(frames);
-            serverTasks.add(new Task(() -> framesLeft.decrementAndGet() <= 0, run));
+            (onClient ? clientTasks : serverTasks).add(new Task(() -> framesLeft.decrementAndGet() <= 0, run));
         }
     }
 

@@ -1,5 +1,6 @@
 package gollorum.signpost.blockpartdata.types;
 
+import gollorum.signpost.BlockRestrictions;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.interactions.InteractionInfo;
@@ -8,6 +9,7 @@ import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.SignGui;
 import gollorum.signpost.minecraft.gui.WaystoneGui;
 import gollorum.signpost.minecraft.utils.CoordinatesUtil;
+import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.BlockPart;
 import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.utils.BlockPartMetadata;
@@ -64,6 +66,7 @@ public class Post implements BlockPart<Post> {
     @Override
     public InteractionResult interact(InteractionInfo info) {
         ItemStack heldItem = info.player.getHeldItem(info.hand);
+        PlayerHandle playerHandle = PlayerHandle.from(info.player);
         if(isValidSign(heldItem)) {
             if (info.isRemote && info.tile.getParts().stream().filter(i -> i.blockPart instanceof Sign).count() < maxSignCount) {
                 SignGui.display(
@@ -76,9 +79,9 @@ public class Post implements BlockPart<Post> {
             return InteractionResult.Accepted;
         } else if(isWaystone(heldItem)) {
             if(info.tile.getParts().stream().noneMatch(p -> p.blockPart instanceof Waystone))
-                if(!info.isRemote) {
+                if(!info.isRemote && BlockRestrictions.getInstance().tryDecrementRemaining(BlockRestrictions.Type.Waystone, playerHandle)) {
                     info.tile.addPart(
-                        new BlockPartInstance(new gollorum.signpost.blockpartdata.types.Waystone(), Vector3.ZERO),
+                        new BlockPartInstance(new gollorum.signpost.blockpartdata.types.Waystone(playerHandle), Vector3.ZERO),
                         new ItemStack(heldItem.getItem()),
                         PlayerHandle.from(info.player)
                     );
@@ -124,7 +127,7 @@ public class Post implements BlockPart<Post> {
     }
 
     @Override
-    public boolean hasThePermissionToEdit(PlayerEntity player) { return true; }
+    public boolean hasThePermissionToEdit(WithOwner owner, PlayerEntity player) { return true; }
 
     @Override
     public Collection<ItemStack> getDrops(PostTile tile) {

@@ -98,7 +98,7 @@ public class WaystoneGui extends ExtendedScreen {
         addButton(lockButton);
         oldData.ifPresent(data -> {
             inputBox.setText(data.name);
-            lockButton.setLocked(data.ownership.isLocked);
+            lockButton.setLocked(data.isLocked);
         });
         doneButton = new Button(
             getCenterX() - buttonsSize.width / 2,
@@ -146,7 +146,7 @@ public class WaystoneGui extends ExtendedScreen {
                 inputBox.getText(),
                 new WaystoneLocationData(location, Vector3.fromVec3d(getMinecraft().player.getPositionVec())),
                 getMinecraft().player,
-                new OwnershipData(oldData.map(d -> d.ownership.owner).orElseGet(() -> new PlayerHandle(getMinecraft().player)), lockButton.isLocked())
+                lockButton.isLocked()
             );
         WaystoneLibrary.getInstance().updateEventDispatcher.removeListener(waystoneUpdateListener);
     }

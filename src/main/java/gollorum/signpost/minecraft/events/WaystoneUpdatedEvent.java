@@ -11,16 +11,16 @@ import java.util.Optional;
 public abstract class WaystoneUpdatedEvent {
 
     public static WaystoneUpdatedEvent fromUpdated(
-        WaystoneLocationData location, String name, Optional<String> oldName, OwnershipData ownership
+        WaystoneLocationData location, String name, Optional<String> oldName, boolean isLocked
     ) {
-        return oldName.map(n -> (WaystoneUpdatedEvent) new WaystoneRenamedEvent(location, name, n, ownership))
-            .orElse(new WaystoneAddedEvent(location, name, ownership));
+        return oldName.map(n -> (WaystoneUpdatedEvent) new WaystoneRenamedEvent(location, name, n, isLocked))
+            .orElse(new WaystoneAddedEvent(location, name, isLocked));
     }
 
     public static WaystoneUpdatedEvent fromUpdated(
-        WaystoneLocationData location, String name, OwnershipData ownership
+        WaystoneLocationData location, String name, boolean isLocked
     ) {
-        return new WaystoneAddedEvent(location, name, ownership);
+        return new WaystoneAddedEvent(location, name, isLocked);
     }
 
     public enum Type {
@@ -51,8 +51,8 @@ public abstract class WaystoneUpdatedEvent {
                 buffer.writeString(((WaystoneRenamedEvent)event).oldName);
             else if(event instanceof WaystoneMovedEvent)
                 WorldLocation.SERIALIZER.write(((WaystoneMovedEvent)event).newLocation, buffer);
-            if(event instanceof WaystoneAddedOrRemovedEvent)
-                OwnershipData.Serializer.write(((WaystoneAddedOrRemovedEvent) event).ownership, buffer);
+            if(event instanceof WaystoneAddedOrRenamedEvent)
+                buffer.writeBoolean(((WaystoneAddedOrRenamedEvent) event).isLocked);
         }
 
         @Override
@@ -61,9 +61,9 @@ public abstract class WaystoneUpdatedEvent {
             WaystoneLocationData location = WaystoneLocationData.SERIALIZER.read(buffer);
             String name = buffer.readString(32767);
             switch (type){
-                case Added: return new WaystoneAddedEvent(location, name, OwnershipData.Serializer.read(buffer));
+                case Added: return new WaystoneAddedEvent(location, name, buffer.readBoolean());
                 case Removed: return new WaystoneRemovedEvent(location, name);
-                case Renamed: return new WaystoneRenamedEvent(location, name, buffer.readString(32767), OwnershipData.Serializer.read(buffer));
+                case Renamed: return new WaystoneRenamedEvent(location, name, buffer.readString(32767), buffer.readBoolean());
                 case Moved: return new WaystoneMovedEvent(location, WorldLocation.SERIALIZER.read(buffer), name);
                 default: throw new RuntimeException("Type " + type + " is not supported");
             }

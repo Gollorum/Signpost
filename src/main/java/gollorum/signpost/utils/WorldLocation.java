@@ -55,6 +55,14 @@ public class WorldLocation {
         return Objects.hash(blockPos, world.rightOr(w -> w.getDimensionKey().getLocation()));
     }
 
+    @Override
+    public String toString() {
+        return String.format("(%d %d %d) in %s",
+            blockPos.getX(), blockPos.getY(), blockPos.getZ(),
+            world.match(World::getProviderName, ResourceLocation::toString)
+        );
+    }
+
     public static final Serializer SERIALIZER = new Serializer();
 
     public static final class Serializer implements CompoundSerializable<WorldLocation>{

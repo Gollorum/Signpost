@@ -8,7 +8,7 @@ import gollorum.signpost.minecraft.gui.ConfirmTeleportGui;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.minecraft.utils.Inventory;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.utils.TileEntityUtils;
+import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.utils.WaystoneLocationData;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;

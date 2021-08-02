@@ -7,9 +7,11 @@ import gollorum.signpost.blockpartdata.types.*;
 import gollorum.signpost.minecraft.Wrench;
 import gollorum.signpost.minecraft.utils.SideUtils;
 import gollorum.signpost.networking.PacketHandler;
+import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.utils.BlockPartMetadata;
-import gollorum.signpost.utils.TileEntityUtils;
+import gollorum.signpost.minecraft.utils.TileEntityUtils;
+import gollorum.signpost.utils.WaystoneContainer;
 import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.BlockPosSerializer;
@@ -43,7 +45,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class PostTile extends TileEntity {
+public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOwner.OfWaystone, WaystoneContainer {
 
     public static final String REGISTRY_NAME = "post";
 
@@ -59,7 +61,7 @@ public class PostTile extends TileEntity {
         partsMetadata.add(Waystone.METADATA);
     }
 
-    public static class TraceResult {
+	public static class TraceResult {
         public final BlockPartInstance part;
         public final UUID id;
         public final Vector3 hitPos;
@@ -74,6 +76,7 @@ public class PostTile extends TileEntity {
 
     public final gollorum.signpost.minecraft.block.Post.ModelType modelType;
     private ItemStack drop;
+    private Optional<PlayerHandle> owner = Optional.empty();
 
     public PostTile(gollorum.signpost.minecraft.block.Post.ModelType modelType, ItemStack drop) {
         super(type);
@@ -169,7 +172,8 @@ public class PostTile extends TileEntity {
                 subComp.putUniqueId("PartId", e.getKey());
             }
         }
-        compound.put("Drop", ItemStackSerializer.Instance.write(drop, new CompoundNBT()));
+        compound.put("Drop", ItemStackSerializer.Instance.write(drop));
+        compound.put("Owner", PlayerHandle.Serializer.optional().write(owner));
     }
 
     @Override
@@ -200,6 +204,7 @@ public class PostTile extends TileEntity {
             PlayerHandle.Invalid
         );
         drop = ItemStackSerializer.Instance.read(compound.getCompound("Drop"));
+        owner = PlayerHandle.Serializer.optional().read(compound.getCompound("Owner"));
     }
 
     @Override
@@ -235,8 +240,15 @@ public class PostTile extends TileEntity {
         return ret;
     }
 
-    public void setMainDrop(ItemStack drop) {
-        this.drop = drop;
+    public void setSignpostOwner(Optional<PlayerHandle> owner) {
+        this.owner = owner;
+    }
+
+    public Optional<PlayerHandle> getSignpostOwner() { return owner; }
+
+    public Optional<PlayerHandle> getWaystoneOwner() {
+        return getParts().stream().filter(p -> p.blockPart instanceof Waystone).findFirst()
+            .flatMap(p -> ((Waystone)p.blockPart).getWaystoneOwner());
     }
 
     public static boolean isAngleTool(Item item) {
@@ -448,7 +460,7 @@ public class PostTile extends TileEntity {
                     PostTile.class
                 ).ifPresent(tile -> {
                     BlockPartInstance oldPart = tile.removePart(message.info.identifier);
-                    if(oldPart != null && !tile.world.isRemote && !context.get().getSender().isCreative() && message.shouldDropItem){
+                    if(oldPart != null && !tile.getWorld().isRemote && !context.get().getSender().isCreative() && message.shouldDropItem){
                         for(ItemStack item : (Collection<ItemStack>) oldPart.blockPart.getDrops(tile)) {
                             if(!context.get().getSender().inventory.addItemStackToInventory(item))
                                 if(tile.world instanceof ServerWorld) {

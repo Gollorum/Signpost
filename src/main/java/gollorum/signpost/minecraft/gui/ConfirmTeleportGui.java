@@ -160,7 +160,7 @@ public class ConfirmTeleportGui extends Screen {
 		}
 		signInfo.ifPresent(info -> {
 			Rect editRect = new Rect(new Point(width / 2, editButtonTop), TextureResource.edit.size, Rect.XAlignment.Center, Rect.YAlignment.Top);
-			if(info.sign.hasThePermissionToEdit(getMinecraft().player)) {
+			if(info.sign.hasThePermissionToEdit(info.tile, getMinecraft().player)) {
 				addButton(new ImageButton(
 					editRect.point.x, editRect.point.y,
 					editRect.width, editRect.height,

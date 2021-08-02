@@ -1,7 +1,9 @@
 package gollorum.signpost.minecraft.block;
 
+import gollorum.signpost.BlockRestrictions;
 import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
+import gollorum.signpost.security.WithCountRestriction;
 import gollorum.signpost.utils.WorldLocation;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -36,7 +38,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class ModelWaystone extends Block implements IWaterLoggable  {
+public class ModelWaystone extends Block implements IWaterLoggable, WithCountRestriction {
 
 	public static final BooleanProperty Waterlogged = BlockStateProperties.WATERLOGGED;
 	public static final DirectionProperty Facing = BlockStateProperties.HORIZONTAL_FACING;
@@ -169,6 +171,11 @@ public class ModelWaystone extends Block implements IWaterLoggable  {
 	@Override
 	public VoxelShape getShape(BlockState state, IBlockReader world, BlockPos pos, ISelectionContext context) {
 		return variant.shape;
+	}
+
+	@Override
+	public BlockRestrictions.Type getBlockRestrictionType() {
+		return BlockRestrictions.Type.Waystone;
 	}
 
 }

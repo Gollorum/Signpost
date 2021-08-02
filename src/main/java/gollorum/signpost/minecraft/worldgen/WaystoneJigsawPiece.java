@@ -127,7 +127,7 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 				name,
 				locationDataFor(pos, seedReader, facing),
 				null,
-				OwnershipData.empty
+				false
 			);
 			registerGenerated(name, villageLocation);
 

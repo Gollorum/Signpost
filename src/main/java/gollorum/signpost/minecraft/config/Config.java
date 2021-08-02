@@ -72,6 +72,8 @@ public class Config {
 	public static class Client {
 
 		public final ForgeConfigSpec.BooleanValue enableConfirmationScreen;
+		public final ForgeConfigSpec.BooleanValue enableWaystoneLimitNotifications;
+		public final ForgeConfigSpec.BooleanValue enableSignpostLimitNotifications;
 
 		public Client(ForgeConfigSpec.Builder builder) {
 			builder.push("teleport");
@@ -83,6 +85,12 @@ public class Config {
 					"CAUTION 2: The only way to edit a sign with destination is through this screen.",
 					"This should probably never be turned off. Why did I make it an option? No idea."
 				).define("enable_confirmation_screen", true);
+			enableWaystoneLimitNotifications = builder
+				.comment("Choose whether you want to receive a notification on how many waystones you have left to place (if it is limited by the server).")
+				.define("enable_waystone_limit_notifications", false);
+			enableSignpostLimitNotifications = builder
+				.comment("Choose whether you want to receive a notification on how many signposts you have left to place (if it is limited by the server).")
+				.define("enable_signpost_limit_notifications", false);
 			builder.pop();
 		}
 

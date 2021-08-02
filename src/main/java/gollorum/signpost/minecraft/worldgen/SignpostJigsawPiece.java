@@ -18,7 +18,7 @@ import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.utils.OwnershipData;
-import gollorum.signpost.utils.TileEntityUtils;
+import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.utils.WaystoneData;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
@@ -193,7 +193,7 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 						rotation, targetData.name, shouldFlip(facing, rotation),
 						tile.modelType.mainTexture, tile.modelType.secondaryTexture,
 						overlayFor(world, tilePos), Colors.black, Optional.of(target.getValue()),
-						ItemStack.EMPTY, tile.modelType, OwnershipData.empty
+						ItemStack.EMPTY, tile.modelType, false
 					),
 					new Vector3(0, y, 0)
 				),
@@ -226,7 +226,7 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 					rotation, targetData.name, shouldFlip,
 					tile.modelType.mainTexture, tile.modelType.secondaryTexture,
 					overlay, Colors.black, Optional.of(target.getValue()),
-					ItemStack.EMPTY, tile.modelType, OwnershipData.empty
+					ItemStack.EMPTY, tile.modelType, false
 				),
 				new Vector3(0, y, 0)
 			),
@@ -251,7 +251,7 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 						secondRotation, secondTargetData.name, shouldSecondFlip,
 						tile.modelType.mainTexture, tile.modelType.secondaryTexture,
 						overlay, Colors.black, Optional.of(secondTargetHandle),
-						ItemStack.EMPTY, tile.modelType, OwnershipData.empty
+						ItemStack.EMPTY, tile.modelType, false
 					),
 					new Vector3(0, y, 0)
 				),

@@ -1,14 +1,13 @@
 package gollorum.signpost.blockpartdata.types;
 
-import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.Post;
 import gollorum.signpost.minecraft.utils.CoordinatesUtil;
 import gollorum.signpost.minecraft.utils.LangKeys;
+import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.BlockPartMetadata;
-import gollorum.signpost.utils.OwnershipData;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.AABB;
 import gollorum.signpost.utils.math.geometry.Matrix4x4;
@@ -71,10 +70,10 @@ public class LargeSign extends Sign<LargeSign> {
         Optional<WaystoneHandle> destination,
         ItemStack itemToDropOnBreak,
         Post.ModelType modelType,
-        OwnershipData ownership
+        boolean isLocked
     ) { this(
         new CoreData(angle, flip, mainTexture, secondaryTexture, overlay,
-            color, destination, modelType, itemToDropOnBreak, ownership),
+            color, destination, modelType, itemToDropOnBreak, isLocked),
         text
     ); }
 
@@ -101,7 +100,11 @@ public class LargeSign extends Sign<LargeSign> {
 
     @Override
     public void readMutationUpdate(CompoundNBT compound, TileEntity tile, PlayerEntity editingPlayer) {
-        if(editingPlayer != null && editingPlayer.isServerWorld() && !hasThePermissionToEdit(editingPlayer)) {
+        if(editingPlayer != null
+            && editingPlayer.isServerWorld()
+            && tile instanceof WithOwner.OfSignpost
+            && !hasThePermissionToEdit(((WithOwner.OfSignpost)tile), editingPlayer)
+        ) {
             // This should not happen unless a player tries to hacc
             editingPlayer.sendMessage(new TranslationTextComponent(LangKeys.noPermissionSignpost), Util.DUMMY_UUID);
             return;

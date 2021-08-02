@@ -27,7 +27,7 @@ public class AngleInputBox extends InputBox {
     private static boolean canParse(String text) {
         if(text.equals("")) return true;
         try {
-            Float.parseFloat(text);
+            Integer.parseInt(text);
             return true;
         } catch(NumberFormatException e) {
             return false;
@@ -38,7 +38,7 @@ public class AngleInputBox extends InputBox {
         String text = getText().endsWith(degreeSign)
             ? getText().substring(0, getText().length() - 1)
             : getText();
-        return text.equals("") ? 0 : Float.parseFloat(text);
+        return text.equals("") ? 0 : Integer.parseInt(text);
     }
 
     public Angle getCurrentAngle() { return Angle.fromDegrees(currentResult); }
@@ -57,6 +57,6 @@ public class AngleInputBox extends InputBox {
     }
 
     public void setSelectedAngle(Angle angle) {
-        setText(angle.degrees() + degreeSign);
+        setText(Math.round(angle.degrees()) + degreeSign);
     }
 }

@@ -3,17 +3,17 @@ package gollorum.signpost.minecraft.events;
 import gollorum.signpost.utils.WaystoneLocationData;
 import gollorum.signpost.utils.OwnershipData;
 
-public class WaystoneAddedOrRemovedEvent extends WaystoneUpdatedEvent {
+public class WaystoneAddedOrRenamedEvent extends WaystoneUpdatedEvent {
 
-	public final OwnershipData ownership;
+	public final boolean isLocked;
 
-	public WaystoneAddedOrRemovedEvent(
+	public WaystoneAddedOrRenamedEvent(
 		WaystoneLocationData location,
 		String name,
-		OwnershipData ownership
+		boolean isLocked
 	) {
 		super(location, name);
-		this.ownership = ownership;
+		this.isLocked = isLocked;
 	}
 
 	@Override

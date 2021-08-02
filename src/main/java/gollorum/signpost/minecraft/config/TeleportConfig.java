@@ -14,7 +14,8 @@ public class TeleportConfig {
 
 	public TeleportConfig(ForgeConfigSpec.Builder builder) {
 		enableTeleport = builder.define("enable", true);
-		maximumDistance = builder.defineInRange("max_distance", -1, -1, Integer.MAX_VALUE);
+		maximumDistance = builder.comment("-1 = infinite")
+			.defineInRange("max_distance", -1, -1, Integer.MAX_VALUE);
 		enforceDiscovery = builder.define("enforce_discovery", true);
 
 		builder.push("cost");

@@ -136,7 +136,7 @@ public class SignGui extends ExtendedScreen {
     }
 
     public static void display(PostTile tile, Sign oldSign, Vector3 oldOffset, PostTile.TilePartInfo oldTilePartInfo) {
-        if(oldSign.hasThePermissionToEdit(Minecraft.getInstance().player))
+        if(oldSign.hasThePermissionToEdit(tile, Minecraft.getInstance().player))
             Minecraft.getInstance().displayGuiScreen(new SignGui(tile, oldSign, oldOffset, oldTilePartInfo));
     }
 
@@ -311,7 +311,7 @@ public class SignGui extends ExtendedScreen {
             doneRect.point.y - 30,
             b -> lockButton.setLocked(!lockButton.isLocked())
         );
-        lockButton.setLocked(oldSign.map(s -> s.getOwnership().isLocked).orElse(false));
+        lockButton.setLocked(oldSign.map(Sign::isLocked).orElse(false));
         addButton(lockButton);
 
         Collection<String> waystoneDropdownEntry = hasBeenInitialized
@@ -807,9 +807,7 @@ public class SignGui extends ExtendedScreen {
         PostTile.TilePartInfo tilePartInfo = oldTilePartInfo.orElseGet(() ->
             new PostTile.TilePartInfo(tile.getWorld().getDimensionKey().getLocation(), tile.getPos(), UUID.randomUUID()));
         CompoundNBT data;
-        OwnershipData owner = new OwnershipData(
-            oldSign.map(s -> s.getOwnership().owner).orElseGet(() -> PlayerHandle.from(getMinecraft().player)),
-            lockButton.isLocked());
+        boolean isLocked = lockButton.isLocked();
         switch (selectedType) {
             case Wide:
                 data = SmallWideSign.METADATA.write(
@@ -824,7 +822,7 @@ public class SignGui extends ExtendedScreen {
                         destinationId,
                         itemToDropOnBreak,
                         modelType,
-                        owner
+                        isLocked
                     )
                 );
                 if(oldSign.isPresent()) {
@@ -854,7 +852,7 @@ public class SignGui extends ExtendedScreen {
                         destinationId,
                         itemToDropOnBreak,
                         modelType,
-                        owner
+                        isLocked
                     )
                 );
                 if(oldSign.isPresent()) {
@@ -889,7 +887,7 @@ public class SignGui extends ExtendedScreen {
                         destinationId,
                         itemToDropOnBreak,
                         modelType,
-                        owner
+                        isLocked
                     )
                 );
                 if(oldSign.isPresent()) {
@@ -928,6 +926,15 @@ public class SignGui extends ExtendedScreen {
         Delay.onClientUntil(() -> getMinecraft() != null && getMinecraft().player != null, () -> {
             angleWhenFlipped.set(Angle.fromDegrees(-getMinecraft().player.rotationYaw).normalized());
             angleWhenNotFlipped.set(angleWhenFlipped.get().add(Angle.fromRadians((float) Math.PI)).normalized());
+
+            if(!oldSign.isPresent() && rotationInputField.getCurrentAngle().equals(Angle.ZERO)) {
+                Delay.onClientUntil(
+                    () -> widgetsToFlip.size() > 0,
+                    () -> rotationInputField.setSelectedAngle((widgetsToFlip.get(0).isFlipped() ? angleWhenFlipped : angleWhenNotFlipped).get()),
+                    100,
+                    Optional.empty()
+                );
+            }
         });
         return new AngleSelectionEntry(LangKeys.rotationPlayer,
             () -> (widgetsToFlip.get(0).isFlipped() ? angleWhenFlipped : angleWhenNotFlipped).get());

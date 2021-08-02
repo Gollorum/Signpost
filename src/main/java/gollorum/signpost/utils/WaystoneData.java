@@ -2,35 +2,46 @@ package gollorum.signpost.utils;
 
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.minecraft.config.Config;
+import gollorum.signpost.minecraft.utils.TileEntityUtils;
+import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
+
+import java.util.Optional;
 
 public class WaystoneData {
 
     public final WaystoneHandle handle;
     public final String name;
     public final WaystoneLocationData location;
-    public final OwnershipData ownership;
+    public final boolean isLocked;
 
-	public WaystoneData(WaystoneHandle handle, String name, WaystoneLocationData location, OwnershipData ownership) {
+	public WaystoneData(WaystoneHandle handle, String name, WaystoneLocationData location, boolean isLocked) {
         this.handle = handle;
         this.name = name;
         this.location = location;
-        this.ownership = ownership;
+        this.isLocked = isLocked;
     }
 
-    public WaystoneData withName(String newName) { return new WaystoneData(handle, newName, location, ownership); }
+    public WaystoneData withName(String newName) { return new WaystoneData(handle, newName, location, isLocked); }
 
     public boolean hasThePermissionToEdit(PlayerEntity player) {
-        return hasThePermissionToEdit(player, ownership);
+        return hasThePermissionToEdit(player, location, isLocked);
     }
 
-    public static boolean hasThePermissionToEdit(PlayerEntity player, OwnershipData ownership) {
-        return !ownership.isLocked
-            || ownership.owner.id.equals(player.getUniqueID())
-            || player.hasPermissionLevel(Config.Server.permissions.editLockedWaystoneCommandPermissionLevel.get());
+    public static boolean hasThePermissionToEdit(PlayerEntity player, WaystoneLocationData locationData, boolean isLocked) {
+        return !isLocked || hasSecurityPermissions(player, locationData);
+    }
+
+    public static boolean hasSecurityPermissions(PlayerEntity player, WaystoneLocationData locationData) {
+        return player.hasPermissionLevel(Config.Server.permissions.editLockedWaystoneCommandPermissionLevel.get())
+            || TileEntityUtils.toWorld(locationData.block.world)
+                .map(w -> w.getTileEntity(locationData.block.blockPos))
+                .flatMap(tile -> tile instanceof WithOwner.OfWaystone ? ((WithOwner.OfWaystone)tile).getWaystoneOwner() : Optional.empty())
+                .map(owner -> owner.id.equals(player.getUniqueID()))
+                .orElse(true);
     }
 
     public static final Serializer SERIALIZER = new Serializer();
@@ -42,7 +53,7 @@ public class WaystoneData {
             compound.put("Handle" , WaystoneHandle.Serializer.write(data.handle));
             compound.putString("Name", data.name);
             compound.put("Location", WaystoneLocationData.SERIALIZER.write(data.location));
-            compound.put("Owner", OwnershipData.Serializer.write(data.ownership));
+            compound.putBoolean("IsLocked", data.isLocked);
             return compound;
         }
 
@@ -52,7 +63,7 @@ public class WaystoneData {
                 WaystoneHandle.Serializer.read(compound.getCompound("Handle")),
                 compound.getString("Name"),
                 WaystoneLocationData.SERIALIZER.read(compound.getCompound("Location")),
-                OwnershipData.Serializer.read(compound.getCompound("Owner"))
+                compound.getBoolean("IsLocked")
             );
         }
 
@@ -61,7 +72,8 @@ public class WaystoneData {
             return
                 compound.contains("Handle") && WaystoneHandle.Serializer.isContainedIn(compound.getCompound("Handle")) &&
                 compound.contains("Name") &&
-                compound.contains("SpawnLocation") && WaystoneLocationData.SERIALIZER.isContainedIn(compound.getCompound("SpawnLocation"));
+                compound.contains("Location") && WaystoneLocationData.SERIALIZER.isContainedIn(compound.getCompound("Location")) &&
+                compound.contains("IsLocked");
         }
 
         @Override
@@ -69,7 +81,7 @@ public class WaystoneData {
             WaystoneHandle.Serializer.write(data.handle, buffer);
             buffer.writeString(data.name);
             WaystoneLocationData.SERIALIZER.write(data.location, buffer);
-            OwnershipData.Serializer.write(data.ownership, buffer);
+            buffer.writeBoolean(data.isLocked);
         }
 
         @Override
@@ -78,7 +90,7 @@ public class WaystoneData {
                 WaystoneHandle.Serializer.read(buffer),
                 buffer.readString(32767),
                 WaystoneLocationData.SERIALIZER.read(buffer),
-                OwnershipData.Serializer.read(buffer)
+                buffer.readBoolean()
             );
         }
     }
