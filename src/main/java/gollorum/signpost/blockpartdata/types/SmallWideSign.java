@@ -39,7 +39,8 @@ public class SmallWideSign extends Sign<SmallWideSign> {
         (compound) -> new SmallWideSign(
             CoreData.SERIALIZER.read(compound.getCompound("CoreData")),
             compound.getString("Text")
-        )
+        ),
+        SmallWideSign.class
     );
 
     private String text;
@@ -100,7 +101,7 @@ public class SmallWideSign extends Sign<SmallWideSign> {
         if (compound.contains("Text")) {
             setText(compound.getString("Text"));
         }
-        super.readMutationUpdate(compound.getCompound("CoreData"), tile, editingPlayer);
+        super.readMutationUpdate(compound, tile, editingPlayer);
     }
 
     @Override

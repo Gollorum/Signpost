@@ -37,7 +37,8 @@ public class Waystone implements BlockPart<Waystone>, WithOwner.OfWaystone {
 	public static final BlockPartMetadata<Waystone> METADATA = new BlockPartMetadata<>(
 		"Waystone",
 		Waystone::writeTo,
-		(compound) -> new Waystone(PlayerHandle.Serializer.optional().read(compound.getCompound("owner")))
+		(compound) -> new Waystone(PlayerHandle.Serializer.optional().read(compound.getCompound("owner"))),
+        Waystone.class
 	);
 
 	public Waystone(Optional<PlayerHandle> owner) { this.owner = owner; }

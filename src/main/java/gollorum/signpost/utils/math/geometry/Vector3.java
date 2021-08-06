@@ -147,7 +147,8 @@ public final class Vector3 {
         return (float) Math.sqrt(x * x + y * y + z * z);
     }
 
-    public static final CompoundSerializable<Vector3> Serializer = new CompoundSerializable<Vector3>() {
+    public static final CompoundSerializable<Vector3> Serializer = new SerializerImpl();
+    public static final class SerializerImpl implements CompoundSerializable<Vector3> {
 
         @Override
         public CompoundNBT write(Vector3 vector3, CompoundNBT compound) {
@@ -171,6 +172,11 @@ public final class Vector3 {
                 compound.getFloat("Y"),
                 compound.getFloat("Z")
             );
+        }
+
+        @Override
+        public Class<Vector3> getTargetClass() {
+            return Vector3.class;
         }
 
         @Override

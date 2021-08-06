@@ -276,7 +276,8 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
             this.identifier = identifier;
         }
 
-        public static final CompoundSerializable<TilePartInfo> Serializer = new CompoundSerializable<TilePartInfo>() {
+        public static final CompoundSerializable<TilePartInfo> Serializer = new SerializerImpl();
+        public static final class SerializerImpl implements CompoundSerializable<TilePartInfo> {
 
             @Override
             public CompoundNBT write(TilePartInfo tilePartInfo, CompoundNBT compound) {
@@ -300,6 +301,11 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
                     BlockPosSerializer.INSTANCE.read(compound.getCompound("Pos")),
                     compound.getUniqueId("Id")
                 );
+            }
+
+            @Override
+            public Class<TilePartInfo> getTargetClass() {
+                return TilePartInfo.class;
             }
 
             @Override

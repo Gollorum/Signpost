@@ -3,17 +3,28 @@ package gollorum.signpost;
 import com.ibm.icu.impl.Pair;
 import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.storage.BlockRestrictionsStorage;
+import gollorum.signpost.minecraft.utils.ClientFrameworkAdapter;
 import gollorum.signpost.minecraft.utils.LangKeys;
+import gollorum.signpost.networking.PacketHandler;
+import gollorum.signpost.networking.ReflectionEvent;
+import gollorum.signpost.networking.SerializedWith;
 import gollorum.signpost.security.WithOwner;
+import gollorum.signpost.utils.serialization.BooleanSerializer;
+import gollorum.signpost.utils.serialization.IntSerializer;
+import gollorum.signpost.utils.serialization.StringSerializer;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.util.Util;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.DimensionSavedDataManager;
 import net.minecraft.world.storage.WorldSavedData;
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.fml.network.PacketDistributor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -53,12 +64,14 @@ public class BlockRestrictions {
 		public final String unlimitedRemainingLangKeyOther;
 		public final Function<Object, Optional<PlayerHandle>> tryGetOwner;
 
-		public String getRemainingLangKey(boolean isCallerSubject) {
-			return isCallerSubject ? remainingLangKey : remainingLangKeyOther;
+		public TranslationTextComponent getRemainingTextComponent(int count, Optional<ITextComponent> subject) {
+			return subject.map(s -> new TranslationTextComponent(remainingLangKeyOther, count, s))
+				.orElseGet(() -> new TranslationTextComponent(remainingLangKey, count));
 		}
 
-		public String getUnlimitedRemainingLangKey(boolean isCallerSubject) {
-			return isCallerSubject ? unlimitedRemainingLangKey : unlimitedRemainingLangKeyOther;
+		public TranslationTextComponent getUnlimitedRemainingTextComponent(Optional<ITextComponent> subject) {
+			return subject.map(s -> new TranslationTextComponent(unlimitedRemainingLangKeyOther, s))
+				.orElseGet(() -> new TranslationTextComponent(unlimitedRemainingLangKey));
 		}
 
 		Type(
@@ -155,8 +168,10 @@ public class BlockRestrictions {
 		int prevCount = type.getCount.apply(entry);
 		if(prevCount >= 0) {
 			type.setCount.accept(entry, prevCount + 1);
-			player.asEntity()
-				.sendMessage(new TranslationTextComponent(type.remainingLangKey, prevCount + 1), Util.DUMMY_UUID);
+			PacketHandler.send(
+				PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player.asEntity()),
+				new NotifyCountChanged(type.remainingLangKey, prevCount + 1, type == Type.Waystone)
+			);
 		}
 	}
 
@@ -166,10 +181,14 @@ public class BlockRestrictions {
 		int prevCount = type.getCount.apply(entry);
 		if(prevCount >= 1) {
 			type.setCount.accept(entry, prevCount - 1);
-			player.asEntity().sendMessage(new TranslationTextComponent(type.remainingLangKey, prevCount - 1), Util.DUMMY_UUID);
+			PacketHandler.send(
+				PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player.asEntity()),
+				new NotifyCountChanged(type.remainingLangKey, prevCount - 1, type == Type.Waystone)
+			);
 			return true;
 		} else {
-			player.asEntity().sendMessage(prevCount < 0 ? new TranslationTextComponent(type.unlimitedRemainingLangKey) : new TranslationTextComponent(type.errorLangKey), Util.DUMMY_UUID);
+			if(prevCount == 0)
+				player.asEntity().sendMessage(new TranslationTextComponent(type.errorLangKey), Util.DUMMY_UUID);
 			return prevCount < 0;
 		}
 	}
@@ -227,6 +246,43 @@ public class BlockRestrictions {
 				return Pair.of(PlayerHandle.Serializer.read(elementCompound),
 					new Entry(elementCompound.getInt("remaining_waystones"), elementCompound.getInt("remaining_signposts")));
 			}).collect(Collectors.toMap(p -> p.first, p -> p.second)));
+		}
+	}
+
+	public static class NotifyCountChanged extends ReflectionEvent<NotifyCountChanged> {
+
+		public NotifyCountChanged() {
+			super();
+		}
+
+		public NotifyCountChanged(String langKey, Integer count, boolean isWaystoneNotification) {
+			super(null);
+			this.langKey = langKey;
+			this.count = count;
+			IsWaystoneNotification = isWaystoneNotification;
+		}
+
+		@SerializedWith(serializer = StringSerializer.class)
+		private String langKey;
+
+		@SerializedWith(serializer = IntSerializer.class)
+		private Integer count;
+
+		@SerializedWith(serializer = BooleanSerializer.class)
+		private Boolean IsWaystoneNotification;
+
+		@Override
+		public Class<NotifyCountChanged> getMessageClass() {
+			return NotifyCountChanged.class;
+		}
+
+		@Override
+		protected void handle(NotifyCountChanged message, NetworkEvent.Context context) {
+			if((message.IsWaystoneNotification
+				? Config.Client.enableWaystoneLimitNotifications
+				: Config.Client.enableSignpostLimitNotifications
+			).get())
+				ClientFrameworkAdapter.showStatusMessage(new TranslationTextComponent(message.langKey, message.count), true);
 		}
 	}
 

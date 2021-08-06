@@ -39,7 +39,8 @@ public class SmallShortSign extends Sign<SmallShortSign> {
         (compound) -> new SmallShortSign(
             CoreData.SERIALIZER.read(compound.getCompound("CoreData")),
             compound.getString("Text")
-        )
+        ),
+        SmallShortSign.class
     );
 
     private String text;
@@ -99,7 +100,7 @@ public class SmallShortSign extends Sign<SmallShortSign> {
         if (compound.contains("Text")) {
             setText(compound.getString("Text"));
         }
-        super.readMutationUpdate(compound.getCompound("CoreData"), tile, editingPlayer);
+        super.readMutationUpdate(compound, tile, editingPlayer);
     }
 
     @Override

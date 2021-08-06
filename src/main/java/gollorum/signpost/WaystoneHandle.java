@@ -27,7 +27,8 @@ public class WaystoneHandle {
         return id.hashCode();
     }
 
-    public static final CompoundSerializable<WaystoneHandle> Serializer = new CompoundSerializable<WaystoneHandle>() {
+    public static final CompoundSerializable<WaystoneHandle> Serializer = new SerializerImpl();
+    public static final class SerializerImpl implements CompoundSerializable<WaystoneHandle> {
 
         @Override
         public CompoundNBT write(WaystoneHandle playerHandle, CompoundNBT compound) {
@@ -43,6 +44,11 @@ public class WaystoneHandle {
         @Override
         public WaystoneHandle read(CompoundNBT compound) {
             return new WaystoneHandle(compound.getUniqueId("Id"));
+        }
+
+        @Override
+        public Class<WaystoneHandle> getTargetClass() {
+            return WaystoneHandle.class;
         }
 
         @Override

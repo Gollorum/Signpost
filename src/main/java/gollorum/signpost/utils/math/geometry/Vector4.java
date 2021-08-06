@@ -128,6 +128,11 @@ public final class Vector4 {
         }
 
         @Override
+        public Class<Vector4> getTargetClass() {
+            return Vector4.class;
+        }
+
+        @Override
         public void write(Vector4 vec, PacketBuffer buffer) {
             buffer.writeFloat(vec.x);
             buffer.writeFloat(vec.y);

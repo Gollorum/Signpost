@@ -49,7 +49,8 @@ public class PlayerHandle {
         return Signpost.getServerInstance().getPlayerList().getPlayerByUUID(id);
     }
 
-    public static final CompoundSerializable<PlayerHandle> Serializer = new CompoundSerializable<PlayerHandle>() {
+    public static final CompoundSerializable<PlayerHandle> Serializer = new SerializerImpl();
+    public static final class SerializerImpl implements CompoundSerializable<PlayerHandle> {
 
         @Override
         public CompoundNBT write(PlayerHandle playerHandle, CompoundNBT compound) {
@@ -65,6 +66,11 @@ public class PlayerHandle {
         @Override
         public PlayerHandle read(CompoundNBT compound) {
             return new PlayerHandle(compound.getUniqueId("Id"));
+        }
+
+        @Override
+        public Class<PlayerHandle> getTargetClass() {
+            return PlayerHandle.class;
         }
 
         @Override

@@ -15,7 +15,13 @@ public class OwnershipData {
 		this.isLocked = isLocked;
 	}
 
-	public static final CompoundSerializable<OwnershipData> Serializer = new CompoundSerializable<OwnershipData>() {
+	public static final CompoundSerializable<OwnershipData> Serializer = new SerializerImpl();
+	public static final class SerializerImpl implements CompoundSerializable<OwnershipData> {
+		@Override
+		public Class<OwnershipData> getTargetClass() {
+			return OwnershipData.class;
+		}
+
 		@Override
 		public CompoundNBT write(
 			OwnershipData ownershipData, CompoundNBT compound

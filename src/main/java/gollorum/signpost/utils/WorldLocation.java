@@ -91,6 +91,11 @@ public class WorldLocation {
         }
 
         @Override
+        public Class<WorldLocation> getTargetClass() {
+            return WorldLocation.class;
+        }
+
+        @Override
         public void write(WorldLocation worldLocation, PacketBuffer buffer) {
             BlockPosSerializer.INSTANCE.write(worldLocation.blockPos, buffer);
             WorldSerializer.INSTANCE.write(worldLocation.world, buffer);

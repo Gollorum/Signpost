@@ -1,5 +1,6 @@
 package gollorum.signpost.networking;
 
+import gollorum.signpost.BlockRestrictions;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.Teleport;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
@@ -30,7 +31,8 @@ public class PacketHandler {
         new Teleport.Request(),
         new RequestSignGui(),
         new RequestSignGui.ForNewSign(),
-        new RequestWaystoneGui()
+        new RequestWaystoneGui(),
+        new BlockRestrictions.NotifyCountChanged()
     };
 
     private static final String PROTOCOL_VERSION = "1";

@@ -2,6 +2,7 @@ package gollorum.signpost.utils.math;
 
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.network.PacketBuffer;
 
 public final class Angle {
 
@@ -64,7 +65,13 @@ public final class Angle {
         return Float.hashCode(radians);
     }
 
-    public static final CompoundSerializable<Angle> Serializer = new CompoundSerializable<Angle>() {
+    public static final CompoundSerializable<Angle> Serializer = new SerializerImpl();
+    public static final class SerializerImpl implements CompoundSerializable<Angle> {
+
+        @Override
+        public Class<Angle> getTargetClass() {
+            return Angle.class;
+        }
 
         private static final String key = "Radians";
 
@@ -82,6 +89,16 @@ public final class Angle {
         @Override
         public Angle read(CompoundNBT compound) {
             return Angle.fromRadians(compound.getFloat(key));
+        }
+
+        @Override
+        public void write(Angle angle, PacketBuffer buffer) {
+            buffer.writeFloat(angle.radians);
+        }
+
+        @Override
+        public Angle read(PacketBuffer buffer) {
+            return Angle.fromRadians(buffer.readFloat());
         }
     };
 

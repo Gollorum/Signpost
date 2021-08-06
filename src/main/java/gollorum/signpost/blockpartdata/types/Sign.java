@@ -122,6 +122,11 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
                    compound.getBoolean("IsLocked")
                 );
             }
+
+            @Override
+            public Class<CoreData> getTargetClass() {
+                return CoreData.class;
+            }
         }
     }
 
@@ -275,6 +280,7 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
 
     @Override
     public void readMutationUpdate(CompoundNBT compound, TileEntity tile, PlayerEntity editingPlayer) {
+        if(compound.contains("CoreData")) compound = compound.getCompound("CoreData");
         if(compound.contains("Angle"))
             setAngle(Angle.Serializer.read(compound.getCompound("Angle")));
 

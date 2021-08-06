@@ -92,7 +92,13 @@ public abstract class Overlay {
         register(Snow);
     }
 
-    public static final CompoundSerializable<Overlay> Serializer = new CompoundSerializable<Overlay>() {
+    public static final CompoundSerializable<Overlay> Serializer = new SerializerImpl();
+    public static final class SerializerImpl implements CompoundSerializable<Overlay> {
+        @Override
+        public Class<Overlay> getTargetClass() {
+            return Overlay.class;
+        }
+
         @Override
         public CompoundNBT write(Overlay overlay, CompoundNBT compound) {
             compound.putString("Id", overlay.id);

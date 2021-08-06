@@ -29,6 +29,11 @@ public class WorldSerializer implements CompoundSerializable<Either<World, Resou
     }
 
     @Override
+    public Class<Either<World, ResourceLocation>> getTargetClass() {
+        return (Class<Either<World, ResourceLocation>>) Either.<World, ResourceLocation>right(null).getClass();
+    }
+
+    @Override
     public void write(Either<World, ResourceLocation> world, PacketBuffer buffer) {
         buffer.writeResourceLocation(world.rightOr(w -> w.getDimensionKey().getLocation()));
     }

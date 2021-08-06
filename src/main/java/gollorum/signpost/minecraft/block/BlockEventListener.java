@@ -20,10 +20,8 @@ public class BlockEventListener {
         if(!event.isCanceled() && event.getPlacedBlock().getBlock() instanceof WithCountRestriction) {
             BlockRestrictions.Type restrictionType = ((WithCountRestriction)event.getPlacedBlock().getBlock()).getBlockRestrictionType();
             PlayerHandle player = PlayerHandle.from(event.getEntity());
-            if(!BlockRestrictions.getInstance().tryDecrementRemaining(restrictionType, player)) {
+            if(!BlockRestrictions.getInstance().tryDecrementRemaining(restrictionType, player))
                 event.setCanceled(true);
-                event.getEntity().sendMessage(new TranslationTextComponent(restrictionType.errorLangKey), Util.DUMMY_UUID);
-            }
         }
     }
 

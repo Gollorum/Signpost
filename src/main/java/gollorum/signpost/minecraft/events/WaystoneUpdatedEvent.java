@@ -43,6 +43,11 @@ public abstract class WaystoneUpdatedEvent {
         private Serializer(){}
 
         @Override
+        public Class<WaystoneUpdatedEvent> getTargetClass() {
+            return WaystoneUpdatedEvent.class;
+        }
+
+        @Override
         public void write(WaystoneUpdatedEvent event, PacketBuffer buffer) {
             buffer.writeEnumValue(event.getType());
             WaystoneLocationData.SERIALIZER.write(event.location, buffer);

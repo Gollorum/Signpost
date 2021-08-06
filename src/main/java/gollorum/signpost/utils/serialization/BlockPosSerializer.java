@@ -35,6 +35,11 @@ public class BlockPosSerializer implements CompoundSerializable<BlockPos> {
     }
 
     @Override
+    public Class<BlockPos> getTargetClass() {
+        return BlockPos.class;
+    }
+
+    @Override
     public void write(BlockPos blockPos, PacketBuffer buffer) {
         buffer.writeInt(blockPos.getX());
         buffer.writeInt(blockPos.getY());

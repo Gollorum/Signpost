@@ -31,6 +31,11 @@ public final class ItemStackSerializer implements CompoundSerializable<ItemStack
 	}
 
 	@Override
+	public Class<ItemStack> getTargetClass() {
+		return ItemStack.class;
+	}
+
+	@Override
 	public void write(ItemStack itemStack, PacketBuffer buffer) {
 		buffer.writeItemStack(itemStack);
 	}

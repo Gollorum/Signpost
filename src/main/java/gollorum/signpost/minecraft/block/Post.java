@@ -214,7 +214,13 @@ public class Post extends Block implements IWaterLoggable, WithCountRestriction 
                 return Oak;
         }
 
-        public static BufferSerializable<ModelType> Serializer = new BufferSerializable<ModelType>() {
+        public static BufferSerializable<ModelType> Serializer = new SerializerImpl();
+        public static final class SerializerImpl implements BufferSerializable<ModelType> {
+            @Override
+            public Class<ModelType> getTargetClass() {
+                return ModelType.class;
+            }
+
             @Override
             public void write(ModelType modelType, PacketBuffer buffer) {
                 buffer.writeString(modelType.name);
@@ -283,14 +289,7 @@ public class Post extends Block implements IWaterLoggable, WithCountRestriction 
         Delay.forFrames(6, world.isRemote, () ->
             TileEntityUtils.delayUntilTileEntityExists(world, pos, PostTile.class, tile -> {
                 tile.setSignpostOwner(Optional.of(PlayerHandle.from(placer)));
-                if (world.isRemote) {
-//                    SignGui.display(
-//                        tile,
-//                        tile.modelType,
-//                        new Vector3(0, 1, 0),
-//                        ItemStack.EMPTY
-//                    );
-                } else {
+                if (!world.isRemote) {
                     tile.addPart(
                         new BlockPartInstance(new gollorum.signpost.blockpartdata.types.Post(type.postTexture), Vector3.ZERO),
                         ItemStack.EMPTY,

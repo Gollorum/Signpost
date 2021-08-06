@@ -9,8 +9,10 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.command.arguments.EntityArgument;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Util;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
+
+import java.util.Optional;
 
 public class BlockRestrictions {
 
@@ -18,7 +20,6 @@ public class BlockRestrictions {
 
 	public static ArgumentBuilder<CommandSource, ?> register() {
 		return Commands.literal(commandName)
-			.requires(CommandUtils::isPlayer)
 			.then(signposts())
 			.then(waystone());
 	}
@@ -39,25 +40,27 @@ public class BlockRestrictions {
 		return LiteralArgumentBuilder.<CommandSource>literal("get")
 			.executes(context -> {
 				PlayerEntity player = context.getSource().asPlayer();
-				return get(type, player, PlayerHandle.from(player));
+				return get(type, context.getSource(), player);
 			})
 			.then(Commands.argument("player", EntityArgument.player())
 				.requires(source -> source.hasPermissionLevel(3))
 				.executes(context -> get(
 					type,
-					context.getSource().asPlayer(),
-					PlayerHandle.from(EntityArgument.getPlayer(context, "player"))
+					context.getSource(),
+					EntityArgument.getPlayer(context, "player")
 				)));
 	}
 
 	private static int get(
-		gollorum.signpost.BlockRestrictions.Type type, PlayerEntity callingPlayer, PlayerHandle targetedPlayer
+		gollorum.signpost.BlockRestrictions.Type type, CommandSource commandSource, PlayerEntity targetedPlayer
 	) {
-		int left = gollorum.signpost.BlockRestrictions.getInstance().getRemaining(type, targetedPlayer);
-		boolean isCallerSubject = PlayerHandle.from(callingPlayer).equals(targetedPlayer);
-		callingPlayer.sendMessage(left < 0 ?
-			new TranslationTextComponent(type.getUnlimitedRemainingLangKey(isCallerSubject)) :
-			new TranslationTextComponent(type.getRemainingLangKey(isCallerSubject), left), Util.DUMMY_UUID);
+		int left = gollorum.signpost.BlockRestrictions.getInstance().getRemaining(type, PlayerHandle.from(targetedPlayer));
+		Optional<ITextComponent> subject = PlayerHandle.from(commandSource.getEntity()).equals(PlayerHandle.from(targetedPlayer)) || targetedPlayer == null
+			? Optional.empty()
+			: Optional.of(targetedPlayer.getDisplayName());
+		commandSource.sendFeedback(left < 0 ?
+			type.getUnlimitedRemainingTextComponent(subject) :
+			type.getRemainingTextComponent(left, subject), false);
 		return Command.SINGLE_SUCCESS;
 	}
 
@@ -67,23 +70,26 @@ public class BlockRestrictions {
 			.then(Commands.argument("count", IntegerArgumentType.integer(-1))
 				.executes(context -> {
 					PlayerEntity player = context.getSource().asPlayer();
-					return set(type, player, PlayerHandle.from(player), IntegerArgumentType.getInteger(context, "count"));
+					return set(type, context.getSource(), player, IntegerArgumentType.getInteger(context, "count"));
 				})
 				.then(Commands.argument("player", EntityArgument.player())
 					.executes(context -> set(
 						type,
-						context.getSource().asPlayer(),
-						PlayerHandle.from(EntityArgument.getPlayer(context, "player")),
+						context.getSource(),
+						EntityArgument.getPlayer(context, "player"),
 						IntegerArgumentType.getInteger(context, "count")
 					))));
 	}
 
-	private static int set(gollorum.signpost.BlockRestrictions.Type type, PlayerEntity callingPlayer, PlayerHandle targetedPlayer, int count) {
-		gollorum.signpost.BlockRestrictions.getInstance().setRemaining(type, targetedPlayer, c -> count);
-		boolean isCallerSubject = PlayerHandle.from(callingPlayer).equals(targetedPlayer);
-		callingPlayer.sendMessage(count < 0 ?
-			new TranslationTextComponent(type.getUnlimitedRemainingLangKey(isCallerSubject)) :
-			new TranslationTextComponent(type.getRemainingLangKey(isCallerSubject), count), Util.DUMMY_UUID);
+	private static int set(gollorum.signpost.BlockRestrictions.Type type, CommandSource commandSource, PlayerEntity targetedPlayer, int count) {
+		PlayerHandle tHandle = PlayerHandle.from(targetedPlayer);
+		gollorum.signpost.BlockRestrictions.getInstance().setRemaining(type, tHandle, c -> count);
+		Optional<ITextComponent> subject = PlayerHandle.from(commandSource.getEntity()).equals(tHandle) || targetedPlayer == null
+			? Optional.empty()
+			: Optional.of(targetedPlayer.getDisplayName());
+		commandSource.sendFeedback(count < 0 ?
+			type.getUnlimitedRemainingTextComponent(subject) :
+			type.getRemainingTextComponent(count, subject), true);
 		return Command.SINGLE_SUCCESS;
 	}
 

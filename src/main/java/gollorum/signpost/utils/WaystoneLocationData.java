@@ -41,6 +41,11 @@ public class WaystoneLocationData {
                 Vector3.Serializer.read(compound.getCompound("Spawn"))
             );
         }
+
+        @Override
+        public Class<WaystoneLocationData> getTargetClass() {
+            return WaystoneLocationData.class;
+        }
     }
 
 }

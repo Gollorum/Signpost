@@ -77,6 +77,11 @@ public class WaystoneData {
         }
 
         @Override
+        public Class<WaystoneData> getTargetClass() {
+            return WaystoneData.class;
+        }
+
+        @Override
         public void write(WaystoneData data, PacketBuffer buffer) {
             WaystoneHandle.Serializer.write(data.handle, buffer);
             buffer.writeString(data.name);

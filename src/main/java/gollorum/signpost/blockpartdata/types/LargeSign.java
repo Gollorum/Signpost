@@ -46,7 +46,7 @@ public class LargeSign extends Sign<LargeSign> {
                 compound.getString("Text1"),
                 compound.getString("Text2"),
                 compound.getString("Text3")}
-        ));
+        ), LargeSign.class);
 
     private String[] text;
 
@@ -121,7 +121,7 @@ public class LargeSign extends Sign<LargeSign> {
         if (compound.contains("Text3")) {
             text[3] = compound.getString("Text3");
         }
-        super.readMutationUpdate(compound.getCompound("CoreData"), tile, editingPlayer);
+        super.readMutationUpdate(compound, tile, editingPlayer);
     }
 
     @Override

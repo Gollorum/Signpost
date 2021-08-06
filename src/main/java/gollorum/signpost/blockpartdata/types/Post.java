@@ -43,7 +43,8 @@ public class Post implements BlockPart<Post> {
     public static final BlockPartMetadata<Post> METADATA = new BlockPartMetadata<>(
         "Post",
         (post, compound) -> compound.putString("texture", post.texture.toString()),
-        (compound) -> new Post(new ResourceLocation(compound.getString("texture")))
+        (compound) -> new Post(new ResourceLocation(compound.getString("texture"))),
+        Post.class
     );
 
     private ResourceLocation texture;
