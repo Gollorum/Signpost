@@ -1,5 +1,14 @@
 {
   "block.signpost.waystone": "Waystone",
+  "block.signpost.waystone_0_simple_0": "Waystone",
+  "block.signpost.waystone_0_simple_1": "Waystone",
+  "block.signpost.waystone_0_simple_2": "Waystone",
+  "block.signpost.waystone_1_detailed_0": "Waystone",
+  "block.signpost.waystone_1_detailed_1": "Waystone",
+  "block.signpost.waystone_2_aer": "Waystone",
+  "block.signpost.waystone_2_dwarf": "Waystone",
+  "block.signpost.waystone_2_ygnar": "Waystone",
+
   "block.signpost.post_acacia": "Acacia sign post",
   "block.signpost.post_birch": "Birch sign post",
   "block.signpost.post_iron": "Iron sign post",

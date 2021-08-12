@@ -7,6 +7,11 @@
         315,
         0
       ],
+      "translation": [
+        0,
+        1,
+        0
+      ],
       "scale": [
         0.625,
         0.625,
@@ -17,6 +22,11 @@
       "rotation": [
         0,
         315,
+        0
+      ],
+      "translation": [
+        0,
+        1,
         0
       ],
       "scale": [
@@ -31,6 +41,11 @@
         315,
         0
       ],
+      "translation": [
+        0,
+        1,
+        0
+      ],
       "scale": [
         0.4,
         0.4,
@@ -42,7 +57,7 @@
     "particle": "signpost:block/waystone"
   },
   "loader": "forge:obj",
-  "model": "signpost:models/block/waystone_model_detailed1.obj",
+  "model": "signpost:models/block/waystone_model_simple_0.obj",
   "diffuseLighting": true,
   "flip-v": true,
   "ambientToFullbright": false

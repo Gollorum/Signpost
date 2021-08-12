@@ -5,6 +5,8 @@ import gollorum.signpost.minecraft.block.ModelWaystone;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class WorldGenConfig {
 
@@ -29,9 +31,11 @@ public class WorldGenConfig {
 			"You can look up the model names at https://www.curseforge.com/minecraft/mc-mods/signpost/pages/waystone-models"
 		).defineList(
 			"allowed_waystone_models",
-			Lists.newArrayList("simple0", "simple1", "simple2", "detailed0", "detailed1"), n -> n instanceof String &&
-				ModelWaystone.variants.contains(new ModelWaystone.Variant((String) n, null, 0
-				)));
+			Stream.of(ModelWaystone.simple_0, ModelWaystone.simple_1, ModelWaystone.simple_2, ModelWaystone.detailed_0, ModelWaystone.detailed_1)
+				.map(v -> v.name).collect(Collectors.toList()),
+			n -> n instanceof String &&
+				ModelWaystone.variants.contains(new ModelWaystone.Variant((String) n, null, null, 0
+			)));
 
 		builder.push("naming");
 		naming = new Naming(builder);

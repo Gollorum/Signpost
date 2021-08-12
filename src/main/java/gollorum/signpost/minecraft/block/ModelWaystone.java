@@ -47,13 +47,15 @@ public class ModelWaystone extends Block implements IWaterLoggable, WithCountRes
 	public static class Variant {
 		public final String name;
 		public final String registryName;
+		public final String langPrefix;
 		public final ModelWaystone block;
 		public final VoxelShape shape;
 		public final float modelYOffset;
 
-		public Variant(String name, VoxelShape shape, float modelYOffset) {
+		public Variant(String name, String langPrefix, VoxelShape shape, float modelYOffset) {
 			this.name = name;
 			registryName = REGISTRY_NAME + "_" + name;
+			this.langPrefix = langPrefix;
 			this.shape = shape;
 			this.modelYOffset = modelYOffset;
 			block = new ModelWaystone(this);
@@ -64,16 +66,24 @@ public class ModelWaystone extends Block implements IWaterLoggable, WithCountRes
 		public int hashCode() { return name.hashCode(); }
 	}
 	public static final List<Variant> variants = new ArrayList<>();
-	public static final Variant generationMarker;
+	public static Variant simple_0 = new Variant("simple_0", "0", VoxelShapes.create(0.25f, 0, 0.25f, 0.75f, 0.5f, 0.75f), 1);
+	public static Variant simple_1 = new Variant("simple_1", "0", VoxelShapes.create(0.25f, 0, 0.25f, 0.75f, 0.5f, 0.75f), 1);
+	public static Variant simple_2 = new Variant("simple_2", "0", VoxelShapes.create(0.3125f, 0, 0.3125f, 0.75f, 0.6875f, 0.6875f), 0);
+	public static Variant detailed_0 = new Variant("detailed_0", "1", VoxelShapes.create(0.25f, 0, 0.25f, 0.75f, 0.5f, 0.75f), 2);
+	public static Variant detailed_1 = new Variant("detailed_1", "1", VoxelShapes.create(0.25f, 0, 0.25f, 0.75f, 0.75f, 0.75f), 0);
+	public static Variant aer = new Variant("aer", "2", VoxelShapes.create(0.05f, 0, 0.05f, 0.95f, 0.6f, 0.95f), 0);
+	public static Variant dwarf = new Variant("dwarf", "2", VoxelShapes.create(0.05f, 0, 0.05f, 0.95f, 0.4375f, 0.95f), 2);
+	public static Variant ygnar = new Variant("ygnar", "2", VoxelShapes.create(0.125f, 0, 0.125f, 0.875f, 1f, 0.875f), 0);
+	public static final Variant generationMarker = simple_0;
 	static {
-		variants.add(generationMarker = new Variant("simple0", VoxelShapes.create(0.25f, 0, 0.25f, 0.75f, 0.5f, 0.75f), 1));
-		variants.add(new Variant("simple1", VoxelShapes.create(0.25f, 0, 0.25f, 0.75f, 0.5f, 0.75f), 1));
-		variants.add(new Variant("simple2", VoxelShapes.create(0.3125f, 0, 0.3125f, 0.75f, 0.6875f, 0.6875f), 0));
-		variants.add(new Variant("detailed0", VoxelShapes.create(0.25f, 0, 0.25f, 0.75f, 0.5f, 0.75f), 2));
-		variants.add(new Variant("detailed1", VoxelShapes.create(0.25f, 0, 0.25f, 0.75f, 0.75f, 0.75f), 0));
-		variants.add(new Variant("aer", VoxelShapes.create(0.05f, 0, 0.05f, 0.95f, 0.6f, 0.95f), 0));
-		variants.add(new Variant("dwarf", VoxelShapes.create(0.05f, 0, 0.05f, 0.95f, 0.4375f, 0.95f), 2));
-		variants.add(new Variant("ygnar", VoxelShapes.create(0.125f, 0, 0.125f, 0.875f, 1f, 0.875f), 0));
+		variants.add(simple_0);
+		variants.add(simple_1);
+		variants.add(simple_2);
+		variants.add(detailed_0);
+		variants.add(detailed_1);
+		variants.add(aer);
+		variants.add(dwarf);
+		variants.add(ygnar);
 	}
 
 	public final Variant variant;
@@ -89,7 +99,7 @@ public class ModelWaystone extends Block implements IWaterLoggable, WithCountRes
 
 	@Override
 	public String getTranslationKey() {
-		return Waystone.INSTANCE.getTranslationKey();
+		return Waystone.INSTANCE.getTranslationKey() + "_" + variant.langPrefix + "_" + variant.name;
 	}
 
 	@Override

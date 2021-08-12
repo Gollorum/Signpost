@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "tag": "minecraft:waystone"
+  },
+  "result": "signpost:waystone",
+  "count": 1
+}

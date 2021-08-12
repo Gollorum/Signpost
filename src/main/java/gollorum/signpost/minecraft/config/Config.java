@@ -55,7 +55,7 @@ public class Config {
 				"allowed_waystone_models",
 				ModelWaystone.variants.stream().map(v -> v.name).collect(Collectors.toList()),
 				n -> n instanceof String &&
-					ModelWaystone.variants.contains(new ModelWaystone.Variant((String) n, null, 0
+					ModelWaystone.variants.contains(new ModelWaystone.Variant((String) n, null, null, 0
 			)));
 
 			builder.push("permissions");
@@ -87,10 +87,10 @@ public class Config {
 				).define("enable_confirmation_screen", true);
 			enableWaystoneLimitNotifications = builder
 				.comment("Choose whether you want to receive a notification on how many waystones you have left to place (if it is limited by the server).")
-				.define("enable_waystone_limit_notifications", false);
+				.define("enable_waystone_limit_notifications", true);
 			enableSignpostLimitNotifications = builder
 				.comment("Choose whether you want to receive a notification on how many signposts you have left to place (if it is limited by the server).")
-				.define("enable_signpost_limit_notifications", false);
+				.define("enable_signpost_limit_notifications", true);
 			builder.pop();
 		}
 

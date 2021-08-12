@@ -1,0 +1,8 @@
+{
+  "type": "signpost:cut_waystone",
+  "ingredient": {
+    "tag": "minecraft:waystone"
+  },
+  "result": "signpost:waystone_model_simple_2",
+  "count": 1
+}

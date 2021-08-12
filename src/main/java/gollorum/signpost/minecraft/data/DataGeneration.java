@@ -20,9 +20,15 @@ public final class DataGeneration {
         ExistingFileHelper fileHelper = event.getExistingFileHelper();
 
         if (event.includeServer()) {
-            PostTag.Blocks blocksTagProvider = new PostTag.Blocks(datagenerator, fileHelper);
-            datagenerator.addProvider(blocksTagProvider);
-            datagenerator.addProvider(new PostTag(datagenerator, blocksTagProvider, fileHelper));
+
+            PostTag.Blocks postBlocksTagProvider = new PostTag.Blocks(datagenerator, fileHelper);
+            datagenerator.addProvider(postBlocksTagProvider);
+            datagenerator.addProvider(new PostTag(datagenerator, postBlocksTagProvider, fileHelper));
+
+            WaystoneTag.Blocks waystoneBlocksTagProvider = new WaystoneTag.Blocks(datagenerator, fileHelper);
+            datagenerator.addProvider(waystoneBlocksTagProvider);
+            datagenerator.addProvider(new WaystoneTag(datagenerator, waystoneBlocksTagProvider, fileHelper));
+
             datagenerator.addProvider(new PostRecipe(datagenerator));
             datagenerator.addProvider(new WaystoneRecipe(datagenerator));
             datagenerator.addProvider(new WrenchRecipe(datagenerator));

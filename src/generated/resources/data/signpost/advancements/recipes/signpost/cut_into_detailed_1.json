@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "signpost:cut_into_detailed_1"
+    ]
+  },
+  "criteria": {
+    "has_waystone": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "tag": "minecraft:waystone"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "signpost:cut_into_detailed_1"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_waystone",
+      "has_the_recipe"
+    ]
+  ]
+}

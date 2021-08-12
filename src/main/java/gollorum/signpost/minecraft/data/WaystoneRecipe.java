@@ -1,11 +1,13 @@
 package gollorum.signpost.minecraft.data;
 
 import gollorum.signpost.Signpost;
+import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.block.Waystone;
-import gollorum.signpost.minecraft.crafting.CycleWaystoneModelRecipe;
 import gollorum.signpost.minecraft.registry.RecipeRegistry;
 import net.minecraft.data.*;
 import net.minecraft.item.Items;
+import net.minecraft.item.crafting.IRecipeSerializer;
+import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.function.Consumer;
@@ -28,7 +30,21 @@ public class WaystoneRecipe extends RecipeProvider {
             .addCriterion("has_signpost", hasItem(PostTag.Tag))
         .build(consumer);
 
-        CustomRecipeBuilder.customRecipe(RecipeRegistry.CycleWaystoneModelSerializer.get()).
-            build(consumer, new ResourceLocation(Signpost.MOD_ID, CycleWaystoneModelRecipe.RegistryName).toString());
+        for(ModelWaystone.Variant v : ModelWaystone.variants) {
+            new SingleItemRecipeBuilder(
+                RecipeRegistry.CutWaystoneSerializer.get(),
+                Ingredient.fromTag(WaystoneTag.Tag),
+                v.block,
+                1
+            ).addCriterion("has_waystone", hasItem(WaystoneTag.Tag))
+            .build(consumer, new ResourceLocation(Signpost.MOD_ID, "cut_into_" + v.name));
+        }
+        new SingleItemRecipeBuilder(
+            IRecipeSerializer.STONECUTTING,
+            Ingredient.fromTag(WaystoneTag.Tag),
+            Waystone.INSTANCE,
+            1
+        ).addCriterion("has_waystone", hasItem(WaystoneTag.Tag))
+            .build(consumer, new ResourceLocation(Signpost.MOD_ID, "cut_into_full_block"));
     }
 }

@@ -57,7 +57,7 @@
     "particle": "signpost:block/waystone"
   },
   "loader": "forge:obj",
-  "model": "signpost:models/block/waystone_model_detailed0.obj",
+  "model": "signpost:models/block/waystone_model_detailed_0.obj",
   "diffuseLighting": true,
   "flip-v": true,
   "ambientToFullbright": false
