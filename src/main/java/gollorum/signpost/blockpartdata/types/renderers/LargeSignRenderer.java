@@ -96,8 +96,4 @@ public class LargeSignRenderer extends SignRenderer<LargeSign> {
 			sign.getColor(), false, matrix.getLast().getMatrix(), buffer, false, 0, combinedLights);
 	}
 
-	@Override
-	public void renderGui(LargeSign part, Point center, float yaw, float pitch, float scale, Vector3 offset) {
-		RenderingUtil.renderGui(makeBakedModel(part), center, yaw, pitch, scale, offset);
-	}
 }

@@ -5,6 +5,7 @@ import gollorum.signpost.Signpost;
 import gollorum.signpost.blockpartdata.types.*;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.utils.BlockPart;
+import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
@@ -67,7 +68,7 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
     }
 
     public static <T extends BlockPart<T>> void renderGuiDynamic(
-        T part, Point center, float yaw, float pitch, float scale, Vector3 offset
+        T part, Point center, Angle yaw, Angle pitch, float scale, Vector3 offset
     ) {
         Optional<BlockPartRenderer<T>> renderer = BlockPartRenderer.getFor((Class<T>) part.getClass());
         if(renderer.isPresent()) {
@@ -97,7 +98,7 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
     );
 
     public abstract void renderGui(
-        T part, Point center, float yaw, float pitch, float scale, Vector3 offset
+        T part, Point center, Angle yaw, Angle pitch, float scale, Vector3 offset
     );
 
 }

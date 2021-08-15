@@ -72,8 +72,4 @@ public class ShortSignRenderer extends SignRenderer<SmallShortSign> {
 		fontRenderer.renderString(sign.getText(), 0, 0, sign.getColor(), false, matrix.getLast().getMatrix(), buffer, false, 0, combinedLights);
 	}
 
-	@Override
-	public void renderGui(SmallShortSign part, Point center, float yaw, float pitch, float scale, Vector3 offset) {
-		RenderingUtil.renderGui(makeBakedModel(part), center, yaw, pitch, scale, offset);
-	}
 }

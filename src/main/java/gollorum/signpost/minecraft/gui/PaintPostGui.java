@@ -6,6 +6,7 @@ import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.utils.*;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.BlockPartInstance;
+import gollorum.signpost.utils.math.Angle;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
@@ -79,7 +80,11 @@ public class PaintPostGui extends ExtendedScreen {
             tile.getParts().stream()
                 .map(p -> p.blockPart == post ? new BlockPartInstance(displayPost, p.offset) : p)
                 .collect(Collectors.toList()),
-            new Point(width / 2, height / 4), 30, 15, 64));
+            new Point(width / 2, height / 4),
+            Angle.fromDegrees(getMinecraft().player.rotationYaw + 180),
+            Angle.fromDegrees(getMinecraft().player.rotationPitch),
+            64
+        ));
     }
 
     private static final Direction[] faces = new Direction[]{null, Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP, Direction.DOWN};

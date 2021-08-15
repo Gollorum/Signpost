@@ -5,6 +5,7 @@ import gollorum.signpost.minecraft.data.PostModel;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.blockpartdata.types.Post;
+import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.RenderType;
@@ -58,7 +59,7 @@ public class PostRenderer extends BlockPartRenderer<Post> {
 	}
 
 	@Override
-	public void renderGui(Post post, Point center, float yaw, float pitch, float scale, Vector3 offset) {
+	public void renderGui(Post post, Point center, Angle yaw, Angle pitch, float scale, Vector3 offset) {
 		RenderingUtil.renderGui(makeModel(post), center, yaw, pitch, scale, offset);
 	}
 }

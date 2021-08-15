@@ -5,6 +5,7 @@ import gollorum.signpost.blockpartdata.types.Waystone;
 import gollorum.signpost.minecraft.data.WaystoneModel;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
+import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.RenderType;
@@ -46,7 +47,7 @@ public class WaystoneRenderer extends BlockPartRenderer<Waystone> {
 	}
 
 	@Override
-	public void renderGui(Waystone part, Point center, float yaw, float pitch, float scale, Vector3 offset) {
+	public void renderGui(Waystone part, Point center, Angle yaw, Angle pitch, float scale, Vector3 offset) {
 		RenderingUtil.renderGui(model.get(), center, yaw, pitch, scale, offset);
 	}
 }

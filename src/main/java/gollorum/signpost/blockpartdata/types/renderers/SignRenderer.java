@@ -1,10 +1,14 @@
 package gollorum.signpost.blockpartdata.types.renderers;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import gollorum.signpost.blockpartdata.types.SmallShortSign;
 import gollorum.signpost.minecraft.gui.utils.Colors;
+import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.blockpartdata.types.Sign;
+import gollorum.signpost.utils.math.Angle;
+import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.modelGeneration.SignModel;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
@@ -71,5 +75,10 @@ public abstract class SignRenderer<T extends Sign<T>> extends BlockPartRenderer<
 	}
 
 	protected abstract void renderText(T sign, MatrixStack matrix, FontRenderer fontRenderer, IRenderTypeBuffer buffer, int combinedLights);
+
+	@Override
+	public void renderGui(T part, Point center, Angle yaw, Angle pitch, float scale, Vector3 offset) {
+		RenderingUtil.renderGui(makeBakedModel(part), center, yaw.add(part.getAngle()), pitch, scale, offset);
+	}
 
 }

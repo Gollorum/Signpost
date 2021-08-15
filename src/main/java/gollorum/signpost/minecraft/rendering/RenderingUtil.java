@@ -7,6 +7,7 @@ import com.mojang.blaze3d.vertex.IVertexBuilder;
 import gollorum.signpost.minecraft.data.PostModel;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.utils.Rect;
+import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -163,7 +164,7 @@ public class RenderingUtil {
         return i;
     }
 
-    public static void renderGui(IBakedModel model, Point center, float yaw, float pitch, float scale, Vector3 offset) {
+    public static void renderGui(IBakedModel model, Point center, Angle yaw, Angle pitch, float scale, Vector3 offset) {
         MatrixStack matrixStack = new MatrixStack();
         Minecraft.getInstance().getTextureManager().bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
         Minecraft.getInstance().getTextureManager().getTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE).setBlurMipmapDirect(false, false);
@@ -175,8 +176,8 @@ public class RenderingUtil {
         RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
         matrixStack.translate(center.x, center.y, 100);
         matrixStack.scale(scale, -scale, scale);
-        matrixStack.rotate(new Quaternion(Vector3f.XP, pitch, true));
-        matrixStack.rotate(new Quaternion(Vector3f.YP, yaw, true));
+        matrixStack.rotate(new Quaternion(Vector3f.XP, pitch.radians(), false));
+        matrixStack.rotate(new Quaternion(Vector3f.YP, yaw.radians(), false));
         matrixStack.translate(offset.x, offset.y, offset.z);
         matrixStack.translate(0.5f, 0.5f, 0);
         IRenderTypeBuffer.Impl renderTypeBuffer = Minecraft.getInstance().getRenderTypeBuffers().getBufferSource();
