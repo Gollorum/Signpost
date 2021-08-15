@@ -1,24 +1,30 @@
 package gollorum.signpost.minecraft.rendering;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import gollorum.signpost.minecraft.data.PostModel;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.utils.Rect;
+import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.*;
-import net.minecraft.client.renderer.model.BakedQuad;
-import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.client.renderer.model.ItemOverrideList;
-import net.minecraft.client.renderer.model.RenderMaterial;
+import net.minecraft.client.renderer.model.*;
+import net.minecraft.client.renderer.texture.AtlasTexture;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.util.math.vector.Quaternion;
 import net.minecraft.util.math.vector.TransformationMatrix;
+import net.minecraft.util.math.vector.Vector3f;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.SimpleModelTransform;
 import net.minecraftforge.common.util.Lazy;
@@ -29,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class RenderingUtil {
@@ -50,6 +57,15 @@ public class RenderingUtil {
         );
     }
 
+    public static IBakedModel loadModel(ResourceLocation modelLocation, Supplier<ResourceLocation> textureLocation) {
+        return ModelLoader.instance().getUnbakedModel(modelLocation).bakeModel(
+            ModelLoader.instance(),
+            m -> Minecraft.getInstance().getAtlasSpriteGetter(m.getAtlasLocation()).apply(trim(textureLocation.get())),
+            new SimpleModelTransform(TransformationMatrix.identity()),
+            modelLocation
+        );
+    }
+
     public static IBakedModel loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation1, ResourceLocation textureLocation2) {
         final ResourceLocation textLoc1 = trim(textureLocation1);
         final ResourceLocation textLoc2 = trim(textureLocation2);
@@ -58,6 +74,18 @@ public class RenderingUtil {
             m -> Minecraft.getInstance().getAtlasSpriteGetter(m.getAtlasLocation()).apply(
                 m.getTextureLocation().equals(PostModel.mainTextureMarker)
                     ? textLoc1 : textLoc2
+            ),
+            new SimpleModelTransform(TransformationMatrix.identity()),
+            modelLocation
+        );
+    }
+
+    public static IBakedModel loadModel(ResourceLocation modelLocation, Supplier<ResourceLocation> textureLocation1, Supplier<ResourceLocation> textureLocation2) {
+        return ModelLoader.instance().getUnbakedModel(modelLocation).bakeModel(
+            ModelLoader.instance(),
+            m -> Minecraft.getInstance().getAtlasSpriteGetter(m.getAtlasLocation()).apply(
+                trim((m.getTextureLocation().equals(PostModel.mainTextureMarker)
+                    ? textureLocation1 : textureLocation2).get())
             ),
             new SimpleModelTransform(TransformationMatrix.identity()),
             modelLocation
@@ -133,6 +161,43 @@ public class RenderingUtil {
         );
         buffer.finish();
         return i;
+    }
+
+    public static void renderGui(IBakedModel model, Point center, float yaw, float pitch, float scale, Vector3 offset) {
+        MatrixStack matrixStack = new MatrixStack();
+        Minecraft.getInstance().getTextureManager().bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
+        Minecraft.getInstance().getTextureManager().getTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE).setBlurMipmapDirect(false, false);
+        RenderSystem.enableRescaleNormal();
+        RenderSystem.enableAlphaTest();
+        RenderSystem.defaultAlphaFunc();
+        RenderSystem.enableBlend();
+        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+        matrixStack.translate(center.x, center.y, 100);
+        matrixStack.scale(scale, -scale, scale);
+        matrixStack.rotate(new Quaternion(Vector3f.XP, pitch, true));
+        matrixStack.rotate(new Quaternion(Vector3f.YP, yaw, true));
+        matrixStack.translate(offset.x, offset.y, offset.z);
+        matrixStack.translate(0.5f, 0.5f, 0);
+        IRenderTypeBuffer.Impl renderTypeBuffer = Minecraft.getInstance().getRenderTypeBuffers().getBufferSource();
+        RenderHelper.setupGuiFlatDiffuseLighting();
+
+        Minecraft.getInstance().getItemRenderer().renderItem(
+            new ItemStack(Blocks.OAK_LOG),
+            ItemCameraTransforms.TransformType.GUI,
+            false,
+            matrixStack,
+            renderTypeBuffer,
+            0xf000f0,
+            OverlayTexture.NO_OVERLAY,
+            model
+        );
+        renderTypeBuffer.finish();
+        RenderSystem.enableDepthTest();
+        RenderHelper.setupGui3DDiffuseLighting();
+
+        RenderSystem.disableAlphaTest();
+        RenderSystem.disableRescaleNormal();
     }
 
     public static IBakedModel withTintIndex(IBakedModel original, int tintIndex) {

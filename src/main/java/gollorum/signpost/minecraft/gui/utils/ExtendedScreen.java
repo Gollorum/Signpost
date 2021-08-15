@@ -62,4 +62,10 @@ public abstract class ExtendedScreen extends Screen {
 		}
 		super.setListener(listener);
 	}
+
+	@Override
+	protected void init() {
+		super.init();
+		additionalRenderables.clear();
+	}
 }

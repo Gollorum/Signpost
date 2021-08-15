@@ -3,7 +3,9 @@ package gollorum.signpost.blockpartdata.types.renderers;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blockpartdata.types.*;
+import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.utils.BlockPart;
+import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.tileentity.TileEntity;
@@ -64,6 +66,24 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
         }
     }
 
+    public static <T extends BlockPart<T>> void renderGuiDynamic(
+        T part, Point center, float yaw, float pitch, float scale, Vector3 offset
+    ) {
+        Optional<BlockPartRenderer<T>> renderer = BlockPartRenderer.getFor((Class<T>) part.getClass());
+        if(renderer.isPresent()) {
+            renderer.get().renderGui(
+                part,
+                center,
+                yaw,
+                pitch,
+                scale,
+                offset
+            );
+        } else {
+            Signpost.LOGGER.error("Block part renderer was not found for " + part.getClass());
+        }
+    }
+
     public abstract void render(
         T part,
         TileEntity tileEntity,
@@ -74,6 +94,10 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
         int combinedOverlay,
         Random random,
         long randomSeed
+    );
+
+    public abstract void renderGui(
+        T part, Point center, float yaw, float pitch, float scale, Vector3 offset
     );
 
 }

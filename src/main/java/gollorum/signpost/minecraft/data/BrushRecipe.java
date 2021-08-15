@@ -11,20 +11,21 @@ import net.minecraft.tags.ItemTags;
 
 import java.util.function.Consumer;
 
-public class WrenchRecipe extends RecipeProvider {
+public class BrushRecipe extends RecipeProvider {
 
-    public WrenchRecipe(DataGenerator generatorIn) {
+    public BrushRecipe(DataGenerator generatorIn) {
         super(generatorIn);
     }
 
     @Override
     protected void registerRecipes(Consumer<IFinishedRecipe> consumer) {
-        ShapedRecipeBuilder.shapedRecipe(ItemRegistry.WRENCH.get(), 1)
-            .key('s', ItemTags.SIGNS)
+        ShapedRecipeBuilder.shapedRecipe(ItemRegistry.BRUSH.get(), 1)
+            .key('w', ItemTags.WOOL)
             .key('i', Items.IRON_INGOT)
-            .patternLine("i ")
-            .patternLine("ii")
-            .patternLine("s ")
+            .key('s', Items.STICK)
+            .patternLine("w")
+            .patternLine("i")
+            .patternLine("s")
             .addCriterion("has_signpost", hasItem(PostTag.Tag))
             .build(consumer);
     }

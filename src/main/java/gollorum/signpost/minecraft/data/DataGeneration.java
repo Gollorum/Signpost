@@ -32,12 +32,14 @@ public final class DataGeneration {
             datagenerator.addProvider(new PostRecipe(datagenerator));
             datagenerator.addProvider(new WaystoneRecipe(datagenerator));
             datagenerator.addProvider(new WrenchRecipe(datagenerator));
+            datagenerator.addProvider(new BrushRecipe(datagenerator));
         }
         if(event.includeClient()) {
             PostModel postModel = new PostModel(datagenerator, fileHelper);
             datagenerator.addProvider(postModel);
             WaystoneModel waystoneModel = WaystoneModel.addTo(datagenerator, fileHelper);
             datagenerator.addProvider(new WrenchModel(datagenerator, fileHelper));
+            datagenerator.addProvider(new BrushModel(datagenerator, fileHelper));
             datagenerator.addProvider(new PostBlockState(datagenerator, fileHelper, postModel, waystoneModel));
         }
     }

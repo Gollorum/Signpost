@@ -21,6 +21,7 @@
   "block.signpost.post_crimson": "Crimson sign post",
 
   "item.signpost.tool": "Sign angle wrench",
+  "item.signpost.brush": "Signpost paint brush",
 
   "gui.signpost.sign_gui_title": "Add or edit sign",
   "gui.signpost.confirm_teleport_gui_title": "Confirm teleport",

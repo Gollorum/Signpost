@@ -6,8 +6,10 @@ import gollorum.signpost.Signpost;
 import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.Waystone;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.gui.PaintPostGui;
 import gollorum.signpost.minecraft.gui.SignGui;
 import gollorum.signpost.minecraft.gui.WaystoneGui;
+import gollorum.signpost.minecraft.items.Brush;
 import gollorum.signpost.minecraft.utils.CoordinatesUtil;
 import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.BlockPart;
@@ -68,29 +70,43 @@ public class Post implements BlockPart<Post> {
     public InteractionResult interact(InteractionInfo info) {
         ItemStack heldItem = info.player.getHeldItem(info.hand);
         PlayerHandle playerHandle = PlayerHandle.from(info.player);
-        if(isValidSign(heldItem)) {
-            if (info.isRemote && info.tile.getParts().stream().filter(i -> i.blockPart instanceof Sign).count() < maxSignCount) {
-                SignGui.display(
-                    info.tile,
-                    gollorum.signpost.minecraft.block.Post.ModelType.from(info.player.getHeldItem(info.hand).getItem()),
-                    info.traceResult.hitPos,
-                    new ItemStack(heldItem.getItem(), 1)
+        if(isValidSign(heldItem)) return attachSign(info, heldItem);
+        else if(isWaystone(heldItem)) return attachWaystone(info, heldItem, playerHandle);
+        else if(isBrush(heldItem)) return paint(info);
+        else return InteractionResult.Ignored;
+    }
+
+    private InteractionResult attachWaystone(InteractionInfo info, ItemStack heldItem, PlayerHandle playerHandle) {
+        if(info.tile.getParts().stream().noneMatch(p -> p.blockPart instanceof Waystone))
+            if(!info.isRemote && BlockRestrictions.getInstance().tryDecrementRemaining(BlockRestrictions.Type.Waystone, playerHandle)) {
+                info.tile.addPart(
+                    new BlockPartInstance(new gollorum.signpost.blockpartdata.types.Waystone(playerHandle), Vector3.ZERO),
+                    new ItemStack(heldItem.getItem()),
+                    PlayerHandle.from(info.player)
                 );
+                info.tile.markDirty();
             }
-            return InteractionResult.Accepted;
-        } else if(isWaystone(heldItem)) {
-            if(info.tile.getParts().stream().noneMatch(p -> p.blockPart instanceof Waystone))
-                if(!info.isRemote && BlockRestrictions.getInstance().tryDecrementRemaining(BlockRestrictions.Type.Waystone, playerHandle)) {
-                    info.tile.addPart(
-                        new BlockPartInstance(new gollorum.signpost.blockpartdata.types.Waystone(playerHandle), Vector3.ZERO),
-                        new ItemStack(heldItem.getItem()),
-                        PlayerHandle.from(info.player)
-                    );
-                    info.tile.markDirty();
-                }
-                else WaystoneGui.display(new WorldLocation(info.tile.getPos(), info.player.world), Optional.empty());
-            return InteractionResult.Accepted;
-        } else return InteractionResult.Ignored;
+            else WaystoneGui.display(new WorldLocation(info.tile.getPos(), info.player.world), Optional.empty());
+        return InteractionResult.Accepted;
+    }
+
+    private InteractionResult attachSign(InteractionInfo info, ItemStack heldItem) {
+        if (info.isRemote && info.tile.getParts().stream().filter(i -> i.blockPart instanceof Sign).count() < maxSignCount) {
+            SignGui.display(
+                info.tile,
+                gollorum.signpost.minecraft.block.Post.ModelType.from(info.player.getHeldItem(info.hand).getItem()),
+                info.traceResult.hitPos,
+                new ItemStack(heldItem.getItem(), 1)
+            );
+        }
+        return InteractionResult.Accepted;
+    }
+
+    private InteractionResult paint(InteractionInfo info) {
+        if(info.isRemote) {
+            PaintPostGui.display(info.tile, this, info.traceResult.id);
+        }
+        return InteractionResult.Accepted;
     }
 
     private static boolean isValidSign(ItemStack itemStack) {
@@ -103,6 +119,12 @@ public class Post implements BlockPart<Post> {
         if(itemStack == null || itemStack.getCount() < 1) return false;
         Item item = itemStack.getItem();
         return item.equals(Waystone.INSTANCE.asItem());
+    }
+
+    private static boolean isBrush(ItemStack itemStack) {
+        if(itemStack == null || itemStack.getCount() < 1) return false;
+        Item item = itemStack.getItem();
+        return item instanceof Brush;
     }
 
     @Override

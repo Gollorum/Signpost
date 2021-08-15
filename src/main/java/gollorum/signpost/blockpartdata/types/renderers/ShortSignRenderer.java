@@ -4,11 +4,13 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import gollorum.signpost.blockpartdata.types.LargeSign;
 import gollorum.signpost.blockpartdata.types.SmallWideSign;
 import gollorum.signpost.minecraft.data.PostModel;
+import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.rendering.ModelRegistry;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.blockpartdata.types.SmallShortSign;
 import gollorum.signpost.utils.math.MathUtils;
+import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.modelGeneration.SignModel;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
@@ -70,4 +72,8 @@ public class ShortSignRenderer extends SignRenderer<SmallShortSign> {
 		fontRenderer.renderString(sign.getText(), 0, 0, sign.getColor(), false, matrix.getLast().getMatrix(), buffer, false, 0, combinedLights);
 	}
 
+	@Override
+	public void renderGui(SmallShortSign part, Point center, float yaw, float pitch, float scale, Vector3 offset) {
+		RenderingUtil.renderGui(makeBakedModel(part), center, yaw, pitch, scale, offset);
+	}
 }

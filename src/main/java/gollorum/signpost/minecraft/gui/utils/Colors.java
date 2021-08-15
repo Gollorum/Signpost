@@ -89,6 +89,10 @@ public class Colors {
         return (red << 16) + (green << 8) + blue;
     }
 
+    public static int from(int red, int green, int blue, int alpha) {
+        return (alpha << 24) + (red << 16) + (green << 8) + blue;
+    }
+
     public static int getAlpha(int color) { return (color >>> 24) & 0xff; }
     public static int getRed(int color) { return (color >>> 16) & 0xff; }
     public static int getGreen(int color) { return (color >>> 8) & 0xff; }

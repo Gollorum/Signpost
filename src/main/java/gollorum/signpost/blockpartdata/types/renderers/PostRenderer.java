@@ -2,8 +2,10 @@ package gollorum.signpost.blockpartdata.types.renderers;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import gollorum.signpost.minecraft.data.PostModel;
+import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.blockpartdata.types.Post;
+import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.model.IBakedModel;
@@ -55,4 +57,8 @@ public class PostRenderer extends BlockPartRenderer<Post> {
 		));
 	}
 
+	@Override
+	public void renderGui(Post post, Point center, float yaw, float pitch, float scale, Vector3 offset) {
+		RenderingUtil.renderGui(makeModel(post), center, yaw, pitch, scale, offset);
+	}
 }

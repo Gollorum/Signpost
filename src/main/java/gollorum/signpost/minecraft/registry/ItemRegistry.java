@@ -1,6 +1,7 @@
 package gollorum.signpost.minecraft.registry;
 
-import gollorum.signpost.minecraft.Wrench;
+import gollorum.signpost.minecraft.items.Brush;
+import gollorum.signpost.minecraft.items.Wrench;
 import gollorum.signpost.minecraft.block.*;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
@@ -43,6 +44,8 @@ public class ItemRegistry {
             .collect(Collectors.toList());
 
     public static final RegistryObject<Item> WRENCH = REGISTER.register(Wrench.registryName, () -> new Wrench(ITEM_GROUP));
+
+    public static final RegistryObject<Item> BRUSH = REGISTER.register(Brush.registryName, () -> new Brush(ITEM_GROUP));
 
     private static RegistryObject<Item> registerPostItem(Post.Variant postVariant){
         return REGISTER.register(

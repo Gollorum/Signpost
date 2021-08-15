@@ -1,4 +1,4 @@
-package gollorum.signpost.minecraft;
+package gollorum.signpost.minecraft.items;
 
 import gollorum.signpost.minecraft.block.Post;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
@@ -11,12 +11,12 @@ import net.minecraft.util.ActionResultType;
 
 import java.util.HashSet;
 
-public class Wrench extends ToolItem {
+public class Brush extends ToolItem {
 
-    public static final String registryName = "tool";
+    public static final String registryName = "brush";
 
-    public Wrench(ItemGroup itemGroup) {
-        super(0, -3, ItemTier.IRON, new HashSet<>(), new Properties().group(itemGroup));
+    public Brush(ItemGroup itemGroup) {
+        super(0, -3, ItemTier.WOOD, new HashSet<>(), new Properties().group(itemGroup));
     }
 
     @Override

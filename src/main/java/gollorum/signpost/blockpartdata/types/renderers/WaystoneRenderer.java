@@ -3,7 +3,9 @@ package gollorum.signpost.blockpartdata.types.renderers;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import gollorum.signpost.blockpartdata.types.Waystone;
 import gollorum.signpost.minecraft.data.WaystoneModel;
+import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
+import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.model.IBakedModel;
@@ -41,5 +43,10 @@ public class WaystoneRenderer extends BlockPartRenderer<Waystone> {
 			combinedOverlay,
 			new Matrix4f(Quaternion.ONE)
 		));
+	}
+
+	@Override
+	public void renderGui(Waystone part, Point center, float yaw, float pitch, float scale, Vector3 offset) {
+		RenderingUtil.renderGui(model.get(), center, yaw, pitch, scale, offset);
 	}
 }

@@ -4,7 +4,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blockpartdata.types.*;
-import gollorum.signpost.minecraft.Wrench;
+import gollorum.signpost.minecraft.items.Wrench;
 import gollorum.signpost.minecraft.utils.SideUtils;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.security.WithOwner;
