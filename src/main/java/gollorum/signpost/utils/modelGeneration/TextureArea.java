@@ -29,4 +29,13 @@ public class TextureArea {
     public TextureArea map(Function<Float, Float> uMapping, Function<Float, Float> vMapping) {
         return new TextureArea(u.map(uMapping), v.map(vMapping));
     }
+
+    public TextureArea flipU() {
+        return new TextureArea(u.flip(), v);
+    }
+
+    public TextureArea flipV() {
+        return new TextureArea(u, v.flip());
+    }
+
 }

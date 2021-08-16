@@ -125,6 +125,11 @@ public class LargeSign extends Sign<LargeSign> {
     }
 
     @Override
+    public LargeSign copy() {
+        return new LargeSign(coreData.copy(), text);
+    }
+
+    @Override
     public BlockPartMetadata<LargeSign> getMeta() {
         return METADATA;
     }

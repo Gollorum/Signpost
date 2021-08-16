@@ -104,6 +104,11 @@ public class SmallShortSign extends Sign<SmallShortSign> {
     }
 
     @Override
+    public SmallShortSign copy() {
+        return new SmallShortSign(coreData.copy(), text);
+    }
+
+    @Override
     public BlockPartMetadata<SmallShortSign> getMeta() {
         return METADATA;
     }

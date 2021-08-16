@@ -32,6 +32,8 @@
   "gui.signpost.rotation_label": "Rotation:",
   "gui.signpost.rotation_waystone": "%d (point at waystone)",
   "gui.signpost.rotation_player": "%d (face the player)",
+  "gui.signpost.main_material": "Main material",
+  "gui.signpost.secondary_material": "Secondary material",
 
   "signpost.discovered": "You can now travel to %s using sign posts.",
   "signpost.not_discovered": "You have not yet discovered %s",

@@ -9,7 +9,10 @@ import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.Post;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.config.Config;
+import gollorum.signpost.minecraft.gui.PaintPostGui;
+import gollorum.signpost.minecraft.gui.PaintSignGui;
 import gollorum.signpost.minecraft.gui.RequestSignGui;
+import gollorum.signpost.minecraft.items.Brush;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.BlockPart;
@@ -25,6 +28,7 @@ import gollorum.signpost.utils.serialization.OptionalSerializer;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
@@ -74,6 +78,12 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
             this.modelType = modelType;
             this.itemToDropOnBreak = itemToDropOnBreak;
             this.isLocked = isLocked;
+        }
+
+        public CoreData copy() {
+            return new CoreData(
+                angle, flip, mainTexture, secondaryTexture, overlay, color, destination, modelType, itemToDropOnBreak, isLocked
+            );
         }
 
         public static final Serializer SERIALIZER = new Serializer();
@@ -200,6 +210,13 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
     public ResourceLocation getMainTexture() { return coreData.mainTexture; }
     public ResourceLocation getSecondaryTexture() { return coreData.secondaryTexture; }
 
+    public void setMainTexture(ResourceLocation tex) {
+        coreData.mainTexture = tex;
+    }
+    public void setSecondaryTexture(ResourceLocation tex) {
+        coreData.secondaryTexture = tex;
+    }
+
     private void setOverlay(Optional<Overlay> overlay) {
         coreData.overlay = overlay;
     }
@@ -215,6 +232,7 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
 
     @Override
     public InteractionResult interact(InteractionInfo info) {
+        ItemStack heldItem = info.player.getHeldItem(info.hand);
         if (!info.isRemote) {
             if(holdsAngleTool(info)) {
                 if(info.player.isSneaking()) {
@@ -227,8 +245,10 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
                     setAngle(coreData.angle.add(Angle.fromDegrees(angleToPost.radians() < 0 ? 15 : -15)));
                     notifyAngleChanged(info);
                 }
-            } else tryTeleport((ServerPlayerEntity) info.player, info.getTilePartInfo());
-        }
+            } else if(!isBrush(heldItem))
+                tryTeleport((ServerPlayerEntity) info.player, info.getTilePartInfo());
+        } else if(isBrush(heldItem))
+            paint(info);
         return InteractionResult.Accepted;
     }
 
@@ -257,6 +277,19 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
     private boolean holdsAngleTool(InteractionInfo info) {
         ItemStack itemStack = info.player.getHeldItem(info.hand);
         return !itemStack.isEmpty() && PostTile.isAngleTool(itemStack.getItem());
+    }
+
+    private static boolean isBrush(ItemStack itemStack) {
+        if(itemStack == null || itemStack.getCount() < 1) return false;
+        Item item = itemStack.getItem();
+        return item instanceof Brush;
+    }
+
+    private InteractionResult paint(InteractionInfo info) {
+        if(info.isRemote) {
+            PaintSignGui.display(info.tile, (Self)this, info.traceResult.id);
+        }
+        return InteractionResult.Accepted;
     }
 
     protected void notifyAngleChanged(InteractionInfo info) {
@@ -341,5 +374,7 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
     public Angle getAngle() {
         return coreData.angle;
     }
+
+    public abstract Self copy();
 
 }

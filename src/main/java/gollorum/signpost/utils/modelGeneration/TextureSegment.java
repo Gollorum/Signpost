@@ -29,4 +29,8 @@ public class TextureSegment {
 	public TextureSegment map(Function<Float, Float> mapping) {
         return new TextureSegment(mapping.apply(from), mapping.apply(to), false);
 	}
+
+	public TextureSegment flip() {
+        return new TextureSegment(to, from, false);
+    }
 }

@@ -228,8 +228,8 @@ public class SignGui extends ExtendedScreen {
             .filter(p -> p.blockPart instanceof gollorum.signpost.blockpartdata.types.Post)
             .map(p -> ((gollorum.signpost.blockpartdata.types.Post)p.blockPart).getTexture())
             .findFirst().orElse(tile.modelType.postTexture);
-        ResourceLocation mainTexture = modelType.mainTexture;
-        ResourceLocation secondaryTexture = modelType.secondaryTexture;
+        ResourceLocation mainTexture = oldSign.map(Sign::getMainTexture).orElse(modelType.mainTexture);
+        ResourceLocation secondaryTexture = oldSign.map(Sign::getSecondaryTexture).orElse(modelType.secondaryTexture);
 
         FlippableModel postModel = FlippableModel.loadSymmetrical(PostModel.postLocation, postTexture);
         FlippableModel wideModel = FlippableModel.loadFrom(
@@ -808,6 +808,8 @@ public class SignGui extends ExtendedScreen {
             new PostTile.TilePartInfo(tile.getWorld().getDimensionKey().getLocation(), tile.getPos(), UUID.randomUUID()));
         CompoundNBT data;
         boolean isLocked = lockButton.isLocked();
+        ResourceLocation mainTex = oldSign.map(Sign::getMainTexture).orElse(modelType.mainTexture);
+        ResourceLocation secondaryTex = oldSign.map(Sign::getSecondaryTexture).orElse(modelType.secondaryTexture);
         switch (selectedType) {
             case Wide:
                 data = SmallWideSign.METADATA.write(
@@ -815,8 +817,8 @@ public class SignGui extends ExtendedScreen {
                         rotationInputField.getCurrentAngle(),
                         wideSignInputBox.getText(),
                         wideSignRenderer.isFlipped(),
-                        modelType.mainTexture,
-                        modelType.secondaryTexture,
+                        mainTex,
+                        secondaryTex,
                         selectedOverlay,
                         colorInputBox.getCurrentColor(),
                         destinationId,
@@ -845,8 +847,8 @@ public class SignGui extends ExtendedScreen {
                         rotationInputField.getCurrentAngle(),
                         shortSignInputBox.getText(),
                         shortSignRenderer.isFlipped(),
-                        modelType.mainTexture,
-                        modelType.secondaryTexture,
+                        mainTex,
+                        secondaryTex,
                         selectedOverlay,
                         colorInputBox.getCurrentColor(),
                         destinationId,
@@ -880,8 +882,8 @@ public class SignGui extends ExtendedScreen {
                             largeSignInputBoxes.get(3).getText(),
                         },
                         currentSignRenderer.isFlipped(),
-                        modelType.mainTexture,
-                        modelType.secondaryTexture,
+                        mainTex,
+                        secondaryTex,
                         selectedOverlay,
                         colorInputBox.getCurrentColor(),
                         destinationId,

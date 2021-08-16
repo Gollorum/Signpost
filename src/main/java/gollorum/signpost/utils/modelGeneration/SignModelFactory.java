@@ -3,7 +3,6 @@ package gollorum.signpost.utils.modelGeneration;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import javafx.util.Pair;
 import net.minecraft.util.Direction;
-import net.minecraft.util.Direction8;
 import net.minecraftforge.client.model.generators.BlockModelBuilder;
 import net.minecraftforge.client.model.generators.ModelBuilder;
 
@@ -281,21 +280,14 @@ public class SignModelFactory<TextureIdentifier> {
             for(Map.Entry<Direction, FaceData<TextureIdentifier>> face : cube.sides.entrySet()) {
                 Direction dir = face.getKey();
                 FaceData<TextureIdentifier> faceData = face.getValue();
-                TextureArea textureArea = faceData.textureArea.rotate(faceData.rotation, false);
-                float uFrom = textureArea.u.from;
-                float uTo = textureArea.u.to;
-                float vFrom = textureArea.v.from;
-                float vTo = textureArea.v.to;
+                TextureArea textureArea = faceData.textureArea.rotate(FaceRotation.UpsideDown, false);
                 if(dir.getAxis().equals(Direction.Axis.Z)) {
-                    uFrom = textureArea.u.to;
-                    uTo = textureArea.u.from;
                     dir = dir.getOpposite();
                 }
-                textureArea = new TextureArea(
-                    new TextureSegment(uFrom, uTo, false),
-                    new TextureSegment(vFrom, vTo, false)
-                ).rotate(FaceRotation.inverseOf(faceData.rotation), false);
-                sides.put(dir, new FaceData<>(textureArea, faceData.rotation, faceData.texture));
+                sides.put(dir, new FaceData<>(
+                    textureArea,
+                    faceData.rotation,
+                    faceData.texture));
             }
             return new Cube<>(
                 cube.from.withZ(-cube.to.z),
@@ -329,17 +321,6 @@ public class SignModelFactory<TextureIdentifier> {
             }
         };
 
-        private static Direction flipZAxis(Direction dir) {
-            switch (dir) {
-                case NORTH:
-                    return Direction.SOUTH;
-                case SOUTH:
-                    return Direction.NORTH;
-                default:
-                    return dir;
-            }
-        }
-
         public static final BiConsumer<BlockModelBuilder, Cube<String>> BlockModelFlipped = (b, cube) -> {
             BlockModelBuilder.ElementBuilder builder = b.element()
                 .from(cube.from.x, cube.from.y, -cube.to.z)
@@ -347,19 +328,13 @@ public class SignModelFactory<TextureIdentifier> {
             for(Map.Entry<Direction, FaceData<String>> face: cube.sides.entrySet()) {
                 Direction dir = face.getKey();
                 FaceData<String> faceData = face.getValue();
-                TextureArea textureArea = faceData.textureArea.rotate(faceData.rotation, true);
-                float uFrom = textureArea.u.from;
-                float uTo = textureArea.u.to;
-                float vFrom = textureArea.v.from;
-                float vTo = textureArea.v.to;
+                TextureArea textureArea = faceData.textureArea.rotate(faceData.rotation.rotate180(), false);
                 if(dir.getAxis().equals(Direction.Axis.Z)) {
-                    uFrom = textureArea.u.to;
-                    uTo = textureArea.u.from;
                     dir = dir.getOpposite();
                 }
                 ModelBuilder<BlockModelBuilder>.ElementBuilder.FaceBuilder faceBuilder = builder.face(dir)
                     .texture(faceData.texture)
-                    .uvs(uFrom, vFrom, uTo, vTo);
+                    .uvs(textureArea.u.from, textureArea.v.from, textureArea.u.to, textureArea.v.to);
                 if(!faceData.rotation.equals(FaceRotation.Zero))
                     faceBuilder.rotation(faceData.rotation.asMinecraft);
             }
