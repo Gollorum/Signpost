@@ -1,8 +1,12 @@
 package gollorum.signpost.minecraft.gui;
 
 import com.google.common.collect.Streams;
+import com.mojang.datafixers.util.Pair;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.utils.*;
+import gollorum.signpost.minecraft.gui.widget.GuiBlockPartRenderer;
+import gollorum.signpost.minecraft.gui.widget.ItemButton;
+import gollorum.signpost.minecraft.gui.widget.SpriteSelectionButton;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.BlockPart;
 import gollorum.signpost.utils.BlockPartInstance;
@@ -58,10 +62,12 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
     protected void init() {
         super.init();
 
-        List<ItemStack> blocksToRender = getMinecraft().player.inventory.mainInventory.stream()
+        List<Pair<List<TextureAtlasSprite>, ItemStack>> blocksToRender = getMinecraft().player.inventory.mainInventory.stream()
             .filter(i -> !i.isEmpty() && i.getItem() instanceof BlockItem)
             .map(i -> new ItemStack(i.getItem()))
             .distinct()
+            .map(is -> Pair.of(allSpritesFor((BlockItem) is.getItem()), is))
+            .filter(p -> p.getFirst().size() > 1)
             .collect(Collectors.toList());
 
         int rows = (blocksToRender.size() + 8) / 9;
@@ -71,10 +77,11 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
             int top = (height * 3) / 4 + y * ItemButton.height;
             int left = width / 2 - (rowWidth * ItemButton.width / 2);
             for (int x = 0; x < rowWidth; x++) {
+                Pair<List<TextureAtlasSprite>, ItemStack> pair = blocksToRender.get(x + y * 9);
                 addButton(new ItemButton(
                     left + x * ItemButton.width, top, Rect.XAlignment.Left, Rect.YAlignment.Bottom,
-                    blocksToRender.get(x + y * 9),
-                    this::setupTextureButtonsFor,
+                    pair.getSecond(),
+                    b -> setupTextureButtonsFor(pair.getFirst()),
                     itemRenderer, font
                 ));
             }
@@ -93,17 +100,20 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
 
     private static final Direction[] faces = new Direction[]{null, Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP, Direction.DOWN};
 
-    private void setupTextureButtonsFor(ItemButton b) {
-        Block block = ((BlockItem) b.stack.getItem()).getBlock();
+    private List<TextureAtlasSprite> allSpritesFor(BlockItem item) {
+        Block block = ((BlockItem) item.getItem()).getBlock();
         BlockState state = block.getDefaultState();
         IBakedModel model = Minecraft.getInstance().getBlockRendererDispatcher().getModelForState(state);
-        List<TextureAtlasSprite> sprites = Streams.concat(
+        return Streams.concat(
                 Stream.of(oldSprite),
                 Arrays.stream(faces)
                     .flatMap(side -> model.getQuads(null, side, font.random).stream())
                     .map(BakedQuad::getSprite)
             ).distinct()
             .collect(Collectors.toList());
+    }
+
+    private void setupTextureButtonsFor(List<TextureAtlasSprite> sprites) {
         clearSelection();
 
         int spriteButtonSize = 30;

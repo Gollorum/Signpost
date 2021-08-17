@@ -53,7 +53,7 @@ public class PostModel extends BlockModelProvider {
     public PostModel(DataGenerator generator, ExistingFileHelper fileHelper) {
         super(generator, Signpost.MOD_ID, fileHelper);
         previewModel = new BlockModelBuilder(previewLocation, fileHelper);
-        allModels = Arrays.stream(Post.AllVariants).collect(Collectors.<Post.Variant, Post.Variant, BlockModelBuilder>toMap(
+        allModels = Post.AllVariants.stream().collect(Collectors.<Post.Variant, Post.Variant, BlockModelBuilder>toMap(
             i -> i,
             i -> new BlockModelBuilder(new ResourceLocation(Signpost.MOD_ID, "block/" + i.registryName), fileHelper)
         ));

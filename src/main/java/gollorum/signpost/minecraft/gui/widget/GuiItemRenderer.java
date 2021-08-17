@@ -1,6 +1,7 @@
-package gollorum.signpost.minecraft.gui.utils;
+package gollorum.signpost.minecraft.gui.widget;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import gollorum.signpost.minecraft.gui.utils.Rect;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.widget.Widget;
@@ -10,12 +11,16 @@ import net.minecraft.util.text.StringTextComponent;
 
 public class GuiItemRenderer extends Widget {
 
-	private final ItemStack itemStack;
+	private ItemStack itemStack;
 
 	private final ItemRenderer itemRenderer = Minecraft.getInstance().getItemRenderer();
 
 	public GuiItemRenderer(Rect rect, ItemStack itemStack) {
 		super(rect.point.x, rect.point.y, rect.width, rect.height, new StringTextComponent("GuiItemRenderer"));
+		this.itemStack = itemStack;
+	}
+
+	public void setItemStack(ItemStack itemStack) {
 		this.itemStack = itemStack;
 	}
 

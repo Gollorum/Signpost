@@ -7,8 +7,6 @@ import gollorum.signpost.interactions.Interactable;
 import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.RequestSignGui;
-import gollorum.signpost.minecraft.gui.RequestWaystoneGui;
-import gollorum.signpost.minecraft.gui.SignGui;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.security.WithCountRestriction;
 import gollorum.signpost.utils.BlockPartInstance;
@@ -17,7 +15,6 @@ import gollorum.signpost.utils.Delay;
 import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.BufferSerializable;
-import gollorum.signpost.utils.serialization.CompoundSerializable;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
@@ -35,7 +32,6 @@ import net.minecraft.item.Items;
 import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.loot.LootContext;
 import net.minecraft.loot.LootParameters;
-import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.StateContainer;
@@ -59,6 +55,7 @@ import net.minecraftforge.fml.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Post extends Block implements IWaterLoggable, WithCountRestriction {
 
@@ -82,53 +79,70 @@ public class Post extends Block implements IWaterLoggable, WithCountRestriction 
         public static final ModelType Acacia = new ModelType("acacia",
             new ResourceLocation("acacia_log"),
             new ResourceLocation("stripped_acacia_log"),
-            new ResourceLocation("acacia_log")
+            new ResourceLocation("acacia_log"),
+            Items.ACACIA_SIGN
         );
         public static final ModelType Birch = new ModelType("birch",
             new ResourceLocation("birch_log"),
             new ResourceLocation("stripped_birch_log"),
-            new ResourceLocation("birch_log")
+            new ResourceLocation("birch_log"),
+            Items.BIRCH_SIGN
         );
         public static final ModelType Iron = new ModelType("iron",
             new ResourceLocation("iron_block"),
             new ResourceLocation(Signpost.MOD_ID, "iron"),
-            new ResourceLocation(Signpost.MOD_ID, "iron_dark")
+            new ResourceLocation(Signpost.MOD_ID, "iron_dark"),
+            Items.IRON_INGOT
         );
         public static final ModelType Jungle = new ModelType("jungle",
             new ResourceLocation("jungle_log"),
             new ResourceLocation("stripped_jungle_log"),
-            new ResourceLocation("jungle_log")
+            new ResourceLocation("jungle_log"),
+            Items.JUNGLE_SIGN
         );
         public static final ModelType Oak = new ModelType("oak",
             new ResourceLocation("oak_log"),
             new ResourceLocation("stripped_oak_log"),
-            new ResourceLocation("oak_log")
+            new ResourceLocation("oak_log"),
+            Items.OAK_SIGN
         );
         public static final ModelType DarkOak = new ModelType("darkoak",
             new ResourceLocation("dark_oak_log"),
             new ResourceLocation("stripped_dark_oak_log"),
-            new ResourceLocation("dark_oak_log")
+            new ResourceLocation("dark_oak_log"),
+            Items.DARK_OAK_SIGN
         );
         public static final ModelType Spruce = new ModelType("spruce",
             new ResourceLocation("spruce_log"),
             new ResourceLocation("stripped_spruce_log"),
-            new ResourceLocation("spruce_log")
+            new ResourceLocation("spruce_log"),
+            Items.SPRUCE_SIGN
         );
         public static final ModelType Stone = new ModelType("stone",
             new ResourceLocation("stone"),
             new ResourceLocation("stone"),
-            new ResourceLocation(Signpost.MOD_ID, "stone_dark")
+            new ResourceLocation(Signpost.MOD_ID, "stone_dark"),
+            Items.STONE
         );
         public static final ModelType Warped = new ModelType("warped",
             new ResourceLocation("warped_stem"),
             new ResourceLocation("stripped_warped_stem"),
-            new ResourceLocation("warped_stem")
+            new ResourceLocation("warped_stem"),
+            Items.WARPED_SIGN
         );
         public static final ModelType Crimson = new ModelType("crimson",
             new ResourceLocation("crimson_stem"),
             new ResourceLocation("stripped_crimson_stem"),
-            new ResourceLocation("crimson_stem")
+            new ResourceLocation("crimson_stem"),
+            Items.CRIMSON_SIGN
         );
+
+        public static ModelType from(Item signItem) {
+            return allTypes.values().stream()
+                .filter(t -> t.item.equals(signItem))
+                .findFirst()
+                .orElse(Oak);
+        }
 
         static {
             signIngredientForType.put(Acacia, Lazy.of(() -> Ingredient.fromItems(Items.ACACIA_SIGN)));
@@ -169,12 +183,14 @@ public class Post extends Block implements IWaterLoggable, WithCountRestriction 
         public final ResourceLocation postTexture;
         public final ResourceLocation mainTexture;
         public final ResourceLocation secondaryTexture;
+        public final Item item;
 
-        ModelType(String name, ResourceLocation postTexture, ResourceLocation mainTexture, ResourceLocation secondaryTexture) {
+        ModelType(String name, ResourceLocation postTexture, ResourceLocation mainTexture, ResourceLocation secondaryTexture, Item item) {
             this.name = name;
             this.postTexture = expand(postTexture);
             this.mainTexture = expand(mainTexture);
             this.secondaryTexture = expand(secondaryTexture);
+            this.item = item;
         }
 
         private static ResourceLocation expand(ResourceLocation loc){
@@ -187,31 +203,6 @@ public class Post extends Block implements IWaterLoggable, WithCountRestriction 
         @Override
         public String getString() {
             return name;
-        }
-
-        public static ModelType from(Item signItem) {
-            if(signItem.equals(Items.ACACIA_SIGN))
-                return Acacia;
-            else if(signItem.equals(Items.BIRCH_SIGN))
-                return Birch;
-            else if(signItem.equals(Items.DARK_OAK_SIGN))
-                return DarkOak;
-            else if(signItem.equals(Items.IRON_INGOT))
-                return Iron;
-            else if(signItem.equals(Items.JUNGLE_SIGN))
-                return Jungle;
-            else if(signItem.equals(Items.OAK_SIGN))
-                return Oak;
-            else if(signItem.equals(Items.SPRUCE_SIGN))
-                return Spruce;
-            else if(signItem.equals(Items.WARPED_SIGN))
-                return Warped;
-            else if(signItem.equals(Items.CRIMSON_SIGN))
-                return Crimson;
-            else if(signItem.equals(Items.STONE))
-                return Stone;
-            else
-                return Oak;
         }
 
         public static BufferSerializable<ModelType> Serializer = new SerializerImpl();
@@ -227,6 +218,7 @@ public class Post extends Block implements IWaterLoggable, WithCountRestriction 
                 buffer.writeResourceLocation(modelType.postTexture);
                 buffer.writeResourceLocation(modelType.mainTexture);
                 buffer.writeResourceLocation(modelType.secondaryTexture);
+                buffer.writeItemStack(new ItemStack(modelType.item));
             }
 
             @Override
@@ -235,7 +227,8 @@ public class Post extends Block implements IWaterLoggable, WithCountRestriction 
                     buffer.readString(),
                     buffer.readResourceLocation(),
                     buffer.readResourceLocation(),
-                    buffer.readResourceLocation()
+                    buffer.readResourceLocation(),
+                    buffer.readItemStack().getItem()
                 );
             }
         };
@@ -272,8 +265,8 @@ public class Post extends Block implements IWaterLoggable, WithCountRestriction 
     public static final Variant WARPED = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Warped), ModelType.Warped, "warped");
     public static final Variant CRIMSON = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Crimson), ModelType.Crimson, "crimson");
 
-    public static final Variant[] AllVariants = new Variant[]{OAK, BIRCH, SPRUCE, JUNGLE, DARK_OAK, ACACIA, STONE, IRON, WARPED, CRIMSON};
-    public static final Block[] ALL = Arrays.stream(AllVariants).map(i -> i.block).toArray(Block[]::new);
+    public static final List<Variant> AllVariants = Arrays.asList(OAK, BIRCH, SPRUCE, JUNGLE, DARK_OAK, ACACIA, STONE, IRON, WARPED, CRIMSON);
+    public static final List<Block> ALL = AllVariants.stream().map(i -> i.block).collect(Collectors.toList());
 
     public final ModelType type;
 

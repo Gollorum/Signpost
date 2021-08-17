@@ -26,7 +26,7 @@ public class BlockRegistry {
             .collect(Collectors.toList());
 
     private static final List<RegistryObject<Block>> PostBlocks =
-        Arrays.stream(Post.AllVariants)
+        Post.AllVariants.stream()
             .map(BlockRegistry::registerPostBlock)
             .collect(Collectors.toList());
 

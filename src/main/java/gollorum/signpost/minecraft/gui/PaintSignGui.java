@@ -34,7 +34,7 @@ public class PaintSignGui<T extends Sign<T>> extends PaintBlockPartGui<T> {
     @Override
     protected void init() {
         super.init();
-        Rect buttonRect = new Rect(new Point(width / 4, height / 4), 150, 20, Rect.XAlignment.Center, Rect.YAlignment.Center);
+        Rect buttonRect = new Rect(new Point(width / 4, height / 4), 125, 20, Rect.XAlignment.Center, Rect.YAlignment.Center);
         addButton(new Button(
             buttonRect.point.x, buttonRect.point.y,
             buttonRect.width, buttonRect.height,

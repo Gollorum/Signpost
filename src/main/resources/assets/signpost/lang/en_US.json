@@ -27,7 +27,7 @@
   "gui.signpost.confirm_teleport_gui_title": "Confirm teleport",
   "gui.signpost.confirm_teleport": "Do you want to travel to %s?",
   "gui.signpost.cost": "Cost:",
-  "gui.signpost.new_sign_hint": "To attach another sign, right click the post with a normal sign item.",
+  "gui.signpost.new_sign_hint": "To attach another sign, activate the post with a ",
   "gui.signpost.remove_sign": "Remove sign",
   "gui.signpost.rotation_label": "Rotation:",
   "gui.signpost.rotation_waystone": "%d (point at waystone)",

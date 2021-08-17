@@ -1,6 +1,8 @@
-package gollorum.signpost.minecraft.gui.utils;
+package gollorum.signpost.minecraft.gui.widget;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import gollorum.signpost.minecraft.gui.utils.Rect;
+import gollorum.signpost.minecraft.gui.utils.TextureResource;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.util.text.StringTextComponent;

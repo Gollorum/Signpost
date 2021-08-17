@@ -12,6 +12,7 @@ import gollorum.signpost.minecraft.data.PostModel;
 import gollorum.signpost.minecraft.events.WaystoneRenamedEvent;
 import gollorum.signpost.minecraft.events.WaystoneUpdatedEvent;
 import gollorum.signpost.minecraft.gui.utils.*;
+import gollorum.signpost.minecraft.gui.widget.*;
 import gollorum.signpost.minecraft.rendering.FlippableModel;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.networking.PacketHandler;
@@ -21,7 +22,6 @@ import gollorum.signpost.blockpartdata.types.Sign;
 import gollorum.signpost.blockpartdata.types.SmallShortSign;
 import gollorum.signpost.blockpartdata.types.SmallWideSign;
 import gollorum.signpost.utils.Delay;
-import gollorum.signpost.utils.OwnershipData;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
@@ -37,6 +37,8 @@ import net.minecraft.util.text.TranslationTextComponent;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -567,12 +569,32 @@ public class SignGui extends ExtendedScreen {
             WaystoneLibrary.getInstance().updateEventDispatcher.addListener(waystoneUpdateListener);
         }
 
-        additionalRenderables.add(new TextDisplay(
+        final int newSignItemSize = 16;
+        TextDisplay newSignHint = new TextDisplay(
             I18n.format(LangKeys.newSignHint),
-            new Point(getCenterX(), (int) ((doneButton.y + doneButton.getHeightRealms() + height) / 2f)),
+            new Point(getCenterX() - newSignItemSize, (int) ((doneButton.y + doneButton.getHeightRealms() + height) / 2f)),
             Rect.XAlignment.Center, Rect.YAlignment.Center,
             font
-        ));
+        );
+        additionalRenderables.add(newSignHint);
+        GuiItemRenderer ir = new GuiItemRenderer(
+            new Rect(newSignHint.rect.at(Rect.XAlignment.Right, Rect.YAlignment.Center), newSignItemSize, newSignItemSize, Rect.XAlignment.Left, Rect.YAlignment.Center),
+            itemToDropOnBreak
+        );
+        additionalRenderables.add(ir);
+        AtomicReference<Runnable> cycleItem = new AtomicReference<>();
+        AtomicInteger cycleItemIndex = new AtomicInteger(0);
+        AtomicLong nextCycleAt = new AtomicLong(System.currentTimeMillis());
+        cycleItem.set(() -> {
+            ir.setItemStack(new ItemStack(Post.AllVariants.get(cycleItemIndex.get()).type.item));
+            cycleItemIndex.set((cycleItemIndex.get() + 1) % Post.AllVariants.size());
+            nextCycleAt.set(nextCycleAt.get() + 1500);
+            Delay.onClientUntil(
+                () -> System.currentTimeMillis() >= nextCycleAt.get(),
+                () -> cycleItem.get().run()
+            );
+        });
+        cycleItem.get().run();
 
         hasBeenInitialized = true;
     }

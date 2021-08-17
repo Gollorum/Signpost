@@ -39,7 +39,7 @@ public class ItemRegistry {
             .collect(Collectors.toList());
 
     private static final List<RegistryObject<Item>> POSTS_ITEMS =
-        Arrays.stream(Post.AllVariants)
+        Post.AllVariants.stream()
             .map(ItemRegistry::registerPostItem)
             .collect(Collectors.toList());
 

@@ -1,8 +1,11 @@
-package gollorum.signpost.minecraft.gui.utils;
+package gollorum.signpost.minecraft.gui.widget;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import gollorum.signpost.minecraft.gui.utils.Flippable;
+import gollorum.signpost.minecraft.gui.utils.Point;
+import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.minecraft.rendering.FlippableModel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.IRenderable;

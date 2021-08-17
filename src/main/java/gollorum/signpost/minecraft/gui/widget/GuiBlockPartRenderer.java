@@ -1,7 +1,8 @@
-package gollorum.signpost.minecraft.gui.utils;
+package gollorum.signpost.minecraft.gui.widget;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import gollorum.signpost.blockpartdata.types.renderers.BlockPartRenderer;
+import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.utils.math.Angle;
 import net.minecraft.client.gui.AbstractGui;

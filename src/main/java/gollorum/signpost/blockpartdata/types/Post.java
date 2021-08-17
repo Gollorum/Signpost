@@ -154,7 +154,6 @@ public class Post implements BlockPart<Post> {
 
     @Override
     public Collection<ItemStack> getDrops(PostTile tile) {
-        Signpost.LOGGER.error("Sign post only was broken. This should not happen.");
         return Collections.emptySet();
     }
 

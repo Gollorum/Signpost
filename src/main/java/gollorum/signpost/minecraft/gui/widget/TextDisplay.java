@@ -1,6 +1,9 @@
-package gollorum.signpost.minecraft.gui.utils;
+package gollorum.signpost.minecraft.gui.widget;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import gollorum.signpost.minecraft.gui.utils.Colors;
+import gollorum.signpost.minecraft.gui.utils.Point;
+import gollorum.signpost.minecraft.gui.utils.Rect;
 import javafx.util.Pair;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.IRenderable;
@@ -13,8 +16,7 @@ public class TextDisplay implements IRenderable {
 
     private final List<Pair<String, Integer>> texts;
     private final List<Integer> widths;
-    private final int totalWidth;
-    private final Point point;
+    public final Rect rect;
     private final FontRenderer fontRenderer;
 
     public TextDisplay(Point point, Rect.XAlignment xAlignment, Rect.YAlignment yAlignment, FontRenderer fontRenderer, String translationKey, Pair<String, Integer>... args){
@@ -40,17 +42,20 @@ public class TextDisplay implements IRenderable {
     public TextDisplay(List<Pair<String, Integer>> texts, Point point, Rect.XAlignment xAlignment, Rect.YAlignment yAlignment, FontRenderer fontRenderer) {
         this.texts = texts;
         widths = texts.stream().map(pair -> fontRenderer.getStringWidth(pair.getKey())).collect(Collectors.toList());
-        totalWidth = widths.stream().reduce(0, Integer::sum);
-        this.point = new Rect(point, totalWidth, fontRenderer.FONT_HEIGHT, xAlignment, yAlignment).point;
+        this.rect = new Rect(
+            point,
+            widths.stream().reduce(0, Integer::sum), fontRenderer.FONT_HEIGHT,
+            xAlignment, yAlignment
+        );
         this.fontRenderer = fontRenderer;
     }
 
     @Override
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        int x = point.x;
+        int x = rect.point.x;
         for(int i = 0; i < texts.size(); i++) {
             Pair<String, Integer> textAndColor = texts.get(i);
-            fontRenderer.drawStringWithShadow(matrixStack, textAndColor.getKey(), x, point.y, textAndColor.getValue());
+            fontRenderer.drawStringWithShadow(matrixStack, textAndColor.getKey(), x, rect.point.y, textAndColor.getValue());
             x += widths.get(i);
         }
     }

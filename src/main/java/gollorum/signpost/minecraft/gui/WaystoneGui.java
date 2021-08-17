@@ -1,13 +1,12 @@
 package gollorum.signpost.minecraft.gui;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.events.WaystoneRenamedEvent;
 import gollorum.signpost.minecraft.events.WaystoneUpdatedEvent;
 import gollorum.signpost.minecraft.gui.utils.*;
+import gollorum.signpost.minecraft.gui.widget.ImageInputBox;
 import gollorum.signpost.minecraft.utils.LangKeys;
-import gollorum.signpost.utils.OwnershipData;
 import gollorum.signpost.utils.WaystoneData;
 import gollorum.signpost.utils.WaystoneLocationData;
 import gollorum.signpost.utils.WorldLocation;

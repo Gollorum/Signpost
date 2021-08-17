@@ -27,7 +27,7 @@ public class PostTag extends ItemTagsProvider {
     @Override
     protected void registerTags() {
         this.getOrCreateBuilder(Tag)
-            .add(Arrays.stream(Post.AllVariants).map(i -> i.block.asItem()).toArray(Item[]::new));
+            .add(Post.AllVariants.stream().map(i -> i.block.asItem()).toArray(Item[]::new));
     }
 
     public static class Blocks extends BlockTagsProvider {
@@ -41,7 +41,7 @@ public class PostTag extends ItemTagsProvider {
         @Override
         protected void registerTags() {
             this.getOrCreateBuilder(Tag)
-                .add(Arrays.stream(Post.AllVariants).map(i -> i.block).toArray(Block[]::new));
+                .add(Post.AllVariants.stream().map(i -> i.block).toArray(Block[]::new));
         }
 
     }

@@ -1,5 +1,7 @@
-package gollorum.signpost.minecraft.gui.utils;
+package gollorum.signpost.minecraft.gui.widget;
 
+import gollorum.signpost.minecraft.gui.utils.Point;
+import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.utils.math.Angle;
 import net.minecraft.client.gui.FontRenderer;
 

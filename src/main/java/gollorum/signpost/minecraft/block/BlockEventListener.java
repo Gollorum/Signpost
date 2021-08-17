@@ -2,14 +2,23 @@ package gollorum.signpost.minecraft.block;
 
 import gollorum.signpost.BlockRestrictions;
 import gollorum.signpost.PlayerHandle;
+import gollorum.signpost.blockpartdata.types.Post;
+import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.security.WithCountRestriction;
+import gollorum.signpost.utils.Delay;
 import net.minecraft.block.Block;
+import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+
+import java.util.Collection;
+import java.util.Optional;
 
 public class BlockEventListener {
 
@@ -29,6 +38,33 @@ public class BlockEventListener {
     public static void onBlockRemoved(BlockEvent.BreakEvent event) {
         Block block = event.getState().getBlock();
         TileEntity tile = event.getWorld().getTileEntity(event.getPos());
+        if(!event.isCanceled() && tile instanceof PostTile) {
+            PostTile postTile = (PostTile) tile;
+            Optional<PostTile.TraceResult> traceResult = postTile.trace(event.getPlayer());
+            if(traceResult.isPresent() && !(traceResult.get().part.blockPart instanceof Post)) {
+                event.setCanceled(true);
+                Delay.onServerForFrames(1, () -> {
+                    postTile.removePart(traceResult.get().id);
+                    if (event.getWorld() instanceof ServerWorld) {
+                        ServerWorld world = (ServerWorld) event.getWorld();
+                        if (!event.getPlayer().isCreative()) {
+                            BlockPos pos = tile.getPos();
+                            for (ItemStack item : (Collection<ItemStack>) traceResult.get().part.blockPart.getDrops(postTile)) {
+                                ItemEntity itementity = new ItemEntity(
+                                    world,
+                                    pos.getX() + world.rand.nextFloat() * 0.5 + 0.25,
+                                    pos.getY() + world.rand.nextFloat() * 0.5 + 0.25,
+                                    pos.getZ() + world.rand.nextFloat() * 0.5 + 0.25,
+                                    item
+                                );
+                                itementity.setDefaultPickupDelay();
+                                world.addEntity(itementity);
+                            }
+                        }
+                    }
+                });
+            }
+        }
         if(!event.isCanceled() && block instanceof WithCountRestriction) {
             BlockRestrictions.Type restrictionType = ((WithCountRestriction)event.getState().getBlock()).getBlockRestrictionType();
             restrictionType.tryGetOwner.apply(tile).ifPresent(owner ->

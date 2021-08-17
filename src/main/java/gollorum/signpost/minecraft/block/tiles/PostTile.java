@@ -12,12 +12,14 @@ import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.utils.BlockPartMetadata;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.utils.WaystoneContainer;
+import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.BlockPosSerializer;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.ItemStackSerializer;
 import io.netty.util.internal.ConcurrentSet;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -25,7 +27,9 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.JsonToNBT;
+import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ResourceLocation;
@@ -39,6 +43,7 @@ import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.fml.network.NetworkEvent;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
@@ -49,7 +54,13 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
 
     public static final String REGISTRY_NAME = "post";
 
-    public static final TileEntityType<PostTile> type = TileEntityType.Builder.create(() -> new PostTile(gollorum.signpost.minecraft.block.Post.ModelType.Oak, ItemStack.EMPTY), gollorum.signpost.minecraft.block.Post.ALL).build(null);
+    public static final TileEntityType<PostTile> type = TileEntityType.Builder.create(
+        () -> new PostTile(
+            gollorum.signpost.minecraft.block.Post.ModelType.Oak,
+            ItemStack.EMPTY
+        ),
+        gollorum.signpost.minecraft.block.Post.ALL.toArray(new Block[0])
+    ).build(null);
 
     private final Map<UUID, BlockPartInstance> parts = new ConcurrentHashMap<>();
     public static final Set<BlockPartMetadata<?>> partsMetadata = new ConcurrentSet<>();
@@ -100,9 +111,14 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
 
     public BlockPartInstance removePart(UUID id) {
         BlockPartInstance oldPart = parts.remove(id);
+        if(oldPart == null) {
+            Signpost.LOGGER.error("Failed to remove post block part with id " + id);
+            return oldPart;
+        }
         if(getWorld() != null && !getWorld().isRemote)
             sendToTracing(() -> new PartRemovedEvent.Packet(new TilePartInfo(this, id), false));
         oldPart.blockPart.removeFrom(this);
+        markDirty();
         return oldPart;
     }
 
@@ -214,10 +230,24 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
         return ret;
     }
 
+    @Nullable
+    @Override
+    public SUpdateTileEntityPacket getUpdatePacket() {
+        CompoundNBT ret = new CompoundNBT();
+        writeSelf(ret);
+        return new SUpdateTileEntityPacket(getPos(), 1, ret);
+    }
+
     @Override
     public void handleUpdateTag(BlockState blockState, CompoundNBT compound) {
         super.handleUpdateTag(blockState, compound);
         readSelf(compound);
+    }
+
+    @Override
+    public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
+        super.onDataPacket(net, pkt);
+        readSelf(pkt.getNbtCompound());
     }
 
     public void notifyMutation(UUID part, CompoundNBT data, String partMetaIdentifier) {
@@ -459,33 +489,35 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
         @Override
         public void handle(Packet message, Supplier<NetworkEvent.Context> context) {
             context.get().enqueueWork(() ->
-                TileEntityUtils.findTileEntity(
-                    message.info.dimensionKey,
-                    context.get().getDirection().getReceptionSide().isClient(),
-                    message.info.pos,
-                    PostTile.class
-                ).ifPresent(tile -> {
-                    BlockPartInstance oldPart = tile.removePart(message.info.identifier);
-                    if(oldPart != null && !tile.getWorld().isRemote && !context.get().getSender().isCreative() && message.shouldDropItem){
-                        for(ItemStack item : (Collection<ItemStack>) oldPart.blockPart.getDrops(tile)) {
-                            if(!context.get().getSender().inventory.addItemStackToInventory(item))
-                                if(tile.world instanceof ServerWorld) {
-                                    ServerWorld world = (ServerWorld) tile.world;
-                                    BlockPos pos = message.info.pos;
-                                        ItemEntity itementity = new ItemEntity(
-                                            world,
-                                            pos.getX() + world.rand.nextFloat() * 0.5 + 0.25,
-                                            pos.getY() + world.rand.nextFloat() * 0.5 + 0.25,
-                                            pos.getZ() + world.rand.nextFloat() * 0.5 + 0.25,
-                                            item
-                                        );
-                                        itementity.setDefaultPickupDelay();
-                                        world.addEntity(itementity);
+                TileEntityUtils.findWorld(message.info.dimensionKey, context.get().getDirection().getReceptionSide().isClient()).ifPresent(world ->
+                    TileEntityUtils.delayUntilTileEntityExistsAt(
+                        new WorldLocation(message.info.pos, world),
+                        PostTile.class,
+                        tile -> {
+                            BlockPartInstance oldPart = tile.removePart(message.info.identifier);
+                            if(oldPart != null && !tile.getWorld().isRemote && !context.get().getSender().isCreative() && message.shouldDropItem){
+                                for(ItemStack item : (Collection<ItemStack>) oldPart.blockPart.getDrops(tile)) {
+                                    if(!context.get().getSender().inventory.addItemStackToInventory(item))
+                                        if(tile.world instanceof ServerWorld) {
+                                            ServerWorld serverWorld = (ServerWorld) tile.world;
+                                            BlockPos pos = message.info.pos;
+                                            ItemEntity itementity = new ItemEntity(
+                                                serverWorld,
+                                                pos.getX() + serverWorld.rand.nextFloat() * 0.5 + 0.25,
+                                                pos.getY() + serverWorld.rand.nextFloat() * 0.5 + 0.25,
+                                                pos.getZ() + serverWorld.rand.nextFloat() * 0.5 + 0.25,
+                                                item
+                                            );
+                                            itementity.setDefaultPickupDelay();
+                                            serverWorld.addEntity(itementity);
+                                        }
                                 }
-                        }
-                    }
-                })
-            );
+                            }
+                        },
+                        100,
+                        Optional.of(() -> Signpost.LOGGER.error("Failed to process PartRemovedEvent, tile was not present"))
+                    )
+            ));
             context.get().setPacketHandled(true);
         }
     }
@@ -544,37 +576,40 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
             NetworkEvent.Context context = contextGetter.get();
             boolean isServer = context.getDirection().getReceptionSide().isServer();
             context.enqueueWork(() ->
-                TileEntityUtils.findTileEntity(
-                    message.info.dimensionKey,
-                    !isServer,
-                    message.info.pos,
-                    PostTile.class
-                ).ifPresent(tile -> {
-                    Optional<BlockPartInstance> part = tile.getPart(message.info.identifier);
-                    if(part.isPresent()) {
-                        BlockPartInstance blockPartInstance = part.get();
-                        if(blockPartInstance.blockPart.getMeta().identifier.equals(message.partMetaIdentifier)) {
-                            blockPartInstance.blockPart.readMutationUpdate(message.data, tile, isServer ? context.getSender() : null);
-                            if(message.offset.isPresent()) {
-                                tile.parts.remove(message.info.identifier);
-                                tile.parts.put(message.info.identifier, new BlockPartInstance(blockPartInstance.blockPart, message.offset.get()));
+                TileEntityUtils.findWorld(message.info.dimensionKey, !isServer).ifPresent(world ->
+                    TileEntityUtils.delayUntilTileEntityExistsAt(
+                        new WorldLocation(message.info.pos, world),
+                        PostTile.class,
+                        tile -> {
+                            Optional<BlockPartInstance> part = tile.getPart(message.info.identifier);
+                            if(part.isPresent()) {
+                                BlockPartInstance blockPartInstance = part.get();
+                                if(blockPartInstance.blockPart.getMeta().identifier.equals(message.partMetaIdentifier)) {
+                                    blockPartInstance.blockPart.readMutationUpdate(message.data, tile, isServer ? context.getSender() : null);
+                                    if(message.offset.isPresent()) {
+                                        tile.parts.remove(message.info.identifier);
+                                        tile.parts.put(message.info.identifier, new BlockPartInstance(blockPartInstance.blockPart, message.offset.get()));
+                                    }
+                                } else {
+                                    Optional<BlockPartMetadata<?>> meta = partsMetadata.stream().filter(m -> m.identifier.equals(message.partMetaIdentifier)).findFirst();
+                                    if (meta.isPresent()) {
+                                        tile.parts.remove(message.info.identifier);
+                                        tile.parts.put(message.info.identifier,
+                                            new BlockPartInstance(meta.get().read(message.data), message.offset.orElse(blockPartInstance.offset)));
+                                    } else {
+                                        Signpost.LOGGER.warn("Could not find meta for part " + message.partMetaIdentifier);
+                                    }
+                                }
+                                tile.markDirty();
+                                if(isServer)
+                                    tile.sendToTracing(() -> message);
                             }
-                        } else {
-                            Optional<BlockPartMetadata<?>> meta = partsMetadata.stream().filter(m -> m.identifier.equals(message.partMetaIdentifier)).findFirst();
-                            if (meta.isPresent()) {
-                                tile.parts.remove(message.info.identifier);
-                                tile.parts.put(message.info.identifier,
-                                    new BlockPartInstance(meta.get().read(message.data), message.offset.orElse(blockPartInstance.offset)));
-                            } else {
-                                Signpost.LOGGER.warn("Could not find meta for part " + message.partMetaIdentifier);
-                            }
-                        }
-                        tile.markDirty();
-                        if(context.getDirection().getReceptionSide().isServer())
-                            tile.sendToTracing(() -> message);
-                    }
-                    else Signpost.LOGGER.error("Tried to mutate a post part that wasn't present: " + message.info.identifier);
-                }));
+                            else Signpost.LOGGER.error("Tried to mutate a post part that wasn't present: " + message.info.identifier);
+                        },
+                        100,
+                        Optional.of(() -> Signpost.LOGGER.error("Failed to process PartMutatedEvent, tile was not present"))
+                    )
+                ));
             context.setPacketHandled(true);
         }
     }
