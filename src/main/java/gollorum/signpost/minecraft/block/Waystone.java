@@ -120,6 +120,10 @@ public class Waystone extends Block implements WithCountRestriction {
     @Override
     public void onBlockPlacedBy(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
         super.onBlockPlacedBy(world, pos, state, placer, stack);
+        registerOwnerAndRequestGui(world, pos, placer);
+    }
+
+    public static void registerOwnerAndRequestGui(World world, BlockPos pos, LivingEntity placer) {
         Delay.forFrames(6, world.isRemote, () ->
             TileEntityUtils.delayUntilTileEntityExists(world, pos, WaystoneTile.class, t -> {
                 t.setWaystoneOwner(Optional.of(PlayerHandle.from(placer)));

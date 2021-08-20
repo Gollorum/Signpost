@@ -31,11 +31,12 @@ public class Cube<TextureIdentifier> {
 	private Quad<TextureIdentifier> getQuad(Direction direction, FaceData<TextureIdentifier> faceData) {
 		float fromU = faceData.textureArea.u.to;
 		float toU = faceData.textureArea.u.from;
-		float fromV = faceData.textureArea.v.to;
-		float toV = faceData.textureArea.v.from;
+		float fromV = faceData.textureArea.v.from;
+		float toV = faceData.textureArea.v.to;
+		Quad<TextureIdentifier> quad;
 		switch (direction) {
 			case DOWN:
-				return new Quad<>(
+				quad = new Quad<>(
 					new Vertex[]{
 						new Vertex(from.withX(to.x), toU, toV),
 						new Vertex(to.withY(from.y), toU, fromV),
@@ -44,8 +45,9 @@ public class Cube<TextureIdentifier> {
 					},
 					new Vector3(0, -1, 0),
 					faceData);
+				break;
 			case UP:
-				return new Quad<>(
+				quad = new Quad<>(
 					new Vertex[]{
 						new Vertex(to.withZ(from.z), toU, fromV),
 						new Vertex(from.withY(to.y), fromU, fromV),
@@ -54,8 +56,9 @@ public class Cube<TextureIdentifier> {
 					},
 					new Vector3(0, 1, 0),
 					faceData);
+				break;
 			case SOUTH:
-				return new Quad<>(
+				quad = new Quad<>(
 					new Vertex[]{
 						new Vertex(to.withY(from.y), fromU, toV),
 						new Vertex(to, fromU, fromV),
@@ -64,8 +67,9 @@ public class Cube<TextureIdentifier> {
 					},
 					new Vector3(0, 0, 1),
 					faceData);
+				break;
 			case NORTH:
-				return new Quad<>(
+				quad = new Quad<>(
 					new Vertex[]{
 						new Vertex(from.withY(to.y), fromU, fromV),
 						new Vertex(to.withZ(from.z), toU, fromV),
@@ -74,8 +78,9 @@ public class Cube<TextureIdentifier> {
 					},
 					new Vector3(0, 0, -1),
 					faceData);
+				break;
 			case EAST:
-				return new Quad<>(
+				quad = new Quad<>(
 					new Vertex[]{
 						new Vertex(from.withX(to.x), fromU, toV),
 						new Vertex(to.withZ(from.z), fromU, fromV),
@@ -84,8 +89,9 @@ public class Cube<TextureIdentifier> {
 					},
 					new Vector3(1, 0, 0),
 					faceData);
+				break;
 			case WEST:
-				return new Quad<>(
+				quad = new Quad<>(
 					new Vertex[]{
 						new Vertex(from, toU, toV),
 						new Vertex(from.withZ(to.z), fromU, toV),
@@ -94,9 +100,19 @@ public class Cube<TextureIdentifier> {
 					},
 					new Vector3(-1, 0, 0),
 					faceData);
+				break;
 			default:
 				throw new RuntimeException("Direction " + direction + " could not be handled");
 		}
+		if(faceData.shouldFlipNormal) {
+			for(int i = 0; i < quad.vertices.length / 2; i++) {
+				Vertex temp = quad.vertices[i];
+				int i2 = quad.vertices.length - i - 1;
+				quad.vertices[i] = quad.vertices[i2];
+				quad.vertices[i2] = temp;
+			}
+			return new Quad<>(quad.vertices, quad.normal.negated(), quad.faceData);
+		} else return quad;
 	}
 
 	public static class Quad<TextureIdentifier> {

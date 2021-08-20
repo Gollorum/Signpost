@@ -34,6 +34,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+// Server only.
 public class BlockRestrictions {
 
 	public enum Type {

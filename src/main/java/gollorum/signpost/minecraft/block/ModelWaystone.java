@@ -152,10 +152,9 @@ public class ModelWaystone extends Block implements IWaterLoggable, WithCountRes
 	}
 
 	@Override
-	public void onBlockPlacedBy(World world, BlockPos pos, BlockState state, LivingEntity player, ItemStack stack) {
-		super.onBlockPlacedBy(world, pos, state, player, stack);
-		if(!world.isRemote && player instanceof ServerPlayerEntity)
-			Waystone.openGuiIfHasPermission((ServerPlayerEntity) player, new WorldLocation(pos, world));
+	public void onBlockPlacedBy(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+		super.onBlockPlacedBy(world, pos, state, placer, stack);
+		Waystone.registerOwnerAndRequestGui(world, pos, placer);
 	}
 
 	@Override

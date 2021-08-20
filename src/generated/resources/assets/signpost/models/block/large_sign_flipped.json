@@ -19,20 +19,20 @@
         "down": {
           "texture": "#secondary_texture",
           "uv": [
-            14.0,
-            15.0,
             13.0,
-            16.0
+            16.0,
+            14.0,
+            15.0
           ],
           "rotation": 90
         },
         "up": {
           "texture": "#secondary_texture",
           "uv": [
-            3.0,
-            15.0,
             2.0,
-            16.0
+            16.0,
+            3.0,
+            15.0
           ],
           "rotation": 90
         },
@@ -83,10 +83,10 @@
         "down": {
           "texture": "#secondary_texture",
           "uv": [
-            15.0,
-            0.0,
             14.0,
-            16.0
+            16.0,
+            15.0,
+            0.0
           ],
           "rotation": 90
         },
@@ -137,10 +137,10 @@
         "up": {
           "texture": "#secondary_texture",
           "uv": [
-            2.0,
-            0.0,
             1.0,
-            16.0
+            16.0,
+            2.0,
+            0.0
           ],
           "rotation": 90
         },
@@ -225,10 +225,10 @@
         "down": {
           "texture": "#secondary_texture",
           "uv": [
-            15.0,
-            0.0,
             14.0,
-            2.0
+            2.0,
+            15.0,
+            0.0
           ],
           "rotation": 90
         },
@@ -279,10 +279,10 @@
         "up": {
           "texture": "#secondary_texture",
           "uv": [
-            2.0,
-            0.0,
             1.0,
-            2.0
+            2.0,
+            2.0,
+            0.0
           ],
           "rotation": 90
         },
@@ -367,10 +367,10 @@
         "down": {
           "texture": "#secondary_texture",
           "uv": [
-            14.0,
-            2.0,
             13.0,
-            3.0
+            3.0,
+            14.0,
+            2.0
           ],
           "rotation": 90
         },
@@ -421,10 +421,10 @@
         "up": {
           "texture": "#secondary_texture",
           "uv": [
+            2.0,
             3.0,
-            2.0,
-            2.0,
-            3.0
+            3.0,
+            2.0
           ],
           "rotation": 90
         },
@@ -509,10 +509,10 @@
         "down": {
           "texture": "#secondary_texture",
           "uv": [
-            12.0,
-            3.0,
             11.0,
-            4.0
+            4.0,
+            12.0,
+            3.0
           ],
           "rotation": 90
         },
@@ -563,10 +563,10 @@
         "up": {
           "texture": "#secondary_texture",
           "uv": [
-            5.0,
-            3.0,
             4.0,
-            4.0
+            4.0,
+            5.0,
+            3.0
           ],
           "rotation": 90
         },
@@ -651,20 +651,20 @@
         "down": {
           "texture": "#secondary_texture",
           "uv": [
-            10.0,
-            4.0,
             9.0,
-            5.0
+            5.0,
+            10.0,
+            4.0
           ],
           "rotation": 90
         },
         "up": {
           "texture": "#secondary_texture",
           "uv": [
-            7.0,
-            4.0,
             6.0,
-            5.0
+            5.0,
+            7.0,
+            4.0
           ],
           "rotation": 90
         },

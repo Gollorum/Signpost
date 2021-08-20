@@ -69,9 +69,7 @@ public class CutWaystoneRecipe extends StonecuttingRecipe {
             String group = buffer.readString(32767);
             Ingredient ingredient = Ingredient.read(buffer);
             ItemStack result = buffer.readItemStack();
-            return isAllowed(result)
-                ? new CutWaystoneRecipe(recipeId, group, ingredient, result)
-                : null;
+            return new CutWaystoneRecipe(recipeId, group, ingredient, result);
         }
 
         @Override

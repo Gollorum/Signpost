@@ -83,8 +83,8 @@ public class Waystone implements BlockPart<Waystone>, WithOwner.OfWaystone {
 				WaystoneLibrary.getInstance().removeAt(location.get(), PlayerHandle.Invalid);
 			else Signpost.LOGGER.error("Waystone tile at "+ tile.getPos() +"  was removed but world was null. " +
 				"This means that the waystone has not been cleaned up correctly.");
+			getWaystoneOwner().ifPresent(o -> BlockRestrictions.getInstance().incrementRemaining(BlockRestrictions.Type.Waystone, o));
 		}
-		getWaystoneOwner().ifPresent(o -> BlockRestrictions.getInstance().incrementRemaining(BlockRestrictions.Type.Waystone, o));
 	}
 
 	@Override

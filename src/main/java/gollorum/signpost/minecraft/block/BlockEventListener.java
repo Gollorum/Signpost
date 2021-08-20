@@ -66,7 +66,7 @@ public class BlockEventListener {
             }
         }
         if(!event.isCanceled() && block instanceof WithCountRestriction) {
-            BlockRestrictions.Type restrictionType = ((WithCountRestriction)event.getState().getBlock()).getBlockRestrictionType();
+            BlockRestrictions.Type restrictionType = ((WithCountRestriction)block).getBlockRestrictionType();
             restrictionType.tryGetOwner.apply(tile).ifPresent(owner ->
                 BlockRestrictions.getInstance().incrementRemaining(restrictionType, owner));
         }

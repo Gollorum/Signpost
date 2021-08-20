@@ -280,18 +280,16 @@ public class SignModelFactory<TextureIdentifier> {
             for(Map.Entry<Direction, FaceData<TextureIdentifier>> face : cube.sides.entrySet()) {
                 Direction dir = face.getKey();
                 FaceData<TextureIdentifier> faceData = face.getValue();
-                TextureArea textureArea = faceData.textureArea.rotate(FaceRotation.UpsideDown, false);
-                if(dir.getAxis().equals(Direction.Axis.Z)) {
-                    dir = dir.getOpposite();
-                }
                 sides.put(dir, new FaceData<>(
-                    textureArea,
+                    faceData.textureArea,
                     faceData.rotation,
-                    faceData.texture));
+                    faceData.texture,
+                    true
+                ));
             }
             return new Cube<>(
-                cube.from.withZ(-cube.to.z),
-                cube.to.withZ(-cube.from.z),
+                cube.from.withZ(z -> -z),
+                cube.to.withZ(z -> -z),
                 sides
             );
         });
@@ -315,7 +313,7 @@ public class SignModelFactory<TextureIdentifier> {
                 TextureArea textureArea = faceData.textureArea.rotate(faceData.rotation, true);
                 ModelBuilder<BlockModelBuilder>.ElementBuilder.FaceBuilder faceBuilder = builder.face(dir)
                     .texture(faceData.texture)
-                    .uvs(textureArea.u.from, textureArea.v.from, textureArea.u.to, textureArea.v.to);
+                    .uvs(textureArea.u.to, textureArea.v.from, textureArea.u.from, textureArea.v.to);
                 if(!faceData.rotation.equals(FaceRotation.Zero))
                     faceBuilder.rotation(faceData.rotation.asMinecraft);
             }
@@ -327,14 +325,21 @@ public class SignModelFactory<TextureIdentifier> {
                 .to(cube.to.x, cube.to.y, -cube.from.z);
             for(Map.Entry<Direction, FaceData<String>> face: cube.sides.entrySet()) {
                 Direction dir = face.getKey();
+                Direction.Axis axis = dir.getAxis();
                 FaceData<String> faceData = face.getValue();
-                TextureArea textureArea = faceData.textureArea.rotate(faceData.rotation.rotate180(), false);
-                if(dir.getAxis().equals(Direction.Axis.Z)) {
+                TextureArea textureArea = faceData.textureArea;
+                if(axis.equals(Direction.Axis.Z)) {
                     dir = dir.getOpposite();
+                    textureArea = textureArea.flipU();
+                } else if(axis.equals(Direction.Axis.X)) {
+                    textureArea = textureArea.flipU();
+                } else {
+                    textureArea = textureArea.flipV();
                 }
+                textureArea = textureArea.rotate(faceData.rotation, true);
                 ModelBuilder<BlockModelBuilder>.ElementBuilder.FaceBuilder faceBuilder = builder.face(dir)
                     .texture(faceData.texture)
-                    .uvs(textureArea.u.from, textureArea.v.from, textureArea.u.to, textureArea.v.to);
+                    .uvs(textureArea.u.to, textureArea.v.from, textureArea.u.from, textureArea.v.to);
                 if(!faceData.rotation.equals(FaceRotation.Zero))
                     faceBuilder.rotation(faceData.rotation.asMinecraft);
             }
