@@ -78,17 +78,13 @@ public class SignModelFactory<TextureIdentifier> {
     }
 
     public SignModelFactory<TextureIdentifier> makeSliceWithRim(
-        Vector3 min,
-        Vector3 size,
+        Vector3 min, Vector3 size,
         int rimHeight,
-        float uMin,
-        float vMin,
-        boolean shouldRenderWest,
-        boolean shouldRenderEast,
-        TextureIdentifier mainTexture,
-        FaceRotation mainTextureRotation,
-        TextureIdentifier secondaryTexture,
-        FaceRotation secondaryTextureRotation
+        float uMin, float vMin,
+        boolean shouldRenderWest, boolean shouldRenderEast,
+        boolean isBothSided,
+        FaceRotation mainTextureRotation, TextureIdentifier secondaryTexture,
+        FaceRotation secondaryTextureRotation, TextureIdentifier mainTexture
     ) {
         assert size.y > 2;
         Predicate<Direction> sideNotCulled = d ->
@@ -111,7 +107,7 @@ public class SignModelFactory<TextureIdentifier> {
             new Vector3(size.x, size.y - 2 * rimHeight, size.z),
             uMin, vMin + rimHeight, true,
             CubeFacesData.from(d ->
-                d.equals(Direction.SOUTH)
+                d.equals(Direction.SOUTH) || isBothSided
                     ? Optional.of(new Pair<>(mainTexture, mainTextureRotation))
                     : d.equals(Direction.NORTH)
                         ? Optional.of(new Pair<>(secondaryTexture, secondaryTextureRotation))
@@ -160,12 +156,10 @@ public class SignModelFactory<TextureIdentifier> {
     public SignModelFactory<TextureIdentifier> makeSignAt(
         Vector3 center,
         float height,
-        float widthLeft,
-        float widthRight,
+        float widthLeft, float widthRight,
         float arrowWidth,
-        boolean shouldAddLeftRim,
-        TextureIdentifier mainTexture,
-        TextureIdentifier secondaryTexture
+        boolean shouldAddLeftRim, boolean isBothSided,
+        TextureIdentifier secondaryTexture, TextureIdentifier mainTexture
     ) {
         if(shouldAddLeftRim) makePartialCube(
             center.add(-widthLeft - 1, -height / 2 + 1, -0.5f),
@@ -180,7 +174,7 @@ public class SignModelFactory<TextureIdentifier> {
                 1,
                 0, 8 - height / 2,
                 true, false,
-                mainTexture, signTextureRotation, secondaryTexture, signTextureRotation
+                isBothSided, signTextureRotation, secondaryTexture, signTextureRotation, mainTexture
             );
             makeSliceWithRim(
                 center.add(16 - widthLeft, -height / 2, -0.5f),
@@ -188,7 +182,7 @@ public class SignModelFactory<TextureIdentifier> {
                 1,
                 0, 8 - height / 2,
                 false, true,
-                mainTexture, signTextureRotation, secondaryTexture, signTextureRotation
+                isBothSided, signTextureRotation, secondaryTexture, signTextureRotation, mainTexture
             );
         } else makeSliceWithRim(
             center.add(-widthLeft, -height / 2, -0.5f),
@@ -196,7 +190,7 @@ public class SignModelFactory<TextureIdentifier> {
             1,
             0, 8 - height / 2,
             true, true,
-            mainTexture, signTextureRotation, secondaryTexture, signTextureRotation
+            isBothSided, signTextureRotation, secondaryTexture, signTextureRotation, mainTexture
         );
         int stairsCount = Math.round(Math.min((height - 2) / 2, arrowWidth));
         int stairStep = Math.round((height - 2) / (2 * stairsCount));
@@ -208,7 +202,7 @@ public class SignModelFactory<TextureIdentifier> {
                 stairStep,
                 (widthLeft + widthRight + Math.round(stairsWidth) * i) % 16, 8 - height / 2 + 1 + stairStep * i,
                 false, true,
-                mainTexture, signTextureRotation, secondaryTexture, signTextureRotation
+                isBothSided, signTextureRotation, secondaryTexture, signTextureRotation, mainTexture
             );
         }
         int lastI = stairsCount - 1;
@@ -234,7 +228,7 @@ public class SignModelFactory<TextureIdentifier> {
         TextureIdentifier secondaryTexture
     ) {
         return makeSignAt(offset.add(0, 0, 2.5f), 6, 8, 12, 4, true,
-            mainTexture, secondaryTexture);
+            false, secondaryTexture, mainTexture);
     }
 
     public SignModelFactory<TextureIdentifier> makeShortSign(
@@ -242,7 +236,7 @@ public class SignModelFactory<TextureIdentifier> {
         TextureIdentifier secondaryTexture
     ) {
         return makeSignAt(new Vector3(0, 0, 0), 6, -2, 14, 4, false,
-            mainTexture, secondaryTexture);
+            true, secondaryTexture, mainTexture);
     }
 
     public SignModelFactory<TextureIdentifier> makeLargeSign(
@@ -250,7 +244,7 @@ public class SignModelFactory<TextureIdentifier> {
         TextureIdentifier secondaryTexture
     ) {
         return makeSignAt(new Vector3(0, 0, 2.5f), 12, 8, 10, 3, true,
-            mainTexture, secondaryTexture);
+            false, secondaryTexture, mainTexture);
     }
 
     public SignModelFactory<TextureIdentifier> makeWideSignOverlay(TextureIdentifier mainTexture) {

@@ -55,17 +55,26 @@ public class ShortSignRenderer extends SignRenderer<SmallShortSign> {
 
 	@Override
 	protected void renderText(SmallShortSign sign, MatrixStack matrix, FontRenderer fontRenderer, IRenderTypeBuffer buffer, int combinedLights) {
+		matrix.push();
+		renderText(true, sign, matrix, fontRenderer, buffer, combinedLights);
+		matrix.pop();
+		matrix.push();
+		renderText(false, sign, matrix, fontRenderer, buffer, combinedLights);
+		matrix.pop();
+	}
+
+	private void renderText(boolean isFlipped, SmallShortSign sign, MatrixStack matrix, FontRenderer fontRenderer, IRenderTypeBuffer buffer, int combinedLights) {
 		matrix.rotate(Vector3f.ZP.rotationDegrees(180));
 		float scale = FONT_SIZE_VOXELS * FontToVoxelSize;
 		float MAX_WIDTH_FRAC = fontRenderer.getStringWidth(sign.getText()) * scale / MAXIMUM_TEXT_WIDTH;
 		scale /= Math.max(1, MAX_WIDTH_FRAC);
 		matrix.rotate(Vector3f.YP.rotation((float) (
-			sign.isFlipped()
+			isFlipped
 				? -sign.getAngle().radians()
 				: Math.PI - sign.getAngle().radians())));
 		float offset = MathUtils.lerp(TEXT_OFFSET_RIGHT, (TEXT_OFFSET_RIGHT - TEXT_OFFSET_LEFT) / 2f, 1 - Math.min(1, MAX_WIDTH_FRAC));
 		matrix.translate(
-			sign.isFlipped() ? offset - fontRenderer.getStringWidth(sign.getText()) * scale : -offset,
+			isFlipped ? offset - fontRenderer.getStringWidth(sign.getText()) * scale : -offset,
 			-scale * 4 * TEXT_RATIO,
 			-0.505 * VoxelSize);
 		matrix.scale(scale, scale * TEXT_RATIO, scale);
