@@ -12,6 +12,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.NetworkEvent;
 import net.minecraftforge.fml.network.NetworkRegistry;
@@ -99,6 +101,16 @@ public class PacketHandler {
         Class<T> getMessageClass();
         void encode(T message, PacketBuffer buffer);
         T decode(PacketBuffer buffer);
-        void handle(T message, Supplier<NetworkEvent.Context> context);
+        void handle(T message, NetworkEvent.Context context);
+
+        default void handle(T message, Supplier<NetworkEvent.Context> context) {
+            NetworkEvent.Context c = context.get();
+            c.enqueueWork(() -> {
+                if(c.getDirection().getReceptionSide().isClient())
+                    DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> handle(message, c));
+                else handle(message, c);
+            });
+            c.setPacketHandled(true);
+        }
     }
 }

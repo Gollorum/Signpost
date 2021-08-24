@@ -28,8 +28,8 @@ public class PostRecipe extends RecipeProvider {
 
     private ShapedRecipeBuilder postBuilder(IItemProvider block, Post.ModelType type) {
         return ShapedRecipeBuilder.shapedRecipe(block, 2)
-            .key('s', signFor(type))
-            .key('b', baseFor(type))
+            .key('s', type.signIngredient.get())
+            .key('b', type.baseIngredient.get())
             .patternLine("s")
             .patternLine("s")
             .patternLine("b")
@@ -37,18 +37,6 @@ public class PostRecipe extends RecipeProvider {
             .addCriterion("has_signpost", hasItem(PostTag.Tag))
             .addCriterion("has_waystone", hasItem(Waystone.INSTANCE))
             .setGroup("Signpost");
-    }
-
-    private static Ingredient signFor(Post.ModelType type) {
-        if(Post.ModelType.signIngredientForType.containsKey(type))
-            return Post.ModelType.signIngredientForType.get(type).get();
-        else throw new RuntimeException("Signpost type " + type + " is not supported");
-    }
-
-    private static Ingredient baseFor(Post.ModelType type) {
-        if(Post.ModelType.baseIngredientForType.containsKey(type))
-            return Post.ModelType.baseIngredientForType.get(type).get();
-        else throw new RuntimeException("Signpost type " + type + " is not supported");
     }
 
 }

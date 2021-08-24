@@ -67,13 +67,13 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
             .map(i -> new ItemStack(i.getItem()))
             .distinct()
             .map(is -> Pair.of(allSpritesFor((BlockItem) is.getItem()), is))
-            .filter(p -> p.getFirst().size() > 1)
+            .filter(p -> p.getFirst().size() > 0)
             .collect(Collectors.toList());
 
         int rows = (blocksToRender.size() + 8) / 9;
 
         for(int y = 0; y < rows; y++) {
-            int rowWidth = y == rows - 1 ? blocksToRender.size() % 9 : maxBlocksPerRow;
+            int rowWidth = y == rows - 1 ? ((blocksToRender.size() - 1) % 9) + 1 : maxBlocksPerRow;
             int top = (height * 3) / 4 + y * ItemButton.height;
             int left = width / 2 - (rowWidth * ItemButton.width / 2);
             for (int x = 0; x < rowWidth; x++) {
@@ -104,17 +104,20 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
         Block block = ((BlockItem) item.getItem()).getBlock();
         BlockState state = block.getDefaultState();
         IBakedModel model = Minecraft.getInstance().getBlockRendererDispatcher().getModelForState(state);
-        return Streams.concat(
-                Stream.of(oldSprite),
-                Arrays.stream(faces)
-                    .flatMap(side -> model.getQuads(null, side, font.random).stream())
-                    .map(BakedQuad::getSprite)
-            ).distinct()
+        return Arrays.stream(faces)
+            .flatMap(side -> model.getQuads(null, side, font.random).stream())
+            .map(BakedQuad::getSprite)
+            .distinct()
             .collect(Collectors.toList());
     }
 
     private void setupTextureButtonsFor(List<TextureAtlasSprite> sprites) {
         clearSelection();
+
+        sprites = Streams.concat(
+            Stream.of(oldSprite),
+            sprites.stream()
+        ).distinct().collect(Collectors.toList());
 
         int spriteButtonSize = 30;
         int centerY = height / 2 + 10;

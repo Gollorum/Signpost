@@ -94,7 +94,7 @@ public class Post implements BlockPart<Post> {
         if (info.isRemote && info.tile.getParts().stream().filter(i -> i.blockPart instanceof Sign).count() < maxSignCount) {
             SignGui.display(
                 info.tile,
-                gollorum.signpost.minecraft.block.Post.ModelType.from(info.player.getHeldItem(info.hand).getItem()),
+                gollorum.signpost.minecraft.block.Post.ModelType.from(info.player.getHeldItem(info.hand).getItem()).get(),
                 info.traceResult.hitPos,
                 new ItemStack(heldItem.getItem(), 1)
             );
@@ -112,7 +112,7 @@ public class Post implements BlockPart<Post> {
     private static boolean isValidSign(ItemStack itemStack) {
         if(itemStack == null || itemStack.getCount() < 1) return false;
         Item item = itemStack.getItem();
-        return item instanceof SignItem || item.equals(Items.IRON_INGOT) || item.equals(Items.STONE);
+        return gollorum.signpost.minecraft.block.Post.ModelType.from(item).isPresent();
     }
 
     private static boolean isWaystone(ItemStack itemStack) {

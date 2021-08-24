@@ -278,7 +278,7 @@ public class BlockRestrictions {
 		}
 
 		@Override
-		protected void handle(NotifyCountChanged message, NetworkEvent.Context context) {
+		public void handle(NotifyCountChanged message, NetworkEvent.Context context) {
 			if((message.IsWaystoneNotification
 				? Config.Client.enableWaystoneLimitNotifications
 				: Config.Client.enableSignpostLimitNotifications

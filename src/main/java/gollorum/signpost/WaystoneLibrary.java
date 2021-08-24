@@ -382,10 +382,11 @@ public class WaystoneLibrary {
         }
 
         @Override
-        public void handle(Packet message, Supplier<NetworkEvent.Context> context) {
+        public void handle(Packet message, NetworkEvent.Context context) {
             PacketHandler.send(
-                PacketDistributor.PLAYER.with(() -> context.get().getSender()),
-                new DeliverAllWaystoneNamesEvent.Packet(getInstance().getAllWaystoneNamesAndHandles(message.onlyKnownBy)));
+                PacketDistributor.PLAYER.with(context::getSender),
+                new DeliverAllWaystoneNamesEvent.Packet(getInstance().getAllWaystoneNamesAndHandles(message.onlyKnownBy))
+            );
         }
 
     }
@@ -422,11 +423,11 @@ public class WaystoneLibrary {
         }
 
         @Override
-        public void handle(Packet message, Supplier<NetworkEvent.Context> context) {
+        public void handle(Packet message, NetworkEvent.Context context) {
             getInstance().cachedWaystoneNames.clear();
             getInstance().cachedWaystoneNames.addAll(message.names.values());
             getInstance().isWaystoneNameCacheDirty = false;
-            context.get().enqueueWork(() -> getInstance().requestedAllNamesEventDispatcher.dispatch(message.names, true));
+            getInstance().requestedAllNamesEventDispatcher.dispatch(message.names, true);
         }
     }
 
@@ -451,32 +452,29 @@ public class WaystoneLibrary {
         }
 
         @Override
-        public void handle(Packet message, Supplier<NetworkEvent.Context> contextProvider) {
-            final NetworkEvent.Context context = contextProvider.get();
-            context.enqueueWork(() -> {
-                if(context.getDirection().getReceptionSide().isServer()){
-                    PlayerEntity player = context.getSender();
-                    switch (message.event.getType()){
-                        case Added:
-                            if(!TileEntityUtils.findTileEntityAt(message.event.location.block, WaystoneContainer.class).isPresent()) {
-                                Signpost.LOGGER.error("Tried to add a waystone where no compatible TileEntity was present: " + message.event.location.block);
-                                return;
-                            }
-                        case Renamed:
-                            getInstance().update(message.event.name, message.event.location, player, ((WaystoneAddedOrRenamedEvent)message.event).isLocked);
-                            break;
-                        case Removed:
-                            getInstance().remove(message.event.name, PlayerHandle.from(player));
-                            break;
-                        case Moved:
-                            getInstance().updateLocation(
-                                message.event.location.block,
-                                ((WaystoneMovedEvent)message.event).newLocation
-                            );
-                        default: throw new RuntimeException("Type " + message.event.getType() + " is not supported");
-                    }
-                } else getInstance()._updateEventDispatcher.dispatch(message.event, false);
-            });
+        public void handle(Packet message, NetworkEvent.Context context) {
+            if(context.getDirection().getReceptionSide().isServer()){
+                PlayerEntity player = context.getSender();
+                switch (message.event.getType()){
+                    case Added:
+                        if(!TileEntityUtils.findTileEntityAt(message.event.location.block, WaystoneContainer.class).isPresent()) {
+                            Signpost.LOGGER.error("Tried to add a waystone where no compatible TileEntity was present: " + message.event.location.block);
+                            return;
+                        }
+                    case Renamed:
+                        getInstance().update(message.event.name, message.event.location, player, ((WaystoneAddedOrRenamedEvent)message.event).isLocked);
+                        break;
+                    case Removed:
+                        getInstance().remove(message.event.name, PlayerHandle.from(player));
+                        break;
+                    case Moved:
+                        getInstance().updateLocation(
+                            message.event.location.block,
+                            ((WaystoneMovedEvent)message.event).newLocation
+                        );
+                    default: throw new RuntimeException("Type " + message.event.getType() + " is not supported");
+                }
+            } else getInstance()._updateEventDispatcher.dispatch(message.event, false);
         }
 
     }
@@ -505,10 +503,10 @@ public class WaystoneLibrary {
         }
 
         @Override
-        public void handle(Packet message, Supplier<NetworkEvent.Context> context) {
+        public void handle(Packet message, NetworkEvent.Context context) {
             Optional<WaystoneData> dataAt = getInstance().tryGetWaystoneDataAt(message.waystoneLocation);
             PacketHandler.send(
-                PacketDistributor.PLAYER.with(() -> context.get().getSender()),
+                PacketDistributor.PLAYER.with(context::getSender),
                 new DeliverWaystoneAtLocationEvent.Packet(
                     message.waystoneLocation,
                     dataAt
@@ -547,8 +545,8 @@ public class WaystoneLibrary {
         }
 
         @Override
-        public void handle(Packet message, Supplier<NetworkEvent.Context> context) {
-            context.get().enqueueWork(() -> getInstance().requestedWaystoneAtLocationEventDispatcher.dispatch(message, false));
+        public void handle(Packet message, NetworkEvent.Context context) {
+            getInstance().requestedWaystoneAtLocationEventDispatcher.dispatch(message, false);
         }
 
     }
@@ -577,10 +575,10 @@ public class WaystoneLibrary {
         }
 
         @Override
-        public void handle(Packet message, Supplier<NetworkEvent.Context> context) {
+        public void handle(Packet message, NetworkEvent.Context context) {
             Optional<WaystoneLocationData> dataAt = getInstance().getByName(message.name).map(e -> e.getValue().locationData);
             PacketHandler.send(
-                PacketDistributor.PLAYER.with(() -> context.get().getSender()),
+                PacketDistributor.PLAYER.with(context::getSender),
                 new DeliverWaystoneLocationEvent.Packet(
                     message.name,
                     dataAt
@@ -621,8 +619,8 @@ public class WaystoneLibrary {
         }
 
         @Override
-        public void handle(Packet message, Supplier<NetworkEvent.Context> context) {
-            context.get().enqueueWork(() -> getInstance().requestedWaystoneLocationEventDispatcher.dispatch(message, false));
+        public void handle(Packet message, NetworkEvent.Context context) {
+            getInstance().requestedWaystoneLocationEventDispatcher.dispatch(message, false);
         }
 
     }
@@ -652,9 +650,9 @@ public class WaystoneLibrary {
         }
 
         @Override
-        public void handle(Packet message, Supplier<NetworkEvent.Context> context) {
+        public void handle(Packet message, NetworkEvent.Context context) {
             PacketHandler.send(
-                PacketDistributor.PLAYER.with(() -> context.get().getSender()),
+                PacketDistributor.PLAYER.with(context::getSender),
                 new DeliverIdEvent.Packet(getInstance().getHandleFor(message.name)));
         }
 
@@ -683,8 +681,8 @@ public class WaystoneLibrary {
         }
 
         @Override
-        public void handle(Packet message, Supplier<NetworkEvent.Context> context) {
-            context.get().enqueueWork(() -> getInstance().requestedIdEventDispatcher.dispatch(message.waystone, true));
+        public void handle(Packet message, NetworkEvent.Context context) {
+            getInstance().requestedIdEventDispatcher.dispatch(message.waystone, true);
         }
 
     }

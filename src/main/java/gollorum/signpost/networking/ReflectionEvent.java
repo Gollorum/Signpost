@@ -63,12 +63,5 @@ public abstract class ReflectionEvent<Self extends ReflectionEvent<Self>> implem
         }
     }
 
-    @Override
-    public final void handle(Self message, Supplier<NetworkEvent.Context> context) {
-        NetworkEvent.Context ctx = context.get();
-        ctx.enqueueWork(() -> handle(message, ctx));
-        ctx.setPacketHandled(true);
-    }
-
-    protected abstract void handle(Self message, NetworkEvent.Context context);
+    public abstract void handle(Self message, NetworkEvent.Context context);
 }

@@ -40,7 +40,7 @@ public class RequestWaystoneGui implements PacketHandler.Event<RequestWaystoneGu
 
 	@Override
 	public void handle(
-		RequestWaystoneGui.Package message, Supplier<NetworkEvent.Context> context
+		RequestWaystoneGui.Package message, NetworkEvent.Context context
 	) {
 		WaystoneGui.display(message.location, message.oldData);
 	}

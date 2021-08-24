@@ -584,11 +584,16 @@ public class SignGui extends ExtendedScreen {
         additionalRenderables.add(ir);
         AtomicReference<Runnable> cycleItem = new AtomicReference<>();
         AtomicInteger cycleItemIndex = new AtomicInteger(0);
+        AtomicInteger cycleItemIngredientIndex = new AtomicInteger(0);
         AtomicLong nextCycleAt = new AtomicLong(System.currentTimeMillis());
         cycleItem.set(() -> {
-            ir.setItemStack(new ItemStack(Post.AllVariants.get(cycleItemIndex.get()).type.item));
-            cycleItemIndex.set((cycleItemIndex.get() + 1) % Post.AllVariants.size());
-            nextCycleAt.set(nextCycleAt.get() + 1500);
+            ItemStack[] options = Post.AllVariants.get(cycleItemIndex.get()).type.addSignIngredient.get().getMatchingStacks();
+            ir.setItemStack(options[cycleItemIngredientIndex.get()]);
+            if(cycleItemIngredientIndex.get() >= options.length - 1) {
+                cycleItemIndex.set((cycleItemIndex.get() + 1) % Post.AllVariants.size());
+                cycleItemIngredientIndex.set(0);
+            } else cycleItemIngredientIndex.incrementAndGet();
+            nextCycleAt.set(nextCycleAt.get() + (options.length < 2 ? 1500 : (options.length == 2 ? 1000 : 500)));
             Delay.onClientUntil(
                 () -> System.currentTimeMillis() >= nextCycleAt.get(),
                 () -> cycleItem.get().run()

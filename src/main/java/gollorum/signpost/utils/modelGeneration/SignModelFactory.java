@@ -262,6 +262,33 @@ public class SignModelFactory<TextureIdentifier> {
             .map(c -> c.withSides(s -> s.withTextureArea(ta -> ta.map(u -> u * (16f / 24f), v -> v * (16f / 15f)))));
     }
 
+    public SignModelFactory<TextureIdentifier> makePost(TextureIdentifier textureIdentifier) {
+        return addCube(
+            new Vector3(-2, 0, -2), new Vector3(2, 16, 2),
+            Arrays.stream(Direction.values()).collect(Collectors.toMap(
+                d -> d,
+                d -> {
+                    int offset = 0;
+                    switch (d) {
+                        case EAST: offset = 4; break;
+                        case NORTH: offset = 8; break;
+                        case WEST: offset = 12; break;
+                    }
+                    TextureArea textureArea;
+                    switch (d) {
+                        case UP: textureArea = new TextureArea(new TextureSegment(0, 4, false), new TextureSegment(16, 12, false));
+                            break;
+                        case DOWN: textureArea = new TextureArea(new TextureSegment(0, 4, false), new TextureSegment(4, 0, false));
+                            break;
+                        default:
+                            textureArea = new TextureArea(new TextureSegment(offset, offset + 4, false), new TextureSegment(0, 16, false));
+                    }
+                    return new FaceData<>(textureArea, FaceRotation.Zero, textureIdentifier);
+                }
+            ))
+        );
+    }
+
     public SignModelFactory<TextureIdentifier> map(Function<Cube<TextureIdentifier>, Cube<TextureIdentifier>> func) {
         SignModelFactory<TextureIdentifier> ret = new SignModelFactory<>();
         ret.cubes.addAll(cubes.stream().map(func).collect(Collectors.toList()));

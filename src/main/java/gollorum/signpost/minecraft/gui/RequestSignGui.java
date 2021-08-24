@@ -43,13 +43,13 @@ public class RequestSignGui implements PacketHandler.Event<RequestSignGui.Packag
 
 	@Override
 	public void handle(
-		Package message, Supplier<NetworkEvent.Context> context
+		Package message, NetworkEvent.Context context
 	) {
 		Optional<Pair<PostTile, BlockPartInstance>> pairO = TileEntityUtils.findTileEntityClient(
 			message.tilePartInfo.dimensionKey, message.tilePartInfo.pos, PostTile.class
 		).flatMap(tile -> tile.getPart(message.tilePartInfo.identifier)
 			.flatMap(part -> (part.blockPart instanceof Sign ? Optional.of(new Pair<>(tile, part)) : Optional.empty())));
-		if(pairO.isPresent()) {
+		if (pairO.isPresent()) {
 			Pair<PostTile, BlockPartInstance> pair = pairO.get();
 			SignGui.display(pair.getKey(), (Sign) pair.getValue().blockPart, pair.getValue().offset, message.tilePartInfo);
 		} else {
@@ -96,7 +96,7 @@ public class RequestSignGui implements PacketHandler.Event<RequestSignGui.Packag
 
 		@Override
 		public void handle(
-			Package message, Supplier<NetworkEvent.Context> context
+			Package message, NetworkEvent.Context context
 		) {
 			TileEntityUtils.delayUntilTileEntityExistsAt(
 				message.loc, PostTile.class,

@@ -7,6 +7,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.gui.utils.Colors;
@@ -17,6 +18,7 @@ import net.minecraft.command.arguments.ArgumentTypes;
 import net.minecraft.util.text.TranslationTextComponent;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -41,14 +43,16 @@ public class WaystoneArgument implements ArgumentType<String> {
 	public <S> CompletableFuture<Suggestions> listSuggestions(
 		CommandContext<S> context, SuggestionsBuilder builder
 	) {
-		return ISuggestionProvider.suggest(
-			WaystoneLibrary.hasInstance()
-				? WaystoneLibrary.getInstance().getAllWaystoneNames()
-					.map(set -> set.stream().map(s -> nonLiteralPattern.matcher(s).find() ? "\"" + s + "\"" : s).collect(Collectors.toSet()))
-					.orElse(new HashSet<>())
-				: new HashSet<>(),
-			builder
+		if(!WaystoneLibrary.hasInstance()) return ISuggestionProvider.suggest(new HashSet<>(), builder);
+		CompletableFuture<Suggestions> ret = new CompletableFuture<>();
+		WaystoneLibrary.getInstance().requestAllWaystoneNames(
+			names -> ISuggestionProvider.suggest(
+				names.values().stream().map(s -> nonLiteralPattern.matcher(s).find() ? "\"" + s + "\"" : s).collect(Collectors.toSet()),
+				builder
+			).thenAccept(ret::complete),
+			Optional.empty()
 		);
+		return ret;
 	}
 
 }

@@ -15,10 +15,7 @@ import gollorum.signpost.utils.Delay;
 import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.BufferSerializable;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockRenderType;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.IWaterLoggable;
+import net.minecraft.block.*;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -50,19 +47,18 @@ import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class Post extends Block implements IWaterLoggable, WithCountRestriction {
 
     public static class ModelType implements IStringSerializable {
-
-        public static final Map<ModelType, Lazy<Ingredient>> signIngredientForType = new HashMap<>();
-        public static final Map<ModelType, Lazy<Ingredient>> baseIngredientForType = new HashMap<>();
 
         private static final Map<String, ModelType> allTypes = new HashMap<>();
 
@@ -80,93 +76,100 @@ public class Post extends Block implements IWaterLoggable, WithCountRestriction 
             new ResourceLocation("acacia_log"),
             new ResourceLocation("stripped_acacia_log"),
             new ResourceLocation("acacia_log"),
-            Items.ACACIA_SIGN
+            Lazy.of(() -> Ingredient.fromItems(Items.ACACIA_SIGN)),
+            Lazy.of(() -> Ingredient.fromTag(ItemTags.ACACIA_LOGS)),
+            Lazy.of(() -> Ingredient.fromItems(Items.ACACIA_SIGN))
         );
         public static final ModelType Birch = new ModelType("birch",
             new ResourceLocation("birch_log"),
             new ResourceLocation("stripped_birch_log"),
             new ResourceLocation("birch_log"),
-            Items.BIRCH_SIGN
+            Lazy.of(() -> Ingredient.fromItems(Items.BIRCH_SIGN)),
+            Lazy.of(() -> Ingredient.fromTag(ItemTags.BIRCH_LOGS)),
+            Lazy.of(() -> Ingredient.fromItems(Items.BIRCH_SIGN))
         );
         public static final ModelType Iron = new ModelType("iron",
             new ResourceLocation("iron_block"),
             new ResourceLocation(Signpost.MOD_ID, "iron"),
             new ResourceLocation(Signpost.MOD_ID, "iron_dark"),
-            Items.IRON_INGOT
+            Lazy.of(() -> Ingredient.fromTag(ItemTags.SIGNS)),
+            Lazy.of(() -> Ingredient.fromItems(Items.IRON_INGOT)),
+            Lazy.of(() -> Ingredient.fromItems(Items.IRON_INGOT))
         );
         public static final ModelType Jungle = new ModelType("jungle",
             new ResourceLocation("jungle_log"),
             new ResourceLocation("stripped_jungle_log"),
             new ResourceLocation("jungle_log"),
-            Items.JUNGLE_SIGN
+            Lazy.of(() -> Ingredient.fromItems(Items.JUNGLE_SIGN)),
+            Lazy.of(() -> Ingredient.fromTag(ItemTags.JUNGLE_LOGS)),
+            Lazy.of(() -> Ingredient.fromItems(Items.JUNGLE_SIGN))
         );
         public static final ModelType Oak = new ModelType("oak",
             new ResourceLocation("oak_log"),
             new ResourceLocation("stripped_oak_log"),
             new ResourceLocation("oak_log"),
-            Items.OAK_SIGN
+            Lazy.of(() -> Ingredient.fromItems(Items.OAK_SIGN)),
+            Lazy.of(() -> Ingredient.fromTag(ItemTags.OAK_LOGS)),
+            Lazy.of(() -> Ingredient.fromItems(Items.OAK_SIGN))
         );
         public static final ModelType DarkOak = new ModelType("darkoak",
             new ResourceLocation("dark_oak_log"),
             new ResourceLocation("stripped_dark_oak_log"),
             new ResourceLocation("dark_oak_log"),
-            Items.DARK_OAK_SIGN
+            Lazy.of(() -> Ingredient.fromItems(Items.DARK_OAK_SIGN)),
+            Lazy.of(() -> Ingredient.fromTag(ItemTags.DARK_OAK_LOGS)),
+            Lazy.of(() -> Ingredient.fromItems(Items.DARK_OAK_SIGN))
         );
         public static final ModelType Spruce = new ModelType("spruce",
             new ResourceLocation("spruce_log"),
             new ResourceLocation("stripped_spruce_log"),
             new ResourceLocation("spruce_log"),
-            Items.SPRUCE_SIGN
+            Lazy.of(() -> Ingredient.fromItems(Items.SPRUCE_SIGN)),
+            Lazy.of(() -> Ingredient.fromTag(ItemTags.SPRUCE_LOGS)),
+            Lazy.of(() -> Ingredient.fromItems(Items.SPRUCE_SIGN))
         );
         public static final ModelType Stone = new ModelType("stone",
             new ResourceLocation("stone"),
             new ResourceLocation("stone"),
             new ResourceLocation(Signpost.MOD_ID, "stone_dark"),
-            Items.STONE
+            Lazy.of(() -> Ingredient.fromTag(ItemTags.SIGNS)),
+            Lazy.of(() -> Ingredient.fromItems(Items.STONE)),
+            Lazy.of(() -> Ingredient.fromItems(Items.STONE))
         );
         public static final ModelType Warped = new ModelType("warped",
             new ResourceLocation("warped_stem"),
             new ResourceLocation("stripped_warped_stem"),
             new ResourceLocation("warped_stem"),
-            Items.WARPED_SIGN
+            Lazy.of(() -> Ingredient.fromItems(Items.WARPED_SIGN)),
+            Lazy.of(() -> Ingredient.fromTag(ItemTags.WARPED_STEMS)),
+            Lazy.of(() -> Ingredient.fromItems(Items.WARPED_SIGN))
         );
         public static final ModelType Crimson = new ModelType("crimson",
             new ResourceLocation("crimson_stem"),
             new ResourceLocation("stripped_crimson_stem"),
             new ResourceLocation("crimson_stem"),
-            Items.CRIMSON_SIGN
+            Lazy.of(() -> Ingredient.fromItems(Items.CRIMSON_SIGN)),
+            Lazy.of(() -> Ingredient.fromTag(ItemTags.CRIMSON_STEMS)),
+            Lazy.of(() -> Ingredient.fromItems(Items.CRIMSON_SIGN))
+        );
+        private static final Lazy<Ingredient> sandstone = Lazy.of(() ->
+            Ingredient.fromItems(Blocks.SANDSTONE, Blocks.CUT_SANDSTONE, Blocks.CHISELED_SANDSTONE, Blocks.SMOOTH_SANDSTONE));
+        public static final ModelType Sandstone = new ModelType("sandstone",
+            new ResourceLocation("sandstone"),
+            new ResourceLocation("stripped_jungle_log"),
+            new ResourceLocation("sandstone_bottom"),
+            Lazy.of(() -> Ingredient.fromTag(ItemTags.SIGNS)),
+            sandstone,
+            sandstone
         );
 
-        public static ModelType from(Item signItem) {
+        public static Optional<ModelType> from(Item signItem) {
             return allTypes.values().stream()
-                .filter(t -> t.item.equals(signItem))
-                .findFirst()
-                .orElse(Oak);
+                .filter(t -> t.addSignIngredient.get().test(new ItemStack(signItem)))
+                .findFirst();
         }
 
         static {
-            signIngredientForType.put(Acacia, Lazy.of(() -> Ingredient.fromItems(Items.ACACIA_SIGN)));
-            signIngredientForType.put(Birch, Lazy.of(() -> Ingredient.fromItems(Items.BIRCH_SIGN)));
-            signIngredientForType.put(Iron, Lazy.of(() -> Ingredient.fromTag(ItemTags.SIGNS)));
-            signIngredientForType.put(Stone, Lazy.of(() -> Ingredient.fromTag(ItemTags.SIGNS)));
-            signIngredientForType.put(Jungle, Lazy.of(() -> Ingredient.fromItems(Items.JUNGLE_SIGN)));
-            signIngredientForType.put(Oak, Lazy.of(() -> Ingredient.fromItems(Items.OAK_SIGN)));
-            signIngredientForType.put(DarkOak, Lazy.of(() -> Ingredient.fromItems(Items.DARK_OAK_SIGN)));
-            signIngredientForType.put(Spruce, Lazy.of(() -> Ingredient.fromItems(Items.SPRUCE_SIGN)));
-            signIngredientForType.put(Warped, Lazy.of(() -> Ingredient.fromItems(Items.WARPED_SIGN)));
-            signIngredientForType.put(Crimson, Lazy.of(() -> Ingredient.fromItems(Items.CRIMSON_SIGN)));
-
-            baseIngredientForType.put(Acacia, Lazy.of(() -> Ingredient.fromTag(ItemTags.ACACIA_LOGS)));
-            baseIngredientForType.put(Birch, Lazy.of(() -> Ingredient.fromTag(ItemTags.BIRCH_LOGS)));
-            baseIngredientForType.put(Iron, Lazy.of(() -> Ingredient.fromItems(Items.IRON_INGOT)));
-            baseIngredientForType.put(Stone, Lazy.of(() -> Ingredient.fromItems(Items.STONE)));
-            baseIngredientForType.put(Jungle, Lazy.of(() -> Ingredient.fromTag(ItemTags.JUNGLE_LOGS)));
-            baseIngredientForType.put(Oak, Lazy.of(() -> Ingredient.fromTag(ItemTags.OAK_LOGS)));
-            baseIngredientForType.put(DarkOak, Lazy.of(() -> Ingredient.fromTag(ItemTags.DARK_OAK_LOGS)));
-            baseIngredientForType.put(Spruce, Lazy.of(() -> Ingredient.fromTag(ItemTags.SPRUCE_LOGS)));
-            baseIngredientForType.put(Warped, Lazy.of(() -> Ingredient.fromTag(ItemTags.WARPED_STEMS)));
-            baseIngredientForType.put(Crimson, Lazy.of(() -> Ingredient.fromTag(ItemTags.CRIMSON_STEMS)));
-
             register(Acacia);
             register(Birch);
             register(Iron);
@@ -177,20 +180,27 @@ public class Post extends Block implements IWaterLoggable, WithCountRestriction 
             register(Spruce);
             register(Warped);
             register(Crimson);
+            register(Sandstone);
         }
 
         public final String name;
         public final ResourceLocation postTexture;
         public final ResourceLocation mainTexture;
         public final ResourceLocation secondaryTexture;
-        public final Item item;
+        public final Lazy<Ingredient> signIngredient;
+        public final Lazy<Ingredient> baseIngredient;
+        public final Lazy<Ingredient> addSignIngredient;
 
-        ModelType(String name, ResourceLocation postTexture, ResourceLocation mainTexture, ResourceLocation secondaryTexture, Item item) {
+        ModelType(
+            String name, ResourceLocation postTexture, ResourceLocation mainTexture, ResourceLocation secondaryTexture,
+            Lazy<Ingredient> signIngredient, Lazy<Ingredient> baseIngredient, Lazy<Ingredient> addSignIngredient) {
             this.name = name;
             this.postTexture = expand(postTexture);
             this.mainTexture = expand(mainTexture);
             this.secondaryTexture = expand(secondaryTexture);
-            this.item = item;
+            this.signIngredient = signIngredient;
+            this.baseIngredient = baseIngredient;
+            this.addSignIngredient = addSignIngredient;
         }
 
         private static ResourceLocation expand(ResourceLocation loc){
@@ -218,9 +228,12 @@ public class Post extends Block implements IWaterLoggable, WithCountRestriction 
                 buffer.writeResourceLocation(modelType.postTexture);
                 buffer.writeResourceLocation(modelType.mainTexture);
                 buffer.writeResourceLocation(modelType.secondaryTexture);
-                buffer.writeItemStack(new ItemStack(modelType.item));
+                modelType.signIngredient.get().write(buffer);
+                modelType.baseIngredient.get().write(buffer);
+                modelType.addSignIngredient.get().write(buffer);
             }
 
+            private <T> Lazy<T> constLazy(T t) { return Lazy.of(() -> t); }
             @Override
             public ModelType read(PacketBuffer buffer) {
                 return new ModelType(
@@ -228,7 +241,9 @@ public class Post extends Block implements IWaterLoggable, WithCountRestriction 
                     buffer.readResourceLocation(),
                     buffer.readResourceLocation(),
                     buffer.readResourceLocation(),
-                    buffer.readItemStack().getItem()
+                    constLazy(Ingredient.read(buffer)),
+                    constLazy(Ingredient.read(buffer)),
+                    constLazy(Ingredient.read(buffer))
                 );
             }
         };
@@ -264,8 +279,9 @@ public class Post extends Block implements IWaterLoggable, WithCountRestriction 
     public static final Variant ACACIA = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Acacia), ModelType.Acacia, "acacia");
     public static final Variant WARPED = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Warped), ModelType.Warped, "warped");
     public static final Variant CRIMSON = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Crimson), ModelType.Crimson, "crimson");
+    public static final Variant SANDSTONE = new Variant(PropertiesUtil.STONE, ModelType.Sandstone, "sandstone");
 
-    public static final List<Variant> AllVariants = Arrays.asList(OAK, BIRCH, SPRUCE, JUNGLE, DARK_OAK, ACACIA, STONE, IRON, WARPED, CRIMSON);
+    public static final List<Variant> AllVariants = Arrays.asList(OAK, BIRCH, SPRUCE, JUNGLE, DARK_OAK, ACACIA, STONE, IRON, WARPED, CRIMSON, SANDSTONE);
     public static final List<Block> ALL = AllVariants.stream().map(i -> i.block).collect(Collectors.toList());
 
     public final ModelType type;
@@ -289,6 +305,7 @@ public class Post extends Block implements IWaterLoggable, WithCountRestriction 
                         PlayerHandle.from(placer)
                     );
                     tile.markDirty();
+                    world.notifyBlockUpdate(pos, state, state, 3);
                     PacketHandler.send(
                         PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) placer),
                         new RequestSignGui.ForNewSign.Package(

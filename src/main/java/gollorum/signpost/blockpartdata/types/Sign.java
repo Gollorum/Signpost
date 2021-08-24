@@ -127,7 +127,9 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
                     Overlay.Serializer.optional().read(compound.getCompound("Overlay")),
                     compound.getInt("Color"),
                     WaystoneHandle.Serializer.optional().read(compound.getCompound("Destination")),
-                    Post.ModelType.getByName(compound.getString("ModelType"), true).orElse(Post.ModelType.Oak),
+                    Post.ModelType.getByName(compound.getString("ModelType"), true)
+                        .orElseThrow(() -> new RuntimeException("Tried to load sign post model type " + compound.getString("ModelType") +
+                            ", but it hasn't been registered. @Dev: You have to call Post.ModelType.register")),
                     ItemStackSerializer.Instance.read(compound.getCompound("ItemToDropOnBreak")),
                    compound.getBoolean("IsLocked")
                 );

@@ -112,55 +112,51 @@ public class Teleport {
 
         @Override
         public void handle(
-            Package message, Supplier<NetworkEvent.Context> contextGetter
+            Package message, NetworkEvent.Context context
         ) {
-            NetworkEvent.Context context = contextGetter.get();
-            context.enqueueWork(() -> {
-                if(context.getDirection().getReceptionSide().isServer()) {
-                    ServerPlayerEntity player = context.getSender();
-                    Optional<WaystoneHandle> waystone = WaystoneLibrary.getInstance().getHandleByName(message.waystoneName);
-                    if(waystone.isPresent()) {
-                        WaystoneHandle handle = waystone.get();
-                        WaystoneLocationData waystoneData = WaystoneLibrary.getInstance().getLocationData(handle);
+            if(context.getDirection().getReceptionSide().isServer()) {
+                ServerPlayerEntity player = context.getSender();
+                Optional<WaystoneHandle> waystone = WaystoneLibrary.getInstance().getHandleByName(message.waystoneName);
+                if(waystone.isPresent()) {
+                    WaystoneHandle handle = waystone.get();
+                    WaystoneLocationData waystoneData = WaystoneLibrary.getInstance().getLocationData(handle);
 
-                        boolean isDiscovered = WaystoneLibrary.getInstance().isDiscovered(PlayerHandle.from(player), handle)
-                            || !Config.Server.teleport.enforceDiscovery.get();
-                        int distance = (int) waystoneData.spawn.distanceTo(Vector3.fromVec3d(player.getPositionVec()));
-                        int maxDistance = Config.Server.teleport.maximumDistance.get();
-                        boolean isTooFarAway = maxDistance > 0 && distance > maxDistance;
-                        if(!isDiscovered) player.sendMessage(new TranslationTextComponent(LangKeys.notDiscovered, message.waystoneName), Util.DUMMY_UUID);
-                        if(isTooFarAway) player.sendMessage(new TranslationTextComponent(LangKeys.tooFarAway, Integer.toString(distance), Integer.toString(maxDistance)), Util.DUMMY_UUID);
-                        if(!isDiscovered || isTooFarAway) return;
+                    boolean isDiscovered = WaystoneLibrary.getInstance().isDiscovered(PlayerHandle.from(player), handle)
+                        || !Config.Server.teleport.enforceDiscovery.get();
+                    int distance = (int) waystoneData.spawn.distanceTo(Vector3.fromVec3d(player.getPositionVec()));
+                    int maxDistance = Config.Server.teleport.maximumDistance.get();
+                    boolean isTooFarAway = maxDistance > 0 && distance > maxDistance;
+                    if(!isDiscovered) player.sendMessage(new TranslationTextComponent(LangKeys.notDiscovered, message.waystoneName), Util.DUMMY_UUID);
+                    if(isTooFarAway) player.sendMessage(new TranslationTextComponent(LangKeys.tooFarAway, Integer.toString(distance), Integer.toString(maxDistance)), Util.DUMMY_UUID);
+                    if(!isDiscovered || isTooFarAway) return;
 
-                        Inventory.tryPay(
-                            player,
-                            Teleport.getCost(player, Vector3.fromBlockPos(waystoneData.block.blockPos), waystoneData.spawn),
-                            p -> Teleport.toWaystone(waystoneData, p)
-                        );
-                    } else player.sendMessage(
-                        new TranslationTextComponent(LangKeys.waystoneNotFound, Colors.wrap(message.waystoneName, Colors.highlight)),
-                        Util.DUMMY_UUID
+                    Inventory.tryPay(
+                        player,
+                        Teleport.getCost(player, Vector3.fromBlockPos(waystoneData.block.blockPos), waystoneData.spawn),
+                        p -> Teleport.toWaystone(waystoneData, p)
                     );
-                } else {
-                    if(Config.Client.enableConfirmationScreen.get()) requestOnClient(
-                        message.waystoneName,
-                        message.cost,
-                        message.isDiscovered,
-                        message.distance,
-                        message.maxDistance,
-                        message.tilePartInfo.flatMap(info -> TileEntityUtils.findTileEntity(
-                            info.dimensionKey,
-                            true,
-                            info.pos,
-                            PostTile.class
-                        ).flatMap(tile -> tile.getPart(info.identifier)
-                            .flatMap(part -> part.blockPart instanceof Sign
-                                ? Optional.of(new ConfirmTeleportGui.SignInfo(tile, (Sign) part.blockPart, info, part.offset)) : Optional.empty()
-                            ))));
-                    else PacketHandler.sendToServer(message);
-                }
-            });
-            context.setPacketHandled(true);
+                } else player.sendMessage(
+                    new TranslationTextComponent(LangKeys.waystoneNotFound, Colors.wrap(message.waystoneName, Colors.highlight)),
+                    Util.DUMMY_UUID
+                );
+            } else {
+                if(Config.Client.enableConfirmationScreen.get()) requestOnClient(
+                    message.waystoneName,
+                    message.cost,
+                    message.isDiscovered,
+                    message.distance,
+                    message.maxDistance,
+                    message.tilePartInfo.flatMap(info -> TileEntityUtils.findTileEntity(
+                        info.dimensionKey,
+                        true,
+                        info.pos,
+                        PostTile.class
+                    ).flatMap(tile -> tile.getPart(info.identifier)
+                        .flatMap(part -> part.blockPart instanceof Sign
+                            ? Optional.of(new ConfirmTeleportGui.SignInfo(tile, (Sign) part.blockPart, info, part.offset)) : Optional.empty()
+                        ))));
+                else PacketHandler.sendToServer(message);
+            }
         }
 
         public static final class Package {

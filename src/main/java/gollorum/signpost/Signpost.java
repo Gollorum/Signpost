@@ -140,7 +140,7 @@ public class Signpost {
 
         @Override
         public void handle(
-            Package message, Supplier<NetworkEvent.Context> context
+            Package message, NetworkEvent.Context context
         ) {
             WaystoneLibrary.initialize();
         }
