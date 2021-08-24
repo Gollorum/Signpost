@@ -1,6 +1,5 @@
 package gollorum.signpost.minecraft.data;
 
-import gollorum.signpost.minecraft.block.Waystone;
 import gollorum.signpost.minecraft.registry.ItemRegistry;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.IFinishedRecipe;

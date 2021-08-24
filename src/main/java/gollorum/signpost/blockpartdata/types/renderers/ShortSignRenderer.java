@@ -1,30 +1,20 @@
 package gollorum.signpost.blockpartdata.types.renderers;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import gollorum.signpost.blockpartdata.types.LargeSign;
-import gollorum.signpost.blockpartdata.types.SmallWideSign;
-import gollorum.signpost.minecraft.data.PostModel;
-import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.rendering.ModelRegistry;
-import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.blockpartdata.Overlay;
-import gollorum.signpost.blockpartdata.types.SmallShortSign;
+import gollorum.signpost.blockpartdata.types.SmallShortSignBlockPart;
 import gollorum.signpost.utils.math.MathUtils;
-import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.modelGeneration.SignModel;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.vector.Vector3f;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static gollorum.signpost.minecraft.utils.CoordinatesUtil.FontToVoxelSize;
 import static gollorum.signpost.minecraft.utils.CoordinatesUtil.VoxelSize;
 
-public class ShortSignRenderer extends SignRenderer<SmallShortSign> {
+public class ShortSignRenderer extends SignRenderer<SmallShortSignBlockPart> {
 
 	private static final float TEXT_OFFSET_RIGHT = -3f * VoxelSize;
 	private static final float TEXT_OFFSET_LEFT = 13.5f * VoxelSize;
@@ -34,27 +24,27 @@ public class ShortSignRenderer extends SignRenderer<SmallShortSign> {
 	private static final float FONT_SIZE_VOXELS = 2 / TEXT_RATIO;
 
 	@Override
-	protected IBakedModel makeBakedModel(SmallShortSign sign) {
+	protected IBakedModel makeBakedModel(SmallShortSignBlockPart sign) {
 		return ModelRegistry.ShortBakedSign.makeModel(sign);
 	}
 
 	@Override
-	protected IBakedModel makeBakedOverlayModel(SmallShortSign sign, Overlay overlay) {
+	protected IBakedModel makeBakedOverlayModel(SmallShortSignBlockPart sign, Overlay overlay) {
 		return ModelRegistry.ShortBakedSign.makeOverlayModel(sign, overlay);
 	}
 
 	@Override
-	protected SignModel makeModel(SmallShortSign sign) {
+	protected SignModel makeModel(SmallShortSignBlockPart sign) {
 		return ModelRegistry.ShortSign.makeModel(sign);
 	}
 
 	@Override
-	protected SignModel makeOverlayModel(SmallShortSign sign, Overlay overlay) {
+	protected SignModel makeOverlayModel(SmallShortSignBlockPart sign, Overlay overlay) {
 		return ModelRegistry.ShortSign.makeOverlayModel(sign, overlay);
 	}
 
 	@Override
-	protected void renderText(SmallShortSign sign, MatrixStack matrix, FontRenderer fontRenderer, IRenderTypeBuffer buffer, int combinedLights) {
+	protected void renderText(SmallShortSignBlockPart sign, MatrixStack matrix, FontRenderer fontRenderer, IRenderTypeBuffer buffer, int combinedLights) {
 		matrix.push();
 		renderText(true, sign, matrix, fontRenderer, buffer, combinedLights);
 		matrix.pop();
@@ -63,7 +53,7 @@ public class ShortSignRenderer extends SignRenderer<SmallShortSign> {
 		matrix.pop();
 	}
 
-	private void renderText(boolean isFlipped, SmallShortSign sign, MatrixStack matrix, FontRenderer fontRenderer, IRenderTypeBuffer buffer, int combinedLights) {
+	private void renderText(boolean isFlipped, SmallShortSignBlockPart sign, MatrixStack matrix, FontRenderer fontRenderer, IRenderTypeBuffer buffer, int combinedLights) {
 		matrix.rotate(Vector3f.ZP.rotationDegrees(180));
 		float scale = FONT_SIZE_VOXELS * FontToVoxelSize;
 		float MAX_WIDTH_FRAC = fontRenderer.getStringWidth(sign.getText()) * scale / MAXIMUM_TEXT_WIDTH;

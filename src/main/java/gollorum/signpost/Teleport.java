@@ -1,6 +1,6 @@
 package gollorum.signpost;
 
-import gollorum.signpost.blockpartdata.types.Sign;
+import gollorum.signpost.blockpartdata.types.SignBlockPart;
 import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.utils.Colors;
@@ -27,7 +27,6 @@ import net.minecraftforge.common.util.ITeleporter;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.Optional;
-import java.util.function.Supplier;
 
 public class Teleport {
 
@@ -152,8 +151,8 @@ public class Teleport {
                         info.pos,
                         PostTile.class
                     ).flatMap(tile -> tile.getPart(info.identifier)
-                        .flatMap(part -> part.blockPart instanceof Sign
-                            ? Optional.of(new ConfirmTeleportGui.SignInfo(tile, (Sign) part.blockPart, info, part.offset)) : Optional.empty()
+                        .flatMap(part -> part.blockPart instanceof SignBlockPart
+                            ? Optional.of(new ConfirmTeleportGui.SignInfo(tile, (SignBlockPart) part.blockPart, info, part.offset)) : Optional.empty()
                         ))));
                 else PacketHandler.sendToServer(message);
             }

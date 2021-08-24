@@ -1,7 +1,7 @@
 package gollorum.signpost.minecraft.data;
 
 import gollorum.signpost.Signpost;
-import gollorum.signpost.minecraft.block.Post;
+import gollorum.signpost.minecraft.block.PostBlock;
 import net.minecraft.block.Block;
 import net.minecraft.data.BlockTagsProvider;
 import net.minecraft.data.DataGenerator;
@@ -11,8 +11,6 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ITag;
 import net.minecraft.tags.ItemTags;
 import net.minecraftforge.common.data.ExistingFileHelper;
-
-import java.util.Arrays;
 
 public class PostTag extends ItemTagsProvider {
 
@@ -27,7 +25,7 @@ public class PostTag extends ItemTagsProvider {
     @Override
     protected void registerTags() {
         this.getOrCreateBuilder(Tag)
-            .add(Post.AllVariants.stream().map(i -> i.block.asItem()).toArray(Item[]::new));
+            .add(PostBlock.AllVariants.stream().map(i -> i.block.asItem()).toArray(Item[]::new));
     }
 
     public static class Blocks extends BlockTagsProvider {
@@ -41,7 +39,7 @@ public class PostTag extends ItemTagsProvider {
         @Override
         protected void registerTags() {
             this.getOrCreateBuilder(Tag)
-                .add(Post.AllVariants.stream().map(i -> i.block).toArray(Block[]::new));
+                .add(PostBlock.AllVariants.stream().map(i -> i.block).toArray(Block[]::new));
         }
 
     }

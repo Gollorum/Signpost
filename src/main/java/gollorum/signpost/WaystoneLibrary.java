@@ -1,6 +1,6 @@
 package gollorum.signpost;
 
-import gollorum.signpost.minecraft.block.Waystone;
+import gollorum.signpost.minecraft.block.WaystoneBlock;
 import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.events.*;
 import gollorum.signpost.minecraft.storage.WaystoneLibraryStorage;
@@ -26,7 +26,6 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class WaystoneLibrary {
@@ -171,7 +170,7 @@ public class WaystoneLibrary {
             _updateEventDispatcher.dispatch(updatedEvent, false);
             PacketHandler.sendToAll(new WaystoneUpdatedEventEvent.Packet(updatedEvent));
             markDirty();
-            Waystone.discover(PlayerHandle.from(editingPlayer), new WaystoneData(id, newName, location, isLocked));
+            WaystoneBlock.discover(PlayerHandle.from(editingPlayer), new WaystoneData(id, newName, location, isLocked));
             return oldName;
         }
     }

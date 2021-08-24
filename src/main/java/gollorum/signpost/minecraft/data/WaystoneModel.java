@@ -2,7 +2,7 @@ package gollorum.signpost.minecraft.data;
 
 import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.block.ModelWaystone;
-import gollorum.signpost.minecraft.block.Waystone;
+import gollorum.signpost.minecraft.block.WaystoneBlock;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.IDataProvider;
 import net.minecraft.util.ResourceLocation;
@@ -28,13 +28,13 @@ public class WaystoneModel extends BlockModelProvider {
 
 	private WaystoneModel(DataGenerator generator, ExistingFileHelper fileHelper) {
 		super(generator, Signpost.MOD_ID, fileHelper);
-		waystoneModel = new BlockModelBuilder(new ResourceLocation(Signpost.MOD_ID, "block/" + Waystone.REGISTRY_NAME), fileHelper);
+		waystoneModel = new BlockModelBuilder(new ResourceLocation(Signpost.MOD_ID, "block/" + WaystoneBlock.REGISTRY_NAME), fileHelper);
 	}
 
 	@Override
 	protected void registerModels() {
 		ResourceLocation waystoneTexture = new ResourceLocation(Signpost.MOD_ID, "block/waystone");
-		cubeAll(Waystone.REGISTRY_NAME, waystoneTexture);
+		cubeAll(WaystoneBlock.REGISTRY_NAME, waystoneTexture);
 
         getBuilder(inPostLocation.toString())
             .element()
@@ -90,7 +90,7 @@ public class WaystoneModel extends BlockModelProvider {
 
 		@Override
 		protected void registerModels() {
-			getBuilder(Waystone.REGISTRY_NAME).parent(waystoneModel);
+			getBuilder(WaystoneBlock.REGISTRY_NAME).parent(waystoneModel);
 			for(Map.Entry<ModelWaystone.Variant, ModelFile> variant : variantModels.entrySet()) {
 				getBuilder(variant.getKey().registryName).parent(variant.getValue());
 			}

@@ -5,6 +5,7 @@ import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.interactions.InteractionInfo;
+import gollorum.signpost.minecraft.block.WaystoneBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.utils.CoordinatesUtil;
 import gollorum.signpost.security.WithOwner;
@@ -25,7 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
 
-public class Waystone implements BlockPart<Waystone>, WithOwner.OfWaystone {
+public class WaystoneBlockPart implements BlockPart<WaystoneBlockPart>, WithOwner.OfWaystone {
 
 	private Optional<PlayerHandle> owner;
 
@@ -34,27 +35,27 @@ public class Waystone implements BlockPart<Waystone>, WithOwner.OfWaystone {
 		new Vector3(3, -2, 3)
 	).map(CoordinatesUtil::voxelToLocal);
 
-	public static final BlockPartMetadata<Waystone> METADATA = new BlockPartMetadata<>(
+	public static final BlockPartMetadata<WaystoneBlockPart> METADATA = new BlockPartMetadata<>(
 		"Waystone",
-		Waystone::writeTo,
-		(compound) -> new Waystone(PlayerHandle.Serializer.optional().read(compound.getCompound("owner"))),
-        Waystone.class
+		WaystoneBlockPart::writeTo,
+		(compound) -> new WaystoneBlockPart(PlayerHandle.Serializer.optional().read(compound.getCompound("owner"))),
+        WaystoneBlockPart.class
 	);
 
-	public Waystone(Optional<PlayerHandle> owner) { this.owner = owner; }
-	public Waystone(PlayerHandle owner) { this.owner = Optional.of(owner); }
+	public WaystoneBlockPart(Optional<PlayerHandle> owner) { this.owner = owner; }
+	public WaystoneBlockPart(PlayerHandle owner) { this.owner = Optional.of(owner); }
 
 	@Override
 	public Intersectable<Ray, Float> getIntersection() { return BOUNDS; }
 
 	@Override
 	public InteractionResult interact(InteractionInfo info) {
-		gollorum.signpost.minecraft.block.Waystone.onRightClick(info.player.world, info.tile.getPos(), info.player);
+		WaystoneBlock.onRightClick(info.player.world, info.tile.getPos(), info.player);
 		return InteractionResult.Accepted;
 	}
 
 	@Override
-	public BlockPartMetadata<Waystone> getMeta() { return METADATA; }
+	public BlockPartMetadata<WaystoneBlockPart> getMeta() { return METADATA; }
 
 	@Override
 	public void writeTo(CompoundNBT compound) {
@@ -72,7 +73,7 @@ public class Waystone implements BlockPart<Waystone>, WithOwner.OfWaystone {
 
 	@Override
 	public Collection<ItemStack> getDrops(PostTile tile) {
-		return Collections.singleton(new ItemStack(gollorum.signpost.minecraft.block.Waystone.INSTANCE.asItem()));
+		return Collections.singleton(new ItemStack(WaystoneBlock.INSTANCE.asItem()));
 	}
 
 	@Override

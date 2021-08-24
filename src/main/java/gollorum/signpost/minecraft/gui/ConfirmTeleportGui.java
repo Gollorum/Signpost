@@ -2,7 +2,7 @@ package gollorum.signpost.minecraft.gui;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import gollorum.signpost.Teleport;
-import gollorum.signpost.blockpartdata.types.Sign;
+import gollorum.signpost.blockpartdata.types.SignBlockPart;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.utils.*;
 import gollorum.signpost.minecraft.gui.widget.GuiItemRenderer;
@@ -26,13 +26,13 @@ public class ConfirmTeleportGui extends Screen {
 
 	public static class SignInfo {
 		public final PostTile tile;
-		public final Sign sign;
+		public final SignBlockPart sign;
 		public final PostTile.TilePartInfo tilePartInfo;
 		public final Vector3 offset;
 
 		public SignInfo(
 			PostTile tile,
-			Sign sign,
+			SignBlockPart sign,
 			PostTile.TilePartInfo tilePartInfo,
 			Vector3 offset
 		) {

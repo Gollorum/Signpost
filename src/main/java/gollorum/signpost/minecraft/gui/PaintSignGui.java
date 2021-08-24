@@ -1,6 +1,6 @@
 package gollorum.signpost.minecraft.gui;
 
-import gollorum.signpost.blockpartdata.types.Sign;
+import gollorum.signpost.blockpartdata.types.SignBlockPart;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.utils.Rect;
@@ -13,7 +13,7 @@ import net.minecraft.util.text.TranslationTextComponent;
 
 import java.util.UUID;
 
-public class PaintSignGui<T extends Sign<T>> extends PaintBlockPartGui<T> {
+public class PaintSignGui<T extends SignBlockPart<T>> extends PaintBlockPartGui<T> {
 
     private final TextureAtlasSprite oldMainSprite;
     private final TextureAtlasSprite oldSecSprite;
@@ -27,7 +27,7 @@ public class PaintSignGui<T extends Sign<T>> extends PaintBlockPartGui<T> {
         isTargetingMainTexture = true;
     }
 
-    public static <T extends Sign<T>> void display(PostTile tile, T sign, UUID identifier) {
+    public static <T extends SignBlockPart<T>> void display(PostTile tile, T sign, UUID identifier) {
         Minecraft.getInstance().displayGuiScreen(new PaintSignGui<>(tile, sign, identifier));
     }
 

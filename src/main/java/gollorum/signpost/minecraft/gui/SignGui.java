@@ -6,7 +6,8 @@ import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
-import gollorum.signpost.minecraft.block.Post;
+import gollorum.signpost.blockpartdata.types.*;
+import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.data.PostModel;
 import gollorum.signpost.minecraft.events.WaystoneRenamedEvent;
@@ -17,10 +18,6 @@ import gollorum.signpost.minecraft.rendering.FlippableModel;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.blockpartdata.Overlay;
-import gollorum.signpost.blockpartdata.types.LargeSign;
-import gollorum.signpost.blockpartdata.types.Sign;
-import gollorum.signpost.blockpartdata.types.SmallShortSign;
-import gollorum.signpost.blockpartdata.types.SmallWideSign;
 import gollorum.signpost.utils.Delay;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
@@ -97,10 +94,10 @@ public class SignGui extends ExtendedScreen {
     private final PostTile tile;
     private final ItemStack itemStack;
 
-    private final Post.ModelType modelType;
+    private final PostBlock.ModelType modelType;
     private final Vector3 localHitPos;
 
-    private final Optional<Sign> oldSign;
+    private final Optional<SignBlockPart> oldSign;
     private final Optional<PostTile.TilePartInfo> oldTilePartInfo;
 
     private final List<Flippable> widgetsToFlip = new ArrayList<>();
@@ -133,16 +130,16 @@ public class SignGui extends ExtendedScreen {
 
     private TextDisplay noWaystonesInfo;
 
-    public static void display(PostTile tile, Post.ModelType modelType, Vector3 localHitPos, ItemStack itemToDropOnBreak) {
+    public static void display(PostTile tile, PostBlock.ModelType modelType, Vector3 localHitPos, ItemStack itemToDropOnBreak) {
         Minecraft.getInstance().displayGuiScreen(new SignGui(tile, modelType, localHitPos, itemToDropOnBreak));
     }
 
-    public static void display(PostTile tile, Sign oldSign, Vector3 oldOffset, PostTile.TilePartInfo oldTilePartInfo) {
+    public static void display(PostTile tile, SignBlockPart oldSign, Vector3 oldOffset, PostTile.TilePartInfo oldTilePartInfo) {
         if(oldSign.hasThePermissionToEdit(tile, Minecraft.getInstance().player))
             Minecraft.getInstance().displayGuiScreen(new SignGui(tile, oldSign, oldOffset, oldTilePartInfo));
     }
 
-    public SignGui(PostTile tile, Post.ModelType modelType, Vector3 localHitPos, ItemStack itemToDropOnBreak) {
+    public SignGui(PostTile tile, PostBlock.ModelType modelType, Vector3 localHitPos, ItemStack itemToDropOnBreak) {
         super(new TranslationTextComponent(LangKeys.signGuiTitle));
         this.tile = tile;
         this.modelType = modelType;
@@ -153,7 +150,7 @@ public class SignGui extends ExtendedScreen {
         itemStack = new ItemStack(tile.getBlockState().getBlock().asItem());
     }
 
-    public SignGui(PostTile tile, Sign oldSign, Vector3 oldOffset, PostTile.TilePartInfo oldTilePartInfo) {
+    public SignGui(PostTile tile, SignBlockPart oldSign, Vector3 oldOffset, PostTile.TilePartInfo oldTilePartInfo) {
         super(new TranslationTextComponent(LangKeys.signGuiTitle));
         this.tile = tile;
         this.modelType = oldSign.getModelType();
@@ -193,18 +190,18 @@ public class SignGui extends ExtendedScreen {
         } else {
             currentWaystone = "";
             if(oldSign.isPresent()) {
-                if(oldSign.get() instanceof LargeSign) {
+                if(oldSign.get() instanceof LargeSignBlockPart) {
                     currentType = SignType.Large;
-                    LargeSign sign = (LargeSign) oldSign.get();
+                    LargeSignBlockPart sign = (LargeSignBlockPart) oldSign.get();
                     currentText = sign.getText();
                 }
-                else if(oldSign.get() instanceof SmallShortSign) {
+                else if(oldSign.get() instanceof SmallShortSignBlockPart) {
                     currentType = SignType.Short;
-                    currentText = new String[]{((SmallShortSign) oldSign.get()).getText()};
+                    currentText = new String[]{((SmallShortSignBlockPart) oldSign.get()).getText()};
                 }
                 else {
                     currentType = SignType.Wide;
-                    currentText = new String[]{((SmallWideSign) oldSign.get()).getText()};
+                    currentText = new String[]{((SmallWideSignBlockPart) oldSign.get()).getText()};
                 }
                 isFlipped = oldSign.get().isFlipped();
                 currentColor = oldSign.get().getColor();
@@ -227,11 +224,11 @@ public class SignGui extends ExtendedScreen {
         int centerOffset = (typeSelectionButtonsSize.width + typeSelectionButtonsSpace) / 2;
 
         ResourceLocation postTexture = tile.getParts().stream()
-            .filter(p -> p.blockPart instanceof gollorum.signpost.blockpartdata.types.Post)
-            .map(p -> ((gollorum.signpost.blockpartdata.types.Post)p.blockPart).getTexture())
+            .filter(p -> p.blockPart instanceof PostBlockPart)
+            .map(p -> ((PostBlockPart)p.blockPart).getTexture())
             .findFirst().orElse(tile.modelType.postTexture);
-        ResourceLocation mainTexture = oldSign.map(Sign::getMainTexture).orElse(modelType.mainTexture);
-        ResourceLocation secondaryTexture = oldSign.map(Sign::getSecondaryTexture).orElse(modelType.secondaryTexture);
+        ResourceLocation mainTexture = oldSign.map(SignBlockPart::getMainTexture).orElse(modelType.mainTexture);
+        ResourceLocation secondaryTexture = oldSign.map(SignBlockPart::getSecondaryTexture).orElse(modelType.secondaryTexture);
 
         FlippableModel postModel = FlippableModel.loadSymmetrical(PostModel.postLocation, postTexture);
         FlippableModel wideModel = FlippableModel.loadFrom(
@@ -313,7 +310,7 @@ public class SignGui extends ExtendedScreen {
             doneRect.point.y - 30,
             b -> lockButton.setLocked(!lockButton.isLocked())
         );
-        lockButton.setLocked(oldSign.map(Sign::isLocked).orElse(false));
+        lockButton.setLocked(oldSign.map(SignBlockPart::isLocked).orElse(false));
         addButton(lockButton);
 
         Collection<String> waystoneDropdownEntry = hasBeenInitialized
@@ -410,7 +407,7 @@ public class SignGui extends ExtendedScreen {
         GuiModelRenderer postRenderer = new GuiModelRenderer(
             modelRect, postModel,
             0, -0.5f,
-            new ItemStack(Post.OAK.block.asItem())
+            new ItemStack(PostBlock.OAK.block.asItem())
         );
         additionalRenderables.add(postRenderer);
         Point modelRectTop = modelRect.at(Rect.XAlignment.Center, Rect.YAlignment.Top);
@@ -508,7 +505,7 @@ public class SignGui extends ExtendedScreen {
         int i = 0;
         for(Overlay overlay: Overlay.getAllOverlays()) {
             FlippableModel overlayModel = FlippableModel.loadFrom(
-                PostModel.wideOverlayLocation, PostModel.wideOverlayFlippedLocation, overlay.textureFor(SmallWideSign.class)
+                PostModel.wideOverlayLocation, PostModel.wideOverlayFlippedLocation, overlay.textureFor(SmallWideSignBlockPart.class)
             ).withTintIndex(overlay.tintIndex);
             overlaySelectionButtons.add(new ModelButton(
                 TextureResource.signTypeSelection, new Point(getCenterX() - centerGap - i * 37, rotationInputBoxRect.max().y + 15),
@@ -587,10 +584,10 @@ public class SignGui extends ExtendedScreen {
         AtomicInteger cycleItemIngredientIndex = new AtomicInteger(0);
         AtomicLong nextCycleAt = new AtomicLong(System.currentTimeMillis());
         cycleItem.set(() -> {
-            ItemStack[] options = Post.AllVariants.get(cycleItemIndex.get()).type.addSignIngredient.get().getMatchingStacks();
+            ItemStack[] options = PostBlock.AllVariants.get(cycleItemIndex.get()).type.addSignIngredient.get().getMatchingStacks();
             ir.setItemStack(options[cycleItemIngredientIndex.get()]);
             if(cycleItemIngredientIndex.get() >= options.length - 1) {
-                cycleItemIndex.set((cycleItemIndex.get() + 1) % Post.AllVariants.size());
+                cycleItemIndex.set((cycleItemIndex.get() + 1) % PostBlock.AllVariants.size());
                 cycleItemIngredientIndex.set(0);
             } else cycleItemIngredientIndex.incrementAndGet();
             nextCycleAt.set(nextCycleAt.get() + (options.length < 2 ? 1500 : (options.length == 2 ? 1000 : 500)));
@@ -744,7 +741,7 @@ public class SignGui extends ExtendedScreen {
             case Wide:
                 currentOverlay = new GuiModelRenderer(
                     wideSignRenderer.rect,
-                    FlippableModel.loadFrom(PostModel.wideOverlayLocation, PostModel.wideOverlayFlippedLocation, o.textureFor(SmallWideSign.class))
+                    FlippableModel.loadFrom(PostModel.wideOverlayLocation, PostModel.wideOverlayFlippedLocation, o.textureFor(SmallWideSignBlockPart.class))
                         .withTintIndex(o.tintIndex),
                     0, 0.25f, itemStack
                 );
@@ -752,7 +749,7 @@ public class SignGui extends ExtendedScreen {
             case Short:
                 currentOverlay = new GuiModelRenderer(
                     shortSignRenderer.rect,
-                    FlippableModel.loadFrom(PostModel.shortOverlayLocation, PostModel.shortOverlayFlippedLocation, o.textureFor(SmallShortSign.class))
+                    FlippableModel.loadFrom(PostModel.shortOverlayLocation, PostModel.shortOverlayFlippedLocation, o.textureFor(SmallShortSignBlockPart.class))
                         .withTintIndex(o.tintIndex),
                     0, 0.25f, itemStack
                 );
@@ -760,7 +757,7 @@ public class SignGui extends ExtendedScreen {
             case Large:
                 currentOverlay = new GuiModelRenderer(
                     largeSignRenderer.rect,
-                    FlippableModel.loadFrom(PostModel.largeOverlayLocation, PostModel.largeOverlayFlippedLocation, o.textureFor(LargeSign.class))
+                    FlippableModel.loadFrom(PostModel.largeOverlayLocation, PostModel.largeOverlayFlippedLocation, o.textureFor(LargeSignBlockPart.class))
                         .withTintIndex(o.tintIndex),
                     0, 0, itemStack
                 );
@@ -835,12 +832,12 @@ public class SignGui extends ExtendedScreen {
             new PostTile.TilePartInfo(tile.getWorld().getDimensionKey().getLocation(), tile.getPos(), UUID.randomUUID()));
         CompoundNBT data;
         boolean isLocked = lockButton.isLocked();
-        ResourceLocation mainTex = oldSign.map(Sign::getMainTexture).orElse(modelType.mainTexture);
-        ResourceLocation secondaryTex = oldSign.map(Sign::getSecondaryTexture).orElse(modelType.secondaryTexture);
+        ResourceLocation mainTex = oldSign.map(SignBlockPart::getMainTexture).orElse(modelType.mainTexture);
+        ResourceLocation secondaryTex = oldSign.map(SignBlockPart::getSecondaryTexture).orElse(modelType.secondaryTexture);
         switch (selectedType) {
             case Wide:
-                data = SmallWideSign.METADATA.write(
-                    new SmallWideSign(
+                data = SmallWideSignBlockPart.METADATA.write(
+                    new SmallWideSignBlockPart(
                         rotationInputField.getCurrentAngle(),
                         wideSignInputBox.getText(),
                         wideSignRenderer.isFlipped(),
@@ -857,20 +854,20 @@ public class SignGui extends ExtendedScreen {
                 if(oldSign.isPresent()) {
                     PacketHandler.sendToServer(new PostTile.PartMutatedEvent.Packet(
                         tilePartInfo, data,
-                        SmallWideSign.METADATA.identifier,
+                        SmallWideSignBlockPart.METADATA.identifier,
                         new Vector3(0, localHitPos.y > 0.5f ? 0.75f : 0.25f, 0)
                     ));
                 } else {
                     PacketHandler.sendToServer(new PostTile.PartAddedEvent.Packet(
                         tilePartInfo, data,
-                        SmallWideSign.METADATA.identifier,
+                        SmallWideSignBlockPart.METADATA.identifier,
                         new Vector3(0, localHitPos.y > 0.5f ? 0.75f : 0.25f, 0), itemToDropOnBreak, PlayerHandle.from(getMinecraft().player)
                     ));
                 }
                 break;
             case Short:
-                data = SmallShortSign.METADATA.write(
-                    new SmallShortSign(
+                data = SmallShortSignBlockPart.METADATA.write(
+                    new SmallShortSignBlockPart(
                         rotationInputField.getCurrentAngle(),
                         shortSignInputBox.getText(),
                         shortSignRenderer.isFlipped(),
@@ -887,20 +884,20 @@ public class SignGui extends ExtendedScreen {
                 if(oldSign.isPresent()) {
                     PacketHandler.sendToServer(new PostTile.PartMutatedEvent.Packet(
                         tilePartInfo, data,
-                        SmallShortSign.METADATA.identifier,
+                        SmallShortSignBlockPart.METADATA.identifier,
                         new Vector3(0, localHitPos.y > 0.5f ? 0.75f : 0.25f, 0)
                     ));
                 } else {
                     PacketHandler.sendToServer(new PostTile.PartAddedEvent.Packet(
                         tilePartInfo, data,
-                        SmallShortSign.METADATA.identifier,
+                        SmallShortSignBlockPart.METADATA.identifier,
                         new Vector3(0, localHitPos.y > 0.5f ? 0.75f : 0.25f, 0), itemToDropOnBreak, PlayerHandle.from(getMinecraft().player)
                     ));
                 }
                 break;
             case Large:
-                data = LargeSign.METADATA.write(
-                    new LargeSign(
+                data = LargeSignBlockPart.METADATA.write(
+                    new LargeSignBlockPart(
                         rotationInputField.getCurrentAngle(),
                         new String[] {
                             largeSignInputBoxes.get(0).getText(),
@@ -922,13 +919,13 @@ public class SignGui extends ExtendedScreen {
                 if(oldSign.isPresent()) {
                     PacketHandler.sendToServer(new PostTile.PartMutatedEvent.Packet(
                         tilePartInfo, data,
-                        LargeSign.METADATA.identifier,
+                        LargeSignBlockPart.METADATA.identifier,
                         new Vector3(0, localHitPos.y >= 0.5f ? 0.501f : 0.499f, 0)
                     ));
                 } else {
                     PacketHandler.sendToServer(new PostTile.PartAddedEvent.Packet(
                         tilePartInfo, data,
-                        LargeSign.METADATA.identifier,
+                        LargeSignBlockPart.METADATA.identifier,
                         new Vector3(0, 0.5f, 0), itemToDropOnBreak, PlayerHandle.from(getMinecraft().player)
                     ));
                 }
@@ -940,7 +937,7 @@ public class SignGui extends ExtendedScreen {
         AtomicReference<Angle> angle = new AtomicReference<>(Angle.fromDegrees(404));
         WaystoneLibrary.getInstance().requestWaystoneLocationData(waystoneName, loc -> {
             if(loc.isPresent()) {
-                angle.set(Sign.pointingAt(tile.getPos(), loc.get().block.blockPos));
+                angle.set(SignBlockPart.pointingAt(tile.getPos(), loc.get().block.blockPos));
             } else {
                 angleDropDown.removeEntry(waystoneRotationEntry);
                 waystoneRotationEntry = null;

@@ -2,7 +2,7 @@ package gollorum.signpost.minecraft.data;
 
 import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.block.ModelWaystone;
-import gollorum.signpost.minecraft.block.Waystone;
+import gollorum.signpost.minecraft.block.WaystoneBlock;
 import gollorum.signpost.minecraft.registry.RecipeRegistry;
 import net.minecraft.data.*;
 import net.minecraft.item.Items;
@@ -20,7 +20,7 @@ public class WaystoneRecipe extends RecipeProvider {
 
     @Override
     protected void registerRecipes(Consumer<IFinishedRecipe> consumer) {
-        ShapedRecipeBuilder.shapedRecipe(Waystone.INSTANCE)
+        ShapedRecipeBuilder.shapedRecipe(WaystoneBlock.INSTANCE)
             .key('s', Items.STONE)
             .key('e', Items.ENDER_PEARL)
             .patternLine("sss")
@@ -42,7 +42,7 @@ public class WaystoneRecipe extends RecipeProvider {
         new SingleItemRecipeBuilder(
             IRecipeSerializer.STONECUTTING,
             Ingredient.fromTag(WaystoneTag.Tag),
-            Waystone.INSTANCE,
+            WaystoneBlock.INSTANCE,
             1
         ).addCriterion("has_waystone", hasItem(WaystoneTag.Tag))
             .build(consumer, new ResourceLocation(Signpost.MOD_ID, "cut_into_full_block"));

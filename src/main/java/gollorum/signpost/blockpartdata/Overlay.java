@@ -1,10 +1,10 @@
 package gollorum.signpost.blockpartdata;
 
 import gollorum.signpost.Signpost;
-import gollorum.signpost.blockpartdata.types.LargeSign;
-import gollorum.signpost.blockpartdata.types.Sign;
-import gollorum.signpost.blockpartdata.types.SmallShortSign;
-import gollorum.signpost.blockpartdata.types.SmallWideSign;
+import gollorum.signpost.blockpartdata.types.LargeSignBlockPart;
+import gollorum.signpost.blockpartdata.types.SignBlockPart;
+import gollorum.signpost.blockpartdata.types.SmallShortSignBlockPart;
+import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
 import gollorum.signpost.minecraft.registry.ColorRegistry;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import net.minecraft.nbt.CompoundNBT;
@@ -36,7 +36,7 @@ public abstract class Overlay {
         this.id = id;
     }
 
-    public abstract ResourceLocation textureFor(Class<? extends Sign> signClass);
+    public abstract ResourceLocation textureFor(Class<? extends SignBlockPart> signClass);
 
     public int getTintAt(World world, BlockPos pos) {
         return ColorRegistry.getOverlayColor(tintIndex, world, pos);
@@ -49,40 +49,40 @@ public abstract class Overlay {
 
     public static final Overlay Gras = new Overlay(GrasTint, "gras") {
         @Override
-        public ResourceLocation textureFor(Class<? extends Sign> signClass) {
-            return signClass.equals(SmallWideSign.class)
+        public ResourceLocation textureFor(Class<? extends SignBlockPart> signClass) {
+            return signClass.equals(SmallWideSignBlockPart.class)
                 ? new ResourceLocation(Signpost.MOD_ID, "block/sign_overlay_grass")
-                : signClass.equals(SmallShortSign.class)
+                : signClass.equals(SmallShortSignBlockPart.class)
                 ? new ResourceLocation(Signpost.MOD_ID, "block/sign_overlay_grass_short")
-                : signClass.equals(LargeSign.class)
+                : signClass.equals(LargeSignBlockPart.class)
                 ? new ResourceLocation(Signpost.MOD_ID, "block/sign_overlay_grass_large")
-                : logErrorAndReturn("Sign class " + signClass + " is not supported by " + this, textureFor(SmallWideSign.class));
+                : logErrorAndReturn("Sign class " + signClass + " is not supported by " + this, textureFor(SmallWideSignBlockPart.class));
         }
     };
 
     public static final Overlay Vine = new Overlay(FoliageTint, "vine") {
         @Override
-        public ResourceLocation textureFor(Class<? extends Sign> signClass) {
-            return signClass.equals(SmallWideSign.class)
+        public ResourceLocation textureFor(Class<? extends SignBlockPart> signClass) {
+            return signClass.equals(SmallWideSignBlockPart.class)
                 ? new ResourceLocation(Signpost.MOD_ID, "block/sign_overlay_vine")
-                : signClass.equals(SmallShortSign.class)
+                : signClass.equals(SmallShortSignBlockPart.class)
                 ? new ResourceLocation(Signpost.MOD_ID, "block/sign_overlay_vine_short")
-                : signClass.equals(LargeSign.class)
+                : signClass.equals(LargeSignBlockPart.class)
                 ? new ResourceLocation(Signpost.MOD_ID, "block/sign_overlay_vine_large")
-                : logErrorAndReturn("Sign class " + signClass + " is not supported by " + this, textureFor(SmallWideSign.class));
+                : logErrorAndReturn("Sign class " + signClass + " is not supported by " + this, textureFor(SmallWideSignBlockPart.class));
         }
     };
 
     public static final Overlay Snow = new Overlay(NoTint, "snow") {
         @Override
-        public ResourceLocation textureFor(Class<? extends Sign> signClass) {
-            return signClass.equals(SmallWideSign.class)
+        public ResourceLocation textureFor(Class<? extends SignBlockPart> signClass) {
+            return signClass.equals(SmallWideSignBlockPart.class)
                 ? new ResourceLocation(Signpost.MOD_ID, "block/sign_overlay_snow")
-                : signClass.equals(SmallShortSign.class)
+                : signClass.equals(SmallShortSignBlockPart.class)
                 ? new ResourceLocation(Signpost.MOD_ID, "block/sign_overlay_snow_short")
-                : signClass.equals(LargeSign.class)
+                : signClass.equals(LargeSignBlockPart.class)
                 ? new ResourceLocation(Signpost.MOD_ID, "block/sign_overlay_snow_large")
-                : logErrorAndReturn("Sign class " + signClass + " is not supported by " + this, textureFor(SmallWideSign.class));
+                : logErrorAndReturn("Sign class " + signClass + " is not supported by " + this, textureFor(SmallWideSignBlockPart.class));
         }
     };
 

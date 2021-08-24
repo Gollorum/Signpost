@@ -3,7 +3,7 @@ package gollorum.signpost.blockpartdata.types;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.interactions.InteractionInfo;
-import gollorum.signpost.minecraft.block.Post;
+import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.utils.CoordinatesUtil;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.security.WithOwner;
@@ -23,29 +23,29 @@ import net.minecraft.util.text.TranslationTextComponent;
 
 import java.util.Optional;
 
-public class SmallWideSign extends Sign<SmallWideSign> {
+public class SmallShortSignBlockPart extends SignBlockPart<SmallShortSignBlockPart> {
 
     private static final AABB LOCAL_BOUNDS = new AABB(
-        new Vector3(-9, -11, 2),
-        new Vector3(16, -5, 3)
+        new Vector3(2, -11, 0.5f),
+        new Vector3(18, -5, -0.5f)
     ).map(CoordinatesUtil::voxelToLocal);
 
-    public static final BlockPartMetadata<SmallWideSign> METADATA = new BlockPartMetadata<>(
-        "small_wide_sign",
+    public static final BlockPartMetadata<SmallShortSignBlockPart> METADATA = new BlockPartMetadata<>(
+        "small_short_sign",
         (sign, compound) -> {
             compound.put("CoreData", CoreData.SERIALIZER.write(sign.coreData));
             compound.putString("Text", sign.text);
         },
-        (compound) -> new SmallWideSign(
+        (compound) -> new SmallShortSignBlockPart(
             CoreData.SERIALIZER.read(compound.getCompound("CoreData")),
             compound.getString("Text")
         ),
-        SmallWideSign.class
+        SmallShortSignBlockPart.class
     );
 
     private String text;
 
-    public SmallWideSign(
+    public SmallShortSignBlockPart(
         CoreData coreData,
         String text
     ){
@@ -53,7 +53,7 @@ public class SmallWideSign extends Sign<SmallWideSign> {
         this.text = text;
     }
 
-    public SmallWideSign(
+    public SmallShortSignBlockPart(
         Angle angle,
         String text,
         boolean flip,
@@ -63,11 +63,11 @@ public class SmallWideSign extends Sign<SmallWideSign> {
         int color,
         Optional<WaystoneHandle> destination,
         ItemStack itemToDropOnBreak,
-        Post.ModelType modelType,
+        PostBlock.ModelType modelType,
         boolean isLocked
     ) { this(
-            new CoreData(angle, flip, mainTexture, secondaryTexture, overlay,
-                color, destination, modelType, itemToDropOnBreak, isLocked),
+        new CoreData(angle, flip, mainTexture, secondaryTexture, overlay,
+            color, destination, modelType, itemToDropOnBreak, isLocked),
         text
     ); }
 
@@ -78,7 +78,6 @@ public class SmallWideSign extends Sign<SmallWideSign> {
     @Override
     protected void regenerateTransformedBox() {
         transformedBounds = new TransformedBox(LOCAL_BOUNDS).rotateAlong(Matrix4x4.Axis.Y, coreData.angle);
-        if(coreData.flip) transformedBounds = transformedBounds.scale(new Vector3(1, 1, -1));
     }
 
     private void notifyTextChanged(InteractionInfo info) {
@@ -105,12 +104,12 @@ public class SmallWideSign extends Sign<SmallWideSign> {
     }
 
     @Override
-    public SmallWideSign copy() {
-        return new SmallWideSign(coreData.copy(), text);
+    public SmallShortSignBlockPart copy() {
+        return new SmallShortSignBlockPart(coreData.copy(), text);
     }
 
     @Override
-    public BlockPartMetadata<SmallWideSign> getMeta() {
+    public BlockPartMetadata<SmallShortSignBlockPart> getMeta() {
         return METADATA;
     }
 

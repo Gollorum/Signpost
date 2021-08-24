@@ -9,15 +9,14 @@ import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.blockpartdata.Overlay;
-import gollorum.signpost.blockpartdata.types.Post;
-import gollorum.signpost.blockpartdata.types.Sign;
-import gollorum.signpost.blockpartdata.types.SmallShortSign;
-import gollorum.signpost.blockpartdata.types.SmallWideSign;
+import gollorum.signpost.blockpartdata.types.PostBlockPart;
+import gollorum.signpost.blockpartdata.types.SignBlockPart;
+import gollorum.signpost.blockpartdata.types.SmallShortSignBlockPart;
+import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
 import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.utils.BlockPartInstance;
-import gollorum.signpost.utils.OwnershipData;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.utils.WaystoneData;
 import gollorum.signpost.utils.math.Angle;
@@ -183,13 +182,13 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 		Map.Entry<BlockPos, WaystoneHandle> target = possibleTargets.poll();
 		if(target == null) return new Pair<>(Collections.emptySet(), x -> {});
 		WaystoneData targetData = WaystoneLibrary.getInstance().getData(target.getValue());
-		Angle rotation = Sign.pointingAt(tilePos, target.getKey());
+		Angle rotation = SignBlockPart.pointingAt(tilePos, target.getKey());
 		Consumer<PostTile> onTileFetched = tile -> {
-			if(tile.getParts().stream().anyMatch(instance -> !(instance.blockPart instanceof Post) && isNearly(instance.offset.y, y)))
+			if(tile.getParts().stream().anyMatch(instance -> !(instance.blockPart instanceof PostBlockPart) && isNearly(instance.offset.y, y)))
 				return;
 			tile.addPart(
 				new BlockPartInstance(
-					new SmallWideSign(
+					new SmallWideSignBlockPart(
 						rotation, targetData.name, shouldFlip(facing, rotation),
 						tile.modelType.mainTexture, tile.modelType.secondaryTexture,
 						overlayFor(world, tilePos), Colors.black, Optional.of(target.getValue()),
@@ -216,13 +215,13 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 		Map.Entry<BlockPos, WaystoneHandle> target = possibleTargets.poll();
 		if(target == null) return new Pair<>(Collections.emptySet(), x -> {});
 		WaystoneData targetData = WaystoneLibrary.getInstance().getData(target.getValue());
-		Angle rotation = Sign.pointingAt(tilePos, target.getKey());
+		Angle rotation = SignBlockPart.pointingAt(tilePos, target.getKey());
 		boolean shouldFlip = shouldFlip(facing, rotation);
 		Optional<Overlay> overlay = overlayFor(world, tilePos);
 		List<Consumer<PostTile>> onTileFetched = new ArrayList<>();
 		onTileFetched.add(tile -> tile.addPart(
 			new BlockPartInstance(
-				new SmallShortSign(
+				new SmallShortSignBlockPart(
 					rotation, targetData.name, shouldFlip,
 					tile.modelType.mainTexture, tile.modelType.secondaryTexture,
 					overlay, Colors.black, Optional.of(target.getValue()),
@@ -237,7 +236,7 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 		List<Map.Entry<BlockPos, WaystoneHandle>> skippedTargets = new ArrayList<>();
 		while(secondTarget != null) {
 			WaystoneData secondTargetData = WaystoneLibrary.getInstance().getData(secondTarget.getValue());
-			Angle secondRotation = Sign.pointingAt(tilePos, secondTarget.getKey());
+			Angle secondRotation = SignBlockPart.pointingAt(tilePos, secondTarget.getKey());
 			boolean shouldSecondFlip = shouldFlip(facing, secondRotation);
 			if(shouldSecondFlip == shouldFlip) {
 				skippedTargets.add(secondTarget);
@@ -247,7 +246,7 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 			WaystoneHandle secondTargetHandle = secondTarget.getValue();
 			onTileFetched.add(tile -> tile.addPart(
 				new BlockPartInstance(
-					new SmallShortSign(
+					new SmallShortSignBlockPart(
 						secondRotation, secondTargetData.name, shouldSecondFlip,
 						tile.modelType.mainTexture, tile.modelType.secondaryTexture,
 						overlay, Colors.black, Optional.of(secondTargetHandle),
@@ -268,7 +267,7 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 				? Collections.singleton(target.getValue())
 				: ImmutableList.of(target.getValue(), secondTarget.getValue()),
 			tile -> {
-				if(!tile.getParts().stream().anyMatch(instance -> !(instance.blockPart instanceof Post) && isNearly(instance.offset.y, y)))
+				if(!tile.getParts().stream().anyMatch(instance -> !(instance.blockPart instanceof PostBlockPart) && isNearly(instance.offset.y, y)))
 					for(Consumer<PostTile> now : onTileFetched) now.accept(tile);
 			}
 		);

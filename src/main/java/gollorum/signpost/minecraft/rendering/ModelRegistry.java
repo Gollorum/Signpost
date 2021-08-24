@@ -1,7 +1,10 @@
 package gollorum.signpost.minecraft.rendering;
 
 import gollorum.signpost.blockpartdata.Overlay;
-import gollorum.signpost.blockpartdata.types.Sign;
+import gollorum.signpost.blockpartdata.types.LargeSignBlockPart;
+import gollorum.signpost.blockpartdata.types.SignBlockPart;
+import gollorum.signpost.blockpartdata.types.SmallShortSignBlockPart;
+import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
 import gollorum.signpost.minecraft.data.PostModel;
 import gollorum.signpost.utils.modelGeneration.SignModel;
 import gollorum.signpost.utils.modelGeneration.SignModelFactory;
@@ -26,7 +29,7 @@ public class ModelRegistry<M> {
 			.makeLargeSignOverlay(overlayTexture)
 			.flipZ()
 			.build(new SignModel(), SignModel::addCube),
-		gollorum.signpost.blockpartdata.types.LargeSign.class
+		LargeSignBlockPart.class
 	);
 
 	public static ModelRegistry<SignModel> WideSign = new ModelRegistry<>(
@@ -42,7 +45,7 @@ public class ModelRegistry<M> {
 			.makeWideSignOverlay(overlayTexture)
 			.flipZ()
 			.build(new SignModel(), SignModel::addCube),
-		gollorum.signpost.blockpartdata.types.SmallWideSign.class
+		SmallWideSignBlockPart.class
 	);
 
 	public static ModelRegistry<SignModel> ShortSign = new ModelRegistry<>(
@@ -58,7 +61,7 @@ public class ModelRegistry<M> {
 			.makeShortSignOverlay(overlayTexture)
 			.flipZ()
 			.build(new SignModel(), SignModel::addCube),
-		gollorum.signpost.blockpartdata.types.SmallShortSign.class
+		SmallShortSignBlockPart.class
 	);
 
 	public static ModelRegistry<IBakedModel> LargeBakedSign = new ModelRegistry<>(
@@ -70,7 +73,7 @@ public class ModelRegistry<M> {
 			PostModel.largeFlippedLocation, mainTexture, secondaryTexture
 		),
 		overlayTexture -> RenderingUtil.loadModel(PostModel.largeOverlayFlippedLocation, overlayTexture),
-		gollorum.signpost.blockpartdata.types.LargeSign.class
+		LargeSignBlockPart.class
 	);
 
 	public static ModelRegistry<IBakedModel> WideBakedSign = new ModelRegistry<>(
@@ -82,7 +85,7 @@ public class ModelRegistry<M> {
 			PostModel.wideFlippedLocation, mainTexture, secondaryTexture
 		),
 		overlayTexture -> RenderingUtil.loadModel(PostModel.wideOverlayFlippedLocation, overlayTexture),
-		gollorum.signpost.blockpartdata.types.SmallWideSign.class
+		SmallWideSignBlockPart.class
 	);
 
 	public static ModelRegistry<IBakedModel> ShortBakedSign = new ModelRegistry<>(
@@ -94,7 +97,7 @@ public class ModelRegistry<M> {
 			PostModel.shortFlippedLocation, mainTexture, secondaryTexture
 		),
 		overlayTexture -> RenderingUtil.loadModel(PostModel.shortOverlayFlippedLocation, overlayTexture),
-		gollorum.signpost.blockpartdata.types.SmallShortSign.class
+		SmallShortSignBlockPart.class
 	);
 
 	public interface ModelConstructor<M> {
@@ -117,14 +120,14 @@ public class ModelRegistry<M> {
 	private final ModelConstructor<M> flippedModelConstructor;
 	private final OverlayModelConstructor<M> flippedOverlayModelConstructor;
 
-	private final Class<? extends Sign> signClass;
+	private final Class<? extends SignBlockPart> signClass;
 
 	public ModelRegistry(
 		ModelConstructor<M> modelConstructor,
 		OverlayModelConstructor<M> overlayModelConstructor,
 		ModelConstructor<M> flippedModelConstructor,
 		OverlayModelConstructor<M> flippedOverlayModelConstructor,
-		Class<? extends Sign> signClass
+		Class<? extends SignBlockPart> signClass
 	) {
 		this.modelConstructor = modelConstructor;
 		this.overlayModelConstructor = overlayModelConstructor;
@@ -133,7 +136,7 @@ public class ModelRegistry<M> {
 		this.signClass = signClass;
 	}
 
-	public M makeModel(Sign sign) {
+	public M makeModel(SignBlockPart sign) {
 		return (sign.isFlipped() ? cachedFlippedModels : cachedModels)
 			.computeIfAbsent(sign.getMainTexture(), x -> new ConcurrentHashMap<>())
 			.computeIfAbsent(sign.getSecondaryTexture(),
@@ -142,7 +145,7 @@ public class ModelRegistry<M> {
 			);
 	}
 
-	public M makeOverlayModel(Sign sign, Overlay overlay) {
+	public M makeOverlayModel(SignBlockPart sign, Overlay overlay) {
 		ResourceLocation texture = overlay.textureFor(signClass);
 		return (sign.isFlipped() ? cachedFlippedOverlayModels : cachedOverlayModels)
 			.computeIfAbsent(texture,

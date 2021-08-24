@@ -4,6 +4,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blockpartdata.types.*;
+import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.items.Wrench;
 import gollorum.signpost.minecraft.utils.SideUtils;
 import gollorum.signpost.networking.PacketHandler;
@@ -56,20 +57,20 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
 
     public static final TileEntityType<PostTile> type = TileEntityType.Builder.create(
         () -> new PostTile(
-            gollorum.signpost.minecraft.block.Post.ModelType.Oak,
+            PostBlock.ModelType.Oak,
             ItemStack.EMPTY
         ),
-        gollorum.signpost.minecraft.block.Post.ALL.toArray(new Block[0])
+        PostBlock.ALL.toArray(new Block[0])
     ).build(null);
 
     private final Map<UUID, BlockPartInstance> parts = new ConcurrentHashMap<>();
     public static final Set<BlockPartMetadata<?>> partsMetadata = new ConcurrentSet<>();
     static {
-        partsMetadata.add(Post.METADATA);
-        partsMetadata.add(SmallWideSign.METADATA);
-        partsMetadata.add(SmallShortSign.METADATA);
-        partsMetadata.add(LargeSign.METADATA);
-        partsMetadata.add(Waystone.METADATA);
+        partsMetadata.add(PostBlockPart.METADATA);
+        partsMetadata.add(SmallWideSignBlockPart.METADATA);
+        partsMetadata.add(SmallShortSignBlockPart.METADATA);
+        partsMetadata.add(LargeSignBlockPart.METADATA);
+        partsMetadata.add(WaystoneBlockPart.METADATA);
     }
 
 	public static class TraceResult {
@@ -85,11 +86,11 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
         }
     }
 
-    public final gollorum.signpost.minecraft.block.Post.ModelType modelType;
+    public final PostBlock.ModelType modelType;
     private ItemStack drop;
     private Optional<PlayerHandle> owner = Optional.empty();
 
-    public PostTile(gollorum.signpost.minecraft.block.Post.ModelType modelType, ItemStack drop) {
+    public PostTile(PostBlock.ModelType modelType, ItemStack drop) {
         super(type);
         this.modelType = modelType;
         this.drop = drop;
@@ -272,8 +273,8 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
     public Optional<PlayerHandle> getSignpostOwner() { return owner; }
 
     public Optional<PlayerHandle> getWaystoneOwner() {
-        return getParts().stream().filter(p -> p.blockPart instanceof Waystone).findFirst()
-            .flatMap(p -> ((Waystone)p.blockPart).getWaystoneOwner());
+        return getParts().stream().filter(p -> p.blockPart instanceof WaystoneBlockPart).findFirst()
+            .flatMap(p -> ((WaystoneBlockPart)p.blockPart).getWaystoneOwner());
     }
 
     public static boolean isAngleTool(Item item) {

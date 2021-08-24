@@ -1,12 +1,11 @@
 package gollorum.signpost.blockpartdata.types.renderers;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import gollorum.signpost.blockpartdata.types.SmallShortSign;
 import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.blockpartdata.Overlay;
-import gollorum.signpost.blockpartdata.types.Sign;
+import gollorum.signpost.blockpartdata.types.SignBlockPart;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.modelGeneration.SignModel;
@@ -22,7 +21,7 @@ import net.minecraft.util.math.vector.Vector3f;
 
 import java.util.Random;
 
-public abstract class SignRenderer<T extends Sign<T>> extends BlockPartRenderer<T> {
+public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPartRenderer<T> {
 
 	private final boolean shouldRenderBaked = false;
 

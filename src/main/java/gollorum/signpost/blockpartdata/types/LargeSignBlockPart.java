@@ -3,7 +3,7 @@ package gollorum.signpost.blockpartdata.types;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.interactions.InteractionInfo;
-import gollorum.signpost.minecraft.block.Post;
+import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.utils.CoordinatesUtil;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.security.WithOwner;
@@ -23,39 +23,45 @@ import net.minecraft.util.text.TranslationTextComponent;
 
 import java.util.Optional;
 
-public class SmallShortSign extends Sign<SmallShortSign> {
+public class LargeSignBlockPart extends SignBlockPart<LargeSignBlockPart> {
 
     private static final AABB LOCAL_BOUNDS = new AABB(
-        new Vector3(2, -11, 0.5f),
-        new Vector3(18, -5, -0.5f)
+        new Vector3(-9, -14, 2),
+        new Vector3(12, -2, 3)
     ).map(CoordinatesUtil::voxelToLocal);
 
-    public static final BlockPartMetadata<SmallShortSign> METADATA = new BlockPartMetadata<>(
-        "small_short_sign",
+    public static final BlockPartMetadata<LargeSignBlockPart> METADATA = new BlockPartMetadata<>(
+        "large_sign",
         (sign, compound) -> {
             compound.put("CoreData", CoreData.SERIALIZER.write(sign.coreData));
-            compound.putString("Text", sign.text);
+            compound.putString("Text0", sign.text[0]);
+            compound.putString("Text1", sign.text[1]);
+            compound.putString("Text2", sign.text[2]);
+            compound.putString("Text3", sign.text[3]);
         },
-        (compound) -> new SmallShortSign(
+        (compound) -> new LargeSignBlockPart(
             CoreData.SERIALIZER.read(compound.getCompound("CoreData")),
-            compound.getString("Text")
-        ),
-        SmallShortSign.class
-    );
+            new String[]{
+                compound.getString("Text0"),
+                compound.getString("Text1"),
+                compound.getString("Text2"),
+                compound.getString("Text3")}
+        ), LargeSignBlockPart.class);
 
-    private String text;
+    private String[] text;
 
-    public SmallShortSign(
+    public LargeSignBlockPart(
         CoreData coreData,
-        String text
-    ){
+        String[] text
+    ) {
         super(coreData);
+        assert text.length == 4;
         this.text = text;
     }
 
-    public SmallShortSign(
+    public LargeSignBlockPart(
         Angle angle,
-        String text,
+        String[] text,
         boolean flip,
         ResourceLocation mainTexture,
         ResourceLocation secondaryTexture,
@@ -63,7 +69,7 @@ public class SmallShortSign extends Sign<SmallShortSign> {
         int color,
         Optional<WaystoneHandle> destination,
         ItemStack itemToDropOnBreak,
-        Post.ModelType modelType,
+        PostBlock.ModelType modelType,
         boolean isLocked
     ) { this(
         new CoreData(angle, flip, mainTexture, secondaryTexture, overlay,
@@ -71,18 +77,24 @@ public class SmallShortSign extends Sign<SmallShortSign> {
         text
     ); }
 
-    public void setText(String text) { this.text = text; }
+    public void setText(String[] text) {
+        this.text = text;
+    }
 
-    public String getText() { return text; }
+    public String[] getText() { return text; }
 
     @Override
     protected void regenerateTransformedBox() {
         transformedBounds = new TransformedBox(LOCAL_BOUNDS).rotateAlong(Matrix4x4.Axis.Y, coreData.angle);
+        if(coreData.flip) transformedBounds = transformedBounds.scale(new Vector3(1, 1, -1));
     }
 
     private void notifyTextChanged(InteractionInfo info) {
         CompoundNBT compound = new CompoundNBT();
-        compound.putString("Text", text);
+        compound.putString("Text0", text[0]);
+        compound.putString("Text1", text[1]);
+        compound.putString("Text2", text[2]);
+        compound.putString("Text3", text[3]);
         info.mutationDistributor.accept(compound);
     }
 
@@ -97,19 +109,28 @@ public class SmallShortSign extends Sign<SmallShortSign> {
             editingPlayer.sendMessage(new TranslationTextComponent(LangKeys.noPermissionSignpost), Util.DUMMY_UUID);
             return;
         }
-        if (compound.contains("Text")) {
-            setText(compound.getString("Text"));
+        if (compound.contains("Text0")) {
+            text[0] = compound.getString("Text0");
+        }
+        if (compound.contains("Text1")) {
+            text[1] = compound.getString("Text1");
+        }
+        if (compound.contains("Text2")) {
+            text[2] = compound.getString("Text2");
+        }
+        if (compound.contains("Text3")) {
+            text[3] = compound.getString("Text3");
         }
         super.readMutationUpdate(compound, tile, editingPlayer);
     }
 
     @Override
-    public SmallShortSign copy() {
-        return new SmallShortSign(coreData.copy(), text);
+    public LargeSignBlockPart copy() {
+        return new LargeSignBlockPart(coreData.copy(), text);
     }
 
     @Override
-    public BlockPartMetadata<SmallShortSign> getMeta() {
+    public BlockPartMetadata<LargeSignBlockPart> getMeta() {
         return METADATA;
     }
 

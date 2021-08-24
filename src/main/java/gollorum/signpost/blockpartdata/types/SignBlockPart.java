@@ -6,10 +6,9 @@ import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.interactions.InteractionInfo;
-import gollorum.signpost.minecraft.block.Post;
+import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.config.Config;
-import gollorum.signpost.minecraft.gui.PaintPostGui;
 import gollorum.signpost.minecraft.gui.PaintSignGui;
 import gollorum.signpost.minecraft.gui.RequestSignGui;
 import gollorum.signpost.minecraft.items.Brush;
@@ -42,7 +41,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
 
-public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
+public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements BlockPart<Self> {
 
     protected static final class CoreData {
         public Angle angle;
@@ -52,7 +51,7 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
         public Optional<Overlay> overlay;
         public int color;
         public Optional<WaystoneHandle> destination;
-        public Post.ModelType modelType;
+        public PostBlock.ModelType modelType;
         public ItemStack itemToDropOnBreak;
         public boolean isLocked;
 
@@ -64,7 +63,7 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
             Optional<Overlay> overlay,
             int color,
             Optional<WaystoneHandle> destination,
-            Post.ModelType modelType,
+            PostBlock.ModelType modelType,
             ItemStack itemToDropOnBreak,
             boolean isLocked
         ) {
@@ -127,7 +126,7 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
                     Overlay.Serializer.optional().read(compound.getCompound("Overlay")),
                     compound.getInt("Color"),
                     WaystoneHandle.Serializer.optional().read(compound.getCompound("Destination")),
-                    Post.ModelType.getByName(compound.getString("ModelType"), true)
+                    PostBlock.ModelType.getByName(compound.getString("ModelType"), true)
                         .orElseThrow(() -> new RuntimeException("Tried to load sign post model type " + compound.getString("ModelType") +
                             ", but it hasn't been registered. @Dev: You have to call Post.ModelType.register")),
                     ItemStackSerializer.Instance.read(compound.getCompound("ItemToDropOnBreak")),
@@ -152,7 +151,7 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
 
     protected TransformedBox transformedBounds;
 
-    protected Sign(CoreData coreData) {
+    protected SignBlockPart(CoreData coreData) {
         this.coreData = coreData;
         setAngle(coreData.angle);
         setTextures(coreData.mainTexture, coreData.secondaryTexture);
@@ -184,7 +183,7 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
         coreData.itemToDropOnBreak = itemToDropOnBreak;
     }
 
-    private void setModelType(Post.ModelType modelType) {
+    private void setModelType(PostBlock.ModelType modelType) {
         coreData.modelType = modelType;
     }
 
@@ -194,7 +193,7 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
 
     public int getColor() { return coreData.color; }
 
-    public Post.ModelType getModelType() { return coreData.modelType; }
+    public PostBlock.ModelType getModelType() { return coreData.modelType; }
 
     public boolean isLocked() { return coreData.isLocked; }
 
@@ -339,7 +338,7 @@ public abstract class Sign<Self extends Sign<Self>> implements BlockPart<Self> {
             setItemToDropOnBreak(ItemStackSerializer.Instance.read(compound.getCompound("ItemToDropOnBreak")));
         }
         if(compound.contains("ModelType"))
-            Post.ModelType.getByName(compound.getString("ModelType"), true).ifPresent(this::setModelType);
+            PostBlock.ModelType.getByName(compound.getString("ModelType"), true).ifPresent(this::setModelType);
 
         OptionalSerializer<Overlay> overlaySerializer = Overlay.Serializer.optional();
         if(compound.contains("Overlay"))

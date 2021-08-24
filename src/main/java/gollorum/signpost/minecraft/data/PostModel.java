@@ -2,10 +2,10 @@ package gollorum.signpost.minecraft.data;
 
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blockpartdata.Overlay;
-import gollorum.signpost.blockpartdata.types.LargeSign;
-import gollorum.signpost.blockpartdata.types.SmallShortSign;
-import gollorum.signpost.blockpartdata.types.SmallWideSign;
-import gollorum.signpost.minecraft.block.Post;
+import gollorum.signpost.blockpartdata.types.LargeSignBlockPart;
+import gollorum.signpost.blockpartdata.types.SmallShortSignBlockPart;
+import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
+import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.modelGeneration.SignModelFactory;
 import net.minecraft.data.DataGenerator;
@@ -14,7 +14,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.generators.*;
 import net.minecraftforge.common.data.ExistingFileHelper;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -22,7 +21,7 @@ public class PostModel extends BlockModelProvider {
 
     private static final String texturePost = "post";
     public static final String textureSign = "texture";
-    public static final ResourceLocation mainTextureMarker = Post.ModelType.Oak.mainTexture;
+    public static final ResourceLocation mainTextureMarker = PostBlock.ModelType.Oak.mainTexture;
     public static final String secondaryTexture = "secondary_texture";
 
     private static final ResourceLocation previewLocation = new ResourceLocation(Signpost.MOD_ID, "block/post_preview");
@@ -43,7 +42,7 @@ public class PostModel extends BlockModelProvider {
     public static final ResourceLocation largeOverlayLocation = new ResourceLocation(Signpost.MOD_ID, "block/large_sign_overlay");
     public static final ResourceLocation largeOverlayFlippedLocation = new ResourceLocation(Signpost.MOD_ID, largeOverlayLocation.getPath() + "_flipped");
 
-    public final Map<Post.Variant, BlockModelBuilder> allModels;
+    public final Map<PostBlock.Variant, BlockModelBuilder> allModels;
 
     private static final ModelBuilder.FaceRotation mainTextureRotation = ModelBuilder.FaceRotation.CLOCKWISE_90;
     private static final ModelBuilder.FaceRotation secondaryTextureRotation = ModelBuilder.FaceRotation.CLOCKWISE_90;
@@ -53,7 +52,7 @@ public class PostModel extends BlockModelProvider {
     public PostModel(DataGenerator generator, ExistingFileHelper fileHelper) {
         super(generator, Signpost.MOD_ID, fileHelper);
         previewModel = new BlockModelBuilder(previewLocation, fileHelper);
-        allModels = Post.AllVariants.stream().collect(Collectors.<Post.Variant, Post.Variant, BlockModelBuilder>toMap(
+        allModels = PostBlock.AllVariants.stream().collect(Collectors.<PostBlock.Variant, PostBlock.Variant, BlockModelBuilder>toMap(
             i -> i,
             i -> new BlockModelBuilder(new ResourceLocation(Signpost.MOD_ID, "block/" + i.registryName), fileHelper)
         ));
@@ -68,7 +67,7 @@ public class PostModel extends BlockModelProvider {
 
         @Override
         protected void registerModels() {
-            for (Map.Entry<Post.Variant, BlockModelBuilder> entry : allModels.entrySet()) {
+            for (Map.Entry<PostBlock.Variant, BlockModelBuilder> entry : allModels.entrySet()) {
                 getBuilder(entry.getKey().registryName).parent(entry.getValue());
             }
         }
@@ -97,7 +96,7 @@ public class PostModel extends BlockModelProvider {
             .build(previewBuilder, SignModelFactory.Builder.BlockModel);
 
         makePostAt(new Vector3(0, 8, 0), getBuilder(postLocation.toString()))
-            .texture(texturePost, Post.ModelType.Oak.postTexture);
+            .texture(texturePost, PostBlock.ModelType.Oak.postTexture);
 
         buildDefaultAndFlipped(
             new SignModelFactory<String>().makeWideSign("#" + textureSign, "#" + secondaryTexture),
@@ -120,20 +119,20 @@ public class PostModel extends BlockModelProvider {
         buildDefaultAndFlippedOverlay(
             new SignModelFactory<String>().makeWideSignOverlay("#" + textureSign),
             wideOverlayLocation, wideOverlayFlippedLocation,
-            Overlay.Gras.textureFor(SmallWideSign.class)
+            Overlay.Gras.textureFor(SmallWideSignBlockPart.class)
         );
         buildDefaultAndFlippedOverlay(
             new SignModelFactory<String>().makeShortSignOverlay("#" + textureSign),
             shortOverlayLocation, shortOverlayFlippedLocation,
-            Overlay.Gras.textureFor(SmallShortSign.class)
+            Overlay.Gras.textureFor(SmallShortSignBlockPart.class)
         );
         buildDefaultAndFlippedOverlay(
             new SignModelFactory<String>().makeLargeSignOverlay("#" + textureSign),
             largeOverlayLocation, largeOverlayFlippedLocation,
-            Overlay.Gras.textureFor(LargeSign.class)
+            Overlay.Gras.textureFor(LargeSignBlockPart.class)
         );
 
-        for(Post.Variant variant : Post.AllVariants) {
+        for(PostBlock.Variant variant : PostBlock.AllVariants) {
             getBuilder(variant.registryName)
                 .parent(previewModel)
                 .texture("particle", variant.type.postTexture)
@@ -146,10 +145,10 @@ public class PostModel extends BlockModelProvider {
     private void buildDefaultAndFlipped(SignModelFactory<String> factory, ResourceLocation main, ResourceLocation flipped) {
         factory.build(getBuilder(main.toString()), SignModelFactory.Builder.BlockModel)
             .texture(textureSign, mainTextureMarker)
-            .texture(secondaryTexture, Post.ModelType.Oak.secondaryTexture);
+            .texture(secondaryTexture, PostBlock.ModelType.Oak.secondaryTexture);
         factory.build(getBuilder(flipped.toString()), SignModelFactory.Builder.BlockModelFlipped)
             .texture(textureSign, mainTextureMarker)
-            .texture(secondaryTexture, Post.ModelType.Oak.secondaryTexture);
+            .texture(secondaryTexture, PostBlock.ModelType.Oak.secondaryTexture);
     }
 
     private void buildDefaultAndFlippedOverlay(SignModelFactory<String> factory, ResourceLocation main, ResourceLocation flipped, ResourceLocation texture) {

@@ -1,8 +1,8 @@
 package gollorum.signpost.minecraft.gui;
 
 import gollorum.signpost.Signpost;
-import gollorum.signpost.blockpartdata.types.Sign;
-import gollorum.signpost.minecraft.block.Post;
+import gollorum.signpost.blockpartdata.types.SignBlockPart;
+import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.BlockPartInstance;
@@ -16,7 +16,6 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.Optional;
-import java.util.function.Supplier;
 
 public class RequestSignGui implements PacketHandler.Event<RequestSignGui.Package> {
 
@@ -48,10 +47,10 @@ public class RequestSignGui implements PacketHandler.Event<RequestSignGui.Packag
 		Optional<Pair<PostTile, BlockPartInstance>> pairO = TileEntityUtils.findTileEntityClient(
 			message.tilePartInfo.dimensionKey, message.tilePartInfo.pos, PostTile.class
 		).flatMap(tile -> tile.getPart(message.tilePartInfo.identifier)
-			.flatMap(part -> (part.blockPart instanceof Sign ? Optional.of(new Pair<>(tile, part)) : Optional.empty())));
+			.flatMap(part -> (part.blockPart instanceof SignBlockPart ? Optional.of(new Pair<>(tile, part)) : Optional.empty())));
 		if (pairO.isPresent()) {
 			Pair<PostTile, BlockPartInstance> pair = pairO.get();
-			SignGui.display(pair.getKey(), (Sign) pair.getValue().blockPart, pair.getValue().offset, message.tilePartInfo);
+			SignGui.display(pair.getKey(), (SignBlockPart) pair.getValue().blockPart, pair.getValue().offset, message.tilePartInfo);
 		} else {
 			Signpost.LOGGER.error("Tried to open sign gui, but something was missing.");
 		}
@@ -61,11 +60,11 @@ public class RequestSignGui implements PacketHandler.Event<RequestSignGui.Packag
 
 		public static class Package {
 			private final WorldLocation loc;
-			private final Post.ModelType modelType;
+			private final PostBlock.ModelType modelType;
 			private final Vector3 localHitPos;
 			private final ItemStack itemToDropOnBreak;
 
-			public Package(WorldLocation loc, Post.ModelType modelType, Vector3 localHitPos, ItemStack itemToDropOnBreak) {
+			public Package(WorldLocation loc, PostBlock.ModelType modelType, Vector3 localHitPos, ItemStack itemToDropOnBreak) {
 				this.loc = loc;
 				this.modelType = modelType;
 				this.localHitPos = localHitPos;
@@ -79,7 +78,7 @@ public class RequestSignGui implements PacketHandler.Event<RequestSignGui.Packag
 		@Override
 		public void encode(Package message, PacketBuffer buffer) {
 			WorldLocation.SERIALIZER.write(message.loc, buffer);
-			Post.ModelType.Serializer.write(message.modelType, buffer);
+			PostBlock.ModelType.Serializer.write(message.modelType, buffer);
 			Vector3.Serializer.write(message.localHitPos, buffer);
 			ItemStackSerializer.Instance.write(message.itemToDropOnBreak, buffer);
 		}
@@ -88,7 +87,7 @@ public class RequestSignGui implements PacketHandler.Event<RequestSignGui.Packag
 		public Package decode(PacketBuffer buffer) {
 			return new Package(
 				WorldLocation.SERIALIZER.read(buffer),
-				Post.ModelType.Serializer.read(buffer),
+				PostBlock.ModelType.Serializer.read(buffer),
 				Vector3.Serializer.read(buffer),
 				ItemStackSerializer.Instance.read(buffer)
 			);

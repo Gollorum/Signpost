@@ -31,11 +31,11 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
     }
 
     static {
-        register(Post.class, new PostRenderer());
-        register(SmallWideSign.class, new WideSignRenderer());
-        register(SmallShortSign.class, new ShortSignRenderer());
-        register(LargeSign.class, new LargeSignRenderer());
-        register(Waystone.class, new WaystoneRenderer());
+        register(PostBlockPart.class, new PostRenderer());
+        register(SmallWideSignBlockPart.class, new WideSignRenderer());
+        register(SmallShortSignBlockPart.class, new ShortSignRenderer());
+        register(LargeSignBlockPart.class, new LargeSignRenderer());
+        register(WaystoneBlockPart.class, new WaystoneRenderer());
     }
 
     public static <T extends BlockPart<T>> void renderDynamic(

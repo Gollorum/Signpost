@@ -2,10 +2,10 @@ package gollorum.signpost.minecraft.registry;
 
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blockpartdata.Overlay;
-import gollorum.signpost.blockpartdata.types.LargeSign;
-import gollorum.signpost.blockpartdata.types.Sign;
-import gollorum.signpost.blockpartdata.types.SmallShortSign;
-import gollorum.signpost.blockpartdata.types.SmallWideSign;
+import gollorum.signpost.blockpartdata.types.LargeSignBlockPart;
+import gollorum.signpost.blockpartdata.types.SignBlockPart;
+import gollorum.signpost.blockpartdata.types.SmallShortSignBlockPart;
+import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
 import net.minecraft.inventory.container.PlayerContainer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
@@ -22,11 +22,11 @@ import static net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus.MOD;
 @Mod.EventBusSubscriber(value = Dist.CLIENT, modid = Signpost.MOD_ID, bus = MOD)
 public class ResourceRegistry {
 
-    private static final Set<Class<? extends Sign>> signTypesToHandle = new HashSet<>();
+    private static final Set<Class<? extends SignBlockPart>> signTypesToHandle = new HashSet<>();
     static {
-        signTypesToHandle.add(SmallWideSign.class);
-        signTypesToHandle.add(SmallShortSign.class);
-        signTypesToHandle.add(LargeSign.class);
+        signTypesToHandle.add(SmallWideSignBlockPart.class);
+        signTypesToHandle.add(SmallShortSignBlockPart.class);
+        signTypesToHandle.add(LargeSignBlockPart.class);
     }
 
     @SubscribeEvent

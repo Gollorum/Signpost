@@ -2,7 +2,7 @@ package gollorum.signpost.minecraft.data;
 
 import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.block.ModelWaystone;
-import gollorum.signpost.minecraft.block.Waystone;
+import gollorum.signpost.minecraft.block.WaystoneBlock;
 import net.minecraft.block.Block;
 import net.minecraft.data.BlockTagsProvider;
 import net.minecraft.data.DataGenerator;
@@ -27,7 +27,7 @@ public class WaystoneTag extends ItemTagsProvider {
     protected void registerTags() {
         this.getOrCreateBuilder(Tag)
             .add(ModelWaystone.variants.stream().map(i -> i.block.asItem()).toArray(Item[]::new))
-            .add(Waystone.INSTANCE.asItem());
+            .add(WaystoneBlock.INSTANCE.asItem());
     }
 
     public static class Blocks extends BlockTagsProvider {
@@ -42,7 +42,7 @@ public class WaystoneTag extends ItemTagsProvider {
         protected void registerTags() {
             this.getOrCreateBuilder(Tag)
                 .add(ModelWaystone.variants.stream().map(i -> i.block).toArray(Block[]::new))
-                .add(Waystone.INSTANCE);
+                .add(WaystoneBlock.INSTANCE);
         }
 
     }

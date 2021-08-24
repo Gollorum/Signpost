@@ -1,6 +1,6 @@
 package gollorum.signpost.minecraft.items;
 
-import gollorum.signpost.minecraft.block.Post;
+import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import net.minecraft.item.ItemGroup;
@@ -22,7 +22,7 @@ public class Wrench extends ToolItem {
     @Override
     public ActionResultType onItemUse(ItemUseContext context) {
         return TileEntityUtils.findTileEntity(context.getWorld(), context.getPos(), PostTile.class)
-            .map(tile -> Post.onActivate(tile, context.getWorld(), context.getPlayer(), context.getHand()))
+            .map(tile -> PostBlock.onActivate(tile, context.getWorld(), context.getPlayer(), context.getHand()))
             .orElse(ActionResultType.PASS);
     }
 }

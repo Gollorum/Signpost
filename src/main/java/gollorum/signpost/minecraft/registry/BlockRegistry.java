@@ -7,7 +7,6 @@ import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,7 +17,7 @@ public class BlockRegistry {
     private static final DeferredRegister<Block> Register = DeferredRegister.create(ForgeRegistries.BLOCKS, MOD_ID);
 
     private static final RegistryObject<Block> WaystoneBlock =
-        Register.register(Waystone.REGISTRY_NAME, () -> Waystone.INSTANCE);
+        Register.register(gollorum.signpost.minecraft.block.WaystoneBlock.REGISTRY_NAME, () -> gollorum.signpost.minecraft.block.WaystoneBlock.INSTANCE);
 
     private static final List<RegistryObject<Block>> ModelWaystoneBlocks =
         ModelWaystone.variants.stream()
@@ -26,11 +25,11 @@ public class BlockRegistry {
             .collect(Collectors.toList());
 
     private static final List<RegistryObject<Block>> PostBlocks =
-        Post.AllVariants.stream()
+        PostBlock.AllVariants.stream()
             .map(BlockRegistry::registerPostBlock)
             .collect(Collectors.toList());
 
-    private static RegistryObject<Block> registerPostBlock(Post.Variant postVariant) {
+    private static RegistryObject<Block> registerPostBlock(PostBlock.Variant postVariant) {
         return Register.register(postVariant.registryName, () -> postVariant.block);
     }
 

@@ -2,9 +2,9 @@ package gollorum.signpost.blockpartdata.types;
 
 import gollorum.signpost.BlockRestrictions;
 import gollorum.signpost.PlayerHandle;
-import gollorum.signpost.Signpost;
 import gollorum.signpost.interactions.InteractionInfo;
-import gollorum.signpost.minecraft.block.Waystone;
+import gollorum.signpost.minecraft.block.PostBlock;
+import gollorum.signpost.minecraft.block.WaystoneBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.PaintPostGui;
 import gollorum.signpost.minecraft.gui.SignGui;
@@ -23,8 +23,6 @@ import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.SignItem;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
@@ -33,7 +31,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
 
-public class Post implements BlockPart<Post> {
+public class PostBlockPart implements BlockPart<PostBlockPart> {
 
     private static final int maxSignCount = 10;
 
@@ -42,16 +40,16 @@ public class Post implements BlockPart<Post> {
         new Vector3(2, 8, 2)
     ).map(CoordinatesUtil::voxelToLocal);
 
-    public static final BlockPartMetadata<Post> METADATA = new BlockPartMetadata<>(
+    public static final BlockPartMetadata<PostBlockPart> METADATA = new BlockPartMetadata<>(
         "Post",
         (post, compound) -> compound.putString("texture", post.texture.toString()),
-        (compound) -> new Post(new ResourceLocation(compound.getString("texture"))),
-        Post.class
+        (compound) -> new PostBlockPart(new ResourceLocation(compound.getString("texture"))),
+        PostBlockPart.class
     );
 
     private ResourceLocation texture;
 
-    public Post(ResourceLocation texture) {
+    public PostBlockPart(ResourceLocation texture) {
         setTexture(texture);
     }
 
@@ -77,10 +75,10 @@ public class Post implements BlockPart<Post> {
     }
 
     private InteractionResult attachWaystone(InteractionInfo info, ItemStack heldItem, PlayerHandle playerHandle) {
-        if(info.tile.getParts().stream().noneMatch(p -> p.blockPart instanceof Waystone))
+        if(info.tile.getParts().stream().noneMatch(p -> p.blockPart instanceof WaystoneBlock))
             if(!info.isRemote && BlockRestrictions.getInstance().tryDecrementRemaining(BlockRestrictions.Type.Waystone, playerHandle)) {
                 info.tile.addPart(
-                    new BlockPartInstance(new gollorum.signpost.blockpartdata.types.Waystone(playerHandle), Vector3.ZERO),
+                    new BlockPartInstance(new WaystoneBlockPart(playerHandle), Vector3.ZERO),
                     new ItemStack(heldItem.getItem()),
                     PlayerHandle.from(info.player)
                 );
@@ -91,10 +89,10 @@ public class Post implements BlockPart<Post> {
     }
 
     private InteractionResult attachSign(InteractionInfo info, ItemStack heldItem) {
-        if (info.isRemote && info.tile.getParts().stream().filter(i -> i.blockPart instanceof Sign).count() < maxSignCount) {
+        if (info.isRemote && info.tile.getParts().stream().filter(i -> i.blockPart instanceof SignBlockPart).count() < maxSignCount) {
             SignGui.display(
                 info.tile,
-                gollorum.signpost.minecraft.block.Post.ModelType.from(info.player.getHeldItem(info.hand).getItem()).get(),
+                PostBlock.ModelType.from(info.player.getHeldItem(info.hand).getItem()).get(),
                 info.traceResult.hitPos,
                 new ItemStack(heldItem.getItem(), 1)
             );
@@ -112,13 +110,13 @@ public class Post implements BlockPart<Post> {
     private static boolean isValidSign(ItemStack itemStack) {
         if(itemStack == null || itemStack.getCount() < 1) return false;
         Item item = itemStack.getItem();
-        return gollorum.signpost.minecraft.block.Post.ModelType.from(item).isPresent();
+        return PostBlock.ModelType.from(item).isPresent();
     }
 
     private static boolean isWaystone(ItemStack itemStack) {
         if(itemStack == null || itemStack.getCount() < 1) return false;
         Item item = itemStack.getItem();
-        return item.equals(Waystone.INSTANCE.asItem());
+        return item.equals(WaystoneBlock.INSTANCE.asItem());
     }
 
     private static boolean isBrush(ItemStack itemStack) {
@@ -128,7 +126,7 @@ public class Post implements BlockPart<Post> {
     }
 
     @Override
-    public BlockPartMetadata<Post> getMeta() {
+    public BlockPartMetadata<PostBlockPart> getMeta() {
         return METADATA;
     }
 

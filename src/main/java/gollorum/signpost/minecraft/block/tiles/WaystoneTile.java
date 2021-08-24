@@ -3,7 +3,7 @@ package gollorum.signpost.minecraft.block.tiles;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneLibrary;
-import gollorum.signpost.minecraft.block.Waystone;
+import gollorum.signpost.minecraft.block.WaystoneBlock;
 import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.WaystoneContainer;
 import gollorum.signpost.utils.WorldLocation;
@@ -20,7 +20,7 @@ public class WaystoneTile extends TileEntity implements WithOwner.OfWaystone, Wa
 
     public static final String REGISTRY_NAME = "waystone";
 
-    public static final TileEntityType<WaystoneTile> type = TileEntityType.Builder.create(WaystoneTile::new, Waystone.INSTANCE).build(null);
+    public static final TileEntityType<WaystoneTile> type = TileEntityType.Builder.create(WaystoneTile::new, WaystoneBlock.INSTANCE).build(null);
 
     private Optional<PlayerHandle> owner = Optional.empty();
 

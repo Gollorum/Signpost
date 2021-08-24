@@ -27,11 +27,11 @@ public class PostBlockState extends BlockStateProvider {
 
     @Override
     protected void registerStatesAndModels() {
-        for (Map.Entry<Post.Variant, BlockModelBuilder> entry : postModel.allModels.entrySet()) {
+        for (Map.Entry<PostBlock.Variant, BlockModelBuilder> entry : postModel.allModels.entrySet()) {
             getVariantBuilder(entry.getKey().block)
                 .partialState().setModels(new ConfiguredModel(entry.getValue()));
         }
-        getVariantBuilder(Waystone.INSTANCE)
+        getVariantBuilder(WaystoneBlock.INSTANCE)
             .partialState().setModels(new ConfiguredModel(waystoneModel.waystoneModel));
 
         for(Map.Entry<ModelWaystone.Variant, ModelFile> entry : waystoneModel.variantModels.entrySet()) {

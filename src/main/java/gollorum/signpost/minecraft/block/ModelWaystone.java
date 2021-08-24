@@ -4,7 +4,6 @@ import gollorum.signpost.BlockRestrictions;
 import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
 import gollorum.signpost.security.WithCountRestriction;
-import gollorum.signpost.utils.WorldLocation;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.IWaterLoggable;
@@ -12,7 +11,6 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.material.MaterialColor;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.BlockItemUseContext;
@@ -99,7 +97,7 @@ public class ModelWaystone extends Block implements IWaterLoggable, WithCountRes
 
 	@Override
 	public String getTranslationKey() {
-		return Waystone.INSTANCE.getTranslationKey() + "_" + variant.langPrefix + "_" + variant.name;
+		return WaystoneBlock.INSTANCE.getTranslationKey() + "_" + variant.langPrefix + "_" + variant.name;
 	}
 
 	@Override
@@ -109,7 +107,7 @@ public class ModelWaystone extends Block implements IWaterLoggable, WithCountRes
 
 	@Override
 	public ActionResultType onBlockActivated(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
-		Waystone.onRightClick(world, pos, player);
+		WaystoneBlock.onRightClick(world, pos, player);
 		return ActionResultType.CONSUME;
 	}
 
@@ -154,7 +152,7 @@ public class ModelWaystone extends Block implements IWaterLoggable, WithCountRes
 	@Override
 	public void onBlockPlacedBy(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
 		super.onBlockPlacedBy(world, pos, state, placer, stack);
-		Waystone.registerOwnerAndRequestGui(world, pos, placer);
+		WaystoneBlock.registerOwnerAndRequestGui(world, pos, placer);
 	}
 
 	@Override

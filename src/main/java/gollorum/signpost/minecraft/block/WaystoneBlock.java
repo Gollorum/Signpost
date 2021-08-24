@@ -1,12 +1,10 @@
 package gollorum.signpost.minecraft.block;
 
 import gollorum.signpost.*;
-import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
 import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.gui.RequestWaystoneGui;
 import gollorum.signpost.minecraft.utils.LangKeys;
-import gollorum.signpost.minecraft.gui.WaystoneGui;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.security.WithCountRestriction;
@@ -15,13 +13,11 @@ import gollorum.signpost.utils.WaystoneData;
 import gollorum.signpost.utils.WorldLocation;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.material.MaterialColor;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.fluid.FluidState;
 import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.LootContext;
@@ -44,14 +40,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class Waystone extends Block implements WithCountRestriction {
+public class WaystoneBlock extends Block implements WithCountRestriction {
 
     private static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final String REGISTRY_NAME = "waystone";
 
-    public static final Waystone INSTANCE = new Waystone();
+    public static final WaystoneBlock INSTANCE = new WaystoneBlock();
 
-    private Waystone() {
+    private WaystoneBlock() {
         super(Properties.create(Material.PISTON, MaterialColor.STONE)
             .hardnessAndResistance(1.5F, 6.0F));
     }

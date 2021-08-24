@@ -3,6 +3,7 @@ package gollorum.signpost.minecraft.block;
 import gollorum.signpost.BlockRestrictions;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
+import gollorum.signpost.blockpartdata.types.PostBlockPart;
 import gollorum.signpost.interactions.Interactable;
 import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
@@ -47,16 +48,14 @@ import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class Post extends Block implements IWaterLoggable, WithCountRestriction {
+public class PostBlock extends Block implements IWaterLoggable, WithCountRestriction {
 
     public static class ModelType implements IStringSerializable {
 
@@ -253,7 +252,7 @@ public class Post extends Block implements IWaterLoggable, WithCountRestriction 
     private static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
     public static class Variant {
-        public final Post block;
+        public final PostBlock block;
         public final String registryName;
         public final Properties properties;
         public final ModelType type;
@@ -261,7 +260,7 @@ public class Post extends Block implements IWaterLoggable, WithCountRestriction 
         public Variant(Properties properties, ModelType type, String registryName) {
             this.properties = properties;
             this.type = type;
-            this.block = new Post(properties, type);
+            this.block = new PostBlock(properties, type);
             this.registryName = REGISTRY_NAME + "_" + registryName;
         }
 
@@ -286,7 +285,7 @@ public class Post extends Block implements IWaterLoggable, WithCountRestriction 
 
     public final ModelType type;
 
-    private Post(Properties properties, ModelType type) {
+    private PostBlock(Properties properties, ModelType type) {
         super(properties.notSolid());
         this.type = type;
         this.setDefaultState(this.getDefaultState().with(WATERLOGGED, false));
@@ -300,7 +299,7 @@ public class Post extends Block implements IWaterLoggable, WithCountRestriction 
                 tile.setSignpostOwner(Optional.of(PlayerHandle.from(placer)));
                 if (!world.isRemote) {
                     tile.addPart(
-                        new BlockPartInstance(new gollorum.signpost.blockpartdata.types.Post(type.postTexture), Vector3.ZERO),
+                        new BlockPartInstance(new PostBlockPart(type.postTexture), Vector3.ZERO),
                         ItemStack.EMPTY,
                         PlayerHandle.from(placer)
                     );

@@ -1,7 +1,7 @@
 package gollorum.signpost.minecraft.registry;
 
 import gollorum.signpost.Signpost;
-import gollorum.signpost.minecraft.block.Post;
+import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.blockpartdata.Overlay;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
@@ -25,14 +25,14 @@ public class ColorRegistry {
 
     @SubscribeEvent
     static void onBlockColor(ColorHandlerEvent.Block event) {
-        for(Post.Variant variant : Post.AllVariants) {
+        for(PostBlock.Variant variant : PostBlock.AllVariants) {
             event.getBlockColors().register(ColorRegistry::getOverlayBlockColor, variant.block);
         }
     }
 
     @SubscribeEvent
     static void onItemColor(ColorHandlerEvent.Item event) {
-        for(Post.Variant variant : Post.AllVariants) {
+        for(PostBlock.Variant variant : PostBlock.AllVariants) {
             event.getItemColors().register(ColorRegistry::getOverlayItemColor, variant.block);
             event.getBlockColors().register(ColorRegistry::getOverlayBlockColor, variant.block);
         }

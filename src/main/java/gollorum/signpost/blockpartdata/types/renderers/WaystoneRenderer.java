@@ -1,7 +1,7 @@
 package gollorum.signpost.blockpartdata.types.renderers;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import gollorum.signpost.blockpartdata.types.Waystone;
+import gollorum.signpost.blockpartdata.types.WaystoneBlockPart;
 import gollorum.signpost.minecraft.data.WaystoneModel;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
@@ -18,13 +18,13 @@ import net.minecraftforge.common.util.Lazy;
 
 import java.util.Random;
 
-public class WaystoneRenderer extends BlockPartRenderer<Waystone> {
+public class WaystoneRenderer extends BlockPartRenderer<WaystoneBlockPart> {
 
 	private static final Lazy<IBakedModel> model = Lazy.of(() -> RenderingUtil.loadModel(WaystoneModel.inPostLocation));
 
 	@Override
 	public void render(
-		Waystone part,
+		WaystoneBlockPart part,
 		TileEntity tileEntity,
 		TileEntityRendererDispatcher renderDispatcher,
 		MatrixStack matrix,
@@ -47,7 +47,7 @@ public class WaystoneRenderer extends BlockPartRenderer<Waystone> {
 	}
 
 	@Override
-	public void renderGui(Waystone part, Point center, Angle yaw, Angle pitch, float scale, Vector3 offset) {
+	public void renderGui(WaystoneBlockPart part, Point center, Angle yaw, Angle pitch, float scale, Vector3 offset) {
 		RenderingUtil.renderGui(model.get(), center, yaw, pitch, scale, offset);
 	}
 }

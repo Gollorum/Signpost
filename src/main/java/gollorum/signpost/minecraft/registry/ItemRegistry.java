@@ -12,7 +12,6 @@ import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,8 +29,8 @@ public class ItemRegistry {
     private static final DeferredRegister<Item> REGISTER = DeferredRegister.create(ForgeRegistries.ITEMS, MOD_ID);
 
     private static final RegistryObject<Item> WAYSTONE_ITEM =
-        REGISTER.register(Waystone.REGISTRY_NAME,
-            () -> new BlockItem(Waystone.INSTANCE, new Item.Properties().group(ITEM_GROUP)));
+        REGISTER.register(WaystoneBlock.REGISTRY_NAME,
+            () -> new BlockItem(WaystoneBlock.INSTANCE, new Item.Properties().group(ITEM_GROUP)));
 
     private static final List<RegistryObject<Item>> ModelWaystoneItems =
         ModelWaystone.variants.stream()
@@ -39,7 +38,7 @@ public class ItemRegistry {
             .collect(Collectors.toList());
 
     private static final List<RegistryObject<Item>> POSTS_ITEMS =
-        Post.AllVariants.stream()
+        PostBlock.AllVariants.stream()
             .map(ItemRegistry::registerPostItem)
             .collect(Collectors.toList());
 
@@ -47,7 +46,7 @@ public class ItemRegistry {
 
     public static final RegistryObject<Item> BRUSH = REGISTER.register(Brush.registryName, () -> new Brush(ITEM_GROUP));
 
-    private static RegistryObject<Item> registerPostItem(Post.Variant postVariant){
+    private static RegistryObject<Item> registerPostItem(PostBlock.Variant postVariant){
         return REGISTER.register(
             postVariant.registryName,
             () -> new BlockItem(postVariant.block, new Item.Properties().group(ITEM_GROUP)));
