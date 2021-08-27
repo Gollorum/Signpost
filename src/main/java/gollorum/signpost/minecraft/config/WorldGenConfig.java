@@ -65,13 +65,13 @@ public class WorldGenConfig {
 				"e.g.: If \"tol \", \"ker\" and \"dra\" are selected, the name will be \"Tol Kerdra\"",
 				"Here are some language-specific examples:",
 				"english:",
-				"\tvillage_name_prefixes = [\"" + String.join("\", \"", englishNamePrefixes) + "\"]",
-				"\tvillage_name_infixes = [\"" + String.join("\", \"", englishNameInfixes) + "\"]",
-				"\tvillage_name_postfixes = [\"" + String.join("\", \"", englishNamePostfixes) + "\"]",
+				"village_name_prefixes = [\"" + String.join("\", \"", englishNamePrefixes) + "\"]",
+				"village_name_infixes = [\"" + String.join("\", \"", englishNameInfixes) + "\"]",
+				"village_name_postfixes = [\"" + String.join("\", \"", englishNamePostfixes) + "\"]",
 				"german:",
-				"\tvillage_name_prefixes = [\"" + String.join("\", \"", germanNamePrefixes) + "\"]",
-				"\tvillage_name_infixes = [\"" + String.join("\", \"", germanNameInfixes) + "\"]",
-				"\tvillage_name_postfixes = [\"" + String.join("\", \"", germanNamePostfixes) + "\"]"
+				"village_name_prefixes = [\"" + String.join("\", \"", germanNamePrefixes) + "\"]",
+				"village_name_infixes = [\"" + String.join("\", \"", germanNameInfixes) + "\"]",
+				"village_name_postfixes = [\"" + String.join("\", \"", germanNamePostfixes) + "\"]"
 			).defineList(
 				"village_name_prefixes",
 				genericNamePrefixes,
