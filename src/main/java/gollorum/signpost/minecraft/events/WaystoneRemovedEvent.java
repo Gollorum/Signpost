@@ -1,11 +1,12 @@
 package gollorum.signpost.minecraft.events;
 
+import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.utils.WaystoneLocationData;
 
 public class WaystoneRemovedEvent extends WaystoneUpdatedEvent {
 
-    public WaystoneRemovedEvent(WaystoneLocationData location, String name) {
-        super(location, name);
+    public WaystoneRemovedEvent(WaystoneLocationData location, String name, WaystoneHandle.Vanilla id) {
+        super(location, name, id);
     }
 
     @Override

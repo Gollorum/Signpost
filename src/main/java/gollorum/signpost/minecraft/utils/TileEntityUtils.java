@@ -44,21 +44,21 @@ public class TileEntityUtils {
                 : Optional.empty());
     }
 
-    public static Optional<World> toWorld(Either<World, ResourceLocation> either) {
+    public static Optional<World> toWorld(Either<World, ResourceLocation> either, boolean onClient) {
         return either.match(
             Optional::of,
-            right -> findWorld(right, !Signpost.getServerType().isServer)
+            right -> findWorld(right, onClient)
         );
     }
 
-    public static <T> Optional<T> findTileEntityAt(WorldLocation location, Class<T> c) {
-        return toWorld(location.world)
+    public static <T> Optional<T> findTileEntityAt(WorldLocation location, Class<T> c, boolean onClient) {
+        return toWorld(location.world, onClient)
             .map(w -> w.getTileEntity(location.blockPos))
             .flatMap(tile -> c.isAssignableFrom(tile.getClass()) ? Optional.of((T)tile) : Optional.empty());
     }
 
-    public static <T> void delayUntilTileEntityExistsAt(WorldLocation location, Class<T> c, Consumer<T> action, int timeout, Optional<Runnable> onTimeOut) {
-        Delay.untilIsPresent(() -> findTileEntityAt(location, c), action, timeout, onTimeOut);
+    public static <T> void delayUntilTileEntityExistsAt(WorldLocation location, Class<T> c, Consumer<T> action, int timeout, boolean onClient, Optional<Runnable> onTimeOut) {
+        Delay.untilIsPresent(() -> findTileEntityAt(location, c, onClient), action, timeout, onClient, onTimeOut);
     }
 
     public static <T> Optional<T> findTileEntityClient(ResourceLocation dimensionKeyLocation, BlockPos pos, Class<T> c){

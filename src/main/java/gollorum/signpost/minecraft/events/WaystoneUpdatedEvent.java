@@ -1,26 +1,28 @@
 package gollorum.signpost.minecraft.events;
 
+import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.utils.WaystoneLocationData;
-import gollorum.signpost.utils.OwnershipData;
 import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.serialization.BufferSerializable;
+import gollorum.signpost.utils.serialization.CompoundSerializable;
 import net.minecraft.network.PacketBuffer;
 
 import java.util.Optional;
+import java.util.UUID;
 
 public abstract class WaystoneUpdatedEvent {
 
     public static WaystoneUpdatedEvent fromUpdated(
-        WaystoneLocationData location, String name, Optional<String> oldName, boolean isLocked
+        WaystoneLocationData location, String name, Optional<String> oldName, boolean isLocked, WaystoneHandle.Vanilla handle
     ) {
-        return oldName.map(n -> (WaystoneUpdatedEvent) new WaystoneRenamedEvent(location, name, n, isLocked))
-            .orElse(new WaystoneAddedEvent(location, name, isLocked));
+        return oldName.map(n -> (WaystoneUpdatedEvent) new WaystoneRenamedEvent(location, name, n, isLocked, handle))
+            .orElse(new WaystoneAddedEvent(location, name, isLocked, handle));
     }
 
     public static WaystoneUpdatedEvent fromUpdated(
-        WaystoneLocationData location, String name, boolean isLocked
+        WaystoneLocationData location, String name, boolean isLocked, WaystoneHandle.Vanilla handle
     ) {
-        return new WaystoneAddedEvent(location, name, isLocked);
+        return new WaystoneAddedEvent(location, name, isLocked, handle);
     }
 
     public enum Type {
@@ -29,10 +31,12 @@ public abstract class WaystoneUpdatedEvent {
 
     public final WaystoneLocationData location;
     public final String name;
+    public final WaystoneHandle.Vanilla handle;
 
-    public WaystoneUpdatedEvent(WaystoneLocationData location, String name) {
+    public WaystoneUpdatedEvent(WaystoneLocationData location, String name, WaystoneHandle.Vanilla handle) {
         this.location = location;
         this.name = name;
+        this.handle = handle;
     }
 
     public abstract Type getType();
@@ -47,11 +51,11 @@ public abstract class WaystoneUpdatedEvent {
             return WaystoneUpdatedEvent.class;
         }
 
-        @Override
         public void write(WaystoneUpdatedEvent event, PacketBuffer buffer) {
             buffer.writeEnumValue(event.getType());
             WaystoneLocationData.SERIALIZER.write(event.location, buffer);
             buffer.writeString(event.name);
+            WaystoneHandle.Vanilla.Serializer.write(event.handle, buffer);
             if(event instanceof WaystoneRenamedEvent)
                 buffer.writeString(((WaystoneRenamedEvent)event).oldName);
             else if(event instanceof WaystoneMovedEvent)
@@ -60,16 +64,16 @@ public abstract class WaystoneUpdatedEvent {
                 buffer.writeBoolean(((WaystoneAddedOrRenamedEvent) event).isLocked);
         }
 
-        @Override
         public WaystoneUpdatedEvent read(PacketBuffer buffer) {
             Type type = buffer.readEnumValue(Type.class);
             WaystoneLocationData location = WaystoneLocationData.SERIALIZER.read(buffer);
             String name = buffer.readString(32767);
+            WaystoneHandle.Vanilla handle = WaystoneHandle.Vanilla.Serializer.read(buffer);
             switch (type){
-                case Added: return new WaystoneAddedEvent(location, name, buffer.readBoolean());
-                case Removed: return new WaystoneRemovedEvent(location, name);
-                case Renamed: return new WaystoneRenamedEvent(location, name, buffer.readString(32767), buffer.readBoolean());
-                case Moved: return new WaystoneMovedEvent(location, WorldLocation.SERIALIZER.read(buffer), name);
+                case Added: return new WaystoneAddedEvent(location, name, buffer.readBoolean(), handle);
+                case Removed: return new WaystoneRemovedEvent(location, name, handle);
+                case Renamed: return new WaystoneRenamedEvent(location, name, buffer.readString(32767), buffer.readBoolean(), handle);
+                case Moved: return new WaystoneMovedEvent(location, WorldLocation.SERIALIZER.read(buffer), name, handle);
                 default: throw new RuntimeException("Type " + type + " is not supported");
             }
         }

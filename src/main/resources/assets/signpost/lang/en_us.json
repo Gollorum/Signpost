@@ -33,8 +33,8 @@
   "gui.signpost.rotation_label": "Rotation:",
   "gui.signpost.rotation_waystone": "%d (point at waystone)",
   "gui.signpost.rotation_player": "%d (face the player)",
-  "gui.signpost.main_material": "Main material",
-  "gui.signpost.secondary_material": "Secondary material",
+  "gui.signpost.main_material": "Front",
+  "gui.signpost.secondary_material": "Back",
 
   "signpost.discovered": "You can now travel to %s using sign posts.",
   "signpost.not_discovered": "You have not yet discovered %s",
@@ -57,5 +57,7 @@
   "signpost:unlimited_waystones_other": "The amount of waystones %s is allowed to place is not limited.",
   "signpost:unlimited_signposts_other": "The amount of signposts %s is allowed to place is not limited.",
 
-  "itemGroup.signpost": "Sign post"
+  "itemGroup.signpost": "Sign post",
+
+  "signpost.no_teleport_waystones_mod": "You cannot use a sign post to travel to this waystone. Use a Warp Scroll or similar."
 }

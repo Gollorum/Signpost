@@ -3,6 +3,9 @@ package gollorum.signpost.utils.serialization;
 import net.minecraft.network.PacketBuffer;
 
 public final class IntSerializer implements BufferSerializable<Integer> {
+
+    public static final IntSerializer instance = new IntSerializer();
+
     @Override
     public Class<Integer> getTargetClass() {
         return Integer.class;

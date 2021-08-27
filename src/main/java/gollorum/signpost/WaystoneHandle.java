@@ -1,65 +1,102 @@
 package gollorum.signpost;
 
+import gollorum.signpost.relations.ExternalWaystoneLibrary;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
+import gollorum.signpost.utils.serialization.StringSerializer;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
-public class WaystoneHandle {
-    public final UUID id;
+public interface WaystoneHandle {
 
-    public WaystoneHandle(UUID id) {
-        this.id = id;
+    void write(PacketBuffer buffer);
+    void write(CompoundNBT compound);
+
+    static Optional<WaystoneHandle> read(PacketBuffer buffer) {
+        String type = StringSerializer.instance.read(buffer);
+        if(type.equals(Vanilla.typeTag)) return Optional.of(Vanilla.Serializer.read(buffer));
+        else return ExternalWaystoneLibrary.getInstance().read(type, buffer);
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        WaystoneHandle that = (WaystoneHandle) o;
-        return Objects.equals(id, that.id);
+    static Optional<WaystoneHandle> read(CompoundNBT compound) {
+        String type = compound.getString("type");
+        if(type.equals(Vanilla.typeTag)) return Optional.of(Vanilla.Serializer.read(compound));
+        else return ExternalWaystoneLibrary.getInstance().read(type, compound);
     }
 
-    @Override
-    public int hashCode() {
-        return id.hashCode();
+    public static class Vanilla implements WaystoneHandle {
+        public static final String typeTag = "vanilla";
+
+        public final UUID id;
+
+        public Vanilla(UUID id) {
+            this.id = id;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Vanilla that = (Vanilla) o;
+            return Objects.equals(id, that.id);
+        }
+
+        @Override
+        public int hashCode() {
+            return id.hashCode();
+        }
+
+        public static final CompoundSerializable<Vanilla> Serializer = new SerializerImpl();
+
+        @Override
+        public void write(PacketBuffer buffer) {
+            buffer.writeString(typeTag);
+            Serializer.write(this, buffer);
+        }
+
+        @Override
+        public void write(CompoundNBT compound) {
+            Serializer.write(this, compound);
+        }
+
+        public static final class SerializerImpl implements CompoundSerializable<Vanilla> {
+
+            @Override
+            public CompoundNBT write(Vanilla playerHandle, CompoundNBT compound) {
+                compound.putString("type", typeTag);
+                compound.putUniqueId("Id", playerHandle.id);
+                return compound;
+            }
+
+            @Override
+            public boolean isContainedIn(CompoundNBT compound) {
+                return compound.contains("Id");
+            }
+
+            @Override
+            public Vanilla read(CompoundNBT compound) {
+                return new Vanilla(compound.getUniqueId("Id"));
+            }
+
+            @Override
+            public Class<Vanilla> getTargetClass() {
+                return Vanilla.class;
+            }
+
+            @Override
+            public void write(Vanilla playerHandle, PacketBuffer buffer) {
+                buffer.writeUniqueId(playerHandle.id);
+            }
+
+            @Override
+            public Vanilla read(PacketBuffer buffer) {
+                return new Vanilla(buffer.readUniqueId());
+            }
+        };
+
     }
-
-    public static final CompoundSerializable<WaystoneHandle> Serializer = new SerializerImpl();
-    public static final class SerializerImpl implements CompoundSerializable<WaystoneHandle> {
-
-        @Override
-        public CompoundNBT write(WaystoneHandle playerHandle, CompoundNBT compound) {
-            compound.putUniqueId("Id", playerHandle.id);
-            return compound;
-        }
-
-        @Override
-        public boolean isContainedIn(CompoundNBT compound) {
-            return compound.contains("Id");
-        }
-
-        @Override
-        public WaystoneHandle read(CompoundNBT compound) {
-            return new WaystoneHandle(compound.getUniqueId("Id"));
-        }
-
-        @Override
-        public Class<WaystoneHandle> getTargetClass() {
-            return WaystoneHandle.class;
-        }
-
-        @Override
-        public void write(WaystoneHandle playerHandle, PacketBuffer buffer) {
-            buffer.writeUniqueId(playerHandle.id);
-        }
-
-        @Override
-        public WaystoneHandle read(PacketBuffer buffer) {
-            return new WaystoneHandle(buffer.readUniqueId());
-        }
-    };
 
 }

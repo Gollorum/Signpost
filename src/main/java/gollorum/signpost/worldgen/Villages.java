@@ -66,26 +66,35 @@ public class Villages {
 	public void initialize() {
 		registerProcessorLists();
 		for(VillageType villageType : VillageType.values()) {
-			addToPool(
-				ImmutableList.of(
-					Pair.of(
-						new WaystoneJigsawPiece(villageType.getStructureResourceLocation("waystone"),
-							villageType.processorList, JigsawPattern.PlacementBehaviour.TERRAIN_MATCHING),
-						5
-					),
-					Pair.of(
-						new SignpostJigsawPiece(villageType.getStructureResourceLocation("signpost"),
-							villageType.processorList, JigsawPattern.PlacementBehaviour.TERRAIN_MATCHING),
-						5
-					)
-				),
-				getVillagePool(villageType)
-			);
+			registerFor(villageType, true);
+			registerFor(villageType, false);
 		}
+	}
+
+	private void registerFor(VillageType villageType, boolean isZombie) {
+		addToPool(
+			ImmutableList.of(
+				Pair.of(
+					new WaystoneJigsawPiece(villageType.getStructureResourceLocation("waystone"),
+						villageType.processorList, JigsawPattern.PlacementBehaviour.RIGID),
+					5
+				),
+				Pair.of(
+					new SignpostJigsawPiece(villageType.getStructureResourceLocation("signpost"),
+						villageType.processorList, JigsawPattern.PlacementBehaviour.TERRAIN_MATCHING, isZombie),
+					5
+				)
+			),
+			isZombie ? getZombieVillagePool(villageType) : getVillagePool(villageType)
+		);
 	}
 
 	private static ResourceLocation getVillagePool(VillageType villageType) {
 		return  new ResourceLocation("village/" + villageType.name + "/houses");
+	}
+
+	private static ResourceLocation getZombieVillagePool(VillageType villageType) {
+		return  new ResourceLocation("village/" + villageType.name + "/zombie/houses");
 	}
 
 	private void addLocationsToPool(

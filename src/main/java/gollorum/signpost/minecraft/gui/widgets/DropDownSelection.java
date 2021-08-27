@@ -1,4 +1,4 @@
-package gollorum.signpost.minecraft.gui.widget;
+package gollorum.signpost.minecraft.gui.widgets;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
@@ -107,6 +107,10 @@ public class DropDownSelection<EntryType> extends ImageButton {
 
     public void setEntries(Collection<EntryType> entries) {
         allEntries.clear();
+        addEntries(entries);
+    }
+
+    public void addEntries(Collection<EntryType> entries) {
         allEntries.addAll(entries);
         list.updateContent();
     }

@@ -6,10 +6,12 @@ import gollorum.signpost.Teleport;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.RequestSignGui;
 import gollorum.signpost.minecraft.gui.RequestWaystoneGui;
+import gollorum.signpost.utils.EventDispatcher;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Unit;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
@@ -31,16 +33,18 @@ public class PacketHandler {
         new PostTile.PartMutatedEvent(),
         new PostTile.PartRemovedEvent(),
         new Teleport.Request(),
+        new Teleport.RequestGui(),
         new RequestSignGui(),
         new RequestSignGui.ForNewSign(),
         new RequestWaystoneGui(),
-        new BlockRestrictions.NotifyCountChanged()
+        new BlockRestrictions.NotifyCountChanged(),
     };
 
     private static final String PROTOCOL_VERSION = "1";
     private static SimpleChannel channel;
 
-    private static int id;
+    private static final EventDispatcher.Impl.WithPublicDispatch<Unit> onInitialize = new EventDispatcher.Impl.WithPublicDispatch<>();
+    public static EventDispatcher<Unit> onInitialize() { return onInitialize; }
 
     public static void initialize(){
         channel = NetworkRegistry.newSimpleChannel(
@@ -49,22 +53,25 @@ public class PacketHandler {
             PROTOCOL_VERSION::equals,
             PROTOCOL_VERSION::equals
         );
+        int id = 0;
         for(Event<?> event : EVENTS){
-            register(event);
+            register(event, id++);
         }
+        onInitialize.dispatch(Unit.INSTANCE, false);
     }
 
-    public static <T> void register(Event<T> event){
-        register(event.getMessageClass(), event::encode, event::decode, event::handle);
+    public static <T> void register(Event<T> event, int id){
+        register(event.getMessageClass(), event::encode, event::decode, event::handle, id);
     }
 
     public static <T> void register(
         Class<T> messageClass,
         BiConsumer<T, PacketBuffer> encode,
         Function<PacketBuffer, T> decode,
-        BiConsumer<T, Supplier<NetworkEvent.Context>> handle
+        BiConsumer<T, Supplier<NetworkEvent.Context>> handle,
+        int id
     ){
-        channel.registerMessage(id++, messageClass, encode, decode, handle);
+        channel.registerMessage(id, messageClass, encode, decode, handle);
     }
 
     public static <T> void sendToServer(T message) {

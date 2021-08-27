@@ -1,4 +1,4 @@
-package gollorum.signpost.minecraft.gui.widget;
+package gollorum.signpost.minecraft.gui.widgets;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;

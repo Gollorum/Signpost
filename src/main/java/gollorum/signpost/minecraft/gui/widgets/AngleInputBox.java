@@ -1,4 +1,4 @@
-package gollorum.signpost.minecraft.gui.widget;
+package gollorum.signpost.minecraft.gui.widgets;
 
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.utils.Rect;

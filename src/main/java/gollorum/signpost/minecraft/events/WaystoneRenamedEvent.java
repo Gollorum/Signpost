@@ -1,5 +1,6 @@
 package gollorum.signpost.minecraft.events;
 
+import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.utils.WaystoneLocationData;
 
 public class WaystoneRenamedEvent extends WaystoneAddedOrRenamedEvent {
@@ -10,9 +11,10 @@ public class WaystoneRenamedEvent extends WaystoneAddedOrRenamedEvent {
 	    WaystoneLocationData location,
 	    String newName,
 	    String oldName,
-	    boolean isLocked
+	    boolean isLocked,
+        WaystoneHandle.Vanilla id
     ) {
-        super(location, newName, isLocked);
+        super(location, newName, isLocked, id);
         this.oldName = oldName;
     }
 

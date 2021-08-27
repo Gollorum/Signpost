@@ -481,7 +481,8 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
 
         @Override
         public void handle(Packet message, NetworkEvent.Context context) {
-            TileEntityUtils.findWorld(message.info.dimensionKey, context.getDirection().getReceptionSide().isClient()).ifPresent(world ->
+            boolean isClient = context.getDirection().getReceptionSide().isClient();
+            TileEntityUtils.findWorld(message.info.dimensionKey, isClient).ifPresent(world ->
                 TileEntityUtils.delayUntilTileEntityExistsAt(
                     new WorldLocation(message.info.pos, world),
                     PostTile.class,
@@ -507,6 +508,7 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
                         }
                     },
                     100,
+                    isClient,
                     Optional.of(() -> Signpost.LOGGER.error("Failed to process PartRemovedEvent, tile was not present"))
                 )
             );
@@ -596,6 +598,7 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
                         else Signpost.LOGGER.error("Tried to mutate a post part that wasn't present: " + message.info.identifier);
                     },
                     100,
+                    !isServer,
                     Optional.of(() -> Signpost.LOGGER.error("Failed to process PartMutatedEvent, tile was not present"))
                 ));
         }

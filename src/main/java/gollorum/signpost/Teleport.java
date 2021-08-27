@@ -9,9 +9,13 @@ import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.minecraft.utils.Inventory;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
+import gollorum.signpost.relations.ExternalWaystone;
+import gollorum.signpost.utils.Either;
 import gollorum.signpost.utils.WaystoneLocationData;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
+import gollorum.signpost.utils.serialization.*;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.Item;
@@ -32,8 +36,10 @@ public class Teleport {
 
     public static void toWaystone(WaystoneHandle waystone, PlayerEntity player) {
         assert Signpost.getServerType().isServer;
-        WaystoneLocationData waystoneData = WaystoneLibrary.getInstance().getLocationData(waystone);
-        toWaystone(waystoneData, player);
+        if(waystone instanceof WaystoneHandle.Vanilla) {
+            WaystoneLocationData waystoneData = WaystoneLibrary.getInstance().getLocationData((WaystoneHandle.Vanilla) waystone);
+            toWaystone(waystoneData, player);
+        } else Signpost.LOGGER.error("Tried to teleport to non-vanilla waystone " + ((ExternalWaystone.Handle)waystone).modMark());
     }
 
     public static void toWaystone(WaystoneLocationData waystoneData, PlayerEntity player){
@@ -60,14 +66,10 @@ public class Teleport {
     }
 
     public static void requestOnClient(
-        String waystoneName,
-        ItemStack cost,
-        boolean isDiscovered,
-        int distance,
-        int maxDistance,
+        Either<String, RequestGui.Package.Info> data,
         Optional<ConfirmTeleportGui.SignInfo> signInfo
     ) {
-        ConfirmTeleportGui.display(waystoneName, cost, isDiscovered, distance, maxDistance, signInfo);
+        ConfirmTeleportGui.display(data, signInfo);
     }
 
     public static ItemStack getCost(PlayerEntity player, Vector3 from, Vector3 to) {
@@ -82,6 +84,15 @@ public class Teleport {
 
     public static final class Request implements PacketHandler.Event<Request.Package> {
 
+        public static final class Package {
+            public final String waystoneName;
+            public Package(
+                String waystoneName
+            ) {
+                this.waystoneName = waystoneName;
+            }
+        }
+
         @Override
         public Class<Package> getMessageClass() {
             return Package.class;
@@ -89,99 +100,142 @@ public class Teleport {
 
         @Override
         public void encode(Package message, PacketBuffer buffer) {
-            buffer.writeString(message.waystoneName);
-            buffer.writeBoolean(message.isDiscovered);
-            buffer.writeInt(message.distance);
-            buffer.writeInt(message.maxDistance);
-            buffer.writeItemStack(message.cost);
-            PostTile.TilePartInfo.Serializer.optional().write(message.tilePartInfo, buffer);
+            StringSerializer.instance.write(message.waystoneName, buffer);
         }
 
         @Override
         public Package decode(PacketBuffer buffer) {
-            return new Package(
-                buffer.readString(32767),
-                buffer.readBoolean(),
-                buffer.readInt(),
-                buffer.readInt(),
-                buffer.readItemStack(),
-                PostTile.TilePartInfo.Serializer.optional().read(buffer)
-            );
+            return new Package(StringSerializer.instance.read(buffer));
         }
 
         @Override
         public void handle(
             Package message, NetworkEvent.Context context
         ) {
-            if(context.getDirection().getReceptionSide().isServer()) {
-                ServerPlayerEntity player = context.getSender();
-                Optional<WaystoneHandle> waystone = WaystoneLibrary.getInstance().getHandleByName(message.waystoneName);
-                if(waystone.isPresent()) {
-                    WaystoneHandle handle = waystone.get();
-                    WaystoneLocationData waystoneData = WaystoneLibrary.getInstance().getLocationData(handle);
+            ServerPlayerEntity player = context.getSender();
+            Optional<WaystoneHandle.Vanilla> waystone = WaystoneLibrary.getInstance().getHandleByName(message.waystoneName);
+            if(waystone.isPresent()) {
+                WaystoneHandle.Vanilla handle = waystone.get();
+                WaystoneLocationData waystoneData = WaystoneLibrary.getInstance().getLocationData(handle);
 
-                    boolean isDiscovered = WaystoneLibrary.getInstance().isDiscovered(PlayerHandle.from(player), handle)
-                        || !Config.Server.teleport.enforceDiscovery.get();
-                    int distance = (int) waystoneData.spawn.distanceTo(Vector3.fromVec3d(player.getPositionVec()));
-                    int maxDistance = Config.Server.teleport.maximumDistance.get();
-                    boolean isTooFarAway = maxDistance > 0 && distance > maxDistance;
-                    if(!isDiscovered) player.sendMessage(new TranslationTextComponent(LangKeys.notDiscovered, message.waystoneName), Util.DUMMY_UUID);
-                    if(isTooFarAway) player.sendMessage(new TranslationTextComponent(LangKeys.tooFarAway, Integer.toString(distance), Integer.toString(maxDistance)), Util.DUMMY_UUID);
-                    if(!isDiscovered || isTooFarAway) return;
+                boolean isDiscovered = WaystoneLibrary.getInstance().isDiscovered(PlayerHandle.from(player), handle)
+                    || !Config.Server.teleport.enforceDiscovery.get();
+                int distance = (int) waystoneData.spawn.distanceTo(Vector3.fromVec3d(player.getPositionVec()));
+                int maxDistance = Config.Server.teleport.maximumDistance.get();
+                boolean isTooFarAway = maxDistance > 0 && distance > maxDistance;
+                if(!isDiscovered) player.sendMessage(new TranslationTextComponent(LangKeys.notDiscovered, message.waystoneName), Util.DUMMY_UUID);
+                if(isTooFarAway) player.sendMessage(new TranslationTextComponent(LangKeys.tooFarAway, Integer.toString(distance), Integer.toString(maxDistance)), Util.DUMMY_UUID);
+                if(!isDiscovered || isTooFarAway) return;
 
-                    Inventory.tryPay(
-                        player,
-                        Teleport.getCost(player, Vector3.fromBlockPos(waystoneData.block.blockPos), waystoneData.spawn),
-                        p -> Teleport.toWaystone(waystoneData, p)
-                    );
-                } else player.sendMessage(
-                    new TranslationTextComponent(LangKeys.waystoneNotFound, Colors.wrap(message.waystoneName, Colors.highlight)),
-                    Util.DUMMY_UUID
+                Inventory.tryPay(
+                    player,
+                    Teleport.getCost(player, Vector3.fromBlockPos(waystoneData.block.blockPos), waystoneData.spawn),
+                    p -> Teleport.toWaystone(waystoneData, p)
                 );
-            } else {
-                if(Config.Client.enableConfirmationScreen.get()) requestOnClient(
-                    message.waystoneName,
-                    message.cost,
-                    message.isDiscovered,
-                    message.distance,
-                    message.maxDistance,
-                    message.tilePartInfo.flatMap(info -> TileEntityUtils.findTileEntity(
-                        info.dimensionKey,
-                        true,
-                        info.pos,
-                        PostTile.class
-                    ).flatMap(tile -> tile.getPart(info.identifier)
-                        .flatMap(part -> part.blockPart instanceof SignBlockPart
-                            ? Optional.of(new ConfirmTeleportGui.SignInfo(tile, (SignBlockPart) part.blockPart, info, part.offset)) : Optional.empty()
-                        ))));
-                else PacketHandler.sendToServer(message);
-            }
+            } else player.sendMessage(
+                new TranslationTextComponent(LangKeys.waystoneNotFound, Colors.wrap(message.waystoneName, Colors.highlight)),
+                Util.DUMMY_UUID
+            );
         }
+
+    }
+
+    public static final class RequestGui implements PacketHandler.Event<RequestGui.Package> {
 
         public static final class Package {
-            public final String waystoneName;
-            public final boolean isDiscovered;
-            public final int distance;
-            public final int maxDistance;
-            public final ItemStack cost;
+
+            public final Either<String, Info> data;
             public final Optional<PostTile.TilePartInfo> tilePartInfo;
-            public Package(
-                String waystoneName,
-                boolean isDiscovered,
-                int distance,
-                int maxDistance,
-                ItemStack cost,
-                Optional<PostTile.TilePartInfo> tilePartInfo
-            ) {
-                this.waystoneName = waystoneName;
-                this.isDiscovered = isDiscovered;
-                this.distance = distance;
-                this.maxDistance = maxDistance;
-                this.cost = cost;
+
+            public Package(Either<String, Info> data, Optional<PostTile.TilePartInfo> tilePartInfo) {
+                this.data = data;
                 this.tilePartInfo = tilePartInfo;
+            }
+
+            public static final class Info {
+
+                public int maxDistance;
+                public int distance;
+                public boolean isDiscovered;
+                public String waystoneName;
+                public ItemStack cost;
+
+                public Info(int maxDistance, int distance, boolean isDiscovered, String waystoneName, ItemStack cost) {
+                    this.maxDistance = maxDistance;
+                    this.distance = distance;
+                    this.isDiscovered = isDiscovered;
+                    this.waystoneName = waystoneName;
+                    this.cost = cost;
+                }
+
+                public static final Serializer serializer = new Serializer();
+                public static final class Serializer implements BufferSerializable<Info> {
+
+                    @Override
+                    public Class<Info> getTargetClass() { return Info.class; }
+
+                    @Override
+                    public void write(Info info, PacketBuffer buffer) {
+                        buffer.writeInt(info.maxDistance);
+                        buffer.writeInt(info.distance);
+                        buffer.writeBoolean(info.isDiscovered);
+                        buffer.writeString(info.waystoneName);
+                        buffer.writeItemStack(info.cost);
+                    }
+
+                    @Override
+                    public Info read(PacketBuffer buffer) {
+                        return new Info(
+                            buffer.readInt(),
+                            buffer.readInt(),
+                            buffer.readBoolean(),
+                            buffer.readString(),
+                            buffer.readItemStack()
+                        );
+                    }
+                }
             }
         }
 
+        @Override
+        public Class<Package> getMessageClass() {
+            return Package.class;
+        }
+
+        @Override
+        public void encode(Package message, PacketBuffer buffer) {
+            Either.BufferSerializer.of(StringSerializer.instance, Package.Info.serializer)
+                .write(message.data, buffer);
+            PostTile.TilePartInfo.Serializer.optional().write(message.tilePartInfo, buffer);
+        }
+
+        @Override
+        public Package decode(PacketBuffer buffer) {
+            return new Package(
+                Either.BufferSerializer.of(StringSerializer.instance, Package.Info.serializer)
+                    .read(buffer),
+                PostTile.TilePartInfo.Serializer.optional().read(buffer)
+            );
+        }
+
+        @Override
+        public void handle(Package message, NetworkEvent.Context context) {
+            if(Config.Client.enableConfirmationScreen.get()) requestOnClient(
+                message.data,
+                message.tilePartInfo.flatMap(info -> TileEntityUtils.findTileEntity(
+                    info.dimensionKey,
+                    true,
+                    info.pos,
+                    PostTile.class
+                ).flatMap(tile -> tile.getPart(info.identifier)
+                    .flatMap(part -> part.blockPart instanceof SignBlockPart
+                        ? Optional.of(new ConfirmTeleportGui.SignInfo(tile, (SignBlockPart) part.blockPart, info, part.offset)) : Optional.empty()
+                    ))));
+            else message.data.consume(
+                l -> Minecraft.getInstance().player.sendStatusMessage(new TranslationTextComponent(l), true),
+                r -> PacketHandler.sendToServer(new Request.Package(r.waystoneName))
+            );
+        }
     }
 
 }

@@ -60,6 +60,10 @@ public final class Angle {
         return Float.compare(angle.radians, radians) == 0;
     }
 
+    public boolean isNearly(Angle other, Angle threshold) {
+        return Math.abs(radians - other.radians) <= threshold.radians;
+    }
+
     @Override
     public int hashCode() {
         return Float.hashCode(radians);

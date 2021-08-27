@@ -1,9 +1,6 @@
 package gollorum.signpost.blockpartdata.types;
 
-import gollorum.signpost.PlayerHandle;
-import gollorum.signpost.Teleport;
-import gollorum.signpost.WaystoneHandle;
-import gollorum.signpost.WaystoneLibrary;
+import gollorum.signpost.*;
 import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.PostBlock;
@@ -13,8 +10,10 @@ import gollorum.signpost.minecraft.gui.PaintSignGui;
 import gollorum.signpost.minecraft.gui.RequestSignGui;
 import gollorum.signpost.minecraft.items.Brush;
 import gollorum.signpost.networking.PacketHandler;
+import gollorum.signpost.relations.ExternalWaystone;
 import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.BlockPart;
+import gollorum.signpost.utils.Either;
 import gollorum.signpost.utils.WaystoneData;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Intersectable;
@@ -96,7 +95,12 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
                 compound.putString("TextureDark", coreData.secondaryTexture.toString());
                 compound.put("Overlay", Overlay.Serializer.optional().write(coreData.overlay));
                 compound.putInt("Color", coreData.color);
-                compound.put("Destination", WaystoneHandle.Serializer.optional().write(coreData.destination));
+
+                CompoundNBT dest = new CompoundNBT();
+                dest.putBoolean("IsPresent", coreData.destination.isPresent());
+                coreData.destination.ifPresent(d -> d.write(dest));
+                compound.put("Destination", dest);
+
                 compound.put("ItemToDropOnBreak", ItemStackSerializer.Instance.write(coreData.itemToDropOnBreak));
                 compound.putString("ModelType", coreData.modelType.name);
                 compound.putBoolean("IsLocked", coreData.isLocked);
@@ -118,6 +122,13 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
 
             @Override
             public CoreData read(CompoundNBT compound) {
+                CompoundNBT dest = compound.getCompound("Destination");
+                Optional<WaystoneHandle> destination;
+                if(dest.getBoolean("IsPresent")){
+                    Optional<WaystoneHandle> d2 = WaystoneHandle.read(dest);
+                    if(!d2.isPresent()) Signpost.LOGGER.error("Error deserializing waystone handle of unknown type: " + dest.getString("type"));
+                    destination = d2;
+                } else destination = Optional.empty();
                 return new CoreData(
                     Angle.Serializer.read(compound.getCompound("Angle")),
                     compound.getBoolean("Flip"),
@@ -125,7 +136,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
                     new ResourceLocation(compound.getString("TextureDark")),
                     Overlay.Serializer.optional().read(compound.getCompound("Overlay")),
                     compound.getInt("Color"),
-                    WaystoneHandle.Serializer.optional().read(compound.getCompound("Destination")),
+                    destination,
                     PostBlock.ModelType.getByName(compound.getString("ModelType"), true)
                         .orElseThrow(() -> new RuntimeException("Tried to load sign post model type " + compound.getString("ModelType") +
                             ", but it hasn't been registered. @Dev: You have to call Post.ModelType.register")),
@@ -254,19 +265,26 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
     }
 
     private void tryTeleport(ServerPlayerEntity player, PostTile.TilePartInfo tilePartInfo) {
-        if(Config.Server.teleport.enableTeleport.get() && coreData.destination.isPresent() && WaystoneLibrary.getInstance().contains(coreData.destination.get())) {
-            WaystoneData data = WaystoneLibrary.getInstance().getData(coreData.destination.get());
-            boolean isDiscovered = WaystoneLibrary.getInstance()
-                .isDiscovered(new PlayerHandle(player), coreData.destination.get()) || !Config.Server.teleport.enforceDiscovery.get();
-            int distance = (int) data.location.spawn.distanceTo(Vector3.fromVec3d(player.getPositionVec()));
+        if(Config.Server.teleport.enableTeleport.get() && coreData.destination.isPresent() && (!(coreData.destination.get() instanceof WaystoneHandle.Vanilla) || WaystoneLibrary.getInstance().contains((WaystoneHandle.Vanilla) coreData.destination.get()))) {
+            WaystoneHandle dest = coreData.destination.get();
+            Optional<WaystoneHandle.Vanilla> vanillaHandle = dest instanceof WaystoneHandle.Vanilla ? Optional.of((WaystoneHandle.Vanilla) dest) : Optional.empty();
             PacketHandler.send(
                 PacketDistributor.PLAYER.with(() -> player),
-                new Teleport.Request.Package(
-                    WaystoneLibrary.getInstance().getData(coreData.destination.get()).name,
-                    isDiscovered,
-                    distance,
-                    Config.Server.teleport.maximumDistance.get(),
-                    Teleport.getCost(player, Vector3.fromBlockPos(data.location.block.blockPos), data.location.spawn),
+                new Teleport.RequestGui.Package(
+                    Either.rightIfPresent(vanillaHandle, () -> ((ExternalWaystone.Handle) dest).noTeleportLangKey())
+                        .mapRight(h -> {
+                            WaystoneData data = WaystoneLibrary.getInstance().getData(h);
+                            boolean isDiscovered = WaystoneLibrary.getInstance()
+                                .isDiscovered(new PlayerHandle(player), h) || !Config.Server.teleport.enforceDiscovery.get();
+                            int distance = (int) data.location.spawn.distanceTo(Vector3.fromVec3d(player.getPositionVec()));
+                            return new Teleport.RequestGui.Package.Info(
+                                Config.Server.teleport.maximumDistance.get(),
+                                distance,
+                                isDiscovered,
+                                data.name,
+                                Teleport.getCost(player, Vector3.fromBlockPos(data.location.block.blockPos), data.location.spawn)
+                            );
+                        }),
                     Optional.of(tilePartInfo)
                 )
             );
@@ -331,9 +349,18 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
 
         if(compound.contains("Flip")) setFlip(compound.getBoolean("Flip"));
         if(compound.contains("Color")) setColor(compound.getInt("Color"));
-        OptionalSerializer<WaystoneHandle> destinationSerializer = WaystoneHandle.Serializer.optional();
-        if(compound.contains("Destination"))
-            setDestination(destinationSerializer.read(compound.getCompound("Destination")));
+        if(compound.contains("Destination")) {
+            CompoundNBT dest = compound.getCompound("Destination");
+            Optional<WaystoneHandle> destination;
+            if(dest.getBoolean("IsPresent")){
+                Optional<WaystoneHandle> d2 = WaystoneHandle.read(dest);
+                if (d2.isPresent()) {
+                    setDestination(d2);
+                } else {
+                    Signpost.LOGGER.error("Error deserializing waystone handle of unknown type: " + dest.getString("type"));
+                }
+            } else setDestination(Optional.empty());
+        }
         if(compound.contains("ItemToDropOnBreak")) {
             setItemToDropOnBreak(ItemStackSerializer.Instance.read(compound.getCompound("ItemToDropOnBreak")));
         }

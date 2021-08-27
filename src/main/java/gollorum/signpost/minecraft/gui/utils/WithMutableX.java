@@ -4,6 +4,6 @@ public interface WithMutableX {
 
     int getX();
     void setX(int x);
-    int getWidth();
+    int width();
 
 }

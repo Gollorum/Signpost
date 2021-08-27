@@ -1,4 +1,4 @@
-package gollorum.signpost.minecraft.gui.widget;
+package gollorum.signpost.minecraft.gui.widgets;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
@@ -693,7 +693,7 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener, 
     }
 
     @Override
-    public int getWidth() {
+    public int width() {
         return width;
     }
 

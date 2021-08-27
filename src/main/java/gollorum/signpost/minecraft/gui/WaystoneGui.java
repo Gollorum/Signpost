@@ -5,7 +5,7 @@ import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.events.WaystoneRenamedEvent;
 import gollorum.signpost.minecraft.events.WaystoneUpdatedEvent;
 import gollorum.signpost.minecraft.gui.utils.*;
-import gollorum.signpost.minecraft.gui.widget.ImageInputBox;
+import gollorum.signpost.minecraft.gui.widgets.ImageInputBox;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.utils.WaystoneData;
 import gollorum.signpost.utils.WaystoneLocationData;
@@ -90,7 +90,7 @@ public class WaystoneGui extends ExtendedScreen {
             texture,
             true, 0);
         lockButton = new LockIconButton(
-            inputBox.x + inputBox.getWidth() + 10,
+            inputBox.x + inputBox.width() + 10,
             inputBox.y + inputBox.getHeight() / 2 - 10,
             b -> lockButton.setLocked(!lockButton.isLocked())
         );
@@ -141,7 +141,7 @@ public class WaystoneGui extends ExtendedScreen {
     public void onClose() {
         super.onClose();
         if(inputBox != null && !inputBox.getText().equals("") && isValid(inputBox.getText()))
-            WaystoneLibrary.getInstance().update(
+            WaystoneLibrary.getInstance().requestUpdate(
                 inputBox.getText(),
                 new WaystoneLocationData(location, Vector3.fromVec3d(getMinecraft().player.getPositionVec())),
                 getMinecraft().player,

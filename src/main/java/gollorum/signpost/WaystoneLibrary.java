@@ -1,5 +1,6 @@
 package gollorum.signpost;
 
+import com.mojang.datafixers.util.Pair;
 import gollorum.signpost.minecraft.block.WaystoneBlock;
 import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.events.*;
@@ -9,6 +10,7 @@ import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.*;
 import gollorum.signpost.utils.math.geometry.Vector3;
+import gollorum.signpost.utils.serialization.StringSerializer;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
@@ -46,15 +48,18 @@ public class WaystoneLibrary {
     public final EventDispatcher<WaystoneUpdatedEvent> updateEventDispatcher = _updateEventDispatcher;
 
     public static void registerNetworkPackets() {
-        PacketHandler.register(new RequestAllWaystoneNamesEvent());
-        PacketHandler.register(new DeliverAllWaystoneNamesEvent());
-        PacketHandler.register(new WaystoneUpdatedEventEvent());
-        PacketHandler.register(new RequestWaystoneLocationEvent());
-        PacketHandler.register(new DeliverWaystoneLocationEvent());
-        PacketHandler.register(new RequestWaystoneAtLocationEvent());
-        PacketHandler.register(new DeliverWaystoneAtLocationEvent());
-        PacketHandler.register(new DeliverIdEvent());
-        PacketHandler.register(new RequestIdEvent());
+        int id = -1000;
+        PacketHandler.register(new RequestAllWaystoneNamesEvent(), id++);
+        PacketHandler.register(new DeliverAllWaystoneNamesEvent(), id++);
+        PacketHandler.register(new RequestAllWaystonesEvent(), id++);
+        PacketHandler.register(new DeliverAllWaystonesEvent(), id++);
+        PacketHandler.register(new WaystoneUpdatedEventEvent(), id++);
+        PacketHandler.register(new RequestWaystoneLocationEvent(), id++);
+        PacketHandler.register(new DeliverWaystoneLocationEvent(), id++);
+        PacketHandler.register(new RequestWaystoneAtLocationEvent(), id++);
+        PacketHandler.register(new DeliverWaystoneAtLocationEvent(), id++);
+        PacketHandler.register(new DeliverIdEvent(), id++);
+        PacketHandler.register(new RequestIdEvent(), id++);
     }
 
     public void setupStorage(ServerWorld world){
@@ -80,12 +85,12 @@ public class WaystoneLibrary {
         });
     }
 
-    public WaystoneLocationData getLocationData(WaystoneHandle waystoneId) {
+    public WaystoneLocationData getLocationData(WaystoneHandle.Vanilla waystoneId) {
         assert Signpost.getServerType().isServer;
         return allWaystones.get(waystoneId).locationData;
     }
 
-    public WaystoneData getData(WaystoneHandle waystoneId) {
+    public WaystoneData getData(WaystoneHandle.Vanilla waystoneId) {
         assert Signpost.getServerType().isServer;
         WaystoneEntry entry = allWaystones.get(waystoneId);
         return new WaystoneData(waystoneId, entry.name, entry.locationData, entry.isLocked);
@@ -111,16 +116,19 @@ public class WaystoneLibrary {
 
     }
 
-    private final Map<WaystoneHandle, WaystoneEntry> allWaystones = new ConcurrentHashMap<>();
-    private final Map<PlayerHandle, Set<WaystoneHandle>> playerMemory = new ConcurrentHashMap<>();
+    private final Map<WaystoneHandle.Vanilla, WaystoneEntry> allWaystones = new ConcurrentHashMap<>();
+    private final Map<PlayerHandle, Set<WaystoneHandle.Vanilla>> playerMemory = new ConcurrentHashMap<>();
 
     private final Set<String> cachedWaystoneNames = new HashSet<>();
     private boolean isWaystoneNameCacheDirty = true;
 
-    private final EventDispatcher.Impl.WithPublicDispatch<Map<WaystoneHandle, String>> requestedAllNamesEventDispatcher =
+    private final EventDispatcher.Impl.WithPublicDispatch<Map<WaystoneHandle.Vanilla, String>> requestedAllNamesEventDispatcher =
         new EventDispatcher.Impl.WithPublicDispatch<>();
 
-    private final EventDispatcher.Impl.WithPublicDispatch<Optional<WaystoneHandle>> requestedIdEventDispatcher =
+    private final EventDispatcher.Impl.WithPublicDispatch<Map<WaystoneHandle.Vanilla, Pair<String, WaystoneLocationData>>> requestedAllWaystonesEventDispatcher =
+        new EventDispatcher.Impl.WithPublicDispatch<>();
+
+    private final EventDispatcher.Impl.WithPublicDispatch<Optional<WaystoneHandle.Vanilla>> requestedIdEventDispatcher =
         new EventDispatcher.Impl.WithPublicDispatch<>();
 
     private final EventDispatcher.Impl.WithPublicDispatch<DeliverWaystoneAtLocationEvent.Packet> requestedWaystoneAtLocationEventDispatcher =
@@ -129,71 +137,72 @@ public class WaystoneLibrary {
     private final EventDispatcher.Impl.WithPublicDispatch<DeliverWaystoneLocationEvent.Packet> requestedWaystoneLocationEventDispatcher =
         new EventDispatcher.Impl.WithPublicDispatch<>();
 
+    public void requestUpdate(String newName, WaystoneLocationData location, @Nullable PlayerEntity editingPlayer, boolean isLocked) {
+        PacketHandler.sendToServer(new WaystoneUpdatedEventEvent.Packet(WaystoneUpdatedEvent.fromUpdated(location, newName, isLocked, new WaystoneHandle.Vanilla(Util.DUMMY_UUID))));
+    }
+
     public Optional<String> update(String newName, WaystoneLocationData location, @Nullable PlayerEntity editingPlayer, boolean isLocked) {
-        if(!Signpost.getServerType().isServer || location.block.world.match(w -> !(w instanceof ServerWorld), i -> false)) {
-            PacketHandler.sendToServer(new WaystoneUpdatedEventEvent.Packet(WaystoneUpdatedEvent.fromUpdated(location, newName, isLocked)));
-            return Optional.empty();
-        } else {
-            WaystoneHandle[] oldWaystones = allWaystones
-                .entrySet()
-                .stream()
-                .filter(e -> e.getValue().locationData.block.equals(location.block))
-                .map(Map.Entry::getKey)
-                .distinct()
-                .toArray(WaystoneHandle[]::new);
-            String[] oldNames = Arrays.stream(oldWaystones).map(id -> allWaystones.get(id).name).toArray(String[]::new);
-            if(oldWaystones.length > 1)
-                Signpost.LOGGER.error("Waystone at " + location + ", new name: " + newName +" was already present "
-                    + oldWaystones.length + " times. This indicates invalid state. Names found: " + String.join(", ", oldNames));
-            if(oldWaystones.length > 0) {
-                WaystoneEntry oldEntry = allWaystones.get(oldWaystones[0]);
-                if(editingPlayer != null && !oldEntry.hasThePermissionToEdit(editingPlayer)) {
-                    // This should not happen unless a player tries to hacc
-                    editingPlayer.sendMessage(new TranslationTextComponent(LangKeys.noPermissionWaystone), Util.DUMMY_UUID);
-                    return Optional.empty();
-                }
-                if(editingPlayer != null && !WaystoneData.hasSecurityPermissions(editingPlayer, location))
-                    isLocked = oldEntry.isLocked;
+        assert Signpost.getServerType().isServer && location.block.world.match(w -> (w instanceof ServerWorld), i -> true);
+        WaystoneHandle.Vanilla[] oldWaystones = allWaystones
+            .entrySet()
+            .stream()
+            .filter(e -> e.getValue().locationData.block.equals(location.block))
+            .map(Map.Entry::getKey)
+            .distinct()
+            .toArray(WaystoneHandle.Vanilla[]::new);
+        String[] oldNames = Arrays.stream(oldWaystones).map(id -> allWaystones.get(id).name).toArray(String[]::new);
+        if(oldWaystones.length > 1)
+            Signpost.LOGGER.error("Waystone at " + location + ", new name: " + newName +" was already present "
+                + oldWaystones.length + " times. This indicates invalid state. Names found: " + String.join(", ", oldNames));
+        if(oldWaystones.length > 0) {
+            WaystoneEntry oldEntry = allWaystones.get(oldWaystones[0]);
+            if(editingPlayer != null && !oldEntry.hasThePermissionToEdit(editingPlayer)) {
+                // This should not happen unless a player tries to hacc
+                editingPlayer.sendMessage(new TranslationTextComponent(LangKeys.noPermissionWaystone), Util.DUMMY_UUID);
+                return Optional.empty();
             }
-            for(WaystoneHandle oldId: oldWaystones) {
-                allWaystones.remove(oldId);
-            }
-            WaystoneHandle id = oldWaystones.length > 0 ? oldWaystones[0] : new WaystoneHandle(UUID.randomUUID());
-            allWaystones.put(id, new WaystoneEntry(newName, location, isLocked));
-            Optional<String> oldName = oldNames.length > 0 ? Optional.of(oldNames[0]) : Optional.empty();
-            WaystoneUpdatedEvent updatedEvent = WaystoneUpdatedEvent.fromUpdated(
-                location,
-                newName,
-                oldName,
-                isLocked
-            );
-            _updateEventDispatcher.dispatch(updatedEvent, false);
-            PacketHandler.sendToAll(new WaystoneUpdatedEventEvent.Packet(updatedEvent));
-            markDirty();
-            WaystoneBlock.discover(PlayerHandle.from(editingPlayer), new WaystoneData(id, newName, location, isLocked));
-            return oldName;
+            if(editingPlayer != null && !WaystoneData.hasSecurityPermissions(editingPlayer, location))
+                isLocked = oldEntry.isLocked;
         }
+        for(WaystoneHandle.Vanilla oldId: oldWaystones) {
+            allWaystones.remove(oldId);
+        }
+        WaystoneHandle.Vanilla id = oldWaystones.length > 0 ? oldWaystones[0] : new WaystoneHandle.Vanilla(UUID.randomUUID());
+        allWaystones.put(id, new WaystoneEntry(newName, location, isLocked));
+        Optional<String> oldName = oldNames.length > 0 ? Optional.of(oldNames[0]) : Optional.empty();
+        WaystoneUpdatedEvent updatedEvent = WaystoneUpdatedEvent.fromUpdated(
+            location,
+            newName,
+            oldName,
+            isLocked,
+            id
+        );
+        _updateEventDispatcher.dispatch(updatedEvent, false);
+        PacketHandler.sendToAll(new WaystoneUpdatedEventEvent.Packet(updatedEvent));
+        markDirty();
+        WaystoneBlock.discover(PlayerHandle.from(editingPlayer), new WaystoneData(id, newName, location, isLocked));
+        return oldName;
     }
 
     public boolean remove(String name, PlayerHandle playerHandle) {
         assert Signpost.getServerType().isServer;
-        Optional<Map.Entry<WaystoneHandle, WaystoneEntry>> oldEntry = getByName(name);
+        Optional<Map.Entry<WaystoneHandle.Vanilla, WaystoneEntry>> oldEntry = getByName(name);
         return oldEntry.isPresent() && remove(oldEntry.get().getKey(), playerHandle);
     }
 
     public boolean removeAt(WorldLocation location, PlayerHandle playerHandle) {
         assert Signpost.getServerType().isServer;
-        Optional<Map.Entry<WaystoneHandle, WaystoneEntry>> oldEntry = getByLocation(location);
+        Optional<Map.Entry<WaystoneHandle.Vanilla, WaystoneEntry>> oldEntry = getByLocation(location);
         return oldEntry.isPresent() && remove(oldEntry.get().getKey(), playerHandle);
     }
 
-    public boolean remove(WaystoneHandle id, PlayerHandle playerHandle) {
+    public boolean remove(WaystoneHandle.Vanilla handle, PlayerHandle playerHandle) {
         assert Signpost.getServerType().isServer;
-        WaystoneEntry oldEntry = allWaystones.remove(id);
+        WaystoneEntry oldEntry = allWaystones.remove(handle);
         if(oldEntry == null) return false;
         else {
-            _updateEventDispatcher.dispatch(new WaystoneRemovedEvent(oldEntry.locationData, oldEntry.name), false);
-            PacketHandler.sendToAll(new WaystoneUpdatedEventEvent.Packet(new WaystoneRemovedEvent(oldEntry.locationData, oldEntry.name)));
+            _updateEventDispatcher.dispatch(new WaystoneRemovedEvent(oldEntry.locationData, oldEntry.name,handle), false);
+            PacketHandler.sendToAll(new WaystoneUpdatedEventEvent.Packet(new WaystoneRemovedEvent(oldEntry.locationData, oldEntry.name, handle)));
             markDirty();
             return true;
         }
@@ -204,7 +213,7 @@ public class WaystoneLibrary {
         WorldLocation newLocation
     ) {
         assert Signpost.getServerType().isServer;
-        Optional<Map.Entry<WaystoneHandle, WaystoneEntry>> oldEntry = getByLocation(oldLocation);
+        Optional<Map.Entry<WaystoneHandle.Vanilla, WaystoneEntry>> oldEntry = getByLocation(oldLocation);
         if(!oldEntry.isPresent()) return false;
         else {
             allWaystones.remove(oldEntry.get().getKey());
@@ -212,35 +221,40 @@ public class WaystoneLibrary {
                 .add(Vector3.fromBlockPos(newLocation.blockPos.subtract(oldLocation.blockPos)));
             allWaystones.put(oldEntry.get().getKey(), new WaystoneEntry(oldEntry.get().getValue().name, new WaystoneLocationData(newLocation, newSpawnLocation),
                 oldEntry.get().getValue().isLocked));
-            _updateEventDispatcher.dispatch(new WaystoneMovedEvent(oldEntry.get().getValue().locationData, newLocation, oldEntry.get().getValue().name), false);
+            _updateEventDispatcher.dispatch(new WaystoneMovedEvent(
+                oldEntry.get().getValue().locationData,
+                newLocation,
+                oldEntry.get().getValue().name,
+                oldEntry.get().getKey()
+            ), false);
             markDirty();
             return true;
         }
     }
 
-    public Optional<WaystoneHandle> getHandleByName(String name){
+    public Optional<WaystoneHandle.Vanilla> getHandleByName(String name){
         assert Signpost.getServerType().isServer;
         return getByName(name).map(e -> e.getKey());
     }
 
-    public Optional<WaystoneHandle> getHandleByLocation(WorldLocation location){
+    public Optional<WaystoneHandle.Vanilla> getHandleByLocation(WorldLocation location){
         assert Signpost.getServerType().isServer;
         return getByLocation(location).map(e -> e.getKey());
     }
 
-    private Optional<Map.Entry<WaystoneHandle, WaystoneEntry>> getByName(String name){
+    private Optional<Map.Entry<WaystoneHandle.Vanilla, WaystoneEntry>> getByName(String name){
         assert Signpost.getServerType().isServer;
         return allWaystones.entrySet().stream()
             .filter(e -> e.getValue().name.equals(name)).findFirst();
     }
 
-    private Optional<Map.Entry<WaystoneHandle, WaystoneEntry>> getByLocation(WorldLocation location){
+    private Optional<Map.Entry<WaystoneHandle.Vanilla, WaystoneEntry>> getByLocation(WorldLocation location){
         assert Signpost.getServerType().isServer;
         return allWaystones.entrySet().stream()
             .filter(e -> e.getValue().locationData.block.equals(location)).findFirst();
     }
 
-    public void requestAllWaystoneNames(Consumer<Map<WaystoneHandle, String>> onReply, Optional<PlayerHandle> onlyKnownBy) {
+    public void requestAllWaystoneNames(Consumer<Map<WaystoneHandle.Vanilla, String>> onReply, Optional<PlayerHandle> onlyKnownBy) {
         if(Signpost.getServerType().isServer) {
             onReply.accept(getAllWaystoneNamesAndHandles(onlyKnownBy));
         } else {
@@ -249,25 +263,25 @@ public class WaystoneLibrary {
         }
     }
 
-    public void requestIdFor(String text, Consumer<Optional<WaystoneHandle>> onReply) {
-        if(Signpost.getServerType().isServer){
-            onReply.accept(getHandleFor(text));
+    public void requestAllWaystones(Consumer<Map<WaystoneHandle.Vanilla, Pair<String, WaystoneLocationData>>> onReply, Optional<PlayerHandle> onlyKnownBy) {
+        if(Signpost.getServerType().isServer) {
+            onReply.accept(getAllWaystones(onlyKnownBy));
         } else {
-            requestedIdEventDispatcher.addListener(onReply);
-            PacketHandler.sendToServer(new RequestIdEvent.Packet(text));
+            requestedAllWaystonesEventDispatcher.addListener(onReply);
+            PacketHandler.sendToServer(new RequestAllWaystonesEvent.Packet(onlyKnownBy));
         }
     }
 
-    private Optional<WaystoneHandle> getHandleFor(String name){
+    private Optional<WaystoneHandle.Vanilla> getHandleFor(String name){
         return allWaystones.entrySet().stream()
             .filter(e -> e.getValue().name.equals(name))
             .map(Map.Entry::getKey)
             .findFirst();
     }
 
-    private Map<WaystoneHandle, String> getAllWaystoneNamesAndHandles(Optional<PlayerHandle> onlyKnownBy) {
+    private Map<WaystoneHandle.Vanilla, String> getAllWaystoneNamesAndHandles(Optional<PlayerHandle> onlyKnownBy) {
         assert Signpost.getServerType().isServer;
-        Map<WaystoneHandle, String> ret = getInstance().allWaystones.entrySet().stream()
+        Map<WaystoneHandle.Vanilla, String> ret = getInstance().allWaystones.entrySet().stream()
             .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().name));
         if(isWaystoneNameCacheDirty) {
             cachedWaystoneNames.clear();
@@ -275,7 +289,20 @@ public class WaystoneLibrary {
             isWaystoneNameCacheDirty = false;
         }
         if(onlyKnownBy.isPresent() && Config.Server.teleport.enforceDiscovery.get()) {
-            Set<WaystoneHandle> known = playerMemory.computeIfAbsent(onlyKnownBy.get(), h -> new HashSet<>());
+            Set<WaystoneHandle.Vanilla> known = playerMemory.computeIfAbsent(onlyKnownBy.get(), h -> new HashSet<>());
+            return ret.entrySet().stream()
+                .filter(e -> known.contains(e.getKey()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        }
+        return ret;
+    }
+
+    private Map<WaystoneHandle.Vanilla, Pair<String, WaystoneLocationData>> getAllWaystones(Optional<PlayerHandle> onlyKnownBy) {
+        assert Signpost.getServerType().isServer;
+        Map<WaystoneHandle.Vanilla, Pair<String, WaystoneLocationData>> ret = getInstance().allWaystones.entrySet().stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, e -> Pair.of(e.getValue().name, e.getValue().locationData)));
+        if(onlyKnownBy.isPresent() && Config.Server.teleport.enforceDiscovery.get()) {
+            Set<WaystoneHandle.Vanilla> known = playerMemory.computeIfAbsent(onlyKnownBy.get(), h -> new HashSet<>());
             return ret.entrySet().stream()
                 .filter(e -> known.contains(e.getKey()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -304,41 +331,7 @@ public class WaystoneLibrary {
             ));
     }
 
-    public void requestWaystoneDataAtLocation(WorldLocation location, Consumer<Optional<WaystoneData>> onReply) {
-        if(Signpost.getServerType().isServer) {
-            onReply.accept(tryGetWaystoneDataAt(location));
-        } else {
-            requestedWaystoneAtLocationEventDispatcher.addListener(new Consumer<DeliverWaystoneAtLocationEvent.Packet>() {
-                @Override
-                public void accept(DeliverWaystoneAtLocationEvent.Packet packet) {
-                    if (packet.waystoneLocation.equals(location)) {
-                        requestedWaystoneAtLocationEventDispatcher.removeListener(this);
-                        onReply.accept(packet.data);
-                    }
-                }
-            });
-            PacketHandler.sendToServer(new RequestWaystoneAtLocationEvent.Packet(location));
-        }
-    }
-
-    public void requestWaystoneLocationData(String waystoneName, Consumer<Optional<WaystoneLocationData>> onReply) {
-        if(Signpost.getServerType().isServer) {
-            onReply.accept(getByName(waystoneName).map(e -> e.getValue().locationData));
-        } else {
-            requestedWaystoneLocationEventDispatcher.addListener(new Consumer<DeliverWaystoneLocationEvent.Packet>() {
-                @Override
-                public void accept(DeliverWaystoneLocationEvent.Packet packet) {
-                    if (packet.name.equals(waystoneName)) {
-                        requestedWaystoneLocationEventDispatcher.removeListener(this);
-                        onReply.accept(packet.data);
-                    }
-                }
-            });
-            PacketHandler.sendToServer(new RequestWaystoneLocationEvent.Packet(waystoneName));
-        }
-    }
-
-    public boolean addDiscovered(PlayerHandle player, WaystoneHandle waystone) {
+    public boolean addDiscovered(PlayerHandle player, WaystoneHandle.Vanilla waystone) {
         assert Signpost.getServerType().isServer;
         if(playerMemory.computeIfAbsent(player, p -> new HashSet<>()).add(waystone)) {
             markDirty();
@@ -346,13 +339,13 @@ public class WaystoneLibrary {
         } return false;
     }
 
-    public boolean isDiscovered(PlayerHandle player, WaystoneHandle waystone) {
+    public boolean isDiscovered(PlayerHandle player, WaystoneHandle.Vanilla waystone) {
         if(!playerMemory.containsKey(player))
             playerMemory.put(player, new HashSet<>());
         return playerMemory.get(player).contains(waystone);
     }
 
-    public boolean contains(WaystoneHandle waystone) {
+    public boolean contains(WaystoneHandle.Vanilla waystone) {
         assert Signpost.getServerType().isServer;
         return allWaystones.containsKey(waystone);
     }
@@ -393,9 +386,9 @@ public class WaystoneLibrary {
     private static final class DeliverAllWaystoneNamesEvent implements PacketHandler.Event<DeliverAllWaystoneNamesEvent.Packet> {
 
         public static final class Packet {
-            public final Map<WaystoneHandle, String> names;
+            public final Map<WaystoneHandle.Vanilla, String> names;
 
-            private Packet(Map<WaystoneHandle, String> names) {
+            private Packet(Map<WaystoneHandle.Vanilla, String> names) {
                 this.names = names;
             }
         }
@@ -406,7 +399,7 @@ public class WaystoneLibrary {
         @Override
         public void encode(Packet message, PacketBuffer buffer) {
             buffer.writeInt(message.names.size());
-            for (Map.Entry<WaystoneHandle, String> name: message.names.entrySet()) {
+            for (Map.Entry<WaystoneHandle.Vanilla, String> name: message.names.entrySet()) {
                 buffer.writeUniqueId(name.getKey().id);
                 buffer.writeString(name.getValue());
             }
@@ -414,10 +407,10 @@ public class WaystoneLibrary {
 
         @Override
         public Packet decode(PacketBuffer buffer) {
-            Map<WaystoneHandle, String> names = new HashMap<>();
+            Map<WaystoneHandle.Vanilla, String> names = new HashMap<>();
             int count = buffer.readInt();
             for(int i = 0; i < count; i++)
-                names.put(new WaystoneHandle(buffer.readUniqueId()), buffer.readString(32767));
+                names.put(new WaystoneHandle.Vanilla(buffer.readUniqueId()), buffer.readString(32767));
             return new Packet(names);
         }
 
@@ -427,6 +420,81 @@ public class WaystoneLibrary {
             getInstance().cachedWaystoneNames.addAll(message.names.values());
             getInstance().isWaystoneNameCacheDirty = false;
             getInstance().requestedAllNamesEventDispatcher.dispatch(message.names, true);
+        }
+    }
+
+    private static final class RequestAllWaystonesEvent implements PacketHandler.Event<RequestAllWaystonesEvent.Packet> {
+
+        public static final class Packet {
+            public final Optional<PlayerHandle> onlyKnownBy;
+
+            public Packet(Optional<PlayerHandle> onlyKnownBy) { this.onlyKnownBy = onlyKnownBy; }
+        }
+
+        @Override
+        public Class<Packet> getMessageClass() { return Packet.class; }
+
+        @Override
+        public void encode(Packet message, PacketBuffer buffer) {
+            PlayerHandle.Serializer.optional().write(message.onlyKnownBy, buffer);
+        }
+
+        @Override
+        public Packet decode(PacketBuffer buffer) {
+            return new Packet(PlayerHandle.Serializer.optional().read(buffer));
+        }
+
+        @Override
+        public void handle(Packet message, NetworkEvent.Context context) {
+            PacketHandler.send(
+                PacketDistributor.PLAYER.with(context::getSender),
+                new DeliverAllWaystonesEvent.Packet(getInstance().getAllWaystones(message.onlyKnownBy))
+            );
+        }
+
+    }
+
+    private static final class DeliverAllWaystonesEvent implements PacketHandler.Event<DeliverAllWaystonesEvent.Packet> {
+
+        public static final class Packet {
+            public final Map<WaystoneHandle.Vanilla, Pair<String, WaystoneLocationData>> names;
+
+            private Packet(Map<WaystoneHandle.Vanilla, Pair<String, WaystoneLocationData>> names) {
+                this.names = names;
+            }
+        }
+
+        @Override
+        public Class<Packet> getMessageClass() { return Packet.class; }
+
+        @Override
+        public void encode(Packet message, PacketBuffer buffer) {
+            buffer.writeInt(message.names.size());
+            for (Map.Entry<WaystoneHandle.Vanilla, Pair<String, WaystoneLocationData>> name: message.names.entrySet()) {
+                buffer.writeUniqueId(name.getKey().id);
+                buffer.writeString(name.getValue().getFirst());
+                WaystoneLocationData.SERIALIZER.write(name.getValue().getSecond(), buffer);
+            }
+        }
+
+        @Override
+        public Packet decode(PacketBuffer buffer) {
+            Map<WaystoneHandle.Vanilla, Pair<String, WaystoneLocationData>> names = new HashMap<>();
+            int count = buffer.readInt();
+            for(int i = 0; i < count; i++)
+                names.put(
+                    new WaystoneHandle.Vanilla(buffer.readUniqueId()),
+                    Pair.of(
+                        StringSerializer.instance.read(buffer),
+                        WaystoneLocationData.SERIALIZER.read(buffer)
+                    )
+                );
+            return new Packet(names);
+        }
+
+        @Override
+        public void handle(Packet message, NetworkEvent.Context context) {
+            getInstance().requestedAllWaystonesEventDispatcher.dispatch(message.names, true);
         }
     }
 
@@ -456,7 +524,7 @@ public class WaystoneLibrary {
                 PlayerEntity player = context.getSender();
                 switch (message.event.getType()){
                     case Added:
-                        if(!TileEntityUtils.findTileEntityAt(message.event.location.block, WaystoneContainer.class).isPresent()) {
+                        if(!TileEntityUtils.findTileEntityAt(message.event.location.block, WaystoneContainer.class, false).isPresent()) {
                             Signpost.LOGGER.error("Tried to add a waystone where no compatible TileEntity was present: " + message.event.location.block);
                             return;
                         }
@@ -660,8 +728,8 @@ public class WaystoneLibrary {
     private static final class DeliverIdEvent implements PacketHandler.Event<DeliverIdEvent.Packet> {
 
         private static final class Packet {
-            private final Optional<WaystoneHandle> waystone;
-            private Packet(Optional<WaystoneHandle> waystone) {
+            private final Optional<WaystoneHandle.Vanilla> waystone;
+            private Packet(Optional<WaystoneHandle.Vanilla> waystone) {
                 this.waystone = waystone;
             }
         }
@@ -671,12 +739,12 @@ public class WaystoneLibrary {
 
         @Override
         public void encode(Packet message, PacketBuffer buffer) {
-           WaystoneHandle.Serializer.optional().write(message.waystone, buffer);
+           WaystoneHandle.Vanilla.Serializer.optional().write(message.waystone, buffer);
         }
 
         @Override
         public Packet decode(PacketBuffer buffer) {
-            return new Packet(WaystoneHandle.Serializer.optional().read(buffer));
+            return new Packet(WaystoneHandle.Vanilla.Serializer.optional().read(buffer));
         }
 
         @Override
@@ -691,7 +759,7 @@ public class WaystoneLibrary {
         waystones.addAll(
             allWaystones.entrySet().stream().map(entry -> {
                 CompoundNBT entryCompound = new CompoundNBT();
-                entryCompound.put("Waystone", WaystoneHandle.Serializer.write(entry.getKey()));
+                entryCompound.put("Waystone", WaystoneHandle.Vanilla.Serializer.write(entry.getKey()));
                 entryCompound.putString("Name", entry.getValue().name);
                 entryCompound.put("Location", WaystoneLocationData.SERIALIZER.write(entry.getValue().locationData));
                 entryCompound.putBoolean("IsLocked", entry.getValue().isLocked);
@@ -705,7 +773,7 @@ public class WaystoneLibrary {
                 CompoundNBT entryCompound = new CompoundNBT();
                 entryCompound.putUniqueId("Player", entry.getKey().id);
                 ListNBT known = new ListNBT();
-                known.addAll(entry.getValue().stream().map(WaystoneHandle.Serializer::write).collect(Collectors.toSet()));
+                known.addAll(entry.getValue().stream().map(WaystoneHandle.Vanilla.Serializer::write).collect(Collectors.toSet()));
                 entryCompound.put("DiscoveredWaystones", known);
                 return entryCompound;
             }).collect(Collectors.toSet())
@@ -721,7 +789,7 @@ public class WaystoneLibrary {
             for(INBT dynamicEntry : ((ListNBT) dynamicWaystones)) {
                 if(dynamicEntry instanceof CompoundNBT) {
                     CompoundNBT entry = (CompoundNBT) dynamicEntry;
-                    WaystoneHandle waystone = WaystoneHandle.Serializer.read(entry.getCompound("Waystone"));
+                    WaystoneHandle.Vanilla waystone = WaystoneHandle.Vanilla.Serializer.read(entry.getCompound("Waystone"));
                     String name = entry.getString("Name");
                     WaystoneLocationData location = WaystoneLocationData.SERIALIZER.read(entry.getCompound("Location"));
                     boolean isLocked = entry.getBoolean("IsLocked");
@@ -738,10 +806,10 @@ public class WaystoneLibrary {
                     CompoundNBT entry = (CompoundNBT) dynamicEntry;
                     UUID player = entry.getUniqueId("Player");
                     INBT dynamicKnown = entry.get("DiscoveredWaystones");
-                    Set<WaystoneHandle> known = dynamicKnown instanceof ListNBT
+                    Set<WaystoneHandle.Vanilla> known = dynamicKnown instanceof ListNBT
                         ?  ((ListNBT) dynamicKnown).stream()
                             .filter(e -> e instanceof CompoundNBT)
-                            .map(e -> WaystoneHandle.Serializer.read((CompoundNBT) e))
+                            .map(e -> WaystoneHandle.Vanilla.Serializer.read((CompoundNBT) e))
                             .collect(Collectors.toSet())
                         : new HashSet<>();
                     playerMemory.put(new PlayerHandle(player), known);

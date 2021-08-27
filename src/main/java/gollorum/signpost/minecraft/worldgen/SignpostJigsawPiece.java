@@ -13,11 +13,11 @@ import gollorum.signpost.blockpartdata.types.PostBlockPart;
 import gollorum.signpost.blockpartdata.types.SignBlockPart;
 import gollorum.signpost.blockpartdata.types.SmallShortSignBlockPart;
 import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
-import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.gui.utils.Colors;
-import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
+import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.utils.WaystoneData;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
@@ -33,6 +33,7 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.ChunkGenerator;
 import net.minecraft.world.gen.feature.jigsaw.IJigsawDeserializer;
 import net.minecraft.world.gen.feature.jigsaw.JigsawPattern;
+import net.minecraft.world.gen.feature.jigsaw.JigsawPiece;
 import net.minecraft.world.gen.feature.jigsaw.SingleJigsawPiece;
 import net.minecraft.world.gen.feature.structure.StructureManager;
 import net.minecraft.world.gen.feature.template.PlacementSettings;
@@ -49,7 +50,7 @@ import java.util.stream.Collectors;
 public class SignpostJigsawPiece extends SingleJigsawPiece {
 
 	private static final float smallSignRatio = 0.5f;
-	private static Map<BlockPos, List<WaystoneHandle>> waystonesTargetedByVillage;
+	private static Map<BlockPos, List<WaystoneHandle.Vanilla>> waystonesTargetedByVillage;
 	private static Map<BlockPos, Integer> signpostCountForVillage;
 	public static void reset() {
 		waystonesTargetedByVillage = new HashMap<>();
@@ -57,22 +58,31 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 	}
 
 	public static final Codec<SignpostJigsawPiece> codec = RecordCodecBuilder.create((codecBuilder) ->
-		codecBuilder.group(func_236846_c_(), func_236844_b_(), func_236848_d_()).apply(codecBuilder, SignpostJigsawPiece::new));
+		codecBuilder.group(func_236846_c_(), func_236844_b_(), func_236848_d_(), isZombieCodec()).apply(codecBuilder, SignpostJigsawPiece::new));
+
+	private static RecordCodecBuilder<SignpostJigsawPiece, Boolean> isZombieCodec() {
+		return Codec.BOOL.fieldOf("isZombie").forGetter(o -> o.isZombie);
+	}
+
+	public final boolean isZombie;
 
 	public SignpostJigsawPiece(
 		ResourceLocation location,
 		Supplier<StructureProcessorList> structureProcessorListSupplier,
-		JigsawPattern.PlacementBehaviour placementBehaviour
+		JigsawPattern.PlacementBehaviour placementBehaviour,
+		boolean isZombie
 	) {
-		this(Either.left(location), structureProcessorListSupplier, placementBehaviour);
+		this(Either.left(location), structureProcessorListSupplier, placementBehaviour, isZombie);
 	}
 
 	public SignpostJigsawPiece(
 		Either<ResourceLocation, Template> template,
 		Supplier<StructureProcessorList> structureProcessorListSupplier,
-		JigsawPattern.PlacementBehaviour placementBehaviour
+		JigsawPattern.PlacementBehaviour placementBehaviour,
+		boolean isZombie
 	) {
 		super(template, structureProcessorListSupplier, placementBehaviour);
+		this.isZombie = isZombie;
 	}
 
 	@Override
@@ -91,13 +101,13 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 		if(!Config.Server.worldGen.isVillageGenerationEnabled.get()) return false;
 		if(signpostCountForVillage.getOrDefault(villageLocation, 0) >= Config.Server.worldGen.maxSignpostsPerVillage.get())
 			return false;
-		Queue<Map.Entry<BlockPos, WaystoneHandle>> possibleTargets = fetchPossibleTargets(pieceLocation, villageLocation, random);
+		Queue<Map.Entry<BlockPos, WaystoneHandle.Vanilla>> possibleTargets = fetchPossibleTargets(pieceLocation, villageLocation, random);
 		if(possibleTargets.isEmpty()) return false;
 
 		Template template = this.field_236839_c_.map(templateManager::getTemplateDefaulted, Function.identity());
 		PlacementSettings placementSettings = this.func_230379_a_(rotation, boundingBox, shouldUseJigsawReplacementStructureProcessor);
 		if (template.func_237146_a_(seedReader, pieceLocation, villageLocation, placementSettings, random, 18)) {
-			Collection<WaystoneHandle> freshlyUsedWaystones = populateSignPostGeneration(
+			Collection<WaystoneHandle.Vanilla> freshlyUsedWaystones = populateSignPostGeneration(
 				placementSettings, pieceLocation, seedReader, random, possibleTargets
 			);
 			waystonesTargetedByVillage.computeIfAbsent(villageLocation, k -> new ArrayList<>())
@@ -117,7 +127,7 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 		}
 	}
 
-	private static Queue<Map.Entry<BlockPos, WaystoneHandle>> fetchPossibleTargets(BlockPos pieceLocation, BlockPos villageLocation, Random random) {
+	private static Queue<Map.Entry<BlockPos, WaystoneHandle.Vanilla>> fetchPossibleTargets(BlockPos pieceLocation, BlockPos villageLocation, Random random) {
 		return WaystoneJigsawPiece.getAllEntries().stream()
 			.filter(e -> !(e.getKey().equals(villageLocation) || (
 				waystonesTargetedByVillage.containsKey(villageLocation)
@@ -129,41 +139,41 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 			.collect(Collectors.toCollection(LinkedList::new));
 	}
 
-	private Collection<WaystoneHandle> populateSignPostGeneration(
+	private Collection<WaystoneHandle.Vanilla> populateSignPostGeneration(
 		PlacementSettings placementSettings,
 		BlockPos pieceLocation,
 		ISeedReader world,
 		Random random,
-		Queue<Map.Entry<BlockPos, WaystoneHandle>> possibleTargets
+		Queue<Map.Entry<BlockPos, WaystoneHandle.Vanilla>> possibleTargets
 	) {
 		Direction facing = placementSettings.getRotation().rotate(Direction.WEST);
 		Direction left = placementSettings.getRotation().rotate(Direction.SOUTH);
 		BlockPos lowerPos = pieceLocation.offset(facing.getOpposite()).offset(left).up();
 		BlockPos upperPos = lowerPos.up();
 
-		Pair<Collection<WaystoneHandle>, Consumer<PostTile>> upperSignResult = makeSign(random, facing, world, upperPos,
+		Pair<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> upperSignResult = makeSign(random, facing, world, upperPos,
 			possibleTargets, 0.75f
 		);
-		Pair<Collection<WaystoneHandle>, Consumer<PostTile>> lowerSignResult = makeSign(random, facing, world, upperPos,
+		Pair<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> lowerSignResult = makeSign(random, facing, world, upperPos,
 			possibleTargets, 0.25f
 		);
-		TileEntityUtils.delayUntilTileEntityExists(world, upperPos, PostTile.class, tile -> {
+		TileEntityUtils.delayUntilTileEntityExists(world.getWorld(), upperPos, PostTile.class, tile -> {
 			upperSignResult.getValue().accept(tile);
 			lowerSignResult.getValue().accept(tile);
 			tile.markDirty();
 		}, 20, Optional.of(() -> Signpost.LOGGER.error("Could not populate generated signpost at " + upperPos + ": TileEntity was not constructed.")));
-		List<WaystoneHandle> ret = new ArrayList<>();
+		List<WaystoneHandle.Vanilla> ret = new ArrayList<>();
 		ret.addAll(upperSignResult.getKey());
 		ret.addAll(lowerSignResult.getKey());
 		return ret;
 	}
 
-	public static Pair<Collection<WaystoneHandle>, Consumer<PostTile>> makeSign(
+	public Pair<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> makeSign(
 		Random random,
 		Direction facing,
 		ISeedReader world,
 		BlockPos tilePos,
-		Queue<Map.Entry<BlockPos, WaystoneHandle>> possibleTargets,
+		Queue<Map.Entry<BlockPos, WaystoneHandle.Vanilla>> possibleTargets,
 		float y
 	) {
 		if(possibleTargets.isEmpty()) return new Pair<>(Collections.emptySet(), x -> {});
@@ -172,14 +182,14 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 			: makeWideSign(facing, world, tilePos, possibleTargets, y);
 	}
 
-	private static Pair<Collection<WaystoneHandle>, Consumer<PostTile>> makeWideSign(
+	private Pair<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> makeWideSign(
 		Direction facing,
 		ISeedReader world,
 		BlockPos tilePos,
-		Queue<Map.Entry<BlockPos, WaystoneHandle>> possibleTargets,
+		Queue<Map.Entry<BlockPos, WaystoneHandle.Vanilla>> possibleTargets,
 		float y
 	) {
-		Map.Entry<BlockPos, WaystoneHandle> target = possibleTargets.poll();
+		Map.Entry<BlockPos, WaystoneHandle.Vanilla> target = possibleTargets.poll();
 		if(target == null) return new Pair<>(Collections.emptySet(), x -> {});
 		WaystoneData targetData = WaystoneLibrary.getInstance().getData(target.getValue());
 		Angle rotation = SignBlockPart.pointingAt(tilePos, target.getKey());
@@ -205,14 +215,14 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 
 	private static boolean isNearly(float a, float b) { return Math.abs(a - b) < 1e-5f; }
 
-	private static Pair<Collection<WaystoneHandle>, Consumer<PostTile>> makeShortSigns(
+	private Pair<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> makeShortSigns(
 		Direction facing,
 		ISeedReader world,
 		BlockPos tilePos,
-		Queue<Map.Entry<BlockPos, WaystoneHandle>> possibleTargets,
+		Queue<Map.Entry<BlockPos, WaystoneHandle.Vanilla>> possibleTargets,
 		float y
 	) {
-		Map.Entry<BlockPos, WaystoneHandle> target = possibleTargets.poll();
+		Map.Entry<BlockPos, WaystoneHandle.Vanilla> target = possibleTargets.poll();
 		if(target == null) return new Pair<>(Collections.emptySet(), x -> {});
 		WaystoneData targetData = WaystoneLibrary.getInstance().getData(target.getValue());
 		Angle rotation = SignBlockPart.pointingAt(tilePos, target.getKey());
@@ -232,8 +242,8 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 			ItemStack.EMPTY,
 			PlayerHandle.Invalid
 		));
-		Map.Entry<BlockPos, WaystoneHandle> secondTarget = possibleTargets.poll();
-		List<Map.Entry<BlockPos, WaystoneHandle>> skippedTargets = new ArrayList<>();
+		Map.Entry<BlockPos, WaystoneHandle.Vanilla> secondTarget = possibleTargets.poll();
+		List<Map.Entry<BlockPos, WaystoneHandle.Vanilla>> skippedTargets = new ArrayList<>();
 		while(secondTarget != null) {
 			WaystoneData secondTargetData = WaystoneLibrary.getInstance().getData(secondTarget.getValue());
 			Angle secondRotation = SignBlockPart.pointingAt(tilePos, secondTarget.getKey());
@@ -243,7 +253,7 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 				secondTarget = possibleTargets.poll();
 				continue;
 			}
-			WaystoneHandle secondTargetHandle = secondTarget.getValue();
+			WaystoneHandle.Vanilla secondTargetHandle = secondTarget.getValue();
 			onTileFetched.add(tile -> tile.addPart(
 				new BlockPartInstance(
 					new SmallShortSignBlockPart(
@@ -278,13 +288,13 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 		return degrees < -90 || degrees > 90;
 	}
 
-	private static Optional<Overlay> overlayFor(ISeedReader world, BlockPos pos) {
+	private Optional<Overlay> overlayFor(ISeedReader world, BlockPos pos) {
 		Biome biome = world.getBiome(pos);
 		if(biome.doesSnowGenerate(world, pos)
 			|| biome.getPrecipitation() == Biome.RainType.SNOW
 			|| biome.getCategory() == Biome.Category.ICY) return Optional.of(Overlay.Snow);
 		else if (biome.getCategory() == Biome.Category.JUNGLE) return Optional.of(Overlay.Vine);
-		else if(biome.isHighHumidity()) return Optional.of(Overlay.Gras);
+		else if(biome.isHighHumidity() || isZombie) return Optional.of(Overlay.Gras);
 		else return Optional.empty();
 	}
 

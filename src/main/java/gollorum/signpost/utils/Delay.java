@@ -67,14 +67,6 @@ public class Delay {
             onServerUntil(canRun, run);
     }
 
-    public static void until(Supplier<Boolean> canRun, Runnable run) {
-        if(canRun.get()) run.run();
-        else if(Signpost.getServerType().isServer)
-            serverTasks.add(new Task(canRun, run));
-        else
-            clientTasks.add(new Task(canRun, run));
-    }
-
     public static void onServerUntil(Supplier<Boolean> canRun, Runnable run, int timeoutFrames, Optional<Runnable> onTimeOut) {
         if(canRun.get()) run.run();
         else delayUntil(canRun, run, timeoutFrames, serverTasks, onTimeOut);
@@ -122,20 +114,11 @@ public class Delay {
             onServerUntil(canRun, run, timeoutFrames, onTimeOut);
     }
 
-    public static void until(Supplier<Boolean> canRun, Runnable run, int timeoutFrames, Optional<Runnable> onTimeOut) {
-        if(canRun.get()) run.run();
-        else delayUntil(canRun, run, timeoutFrames, Signpost.getServerType().isServer ? serverTasks : clientTasks, onTimeOut);
-    }
-
     public static <T> void untilIsPresent(Supplier<Optional<T>> supplier, Consumer<T> run, int timeoutFrames, boolean onClient, Optional<Runnable> onTimeOut) {
         if(onClient)
             onClientUntilIsPresent(supplier, run, timeoutFrames, onTimeOut);
         else
             onServerUntilIsPresent(supplier, run, timeoutFrames, onTimeOut);
-    }
-
-    public static <T> void untilIsPresent(Supplier<Optional<T>> supplier, Consumer<T> run, int timeoutFrames, Optional<Runnable> onTimeOut) {
-        untilIsPresent(supplier, run, timeoutFrames, !Signpost.getServerType().isServer, onTimeOut);
     }
 
     private static void delayUntil(Supplier<Boolean> canRun, Runnable run, int timeoutFrames, List<Task> taskList, Optional<Runnable> onTimeOut) {

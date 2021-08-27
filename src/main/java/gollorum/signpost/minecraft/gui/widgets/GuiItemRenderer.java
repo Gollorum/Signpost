@@ -1,4 +1,4 @@
-package gollorum.signpost.minecraft.gui.widget;
+package gollorum.signpost.minecraft.gui.widgets;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import gollorum.signpost.minecraft.gui.utils.Rect;

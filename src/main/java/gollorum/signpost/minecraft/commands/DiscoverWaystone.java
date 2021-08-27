@@ -43,7 +43,7 @@ public class DiscoverWaystone {
 	}
 
 	private static int execute(String name, PlayerEntity player) throws CommandSyntaxException {
-		WaystoneHandle handle = WaystoneLibrary.getInstance().getHandleByName(name)
+		WaystoneHandle.Vanilla handle = WaystoneLibrary.getInstance().getHandleByName(name)
 			.orElseThrow(() -> new SimpleCommandExceptionType(new TranslationTextComponent(LangKeys.waystoneNotFound, Colors.wrap(name, Colors.highlight))).create());
 		if(WaystoneLibrary.getInstance().addDiscovered(new PlayerHandle(player), handle)) {
 			player.sendMessage(new TranslationTextComponent(LangKeys.discovered, Colors.wrap(name, Colors.highlight)), Util.DUMMY_UUID);

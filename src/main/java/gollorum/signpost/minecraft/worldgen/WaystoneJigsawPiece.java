@@ -1,19 +1,20 @@
 package gollorum.signpost.minecraft.worldgen;
 
+import com.google.common.collect.Streams;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
-import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.block.ModelWaystone;
-import gollorum.signpost.utils.OwnershipData;
+import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.utils.WaystoneLocationData;
 import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.BlockPosSerializer;
+import gollorum.signpost.utils.serialization.CompoundSerializable;
+import gollorum.signpost.utils.serialization.ResourceLocationSerializer;
 import gollorum.signpost.worldgen.VillageNamesProvider;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
@@ -22,6 +23,7 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MutableBoundingBox;
 import net.minecraft.world.ISeedReader;
 import net.minecraft.world.gen.ChunkGenerator;
@@ -41,7 +43,64 @@ import java.util.stream.Collectors;
 
 public class WaystoneJigsawPiece extends SingleJigsawPiece {
 
-	public static final Map<BlockPos, WaystoneHandle> generatedWaystones = new HashMap<>();
+	public static class ChunkEntryKey {
+		public final ChunkPos chunkPos;
+		public final ResourceLocation dimensionKey;
+
+		public ChunkEntryKey(ChunkPos chunkPos, ResourceLocation dimensionKey) {
+			this.chunkPos = chunkPos;
+			this.dimensionKey = dimensionKey;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+			ChunkEntryKey that = (ChunkEntryKey) o;
+			return chunkPos.equals(that.chunkPos) && dimensionKey.equals(that.dimensionKey);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(chunkPos, dimensionKey);
+		}
+
+		public static final Serializer serializer = new Serializer();
+		public static class Serializer implements CompoundSerializable<ChunkEntryKey> {
+
+			@Override
+			public Class<ChunkEntryKey> getTargetClass() {
+				return ChunkEntryKey.class;
+			}
+
+			@Override
+			public CompoundNBT write(ChunkEntryKey key, CompoundNBT compound) {
+				compound.putInt("x", key.chunkPos.x);
+				compound.putInt("z", key.chunkPos.z);
+				ResourceLocationSerializer.Instance.write(key.dimensionKey, compound);
+				return compound;
+			}
+
+			@Override
+			public boolean isContainedIn(CompoundNBT compound) {
+				return compound.contains("x") && compound.contains("z") &&
+					ResourceLocationSerializer.Instance.isContainedIn(compound);
+			}
+
+			@Override
+			public ChunkEntryKey read(CompoundNBT compound) {
+				return new ChunkEntryKey(
+					new ChunkPos(compound.getInt("x"), compound.getInt("z")),
+					ResourceLocationSerializer.Instance.read(compound)
+				);
+			}
+		}
+	}
+
+	// Key is not the position of the block, it's a reference position.
+	// This is usually the village's position.
+	public static final Map<BlockPos, WaystoneHandle.Vanilla> generatedWaystones = new HashMap<>();
+	public static final Map<ChunkEntryKey, WaystoneHandle.Vanilla> generatedWaystonesByChunk = new HashMap<>();
 
 	public static void reset() {
 		generatedWaystones.clear();
@@ -49,11 +108,15 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 
 	public static INBT serialize() {
 		ListNBT ret = new ListNBT();
-		ret.addAll(generatedWaystones.entrySet().stream().map(e -> {
-			CompoundNBT compound = new CompoundNBT();
-			compound.put("refPos", BlockPosSerializer.INSTANCE.write(e.getKey()));
-			compound.put("waystone", WaystoneHandle.Serializer.write(e.getValue()));
-			return compound;
+		ret.addAll(Streams.zip(
+			generatedWaystones.entrySet().stream(),
+			generatedWaystonesByChunk.keySet().stream(),
+			(e, c) -> {
+				CompoundNBT compound = new CompoundNBT();
+				compound.put("refPos", BlockPosSerializer.INSTANCE.write(e.getKey()));
+				compound.put("chunkEntryKey", ChunkEntryKey.serializer.write(c));
+				compound.put("waystone", WaystoneHandle.Vanilla.Serializer.write(e.getValue()));
+				return compound;
 		}).collect(Collectors.toList()));
 		return ret;
 	}
@@ -63,7 +126,13 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 		generatedWaystones.putAll(
 			nbt.stream().collect(Collectors.toMap(
 				entry -> BlockPosSerializer.INSTANCE.read(((CompoundNBT) entry).getCompound("refPos")),
-				entry -> WaystoneHandle.Serializer.read(((CompoundNBT) entry).getCompound("waystone"))
+				entry -> WaystoneHandle.Vanilla.Serializer.read(((CompoundNBT) entry).getCompound("waystone"))
+			)));
+		generatedWaystonesByChunk.clear();
+		generatedWaystonesByChunk.putAll(
+			nbt.stream().collect(Collectors.toMap(
+				entry -> ChunkEntryKey.serializer.read(((CompoundNBT) entry).getCompound("chunkEntryKey")),
+				entry -> WaystoneHandle.Vanilla.Serializer.read(((CompoundNBT) entry).getCompound("waystone"))
 			)));
 	}
 
@@ -129,7 +198,7 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 				null,
 				false
 			);
-			registerGenerated(name, villageLocation);
+			registerGenerated(name, villageLocation, new ChunkEntryKey(new ChunkPos(pos), seedReader.getWorld().getDimensionKey().getLocation()));
 
 			for(Template.BlockInfo blockInfo : Template.processBlockInfos(
 				seedReader, pieceLocation, villageLocation, placementSettings,
@@ -168,14 +237,15 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 		return allowedWaystones.get(random.nextInt(allowedWaystones.size()));
 	}
 
-	private static void registerGenerated(String name, BlockPos referencePos) {
+	private static void registerGenerated(String name, BlockPos referencePos, ChunkEntryKey chunkInfo) {
 		WaystoneLibrary.getInstance().getHandleByName(name).ifPresent(handle -> {
 			generatedWaystones.put(referencePos, handle);
+			generatedWaystonesByChunk.put(chunkInfo, handle);
 			WaystoneLibrary.getInstance().markDirty();
 		});
 	}
 
-	public static Set<Map.Entry<BlockPos, WaystoneHandle>> getAllEntries() {
+	public static Set<Map.Entry<BlockPos, WaystoneHandle.Vanilla>> getAllEntries() {
 		return generatedWaystones.entrySet();
 	}
 

@@ -11,7 +11,7 @@ public interface EventDispatcher<Event> {
 
     boolean removeListener(@Nonnull Consumer<Event> listener);
 
-    class Impl<Event> implements EventDispatcher<Event> {
+    abstract class Impl<Event> implements EventDispatcher<Event> {
 
         protected final Set<Consumer<Event>> listeners = new HashSet<>();
 

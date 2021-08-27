@@ -9,7 +9,10 @@ import gollorum.signpost.minecraft.registry.ItemRegistry;
 import gollorum.signpost.minecraft.registry.RecipeRegistry;
 import gollorum.signpost.minecraft.registry.TileEntityRegistry;
 import gollorum.signpost.minecraft.rendering.PostRenderer;
+import gollorum.signpost.minecraft.worldgen.WaystoneDiscoveryEventListener;
 import gollorum.signpost.networking.PacketHandler;
+import gollorum.signpost.relations.ExternalWaystoneLibrary;
+import gollorum.signpost.relations.WaystonesAdapter;
 import gollorum.signpost.utils.ServerType;
 import gollorum.signpost.worldgen.Villages;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -22,6 +25,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -33,8 +37,6 @@ import net.minecraftforge.fml.network.NetworkEvent;
 import net.minecraftforge.fml.network.PacketDistributor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.function.Supplier;
 
 @Mod(Signpost.MOD_ID)
 public class Signpost {
@@ -67,8 +69,12 @@ public class Signpost {
         TileEntityRegistry.register(modBus);
         DataGeneration.register(modBus);
         BlockEventListener.register(forgeBus);
+        WaystoneDiscoveryEventListener.register(forgeBus);
 
         Villages.instance.initialize();
+
+        if(ModList.get().isLoaded("waystones"))
+            WaystonesAdapter.register();
     }
 
     private static class ModBusEvents {
@@ -76,7 +82,8 @@ public class Signpost {
         @SubscribeEvent
         public void setup(final FMLCommonSetupEvent event) {
             PacketHandler.initialize();
-            PacketHandler.register(new JoinServerEvent());
+            PacketHandler.register(new JoinServerEvent(), -50);
+            ExternalWaystoneLibrary.initialize();
             WaystoneLibrary.registerNetworkPackets();
         }
 
