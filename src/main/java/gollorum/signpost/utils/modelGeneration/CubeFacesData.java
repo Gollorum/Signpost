@@ -1,7 +1,6 @@
 package gollorum.signpost.utils.modelGeneration;
 
-
-import javafx.util.Pair;
+import gollorum.signpost.utils.Tuple;
 import net.minecraft.util.Direction;
 
 import java.util.Arrays;
@@ -22,11 +21,11 @@ public class CubeFacesData<TextureIdentifier> {
         this.rotation = rotation;
     }
 
-    public static <TextureIdentifier> List<CubeFacesData<TextureIdentifier>> from(Function<Direction, Optional<Pair<TextureIdentifier, FaceRotation>>> faceDataGetter) {
+    public static <TextureIdentifier> List<CubeFacesData<TextureIdentifier>> from(Function<Direction, Optional<Tuple<TextureIdentifier, FaceRotation>>> faceDataGetter) {
         return Arrays.stream(Direction.values())
-            .map(d -> faceDataGetter.apply(d).map(fd -> new Pair<>(d, fd)))
+            .map(d -> faceDataGetter.apply(d).map(fd -> Tuple.of(d, fd)))
             .filter(Optional::isPresent).map(Optional::get)
-            .map(pair -> new CubeFacesData<>(pair.getKey(), pair.getValue().getKey(), pair.getValue().getValue()))
+            .map(Tuple -> new CubeFacesData<>(Tuple._1, Tuple._2._1, Tuple._2._2))
             .collect(Collectors.toList());
     }
 

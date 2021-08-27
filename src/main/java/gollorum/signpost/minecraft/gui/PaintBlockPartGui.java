@@ -1,7 +1,6 @@
 package gollorum.signpost.minecraft.gui;
 
 import com.google.common.collect.Streams;
-import com.mojang.datafixers.util.Pair;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.utils.*;
 import gollorum.signpost.minecraft.gui.widgets.GuiBlockPartRenderer;
@@ -10,6 +9,7 @@ import gollorum.signpost.minecraft.gui.widgets.SpriteSelectionButton;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.BlockPart;
 import gollorum.signpost.utils.BlockPartInstance;
+import gollorum.signpost.utils.Tuple;
 import gollorum.signpost.utils.math.Angle;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -62,12 +62,12 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
     protected void init() {
         super.init();
 
-        List<Pair<List<TextureAtlasSprite>, ItemStack>> blocksToRender = getMinecraft().player.inventory.mainInventory.stream()
+        List<Tuple<List<TextureAtlasSprite>, ItemStack>> blocksToRender = getMinecraft().player.inventory.mainInventory.stream()
             .filter(i -> !i.isEmpty() && i.getItem() instanceof BlockItem)
             .map(i -> new ItemStack(i.getItem()))
             .distinct()
-            .map(is -> Pair.of(allSpritesFor((BlockItem) is.getItem()), is))
-            .filter(p -> p.getFirst().size() > 0)
+            .map(is -> Tuple.of(allSpritesFor((BlockItem) is.getItem()), is))
+            .filter(p -> p._1.size() > 0)
             .collect(Collectors.toList());
 
         int rows = (blocksToRender.size() + 8) / 9;
@@ -77,11 +77,11 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
             int top = (height * 3) / 4 + y * ItemButton.height;
             int left = width / 2 - (rowWidth * ItemButton.width / 2);
             for (int x = 0; x < rowWidth; x++) {
-                Pair<List<TextureAtlasSprite>, ItemStack> pair = blocksToRender.get(x + y * 9);
+                Tuple<List<TextureAtlasSprite>, ItemStack> tuple = blocksToRender.get(x + y * 9);
                 addButton(new ItemButton(
                     left + x * ItemButton.width, top, Rect.XAlignment.Left, Rect.YAlignment.Bottom,
-                    pair.getSecond(),
-                    b -> setupTextureButtonsFor(pair.getFirst()),
+                    tuple._2,
+                    b -> setupTextureButtonsFor(tuple._1),
                     itemRenderer, font
                 ));
             }

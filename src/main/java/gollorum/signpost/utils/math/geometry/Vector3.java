@@ -31,6 +31,10 @@ public final class Vector3 {
         return new Vector3((float)vec.getX(), (float)vec.getY(), (float)vec.getZ());
     }
 
+    public BlockPos toBlockPos() {
+        return new BlockPos(x, y, z);
+    }
+
     public static Vector3 min(Vector3 a, Vector3 b) {
         return new Vector3(Float.min(a.x, b.x), Float.min(a.y, b.y), Float.min(a.z, b.z));
     }

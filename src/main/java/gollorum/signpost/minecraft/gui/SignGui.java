@@ -569,8 +569,8 @@ public class SignGui extends ExtendedScreen {
                 onWaystoneCountChanged();
             };
             WaystoneLibrary.getInstance().requestAllWaystones(n -> {
-                waystoneDropdown.addEntries(n.entrySet().stream().map(e -> new WaystoneEntry(e.getValue().getFirst(), e.getValue().getFirst(), e.getKey(), e.getValue().getSecond().block)).collect(Collectors.toList()));
-                setupFromSign.accept(id -> id instanceof WaystoneHandle.Vanilla ? Optional.ofNullable(n.get(id).getFirst()) : Optional.empty());
+                waystoneDropdown.addEntries(n.entrySet().stream().map(e -> new WaystoneEntry(e.getValue()._1, e.getValue()._1, e.getKey(), e.getValue()._2.block)).collect(Collectors.toList()));
+                setupFromSign.accept(id -> id instanceof WaystoneHandle.Vanilla ? Optional.ofNullable(n.get(id)._1) : Optional.empty());
             }, Optional.of(PlayerHandle.from(getMinecraft().player)));
             ExternalWaystoneLibrary.getInstance().requestKnownWaystones(n -> {
                 List<WaystoneEntry> entries = n.stream().map(w -> new WaystoneEntry(w.name() + " " + w.handle().modMark(), w.name(), w.handle(), w.loc())).collect(Collectors.toList());

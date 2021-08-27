@@ -10,11 +10,16 @@ import gollorum.signpost.minecraft.utils.Inventory;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.relations.ExternalWaystone;
+import gollorum.signpost.utils.Delay;
 import gollorum.signpost.utils.Either;
 import gollorum.signpost.utils.WaystoneLocationData;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.*;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.SoundType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -24,13 +29,20 @@ import net.minecraft.item.Items;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.util.ITeleporter;
 import net.minecraftforge.fml.network.NetworkEvent;
+import org.apache.logging.log4j.util.TriConsumer;
 
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 public class Teleport {
 
@@ -57,11 +69,32 @@ public class Teleport {
                 diff.x, diff.z
             );
             Angle pitch = Angle.fromRadians((float) (Math.PI / 2 + Math.atan(Math.sqrt(diff.x * diff.x + diff.z * diff.z) / diff.y)));
+            World oldWorld = player.world;
+            BlockPos oldPos = player.getPosition();
             if(!player.world.getDimensionType().equals(world.getDimensionType()))
                 player.changeDimension(world, new ITeleporter() {});
             player.rotationYaw = yaw.degrees();
             player.rotationPitch = pitch.degrees();
             player.setPositionAndUpdate(location.x, location.y, location.z);
+            final int steps = 6;
+            TriConsumer<World, BlockPos, Float> playStepSound = (soundWorld, pos, volume) -> {
+//                BlockState block = soundWorld.getBlockState(pos);
+//                if (!block.getMaterial().isLiquid()) {
+//                    BlockState stateAbove = soundWorld.getBlockState(pos.up());
+//                    SoundType soundtype = stateAbove.isIn(Blocks.SNOW) ? stateAbove.getSoundType(soundWorld, pos, player) : block.getSoundType(soundWorld, pos, player);
+//                    soundWorld.playSound(null, pos, soundtype.getStepSound(), player.getSoundCategory(), soundtype.getVolume() * volume, soundtype.getPitch());
+//                }
+                SoundType soundType = Blocks.STONE.getDefaultState().getSoundType();
+                soundWorld.playSound(null, pos, soundType.getStepSound(), player.getSoundCategory(), soundType.getVolume() * volume, soundType.getPitch());
+            };
+            AtomicReference<Consumer<Integer>> playStepSounds = new AtomicReference<>();
+            playStepSounds.set(countdown -> {
+                float volume = countdown / (float) steps;
+//                playStepSound.accept(world, location.toBlockPos(), volume);
+                playStepSound.accept(oldWorld, oldPos, volume);
+                if(countdown > 1) Delay.onServerForFrames(15, () -> playStepSounds.get().accept(countdown - 1));
+            });
+            playStepSounds.get().accept(steps);
         });
     }
 

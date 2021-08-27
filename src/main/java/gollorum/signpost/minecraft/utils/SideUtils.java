@@ -1,16 +1,12 @@
 package gollorum.signpost.minecraft.utils;
 
+import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
-import gollorum.signpost.utils.Either;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.Dimension;
-import net.minecraft.world.World;
-import net.minecraft.world.storage.DimensionSavedDataManager;
+import net.minecraft.item.ItemStack;
 
 import java.util.Optional;
-import java.util.stream.StreamSupport;
 
 public class SideUtils {
 
@@ -18,6 +14,33 @@ public class SideUtils {
 		return Minecraft.getInstance().player != null
 			? Optional.of(Minecraft.getInstance().player)
 			: Optional.empty();
+	}
+
+	public static void makePlayerPayIfEditor(boolean isRemote, PlayerEntity sender, PlayerHandle playerHandle, ItemStack cost) {
+		PlayerEntity player = isRemote ? SideUtils.getClientPlayer().get() : sender;
+		if (player.getUniqueID().equals(playerHandle.id)) {
+			if (!player.isCreative())
+				player.inventory.func_234564_a_(
+					i -> i.getItem().equals(cost.getItem()),
+					cost.getCount(),
+					player.container.func_234641_j_()
+				);
+		} else {
+			Signpost.LOGGER.error(
+				"Tried to apply cost but the player was not the expected one (expected {}, got {})",
+				playerHandle.id,
+				player.getUniqueID()
+			);
+		}
+	}
+
+	public static void makePlayerPay(PlayerEntity player, ItemStack cost) {
+		if (!player.isCreative())
+			player.inventory.func_234564_a_(
+				i -> i.getItem().equals(cost.getItem()),
+				cost.getCount(),
+				player.container.func_234641_j_()
+			);
 	}
 
 }

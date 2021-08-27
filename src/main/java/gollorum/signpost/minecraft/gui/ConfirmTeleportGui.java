@@ -1,6 +1,5 @@
 package gollorum.signpost.minecraft.gui;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import gollorum.signpost.Teleport;
 import gollorum.signpost.blockpartdata.types.SignBlockPart;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
@@ -11,16 +10,14 @@ import gollorum.signpost.minecraft.gui.widgets.TextDisplay;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.Either;
+import gollorum.signpost.utils.Tuple;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import javafx.util.Pair;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.IRenderable;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.gui.widget.button.ImageButton;
 import net.minecraft.util.text.TranslationTextComponent;
 
-import java.util.*;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ConfirmTeleportGui extends ExtendedScreen {
@@ -87,7 +84,7 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 						new Point(width / 2, height / 2 - 20),
 						Rect.XAlignment.Center, Rect.YAlignment.Bottom,
 						font,
-						LangKeys.confirmTeleport, new Pair<>(d.waystoneName, Colors.highlight)
+						LangKeys.confirmTeleport, Tuple.of(d.waystoneName, Colors.highlight)
 					));
 
 					if (!d.cost.isEmpty()) {
@@ -142,7 +139,7 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 							Rect.XAlignment.Center, Rect.YAlignment.Bottom,
 							font,
 							LangKeys.notDiscovered,
-							new Pair<>(d.waystoneName, Colors.highlight)
+							new Tuple<>(d.waystoneName, Colors.highlight)
 						));
 					if(isTooFarAway)
 						additionalRenderables.add(new TextDisplay(
@@ -150,8 +147,8 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 							Rect.XAlignment.Center, Rect.YAlignment.Bottom,
 							font,
 							LangKeys.tooFarAway,
-							new Pair<>(Integer.toString(d.distance), Colors.highlight),
-							new Pair<>(Integer.toString(d.maxDistance), Colors.highlight)
+							new Tuple<>(Integer.toString(d.distance), Colors.highlight),
+							new Tuple<>(Integer.toString(d.maxDistance), Colors.highlight)
 						));
 					editButtonTop.set(height / 2 + 20);
 				}

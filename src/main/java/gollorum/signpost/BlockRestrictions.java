@@ -1,6 +1,5 @@
 package gollorum.signpost;
 
-import com.ibm.icu.impl.Pair;
 import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.storage.BlockRestrictionsStorage;
 import gollorum.signpost.minecraft.utils.ClientFrameworkAdapter;
@@ -9,6 +8,7 @@ import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.networking.ReflectionEvent;
 import gollorum.signpost.networking.SerializedWith;
 import gollorum.signpost.security.WithOwner;
+import gollorum.signpost.utils.Tuple;
 import gollorum.signpost.utils.serialization.BooleanSerializer;
 import gollorum.signpost.utils.serialization.IntSerializer;
 import gollorum.signpost.utils.serialization.StringSerializer;
@@ -244,9 +244,9 @@ public class BlockRestrictions {
 			values.clear();
 			values.putAll(list.stream().map(i -> {
 				CompoundNBT elementCompound = (CompoundNBT) i;
-				return Pair.of(PlayerHandle.Serializer.read(elementCompound),
+				return Tuple.of(PlayerHandle.Serializer.read(elementCompound),
 					new Entry(elementCompound.getInt("remaining_waystones"), elementCompound.getInt("remaining_signposts")));
-			}).collect(Collectors.toMap(p -> p.first, p -> p.second)));
+			}).collect(Tuple.mapCollector()));
 		}
 	}
 

@@ -1,7 +1,7 @@
 package gollorum.signpost.utils.modelGeneration;
 
+import gollorum.signpost.utils.Tuple;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import javafx.util.Pair;
 import net.minecraft.util.Direction;
 import net.minecraftforge.client.model.generators.BlockModelBuilder;
 import net.minecraftforge.client.model.generators.ModelBuilder;
@@ -108,9 +108,9 @@ public class SignModelFactory<TextureIdentifier> {
             uMin, vMin + rimHeight, true,
             CubeFacesData.from(d ->
                 d.equals(Direction.SOUTH) || isBothSided
-                    ? Optional.of(new Pair<>(mainTexture, mainTextureRotation))
+                    ? Optional.of(Tuple.of(mainTexture, mainTextureRotation))
                     : d.equals(Direction.NORTH)
-                        ? Optional.of(new Pair<>(secondaryTexture, secondaryTextureRotation))
+                        ? Optional.of(Tuple.of(secondaryTexture, secondaryTextureRotation))
                         : Optional.empty())
         );
         return this;

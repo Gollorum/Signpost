@@ -1,7 +1,6 @@
 package gollorum.signpost.minecraft.worldgen;
 
 import gollorum.signpost.PlayerHandle;
-import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.gui.utils.Colors;

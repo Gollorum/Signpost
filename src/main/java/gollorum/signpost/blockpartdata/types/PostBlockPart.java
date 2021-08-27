@@ -11,6 +11,7 @@ import gollorum.signpost.minecraft.gui.SignGui;
 import gollorum.signpost.minecraft.gui.WaystoneGui;
 import gollorum.signpost.minecraft.items.Brush;
 import gollorum.signpost.minecraft.utils.CoordinatesUtil;
+import gollorum.signpost.minecraft.utils.SideUtils;
 import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.BlockPart;
 import gollorum.signpost.utils.BlockPartInstance;
@@ -75,17 +76,18 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
     }
 
     private InteractionResult attachWaystone(InteractionInfo info, ItemStack heldItem, PlayerHandle playerHandle) {
-        if(info.tile.getParts().stream().noneMatch(p -> p.blockPart instanceof WaystoneBlock))
-            if(!info.isRemote && BlockRestrictions.getInstance().tryDecrementRemaining(BlockRestrictions.Type.Waystone, playerHandle)) {
+        if(info.tile.getParts().stream().noneMatch(p -> p.blockPart instanceof WaystoneBlock)) {
+            if (!info.isRemote && BlockRestrictions.getInstance().tryDecrementRemaining(BlockRestrictions.Type.Waystone, playerHandle)) {
                 info.tile.addPart(
                     new BlockPartInstance(new WaystoneBlockPart(playerHandle), Vector3.ZERO),
                     new ItemStack(heldItem.getItem()),
                     PlayerHandle.from(info.player)
                 );
                 info.tile.markDirty();
-            }
-            else WaystoneGui.display(new WorldLocation(info.tile.getPos(), info.player.world), Optional.empty());
-        return InteractionResult.Accepted;
+                SideUtils.makePlayerPay(info.player, new ItemStack(WaystoneBlock.INSTANCE));
+            } else WaystoneGui.display(new WorldLocation(info.tile.getPos(), info.player.world), Optional.empty());
+            return InteractionResult.Accepted;
+        } else return InteractionResult.Ignored;
     }
 
     private InteractionResult attachSign(InteractionInfo info, ItemStack heldItem) {

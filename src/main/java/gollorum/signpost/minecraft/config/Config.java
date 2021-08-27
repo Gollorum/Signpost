@@ -1,10 +1,10 @@
 package gollorum.signpost.minecraft.config;
 
 import gollorum.signpost.minecraft.block.ModelWaystone;
+import gollorum.signpost.utils.Tuple;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,12 +18,12 @@ public class Config {
 	private static final ForgeConfigSpec ClientConfig;
 
 	static {
-		Pair<Server, ForgeConfigSpec> serverPair = new ForgeConfigSpec.Builder().configure(Server::new);
-		Server = serverPair.getKey();
-		ServerConfig = serverPair.getValue();
-		Pair<Client, ForgeConfigSpec> clientPair = new ForgeConfigSpec.Builder().configure(Client::new);
-		Client = clientPair.getKey();
-		ClientConfig = clientPair.getValue();
+		Tuple<Server, ForgeConfigSpec> serverTuple = Tuple.from(new ForgeConfigSpec.Builder().configure(Server::new));
+		Server = serverTuple._1;
+		ServerConfig = serverTuple._2;
+		Tuple<Client, ForgeConfigSpec> clientTuple = Tuple.from(new ForgeConfigSpec.Builder().configure(Client::new));
+		Client = clientTuple._1;
+		ClientConfig = clientTuple._2;
 	}
 
 	public static void register() {

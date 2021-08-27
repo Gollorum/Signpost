@@ -7,10 +7,10 @@ import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
+import gollorum.signpost.utils.Tuple;
 import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.ItemStackSerializer;
-import javafx.util.Pair;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
@@ -44,13 +44,13 @@ public class RequestSignGui implements PacketHandler.Event<RequestSignGui.Packag
 	public void handle(
 		Package message, NetworkEvent.Context context
 	) {
-		Optional<Pair<PostTile, BlockPartInstance>> pairO = TileEntityUtils.findTileEntityClient(
+		Optional<Tuple<PostTile, BlockPartInstance>> TupleO = TileEntityUtils.findTileEntityClient(
 			message.tilePartInfo.dimensionKey, message.tilePartInfo.pos, PostTile.class
 		).flatMap(tile -> tile.getPart(message.tilePartInfo.identifier)
-			.flatMap(part -> (part.blockPart instanceof SignBlockPart ? Optional.of(new Pair<>(tile, part)) : Optional.empty())));
-		if (pairO.isPresent()) {
-			Pair<PostTile, BlockPartInstance> pair = pairO.get();
-			SignGui.display(pair.getKey(), (SignBlockPart) pair.getValue().blockPart, pair.getValue().offset, message.tilePartInfo);
+			.flatMap(part -> (part.blockPart instanceof SignBlockPart ? Optional.of(new Tuple<>(tile, part)) : Optional.empty())));
+		if (TupleO.isPresent()) {
+			Tuple<PostTile, BlockPartInstance> Tuple = TupleO.get();
+			SignGui.display(Tuple._1, (SignBlockPart) Tuple._2.blockPart, Tuple._2.offset, message.tilePartInfo);
 		} else {
 			Signpost.LOGGER.error("Tried to open sign gui, but something was missing.");
 		}

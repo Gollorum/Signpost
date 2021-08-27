@@ -429,21 +429,7 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
                     if(message.cost.getCount() > 0 &&
                            (!isRemote ||
                                 (SideUtils.getClientPlayer().map(player -> player.getUniqueID().equals(message.player.id)).orElse(false)))) {
-                        PlayerEntity player = isRemote ? SideUtils.getClientPlayer().get() : context.getSender();
-                        if (player.getUniqueID().equals(message.player.id)) {
-                            if (!player.isCreative())
-                                player.inventory.func_234564_a_(
-                                    i -> i.getItem().equals(message.cost.getItem()),
-                                    message.cost.getCount(),
-                                    player.container.func_234641_j_()
-                                );
-                        } else {
-                            Signpost.LOGGER.error(
-                                "Tried to apply cost but the player was not the expected one (expected {}, got {})",
-                                message.player.id,
-                                player.getUniqueID()
-                            );
-                        }
+                        SideUtils.makePlayerPayIfEditor(isRemote, context.getSender(), message.player, message.cost);
                     }
                     tile.markDirty();
                 } else {

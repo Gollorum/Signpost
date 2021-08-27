@@ -18,10 +18,10 @@ import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.utils.BlockPartInstance;
+import gollorum.signpost.utils.Tuple;
 import gollorum.signpost.utils.WaystoneData;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import javafx.util.Pair;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
@@ -33,7 +33,6 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.ChunkGenerator;
 import net.minecraft.world.gen.feature.jigsaw.IJigsawDeserializer;
 import net.minecraft.world.gen.feature.jigsaw.JigsawPattern;
-import net.minecraft.world.gen.feature.jigsaw.JigsawPiece;
 import net.minecraft.world.gen.feature.jigsaw.SingleJigsawPiece;
 import net.minecraft.world.gen.feature.structure.StructureManager;
 import net.minecraft.world.gen.feature.template.PlacementSettings;
@@ -132,9 +131,9 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 			.filter(e -> !(e.getKey().equals(villageLocation) || (
 				waystonesTargetedByVillage.containsKey(villageLocation)
 					&& waystonesTargetedByVillage.get(villageLocation).contains(e.getValue()))))
-			.map(e -> new Pair<>(e, (float) Math.sqrt(e.getKey().distanceSq(pieceLocation)) * (0.5f + random.nextFloat())))
-			.sorted((e1, e2) -> Float.compare(e1.getValue(), e2.getValue()))
-			.map(Pair::getKey)
+			.map(e -> new Tuple<>(e, (float) Math.sqrt(e.getKey().distanceSq(pieceLocation)) * (0.5f + random.nextFloat())))
+			.sorted((e1, e2) -> Float.compare(e1._2, e2._2))
+			.map(Tuple::getLeft)
 			.filter(e -> WaystoneLibrary.getInstance().contains(e.getValue()))
 			.collect(Collectors.toCollection(LinkedList::new));
 	}
@@ -151,24 +150,24 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 		BlockPos lowerPos = pieceLocation.offset(facing.getOpposite()).offset(left).up();
 		BlockPos upperPos = lowerPos.up();
 
-		Pair<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> upperSignResult = makeSign(random, facing, world, upperPos,
+		Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> upperSignResult = makeSign(random, facing, world, upperPos,
 			possibleTargets, 0.75f
 		);
-		Pair<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> lowerSignResult = makeSign(random, facing, world, upperPos,
+		Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> lowerSignResult = makeSign(random, facing, world, upperPos,
 			possibleTargets, 0.25f
 		);
 		TileEntityUtils.delayUntilTileEntityExists(world.getWorld(), upperPos, PostTile.class, tile -> {
-			upperSignResult.getValue().accept(tile);
-			lowerSignResult.getValue().accept(tile);
+			upperSignResult._2.accept(tile);
+			lowerSignResult._2.accept(tile);
 			tile.markDirty();
 		}, 20, Optional.of(() -> Signpost.LOGGER.error("Could not populate generated signpost at " + upperPos + ": TileEntity was not constructed.")));
 		List<WaystoneHandle.Vanilla> ret = new ArrayList<>();
-		ret.addAll(upperSignResult.getKey());
-		ret.addAll(lowerSignResult.getKey());
+		ret.addAll(upperSignResult._1);
+		ret.addAll(lowerSignResult._1);
 		return ret;
 	}
 
-	public Pair<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> makeSign(
+	public Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> makeSign(
 		Random random,
 		Direction facing,
 		ISeedReader world,
@@ -176,13 +175,13 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 		Queue<Map.Entry<BlockPos, WaystoneHandle.Vanilla>> possibleTargets,
 		float y
 	) {
-		if(possibleTargets.isEmpty()) return new Pair<>(Collections.emptySet(), x -> {});
+		if(possibleTargets.isEmpty()) return new Tuple<>(Collections.emptySet(), x -> {});
 		return random.nextFloat() < smallSignRatio
 			? makeShortSigns(facing, world, tilePos, possibleTargets, y)
 			: makeWideSign(facing, world, tilePos, possibleTargets, y);
 	}
 
-	private Pair<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> makeWideSign(
+	private Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> makeWideSign(
 		Direction facing,
 		ISeedReader world,
 		BlockPos tilePos,
@@ -190,7 +189,7 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 		float y
 	) {
 		Map.Entry<BlockPos, WaystoneHandle.Vanilla> target = possibleTargets.poll();
-		if(target == null) return new Pair<>(Collections.emptySet(), x -> {});
+		if(target == null) return new Tuple<>(Collections.emptySet(), x -> {});
 		WaystoneData targetData = WaystoneLibrary.getInstance().getData(target.getValue());
 		Angle rotation = SignBlockPart.pointingAt(tilePos, target.getKey());
 		Consumer<PostTile> onTileFetched = tile -> {
@@ -210,12 +209,12 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 				PlayerHandle.Invalid
 			);
 		};
-		return new Pair<>(Collections.singleton(target.getValue()), onTileFetched);
+		return new Tuple<>(Collections.singleton(target.getValue()), onTileFetched);
 	}
 
 	private static boolean isNearly(float a, float b) { return Math.abs(a - b) < 1e-5f; }
 
-	private Pair<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> makeShortSigns(
+	private Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> makeShortSigns(
 		Direction facing,
 		ISeedReader world,
 		BlockPos tilePos,
@@ -223,7 +222,7 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 		float y
 	) {
 		Map.Entry<BlockPos, WaystoneHandle.Vanilla> target = possibleTargets.poll();
-		if(target == null) return new Pair<>(Collections.emptySet(), x -> {});
+		if(target == null) return new Tuple<>(Collections.emptySet(), x -> {});
 		WaystoneData targetData = WaystoneLibrary.getInstance().getData(target.getValue());
 		Angle rotation = SignBlockPart.pointingAt(tilePos, target.getKey());
 		boolean shouldFlip = shouldFlip(facing, rotation);
@@ -272,7 +271,7 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 		skippedTargets.addAll(possibleTargets);
 		possibleTargets.clear();
 		possibleTargets.addAll(skippedTargets);
-		return new Pair<>(
+		return new Tuple<>(
 			secondTarget == null
 				? Collections.singleton(target.getValue())
 				: ImmutableList.of(target.getValue(), secondTarget.getValue()),

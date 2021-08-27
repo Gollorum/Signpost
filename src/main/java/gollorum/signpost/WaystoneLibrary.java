@@ -1,17 +1,19 @@
 package gollorum.signpost;
 
-import com.mojang.datafixers.util.Pair;
 import gollorum.signpost.minecraft.block.WaystoneBlock;
+import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.events.*;
 import gollorum.signpost.minecraft.storage.WaystoneLibraryStorage;
 import gollorum.signpost.minecraft.utils.LangKeys;
+import gollorum.signpost.minecraft.utils.SideUtils;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.*;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.StringSerializer;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
@@ -125,7 +127,7 @@ public class WaystoneLibrary {
     private final EventDispatcher.Impl.WithPublicDispatch<Map<WaystoneHandle.Vanilla, String>> requestedAllNamesEventDispatcher =
         new EventDispatcher.Impl.WithPublicDispatch<>();
 
-    private final EventDispatcher.Impl.WithPublicDispatch<Map<WaystoneHandle.Vanilla, Pair<String, WaystoneLocationData>>> requestedAllWaystonesEventDispatcher =
+    private final EventDispatcher.Impl.WithPublicDispatch<Map<WaystoneHandle.Vanilla, Tuple<String, WaystoneLocationData>>> requestedAllWaystonesEventDispatcher =
         new EventDispatcher.Impl.WithPublicDispatch<>();
 
     private final EventDispatcher.Impl.WithPublicDispatch<Optional<WaystoneHandle.Vanilla>> requestedIdEventDispatcher =
@@ -263,7 +265,7 @@ public class WaystoneLibrary {
         }
     }
 
-    public void requestAllWaystones(Consumer<Map<WaystoneHandle.Vanilla, Pair<String, WaystoneLocationData>>> onReply, Optional<PlayerHandle> onlyKnownBy) {
+    public void requestAllWaystones(Consumer<Map<WaystoneHandle.Vanilla, Tuple<String, WaystoneLocationData>>> onReply, Optional<PlayerHandle> onlyKnownBy) {
         if(Signpost.getServerType().isServer) {
             onReply.accept(getAllWaystones(onlyKnownBy));
         } else {
@@ -297,10 +299,10 @@ public class WaystoneLibrary {
         return ret;
     }
 
-    private Map<WaystoneHandle.Vanilla, Pair<String, WaystoneLocationData>> getAllWaystones(Optional<PlayerHandle> onlyKnownBy) {
+    private Map<WaystoneHandle.Vanilla, Tuple<String, WaystoneLocationData>> getAllWaystones(Optional<PlayerHandle> onlyKnownBy) {
         assert Signpost.getServerType().isServer;
-        Map<WaystoneHandle.Vanilla, Pair<String, WaystoneLocationData>> ret = getInstance().allWaystones.entrySet().stream()
-            .collect(Collectors.toMap(Map.Entry::getKey, e -> Pair.of(e.getValue().name, e.getValue().locationData)));
+        Map<WaystoneHandle.Vanilla, Tuple<String, WaystoneLocationData>> ret = getInstance().allWaystones.entrySet().stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, e -> Tuple.of(e.getValue().name, e.getValue().locationData)));
         if(onlyKnownBy.isPresent() && Config.Server.teleport.enforceDiscovery.get()) {
             Set<WaystoneHandle.Vanilla> known = playerMemory.computeIfAbsent(onlyKnownBy.get(), h -> new HashSet<>());
             return ret.entrySet().stream()
@@ -457,9 +459,9 @@ public class WaystoneLibrary {
     private static final class DeliverAllWaystonesEvent implements PacketHandler.Event<DeliverAllWaystonesEvent.Packet> {
 
         public static final class Packet {
-            public final Map<WaystoneHandle.Vanilla, Pair<String, WaystoneLocationData>> names;
+            public final Map<WaystoneHandle.Vanilla, Tuple<String, WaystoneLocationData>> names;
 
-            private Packet(Map<WaystoneHandle.Vanilla, Pair<String, WaystoneLocationData>> names) {
+            private Packet(Map<WaystoneHandle.Vanilla, Tuple<String, WaystoneLocationData>> names) {
                 this.names = names;
             }
         }
@@ -470,21 +472,21 @@ public class WaystoneLibrary {
         @Override
         public void encode(Packet message, PacketBuffer buffer) {
             buffer.writeInt(message.names.size());
-            for (Map.Entry<WaystoneHandle.Vanilla, Pair<String, WaystoneLocationData>> name: message.names.entrySet()) {
+            for (Map.Entry<WaystoneHandle.Vanilla, Tuple<String, WaystoneLocationData>> name: message.names.entrySet()) {
                 buffer.writeUniqueId(name.getKey().id);
-                buffer.writeString(name.getValue().getFirst());
-                WaystoneLocationData.SERIALIZER.write(name.getValue().getSecond(), buffer);
+                buffer.writeString(name.getValue()._1);
+                WaystoneLocationData.SERIALIZER.write(name.getValue()._2, buffer);
             }
         }
 
         @Override
         public Packet decode(PacketBuffer buffer) {
-            Map<WaystoneHandle.Vanilla, Pair<String, WaystoneLocationData>> names = new HashMap<>();
+            Map<WaystoneHandle.Vanilla, Tuple<String, WaystoneLocationData>> names = new HashMap<>();
             int count = buffer.readInt();
             for(int i = 0; i < count; i++)
                 names.put(
                     new WaystoneHandle.Vanilla(buffer.readUniqueId()),
-                    Pair.of(
+                    Tuple.of(
                         StringSerializer.instance.read(buffer),
                         WaystoneLocationData.SERIALIZER.read(buffer)
                     )

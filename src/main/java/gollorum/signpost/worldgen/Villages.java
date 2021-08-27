@@ -1,11 +1,11 @@
 package gollorum.signpost.worldgen;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.datafixers.util.Pair;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.worldgen.SignpostJigsawPiece;
 import gollorum.signpost.minecraft.worldgen.WaystoneJigsawPiece;
 import gollorum.signpost.utils.CollectionUtils;
+import gollorum.signpost.utils.Tuple;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.WorldGenRegistries;
@@ -74,12 +74,12 @@ public class Villages {
 	private void registerFor(VillageType villageType, boolean isZombie) {
 		addToPool(
 			ImmutableList.of(
-				Pair.of(
+				Tuple.of(
 					new WaystoneJigsawPiece(villageType.getStructureResourceLocation("waystone"),
 						villageType.processorList, JigsawPattern.PlacementBehaviour.RIGID),
 					5
 				),
-				Pair.of(
+				Tuple.of(
 					new SignpostJigsawPiece(villageType.getStructureResourceLocation("signpost"),
 						villageType.processorList, JigsawPattern.PlacementBehaviour.TERRAIN_MATCHING, isZombie),
 					5
@@ -98,9 +98,9 @@ public class Villages {
 	}
 
 	private void addLocationsToPool(
-		Collection<Pair<ResourceLocation, Integer>> houses, JigsawPattern.PlacementBehaviour placementBehaviour, StructureProcessorList processorList, ResourceLocation pool
+		Collection<Tuple<ResourceLocation, Integer>> houses, JigsawPattern.PlacementBehaviour placementBehaviour, StructureProcessorList processorList, ResourceLocation pool
 	) {
-		addToPool(houses.stream().map(loc -> Pair.of(jigsawPieceFrom(loc.getFirst(), () -> processorList, placementBehaviour), loc.getSecond()))
+		addToPool(houses.stream().map(loc -> Tuple.of(jigsawPieceFrom(loc._1, () -> processorList, placementBehaviour), loc._2))
 			.collect(Collectors.toList()), pool);
 	}
 
@@ -111,15 +111,15 @@ public class Villages {
 	private SingleJigsawPiece jigsawPieceFrom(Template template) { return new SingleJigsawPiece(template); }
 
 	private void addTemplatesToPool(
-		Collection<Pair<Template, Integer>> houses, JigsawPattern.PlacementBehaviour placementBehaviour, StructureProcessorList processorList, ResourceLocation pool
+		Collection<Tuple<Template, Integer>> houses, JigsawPattern.PlacementBehaviour placementBehaviour, StructureProcessorList processorList, ResourceLocation pool
 	) {
 		addToPool(houses.stream()
-			.map(pair -> Pair.of(jigsawPieceFrom(pair.getFirst()), pair.getSecond()))
+			.map(tuple -> tuple.of(jigsawPieceFrom(tuple._1), tuple._2))
 			.collect(Collectors.toList()), pool);
 	}
 
 	private void addToPool(
-		Collection<Pair<SingleJigsawPiece, Integer>> houses, ResourceLocation pool
+		Collection<Tuple<SingleJigsawPiece, Integer>> houses, ResourceLocation pool
 	) {
 		JigsawPattern oldPattern = WorldGenRegistries.JIGSAW_POOL.getOrDefault(pool);
 		if(oldPattern == null) {
@@ -127,8 +127,8 @@ public class Villages {
 			return;
 		}
 		Map<JigsawPiece, Integer> allPieces = CollectionUtils.group(oldPattern.getShuffledPieces(new Random(0)));
-		for(Pair<SingleJigsawPiece, Integer> pair : houses) {
-			allPieces.put(pair.getFirst(), pair.getSecond());
+		for(Tuple<SingleJigsawPiece, Integer> tuple : houses) {
+			allPieces.put(tuple._1, tuple._2);
 		}
 		registerPoolEntries(allPieces, pool, oldPattern.getName());
 	}
@@ -147,7 +147,7 @@ public class Villages {
 	}
 
 	private static void registerPoolEntries(Map<JigsawPiece, Integer> pieces, ResourceLocation pool, ResourceLocation patternName) {
-		Registry.register(WorldGenRegistries.JIGSAW_POOL, pool, new JigsawPattern(pool, patternName, pieces.entrySet().stream().map(e -> Pair
+		Registry.register(WorldGenRegistries.JIGSAW_POOL, pool, new JigsawPattern(pool, patternName, pieces.entrySet().stream().map(e -> com.mojang.datafixers.util.Pair
 			.of(e.getKey(), e.getValue())).collect(Collectors.toList())));
 	}
 
