@@ -20,7 +20,7 @@ public class WaystoneTile extends TileEntity implements WithOwner.OfWaystone, Wa
 
     public static final String REGISTRY_NAME = "waystone";
 
-    public static final TileEntityType<WaystoneTile> type = TileEntityType.Builder.create(WaystoneTile::new, WaystoneBlock.INSTANCE).build(null);
+    public static final TileEntityType<WaystoneTile> type = TileEntityType.Builder.of(WaystoneTile::new, WaystoneBlock.INSTANCE).build(null);
 
     private Optional<PlayerHandle> owner = Optional.empty();
 
@@ -29,35 +29,35 @@ public class WaystoneTile extends TileEntity implements WithOwner.OfWaystone, Wa
     }
 
     @Override
-    public void remove() {
-        super.remove();
+    public void setRemoved() {
+        super.setRemoved();
         if(Signpost.getServerType().isServer) {
             Optional<WorldLocation> location = WorldLocation.from(this);
             if(location.isPresent())
                 WaystoneLibrary.getInstance().removeAt(location.get(), PlayerHandle.Invalid);
-            else Signpost.LOGGER.error("Waystone tile at "+ pos +"  was removed but world was null. " +
+            else Signpost.LOGGER.error("Waystone tile at "+ getBlockPos() +"  was removed but world was null. " +
                 "This means that the waystone has not been cleaned up correctly.");
         }
     }
 
     @Override
-    public void setWorldAndPos(World world, BlockPos pos) {
-        if(!world.isRemote) {
+    public void setLevelAndPosition(World world, BlockPos pos) {
+        if(!world.isClientSide()) {
             Optional<WorldLocation> oldLocation = WorldLocation.from(this);
             oldLocation.ifPresent(worldLocation -> WaystoneLibrary.getInstance().updateLocation(
                 worldLocation,
                 new WorldLocation(pos, world)
             ));
         }
-        super.setWorldAndPos(world, pos);
+        super.setLevelAndPosition(world, pos);
     }
 
     @Override
-    public void setPos(BlockPos pos) {
+    public void setPosition(BlockPos pos) {
         Optional<WorldLocation> oldLocation = WorldLocation.from(this);
-        super.setPos(pos);
-        Optional<WorldLocation> newLocation = WorldLocation.from(this);
-        if(oldLocation.isPresent() && newLocation.isPresent() && !world.isRemote)
+        super.setPosition(pos);
+        Optional<WorldLocation> newLocation = WorldLocation.from(this); // getLevel() has to be non-null if this is present.
+        if(oldLocation.isPresent() && newLocation.isPresent() && !getLevel().isClientSide())
             WaystoneLibrary.getInstance().updateLocation(oldLocation.get(), newLocation.get());
     }
 
@@ -71,14 +71,14 @@ public class WaystoneTile extends TileEntity implements WithOwner.OfWaystone, Wa
     }
 
     @Override
-    public CompoundNBT write(CompoundNBT compound) {
+    public CompoundNBT save(CompoundNBT compound) {
         compound.put("Owner", PlayerHandle.Serializer.optional().write(owner));
-        return super.write(compound);
+        return super.save(compound);
     }
 
     @Override
-    public void read(BlockState state, CompoundNBT compound) {
-        super.read(state, compound);
+    public void load(BlockState state, CompoundNBT compound) {
+        super.load(state, compound);
         owner = PlayerHandle.Serializer.optional().read(compound.getCompound("Owner"));
     }
 }

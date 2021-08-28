@@ -57,7 +57,7 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 	}
 
 	public static final Codec<SignpostJigsawPiece> codec = RecordCodecBuilder.create((codecBuilder) ->
-		codecBuilder.group(func_236846_c_(), func_236844_b_(), func_236848_d_(), isZombieCodec()).apply(codecBuilder, SignpostJigsawPiece::new));
+		codecBuilder.group(templateCodec(), processorsCodec(), projectionCodec(), isZombieCodec()).apply(codecBuilder, SignpostJigsawPiece::new));
 
 	private static RecordCodecBuilder<SignpostJigsawPiece, Boolean> isZombieCodec() {
 		return Codec.BOOL.fieldOf("isZombie").forGetter(o -> o.isZombie);
@@ -85,7 +85,7 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 	}
 
 	@Override
-	public boolean func_230378_a_(
+	public boolean place(
 		TemplateManager templateManager,
 		ISeedReader seedReader,
 		StructureManager structureManager,
@@ -103,9 +103,9 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 		Queue<Map.Entry<BlockPos, WaystoneHandle.Vanilla>> possibleTargets = fetchPossibleTargets(pieceLocation, villageLocation, random);
 		if(possibleTargets.isEmpty()) return false;
 
-		Template template = this.field_236839_c_.map(templateManager::getTemplateDefaulted, Function.identity());
-		PlacementSettings placementSettings = this.func_230379_a_(rotation, boundingBox, shouldUseJigsawReplacementStructureProcessor);
-		if (template.func_237146_a_(seedReader, pieceLocation, villageLocation, placementSettings, random, 18)) {
+		Template template = this.template.map(templateManager::get, Function.identity());
+		PlacementSettings placementSettings = this.getSettings(rotation, boundingBox, shouldUseJigsawReplacementStructureProcessor);
+		if (template.placeInWorld(seedReader, pieceLocation, villageLocation, placementSettings, random, 18)) {
 			Collection<WaystoneHandle.Vanilla> freshlyUsedWaystones = populateSignPostGeneration(
 				placementSettings, pieceLocation, seedReader, random, possibleTargets
 			);
@@ -131,7 +131,7 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 			.filter(e -> !(e.getKey().equals(villageLocation) || (
 				waystonesTargetedByVillage.containsKey(villageLocation)
 					&& waystonesTargetedByVillage.get(villageLocation).contains(e.getValue()))))
-			.map(e -> new Tuple<>(e, (float) Math.sqrt(e.getKey().distanceSq(pieceLocation)) * (0.5f + random.nextFloat())))
+			.map(e -> new Tuple<>(e, (float) Math.sqrt(e.getKey().distSqr(pieceLocation)) * (0.5f + random.nextFloat())))
 			.sorted((e1, e2) -> Float.compare(e1._2, e2._2))
 			.map(Tuple::getLeft)
 			.filter(e -> WaystoneLibrary.getInstance().contains(e.getValue()))
@@ -147,8 +147,8 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 	) {
 		Direction facing = placementSettings.getRotation().rotate(Direction.WEST);
 		Direction left = placementSettings.getRotation().rotate(Direction.SOUTH);
-		BlockPos lowerPos = pieceLocation.offset(facing.getOpposite()).offset(left).up();
-		BlockPos upperPos = lowerPos.up();
+		BlockPos lowerPos = pieceLocation.relative(facing.getOpposite()).relative(left).above();
+		BlockPos upperPos = lowerPos.above();
 
 		Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> upperSignResult = makeSign(random, facing, world, upperPos,
 			possibleTargets, 0.75f
@@ -156,10 +156,10 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 		Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> lowerSignResult = makeSign(random, facing, world, upperPos,
 			possibleTargets, 0.25f
 		);
-		TileEntityUtils.delayUntilTileEntityExists(world.getWorld(), upperPos, PostTile.class, tile -> {
+		TileEntityUtils.delayUntilTileEntityExists(world.getLevel(), upperPos, PostTile.class, tile -> {
 			upperSignResult._2.accept(tile);
 			lowerSignResult._2.accept(tile);
-			tile.markDirty();
+			tile.setChanged();
 		}, 20, Optional.of(() -> Signpost.LOGGER.error("Could not populate generated signpost at " + upperPos + ": TileEntity was not constructed.")));
 		List<WaystoneHandle.Vanilla> ret = new ArrayList<>();
 		ret.addAll(upperSignResult._1);
@@ -283,17 +283,17 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 	}
 
 	private static boolean shouldFlip(Direction facing, Angle signRotation) {
-		float degrees = signRotation.add(Angle.fromDegrees(facing.getHorizontalAngle())).normalized().degrees();
+		float degrees = signRotation.add(Angle.fromDegrees(facing.toYRot())).normalized().degrees();
 		return degrees < -90 || degrees > 90;
 	}
 
 	private Optional<Overlay> overlayFor(ISeedReader world, BlockPos pos) {
 		Biome biome = world.getBiome(pos);
-		if(biome.doesSnowGenerate(world, pos)
+		if(biome.shouldSnow(world, pos)
 			|| biome.getPrecipitation() == Biome.RainType.SNOW
-			|| biome.getCategory() == Biome.Category.ICY) return Optional.of(Overlay.Snow);
-		else if (biome.getCategory() == Biome.Category.JUNGLE) return Optional.of(Overlay.Vine);
-		else if(biome.isHighHumidity() || isZombie) return Optional.of(Overlay.Gras);
+			|| biome.getBiomeCategory() == Biome.Category.ICY) return Optional.of(Overlay.Snow);
+		else if (biome.getBiomeCategory() == Biome.Category.JUNGLE) return Optional.of(Overlay.Vine);
+		else if(biome.isHumid() || isZombie) return Optional.of(Overlay.Gras);
 		else return Optional.empty();
 	}
 
@@ -302,7 +302,7 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 	}
 
 	public String toString() {
-		return "SingleSignpost[" + this.field_236839_c_ + "]";
+		return "SingleSignpost[" + this.template + "]";
 	}
 
 }

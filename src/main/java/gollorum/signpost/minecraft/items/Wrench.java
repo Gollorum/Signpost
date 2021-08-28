@@ -16,13 +16,13 @@ public class Wrench extends ToolItem {
     public static final String registryName = "tool";
 
     public Wrench(ItemGroup itemGroup) {
-        super(0, -3, ItemTier.IRON, new HashSet<>(), new Properties().group(itemGroup));
+        super(0, -3, ItemTier.IRON, new HashSet<>(), new Properties().tab(itemGroup));
     }
 
     @Override
-    public ActionResultType onItemUse(ItemUseContext context) {
-        return TileEntityUtils.findTileEntity(context.getWorld(), context.getPos(), PostTile.class)
-            .map(tile -> PostBlock.onActivate(tile, context.getWorld(), context.getPlayer(), context.getHand()))
+    public ActionResultType useOn(ItemUseContext context) {
+        return TileEntityUtils.findTileEntity(context.getLevel(), context.getClickedPos(), PostTile.class)
+            .map(tile -> PostBlock.onActivate(tile, context.getLevel(), context.getPlayer(), context.getHand()))
             .orElse(ActionResultType.PASS);
     }
 }

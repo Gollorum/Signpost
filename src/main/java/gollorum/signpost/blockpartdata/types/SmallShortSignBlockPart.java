@@ -89,12 +89,12 @@ public class SmallShortSignBlockPart extends SignBlockPart<SmallShortSignBlockPa
     @Override
     public void readMutationUpdate(CompoundNBT compound, TileEntity tile, PlayerEntity editingPlayer) {
         if(editingPlayer != null
-            && editingPlayer.isServerWorld()
+            && !editingPlayer.level.isClientSide()
             && tile instanceof WithOwner.OfSignpost
             && !hasThePermissionToEdit(((WithOwner.OfSignpost)tile), editingPlayer)
         ) {
             // This should not happen unless a player tries to hacc
-            editingPlayer.sendMessage(new TranslationTextComponent(LangKeys.noPermissionSignpost), Util.DUMMY_UUID);
+            editingPlayer.sendMessage(new TranslationTextComponent(LangKeys.noPermissionSignpost), Util.NIL_UUID);
             return;
         }
         if (compound.contains("Text")) {

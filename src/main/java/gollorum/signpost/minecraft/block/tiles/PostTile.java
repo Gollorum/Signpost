@@ -19,6 +19,7 @@ import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.BlockPosSerializer;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.ItemStackSerializer;
+import gollorum.signpost.utils.serialization.StringSerializer;
 import io.netty.util.internal.ConcurrentSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -55,7 +56,7 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
 
     public static final String REGISTRY_NAME = "post";
 
-    public static final TileEntityType<PostTile> type = TileEntityType.Builder.create(
+    public static final TileEntityType<PostTile> type = TileEntityType.Builder.of(
         () -> new PostTile(
             PostBlock.ModelType.Oak,
             ItemStack.EMPTY
@@ -100,7 +101,7 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
 
     public UUID addPart(UUID identifier, BlockPartInstance part, ItemStack cost, PlayerHandle player){
         parts.put(identifier, part);
-        if(hasWorld() && !world.isRemote) sendToTracing(() -> new PartAddedEvent.Packet(
+        if(hasLevel() && !getLevel().isClientSide()) sendToTracing(() -> new PartAddedEvent.Packet(
             new TilePartInfo(this, identifier),
             part.blockPart.write(),
             part.blockPart.getMeta().identifier,
@@ -116,17 +117,17 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
             Signpost.LOGGER.error("Failed to remove post block part with id " + id);
             return oldPart;
         }
-        if(getWorld() != null && !getWorld().isRemote)
+        if(getLevel() != null && !getLevel().isClientSide())
             sendToTracing(() -> new PartRemovedEvent.Packet(new TilePartInfo(this, id), false));
         oldPart.blockPart.removeFrom(this);
-        markDirty();
+        setChanged();
         return oldPart;
     }
 
     @Override
-    public void remove() {
+    public void setRemoved() {
         for (BlockPartInstance part: parts.values()) part.blockPart.removeFrom(this);
-        super.remove();
+        super.setRemoved();
     }
 
     public Collection<BlockPartInstance> getParts(){ return parts.values(); }
@@ -138,24 +139,24 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
             .offset(t.offset)
             .asMinecraftBB()
         ).map(VoxelShapes::create)
-        .reduce((b1, b2) -> VoxelShapes.combine(b1, b2, IBooleanFunction.OR)).orElse(VoxelShapes.empty());
+        .reduce((b1, b2) -> VoxelShapes.join(b1, b2, IBooleanFunction.OR)).orElse(VoxelShapes.empty());
     }
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
         VoxelShape shape = getBounds();
         return shape.isEmpty()
-            ? new AxisAlignedBB(pos)
-            : shape.getBoundingBox().offset(pos);
+            ? new AxisAlignedBB(getBlockPos())
+            : shape.bounds().move(getBlockPos());
     }
 
     public Optional<TraceResult> trace(PlayerEntity player){
-        Vector3d head = player.getPositionVec();
+        Vector3d head = player.position();
         head = head.add(0, player.getEyeHeight(), 0);
         if (player.isCrouching())
             head = head.subtract(0, 0.08, 0);
-        Vector3d look = player.getLookVec();
-        Ray ray = new Ray(Vector3.fromVec3d(head).subtract(Vector3.fromBlockPos(pos)), Vector3.fromVec3d(look));
+        Vector3d look = player.getLookAngle();
+        Ray ray = new Ray(Vector3.fromVec3d(head).subtract(Vector3.fromBlockPos(getBlockPos())), Vector3.fromVec3d(look));
 
         Optional<Tuple<UUID, Float>> closestTrace = Optional.empty();
         for(Map.Entry<UUID, BlockPartInstance> t : parts.entrySet()){
@@ -168,8 +169,8 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
     }
 
     @Override
-    public CompoundNBT write(CompoundNBT compound) {
-        super.write(compound);
+    public CompoundNBT save(CompoundNBT compound) {
+        super.save(compound);
         writeSelf(compound);
         return compound;
     }
@@ -186,7 +187,7 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
                 CompoundNBT subComp = instance.blockPart.write();
                 subComp.put("Offset", Vector3.Serializer.write(instance.offset));
                 compound.put(entry.getKey().identifier + "_" + i, subComp);
-                subComp.putUniqueId("PartId", e.getKey());
+                subComp.putUUID("PartId", e.getKey());
             }
         }
         compound.put("Drop", ItemStackSerializer.Instance.write(drop));
@@ -194,8 +195,8 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
     }
 
     @Override
-    public void read(BlockState blockState, CompoundNBT compound) {
-        super.read(blockState, compound);
+    public void load(BlockState blockState, CompoundNBT compound) {
+        super.load(blockState, compound);
         readSelf(compound);
     }
 
@@ -205,7 +206,7 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
             for(int i = 0; i < compound.getInt(meta.identifier); i++){
                 CompoundNBT comp = compound.getCompound(meta.identifier + "_" + i);
                 addPart(
-                    comp.getUniqueId("PartId"),
+                    comp.getUUID("PartId"),
                     new BlockPartInstance(
                         meta.read(comp),
                         Vector3.Serializer.read(comp.getCompound("Offset"))
@@ -231,7 +232,7 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
     public SUpdateTileEntityPacket getUpdatePacket() {
         CompoundNBT ret = new CompoundNBT();
         writeSelf(ret);
-        return new SUpdateTileEntityPacket(getPos(), 1, ret);
+        return new SUpdateTileEntityPacket(getBlockPos(), 1, ret);
     }
 
     @Override
@@ -243,7 +244,7 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
     @Override
     public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
         super.onDataPacket(net, pkt);
-        readSelf(pkt.getNbtCompound());
+        readSelf(pkt.getTag());
     }
 
     public void notifyMutation(UUID part, CompoundNBT data, String partMetaIdentifier) {
@@ -291,8 +292,8 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
         public final UUID identifier;
 
         public TilePartInfo(TileEntity tile, UUID identifier) {
-            this.dimensionKey = tile.getWorld().getDimensionKey().getLocation();
-            this.pos = tile.getPos();
+            this.dimensionKey = tile.getLevel().dimension().location();
+            this.pos = tile.getBlockPos();
             this.identifier = identifier;
         }
 
@@ -309,7 +310,7 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
             public CompoundNBT write(TilePartInfo tilePartInfo, CompoundNBT compound) {
                 compound.putString("Dimension", tilePartInfo.dimensionKey.toString());
                 compound.put("Pos", BlockPosSerializer.INSTANCE.write(tilePartInfo.pos, compound));
-                compound.putUniqueId("Id", tilePartInfo.identifier);
+                compound.putUUID("Id", tilePartInfo.identifier);
                 return compound;
             }
 
@@ -325,7 +326,7 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
                 return new TilePartInfo(
                     new ResourceLocation(compound.getString("Dimension")),
                     BlockPosSerializer.INSTANCE.read(compound.getCompound("Pos")),
-                    compound.getUniqueId("Id")
+                    compound.getUUID("Id")
                 );
             }
 
@@ -338,7 +339,7 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
             public void write(TilePartInfo tilePartInfo, PacketBuffer buffer) {
                 buffer.writeResourceLocation(tilePartInfo.dimensionKey);
                 BlockPosSerializer.INSTANCE.write(tilePartInfo.pos, buffer);
-                buffer.writeUniqueId(tilePartInfo.identifier);
+                buffer.writeUUID(tilePartInfo.identifier);
             }
 
             @Override
@@ -346,7 +347,7 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
                 return new TilePartInfo(
                     buffer.readResourceLocation(),
                     BlockPosSerializer.INSTANCE.read(buffer),
-                    buffer.readUniqueId()
+                    buffer.readUUID()
                 );
             }
         };
@@ -386,10 +387,10 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
         @Override
         public void encode(Packet message, PacketBuffer buffer) {
             TilePartInfo.Serializer.write(message.info, buffer);
-            buffer.writeString(message.partData.getString());
-            buffer.writeString(message.partMetaIdentifier);
+            StringSerializer.instance.write(message.partData.getAsString(), buffer);
+            StringSerializer.instance.write(message.partMetaIdentifier, buffer);
             Vector3.Serializer.write(message.offset, buffer);
-            buffer.writeItemStack(message.cost);
+            buffer.writeItem(message.cost);
             PlayerHandle.Serializer.write(message.player, buffer);
         }
 
@@ -398,10 +399,10 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
             try {
                 return new Packet(
                     TilePartInfo.Serializer.read(buffer),
-                    JsonToNBT.getTagFromJson(buffer.readString(32767)),
-                    buffer.readString(32767),
+                    JsonToNBT.parseTag(StringSerializer.instance.read(buffer)),
+                    StringSerializer.instance.read(buffer),
                     Vector3.Serializer.read(buffer),
-                    buffer.readItemStack(),
+                    buffer.readItem(),
                     PlayerHandle.Serializer.read(buffer)
                 );
             } catch (CommandSyntaxException e) {
@@ -412,10 +413,10 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
 
         @Override
         public void handle(Packet message, NetworkEvent.Context context) {
-            boolean isRemote = context.getDirection().getReceptionSide().isClient();
+            boolean isClientSide = context.getDirection().getReceptionSide().isClient();
             TileEntityUtils.findTileEntity(
                 message.info.dimensionKey,
-                isRemote,
+                isClientSide,
                 message.info.pos,
                 PostTile.class
             ).ifPresent(tile -> {
@@ -427,11 +428,11 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
                         message.player
                     );
                     if(message.cost.getCount() > 0 &&
-                           (!isRemote ||
-                                (SideUtils.getClientPlayer().map(player -> player.getUniqueID().equals(message.player.id)).orElse(false)))) {
-                        SideUtils.makePlayerPayIfEditor(isRemote, context.getSender(), message.player, message.cost);
+                           (!isClientSide ||
+                                (SideUtils.getClientPlayer().map(player -> player.getUUID().equals(message.player.id)).orElse(false)))) {
+                        SideUtils.makePlayerPayIfEditor(isClientSide, context.getSender(), message.player, message.cost);
                     }
-                    tile.markDirty();
+                    tile.setChanged();
                 } else {
                     Signpost.LOGGER.warn("Could not find meta for part " + message.partMetaIdentifier);
                 }
@@ -468,27 +469,27 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
         @Override
         public void handle(Packet message, NetworkEvent.Context context) {
             boolean isClient = context.getDirection().getReceptionSide().isClient();
-            TileEntityUtils.findWorld(message.info.dimensionKey, isClient).ifPresent(world ->
+            TileEntityUtils.findWorld(message.info.dimensionKey, isClient).ifPresent(level ->
                 TileEntityUtils.delayUntilTileEntityExistsAt(
-                    new WorldLocation(message.info.pos, world),
+                    new WorldLocation(message.info.pos, level),
                     PostTile.class,
                     tile -> {
                         BlockPartInstance oldPart = tile.removePart(message.info.identifier);
-                        if(oldPart != null && !tile.getWorld().isRemote && !context.getSender().isCreative() && message.shouldDropItem){
+                        if(oldPart != null && !tile.getLevel().isClientSide() && !context.getSender().isCreative() && message.shouldDropItem){
                             for(ItemStack item : (Collection<ItemStack>) oldPart.blockPart.getDrops(tile)) {
-                                if(!context.getSender().inventory.addItemStackToInventory(item))
-                                    if(tile.world instanceof ServerWorld) {
-                                        ServerWorld serverWorld = (ServerWorld) tile.world;
+                                if(!context.getSender().inventory.add(item))
+                                    if(tile.getLevel() instanceof ServerWorld) {
+                                        ServerWorld serverWorld = (ServerWorld) tile.getLevel();
                                         BlockPos pos = message.info.pos;
                                         ItemEntity itementity = new ItemEntity(
                                             serverWorld,
-                                            pos.getX() + serverWorld.rand.nextFloat() * 0.5 + 0.25,
-                                            pos.getY() + serverWorld.rand.nextFloat() * 0.5 + 0.25,
-                                            pos.getZ() + serverWorld.rand.nextFloat() * 0.5 + 0.25,
+                                            pos.getX() + serverWorld.getRandom().nextFloat() * 0.5 + 0.25,
+                                            pos.getY() + serverWorld.getRandom().nextFloat() * 0.5 + 0.25,
+                                            pos.getZ() + serverWorld.getRandom().nextFloat() * 0.5 + 0.25,
                                             item
                                         );
-                                        itementity.setDefaultPickupDelay();
-                                        serverWorld.addEntity(itementity);
+                                        itementity.setDefaultPickUpDelay();
+                                        serverWorld.addFreshEntity(itementity);
                                     }
                             }
                         }
@@ -531,8 +532,8 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
         @Override
         public void encode(Packet message, PacketBuffer buffer) {
             TilePartInfo.Serializer.write(message.info, buffer);
-            buffer.writeString(message.data.toString());
-            buffer.writeString(message.partMetaIdentifier);
+            StringSerializer.instance.write(message.data.toString(), buffer);
+            StringSerializer.instance.write(message.partMetaIdentifier, buffer);
             Vector3.Serializer.optional().write(message.offset, buffer);
         }
 
@@ -541,8 +542,8 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
             try {
                 return new Packet(
                     TilePartInfo.Serializer.read(buffer),
-                    JsonToNBT.getTagFromJson(buffer.readString(32767)),
-                    buffer.readString(32767),
+                    JsonToNBT.parseTag(StringSerializer.instance.read(buffer)),
+                    StringSerializer.instance.read(buffer),
                     Vector3.Serializer.optional().read(buffer)
                 );
             } catch (CommandSyntaxException e) {
@@ -553,9 +554,9 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
         @Override
         public void handle(Packet message, NetworkEvent.Context context) {
             boolean isServer = context.getDirection().getReceptionSide().isServer();
-            TileEntityUtils.findWorld(message.info.dimensionKey, !isServer).ifPresent(world ->
+            TileEntityUtils.findWorld(message.info.dimensionKey, !isServer).ifPresent(level ->
                 TileEntityUtils.delayUntilTileEntityExistsAt(
-                    new WorldLocation(message.info.pos, world),
+                    new WorldLocation(message.info.pos, level),
                     PostTile.class,
                     tile -> {
                         Optional<BlockPartInstance> part = tile.getPart(message.info.identifier);
@@ -577,7 +578,7 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
                                     Signpost.LOGGER.warn("Could not find meta for part " + message.partMetaIdentifier);
                                 }
                             }
-                            tile.markDirty();
+                            tile.setChanged();
                             if(isServer)
                                 tile.sendToTracing(() -> message);
                         }

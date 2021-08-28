@@ -18,11 +18,11 @@ public class Teleport {
 
 	public static ArgumentBuilder<CommandSource, ?> register() {
 		return Commands.literal("teleport")
-			.requires(source -> source.hasPermissionLevel(3))
+			.requires(source -> source.hasPermission(3))
 			.then(Commands.argument("waystone", new WaystoneArgument())
 				.executes(context -> execute(
 					context.getArgument("waystone", String.class),
-					context.getSource().asPlayer()
+					context.getSource().getPlayerOrException()
 				))
 				.then(Commands.argument("player", EntityArgument.player())
 					.executes(context -> execute(

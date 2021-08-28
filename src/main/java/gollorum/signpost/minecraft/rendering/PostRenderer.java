@@ -26,16 +26,16 @@ public class PostRenderer extends TileEntityRenderer<PostTile> {
         Random random = new Random();
         long rand = tile.hashCode();
         random.setSeed(rand);
-        matrixStack.push();
+        matrixStack.pushPose();
         matrixStack.translate(0.5, 0, 0.5);
         matrixStack.translate(randomOffset * random.nextDouble(), randomOffset * random.nextDouble(), randomOffset * random.nextDouble());
         for (BlockPartInstance now: tile.getParts()) {
-            matrixStack.push();
+            matrixStack.pushPose();
             matrixStack.translate(now.offset.x, now.offset.y, now.offset.z);
             BlockPartRenderer.renderDynamic(
                 now.blockPart,
                 tile,
-                renderDispatcher,
+                renderer,
                 matrixStack,
                 buffer,
                 combinedLight,
@@ -43,9 +43,9 @@ public class PostRenderer extends TileEntityRenderer<PostTile> {
                 random,
                 rand
             );
-            matrixStack.pop();
+            matrixStack.popPose();
         }
-        matrixStack.pop();
+        matrixStack.popPose();
     }
 
 }

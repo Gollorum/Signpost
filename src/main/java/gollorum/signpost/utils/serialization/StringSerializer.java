@@ -13,11 +13,11 @@ public final class StringSerializer implements BufferSerializable<String> {
 
     @Override
     public void write(String s, PacketBuffer buffer) {
-        buffer.writeString(s);
+        buffer.writeUtf(s);
     }
 
     @Override
     public String read(PacketBuffer buffer) {
-        return buffer.readString(32767);
+        return buffer.readUtf();
     }
 }

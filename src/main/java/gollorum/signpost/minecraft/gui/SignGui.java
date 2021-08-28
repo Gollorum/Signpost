@@ -137,12 +137,12 @@ public class SignGui extends ExtendedScreen {
     private TextDisplay noWaystonesInfo;
 
     public static void display(PostTile tile, PostBlock.ModelType modelType, Vector3 localHitPos, ItemStack itemToDropOnBreak) {
-        Minecraft.getInstance().displayGuiScreen(new SignGui(tile, modelType, localHitPos, itemToDropOnBreak));
+        Minecraft.getInstance().setScreen(new SignGui(tile, modelType, localHitPos, itemToDropOnBreak));
     }
 
     public static void display(PostTile tile, SignBlockPart oldSign, Vector3 oldOffset, PostTile.TilePartInfo oldTilePartInfo) {
         if(oldSign.hasThePermissionToEdit(tile, Minecraft.getInstance().player))
-            Minecraft.getInstance().displayGuiScreen(new SignGui(tile, oldSign, oldOffset, oldTilePartInfo));
+            Minecraft.getInstance().setScreen(new SignGui(tile, oldSign, oldOffset, oldTilePartInfo));
     }
 
     public SignGui(PostTile tile, PostBlock.ModelType modelType, Vector3 localHitPos, ItemStack itemToDropOnBreak) {
@@ -344,7 +344,7 @@ public class SignGui extends ExtendedScreen {
             false);
         waystoneDropdown.setEntries(waystoneDropdownEntry);
         Rect waystoneInputRect = new Rect(
-            new Point(waystoneDropdown.x - 10, waystoneDropdown.y + waystoneDropdown.getHeightRealms() / 2),
+            new Point(waystoneDropdown.x - 10, waystoneDropdown.y + waystoneDropdown.getHeight() / 2),
             new TextureSize((int)((waystoneNameTexture.size.width - 4) * waystoneBoxScale), (int)((waystoneNameTexture.size.height - 4) * waystoneBoxScale)),
             Rect.XAlignment.Right, Rect.YAlignment.Center);
         waystoneInputBox = new ImageInputBox(font,
@@ -359,13 +359,13 @@ public class SignGui extends ExtendedScreen {
         waystoneInputBox.setMaxStringLength(200);
         waystoneInputBox.setTextChangedCallback(this::onWaystoneSelected);
         noWaystonesInfo = new TextDisplay(
-            I18n.format(LangKeys.noWaystones),
+            I18n.get(LangKeys.noWaystones),
             waystoneDropdown.rect.max(),
             Rect.XAlignment.Right, Rect.YAlignment.Bottom,
             font
         );
 
-        int rotationLabelStringWidth = font.getStringWidth(I18n.format(LangKeys.rotationLabel));
+        int rotationLabelStringWidth = font.width(I18n.get(LangKeys.rotationLabel));
         int rotationLabelWidth = Math.min(rotationLabelStringWidth, waystoneInputBox.width() / 2);
         Rect rotationInputBoxRect = waystoneInputRect.offset(
             new Point(rotationLabelWidth + 10, waystoneInputRect.height + 20),
@@ -398,7 +398,7 @@ public class SignGui extends ExtendedScreen {
         angleDropDown.addEntry(angleEntryForPlayer());
         addButton(angleDropDown);
         rotationLabel = new TextDisplay(
-            I18n.format(LangKeys.rotationLabel),
+            I18n.get(LangKeys.rotationLabel),
             rotationInputBoxRect.at(Rect.XAlignment.Left, Rect.YAlignment.Center).add(-10, 0),
             Rect.XAlignment.Right, Rect.YAlignment.Center,
             font
@@ -467,12 +467,12 @@ public class SignGui extends ExtendedScreen {
         largeInputRect = largeInputRect.withPoint(p -> p.withY(Math.round(modelRectTop.y + (13 - 1 * 2.5f) * inputSignsScale)));
         InputBox fourthLarge = new InputBox(font, largeInputRect, false, false, 100);
         fourthLarge.setTextColor(Colors.black);
-        firstLarge.addKeyCodeListener(KeyCodes.Down, () -> setFocusedDefault(secondLarge));
-        secondLarge.addKeyCodeListener(KeyCodes.Up, () -> setFocusedDefault(firstLarge));
-        secondLarge.addKeyCodeListener(KeyCodes.Down, () -> setFocusedDefault(thirdLarge));
-        thirdLarge.addKeyCodeListener(KeyCodes.Up, () -> setFocusedDefault(secondLarge));
-        thirdLarge.addKeyCodeListener(KeyCodes.Down, () -> setFocusedDefault(fourthLarge));
-        fourthLarge.addKeyCodeListener(KeyCodes.Up, () -> setFocusedDefault(thirdLarge));
+        firstLarge.addKeyCodeListener(KeyCodes.Down, () -> setInitialFocus(secondLarge));
+        secondLarge.addKeyCodeListener(KeyCodes.Up, () -> setInitialFocus(firstLarge));
+        secondLarge.addKeyCodeListener(KeyCodes.Down, () -> setInitialFocus(thirdLarge));
+        thirdLarge.addKeyCodeListener(KeyCodes.Up, () -> setInitialFocus(secondLarge));
+        thirdLarge.addKeyCodeListener(KeyCodes.Down, () -> setInitialFocus(fourthLarge));
+        fourthLarge.addKeyCodeListener(KeyCodes.Up, () -> setInitialFocus(thirdLarge));
         widgetsToFlip.add(new FlippableAtPivot(firstLarge, modelRectTop.x));
         widgetsToFlip.add(new FlippableAtPivot(secondLarge, modelRectTop.x));
         widgetsToFlip.add(new FlippableAtPivot(thirdLarge, modelRectTop.x));
@@ -500,7 +500,7 @@ public class SignGui extends ExtendedScreen {
 
         colorInputBox = new ColorInputBox(font,
             new Rect(
-                new Point(switchDirectionButton.x + switchDirectionButton.getWidth() + 20, switchDirectionButton.y + switchDirectionButton.getHeightRealms() / 2),
+                new Point(switchDirectionButton.x + switchDirectionButton.getWidth() + 20, switchDirectionButton.y + switchDirectionButton.getHeight() / 2),
                 80, 20,
                 Rect.XAlignment.Left, Rect.YAlignment.Center
             ), 0);
@@ -582,8 +582,8 @@ public class SignGui extends ExtendedScreen {
 
         final int newSignItemSize = 16;
         TextDisplay newSignHint = new TextDisplay(
-            I18n.format(LangKeys.newSignHint),
-            new Point(getCenterX() - newSignItemSize, (int) ((doneButton.y + doneButton.getHeightRealms() + height) / 2f)),
+            I18n.get(LangKeys.newSignHint),
+            new Point(getCenterX() - newSignItemSize, (int) ((doneButton.y + doneButton.getHeight() + height) / 2f)),
             Rect.XAlignment.Center, Rect.YAlignment.Center,
             font
         );
@@ -598,7 +598,7 @@ public class SignGui extends ExtendedScreen {
         AtomicInteger cycleItemIngredientIndex = new AtomicInteger(0);
         AtomicLong nextCycleAt = new AtomicLong(System.currentTimeMillis());
         cycleItem.set(() -> {
-            ItemStack[] options = PostBlock.AllVariants.get(cycleItemIndex.get()).type.addSignIngredient.get().getMatchingStacks();
+            ItemStack[] options = PostBlock.AllVariants.get(cycleItemIndex.get()).type.addSignIngredient.get().getItems();
             ir.setItemStack(options[cycleItemIngredientIndex.get()]);
             if(cycleItemIngredientIndex.get() >= options.length - 1) {
                 cycleItemIndex.set((cycleItemIndex.get() + 1) % PostBlock.AllVariants.size());
@@ -842,17 +842,17 @@ public class SignGui extends ExtendedScreen {
                 oldTilePartInfo.get(), true
             ));
         else Signpost.LOGGER.error("Tried to remove a sign, but the necessary information was missing.");
-        getMinecraft().displayGuiScreen(null);
+        getMinecraft().setScreen(null);
     }
 
     private void done() {
         apply(asValidWaystone(waystoneInputBox.getText()).map(w -> w.handle));
-        getMinecraft().displayGuiScreen(null);
+        getMinecraft().setScreen(null);
     }
 
     private void apply(Optional<WaystoneHandle> destinationId) {
         PostTile.TilePartInfo tilePartInfo = oldTilePartInfo.orElseGet(() ->
-            new PostTile.TilePartInfo(tile.getWorld().getDimensionKey().getLocation(), tile.getPos(), UUID.randomUUID()));
+            new PostTile.TilePartInfo(tile.getLevel().dimension().location(), tile.getBlockPos(), UUID.randomUUID()));
         CompoundNBT data;
         boolean isLocked = lockButton.isLocked();
         ResourceLocation mainTex = oldSign.map(SignBlockPart::getMainTexture).orElse(modelType.mainTexture);
@@ -958,7 +958,7 @@ public class SignGui extends ExtendedScreen {
 
     private AngleSelectionEntry angleEntryForWaystone(WaystoneEntry waystone) {
         AtomicReference<Angle> angle = new AtomicReference<>(Angle.fromDegrees(404));
-        angle.set(SignBlockPart.pointingAt(tile.getPos(), waystone.loc.blockPos));
+        angle.set(SignBlockPart.pointingAt(tile.getBlockPos(), waystone.loc.blockPos));
         return new AngleSelectionEntry(LangKeys.rotationWaystone, angle::get);
     }
 
@@ -966,7 +966,7 @@ public class SignGui extends ExtendedScreen {
         AtomicReference<Angle> angleWhenFlipped = new AtomicReference<>(Angle.fromDegrees(404));
         AtomicReference<Angle> angleWhenNotFlipped = new AtomicReference<>(Angle.fromDegrees(404));
         Delay.onClientUntil(() -> getMinecraft() != null && getMinecraft().player != null, () -> {
-            angleWhenFlipped.set(Angle.fromDegrees(-getMinecraft().player.rotationYaw).normalized());
+            angleWhenFlipped.set(Angle.fromDegrees(-getMinecraft().player.yRot).normalized());
             angleWhenNotFlipped.set(angleWhenFlipped.get().add(Angle.fromRadians((float) Math.PI)).normalized());
 
             if(!oldSign.isPresent() && rotationInputField.getCurrentAngle().equals(Angle.ZERO)) {
@@ -998,7 +998,7 @@ public class SignGui extends ExtendedScreen {
 
         @Override
         public String toString() {
-            return I18n.format(langKey, angleToString());
+            return I18n.get(langKey, angleToString());
         }
     }
 

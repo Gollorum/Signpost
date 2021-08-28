@@ -41,30 +41,30 @@ public class ColorRegistry {
     private static int getOverlayBlockColor(BlockState blockState, @Nullable IBlockDisplayReader world, @Nullable BlockPos blockPos, int tintIndex) {
         if(world == null || blockPos == null) return -1;
         switch(tintIndex) {
-            case Overlay.GrasTint: return BiomeColors.getGrassColor(world, blockPos);
-            case Overlay.FoliageTint: return BiomeColors.getFoliageColor(world, blockPos);
-            case Overlay.WaterTint: return BiomeColors.getWaterColor(world, blockPos);
+            case Overlay.GrasTint: return BiomeColors.getAverageGrassColor(world, blockPos);
+            case Overlay.FoliageTint: return BiomeColors.getAverageFoliageColor(world, blockPos);
+            case Overlay.WaterTint: return BiomeColors.getAverageWaterColor(world, blockPos);
             default: return -1;
         }
     }
 
     private static int getOverlayItemColor(ItemStack itemStack, int tintIndex) {
-        World world = Minecraft.getInstance().world;
+        World world = Minecraft.getInstance().level;
         PlayerEntity player = Minecraft.getInstance().player;
         if(world == null || player == null) return -1;
         switch(tintIndex) {
-            case Overlay.GrasTint: return BiomeColors.getGrassColor(world, player.getPosition());
-            case Overlay.FoliageTint: return BiomeColors.getFoliageColor(world, player.getPosition());
-            case Overlay.WaterTint: return BiomeColors.getWaterColor(world, player.getPosition());
+            case Overlay.GrasTint: return BiomeColors.getAverageGrassColor(world, player.blockPosition());
+            case Overlay.FoliageTint: return BiomeColors.getAverageFoliageColor(world, player.blockPosition());
+            case Overlay.WaterTint: return BiomeColors.getAverageWaterColor(world, player.blockPosition());
             default: return -1;
         }
     }
 
     public static int getOverlayColor(int tintIndex, World world, BlockPos pos) {
         switch(tintIndex) {
-            case Overlay.GrasTint: return BiomeColors.getGrassColor(world, pos);
-            case Overlay.FoliageTint: return BiomeColors.getFoliageColor(world, pos);
-            case Overlay.WaterTint: return BiomeColors.getWaterColor(world, pos);
+            case Overlay.GrasTint: return BiomeColors.getAverageGrassColor(world, pos);
+            case Overlay.FoliageTint: return BiomeColors.getAverageFoliageColor(world, pos);
+            case Overlay.WaterTint: return BiomeColors.getAverageWaterColor(world, pos);
             default: return -1;
         }
     }

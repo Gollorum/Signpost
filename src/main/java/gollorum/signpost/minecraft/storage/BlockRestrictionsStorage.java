@@ -12,12 +12,12 @@ public class BlockRestrictionsStorage extends WorldSavedData {
 	public BlockRestrictionsStorage() { super(NAME); }
 
 	@Override
-	public CompoundNBT write(CompoundNBT compound) {
+	public CompoundNBT save(CompoundNBT compound) {
 		return BlockRestrictions.getInstance().saveTo(compound);
 	}
 
 	@Override
-	public void read(CompoundNBT compound) {
+	public void load(CompoundNBT compound) {
 		BlockRestrictions.getInstance().readFrom(compound);
 	}
 

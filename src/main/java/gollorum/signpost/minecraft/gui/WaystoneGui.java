@@ -64,7 +64,7 @@ public class WaystoneGui extends ExtendedScreen {
     }
 
 	public static void display(WorldLocation location, Optional<WaystoneData> oldData) {
-        Minecraft.getInstance().displayGuiScreen(new WaystoneGui(location, oldData));
+        Minecraft.getInstance().setScreen(new WaystoneGui(location, oldData));
 	}
 
 	private int getCenterX() { return this.width / 2; }
@@ -80,7 +80,7 @@ public class WaystoneGui extends ExtendedScreen {
         inputBox = new ImageInputBox(font,
             new Rect(
                 new Point(getCenterX(), getCenterY() + inputBoxYOffset),
-                new TextureSize((texture.size.width - 6) * inputBoxScale, font.FONT_HEIGHT),
+                new TextureSize((texture.size.width - 6) * inputBoxScale, font.lineHeight),
                 Rect.XAlignment.Center, Rect.YAlignment.Bottom),
             new Rect(
                 Point.zero,
@@ -105,7 +105,7 @@ public class WaystoneGui extends ExtendedScreen {
             buttonsSize.width,
             buttonsSize.height,
             new TranslationTextComponent(LangKeys.done),
-            b -> getMinecraft().displayGuiScreen(null)
+            b -> done()
         );
         addButton(inputBox);
         addButton(doneButton);
@@ -123,7 +123,7 @@ public class WaystoneGui extends ExtendedScreen {
                 doneButton.active = false;
             }
         });
-        setFocusedDefault(inputBox);
+        setInitialFocus(inputBox);
     }
 
     private boolean isValid(String name) {
@@ -140,13 +140,16 @@ public class WaystoneGui extends ExtendedScreen {
     @Override
     public void onClose() {
         super.onClose();
+        WaystoneLibrary.getInstance().updateEventDispatcher.removeListener(waystoneUpdateListener);
+    }
+
+    private void done() {
         if(inputBox != null && !inputBox.getText().equals("") && isValid(inputBox.getText()))
             WaystoneLibrary.getInstance().requestUpdate(
                 inputBox.getText(),
-                new WaystoneLocationData(location, Vector3.fromVec3d(getMinecraft().player.getPositionVec())),
-                getMinecraft().player,
+                new WaystoneLocationData(location, Vector3.fromVec3d(getMinecraft().player.position())),
                 lockButton.isLocked()
             );
-        WaystoneLibrary.getInstance().updateEventDispatcher.removeListener(waystoneUpdateListener);
+        onClose();
     }
 }

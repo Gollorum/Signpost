@@ -27,12 +27,12 @@ public class GuiItemRenderer extends Widget {
 	@Override
 	public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		FontRenderer font = itemStack.getItem().getFontRenderer(itemStack);
-		if (font == null) font = Minecraft.getInstance().fontRenderer;
+		if (font == null) font = Minecraft.getInstance().font;
 		this.setBlitOffset(200);
-		this.itemRenderer.zLevel = 200.0F;
-		itemRenderer.renderItemAndEffectIntoGUI(itemStack, x, y);
-		itemRenderer.renderItemOverlayIntoGUI(font, itemStack, x, y, null);
-		this.itemRenderer.zLevel = 0.0F;
+		this.itemRenderer.blitOffset = 200.0F;
+		itemRenderer.renderAndDecorateItem(itemStack, x, y);
+		itemRenderer.renderGuiItemDecorations(font, itemStack, x, y, null);
+		this.itemRenderer.blitOffset = 0.0F;
 		this.setBlitOffset(0);
 	}
 }

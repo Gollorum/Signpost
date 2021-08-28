@@ -42,26 +42,26 @@ public class SpriteSelectionButton extends AbstractButton {
     public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         RenderSystem.color4f(1.0F, 1.0F, 1.0F, this.alpha);
 
-        Minecraft.getInstance().getTextureManager().bindTexture(sprite.getAtlasTexture().getTextureLocation());
+        Minecraft.getInstance().getTextureManager().bind(sprite.atlas().location());
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.enableDepthTest();
 
-        Matrix4f matrix = matrixStack.getLast().getMatrix();
+        Matrix4f matrix = matrixStack.last().pose();
         float blitOffset = 0f;
-        BufferBuilder bufferbuilder = Tessellator.getInstance().getBuffer();
+        BufferBuilder bufferbuilder = Tessellator.getInstance().getBuilder();
         bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX);
         int xMin = x;
         int xMax = xMin + width;
         int yMin = y;
         int yMax = yMin + height;
-        bufferbuilder.pos(matrix, xMin, yMax, blitOffset).tex(sprite.getMinU(), sprite.getMaxV()).endVertex();
-        bufferbuilder.pos(matrix, xMax, yMax, blitOffset).tex(sprite.getMaxU(), sprite.getMaxV()).endVertex();
-        bufferbuilder.pos(matrix, xMax, yMin, blitOffset).tex(sprite.getMaxU(), sprite.getMinV()).endVertex();
-        bufferbuilder.pos(matrix, xMin, yMin, blitOffset).tex(sprite.getMinU(), sprite.getMinV()).endVertex();
-        bufferbuilder.finishDrawing();
+        bufferbuilder.vertex(matrix, xMin, yMax, blitOffset).uv(sprite.getU0(), sprite.getV1()).endVertex();
+        bufferbuilder.vertex(matrix, xMax, yMax, blitOffset).uv(sprite.getU1(), sprite.getV1()).endVertex();
+        bufferbuilder.vertex(matrix, xMax, yMin, blitOffset).uv(sprite.getU1(), sprite.getV0()).endVertex();
+        bufferbuilder.vertex(matrix, xMin, yMin, blitOffset).uv(sprite.getU0(), sprite.getV0()).endVertex();
+        bufferbuilder.end();
         RenderSystem.enableAlphaTest();
-        WorldVertexBufferUploader.draw(bufferbuilder);
+        WorldVertexBufferUploader.end(bufferbuilder);
         if(isHovered()) AbstractGui.fill(matrixStack, xMin, yMin, xMax, yMax, 0x50ffffff);
 
     }

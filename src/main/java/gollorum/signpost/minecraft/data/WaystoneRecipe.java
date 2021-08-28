@@ -19,32 +19,32 @@ public class WaystoneRecipe extends RecipeProvider {
     }
 
     @Override
-    protected void registerRecipes(Consumer<IFinishedRecipe> consumer) {
-        ShapedRecipeBuilder.shapedRecipe(WaystoneBlock.INSTANCE)
-            .key('s', Items.STONE)
-            .key('e', Items.ENDER_PEARL)
-            .patternLine("sss")
-            .patternLine("ses")
-            .patternLine("sss")
-            .addCriterion("has_ender_pearl", hasItem(Items.ENDER_PEARL))
-            .addCriterion("has_signpost", hasItem(PostTag.Tag))
-        .build(consumer);
+    protected void buildShapelessRecipes(Consumer<IFinishedRecipe> consumer) {
+        ShapedRecipeBuilder.shaped(WaystoneBlock.INSTANCE)
+            .define('s', Items.STONE)
+            .define('e', Items.ENDER_PEARL)
+            .pattern("sss")
+            .pattern("ses")
+            .pattern("sss")
+            .unlockedBy("has_ender_pearl", has(Items.ENDER_PEARL))
+            .unlockedBy("has_signpost", has(PostTag.Tag))
+        .save(consumer);
 
         for(ModelWaystone.Variant v : ModelWaystone.variants) {
             new SingleItemRecipeBuilder(
                 RecipeRegistry.CutWaystoneSerializer.get(),
-                Ingredient.fromTag(WaystoneTag.Tag),
+                Ingredient.of(WaystoneTag.Tag),
                 v.block,
                 1
-            ).addCriterion("has_waystone", hasItem(WaystoneTag.Tag))
-            .build(consumer, new ResourceLocation(Signpost.MOD_ID, "cut_into_" + v.name));
+            ).unlocks("has_waystone", has(WaystoneTag.Tag))
+            .save(consumer, new ResourceLocation(Signpost.MOD_ID, "cut_into_" + v.name));
         }
         new SingleItemRecipeBuilder(
-            IRecipeSerializer.STONECUTTING,
-            Ingredient.fromTag(WaystoneTag.Tag),
+            IRecipeSerializer.STONECUTTER,
+            Ingredient.of(WaystoneTag.Tag),
             WaystoneBlock.INSTANCE,
             1
-        ).addCriterion("has_waystone", hasItem(WaystoneTag.Tag))
-            .build(consumer, new ResourceLocation(Signpost.MOD_ID, "cut_into_full_block"));
+        ).unlocks("has_waystone", has(WaystoneTag.Tag))
+            .save(consumer, new ResourceLocation(Signpost.MOD_ID, "cut_into_full_block"));
     }
 }

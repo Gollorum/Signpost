@@ -33,19 +33,19 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
 	@Override
 	public void render(T sign, TileEntity tileEntity, TileEntityRendererDispatcher renderDispatcher, MatrixStack matrix, IRenderTypeBuffer buffer, int combinedLights, int combinedOverlay, Random random, long randomSeed) {
 		RenderingUtil.render(matrix, renderModel -> {
-			matrix.push();
+			matrix.pushPose();
 			Quaternion rotation = new Quaternion(Vector3f.YP, sign.getAngle().radians(), false);
-			matrix.rotate(rotation);
+			matrix.mulPose(rotation);
 			Matrix4f rotationMatrix = new Matrix4f(rotation);
 			if(shouldRenderBaked)
 				renderModel.render(
 					makeBakedModel(sign),
-					tileEntity, buffer.getBuffer(RenderType.getSolid()), false, random, randomSeed, combinedOverlay, rotationMatrix
+					tileEntity, buffer.getBuffer(RenderType.solid()), false, random, randomSeed, combinedOverlay, rotationMatrix
 				);
 			else makeModel(sign).render(
-				matrix.getLast(),
+				matrix.last(),
 				buffer,
-				RenderType.getSolid(),
+				RenderType.solid(),
 				combinedLights,
 				combinedOverlay,
 				1, 1, 1
@@ -54,22 +54,22 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
 				if(shouldRenderBaked)
 					renderModel.render(
 						makeBakedOverlayModel(sign, o),
-						tileEntity, buffer.getBuffer(RenderType.getCutoutMipped()), false, random, randomSeed, combinedOverlay, rotationMatrix
+						tileEntity, buffer.getBuffer(RenderType.cutoutMipped()), false, random, randomSeed, combinedOverlay, rotationMatrix
 					);
 				else {
-					int tint = o.getTintAt(tileEntity.getWorld(), tileEntity.getPos());
+					int tint = o.getTintAt(tileEntity.getLevel(), tileEntity.getBlockPos());
 					makeOverlayModel(sign, o).render(
-						matrix.getLast(),
+						matrix.last(),
 						buffer,
-						RenderType.getCutoutMipped(),
+						RenderType.cutoutMipped(),
 						combinedLights,
 						combinedOverlay,
 						Colors.getRed(tint) / 255f, Colors.getGreen(tint) / 255f, Colors.getBlue(tint) / 255f
 					);
 				}
 			});
-			matrix.pop();
-			renderText(sign, matrix, renderDispatcher.getFontRenderer(), buffer, combinedLights);
+			matrix.popPose();
+			renderText(sign, matrix, renderDispatcher.getFont(), buffer, combinedLights);
 		});
 	}
 

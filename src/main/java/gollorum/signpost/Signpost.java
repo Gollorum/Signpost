@@ -1,8 +1,8 @@
 package gollorum.signpost;
 
 import gollorum.signpost.minecraft.block.BlockEventListener;
-import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.data.DataGeneration;
 import gollorum.signpost.minecraft.registry.BlockRegistry;
 import gollorum.signpost.minecraft.registry.ItemRegistry;
@@ -18,7 +18,7 @@ import gollorum.signpost.worldgen.Villages;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.Dimension;
+import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -106,7 +106,7 @@ public class Signpost {
 
         @SubscribeEvent
         public void joinServer(PlayerEvent.PlayerLoggedInEvent e) {
-            if(!e.getPlayer().world.isRemote && serverInstance.isDedicatedServer())
+            if(!e.getPlayer().level.isClientSide && serverInstance.isDedicatedServer())
                 PacketHandler.send(
                     PacketDistributor.PLAYER.with((() -> (ServerPlayerEntity) e.getPlayer())),
                     new JoinServerEvent.Package()
@@ -121,7 +121,7 @@ public class Signpost {
         @SubscribeEvent
         public void onWorldLoad(WorldEvent.Load event) {
             if (event.getWorld() instanceof ServerWorld &&
-                ((ServerWorld) event.getWorld()).getDimensionKey().equals(Dimension.OVERWORLD)) {
+                ((ServerWorld) event.getWorld()).dimension().equals(World.OVERWORLD)) {
                 ServerWorld world = (ServerWorld) event.getWorld();
                 if(!WaystoneLibrary.getInstance().hasStorageBeenSetup())
                     WaystoneLibrary.getInstance().setupStorage(world);

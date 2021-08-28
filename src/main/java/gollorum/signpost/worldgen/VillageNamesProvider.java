@@ -1,15 +1,14 @@
 package gollorum.signpost.worldgen;
 
 import com.google.common.collect.Lists;
-import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneLibrary;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.ISeedReader;
-import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 
-import java.util.*;
-import java.util.function.Consumer;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
 import java.util.function.Predicate;
 
 public interface VillageNamesProvider {

@@ -65,7 +65,7 @@ public class PostRenderer extends BlockPartRenderer<PostBlockPart> {
 				renderModel.render(
 					makeBakedModel(post),
 					tileEntity,
-					buffer.getBuffer(RenderType.getSolid()),
+					buffer.getBuffer(RenderType.solid()),
 					false,
 					random,
 					randomSeed,
@@ -73,9 +73,9 @@ public class PostRenderer extends BlockPartRenderer<PostBlockPart> {
 					new Matrix4f(Quaternion.ONE)
 				);
 			else makeModel(post).render(
-				matrix.getLast(),
+				matrix.last(),
 				buffer,
-				RenderType.getSolid(),
+				RenderType.solid(),
 				combinedLights,
 				combinedOverlay,
 				1, 1, 1

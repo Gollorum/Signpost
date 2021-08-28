@@ -6,6 +6,7 @@ import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.networking.ReflectionEvent;
 import gollorum.signpost.utils.EventDispatcher;
 import gollorum.signpost.utils.WorldLocation;
+import gollorum.signpost.utils.serialization.StringSerializer;
 import net.blay09.mods.waystones.api.IWaystone;
 import net.blay09.mods.waystones.core.PlayerWaystoneManager;
 import net.minecraft.nbt.CompoundNBT;
@@ -46,12 +47,12 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
 
     @Override
     public WaystoneHandle read(PacketBuffer buffer) {
-        return new Handle(buffer.readUniqueId());
+        return new Handle(buffer.readUUID());
     }
 
     @Override
     public WaystoneHandle read(CompoundNBT compound) {
-        return new Handle(compound.getUniqueId("id"));
+        return new Handle(compound.getUUID("id"));
     }
 
     public static class Waystone implements ExternalWaystone {
@@ -67,7 +68,7 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
 
         @Override
         public WorldLocation loc() {
-            return new WorldLocation(wrapped.getPos(), wrapped.getDimension().getLocation());
+            return new WorldLocation(wrapped.getPos(), wrapped.getDimension().location());
         }
 
         @Override
@@ -94,14 +95,14 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
 
         @Override
         public void write(PacketBuffer buffer) {
-            buffer.writeString(instance.typeTag());
-            buffer.writeUniqueId(id);
+            StringSerializer.instance.write(instance.typeTag(), buffer);
+            buffer.writeUUID(id);
         }
 
         @Override
         public void write(CompoundNBT compound) {
             compound.putString("type", instance.typeTag());
-            compound.putUniqueId("id", id);
+            compound.putUUID("id", id);
         }
 
         @Override

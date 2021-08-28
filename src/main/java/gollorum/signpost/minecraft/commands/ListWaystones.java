@@ -15,10 +15,10 @@ public class ListWaystones {
 
 	public static ArgumentBuilder<CommandSource, ?> register() {
 		return Commands.literal("list")
-			.requires(source -> source.hasPermissionLevel(3))
+			.requires(source -> source.hasPermission(3))
 			.executes(context -> {
 				WaystoneLibrary.getInstance().requestAllWaystoneNames(names ->
-					context.getSource().sendFeedback(
+					context.getSource().sendSuccess(
 						names.isEmpty()
 							? new TranslationTextComponent(LangKeys.noWaystones)
 							: new StringTextComponent(String.join(

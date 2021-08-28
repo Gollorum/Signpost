@@ -131,8 +131,8 @@ public class BlockRestrictions {
 	}
 
 	public void setupStorage(ServerWorld world){
-		DimensionSavedDataManager storage = world.getSavedData();
-		savedData = storage.getOrCreate(BlockRestrictionsStorage::new, BlockRestrictionsStorage.NAME);
+		DimensionSavedDataManager storage = world.getDataStorage();
+		savedData = storage.computeIfAbsent(BlockRestrictionsStorage::new, BlockRestrictionsStorage.NAME);
 	}
 
 	private final Map<PlayerHandle, Entry> values = new HashMap<>();
@@ -189,7 +189,7 @@ public class BlockRestrictions {
 			return true;
 		} else {
 			if(prevCount == 0)
-				player.asEntity().sendMessage(new TranslationTextComponent(type.errorLangKey), Util.DUMMY_UUID);
+				player.asEntity().sendMessage(new TranslationTextComponent(type.errorLangKey), Util.NIL_UUID);
 			return prevCount < 0;
 		}
 	}
@@ -222,7 +222,7 @@ public class BlockRestrictions {
 		return remaining;
 	}
 
-	private void markDirty() { savedData.markDirty(); }
+	private void markDirty() { savedData.setDirty(); }
 
 	public CompoundNBT saveTo(CompoundNBT compound) {
 		ListNBT list = new ListNBT();

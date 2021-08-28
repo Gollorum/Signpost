@@ -21,7 +21,7 @@ public class ImageView extends Widget {
 	@Override
 	public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		this.setBlitOffset(0);
-		Minecraft.getInstance().getTextureManager().bindTexture(texture.location);
+		Minecraft.getInstance().getTextureManager().bind(texture.location);
 		blit(matrixStack, x, y, texture.offset.width, texture.offset.height, width, height, texture.fileSize.width, texture.fileSize.height);
 		this.setBlitOffset(0);
 	}

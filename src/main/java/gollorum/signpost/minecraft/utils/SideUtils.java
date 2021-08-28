@@ -18,28 +18,28 @@ public class SideUtils {
 
 	public static void makePlayerPayIfEditor(boolean isRemote, PlayerEntity sender, PlayerHandle playerHandle, ItemStack cost) {
 		PlayerEntity player = isRemote ? SideUtils.getClientPlayer().get() : sender;
-		if (player.getUniqueID().equals(playerHandle.id)) {
+		if (player.getUUID().equals(playerHandle.id)) {
 			if (!player.isCreative())
-				player.inventory.func_234564_a_(
+				player.inventory.clearOrCountMatchingItems(
 					i -> i.getItem().equals(cost.getItem()),
 					cost.getCount(),
-					player.container.func_234641_j_()
+					player.inventoryMenu.getCraftSlots()
 				);
 		} else {
 			Signpost.LOGGER.error(
 				"Tried to apply cost but the player was not the expected one (expected {}, got {})",
 				playerHandle.id,
-				player.getUniqueID()
+				player.getUUID()
 			);
 		}
 	}
 
 	public static void makePlayerPay(PlayerEntity player, ItemStack cost) {
 		if (!player.isCreative())
-			player.inventory.func_234564_a_(
+			player.inventory.clearOrCountMatchingItems(
 				i -> i.getItem().equals(cost.getItem()),
 				cost.getCount(),
-				player.container.func_234641_j_()
+				player.inventoryMenu.getCraftSlots()
 			);
 	}
 

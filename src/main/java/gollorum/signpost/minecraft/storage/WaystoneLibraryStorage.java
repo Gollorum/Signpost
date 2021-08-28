@@ -15,14 +15,14 @@ public class WaystoneLibraryStorage extends WorldSavedData {
     public WaystoneLibraryStorage() { super(NAME); }
 
     @Override
-    public CompoundNBT write(CompoundNBT compound) {
+    public CompoundNBT save(CompoundNBT compound) {
         WaystoneLibrary.getInstance().saveTo(compound);
         compound.put("villageWaystones", WaystoneJigsawPiece.serialize());
         return compound;
     }
 
     @Override
-    public void read(CompoundNBT compound) {
+    public void load(CompoundNBT compound) {
         WaystoneLibrary.getInstance().readFrom(compound);
         INBT villageWaystones = compound.get("villageWaystones");
         if(villageWaystones instanceof ListNBT)

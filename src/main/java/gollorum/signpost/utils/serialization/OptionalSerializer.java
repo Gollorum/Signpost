@@ -1,7 +1,6 @@
 package gollorum.signpost.utils.serialization;
 
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
 
 import java.util.Optional;
 

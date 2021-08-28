@@ -100,7 +100,7 @@ public class Colors {
 
     public static ITextComponent wrap(String text, int color) {
         StringTextComponent ret = new StringTextComponent(text);
-        ret.setStyle(ret.getStyle().setColor(net.minecraft.util.text.Color.fromInt(color)));
+        ret.setStyle(ret.getStyle().withColor(net.minecraft.util.text.Color.fromRgb(color)));
         return ret;
     }
 

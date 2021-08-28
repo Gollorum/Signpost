@@ -53,7 +53,7 @@ public final class ImageInputBox extends InputBox implements Flippable {
     @Override
     public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         RenderSystem.color4f(1.0f, 1.0f, 1.0f, 1.0f);
-        Minecraft.getInstance().getTextureManager().bindTexture(texture.location);
+        Minecraft.getInstance().getTextureManager().bind(texture.location);
         blit(matrixStack, backgroundRect.point.x, backgroundRect.point.y, 0, 0, backgroundRect.width, backgroundRect.height, isFlipped ? -backgroundRect.width : backgroundRect.width, backgroundRect.height);
 
         super.renderButton(matrixStack, mouseX, mouseY, partialTicks);

@@ -64,14 +64,14 @@ public class ModelWaystone extends Block implements IWaterLoggable, WithCountRes
 		public int hashCode() { return name.hashCode(); }
 	}
 	public static final List<Variant> variants = new ArrayList<>();
-	public static Variant simple_0 = new Variant("simple_0", "0", VoxelShapes.create(0.25f, 0, 0.25f, 0.75f, 0.5f, 0.75f), 1);
-	public static Variant simple_1 = new Variant("simple_1", "0", VoxelShapes.create(0.25f, 0, 0.25f, 0.75f, 0.5f, 0.75f), 1);
-	public static Variant simple_2 = new Variant("simple_2", "0", VoxelShapes.create(0.3125f, 0, 0.3125f, 0.75f, 0.6875f, 0.6875f), 0);
-	public static Variant detailed_0 = new Variant("detailed_0", "1", VoxelShapes.create(0.25f, 0, 0.25f, 0.75f, 0.5f, 0.75f), 2);
-	public static Variant detailed_1 = new Variant("detailed_1", "1", VoxelShapes.create(0.25f, 0, 0.25f, 0.75f, 0.75f, 0.75f), 0);
-	public static Variant aer = new Variant("aer", "2", VoxelShapes.create(0.05f, 0, 0.05f, 0.95f, 0.6f, 0.95f), 0);
-	public static Variant dwarf = new Variant("dwarf", "2", VoxelShapes.create(0.05f, 0, 0.05f, 0.95f, 0.4375f, 0.95f), 2);
-	public static Variant ygnar = new Variant("ygnar", "2", VoxelShapes.create(0.125f, 0, 0.125f, 0.875f, 1f, 0.875f), 0);
+	public static Variant simple_0 = new Variant("simple_0", "0", VoxelShapes.box(0.25f, 0, 0.25f, 0.75f, 0.5f, 0.75f), 1);
+	public static Variant simple_1 = new Variant("simple_1", "0", VoxelShapes.box(0.25f, 0, 0.25f, 0.75f, 0.5f, 0.75f), 1);
+	public static Variant simple_2 = new Variant("simple_2", "0", VoxelShapes.box(0.3125f, 0, 0.3125f, 0.75f, 0.6875f, 0.6875f), 0);
+	public static Variant detailed_0 = new Variant("detailed_0", "1", VoxelShapes.box(0.25f, 0, 0.25f, 0.75f, 0.5f, 0.75f), 2);
+	public static Variant detailed_1 = new Variant("detailed_1", "1", VoxelShapes.box(0.25f, 0, 0.25f, 0.75f, 0.75f, 0.75f), 0);
+	public static Variant aer = new Variant("aer", "2", VoxelShapes.box(0.05f, 0, 0.05f, 0.95f, 0.6f, 0.95f), 0);
+	public static Variant dwarf = new Variant("dwarf", "2", VoxelShapes.box(0.05f, 0, 0.05f, 0.95f, 0.4375f, 0.95f), 2);
+	public static Variant ygnar = new Variant("ygnar", "2", VoxelShapes.box(0.125f, 0, 0.125f, 0.875f, 1f, 0.875f), 0);
 	public static final Variant generationMarker = simple_0;
 	static {
 		variants.add(simple_0);
@@ -87,17 +87,17 @@ public class ModelWaystone extends Block implements IWaterLoggable, WithCountRes
 	public final Variant variant;
 
 	private ModelWaystone(Variant variant) {
-		super(Properties.create(Material.PISTON, MaterialColor.STONE)
-			.hardnessAndResistance(1.5F, 6.0F)
-			.notSolid()
-			.setOpaque((x, y, z) -> false));
+		super(Properties.of(Material.PISTON, MaterialColor.STONE)
+			.strength(1.5F, 6.0F)
+			.noOcclusion()
+			.isViewBlocking((x, y, z) -> false));
 		this.variant = variant;
-		this.setDefaultState(this.getDefaultState().with(Waterlogged, false).with(Facing, Direction.NORTH));
+		this.registerDefaultState(this.defaultBlockState().setValue(Waterlogged, false).setValue(Facing, Direction.NORTH));
 	}
 
 	@Override
-	public String getTranslationKey() {
-		return WaystoneBlock.INSTANCE.getTranslationKey() + "_" + variant.langPrefix + "_" + variant.name;
+	public String getDescriptionId() {
+		return WaystoneBlock.INSTANCE.getDescriptionId() + "_" + variant.langPrefix + "_" + variant.name;
 	}
 
 	@Override
@@ -106,30 +106,30 @@ public class ModelWaystone extends Block implements IWaterLoggable, WithCountRes
 	}
 
 	@Override
-	public ActionResultType onBlockActivated(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
+	public ActionResultType use(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
 		WaystoneBlock.onRightClick(world, pos, player);
 		return ActionResultType.CONSUME;
 	}
 
 	@Override
-	protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
+	protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
 		builder.add(Waterlogged).add(Facing);
 	}
 
 	@Nullable
 	@Override
 	public BlockState getStateForPlacement(BlockItemUseContext context) {
-		return getDefaultState().with(Facing, context.getPlacementHorizontalFacing());
+		return defaultBlockState().setValue(Facing, context.getHorizontalDirection());
 	}
 
 	@Override
 	public BlockState rotate(BlockState state, Rotation rot) {
 		if(!state.hasProperty(Facing)) return state;
-		Direction dir = state.get(Facing);
+		Direction dir = state.getValue(Facing);
 		switch (rot) {
-			case CLOCKWISE_90: return state.with(Facing, dir.rotateY());
-			case CLOCKWISE_180: return state.with(Facing, dir.rotateY().rotateY());
-			case COUNTERCLOCKWISE_90: return state.with(Facing, dir.rotateYCCW());
+			case CLOCKWISE_90: return state.setValue(Facing, dir.getClockWise());
+			case CLOCKWISE_180: return state.setValue(Facing, dir.getClockWise().getClockWise());
+			case COUNTERCLOCKWISE_90: return state.setValue(Facing, dir.getCounterClockWise());
 			default: return state;
 		}
 	}
@@ -137,7 +137,7 @@ public class ModelWaystone extends Block implements IWaterLoggable, WithCountRes
 	@Override
 	public BlockState mirror(BlockState state, Mirror mirrorIn) {
 		if(!state.hasProperty(Facing)) return state;
-		return state.with(Facing, state.get(Facing).getOpposite());
+		return state.setValue(Facing, state.getValue(Facing).getOpposite());
 	}
 
 	@Override
@@ -150,28 +150,28 @@ public class ModelWaystone extends Block implements IWaterLoggable, WithCountRes
 	}
 
 	@Override
-	public void onBlockPlacedBy(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
-		super.onBlockPlacedBy(world, pos, state, placer, stack);
+	public void setPlacedBy(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+		super.setPlacedBy(world, pos, state, placer, stack);
 		WaystoneBlock.registerOwnerAndRequestGui(world, pos, placer);
 	}
 
 	@Override
-	public void fillItemGroup(
+	public void fillItemCategory(
 		ItemGroup group, NonNullList<ItemStack> items
 	) {
 		if(Config.Server.allowedWaystones.get().contains(variant.name))
-			super.fillItemGroup(group, items);
+			super.fillItemCategory(group, items);
 	}
 
 	@SuppressWarnings("deprecation")
 	@Override
 	public FluidState getFluidState(BlockState state) {
-		return state.get(Waterlogged) ? Fluids.WATER.getStillFluidState(false) : super.getFluidState(state);
+		return state.getValue(Waterlogged) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
 	}
 
 	@Override
 	public boolean propagatesSkylightDown(BlockState state, IBlockReader reader, BlockPos pos) {
-		return !state.get(Waterlogged);
+		return !state.getValue(Waterlogged);
 	}
 
 	@SuppressWarnings("deprecation")

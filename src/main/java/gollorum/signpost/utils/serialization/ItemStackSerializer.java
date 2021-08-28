@@ -13,7 +13,7 @@ public final class ItemStackSerializer implements CompoundSerializable<ItemStack
 
 	@Override
 	public CompoundNBT write(net.minecraft.item.ItemStack itemStack, CompoundNBT compound) {
-		compound.put("ItemStack", itemStack.write(new CompoundNBT()));
+		compound.put("ItemStack", itemStack.save(new CompoundNBT()));
 		return compound;
 	}
 
@@ -26,7 +26,7 @@ public final class ItemStackSerializer implements CompoundSerializable<ItemStack
 	public net.minecraft.item.ItemStack read(CompoundNBT compound) {
 		INBT readCompound = compound.get("ItemStack");
 		if(readCompound instanceof CompoundNBT)
-			return net.minecraft.item.ItemStack.read((CompoundNBT) readCompound);
+			return net.minecraft.item.ItemStack.of((CompoundNBT) readCompound);
 		else return ItemStack.EMPTY;
 	}
 
@@ -37,12 +37,12 @@ public final class ItemStackSerializer implements CompoundSerializable<ItemStack
 
 	@Override
 	public void write(ItemStack itemStack, PacketBuffer buffer) {
-		buffer.writeItemStack(itemStack);
+		buffer.writeItem(itemStack);
 	}
 
 	@Override
 	public ItemStack read(PacketBuffer buffer) {
-		return buffer.readItemStack();
+		return buffer.readItem();
 	}
 
 }

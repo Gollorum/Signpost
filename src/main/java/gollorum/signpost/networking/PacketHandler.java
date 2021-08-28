@@ -93,7 +93,7 @@ public class PacketHandler {
     }
 
     public static <T> void sendToTracing(TileEntity tile, Supplier<T> t) {
-        sendToTracing(tile.getWorld(), tile.getPos(), t);
+        sendToTracing(tile.getLevel(), tile.getBlockPos(), t);
     }
 
     public static <T> void sendToAll(T message) {

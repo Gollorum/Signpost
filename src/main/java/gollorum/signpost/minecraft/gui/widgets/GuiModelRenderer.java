@@ -54,8 +54,8 @@ public class GuiModelRenderer implements IRenderable, Flippable {
 
     public void render(@Nonnull MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         matrixStack = new MatrixStack();
-        Minecraft.getInstance().getTextureManager().bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
-        Minecraft.getInstance().getTextureManager().getTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE).setBlurMipmapDirect(false, false);
+        Minecraft.getInstance().getTextureManager().bind(AtlasTexture.LOCATION_BLOCKS);
+        Minecraft.getInstance().getTextureManager().getTexture(AtlasTexture.LOCATION_BLOCKS).setBlurMipmap(false, false);
         RenderSystem.enableRescaleNormal();
         RenderSystem.enableAlphaTest();
         RenderSystem.defaultAlphaFunc();
@@ -71,10 +71,10 @@ public class GuiModelRenderer implements IRenderable, Flippable {
             matrixStack.scale(-1, 1, -1);
         }
         matrixStack.translate(0.5f, 0.5f, 0);
-        IRenderTypeBuffer.Impl renderTypeBuffer = Minecraft.getInstance().getRenderTypeBuffers().getBufferSource();
-        RenderHelper.setupGuiFlatDiffuseLighting();
+        IRenderTypeBuffer.Impl renderTypeBuffer = Minecraft.getInstance().renderBuffers().bufferSource();
+        RenderHelper.setupForFlatItems();
 
-        Minecraft.getInstance().getItemRenderer().renderItem(
+        Minecraft.getInstance().getItemRenderer().render(
             stack,
             ItemCameraTransforms.TransformType.GUI,
             false,
@@ -84,9 +84,9 @@ public class GuiModelRenderer implements IRenderable, Flippable {
             OverlayTexture.NO_OVERLAY,
             model.get(isFlipped)
         );
-        renderTypeBuffer.finish();
+        renderTypeBuffer.endBatch();
         RenderSystem.enableDepthTest();
-        RenderHelper.setupGui3DDiffuseLighting();
+        RenderHelper.setupFor3DItems();
 
         RenderSystem.disableAlphaTest();
         RenderSystem.disableRescaleNormal();

@@ -41,7 +41,7 @@ public class PostBlockState extends BlockStateProvider {
                     .partialState()
                     .modelForState()
                     .modelFile(entry.getValue())
-                    .rotationY((((Direction) state.getValues().get(ModelWaystone.Facing)).getHorizontalIndex() - 1) * 90)
+                    .rotationY((((Direction) state.getValues().get(ModelWaystone.Facing)).get2DDataValue() - 1) * 90)
                     .build(),
                 ModelWaystone.Waterlogged
             );

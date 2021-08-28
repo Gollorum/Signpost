@@ -20,11 +20,11 @@ public class DiscoverWaystone {
 
 	public static ArgumentBuilder<CommandSource, ?> register() {
 		return Commands.literal("discover")
-			.requires(source -> source.hasPermissionLevel(3))
+			.requires(source -> source.hasPermission(3))
 			.then(Commands.argument("waystone", new WaystoneArgument())
 				.requires(source -> {
 					try {
-						source.asPlayer();
+						source.getPlayerOrException();
 						return true;
 					} catch (CommandSyntaxException e) {
 						return false;
@@ -32,7 +32,7 @@ public class DiscoverWaystone {
 				})
 				.executes(context -> execute(
 					context.getArgument("waystone", String.class),
-					context.getSource().asPlayer()
+					context.getSource().getPlayerOrException()
 			)))
 			.then(Commands.argument("waystone", new WaystoneArgument())
 				.then(Commands.argument("player", EntityArgument.player())
@@ -46,7 +46,7 @@ public class DiscoverWaystone {
 		WaystoneHandle.Vanilla handle = WaystoneLibrary.getInstance().getHandleByName(name)
 			.orElseThrow(() -> new SimpleCommandExceptionType(new TranslationTextComponent(LangKeys.waystoneNotFound, Colors.wrap(name, Colors.highlight))).create());
 		if(WaystoneLibrary.getInstance().addDiscovered(new PlayerHandle(player), handle)) {
-			player.sendMessage(new TranslationTextComponent(LangKeys.discovered, Colors.wrap(name, Colors.highlight)), Util.DUMMY_UUID);
+			player.sendMessage(new TranslationTextComponent(LangKeys.discovered, Colors.wrap(name, Colors.highlight)), Util.NIL_UUID);
 		}
 		return Command.SINGLE_SUCCESS;
 	}

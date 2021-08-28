@@ -20,12 +20,12 @@ public interface CompoundSerializable<T> extends BufferSerializable<T> {
     T read(CompoundNBT compound);
 
     @Override
-    default void write(T t, PacketBuffer buffer){ buffer.writeString(write(t).toString()); }
+    default void write(T t, PacketBuffer buffer){ StringSerializer.instance.write(write(t).toString(), buffer); }
 
     @Override
     default T read(PacketBuffer buffer){
         try {
-            return read(JsonToNBT.getTagFromJson(buffer.readString(32767)));
+            return read(JsonToNBT.parseTag(StringSerializer.instance.read(buffer)));
         } catch (CommandSyntaxException e) {
             throw new RuntimeException(e);
         }

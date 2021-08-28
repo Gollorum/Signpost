@@ -39,11 +39,11 @@ public class BlockRestrictions {
 	private static ArgumentBuilder<CommandSource, ?> getter(gollorum.signpost.BlockRestrictions.Type type) {
 		return LiteralArgumentBuilder.<CommandSource>literal("get")
 			.executes(context -> {
-				PlayerEntity player = context.getSource().asPlayer();
+				PlayerEntity player = context.getSource().getPlayerOrException();
 				return get(type, context.getSource(), player);
 			})
 			.then(Commands.argument("player", EntityArgument.player())
-				.requires(source -> source.hasPermissionLevel(3))
+				.requires(source -> source.hasPermission(3))
 				.executes(context -> get(
 					type,
 					context.getSource(),
@@ -58,7 +58,7 @@ public class BlockRestrictions {
 		Optional<ITextComponent> subject = PlayerHandle.from(commandSource.getEntity()).equals(PlayerHandle.from(targetedPlayer)) || targetedPlayer == null
 			? Optional.empty()
 			: Optional.of(targetedPlayer.getDisplayName());
-		commandSource.sendFeedback(left < 0 ?
+		commandSource.sendSuccess(left < 0 ?
 			type.getUnlimitedRemainingTextComponent(subject) :
 			type.getRemainingTextComponent(left, subject), false);
 		return Command.SINGLE_SUCCESS;
@@ -66,10 +66,10 @@ public class BlockRestrictions {
 
 	private static ArgumentBuilder<CommandSource, ?> setter(gollorum.signpost.BlockRestrictions.Type type) {
 		return LiteralArgumentBuilder.<CommandSource>literal("set")
-			.requires(source -> source.hasPermissionLevel(3))
+			.requires(source -> source.hasPermission(3))
 			.then(Commands.argument("count", IntegerArgumentType.integer(-1))
 				.executes(context -> {
-					PlayerEntity player = context.getSource().asPlayer();
+					PlayerEntity player = context.getSource().getPlayerOrException();
 					return set(type, context.getSource(), player, IntegerArgumentType.getInteger(context, "count"));
 				})
 				.then(Commands.argument("player", EntityArgument.player())
@@ -87,7 +87,7 @@ public class BlockRestrictions {
 		Optional<ITextComponent> subject = PlayerHandle.from(commandSource.getEntity()).equals(tHandle) || targetedPlayer == null
 			? Optional.empty()
 			: Optional.of(targetedPlayer.getDisplayName());
-		commandSource.sendFeedback(count < 0 ?
+		commandSource.sendSuccess(count < 0 ?
 			type.getUnlimitedRemainingTextComponent(subject) :
 			type.getRemainingTextComponent(count, subject), true);
 		return Command.SINGLE_SUCCESS;

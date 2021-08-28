@@ -55,12 +55,12 @@ public abstract class ExtendedScreen extends Screen {
 	}
 
 	@Override
-	public void setListener(@Nullable IGuiEventListener listener) {
-		if(getListener() != listener && getListener() instanceof Widget) {
-			Widget oldListener = (Widget) getListener();
+	public void setFocused(@Nullable IGuiEventListener listener) {
+		if(getFocused() != listener && getFocused() instanceof Widget) {
+			Widget oldListener = (Widget) getFocused();
 			if(oldListener.isFocused()) oldListener.changeFocus(false);
 		}
-		super.setListener(listener);
+		super.setFocused(listener);
 	}
 
 	@Override

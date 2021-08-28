@@ -67,7 +67,7 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
 
     @Override
     public InteractionResult interact(InteractionInfo info) {
-        ItemStack heldItem = info.player.getHeldItem(info.hand);
+        ItemStack heldItem = info.player.getItemInHand(info.hand);
         PlayerHandle playerHandle = PlayerHandle.from(info.player);
         if(isValidSign(heldItem)) return attachSign(info, heldItem);
         else if(isWaystone(heldItem)) return attachWaystone(info, heldItem, playerHandle);
@@ -83,9 +83,9 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
                     new ItemStack(heldItem.getItem()),
                     PlayerHandle.from(info.player)
                 );
-                info.tile.markDirty();
+                info.tile.setChanged();
                 SideUtils.makePlayerPay(info.player, new ItemStack(WaystoneBlock.INSTANCE));
-            } else WaystoneGui.display(new WorldLocation(info.tile.getPos(), info.player.world), Optional.empty());
+            } else WaystoneGui.display(new WorldLocation(info.tile.getBlockPos(), info.player.level), Optional.empty());
             return InteractionResult.Accepted;
         } else return InteractionResult.Ignored;
     }
@@ -94,7 +94,7 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
         if (info.isRemote && info.tile.getParts().stream().filter(i -> i.blockPart instanceof SignBlockPart).count() < maxSignCount) {
             SignGui.display(
                 info.tile,
-                PostBlock.ModelType.from(info.player.getHeldItem(info.hand).getItem()).get(),
+                PostBlock.ModelType.from(info.player.getItemInHand(info.hand).getItem()).get(),
                 info.traceResult.hitPos,
                 new ItemStack(heldItem.getItem(), 1)
             );

@@ -53,7 +53,7 @@ public interface WaystoneHandle {
 
         @Override
         public void write(PacketBuffer buffer) {
-            buffer.writeString(typeTag);
+            buffer.writeUtf(typeTag);
             Serializer.write(this, buffer);
         }
 
@@ -67,7 +67,7 @@ public interface WaystoneHandle {
             @Override
             public CompoundNBT write(Vanilla playerHandle, CompoundNBT compound) {
                 compound.putString("type", typeTag);
-                compound.putUniqueId("Id", playerHandle.id);
+                compound.putUUID("Id", playerHandle.id);
                 return compound;
             }
 
@@ -78,7 +78,7 @@ public interface WaystoneHandle {
 
             @Override
             public Vanilla read(CompoundNBT compound) {
-                return new Vanilla(compound.getUniqueId("Id"));
+                return new Vanilla(compound.getUUID("Id"));
             }
 
             @Override
@@ -88,12 +88,12 @@ public interface WaystoneHandle {
 
             @Override
             public void write(Vanilla playerHandle, PacketBuffer buffer) {
-                buffer.writeUniqueId(playerHandle.id);
+                buffer.writeUUID(playerHandle.id);
             }
 
             @Override
             public Vanilla read(PacketBuffer buffer) {
-                return new Vanilla(buffer.readUniqueId());
+                return new Vanilla(buffer.readUUID());
             }
         };
 

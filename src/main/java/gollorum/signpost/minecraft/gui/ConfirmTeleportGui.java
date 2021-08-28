@@ -60,7 +60,7 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 		Either<String, Teleport.RequestGui.Package.Info> data,
 		Optional<SignInfo> signInfo
 	) {
-		Minecraft.getInstance().displayGuiScreen(new ConfirmTeleportGui(data, signInfo));
+		Minecraft.getInstance().setScreen(new ConfirmTeleportGui(data, signInfo));
 	}
 
 	@Override
@@ -170,15 +170,15 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 	}
 
 	private void confirm() {
-		getMinecraft().displayGuiScreen(null);
+		getMinecraft().setScreen(null);
 		data.consume(
-			langKey -> getMinecraft().player.sendStatusMessage(new TranslationTextComponent(langKey), true),
+			langKey -> getMinecraft().player.displayClientMessage(new TranslationTextComponent(langKey), true),
 			data -> PacketHandler.sendToServer(new Teleport.Request.Package(data.waystoneName))
 		);
 	}
 
 	private void cancel() {
-		getMinecraft().displayGuiScreen(null);
+		getMinecraft().setScreen(null);
 	}
 
 }

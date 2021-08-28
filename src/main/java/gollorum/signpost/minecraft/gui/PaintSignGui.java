@@ -28,7 +28,7 @@ public class PaintSignGui<T extends SignBlockPart<T>> extends PaintBlockPartGui<
     }
 
     public static <T extends SignBlockPart<T>> void display(PostTile tile, T sign, UUID identifier) {
-        Minecraft.getInstance().displayGuiScreen(new PaintSignGui<>(tile, sign, identifier));
+        Minecraft.getInstance().setScreen(new PaintSignGui<>(tile, sign, identifier));
     }
 
     @Override

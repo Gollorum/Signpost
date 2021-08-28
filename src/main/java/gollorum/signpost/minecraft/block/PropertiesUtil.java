@@ -11,25 +11,25 @@ public class PropertiesUtil {
         Oak, DarkOak, Spruce, Birch, Jungle, Acacia, Warped, Crimson
     }
 
-    public static Block.Properties STONE = Block.Properties.create(Material.ROCK, MaterialColor.STONE)
-        .hardnessAndResistance(1.5F, 6.0F);
+    public static Block.Properties STONE = Block.Properties.of(Material.STONE, MaterialColor.STONE)
+        .strength(1.5F, 6.0F);
 
-    public static Block.Properties IRON = Block.Properties.create(Material.IRON, MaterialColor.IRON)
-        .hardnessAndResistance(5.0F, 6.0F).sound(SoundType.METAL);
+    public static Block.Properties IRON = Block.Properties.of(Material.METAL, MaterialColor.METAL)
+        .strength(5.0F, 6.0F).sound(SoundType.METAL);
 
     private static Block.Properties wood(MaterialColor color){
-        return Block.Properties.create(Material.WOOD, color)
-            .hardnessAndResistance(2.0F, 3.0F).sound(SoundType.WOOD);
+        return Block.Properties.of(Material.WOOD, color)
+            .strength(2.0F, 3.0F).sound(SoundType.WOOD);
     }
 
     private static MaterialColor colorFor(WoodType type){
         switch (type) {
             case Oak: return MaterialColor.WOOD;
-            case DarkOak: return MaterialColor.BROWN;
-            case Spruce: return MaterialColor.OBSIDIAN;
+            case DarkOak: return MaterialColor.COLOR_BROWN;
+            case Spruce: return MaterialColor.PODZOL;
             case Birch: return MaterialColor.SAND;
             case Jungle: return MaterialColor.DIRT;
-            case Acacia: return MaterialColor.ADOBE;
+            case Acacia: return MaterialColor.COLOR_ORANGE;
             case Warped: return MaterialColor.WARPED_STEM;
             case Crimson: return MaterialColor.CRIMSON_STEM;
             default: throw new RuntimeException("Wood type " + type + "is not supported.");

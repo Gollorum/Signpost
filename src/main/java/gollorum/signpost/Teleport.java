@@ -1,23 +1,22 @@
 package gollorum.signpost;
 
 import gollorum.signpost.blockpartdata.types.SignBlockPart;
-import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
-import gollorum.signpost.minecraft.gui.utils.Colors;
+import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.gui.ConfirmTeleportGui;
-import gollorum.signpost.minecraft.utils.LangKeys;
+import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.utils.Inventory;
-import gollorum.signpost.networking.PacketHandler;
+import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
+import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.relations.ExternalWaystone;
 import gollorum.signpost.utils.Delay;
 import gollorum.signpost.utils.Either;
 import gollorum.signpost.utils.WaystoneLocationData;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import gollorum.signpost.utils.serialization.*;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
+import gollorum.signpost.utils.serialization.BufferSerializable;
+import gollorum.signpost.utils.serialization.StringSerializer;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.SoundType;
 import net.minecraft.client.Minecraft;
@@ -40,8 +39,6 @@ import org.apache.logging.log4j.util.TriConsumer;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 public class Teleport {
@@ -69,23 +66,17 @@ public class Teleport {
                 diff.x, diff.z
             );
             Angle pitch = Angle.fromRadians((float) (Math.PI / 2 + Math.atan(Math.sqrt(diff.x * diff.x + diff.z * diff.z) / diff.y)));
-            World oldWorld = player.world;
-            BlockPos oldPos = player.getPosition();
-            if(!player.world.getDimensionType().equals(world.getDimensionType()))
+            World oldWorld = player.level;
+            BlockPos oldPos = player.blockPosition();
+            if(!player.level.dimensionType().equals(world.dimensionType()))
                 player.changeDimension(world, new ITeleporter() {});
-            player.rotationYaw = yaw.degrees();
-            player.rotationPitch = pitch.degrees();
-            player.setPositionAndUpdate(location.x, location.y, location.z);
+            player.yRot = yaw.degrees();
+            player.xRot = pitch.degrees();
+            player.teleportTo(location.x, location.y, location.z);
             final int steps = 6;
             TriConsumer<World, BlockPos, Float> playStepSound = (soundWorld, pos, volume) -> {
-//                BlockState block = soundWorld.getBlockState(pos);
-//                if (!block.getMaterial().isLiquid()) {
-//                    BlockState stateAbove = soundWorld.getBlockState(pos.up());
-//                    SoundType soundtype = stateAbove.isIn(Blocks.SNOW) ? stateAbove.getSoundType(soundWorld, pos, player) : block.getSoundType(soundWorld, pos, player);
-//                    soundWorld.playSound(null, pos, soundtype.getStepSound(), player.getSoundCategory(), soundtype.getVolume() * volume, soundtype.getPitch());
-//                }
-                SoundType soundType = Blocks.STONE.getDefaultState().getSoundType();
-                soundWorld.playSound(null, pos, soundType.getStepSound(), player.getSoundCategory(), soundType.getVolume() * volume, soundType.getPitch());
+                SoundType soundType = Blocks.STONE.defaultBlockState().getSoundType();
+                soundWorld.playSound(null, pos, soundType.getStepSound(), player.getSoundSource(), soundType.getVolume() * volume, soundType.getPitch());
             };
             AtomicReference<Consumer<Integer>> playStepSounds = new AtomicReference<>();
             playStepSounds.set(countdown -> {
@@ -106,7 +97,7 @@ public class Teleport {
     }
 
     public static ItemStack getCost(PlayerEntity player, Vector3 from, Vector3 to) {
-        Item item = Registry.ITEM.getOrDefault(new ResourceLocation(Config.Server.teleport.costItem.get()));
+        Item item = Registry.ITEM.get(new ResourceLocation(Config.Server.teleport.costItem.get()));
         if(item.equals(Items.AIR) || player.isCreative() || player.isSpectator()) return ItemStack.EMPTY;
         int distancePerPayment = Config.Server.teleport.distancePerPayment.get();
         int distanceDependentCost = distancePerPayment < 0
@@ -153,11 +144,11 @@ public class Teleport {
 
                 boolean isDiscovered = WaystoneLibrary.getInstance().isDiscovered(PlayerHandle.from(player), handle)
                     || !Config.Server.teleport.enforceDiscovery.get();
-                int distance = (int) waystoneData.spawn.distanceTo(Vector3.fromVec3d(player.getPositionVec()));
+                int distance = (int) waystoneData.spawn.distanceTo(Vector3.fromVec3d(player.position()));
                 int maxDistance = Config.Server.teleport.maximumDistance.get();
                 boolean isTooFarAway = maxDistance > 0 && distance > maxDistance;
-                if(!isDiscovered) player.sendMessage(new TranslationTextComponent(LangKeys.notDiscovered, message.waystoneName), Util.DUMMY_UUID);
-                if(isTooFarAway) player.sendMessage(new TranslationTextComponent(LangKeys.tooFarAway, Integer.toString(distance), Integer.toString(maxDistance)), Util.DUMMY_UUID);
+                if(!isDiscovered) player.sendMessage(new TranslationTextComponent(LangKeys.notDiscovered, message.waystoneName), Util.NIL_UUID);
+                if(isTooFarAway) player.sendMessage(new TranslationTextComponent(LangKeys.tooFarAway, Integer.toString(distance), Integer.toString(maxDistance)), Util.NIL_UUID);
                 if(!isDiscovered || isTooFarAway) return;
 
                 Inventory.tryPay(
@@ -167,7 +158,7 @@ public class Teleport {
                 );
             } else player.sendMessage(
                 new TranslationTextComponent(LangKeys.waystoneNotFound, Colors.wrap(message.waystoneName, Colors.highlight)),
-                Util.DUMMY_UUID
+                Util.NIL_UUID
             );
         }
 
@@ -212,8 +203,8 @@ public class Teleport {
                         buffer.writeInt(info.maxDistance);
                         buffer.writeInt(info.distance);
                         buffer.writeBoolean(info.isDiscovered);
-                        buffer.writeString(info.waystoneName);
-                        buffer.writeItemStack(info.cost);
+                        StringSerializer.instance.write(info.waystoneName, buffer);
+                        buffer.writeItem(info.cost);
                     }
 
                     @Override
@@ -222,8 +213,8 @@ public class Teleport {
                             buffer.readInt(),
                             buffer.readInt(),
                             buffer.readBoolean(),
-                            buffer.readString(),
-                            buffer.readItemStack()
+                            StringSerializer.instance.read(buffer),
+                            buffer.readItem()
                         );
                     }
                 }
@@ -265,7 +256,7 @@ public class Teleport {
                         ? Optional.of(new ConfirmTeleportGui.SignInfo(tile, (SignBlockPart) part.blockPart, info, part.offset)) : Optional.empty()
                     ))));
             else message.data.consume(
-                l -> Minecraft.getInstance().player.sendStatusMessage(new TranslationTextComponent(l), true),
+                l -> Minecraft.getInstance().player.displayClientMessage(new TranslationTextComponent(l), true),
                 r -> PacketHandler.sendToServer(new Request.Package(r.waystoneName))
             );
         }

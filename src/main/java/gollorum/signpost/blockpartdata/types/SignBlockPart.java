@@ -210,8 +210,8 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
 
     public boolean hasThePermissionToEdit(WithOwner tile, @Nullable PlayerEntity player) {
         return !(tile instanceof WithOwner.OfSignpost) || !coreData.isLocked || player == null
-            || ((WithOwner.OfSignpost)tile).getSignpostOwner().map(o -> o.id.equals(player.getUniqueID())).orElse(true)
-            || player.hasPermissionLevel(Config.Server.permissions.editLockedSignCommandPermissionLevel.get());
+            || ((WithOwner.OfSignpost)tile).getSignpostOwner().map(o -> o.id.equals(player.getUUID())).orElse(true)
+            || player.hasPermissions(Config.Server.permissions.editLockedSignCommandPermissionLevel.get());
     }
 
     private void setTextures(ResourceLocation texture, ResourceLocation textureDark) {
@@ -244,10 +244,10 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
 
     @Override
     public InteractionResult interact(InteractionInfo info) {
-        ItemStack heldItem = info.player.getHeldItem(info.hand);
+        ItemStack heldItem = info.player.getItemInHand(info.hand);
         if (!info.isRemote) {
             if(holdsAngleTool(info)) {
-                if(info.player.isSneaking()) {
+                if(info.player.isCrouching()) {
                     setFlip(!isFlipped());
                     notifyFlipChanged(info);
                 } else {
@@ -276,7 +276,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
                             WaystoneData data = WaystoneLibrary.getInstance().getData(h);
                             boolean isDiscovered = WaystoneLibrary.getInstance()
                                 .isDiscovered(new PlayerHandle(player), h) || !Config.Server.teleport.enforceDiscovery.get();
-                            int distance = (int) data.location.spawn.distanceTo(Vector3.fromVec3d(player.getPositionVec()));
+                            int distance = (int) data.location.spawn.distanceTo(Vector3.fromVec3d(player.position()));
                             return new Teleport.RequestGui.Package.Info(
                                 Config.Server.teleport.maximumDistance.get(),
                                 distance,
@@ -294,7 +294,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
     }
 
     private boolean holdsAngleTool(InteractionInfo info) {
-        ItemStack itemStack = info.player.getHeldItem(info.hand);
+        ItemStack itemStack = info.player.getItemInHand(info.hand);
         return !itemStack.isEmpty() && PostTile.isAngleTool(itemStack.getItem());
     }
 
@@ -372,12 +372,12 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
             setOverlay(overlaySerializer.read(compound.getCompound("Overlay")));
 
         if(compound.contains("IsLocked")) {
-            if(editingPlayer == null || !editingPlayer.isServerWorld()
-                || ((WithOwner.OfSignpost)tile).getSignpostOwner().map(owner -> editingPlayer.getUniqueID().equals(owner.id)).orElse(true)
-                || editingPlayer.hasPermissionLevel(Config.Server.permissions.editLockedSignCommandPermissionLevel.get()))
+            if(editingPlayer == null || editingPlayer.level.isClientSide()
+                || ((WithOwner.OfSignpost)tile).getSignpostOwner().map(owner -> editingPlayer.getUUID().equals(owner.id)).orElse(true)
+                || editingPlayer.hasPermissions(Config.Server.permissions.editLockedSignCommandPermissionLevel.get()))
             coreData.isLocked = compound.getBoolean("IsLocked");
         }
-        tile.markDirty();
+        tile.setChanged();
     }
 
     @Override
@@ -386,16 +386,16 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
     }
 
     private void dropOn(World world, BlockPos pos) {
-        if(!coreData.itemToDropOnBreak.isEmpty() && !world.isRemote) {
+        if(!coreData.itemToDropOnBreak.isEmpty() && !world.isClientSide()) {
             ItemEntity itementity = new ItemEntity(
                 world,
-                pos.getX() + world.rand.nextFloat() * 0.5 + 0.25,
-                pos.getY() + world.rand.nextFloat() * 0.5 + 0.25,
-                pos.getZ() + world.rand.nextFloat() * 0.5 + 0.25,
+                pos.getX() + world.getRandom().nextFloat() * 0.5 + 0.25,
+                pos.getY() + world.getRandom().nextFloat() * 0.5 + 0.25,
+                pos.getZ() + world.getRandom().nextFloat() * 0.5 + 0.25,
                 coreData.itemToDropOnBreak
             );
-            itementity.setDefaultPickupDelay();
-            world.addEntity(itementity);
+            itementity.setDefaultPickUpDelay();
+            world.addFreshEntity(itementity);
         }
     }
 

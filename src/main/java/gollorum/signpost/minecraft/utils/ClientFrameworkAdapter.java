@@ -10,7 +10,7 @@ public class ClientFrameworkAdapter {
     public static void showStatusMessage(TranslationTextComponent message, boolean inActionBar) {
         ClientPlayerEntity player = Minecraft.getInstance().player;
         if(player == null) Signpost.LOGGER.error("Client player was null, failed to show status message");
-        else player.sendStatusMessage(message, inActionBar);
+        else player.displayClientMessage(message, inActionBar);
     }
 
 }

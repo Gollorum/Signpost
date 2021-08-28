@@ -46,46 +46,46 @@ public class LargeSignRenderer extends SignRenderer<LargeSignBlockPart> {
 
 	@Override
 	public void renderText(LargeSignBlockPart sign, MatrixStack matrix, FontRenderer fontRenderer, IRenderTypeBuffer buffer, int combinedLights) {
-		matrix.rotate(Vector3f.ZP.rotationDegrees(180));
-		matrix.rotate(Vector3f.YP.rotation((float) (
+		matrix.mulPose(Vector3f.ZP.rotationDegrees(180));
+		matrix.mulPose(Vector3f.YP.rotation((float) (
 			sign.isFlipped()
 				? sign.getAngle().radians()
 				: Math.PI - sign.getAngle().radians())));
 		matrix.translate(0, 3.5f * VoxelSize, -3.005 * VoxelSize);
 
-		matrix.push();
+		matrix.pushPose();
 		render(sign, fontRenderer, sign.getText()[3], matrix, buffer, combinedLights, false);
-		matrix.pop();
+		matrix.popPose();
 		matrix.translate(0, -7 / 3f * VoxelSize, 0);
 
-		matrix.push();
+		matrix.pushPose();
 		render(sign, fontRenderer, sign.getText()[2], matrix, buffer, combinedLights, true);
-		matrix.pop();
+		matrix.popPose();
 		matrix.translate(0, -7 / 3f * VoxelSize, 0);
 
-		matrix.push();
+		matrix.pushPose();
 		render(sign, fontRenderer, sign.getText()[1], matrix, buffer, combinedLights, true);
-		matrix.pop();
+		matrix.popPose();
 		matrix.translate(0, -7 / 3f * VoxelSize, 0);
 
-		matrix.push();
+		matrix.pushPose();
 		render(sign, fontRenderer, sign.getText()[0], matrix, buffer, combinedLights, false);
-		matrix.pop();
+		matrix.popPose();
 	}
 
 	private void render(LargeSignBlockPart sign, FontRenderer fontRenderer, String text, MatrixStack matrix, IRenderTypeBuffer buffer, int combinedLights, boolean isLong) {
 		float scale = FONT_SIZE_VOXELS * FontToVoxelSize;
-		float MAX_WIDTH_FRAC = fontRenderer.getStringWidth(text) * scale / (isLong ? MAXIMUM_TEXT_WIDTH_LONG : MAXIMUM_TEXT_WIDTH_SHORT);
+		float MAX_WIDTH_FRAC = fontRenderer.width(text) * scale / (isLong ? MAXIMUM_TEXT_WIDTH_LONG : MAXIMUM_TEXT_WIDTH_SHORT);
 		scale /= Math.max(1, MAX_WIDTH_FRAC);
 		float offset = TEXT_OFFSET_RIGHT * Math.min(1, MAX_WIDTH_FRAC);
 		matrix.translate(
-			sign.isFlipped() ? offset - fontRenderer.getStringWidth(text) * scale : -offset,
+			sign.isFlipped() ? offset - fontRenderer.width(text) * scale : -offset,
 			-scale * 4 * TEXT_RATIO,
 			0
 		);
 		matrix.scale(scale, scale * TEXT_RATIO, scale);
-		fontRenderer.renderString(text, 0, 0,
-			sign.getColor(), false, matrix.getLast().getMatrix(), buffer, false, 0, combinedLights);
+		fontRenderer.drawInBatch(text, 0, 0,
+			sign.getColor(), false, matrix.last().pose(), buffer, false, 0, combinedLights);
 	}
 
 }

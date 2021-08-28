@@ -50,7 +50,7 @@ public class WaystoneBlockPart implements BlockPart<WaystoneBlockPart>, WithOwne
 
 	@Override
 	public InteractionResult interact(InteractionInfo info) {
-		WaystoneBlock.onRightClick(info.player.world, info.tile.getPos(), info.player);
+		WaystoneBlock.onRightClick(info.player.level, info.tile.getBlockPos(), info.player);
 		return InteractionResult.Accepted;
 	}
 
@@ -78,11 +78,11 @@ public class WaystoneBlockPart implements BlockPart<WaystoneBlockPart>, WithOwne
 
 	@Override
 	public void removeFrom(PostTile tile) {
-		if(tile.hasWorld() && !tile.getWorld().isRemote) {
+		if(tile.hasLevel() && tile.getLevel().isClientSide()) {
 			Optional<WorldLocation> location = WorldLocation.from(tile);
 			if(location.isPresent())
 				WaystoneLibrary.getInstance().removeAt(location.get(), PlayerHandle.Invalid);
-			else Signpost.LOGGER.error("Waystone tile at "+ tile.getPos() +"  was removed but world was null. " +
+			else Signpost.LOGGER.error("Waystone tile at "+ tile.getBlockPos() +"  was removed but world was null. " +
 				"This means that the waystone has not been cleaned up correctly.");
 			getWaystoneOwner().ifPresent(o -> BlockRestrictions.getInstance().incrementRemaining(BlockRestrictions.Type.Waystone, o));
 		}

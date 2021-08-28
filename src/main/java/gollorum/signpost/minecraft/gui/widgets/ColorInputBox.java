@@ -61,18 +61,18 @@ public class ColorInputBox extends InputBox {
     @Override
     public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferbuilder = tessellator.getBuffer();
-        Minecraft.getInstance().getTextureManager().bindTexture(TextureResource.background.location);
+        BufferBuilder bufferbuilder = tessellator.getBuilder();
+        Minecraft.getInstance().getTextureManager().bind(TextureResource.background.location);
         int red = Colors.getRed(currentResult);
         int green = Colors.getGreen(currentResult);
         int blue = Colors.getBlue(currentResult);
         RenderSystem.color4f(1, 1, 1, 1);
         bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-        bufferbuilder.pos(x - height, y + height, 0.0D).tex(0, 1).color(red, green, blue, 255).endVertex();
-        bufferbuilder.pos(x, y + height, 0.0D).tex(1, 1).color(red, green, blue, 255).endVertex();
-        bufferbuilder.pos(x, y, 0.0D).tex(1, 0).color(red, green, blue, 255).endVertex();
-        bufferbuilder.pos(x - height, y, 0.0D).tex(0, 0).color(red, green, blue, 255).endVertex();
-        tessellator.draw();
+        bufferbuilder.vertex(x - height, y + height, 0.0D).uv(0, 1).color(red, green, blue, 255).endVertex();
+        bufferbuilder.vertex(x, y + height, 0.0D).uv(1, 1).color(red, green, blue, 255).endVertex();
+        bufferbuilder.vertex(x, y, 0.0D).uv(1, 0).color(red, green, blue, 255).endVertex();
+        bufferbuilder.vertex(x - height, y, 0.0D).uv(0, 0).color(red, green, blue, 255).endVertex();
+        tessellator.end();
         super.renderButton(matrixStack, mouseX, mouseY, partialTicks);
     }
 

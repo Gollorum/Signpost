@@ -36,7 +36,7 @@ public class BlockEventListener {
     @SubscribeEvent
     public static void onBlockRemoved(BlockEvent.BreakEvent event) {
         Block block = event.getState().getBlock();
-        TileEntity tile = event.getWorld().getTileEntity(event.getPos());
+        TileEntity tile = event.getWorld().getBlockEntity(event.getPos());
         if(!event.isCanceled() && tile instanceof PostTile) {
             PostTile postTile = (PostTile) tile;
             Optional<PostTile.TraceResult> traceResult = postTile.trace(event.getPlayer());
@@ -47,17 +47,17 @@ public class BlockEventListener {
                     if (event.getWorld() instanceof ServerWorld) {
                         ServerWorld world = (ServerWorld) event.getWorld();
                         if (!event.getPlayer().isCreative()) {
-                            BlockPos pos = tile.getPos();
+                            BlockPos pos = tile.getBlockPos();
                             for (ItemStack item : (Collection<ItemStack>) traceResult.get().part.blockPart.getDrops(postTile)) {
                                 ItemEntity itementity = new ItemEntity(
                                     world,
-                                    pos.getX() + world.rand.nextFloat() * 0.5 + 0.25,
-                                    pos.getY() + world.rand.nextFloat() * 0.5 + 0.25,
-                                    pos.getZ() + world.rand.nextFloat() * 0.5 + 0.25,
+                                    pos.getX() + world.getRandom().nextFloat() * 0.5 + 0.25,
+                                    pos.getY() + world.getRandom().nextFloat() * 0.5 + 0.25,
+                                    pos.getZ() + world.getRandom().nextFloat() * 0.5 + 0.25,
                                     item
                                 );
-                                itementity.setDefaultPickupDelay();
-                                world.addEntity(itementity);
+                                itementity.setDefaultPickUpDelay();
+                                world.addFreshEntity(itementity);
                             }
                         }
                     }

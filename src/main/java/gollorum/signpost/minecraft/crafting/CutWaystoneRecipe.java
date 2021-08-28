@@ -3,6 +3,7 @@ package gollorum.signpost.minecraft.crafting;
 import com.google.gson.JsonObject;
 import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.config.Config;
+import gollorum.signpost.utils.serialization.StringSerializer;
 import net.minecraft.block.Block;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.BlockItem;
@@ -47,36 +48,36 @@ public class CutWaystoneRecipe extends StonecuttingRecipe {
         public static Serializer INSTANCE = new Serializer();
 
         @Override
-        public CutWaystoneRecipe read(ResourceLocation recipeId, JsonObject json) {
-            String group = JSONUtils.getString(json, "group", "");
+        public CutWaystoneRecipe fromJson(ResourceLocation recipeId, JsonObject json) {
+            String group = JSONUtils.getAsString(json, "group", "");
             Ingredient ingredient;
-            if (JSONUtils.isJsonArray(json, "ingredient")) {
-                ingredient = Ingredient.deserialize(JSONUtils.getJsonArray(json, "ingredient"));
+            if (JSONUtils.isArrayNode(json, "ingredient")) {
+                ingredient = Ingredient.fromJson(JSONUtils.getAsJsonArray(json, "ingredient"));
             } else {
-                ingredient = Ingredient.deserialize(JSONUtils.getJsonObject(json, "ingredient"));
+                ingredient = Ingredient.fromJson(JSONUtils.getAsJsonArray(json, "ingredient"));
             }
 
-            String resultLoc = JSONUtils.getString(json, "result");
-            int count = JSONUtils.getInt(json, "count");
-            ItemStack result = new ItemStack(Registry.ITEM.getOrDefault(new ResourceLocation(resultLoc)), count);
+            String resultLoc = JSONUtils.getAsString(json, "result");
+            int count = JSONUtils.getAsInt(json, "count");
+            ItemStack result = new ItemStack(Registry.ITEM.get(new ResourceLocation(resultLoc)), count);
             return isAllowed(result)
                 ? new CutWaystoneRecipe(recipeId, group, ingredient, result)
                 : null;
         }
 
         @Override
-        public CutWaystoneRecipe read(ResourceLocation recipeId, PacketBuffer buffer) {
-            String group = buffer.readString(32767);
-            Ingredient ingredient = Ingredient.read(buffer);
-            ItemStack result = buffer.readItemStack();
+        public CutWaystoneRecipe fromNetwork(ResourceLocation recipeId, PacketBuffer buffer) {
+            String group = StringSerializer.instance.read(buffer);
+            Ingredient ingredient = Ingredient.fromNetwork(buffer);
+            ItemStack result = buffer.readItem();
             return new CutWaystoneRecipe(recipeId, group, ingredient, result);
         }
 
         @Override
-        public void write(PacketBuffer buffer, CutWaystoneRecipe recipe) {
-            buffer.writeString(recipe.group);
-            recipe.ingredient.write(buffer);
-            buffer.writeItemStack(recipe.result);
+        public void toNetwork(PacketBuffer buffer, CutWaystoneRecipe recipe) {
+            StringSerializer.instance.write(recipe.group, buffer);
+            recipe.ingredient.toNetwork(buffer);
+            buffer.writeItem(recipe.result);
         }
 
     }

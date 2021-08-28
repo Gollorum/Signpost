@@ -17,8 +17,8 @@ import java.util.Optional;
 public class WorldLocation {
 
     public static Optional<WorldLocation> from(@Nullable TileEntity tile) {
-        return tile != null && tile.hasWorld()
-            ? Optional.of(new WorldLocation(tile.getPos(), tile.getWorld()))
+        return tile != null && tile.hasLevel()
+            ? Optional.of(new WorldLocation(tile.getBlockPos(), tile.getLevel()))
             : Optional.empty();
     }
 
@@ -46,20 +46,20 @@ public class WorldLocation {
         if (o == null || getClass() != o.getClass()) return false;
         WorldLocation that = (WorldLocation) o;
         return blockPos.equals(that.blockPos) &&
-            world.rightOr(w -> w.getDimensionKey().getLocation())
-                .equals(that.world.rightOr(w -> w.getDimensionKey().getLocation()));
+            world.rightOr(w -> w.dimension().location())
+                .equals(that.world.rightOr(w -> w.dimension().location()));
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(blockPos, world.rightOr(w -> w.getDimensionKey().getLocation()));
+        return Objects.hash(blockPos, world.rightOr(w -> w.dimension().location()));
     }
 
     @Override
     public String toString() {
         return String.format("(%d %d %d) in %s",
             blockPos.getX(), blockPos.getY(), blockPos.getZ(),
-            world.match(World::getProviderName, ResourceLocation::toString)
+            world.match(World::gatherChunkSourceStats, ResourceLocation::toString)
         );
     }
 

@@ -30,30 +30,30 @@ public class SignModel {
 					q.faceData.rotation
 				)).toArray(Quad.Vertex[]::new)
 			);
-			quads.computeIfAbsent(new RenderMaterial(PlayerContainer.LOCATION_BLOCKS_TEXTURE, q.faceData.texture), k -> new ArrayList<>())
+			quads.computeIfAbsent(new RenderMaterial(PlayerContainer.BLOCK_ATLAS, q.faceData.texture), k -> new ArrayList<>())
 				.add(quad);
 		}
 	}
 
 	public void render(MatrixStack.Entry matrixEntry, IRenderTypeBuffer buffer, RenderType renderType, int packedLight, int packedOverlay, float r, float g, float b) {
-		Matrix4f matrix4f = matrixEntry.getMatrix();
-		Matrix3f matrixNormal = matrixEntry.getNormal();
+		Matrix4f matrix4f = matrixEntry.pose();
+		Matrix3f matrixNormal = matrixEntry.normal();
 
 		for(Map.Entry<RenderMaterial, List<Quad>> entry : quads.entrySet()) {
 			for(Quad quad : entry.getValue()) {
 				Vector3f normal = quad.normal.copy();
 				normal.transform(matrixNormal);
-				float normalX = normal.getX();
-				float normalY = normal.getY();
-				float normalZ = normal.getZ();
+				float normalX = normal.x();
+				float normalY = normal.y();
+				float normalZ = normal.z();
 
-				IVertexBuilder vertexBuilder = entry.getKey().getBuffer(buffer, x -> renderType);
+				IVertexBuilder vertexBuilder = entry.getKey().buffer(buffer, x -> renderType);
 
 				for(Quad.Vertex vertex: quad.vertices) {
-					Vector4f pos = new Vector4f(vertex.pos.getX(), vertex.pos.getY(), vertex.pos.getZ(), 1.0F);
+					Vector4f pos = new Vector4f(vertex.pos.x(), vertex.pos.y(), vertex.pos.z(), 1.0F);
 					pos.transform(matrix4f);
-					vertexBuilder.addVertex(
-						pos.getX(), pos.getY(), pos.getZ(),
+					vertexBuilder.vertex(
+						pos.x(), pos.y(), pos.z(),
 						r, g, b, 1,
 						vertex.u,
 						vertex.v,

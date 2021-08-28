@@ -7,7 +7,6 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.Optional;
-import java.util.function.Supplier;
 
 public class RequestWaystoneGui implements PacketHandler.Event<RequestWaystoneGui.Package> {
 

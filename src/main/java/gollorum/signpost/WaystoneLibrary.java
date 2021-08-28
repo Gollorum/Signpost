@@ -1,19 +1,16 @@
 package gollorum.signpost;
 
 import gollorum.signpost.minecraft.block.WaystoneBlock;
-import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.events.*;
 import gollorum.signpost.minecraft.storage.WaystoneLibraryStorage;
 import gollorum.signpost.minecraft.utils.LangKeys;
-import gollorum.signpost.minecraft.utils.SideUtils;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.*;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.StringSerializer;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
@@ -65,8 +62,8 @@ public class WaystoneLibrary {
     }
 
     public void setupStorage(ServerWorld world){
-        DimensionSavedDataManager storage = world.getSavedData();
-        savedData = storage.getOrCreate(WaystoneLibraryStorage::new, WaystoneLibraryStorage.NAME);
+        DimensionSavedDataManager storage = world.getDataStorage();
+        savedData = storage.computeIfAbsent(WaystoneLibraryStorage::new, WaystoneLibraryStorage.NAME);
     }
 
     private WaystoneLibrary() {
@@ -139,8 +136,8 @@ public class WaystoneLibrary {
     private final EventDispatcher.Impl.WithPublicDispatch<DeliverWaystoneLocationEvent.Packet> requestedWaystoneLocationEventDispatcher =
         new EventDispatcher.Impl.WithPublicDispatch<>();
 
-    public void requestUpdate(String newName, WaystoneLocationData location, @Nullable PlayerEntity editingPlayer, boolean isLocked) {
-        PacketHandler.sendToServer(new WaystoneUpdatedEventEvent.Packet(WaystoneUpdatedEvent.fromUpdated(location, newName, isLocked, new WaystoneHandle.Vanilla(Util.DUMMY_UUID))));
+    public void requestUpdate(String newName, WaystoneLocationData location, boolean isLocked) {
+        PacketHandler.sendToServer(new WaystoneUpdatedEventEvent.Packet(WaystoneUpdatedEvent.fromUpdated(location, newName, isLocked, new WaystoneHandle.Vanilla(Util.NIL_UUID))));
     }
 
     public Optional<String> update(String newName, WaystoneLocationData location, @Nullable PlayerEntity editingPlayer, boolean isLocked) {
@@ -154,13 +151,13 @@ public class WaystoneLibrary {
             .toArray(WaystoneHandle.Vanilla[]::new);
         String[] oldNames = Arrays.stream(oldWaystones).map(id -> allWaystones.get(id).name).toArray(String[]::new);
         if(oldWaystones.length > 1)
-            Signpost.LOGGER.error("Waystone at " + location + ", new name: " + newName +" was already present "
+            Signpost.LOGGER.error("Waystone at " + location + " (new name: " + newName +") was already present "
                 + oldWaystones.length + " times. This indicates invalid state. Names found: " + String.join(", ", oldNames));
         if(oldWaystones.length > 0) {
             WaystoneEntry oldEntry = allWaystones.get(oldWaystones[0]);
             if(editingPlayer != null && !oldEntry.hasThePermissionToEdit(editingPlayer)) {
                 // This should not happen unless a player tries to hacc
-                editingPlayer.sendMessage(new TranslationTextComponent(LangKeys.noPermissionWaystone), Util.DUMMY_UUID);
+                editingPlayer.sendMessage(new TranslationTextComponent(LangKeys.noPermissionWaystone), Util.NIL_UUID);
                 return Optional.empty();
             }
             if(editingPlayer != null && !WaystoneData.hasSecurityPermissions(editingPlayer, location))
@@ -352,7 +349,7 @@ public class WaystoneLibrary {
         return allWaystones.containsKey(waystone);
     }
 
-    public void markDirty(){ savedData.markDirty(); }
+    public void markDirty(){ savedData.setDirty(); }
 
     private static final class RequestAllWaystoneNamesEvent implements PacketHandler.Event<RequestAllWaystoneNamesEvent.Packet> {
 
@@ -402,8 +399,8 @@ public class WaystoneLibrary {
         public void encode(Packet message, PacketBuffer buffer) {
             buffer.writeInt(message.names.size());
             for (Map.Entry<WaystoneHandle.Vanilla, String> name: message.names.entrySet()) {
-                buffer.writeUniqueId(name.getKey().id);
-                buffer.writeString(name.getValue());
+                buffer.writeUUID(name.getKey().id);
+                StringSerializer.instance.write(name.getValue(), buffer);
             }
         }
 
@@ -412,7 +409,7 @@ public class WaystoneLibrary {
             Map<WaystoneHandle.Vanilla, String> names = new HashMap<>();
             int count = buffer.readInt();
             for(int i = 0; i < count; i++)
-                names.put(new WaystoneHandle.Vanilla(buffer.readUniqueId()), buffer.readString(32767));
+                names.put(new WaystoneHandle.Vanilla(buffer.readUUID()), StringSerializer.instance.read(buffer));
             return new Packet(names);
         }
 
@@ -473,8 +470,8 @@ public class WaystoneLibrary {
         public void encode(Packet message, PacketBuffer buffer) {
             buffer.writeInt(message.names.size());
             for (Map.Entry<WaystoneHandle.Vanilla, Tuple<String, WaystoneLocationData>> name: message.names.entrySet()) {
-                buffer.writeUniqueId(name.getKey().id);
-                buffer.writeString(name.getValue()._1);
+                buffer.writeUUID(name.getKey().id);
+                buffer.writeUtf(name.getValue()._1);
                 WaystoneLocationData.SERIALIZER.write(name.getValue()._2, buffer);
             }
         }
@@ -485,7 +482,7 @@ public class WaystoneLibrary {
             int count = buffer.readInt();
             for(int i = 0; i < count; i++)
                 names.put(
-                    new WaystoneHandle.Vanilla(buffer.readUniqueId()),
+                    new WaystoneHandle.Vanilla(buffer.readUUID()),
                     Tuple.of(
                         StringSerializer.instance.read(buffer),
                         WaystoneLocationData.SERIALIZER.read(buffer)
@@ -635,12 +632,12 @@ public class WaystoneLibrary {
 
         @Override
         public void encode(Packet message, PacketBuffer buffer) {
-            buffer.writeString(message.name);
+            StringSerializer.instance.write(message.name, buffer);
         }
 
         @Override
         public Packet decode(PacketBuffer buffer) {
-            return new Packet(buffer.readString(32767));
+            return new Packet(StringSerializer.instance.read(buffer));
         }
 
         @Override
@@ -673,17 +670,15 @@ public class WaystoneLibrary {
 
         @Override
         public void encode(Packet message, PacketBuffer buffer) {
-            buffer.writeString(message.name);
-            WaystoneLocationData.SERIALIZER.optional()
-                .write(message.data, buffer);
+            StringSerializer.instance.write(message.name, buffer);
+            WaystoneLocationData.SERIALIZER.optional().write(message.data, buffer);
         }
 
         @Override
         public Packet decode(PacketBuffer buffer) {
             return new Packet(
-                buffer.readString(32767),
-                WaystoneLocationData.SERIALIZER.optional().
-	                read(buffer)
+                StringSerializer.instance.read(buffer),
+                WaystoneLocationData.SERIALIZER.optional().read(buffer)
             );
         }
 
@@ -710,12 +705,12 @@ public class WaystoneLibrary {
 
         @Override
         public void encode(Packet message, PacketBuffer buffer) {
-            buffer.writeString(message.name);
+            StringSerializer.instance.write(message.name, buffer);
         }
 
         @Override
         public Packet decode(PacketBuffer buffer) {
-            return new Packet(buffer.readString(32767));
+            return new Packet(StringSerializer.instance.read(buffer));
         }
 
         @Override
@@ -773,7 +768,7 @@ public class WaystoneLibrary {
         memory.addAll(
             playerMemory.entrySet().stream().map(entry -> {
                 CompoundNBT entryCompound = new CompoundNBT();
-                entryCompound.putUniqueId("Player", entry.getKey().id);
+                entryCompound.putUUID("Player", entry.getKey().id);
                 ListNBT known = new ListNBT();
                 known.addAll(entry.getValue().stream().map(WaystoneHandle.Vanilla.Serializer::write).collect(Collectors.toSet()));
                 entryCompound.put("DiscoveredWaystones", known);
@@ -806,7 +801,7 @@ public class WaystoneLibrary {
             for(INBT dynamicEntry : ((ListNBT) dynamicPlayerMemory)) {
                 if (dynamicEntry instanceof CompoundNBT) {
                     CompoundNBT entry = (CompoundNBT) dynamicEntry;
-                    UUID player = entry.getUniqueId("Player");
+                    UUID player = entry.getUUID("Player");
                     INBT dynamicKnown = entry.get("DiscoveredWaystones");
                     Set<WaystoneHandle.Vanilla> known = dynamicKnown instanceof ListNBT
                         ?  ((ListNBT) dynamicKnown).stream()

@@ -17,30 +17,30 @@ public class WaystoneTag extends ItemTagsProvider {
 
     public static final String Id = "waystone";
 
-    public static final ITag.INamedTag<Item> Tag = ItemTags.makeWrapperTag(Id);
+    public static final ITag.INamedTag<Item> Tag = ItemTags.bind(Id);
 
     public WaystoneTag(DataGenerator dataGenerator, WaystoneTag.Blocks blockTagProvider, ExistingFileHelper fileHelper) {
         super(dataGenerator, blockTagProvider, Signpost.MOD_ID, fileHelper);
     }
 
     @Override
-    protected void registerTags() {
-        this.getOrCreateBuilder(Tag)
+    protected void addTags() {
+        this.tag(Tag)
             .add(ModelWaystone.variants.stream().map(i -> i.block.asItem()).toArray(Item[]::new))
             .add(WaystoneBlock.INSTANCE.asItem());
     }
 
     public static class Blocks extends BlockTagsProvider {
 
-        public static final ITag.INamedTag<Block> Tag = BlockTags.makeWrapperTag(Id);
+        public static final ITag.INamedTag<Block> Tag = BlockTags.bind(Id);
 
         public Blocks(DataGenerator generatorIn, ExistingFileHelper fileHelper) {
             super(generatorIn, Signpost.MOD_ID, fileHelper);
         }
 
         @Override
-        protected void registerTags() {
-            this.getOrCreateBuilder(Tag)
+        protected void addTags() {
+            this.tag(Tag)
                 .add(ModelWaystone.variants.stream().map(i -> i.block).toArray(Block[]::new))
                 .add(WaystoneBlock.INSTANCE);
         }

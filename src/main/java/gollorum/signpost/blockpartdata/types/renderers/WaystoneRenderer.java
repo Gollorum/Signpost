@@ -37,7 +37,7 @@ public class WaystoneRenderer extends BlockPartRenderer<WaystoneBlockPart> {
 		RenderingUtil.render(matrix, renderModel -> renderModel.render(
 			model.get(),
 			tileEntity,
-			buffer.getBuffer(RenderType.getSolid()),
+			buffer.getBuffer(RenderType.solid()),
 			false,
 			random,
 			randomSeed,

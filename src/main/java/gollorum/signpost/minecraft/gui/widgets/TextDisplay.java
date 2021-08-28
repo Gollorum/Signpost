@@ -32,7 +32,7 @@ public class TextDisplay implements IRenderable {
         new TranslationTextComponent(
             translationKey,
             Arrays.stream(args).map(Tuple::getLeft).toArray(Object[]::new)
-        ).getComponent(t -> {
+        ).visit(t -> {
             texts.add(new Tuple<>(t, Arrays.stream(args).filter(p -> p._1.equals(t)).map(Tuple::getRight).findFirst().orElse(Colors.white)));
             return Optional.empty();
         });
@@ -41,10 +41,10 @@ public class TextDisplay implements IRenderable {
 
     public TextDisplay(List<Tuple<String, Integer>> texts, Point point, Rect.XAlignment xAlignment, Rect.YAlignment yAlignment, FontRenderer fontRenderer) {
         this.texts = texts;
-        widths = texts.stream().map(tuple -> fontRenderer.getStringWidth(tuple._1)).collect(Collectors.toList());
+        widths = texts.stream().map(tuple -> fontRenderer.width(tuple._1)).collect(Collectors.toList());
         this.rect = new Rect(
             point,
-            widths.stream().reduce(0, Integer::sum), fontRenderer.FONT_HEIGHT,
+            widths.stream().reduce(0, Integer::sum), fontRenderer.lineHeight,
             xAlignment, yAlignment
         );
         this.fontRenderer = fontRenderer;
@@ -55,7 +55,7 @@ public class TextDisplay implements IRenderable {
         int x = rect.point.x;
         for(int i = 0; i < texts.size(); i++) {
             Tuple<String, Integer> textAndColor = texts.get(i);
-            fontRenderer.drawStringWithShadow(matrixStack, textAndColor._1, x, rect.point.y, textAndColor._2);
+            fontRenderer.drawShadow(matrixStack, textAndColor._1, x, rect.point.y, textAndColor._2);
             x += widths.get(i);
         }
     }

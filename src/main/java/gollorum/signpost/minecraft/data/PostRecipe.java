@@ -18,23 +18,23 @@ public class PostRecipe extends RecipeProvider {
     }
 
     @Override
-    protected void registerRecipes(Consumer<IFinishedRecipe> consumer) {
+    protected void buildShapelessRecipes(Consumer<IFinishedRecipe> consumer) {
         for(PostBlock.Variant variant : PostBlock.AllVariants) {
-            postBuilder(variant.block, variant.type).build(consumer);
+            postBuilder(variant.block, variant.type).save(consumer);
         }
     }
 
     private ShapedRecipeBuilder postBuilder(IItemProvider block, PostBlock.ModelType type) {
-        return ShapedRecipeBuilder.shapedRecipe(block, 2)
-            .key('s', type.signIngredient.get())
-            .key('b', type.baseIngredient.get())
-            .patternLine("s")
-            .patternLine("s")
-            .patternLine("b")
-            .addCriterion("has_sign", hasItem(ItemTags.SIGNS))
-            .addCriterion("has_signpost", hasItem(PostTag.Tag))
-            .addCriterion("has_waystone", hasItem(WaystoneBlock.INSTANCE))
-            .setGroup("Signpost");
+        return ShapedRecipeBuilder.shaped(block, 2)
+            .define('s', type.signIngredient.get())
+            .define('b', type.baseIngredient.get())
+            .pattern("s")
+            .pattern("s")
+            .pattern("b")
+            .unlockedBy("has_sign", has(ItemTags.SIGNS))
+            .unlockedBy("has_signpost", has(PostTag.Tag))
+            .unlockedBy("has_waystone", has(WaystoneBlock.INSTANCE))
+            .group("Signpost");
     }
 
 }

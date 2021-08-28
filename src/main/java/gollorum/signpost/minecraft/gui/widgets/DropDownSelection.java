@@ -141,17 +141,17 @@ public class DropDownSelection<EntryType> extends ImageButton {
 
     @Override
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        matrixStack.push();
+        matrixStack.pushPose();
         matrixStack.translate(0, 0, 100);
         super.render(matrixStack, mouseX, mouseY, partialTicks);
         if(isListVisible) list.render(matrixStack, mouseX, mouseY, partialTicks);
-        matrixStack.pop();
+        matrixStack.popPose();
     }
 
     @Override
     public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         Minecraft minecraft = Minecraft.getInstance();
-        minecraft.getTextureManager().bindTexture(texture.location);
+        minecraft.getTextureManager().bind(texture.location);
         RenderSystem.disableDepthTest();
         int yTexStart = this.isHovered() ? texture.size.height : 0;
         int xTexStart = this.isListVisible ? texture.size.width : 0;
@@ -165,7 +165,7 @@ public class DropDownSelection<EntryType> extends ImageButton {
         private final int rimHeight;
 
         public List(Minecraft minecraft, Point topRight, int width, int height) {
-            this(minecraft, topRight, width, height, minecraft.fontRenderer.FONT_HEIGHT);
+            this(minecraft, topRight, width, height, minecraft.font.lineHeight);
         }
 
         public List(Minecraft minecraft, Point topRight, int width, int height, int rimHeight) {
@@ -193,16 +193,16 @@ public class DropDownSelection<EntryType> extends ImageButton {
             int i = this.getScrollbarPosition();
             int j = i + 6;
             Tessellator tessellator = Tessellator.getInstance();
-            BufferBuilder bufferbuilder = tessellator.getBuffer();
-            this.minecraft.getTextureManager().bindTexture(TextureResource.background.location);
+            BufferBuilder bufferbuilder = tessellator.getBuilder();
+            this.minecraft.getTextureManager().bind(TextureResource.background.location);
             RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
             int backgroundBrightness = 170;
             bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-            bufferbuilder.pos(this.x0, this.y1, 0.0D).tex((float)this.x0 / 32.0F, (float)(this.y1 + (int)this.getScrollAmount()) / 32.0F).color(backgroundBrightness, backgroundBrightness, backgroundBrightness, 255).endVertex();
-            bufferbuilder.pos(this.x1, this.y1, 0.0D).tex((float)this.x1 / 32.0F, (float)(this.y1 + (int)this.getScrollAmount()) / 32.0F).color(backgroundBrightness, backgroundBrightness, backgroundBrightness, 255).endVertex();
-            bufferbuilder.pos(this.x1, this.y0, 0.0D).tex((float)this.x1 / 32.0F, (float)(this.y0 + (int)this.getScrollAmount()) / 32.0F).color(backgroundBrightness, backgroundBrightness, backgroundBrightness, 255).endVertex();
-            bufferbuilder.pos(this.x0, this.y0, 0.0D).tex((float)this.x0 / 32.0F, (float)(this.y0 + (int)this.getScrollAmount()) / 32.0F).color(backgroundBrightness, backgroundBrightness, backgroundBrightness, 255).endVertex();
-            tessellator.draw();
+            bufferbuilder.vertex(this.x0, this.y1, 0.0D).uv((float)this.x0 / 32.0F, (float)(this.y1 + (int)this.getScrollAmount()) / 32.0F).color(backgroundBrightness, backgroundBrightness, backgroundBrightness, 255).endVertex();
+            bufferbuilder.vertex(this.x1, this.y1, 0.0D).uv((float)this.x1 / 32.0F, (float)(this.y1 + (int)this.getScrollAmount()) / 32.0F).color(backgroundBrightness, backgroundBrightness, backgroundBrightness, 255).endVertex();
+            bufferbuilder.vertex(this.x1, this.y0, 0.0D).uv((float)this.x1 / 32.0F, (float)(this.y0 + (int)this.getScrollAmount()) / 32.0F).color(backgroundBrightness, backgroundBrightness, backgroundBrightness, 255).endVertex();
+            bufferbuilder.vertex(this.x0, this.y0, 0.0D).uv((float)this.x0 / 32.0F, (float)(this.y0 + (int)this.getScrollAmount()) / 32.0F).color(backgroundBrightness, backgroundBrightness, backgroundBrightness, 255).endVertex();
+            tessellator.end();
             int k = this.getRowLeft();
             int l = this.y0 + 4 - (int)this.getScrollAmount();
 
@@ -217,17 +217,17 @@ public class DropDownSelection<EntryType> extends ImageButton {
             RenderSystem.shadeModel(7425);
             RenderSystem.disableTexture();
             bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-            bufferbuilder.pos(this.x0, this.y0 + 4, 0.0D).tex(0.0F, 1.0F).color(0, 0, 0, 0).endVertex();
-            bufferbuilder.pos(this.x1, this.y0 + 4, 0.0D).tex(1.0F, 1.0F).color(0, 0, 0, 0).endVertex();
-            bufferbuilder.pos(this.x1, this.y0, 0.0D).tex(1.0F, 0.0F).color(0, 0, 0, 255).endVertex();
-            bufferbuilder.pos(this.x0, this.y0, 0.0D).tex(0.0F, 0.0F).color(0, 0, 0, 255).endVertex();
-            tessellator.draw();
+            bufferbuilder.vertex(this.x0, this.y0 + 4, 0.0D).uv(0.0F, 1.0F).color(0, 0, 0, 0).endVertex();
+            bufferbuilder.vertex(this.x1, this.y0 + 4, 0.0D).uv(1.0F, 1.0F).color(0, 0, 0, 0).endVertex();
+            bufferbuilder.vertex(this.x1, this.y0, 0.0D).uv(1.0F, 0.0F).color(0, 0, 0, 255).endVertex();
+            bufferbuilder.vertex(this.x0, this.y0, 0.0D).uv(0.0F, 0.0F).color(0, 0, 0, 255).endVertex();
+            tessellator.end();
             bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-            bufferbuilder.pos(this.x0, this.y1, 0.0D).tex(0.0F, 1.0F).color(0, 0, 0, 255).endVertex();
-            bufferbuilder.pos(this.x1, this.y1, 0.0D).tex(1.0F, 1.0F).color(0, 0, 0, 255).endVertex();
-            bufferbuilder.pos(this.x1, this.y1 - 4, 0.0D).tex(1.0F, 0.0F).color(0, 0, 0, 0).endVertex();
-            bufferbuilder.pos(this.x0, this.y1 - 4, 0.0D).tex(0.0F, 0.0F).color(0, 0, 0, 0).endVertex();
-            tessellator.draw();
+            bufferbuilder.vertex(this.x0, this.y1, 0.0D).uv(0.0F, 1.0F).color(0, 0, 0, 255).endVertex();
+            bufferbuilder.vertex(this.x1, this.y1, 0.0D).uv(1.0F, 1.0F).color(0, 0, 0, 255).endVertex();
+            bufferbuilder.vertex(this.x1, this.y1 - 4, 0.0D).uv(1.0F, 0.0F).color(0, 0, 0, 0).endVertex();
+            bufferbuilder.vertex(this.x0, this.y1 - 4, 0.0D).uv(0.0F, 0.0F).color(0, 0, 0, 0).endVertex();
+            tessellator.end();
             int j1 = Math.max(0, this.getMaxPosition() - (this.y1 - this.y0 - 4));
             if (j1 > 0) {
                 int k1 = (int)((float)((this.y1 - this.y0) * (this.y1 - this.y0)) / (float)this.getMaxPosition());
@@ -238,23 +238,23 @@ public class DropDownSelection<EntryType> extends ImageButton {
                 }
 
                 bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-                bufferbuilder.pos(i, this.y1, 0.0D).tex(0.0F, 1.0F).color(0, 0, 0, 255).endVertex();
-                bufferbuilder.pos(j, this.y1, 0.0D).tex(1.0F, 1.0F).color(0, 0, 0, 255).endVertex();
-                bufferbuilder.pos(j, this.y0, 0.0D).tex(1.0F, 0.0F).color(0, 0, 0, 255).endVertex();
-                bufferbuilder.pos(i, this.y0, 0.0D).tex(0.0F, 0.0F).color(0, 0, 0, 255).endVertex();
-                tessellator.draw();
+                bufferbuilder.vertex(i, this.y1, 0.0D).uv(0.0F, 1.0F).color(0, 0, 0, 255).endVertex();
+                bufferbuilder.vertex(j, this.y1, 0.0D).uv(1.0F, 1.0F).color(0, 0, 0, 255).endVertex();
+                bufferbuilder.vertex(j, this.y0, 0.0D).uv(1.0F, 0.0F).color(0, 0, 0, 255).endVertex();
+                bufferbuilder.vertex(i, this.y0, 0.0D).uv(0.0F, 0.0F).color(0, 0, 0, 255).endVertex();
+                tessellator.end();
                 bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-                bufferbuilder.pos(i, l1 + k1, 0.0D).tex(0.0F, 1.0F).color(128, 128, 128, 255).endVertex();
-                bufferbuilder.pos(j, l1 + k1, 0.0D).tex(1.0F, 1.0F).color(128, 128, 128, 255).endVertex();
-                bufferbuilder.pos(j, l1, 0.0D).tex(1.0F, 0.0F).color(128, 128, 128, 255).endVertex();
-                bufferbuilder.pos(i, l1, 0.0D).tex(0.0F, 0.0F).color(128, 128, 128, 255).endVertex();
-                tessellator.draw();
+                bufferbuilder.vertex(i, l1 + k1, 0.0D).uv(0.0F, 1.0F).color(128, 128, 128, 255).endVertex();
+                bufferbuilder.vertex(j, l1 + k1, 0.0D).uv(1.0F, 1.0F).color(128, 128, 128, 255).endVertex();
+                bufferbuilder.vertex(j, l1, 0.0D).uv(1.0F, 0.0F).color(128, 128, 128, 255).endVertex();
+                bufferbuilder.vertex(i, l1, 0.0D).uv(0.0F, 0.0F).color(128, 128, 128, 255).endVertex();
+                tessellator.end();
                 bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-                bufferbuilder.pos(i, l1 + k1 - 1, 0.0D).tex(0.0F, 1.0F).color(192, 192, 192, 255).endVertex();
-                bufferbuilder.pos(j - 1, l1 + k1 - 1, 0.0D).tex(1.0F, 1.0F).color(192, 192, 192, 255).endVertex();
-                bufferbuilder.pos(j - 1, l1, 0.0D).tex(1.0F, 0.0F).color(192, 192, 192, 255).endVertex();
-                bufferbuilder.pos(i, l1, 0.0D).tex(0.0F, 0.0F).color(192, 192, 192, 255).endVertex();
-                tessellator.draw();
+                bufferbuilder.vertex(i, l1 + k1 - 1, 0.0D).uv(0.0F, 1.0F).color(192, 192, 192, 255).endVertex();
+                bufferbuilder.vertex(j - 1, l1 + k1 - 1, 0.0D).uv(1.0F, 1.0F).color(192, 192, 192, 255).endVertex();
+                bufferbuilder.vertex(j - 1, l1, 0.0D).uv(1.0F, 0.0F).color(192, 192, 192, 255).endVertex();
+                bufferbuilder.vertex(i, l1, 0.0D).uv(0.0F, 0.0F).color(192, 192, 192, 255).endVertex();
+                tessellator.end();
             }
 
             this.renderDecorations(matrixStack, mouseX, mouseY);
@@ -266,15 +266,15 @@ public class DropDownSelection<EntryType> extends ImageButton {
 
         protected void renderStripe(Point min, Point max) {
             Tessellator tessellator = Tessellator.getInstance();
-            BufferBuilder bufferbuilder = tessellator.getBuffer();
-            this.minecraft.getTextureManager().bindTexture(TextureResource.background.location);
+            BufferBuilder bufferbuilder = tessellator.getBuilder();
+            this.minecraft.getTextureManager().bind(TextureResource.background.location);
             RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
             bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-            bufferbuilder.pos(min.x, max.y, 0.0D).tex(min.x / 32f, max.y / 32.0f).color(255, 255, 255, 255).endVertex();
-            bufferbuilder.pos(max.x, max.y, 0.0D).tex(max.x / 32f, max.y / 32.0f).color(255, 255, 255, 255).endVertex();
-            bufferbuilder.pos(max.x, min.y, 0.0D).tex(max.x / 32f, min.y / 32.0f).color(255, 255, 255, 255).endVertex();
-            bufferbuilder.pos(min.x, min.y, 0.0D).tex(min.x / 32f, min.y / 32.0f).color(255, 255, 255, 255).endVertex();
-            tessellator.draw();
+            bufferbuilder.vertex(min.x, max.y, 0.0D).uv(min.x / 32f, max.y / 32.0f).color(255, 255, 255, 255).endVertex();
+            bufferbuilder.vertex(max.x, max.y, 0.0D).uv(max.x / 32f, max.y / 32.0f).color(255, 255, 255, 255).endVertex();
+            bufferbuilder.vertex(max.x, min.y, 0.0D).uv(max.x / 32f, min.y / 32.0f).color(255, 255, 255, 255).endVertex();
+            bufferbuilder.vertex(min.x, min.y, 0.0D).uv(min.x / 32f, min.y / 32.0f).color(255, 255, 255, 255).endVertex();
+            tessellator.end();
         }
 
         @Override
@@ -282,7 +282,7 @@ public class DropDownSelection<EntryType> extends ImageButton {
             int itemCount = this.getItemCount();
             for(int i = 0; i < itemCount; ++i) {
                 int rowTop = this.getRowTop(i);
-                int rowBottom = rowTop + fontRenderer.FONT_HEIGHT;
+                int rowBottom = rowTop + fontRenderer.lineHeight;
                 if (rowBottom >= this.y0 && rowTop <= this.y1) {
                     int height = this.itemHeight - 4;
                     Entry e = this.getEntry(i);

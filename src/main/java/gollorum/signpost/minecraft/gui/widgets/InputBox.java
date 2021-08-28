@@ -57,7 +57,7 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener, 
     /** Called to check if the text is valid */
     private Predicate<String> validator = Objects::nonNull;
     private BiFunction<String, Integer, IReorderingProcessor> textFormatter = (text, offset) ->
-        IReorderingProcessor.fromString(text, Style.EMPTY);
+        IReorderingProcessor.forward(text, Style.EMPTY);
     private final double zOffset;
 
     private final List<Function<Integer, Boolean>> keyCodeConsumers = new ArrayList<>();
@@ -141,7 +141,7 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener, 
         int selectionFrom = Math.min(this.cursorPosition, this.selectionEnd);
         int selectionTo = Math.max(this.cursorPosition, this.selectionEnd);
         int availableSpace = this.maxStringLength - this.text.length() - (selectionFrom - selectionTo);
-        String text = SharedConstants.filterAllowedCharacters(textToWrite);
+        String text = SharedConstants.filterText(textToWrite);
         int usedUpSpace = text.length();
         if (availableSpace < usedUpSpace) {
             text = text.substring(0, availableSpace);
@@ -262,7 +262,7 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener, 
     }
 
     private int nThCharFromCursor(int n) {
-        return Util.func_240980_a_(this.text, this.cursorPosition, n);
+        return Util.offsetByCodepoints(this.text, this.cursorPosition, n);
     }
 
     /**
@@ -318,16 +318,16 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener, 
                 this.setSelectionPos(0);
                 return true;
             } else if (Screen.isCopy(keyCode)) {
-                Minecraft.getInstance().keyboardListener.setClipboardString(this.getSelectedText());
+                Minecraft.getInstance().keyboardHandler.setClipboard(this.getSelectedText());
                 return true;
             } else if (Screen.isPaste(keyCode)) {
                 if (this.isEnabled) {
-                    this.writeText(Minecraft.getInstance().keyboardListener.getClipboardString());
+                    this.writeText(Minecraft.getInstance().keyboardHandler.getClipboard());
                 }
 
                 return true;
             } else if (Screen.isCut(keyCode)) {
-                Minecraft.getInstance().keyboardListener.setClipboardString(this.getSelectedText());
+                Minecraft.getInstance().keyboardHandler.setClipboard(this.getSelectedText());
                 if (this.isEnabled) {
                     this.writeText("");
                 }
@@ -392,7 +392,7 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener, 
     public boolean charTyped(char codePoint, int modifiers) {
         if (!this.canWrite()) {
             return false;
-        } else if (SharedConstants.isAllowedCharacter(codePoint)) {
+        } else if (SharedConstants.isAllowedChatCharacter(codePoint)) {
             if (this.isEnabled) {
                 this.writeText(Character.toString(codePoint));
             }
@@ -416,8 +416,8 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener, 
                     i -= 4;
                 }
 
-                String s = this.fontRenderer.func_238412_a_(this.text.substring(this.lineScrollOffset), this.getAdjustedWidth());
-                this.setCursorPosition(this.fontRenderer.func_238412_a_(s, i).length() + this.lineScrollOffset);
+                String s = this.fontRenderer.plainSubstrByWidth(this.text.substring(this.lineScrollOffset), this.getAdjustedWidth());
+                this.setCursorPosition(this.fontRenderer.plainSubstrByWidth(s, i).length() + this.lineScrollOffset);
                 return true;
             } else {
                 return false;
@@ -426,7 +426,7 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener, 
     }
 
     public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        matrixStack.push();
+        matrixStack.pushPose();
         matrixStack.translate(0, 0, zOffset);
 
         if (this.getVisible()) {
@@ -441,11 +441,11 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener, 
             int color = this.isEnabled ? this.enabledColor : this.disabledColor;
             int charsBeforeCursor = this.cursorPosition - this.lineScrollOffset;
             int charsBeforeSelectionEnd = this.selectionEnd - this.lineScrollOffset;
-            String trimmedText = this.fontRenderer.func_238412_a_(this.text.substring(this.lineScrollOffset), this.getAdjustedWidth());
+            String trimmedText = this.fontRenderer.plainSubstrByWidth(this.text.substring(this.lineScrollOffset), this.getAdjustedWidth());
             boolean isCursorInsideText = charsBeforeCursor >= 0 && charsBeforeCursor <= trimmedText.length();
             boolean shouldRenderCursorBar = this.isFocused() && this.cursorCounter / 6 % 2 == 0 && isCursorInsideText;
             int textStartX = this.enableBackgroundDrawing ? this.x + 4 : this.x;
-            int textY = y + (height - fontRenderer.FONT_HEIGHT) / 2;
+            int textY = y + (height - fontRenderer.lineHeight) / 2;
             int currentXOffset = textStartX;
             if (charsBeforeSelectionEnd > trimmedText.length()) {
                 charsBeforeSelectionEnd = trimmedText.length();
@@ -481,25 +481,25 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener, 
             }
 
             if (charsBeforeSelectionEnd != charsBeforeCursor) {
-                int l1 = textStartX + this.fontRenderer.getStringWidth(trimmedText.substring(0, charsBeforeSelectionEnd));
+                int l1 = textStartX + this.fontRenderer.width(trimmedText.substring(0, charsBeforeSelectionEnd));
                 this.drawSelectionBox(k1, textY - 1, l1 - 1, textY + 1 + 9);
             }
 
         }
 
-        matrixStack.pop();
+        matrixStack.popPose();
     }
 
     private int drawString(MatrixStack matrixStack, String text, int x, int y, int color){
         return shouldDropShadow
-            ? this.fontRenderer.drawStringWithShadow(matrixStack, text, x, y, color)
-            : this.fontRenderer.drawString(matrixStack, text, x, y, color);
+            ? this.fontRenderer.drawShadow(matrixStack, text, x, y, color)
+            : this.fontRenderer.draw(matrixStack, text, x, y, color);
     }
 
     private int drawString(MatrixStack matrixStack, IReorderingProcessor processor, int x, int y, int color){
         return shouldDropShadow
-            ? this.fontRenderer.func_238407_a_(matrixStack, processor, x, y, color)
-            : this.fontRenderer.func_238422_b_(matrixStack, processor, x, y, color) + 1;
+            ? this.fontRenderer.drawShadow(matrixStack, processor, x, y, color)
+            : this.fontRenderer.draw(matrixStack, processor, x, y, color) + 1;
     }
 
     /**
@@ -527,17 +527,17 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener, 
         }
 
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferbuilder = tessellator.getBuffer();
+        BufferBuilder bufferbuilder = tessellator.getBuilder();
         RenderSystem.color4f(0.0F, 0.0F, 255.0F, 255.0F);
         RenderSystem.disableTexture();
         RenderSystem.enableColorLogicOp();
         RenderSystem.logicOp(GlStateManager.LogicOp.OR_REVERSE);
         bufferbuilder.begin(7, DefaultVertexFormats.POSITION);
-        bufferbuilder.pos(startX, endY, 0.0D).endVertex();
-        bufferbuilder.pos(endX, endY, 0.0D).endVertex();
-        bufferbuilder.pos(endX, startY, 0.0D).endVertex();
-        bufferbuilder.pos(startX, startY, 0.0D).endVertex();
-        tessellator.draw();
+        bufferbuilder.vertex(startX, endY, 0.0D).endVertex();
+        bufferbuilder.vertex(endX, endY, 0.0D).endVertex();
+        bufferbuilder.vertex(endX, startY, 0.0D).endVertex();
+        bufferbuilder.vertex(startX, startY, 0.0D).endVertex();
+        tessellator.end();
         RenderSystem.disableColorLogicOp();
         RenderSystem.enableTexture();
         RenderSystem.color4f(255, 255, 255, 255);
@@ -644,10 +644,10 @@ public class InputBox extends Widget implements IRenderable, IGuiEventListener, 
             }
 
             int j = this.getAdjustedWidth();
-            String s = this.fontRenderer.func_238412_a_(this.text.substring(this.lineScrollOffset), j);
+            String s = this.fontRenderer.plainSubstrByWidth(this.text.substring(this.lineScrollOffset), j);
             int k = s.length() + this.lineScrollOffset;
             if (this.selectionEnd == this.lineScrollOffset) {
-                this.lineScrollOffset -= this.fontRenderer.func_238413_a_(this.text, j, true).length();
+                this.lineScrollOffset -= this.fontRenderer.plainSubstrByWidth(this.text, j, true).length();
             }
 
             if (this.selectionEnd > k) {

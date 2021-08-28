@@ -6,7 +6,6 @@ import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.StringSerializer;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
@@ -39,11 +38,11 @@ public class WaystoneData {
     }
 
     public static boolean hasSecurityPermissions(PlayerEntity player, WaystoneLocationData locationData) {
-        return player.hasPermissionLevel(Config.Server.permissions.editLockedWaystoneCommandPermissionLevel.get())
+        return player.hasPermissions(Config.Server.permissions.editLockedWaystoneCommandPermissionLevel.get())
             || TileEntityUtils.toWorld(locationData.block.world, !(player instanceof ServerPlayerEntity))
-                .map(w -> w.getTileEntity(locationData.block.blockPos))
+                .map(w -> w.getBlockEntity(locationData.block.blockPos))
                 .flatMap(tile -> tile instanceof WithOwner.OfWaystone ? ((WithOwner.OfWaystone)tile).getWaystoneOwner() : Optional.empty())
-                .map(owner -> owner.id.equals(player.getUniqueID()))
+                .map(owner -> owner.id.equals(player.getUUID()))
                 .orElse(true);
     }
 

@@ -44,7 +44,7 @@ public class ItemButton extends Button {
 
         int xTL = x + (width - itemModelWidth) / 2;
         int yTL = y + (height - itemModelHeight) / 2;
-        this.itemRenderer.renderItemAndEffectIntoGUI(stack, xTL, yTL);
-        this.itemRenderer.renderItemOverlayIntoGUI(font, stack, xTL, yTL, null);
+        this.itemRenderer.renderAndDecorateItem(stack, xTL, yTL);
+        this.itemRenderer.renderGuiItemDecorations(font, stack, xTL, yTL, null);
     }
 }

@@ -137,7 +137,7 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 	}
 
 	public static final Codec<WaystoneJigsawPiece> codec = RecordCodecBuilder.create((codecBuilder) ->
-		codecBuilder.group(func_236846_c_(), func_236844_b_(), func_236848_d_()).apply(codecBuilder, WaystoneJigsawPiece::new));
+		codecBuilder.group(templateCodec(), processorsCodec(), projectionCodec()).apply(codecBuilder, WaystoneJigsawPiece::new));
 
 	public WaystoneJigsawPiece(
 		ResourceLocation location,
@@ -156,7 +156,7 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 	}
 
 	@Override
-	public boolean func_230378_a_(
+	public boolean place(
 		TemplateManager templateManager,
 		ISeedReader seedReader,
 		StructureManager structureManager,
@@ -176,29 +176,29 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 			Signpost.LOGGER.warn("Tried to generate a waystone, but the list of allowed waystones was empty.");
 			return false;
 		}
-		PlacementSettings placementSettings = this.func_230379_a_(rotation, boundingBox, shouldUseJigsawReplacementStructureProcessor);
+		PlacementSettings placementSettings = this.getSettings(rotation, boundingBox, shouldUseJigsawReplacementStructureProcessor);
 		Direction facing = placementSettings.getRotation().rotate(Direction.WEST);
 		Direction left = placementSettings.getRotation().rotate(Direction.SOUTH);
-		BlockPos pos = pieceLocation.offset(facing.getOpposite()).offset(left).up();
+		BlockPos pos = pieceLocation.relative(facing.getOpposite()).relative(left).above();
 
 		ModelWaystone waystone = getWaystoneType(random, allowedWaystones);
-		Optional<String> optionalName = VillageNamesProvider.requestFor(pos, villageLocation, seedReader.getWorld(), random);
+		Optional<String> optionalName = VillageNamesProvider.requestFor(pos, villageLocation, seedReader.getLevel(), random);
 		if(!optionalName.isPresent()) {
 			Signpost.LOGGER.warn("No name could be generated for waystone at " + pos + ".");
 			return false;
 		}
 		String name = optionalName.get();
 
-		Template template = this.field_236839_c_.map(templateManager::getTemplateDefaulted, Function.identity());
-		if (template.func_237146_a_(seedReader, pieceLocation, villageLocation, placementSettings, random, 18)) {
-			seedReader.setBlockState(pos, waystone.getDefaultState().with(ModelWaystone.Facing, facing.getOpposite()), 18);
+		Template template = this.template.map(templateManager::get, Function.identity());
+		if (template.placeInWorld(seedReader, pieceLocation, villageLocation, placementSettings, random, 18)) {
+			seedReader.setBlock(pos, waystone.defaultBlockState().setValue(ModelWaystone.Facing, facing.getOpposite()), 18);
 			WaystoneLibrary.getInstance().update(
 				name,
 				locationDataFor(pos, seedReader, facing),
 				null,
 				false
 			);
-			registerGenerated(name, villageLocation, new ChunkEntryKey(new ChunkPos(pos), seedReader.getWorld().getDimensionKey().getLocation()));
+			registerGenerated(name, villageLocation, new ChunkEntryKey(new ChunkPos(pos), seedReader.getLevel().dimension().location()));
 
 			for(Template.BlockInfo blockInfo : Template.processBlockInfos(
 				seedReader, pieceLocation, villageLocation, placementSettings,
@@ -214,20 +214,20 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 	}
 
 	private static WaystoneLocationData locationDataFor(BlockPos pos, ISeedReader world, Direction facing) {
-		return new WaystoneLocationData(new WorldLocation(pos, world.getWorld()), spawnPosFor(world, pos, facing));
+		return new WaystoneLocationData(new WorldLocation(pos, world.getLevel()), spawnPosFor(world, pos, facing));
 	}
 
 	private static Vector3 spawnPosFor(ISeedReader world, BlockPos waystonePos, Direction facing) {
-		BlockPos spawnBlockPos = waystonePos.offset(facing, 2);
+		BlockPos spawnBlockPos = waystonePos.relative(facing, 2);
 		int maxOffset = 10;
 		int offset = 0;
 		while(world.getBlockState(spawnBlockPos).isAir() && offset <= maxOffset) {
-			spawnBlockPos = spawnBlockPos.down();
+			spawnBlockPos = spawnBlockPos.below();
 			offset++;
 		}
 		offset = 0;
 		while(!world.getBlockState(spawnBlockPos).isAir() && offset <= maxOffset) {
-			spawnBlockPos = spawnBlockPos.up();
+			spawnBlockPos = spawnBlockPos.above();
 			offset++;
 		}
 		return Vector3.fromBlockPos(spawnBlockPos).add(0.5f, 0, 0.5f);
@@ -261,7 +261,7 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 	}
 
 	public String toString() {
-		return "SingleSignpostWaystone[" + this.field_236839_c_ + "]";
+		return "SingleSignpostWaystone[" + this.template + "]";
 	}
 
 }

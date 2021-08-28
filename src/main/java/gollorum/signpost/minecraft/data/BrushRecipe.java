@@ -17,16 +17,16 @@ public class BrushRecipe extends RecipeProvider {
     }
 
     @Override
-    protected void registerRecipes(Consumer<IFinishedRecipe> consumer) {
-        ShapedRecipeBuilder.shapedRecipe(ItemRegistry.BRUSH.get(), 1)
-            .key('w', ItemTags.WOOL)
-            .key('i', Items.IRON_INGOT)
-            .key('s', Items.STICK)
-            .patternLine("w")
-            .patternLine("i")
-            .patternLine("s")
-            .addCriterion("has_signpost", hasItem(PostTag.Tag))
-            .build(consumer);
+    protected void buildShapelessRecipes(Consumer<IFinishedRecipe> consumer) {
+        ShapedRecipeBuilder.shaped(ItemRegistry.BRUSH.get(), 1)
+            .define('w', ItemTags.WOOL)
+            .define('i', Items.IRON_INGOT)
+            .define('s', Items.STICK)
+            .pattern("w")
+            .pattern("i")
+            .pattern("s")
+            .unlockedBy("has_signpost", has(PostTag.Tag))
+            .save(consumer);
     }
 
 }

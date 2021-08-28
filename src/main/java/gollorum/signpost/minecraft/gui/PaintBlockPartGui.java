@@ -49,7 +49,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
         this.tile = tile;
         this.part = part;
         this.displayPart = displayPart;
-        atlasSpriteGetter = Minecraft.getInstance().getAtlasSpriteGetter(PlayerContainer.LOCATION_BLOCKS_TEXTURE);
+        atlasSpriteGetter = Minecraft.getInstance().getTextureAtlas(PlayerContainer.BLOCK_ATLAS);
         oldSprite = spriteFrom(oldTexture);
         this.identifier = identifier;
     }
@@ -62,7 +62,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
     protected void init() {
         super.init();
 
-        List<Tuple<List<TextureAtlasSprite>, ItemStack>> blocksToRender = getMinecraft().player.inventory.mainInventory.stream()
+        List<Tuple<List<TextureAtlasSprite>, ItemStack>> blocksToRender = getMinecraft().player.inventory.items.stream()
             .filter(i -> !i.isEmpty() && i.getItem() instanceof BlockItem)
             .map(i -> new ItemStack(i.getItem()))
             .distinct()
@@ -92,8 +92,8 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
                 .map(p -> p.blockPart == part ? new BlockPartInstance(displayPart, p.offset) : p)
                 .collect(Collectors.toList()),
             new Point(width / 2, height / 4),
-            Angle.fromDegrees(getMinecraft().player.rotationYaw + 180),
-            Angle.fromDegrees(getMinecraft().player.rotationPitch),
+            Angle.fromDegrees(getMinecraft().player.yRot + 180),
+            Angle.fromDegrees(getMinecraft().player.xRot),
             64
         ));
     }
@@ -102,8 +102,8 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
 
     private List<TextureAtlasSprite> allSpritesFor(BlockItem item) {
         Block block = ((BlockItem) item.getItem()).getBlock();
-        BlockState state = block.getDefaultState();
-        IBakedModel model = Minecraft.getInstance().getBlockRendererDispatcher().getModelForState(state);
+        BlockState state = block.defaultBlockState();
+        IBakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
         return Arrays.stream(faces)
             .flatMap(side -> model.getQuads(null, side, font.random).stream())
             .map(BakedQuad::getSprite)

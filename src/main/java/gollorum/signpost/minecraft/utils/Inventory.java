@@ -15,9 +15,9 @@ public class Inventory {
 
 	private static List<ItemStack> getAllItemStack(PlayerEntity player) {
 		List<ItemStack> ret = new ArrayList<>();
-		ret.add(player.getHeldItemMainhand());
-		ret.add(player.getHeldItemOffhand());
-		ret.addAll(player.inventory.mainInventory);
+		ret.add(player.getMainHandItem());
+		ret.add(player.getOffhandItem());
+		ret.addAll(player.inventory.items);
 		return ret;
 	}
 
@@ -37,8 +37,8 @@ public class Inventory {
 			else player.sendMessage(new TranslationTextComponent(
 				LangKeys.tooExpensive,
 				itemStack.getCount(),
-				new TranslationTextComponent(itemStack.getItem().getTranslationKey())
-			), Util.DUMMY_UUID);
+				new TranslationTextComponent(itemStack.getItem().getDescriptionId())
+			), Util.NIL_UUID);
 		} else onSuccess.accept(player);
 	}
 

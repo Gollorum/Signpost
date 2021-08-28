@@ -16,6 +16,7 @@ import gollorum.signpost.utils.Delay;
 import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.BufferSerializable;
+import gollorum.signpost.utils.serialization.StringSerializer;
 import net.minecraft.block.*;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -75,89 +76,89 @@ public class PostBlock extends Block implements IWaterLoggable, WithCountRestric
             new ResourceLocation("acacia_log"),
             new ResourceLocation("stripped_acacia_log"),
             new ResourceLocation("acacia_log"),
-            Lazy.of(() -> Ingredient.fromItems(Items.ACACIA_SIGN)),
-            Lazy.of(() -> Ingredient.fromTag(ItemTags.ACACIA_LOGS)),
-            Lazy.of(() -> Ingredient.fromItems(Items.ACACIA_SIGN))
+            Lazy.of(() -> Ingredient.of(Items.ACACIA_SIGN)),
+            Lazy.of(() -> Ingredient.of(ItemTags.ACACIA_LOGS)),
+            Lazy.of(() -> Ingredient.of(Items.ACACIA_SIGN))
         );
         public static final ModelType Birch = new ModelType("birch",
             new ResourceLocation("birch_log"),
             new ResourceLocation("stripped_birch_log"),
             new ResourceLocation("birch_log"),
-            Lazy.of(() -> Ingredient.fromItems(Items.BIRCH_SIGN)),
-            Lazy.of(() -> Ingredient.fromTag(ItemTags.BIRCH_LOGS)),
-            Lazy.of(() -> Ingredient.fromItems(Items.BIRCH_SIGN))
+            Lazy.of(() -> Ingredient.of(Items.BIRCH_SIGN)),
+            Lazy.of(() -> Ingredient.of(ItemTags.BIRCH_LOGS)),
+            Lazy.of(() -> Ingredient.of(Items.BIRCH_SIGN))
         );
         public static final ModelType Iron = new ModelType("iron",
             new ResourceLocation("iron_block"),
             new ResourceLocation(Signpost.MOD_ID, "iron"),
             new ResourceLocation(Signpost.MOD_ID, "iron_dark"),
-            Lazy.of(() -> Ingredient.fromTag(ItemTags.SIGNS)),
-            Lazy.of(() -> Ingredient.fromItems(Items.IRON_INGOT)),
-            Lazy.of(() -> Ingredient.fromItems(Items.IRON_INGOT))
+            Lazy.of(() -> Ingredient.of(ItemTags.SIGNS)),
+            Lazy.of(() -> Ingredient.of(Items.IRON_INGOT)),
+            Lazy.of(() -> Ingredient.of(Items.IRON_INGOT))
         );
         public static final ModelType Jungle = new ModelType("jungle",
             new ResourceLocation("jungle_log"),
             new ResourceLocation("stripped_jungle_log"),
             new ResourceLocation("jungle_log"),
-            Lazy.of(() -> Ingredient.fromItems(Items.JUNGLE_SIGN)),
-            Lazy.of(() -> Ingredient.fromTag(ItemTags.JUNGLE_LOGS)),
-            Lazy.of(() -> Ingredient.fromItems(Items.JUNGLE_SIGN))
+            Lazy.of(() -> Ingredient.of(Items.JUNGLE_SIGN)),
+            Lazy.of(() -> Ingredient.of(ItemTags.JUNGLE_LOGS)),
+            Lazy.of(() -> Ingredient.of(Items.JUNGLE_SIGN))
         );
         public static final ModelType Oak = new ModelType("oak",
             new ResourceLocation("oak_log"),
             new ResourceLocation("stripped_oak_log"),
             new ResourceLocation("oak_log"),
-            Lazy.of(() -> Ingredient.fromItems(Items.OAK_SIGN)),
-            Lazy.of(() -> Ingredient.fromTag(ItemTags.OAK_LOGS)),
-            Lazy.of(() -> Ingredient.fromItems(Items.OAK_SIGN))
+            Lazy.of(() -> Ingredient.of(Items.OAK_SIGN)),
+            Lazy.of(() -> Ingredient.of(ItemTags.OAK_LOGS)),
+            Lazy.of(() -> Ingredient.of(Items.OAK_SIGN))
         );
         public static final ModelType DarkOak = new ModelType("darkoak",
             new ResourceLocation("dark_oak_log"),
             new ResourceLocation("stripped_dark_oak_log"),
             new ResourceLocation("dark_oak_log"),
-            Lazy.of(() -> Ingredient.fromItems(Items.DARK_OAK_SIGN)),
-            Lazy.of(() -> Ingredient.fromTag(ItemTags.DARK_OAK_LOGS)),
-            Lazy.of(() -> Ingredient.fromItems(Items.DARK_OAK_SIGN))
+            Lazy.of(() -> Ingredient.of(Items.DARK_OAK_SIGN)),
+            Lazy.of(() -> Ingredient.of(ItemTags.DARK_OAK_LOGS)),
+            Lazy.of(() -> Ingredient.of(Items.DARK_OAK_SIGN))
         );
         public static final ModelType Spruce = new ModelType("spruce",
             new ResourceLocation("spruce_log"),
             new ResourceLocation("stripped_spruce_log"),
             new ResourceLocation("spruce_log"),
-            Lazy.of(() -> Ingredient.fromItems(Items.SPRUCE_SIGN)),
-            Lazy.of(() -> Ingredient.fromTag(ItemTags.SPRUCE_LOGS)),
-            Lazy.of(() -> Ingredient.fromItems(Items.SPRUCE_SIGN))
+            Lazy.of(() -> Ingredient.of(Items.SPRUCE_SIGN)),
+            Lazy.of(() -> Ingredient.of(ItemTags.SPRUCE_LOGS)),
+            Lazy.of(() -> Ingredient.of(Items.SPRUCE_SIGN))
         );
         public static final ModelType Stone = new ModelType("stone",
             new ResourceLocation("stone"),
             new ResourceLocation("stone"),
             new ResourceLocation(Signpost.MOD_ID, "stone_dark"),
-            Lazy.of(() -> Ingredient.fromTag(ItemTags.SIGNS)),
-            Lazy.of(() -> Ingredient.fromItems(Items.STONE)),
-            Lazy.of(() -> Ingredient.fromItems(Items.STONE))
+            Lazy.of(() -> Ingredient.of(ItemTags.SIGNS)),
+            Lazy.of(() -> Ingredient.of(Items.STONE)),
+            Lazy.of(() -> Ingredient.of(Items.STONE))
         );
         public static final ModelType Warped = new ModelType("warped",
             new ResourceLocation("warped_stem"),
             new ResourceLocation("stripped_warped_stem"),
             new ResourceLocation("warped_stem"),
-            Lazy.of(() -> Ingredient.fromItems(Items.WARPED_SIGN)),
-            Lazy.of(() -> Ingredient.fromTag(ItemTags.WARPED_STEMS)),
-            Lazy.of(() -> Ingredient.fromItems(Items.WARPED_SIGN))
+            Lazy.of(() -> Ingredient.of(Items.WARPED_SIGN)),
+            Lazy.of(() -> Ingredient.of(ItemTags.WARPED_STEMS)),
+            Lazy.of(() -> Ingredient.of(Items.WARPED_SIGN))
         );
         public static final ModelType Crimson = new ModelType("crimson",
             new ResourceLocation("crimson_stem"),
             new ResourceLocation("stripped_crimson_stem"),
             new ResourceLocation("crimson_stem"),
-            Lazy.of(() -> Ingredient.fromItems(Items.CRIMSON_SIGN)),
-            Lazy.of(() -> Ingredient.fromTag(ItemTags.CRIMSON_STEMS)),
-            Lazy.of(() -> Ingredient.fromItems(Items.CRIMSON_SIGN))
+            Lazy.of(() -> Ingredient.of(Items.CRIMSON_SIGN)),
+            Lazy.of(() -> Ingredient.of(ItemTags.CRIMSON_STEMS)),
+            Lazy.of(() -> Ingredient.of(Items.CRIMSON_SIGN))
         );
         private static final Lazy<Ingredient> sandstone = Lazy.of(() ->
-            Ingredient.fromItems(Blocks.SANDSTONE, Blocks.CUT_SANDSTONE, Blocks.CHISELED_SANDSTONE, Blocks.SMOOTH_SANDSTONE));
+            Ingredient.of(Blocks.SANDSTONE, Blocks.CUT_SANDSTONE, Blocks.CHISELED_SANDSTONE, Blocks.SMOOTH_SANDSTONE));
         public static final ModelType Sandstone = new ModelType("sandstone",
             new ResourceLocation("sandstone"),
             new ResourceLocation("stripped_jungle_log"),
             new ResourceLocation("sandstone_bottom"),
-            Lazy.of(() -> Ingredient.fromTag(ItemTags.SIGNS)),
+            Lazy.of(() -> Ingredient.of(ItemTags.SIGNS)),
             sandstone,
             sandstone
         );
@@ -210,7 +211,7 @@ public class PostBlock extends Block implements IWaterLoggable, WithCountRestric
         }
 
         @Override
-        public String getString() {
+        public String getSerializedName() {
             return name;
         }
 
@@ -223,26 +224,26 @@ public class PostBlock extends Block implements IWaterLoggable, WithCountRestric
 
             @Override
             public void write(ModelType modelType, PacketBuffer buffer) {
-                buffer.writeString(modelType.name);
+                StringSerializer.instance.write(modelType.name, buffer);
                 buffer.writeResourceLocation(modelType.postTexture);
                 buffer.writeResourceLocation(modelType.mainTexture);
                 buffer.writeResourceLocation(modelType.secondaryTexture);
-                modelType.signIngredient.get().write(buffer);
-                modelType.baseIngredient.get().write(buffer);
-                modelType.addSignIngredient.get().write(buffer);
+                modelType.signIngredient.get().toNetwork(buffer);
+                modelType.baseIngredient.get().toNetwork(buffer);
+                modelType.addSignIngredient.get().toNetwork(buffer);
             }
 
             private <T> Lazy<T> constLazy(T t) { return Lazy.of(() -> t); }
             @Override
             public ModelType read(PacketBuffer buffer) {
                 return new ModelType(
-                    buffer.readString(),
+                    StringSerializer.instance.read(buffer),
                     buffer.readResourceLocation(),
                     buffer.readResourceLocation(),
                     buffer.readResourceLocation(),
-                    constLazy(Ingredient.read(buffer)),
-                    constLazy(Ingredient.read(buffer)),
-                    constLazy(Ingredient.read(buffer))
+                    constLazy(Ingredient.fromNetwork(buffer)),
+                    constLazy(Ingredient.fromNetwork(buffer)),
+                    constLazy(Ingredient.fromNetwork(buffer))
                 );
             }
         };
@@ -286,25 +287,25 @@ public class PostBlock extends Block implements IWaterLoggable, WithCountRestric
     public final ModelType type;
 
     private PostBlock(Properties properties, ModelType type) {
-        super(properties.notSolid());
+        super(properties.noOcclusion());
         this.type = type;
-        this.setDefaultState(this.getDefaultState().with(WATERLOGGED, false));
+        this.registerDefaultState(this.defaultBlockState().setValue(WATERLOGGED, false));
     }
 
     @Override
-    public void onBlockPlacedBy(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
-        super.onBlockPlacedBy(world, pos, state, placer, stack);
-        Delay.forFrames(6, world.isRemote, () ->
+    public void setPlacedBy(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+        super.setPlacedBy(world, pos, state, placer, stack);
+        Delay.forFrames(6, world.isClientSide(), () ->
             TileEntityUtils.delayUntilTileEntityExists(world, pos, PostTile.class, tile -> {
                 tile.setSignpostOwner(Optional.of(PlayerHandle.from(placer)));
-                if (!world.isRemote) {
+                if (!world.isClientSide()) {
                     tile.addPart(
                         new BlockPartInstance(new PostBlockPart(type.postTexture), Vector3.ZERO),
                         ItemStack.EMPTY,
                         PlayerHandle.from(placer)
                     );
-                    tile.markDirty();
-                    world.notifyBlockUpdate(pos, state, state, 3);
+                    tile.setChanged();
+                    world.sendBlockUpdated(pos, state, state, 3);
                     PacketHandler.send(
                         PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) placer),
                         new RequestSignGui.ForNewSign.Package(
@@ -320,7 +321,7 @@ public class PostBlock extends Block implements IWaterLoggable, WithCountRestric
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
-        TileEntity tileentity = builder.get(LootParameters.BLOCK_ENTITY);
+        TileEntity tileentity = builder.getParameter(LootParameters.BLOCK_ENTITY);
         List<ItemStack> result = (tileentity instanceof PostTile)
             ? new ArrayList<>(((PostTile) tileentity).getDrops())
             : Collections.singletonList(new ItemStack(this));
@@ -330,7 +331,7 @@ public class PostBlock extends Block implements IWaterLoggable, WithCountRestric
     @SuppressWarnings("deprecation")
     @Override
     public VoxelShape getShape(BlockState state, IBlockReader world, BlockPos pos, ISelectionContext context) {
-        TileEntity t = world.getTileEntity(pos);
+        TileEntity t = world.getBlockEntity(pos);
         return t instanceof PostTile
             ? ((PostTile) t).getBounds()
             : VoxelShapes.empty();
@@ -339,17 +340,7 @@ public class PostBlock extends Block implements IWaterLoggable, WithCountRestric
     @SuppressWarnings("deprecation")
     @Override
     public FluidState getFluidState(BlockState state) {
-        return state.get(WATERLOGGED) ? Fluids.WATER.getStillFluidState(false) : super.getFluidState(state);
-    }
-
-    @Override
-    public boolean receiveFluid(IWorld worldIn, BlockPos pos, BlockState state, FluidState fluidStateIn) {
-        return IWaterLoggable.super.receiveFluid(worldIn, pos, state, fluidStateIn);
-    }
-
-    @Override
-    public boolean canContainFluid(IBlockReader worldIn, BlockPos pos, BlockState state, Fluid fluidIn) {
-        return IWaterLoggable.super.canContainFluid(worldIn, pos, state, fluidIn);
+        return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
     }
 
     @Override
@@ -362,12 +353,12 @@ public class PostBlock extends Block implements IWaterLoggable, WithCountRestric
     }
 
     @Override
-    protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
         builder.add(WATERLOGGED);
     }
 
     @Override
-    public BlockRenderType getRenderType(BlockState state) {
+    public BlockRenderType getRenderShape(BlockState state) {
         return BlockRenderType.ENTITYBLOCK_ANIMATED;
     }
 
@@ -377,8 +368,8 @@ public class PostBlock extends Block implements IWaterLoggable, WithCountRestric
     }
 
     @Override
-    public ActionResultType onBlockActivated(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
-        TileEntity tileEntity = world.getTileEntity(pos);
+    public ActionResultType use(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
+        TileEntity tileEntity = world.getBlockEntity(pos);
         if(!(tileEntity instanceof PostTile)) return ActionResultType.SUCCESS;
         PostTile tile = (PostTile) tileEntity;
         return onActivate(tile, world, player, hand);
@@ -391,7 +382,7 @@ public class PostBlock extends Block implements IWaterLoggable, WithCountRestric
                 InteractionInfo.Type.RightClick,
                 player, hand, tile, p,
                 data -> tile.notifyMutation(p.id, data, p.part.blockPart.getMeta().identifier),
-                world.isRemote
+                world.isClientSide()
             )))
             .orElse(Interactable.InteractionResult.Ignored)
         ){
@@ -406,12 +397,12 @@ public class PostBlock extends Block implements IWaterLoggable, WithCountRestric
     @Override
     public BlockState getStateForPlacement(BlockItemUseContext context) {
         return super.getStateForPlacement(context)
-            .with(WATERLOGGED, context.getWorld().getFluidState(context.getPos()).getFluid() == Fluids.WATER);
+            .setValue(WATERLOGGED, context.getLevel().getFluidState(context.getClickedPos()).getType() == Fluids.WATER);
     }
 
     @Override
     public boolean propagatesSkylightDown(BlockState state, IBlockReader reader, BlockPos pos) {
-        return !state.get(WATERLOGGED);
+        return !state.getValue(WATERLOGGED);
     }
 
     @Override

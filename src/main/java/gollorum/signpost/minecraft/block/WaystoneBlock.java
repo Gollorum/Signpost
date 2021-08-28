@@ -48,8 +48,8 @@ public class WaystoneBlock extends Block implements WithCountRestriction {
     public static final WaystoneBlock INSTANCE = new WaystoneBlock();
 
     private WaystoneBlock() {
-        super(Properties.create(Material.PISTON, MaterialColor.STONE)
-            .hardnessAndResistance(1.5F, 6.0F));
+        super(Properties.of(Material.PISTON, MaterialColor.STONE)
+            .strength(1.5F, 6.0F));
     }
 
 	public static void openGuiIfHasPermission(ServerPlayerEntity player, WorldLocation worldLocation) {
@@ -67,21 +67,21 @@ public class WaystoneBlock extends Block implements WithCountRestriction {
         }
 	}
 
-	@Override
-    public ActionResultType onBlockActivated(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
+    @Override
+    public ActionResultType use(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
         onRightClick(world, pos, player);
         return ActionResultType.CONSUME;
     }
 
     public static void onRightClick(World world, BlockPos pos, PlayerEntity player) {
-        if(!world.isRemote && player instanceof ServerPlayerEntity)
+        if(!world.isClientSide() && player instanceof ServerPlayerEntity)
             openGuiIfHasPermission((ServerPlayerEntity) player, new WorldLocation(pos, world));
     }
 
     private static void discover(PlayerEntity player, WaystoneData data) {
         assert Signpost.getServerType().isServer;
-        if(WaystoneLibrary.getInstance().addDiscovered(new PlayerHandle(player.getUniqueID()), data.handle))
-            player.sendMessage(new TranslationTextComponent(LangKeys.discovered, Colors.wrap(data.name, Colors.highlight)), Util.DUMMY_UUID);
+        if(WaystoneLibrary.getInstance().addDiscovered(new PlayerHandle(player.getUUID()), data.handle))
+            player.sendMessage(new TranslationTextComponent(LangKeys.discovered, Colors.wrap(data.name, Colors.highlight)), Util.NIL_UUID);
     }
 
     public static void discover(PlayerHandle player, WaystoneData data) {
@@ -89,19 +89,19 @@ public class WaystoneBlock extends Block implements WithCountRestriction {
         if(WaystoneLibrary.getInstance().addDiscovered(player, data.handle)) {
             PlayerEntity playerEntity = player.asEntity();
             if(playerEntity != null)
-                playerEntity.sendMessage(new TranslationTextComponent(LangKeys.discovered, Colors.wrap(data.name, Colors.highlight)), Util.DUMMY_UUID);
+                playerEntity.sendMessage(new TranslationTextComponent(LangKeys.discovered, Colors.wrap(data.name, Colors.highlight)), Util.NIL_UUID);
         }
     }
 
     @Override
-    protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
         builder.add(FACING);
     }
 
     @Nullable
     @Override
     public BlockState getStateForPlacement(BlockItemUseContext context) {
-        return getDefaultState().with(FACING, context.getPlacementHorizontalFacing());
+        return defaultBlockState().setValue(FACING, context.getHorizontalDirection());
     }
 
     @Override
@@ -114,13 +114,13 @@ public class WaystoneBlock extends Block implements WithCountRestriction {
     }
 
     @Override
-    public void onBlockPlacedBy(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
-        super.onBlockPlacedBy(world, pos, state, placer, stack);
+    public void setPlacedBy(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+        super.setPlacedBy(world, pos, state, placer, stack);
         registerOwnerAndRequestGui(world, pos, placer);
     }
 
     public static void registerOwnerAndRequestGui(World world, BlockPos pos, LivingEntity placer) {
-        Delay.forFrames(6, world.isRemote, () ->
+        Delay.forFrames(6, world.isClientSide(), () ->
             TileEntityUtils.delayUntilTileEntityExists(world, pos, WaystoneTile.class, t -> {
                 t.setWaystoneOwner(Optional.of(PlayerHandle.from(placer)));
                 if(placer instanceof ServerPlayerEntity) PacketHandler.send(
@@ -128,11 +128,6 @@ public class WaystoneBlock extends Block implements WithCountRestriction {
                     new RequestWaystoneGui.Package(new WorldLocation(pos, world), Optional.empty())
                 );
             }, 100, Optional.empty()));
-    }
-
-    @Override
-    public void onReplaced(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
-        super.onReplaced(state, worldIn, pos, newState, isMoving);
     }
 
     @Override

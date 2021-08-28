@@ -31,12 +31,9 @@ import net.minecraftforge.client.model.SimpleModelTransform;
 import net.minecraftforge.common.util.Lazy;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class RenderingUtil {
@@ -45,23 +42,15 @@ public class RenderingUtil {
         return ModelLoader.instance().getBakedModel(
             location,
             new SimpleModelTransform(TransformationMatrix.identity()),
-            RenderMaterial::getSprite);
+            RenderMaterial::sprite
+        );
     }
 
     public static IBakedModel loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation) {
         final ResourceLocation textLoc = trim(textureLocation);
-        return ModelLoader.instance().getUnbakedModel(modelLocation).bakeModel(
+        return ModelLoader.instance().getModel(modelLocation).bake(
             ModelLoader.instance(),
-            m -> Minecraft.getInstance().getAtlasSpriteGetter(m.getAtlasLocation()).apply(textLoc),
-            new SimpleModelTransform(TransformationMatrix.identity()),
-            modelLocation
-        );
-    }
-
-    public static IBakedModel loadModel(ResourceLocation modelLocation, Supplier<ResourceLocation> textureLocation) {
-        return ModelLoader.instance().getUnbakedModel(modelLocation).bakeModel(
-            ModelLoader.instance(),
-            m -> Minecraft.getInstance().getAtlasSpriteGetter(m.getAtlasLocation()).apply(trim(textureLocation.get())),
+            m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(textLoc),
             new SimpleModelTransform(TransformationMatrix.identity()),
             modelLocation
         );
@@ -70,10 +59,10 @@ public class RenderingUtil {
     public static IBakedModel loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation1, ResourceLocation textureLocation2) {
         final ResourceLocation textLoc1 = trim(textureLocation1);
         final ResourceLocation textLoc2 = trim(textureLocation2);
-        return ModelLoader.instance().getUnbakedModel(modelLocation).bakeModel(
+        return ModelLoader.instance().getModel(modelLocation).bake(
             ModelLoader.instance(),
-            m -> Minecraft.getInstance().getAtlasSpriteGetter(m.getAtlasLocation()).apply(
-                m.getTextureLocation().equals(PostModel.mainTextureMarker)
+            m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(
+                m.texture().equals(PostModel.mainTextureMarker)
                     ? textLoc1 : textLoc2
             ),
             new SimpleModelTransform(TransformationMatrix.identity()),
@@ -81,21 +70,9 @@ public class RenderingUtil {
         );
     }
 
-    public static IBakedModel loadModel(ResourceLocation modelLocation, Supplier<ResourceLocation> textureLocation1, Supplier<ResourceLocation> textureLocation2) {
-        return ModelLoader.instance().getUnbakedModel(modelLocation).bakeModel(
-            ModelLoader.instance(),
-            m -> Minecraft.getInstance().getAtlasSpriteGetter(m.getAtlasLocation()).apply(
-                trim((m.getTextureLocation().equals(PostModel.mainTextureMarker)
-                    ? textureLocation1 : textureLocation2).get())
-            ),
-            new SimpleModelTransform(TransformationMatrix.identity()),
-            modelLocation
-        );
-    }
-
-    private static final Lazy<BlockModelRenderer> Renderer = Lazy.of(() -> Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelRenderer());
+    private static final Lazy<BlockModelRenderer> Renderer = Lazy.of(() -> Minecraft.getInstance().getBlockRenderer().getModelRenderer());
     private static final Lazy<Tessellator> Tesselator = Lazy.of(Tessellator::getInstance);
-    private static final Lazy<BufferBuilder> BufferBuilder = Lazy.of(() -> Tesselator.get().getBuffer());
+    private static final Lazy<BufferBuilder> BufferBuilder = Lazy.of(() -> Tesselator.get().getBuilder());
 
     public static interface RenderModel {
         void render(
@@ -119,14 +96,14 @@ public class RenderingUtil {
     }
 
     public static void render(MatrixStack matrix, Consumer<RenderModel> inner){
-        matrix.push();
+        matrix.pushPose();
         inner.accept((model, tileEntity, buffer, checkSides, random, rand, combinedOverlay, rotationMatrix) -> {
-            if(!tileEntity.hasWorld()) throw new RuntimeException("TileEntity without world cannot be rendered.");
-            Renderer.get().renderModel(
-                tileEntity.getWorld(),
+            if(!tileEntity.hasLevel()) throw new RuntimeException("TileEntity without world cannot be rendered.");
+            Renderer.get().tesselateBlock(
+                tileEntity.getLevel(),
                 model,
                 tileEntity.getBlockState(),
-                tileEntity.getPos(),
+                tileEntity.getBlockPos(),
                 matrix,
                 buffer,
                 checkSides,
@@ -135,23 +112,23 @@ public class RenderingUtil {
                 combinedOverlay
             );
         });
-        matrix.pop();
+        matrix.popPose();
     }
 
     public static int drawString(FontRenderer fontRenderer, String text, Point point, Rect.XAlignment xAlignment, Rect.YAlignment yAlignment, int color, int maxWidth, boolean dropShadow){
-        IRenderTypeBuffer.Impl buffer = IRenderTypeBuffer.getImpl(Tessellator.getInstance().getBuffer());
-        int textWidth = fontRenderer.getStringWidth(text);
+        IRenderTypeBuffer.Impl buffer = IRenderTypeBuffer.immediate(Tessellator.getInstance().getBuilder());
+        int textWidth = fontRenderer.width(text);
         float scale = Math.min(1f, maxWidth / (float) textWidth);
-        Matrix4f matrix = Matrix4f.makeTranslate(
+        Matrix4f matrix = Matrix4f.createTranslateMatrix(
             Rect.xCoordinateFor(point.x, maxWidth, xAlignment) + maxWidth * 0.5f,
-            Rect.yCoordinateFor(point.y, fontRenderer.FONT_HEIGHT, yAlignment) + fontRenderer.FONT_HEIGHT * 0.5f,
+            Rect.yCoordinateFor(point.y, fontRenderer.lineHeight, yAlignment) + fontRenderer.lineHeight * 0.5f,
             100
         );
-        if(scale < 1) matrix.mul(Matrix4f.makeScale(scale, scale, scale));
-        int i = fontRenderer.renderString(
+        if(scale < 1) matrix.multiply(Matrix4f.createScaleMatrix(scale, scale, scale));
+        int i = fontRenderer.drawInBatch(
             text,
             (maxWidth - Math.min(maxWidth, textWidth)) * 0.5f,
-            -fontRenderer.FONT_HEIGHT * 0.5f,
+            -fontRenderer.lineHeight * 0.5f,
             color,
             dropShadow,
             matrix,
@@ -160,14 +137,14 @@ public class RenderingUtil {
             0,
             0xf000f0
         );
-        buffer.finish();
+        buffer.endBatch();
         return i;
     }
 
     public static void renderGui(IBakedModel model, Point center, Angle yaw, Angle pitch, float scale, Vector3 offset) {
         MatrixStack matrixStack = new MatrixStack();
-        Minecraft.getInstance().getTextureManager().bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
-        Minecraft.getInstance().getTextureManager().getTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE).setBlurMipmapDirect(false, false);
+        Minecraft.getInstance().getTextureManager().bind(AtlasTexture.LOCATION_BLOCKS);
+        Minecraft.getInstance().getTextureManager().getTexture(AtlasTexture.LOCATION_BLOCKS).setBlurMipmap(false, false);
         RenderSystem.enableRescaleNormal();
         RenderSystem.enableAlphaTest();
         RenderSystem.defaultAlphaFunc();
@@ -176,14 +153,14 @@ public class RenderingUtil {
         RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
         matrixStack.translate(center.x, center.y, 100);
         matrixStack.scale(scale, -scale, scale);
-        matrixStack.rotate(new Quaternion(Vector3f.XP, pitch.radians(), false));
-        matrixStack.rotate(new Quaternion(Vector3f.YP, yaw.radians(), false));
+        matrixStack.mulPose(new Quaternion(Vector3f.XP, pitch.radians(), false));
+        matrixStack.mulPose(new Quaternion(Vector3f.YP, yaw.radians(), false));
         matrixStack.translate(offset.x, offset.y, offset.z);
         matrixStack.translate(0.5f, 0.5f, 0);
-        IRenderTypeBuffer.Impl renderTypeBuffer = Minecraft.getInstance().getRenderTypeBuffers().getBufferSource();
-        RenderHelper.setupGuiFlatDiffuseLighting();
+        IRenderTypeBuffer.Impl renderTypeBuffer = Minecraft.getInstance().renderBuffers().bufferSource();
+        RenderHelper.setupForFlatItems();
 
-        Minecraft.getInstance().getItemRenderer().renderItem(
+        Minecraft.getInstance().getItemRenderer().render(
             new ItemStack(Blocks.OAK_LOG),
             ItemCameraTransforms.TransformType.GUI,
             false,
@@ -193,9 +170,9 @@ public class RenderingUtil {
             OverlayTexture.NO_OVERLAY,
             model
         );
-        renderTypeBuffer.finish();
+        renderTypeBuffer.endBatch();
         RenderSystem.enableDepthTest();
-        RenderHelper.setupGui3DDiffuseLighting();
+        RenderHelper.setupFor3DItems();
 
         RenderSystem.disableAlphaTest();
         RenderSystem.disableRescaleNormal();
@@ -206,13 +183,13 @@ public class RenderingUtil {
             @Override
             public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, Random rand) {
                 return original.getQuads(state, side, rand)
-                           .stream().map(q -> new BakedQuad(q.getVertexData(), tintIndex, q.getFace(), q.getSprite(), q.applyDiffuseLighting()))
+                           .stream().map(q -> new BakedQuad(q.getVertices(), tintIndex, q.getDirection(), q.getSprite(), q.isShade()))
                            .collect(Collectors.toList());
             }
 
             @Override
-            public boolean isAmbientOcclusion() {
-                return original.isAmbientOcclusion();
+            public boolean useAmbientOcclusion() {
+                return original.useAmbientOcclusion();
             }
 
             @Override
@@ -221,79 +198,18 @@ public class RenderingUtil {
             }
 
             @Override
-            public boolean isSideLit() {
-                return original.isSideLit();
+            public boolean usesBlockLight() {
+                return original.usesBlockLight();
             }
 
             @Override
-            public boolean isBuiltInRenderer() {
-                return original.isBuiltInRenderer();
+            public boolean isCustomRenderer() {
+                return original.isCustomRenderer();
             }
 
             @Override
-            public TextureAtlasSprite getParticleTexture() {
-                return original.getParticleTexture();
-            }
-
-            @Override
-            public ItemOverrideList getOverrides() {
-                return original.getOverrides();
-            }
-        };
-    }
-
-    public static IBakedModel withTransformedDirections(IBakedModel original, boolean isFlipped, float yaw) {
-        Map<Direction, Direction> directionMapping = new HashMap<>();
-        if(isFlipped){
-            directionMapping.put(Direction.UP, Direction.DOWN);
-            directionMapping.put(Direction.DOWN, Direction.UP);
-        } else {
-            directionMapping.put(Direction.UP, Direction.UP);
-            directionMapping.put(Direction.DOWN, Direction.DOWN);
-        }
-        Direction[] dir = new Direction[]{
-            Direction.NORTH,
-            isFlipped ? Direction.WEST : Direction.EAST,
-            Direction.SOUTH,
-            isFlipped ? Direction.EAST : Direction.WEST
-        };
-        int indexOffset = Math.round((yaw / 360) * dir.length) % dir.length;
-        if (indexOffset < 0) indexOffset += dir.length;
-        directionMapping.put(Direction.NORTH, dir[indexOffset]);
-        directionMapping.put(Direction.EAST, dir[(indexOffset + 1) % dir.length]);
-        directionMapping.put(Direction.SOUTH, dir[(indexOffset + 2) % dir.length]);
-        directionMapping.put(Direction.WEST, dir[(indexOffset + 3) % dir.length]);
-        return new IBakedModel() {
-            @Override
-            public List<BakedQuad> getQuads(BlockState state, Direction side, Random rand) {
-                return original.getQuads(state, directionMapping.get(side), rand)
-                           .stream().map(q -> new BakedQuad(q.getVertexData(), q.getTintIndex(), directionMapping.get(q.getFace()), q.getSprite(), q.applyDiffuseLighting()))
-                           .collect(Collectors.toList());
-            }
-
-            @Override
-            public boolean isAmbientOcclusion() {
-                return original.isAmbientOcclusion();
-            }
-
-            @Override
-            public boolean isGui3d() {
-                return original.isGui3d();
-            }
-
-            @Override
-            public boolean isSideLit() {
-                return original.isSideLit();
-            }
-
-            @Override
-            public boolean isBuiltInRenderer() {
-                return original.isBuiltInRenderer();
-            }
-
-            @Override
-            public TextureAtlasSprite getParticleTexture() {
-                return original.getParticleTexture();
+            public TextureAtlasSprite getParticleIcon() {
+                return original.getParticleIcon();
             }
 
             @Override
