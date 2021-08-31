@@ -7,11 +7,11 @@ import gollorum.signpost.blockpartdata.types.*;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.items.Wrench;
 import gollorum.signpost.minecraft.utils.SideUtils;
+import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.utils.BlockPartMetadata;
-import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.utils.WaystoneContainer;
 import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.math.geometry.Ray;
@@ -21,29 +21,29 @@ import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.ItemStackSerializer;
 import gollorum.signpost.utils.serialization.StringSerializer;
 import io.netty.util.internal.ConcurrentSet;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.item.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.play.server.SUpdateTileEntityPacket;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.TagParser;
+import net.minecraft.network.Connection;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Tuple;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.shapes.IBooleanFunction;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.math.shapes.VoxelShapes;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.BooleanOp;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraftforge.fmllegacy.network.NetworkEvent;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -52,14 +52,15 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOwner.OfWaystone, WaystoneContainer {
+public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithOwner.OfWaystone, WaystoneContainer {
 
     public static final String REGISTRY_NAME = "post";
 
-    public static final TileEntityType<PostTile> type = TileEntityType.Builder.of(
-        () -> new PostTile(
+    public static final BlockEntityType<PostTile> type = BlockEntityType.Builder.of(
+        (pos, state) -> new PostTile(
             PostBlock.ModelType.Oak,
-            ItemStack.EMPTY
+            ItemStack.EMPTY,
+            pos, state
         ),
         PostBlock.ALL.toArray(new Block[0])
     ).build(null);
@@ -91,8 +92,8 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
     private ItemStack drop;
     private Optional<PlayerHandle> owner = Optional.empty();
 
-    public PostTile(PostBlock.ModelType modelType, ItemStack drop) {
-        super(type);
+    public PostTile(PostBlock.ModelType modelType, ItemStack drop, BlockPos pos, BlockState state) {
+        super(type, pos, state);
         this.modelType = modelType;
         this.drop = drop;
     }
@@ -138,24 +139,24 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
             .getBounds()
             .offset(t.offset)
             .asMinecraftBB()
-        ).map(VoxelShapes::create)
-        .reduce((b1, b2) -> VoxelShapes.join(b1, b2, IBooleanFunction.OR)).orElse(VoxelShapes.empty());
+        ).map(Shapes::create)
+        .reduce((b1, b2) -> Shapes.join(b1, b2, BooleanOp.OR)).orElse(Shapes.empty());
     }
 
     @Override
-    public AxisAlignedBB getRenderBoundingBox() {
+    public AABB getRenderBoundingBox() {
         VoxelShape shape = getBounds();
         return shape.isEmpty()
-            ? new AxisAlignedBB(getBlockPos())
+            ? new AABB(getBlockPos())
             : shape.bounds().move(getBlockPos());
     }
 
-    public Optional<TraceResult> trace(PlayerEntity player){
-        Vector3d head = player.position();
+    public Optional<TraceResult> trace(Player player){
+        Vec3 head = player.position();
         head = head.add(0, player.getEyeHeight(), 0);
         if (player.isCrouching())
             head = head.subtract(0, 0.08, 0);
-        Vector3d look = player.getLookAngle();
+        Vec3 look = player.getLookAngle();
         Ray ray = new Ray(Vector3.fromVec3d(head).subtract(Vector3.fromBlockPos(getBlockPos())), Vector3.fromVec3d(look));
 
         Optional<Tuple<UUID, Float>> closestTrace = Optional.empty();
@@ -169,13 +170,13 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
     }
 
     @Override
-    public CompoundNBT save(CompoundNBT compound) {
+    public CompoundTag save(CompoundTag compound) {
         super.save(compound);
         writeSelf(compound);
         return compound;
     }
 
-    private void writeSelf(CompoundNBT compound){
+    private void writeSelf(CompoundTag compound){
         for(Map.Entry<BlockPartMetadata, List<Map.Entry<UUID, BlockPartInstance>>> entry: parts.entrySet().stream()
             .collect(Collectors.groupingBy(p -> p.getValue().blockPart.getMeta())).entrySet()
         ){
@@ -184,7 +185,7 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
             for(int i=0; i<instances.size(); i++){
                 Map.Entry<UUID, BlockPartInstance> e = instances.get(i);
                 BlockPartInstance instance = e.getValue();
-                CompoundNBT subComp = instance.blockPart.write();
+                CompoundTag subComp = instance.blockPart.write();
                 subComp.put("Offset", Vector3.Serializer.write(instance.offset));
                 compound.put(entry.getKey().identifier + "_" + i, subComp);
                 subComp.putUUID("PartId", e.getKey());
@@ -195,16 +196,16 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
     }
 
     @Override
-    public void load(BlockState blockState, CompoundNBT compound) {
-        super.load(blockState, compound);
+    public void load(CompoundTag compound) {
+        super.load(compound);
         readSelf(compound);
     }
 
-    private void readSelf(CompoundNBT compound){
+    private void readSelf(CompoundTag compound){
         parts.clear();
         for(BlockPartMetadata<?> meta : partsMetadata){
             for(int i = 0; i < compound.getInt(meta.identifier); i++){
-                CompoundNBT comp = compound.getCompound(meta.identifier + "_" + i);
+                CompoundTag comp = compound.getCompound(meta.identifier + "_" + i);
                 addPart(
                     comp.getUUID("PartId"),
                     new BlockPartInstance(
@@ -221,33 +222,33 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
     }
 
     @Override
-    public CompoundNBT getUpdateTag() {
-        CompoundNBT ret = super.getUpdateTag();
+    public CompoundTag getUpdateTag() {
+        CompoundTag ret = super.getUpdateTag();
         writeSelf(ret);
         return ret;
     }
 
     @Nullable
     @Override
-    public SUpdateTileEntityPacket getUpdatePacket() {
-        CompoundNBT ret = new CompoundNBT();
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        CompoundTag ret = new CompoundTag();
         writeSelf(ret);
-        return new SUpdateTileEntityPacket(getBlockPos(), 1, ret);
+        return new ClientboundBlockEntityDataPacket(getBlockPos(), 1, ret);
     }
 
     @Override
-    public void handleUpdateTag(BlockState blockState, CompoundNBT compound) {
-        super.handleUpdateTag(blockState, compound);
+    public void handleUpdateTag(CompoundTag compound) {
+        super.handleUpdateTag(compound);
         readSelf(compound);
     }
 
     @Override
-    public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
         super.onDataPacket(net, pkt);
         readSelf(pkt.getTag());
     }
 
-    public void notifyMutation(UUID part, CompoundNBT data, String partMetaIdentifier) {
+    public void notifyMutation(UUID part, CompoundTag data, String partMetaIdentifier) {
         sendToTracing(
             () -> new PostTile.PartMutatedEvent.Packet(
                 new PostTile.TilePartInfo(this, part),
@@ -291,7 +292,7 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
         public final BlockPos pos;
         public final UUID identifier;
 
-        public TilePartInfo(TileEntity tile, UUID identifier) {
+        public TilePartInfo(BlockEntity tile, UUID identifier) {
             this.dimensionKey = tile.getLevel().dimension().location();
             this.pos = tile.getBlockPos();
             this.identifier = identifier;
@@ -307,7 +308,7 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
         public static final class SerializerImpl implements CompoundSerializable<TilePartInfo> {
 
             @Override
-            public CompoundNBT write(TilePartInfo tilePartInfo, CompoundNBT compound) {
+            public CompoundTag write(TilePartInfo tilePartInfo, CompoundTag compound) {
                 compound.putString("Dimension", tilePartInfo.dimensionKey.toString());
                 compound.put("Pos", BlockPosSerializer.INSTANCE.write(tilePartInfo.pos, compound));
                 compound.putUUID("Id", tilePartInfo.identifier);
@@ -315,14 +316,14 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
             }
 
             @Override
-            public boolean isContainedIn(CompoundNBT compound) {
+            public boolean isContainedIn(CompoundTag compound) {
                 return compound.contains("Dimension")
                     && compound.contains("Pos")
                     && compound.contains("Id");
             }
 
             @Override
-            public TilePartInfo read(CompoundNBT compound) {
+            public TilePartInfo read(CompoundTag compound) {
                 return new TilePartInfo(
                     new ResourceLocation(compound.getString("Dimension")),
                     BlockPosSerializer.INSTANCE.read(compound.getCompound("Pos")),
@@ -336,14 +337,14 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
             }
 
             @Override
-            public void write(TilePartInfo tilePartInfo, PacketBuffer buffer) {
+            public void write(TilePartInfo tilePartInfo, FriendlyByteBuf buffer) {
                 buffer.writeResourceLocation(tilePartInfo.dimensionKey);
                 BlockPosSerializer.INSTANCE.write(tilePartInfo.pos, buffer);
                 buffer.writeUUID(tilePartInfo.identifier);
             }
 
             @Override
-            public TilePartInfo read(PacketBuffer buffer) {
+            public TilePartInfo read(FriendlyByteBuf buffer) {
                 return new TilePartInfo(
                     buffer.readResourceLocation(),
                     BlockPosSerializer.INSTANCE.read(buffer),
@@ -359,14 +360,14 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
         public static class Packet {
             public final TilePartInfo info;
             public final String partMetaIdentifier;
-            public final CompoundNBT partData;
+            public final CompoundTag partData;
             public final Vector3 offset;
             public final ItemStack cost;
             public final PlayerHandle player;
 
             public Packet(
                 TilePartInfo info,
-                CompoundNBT partData,
+                CompoundTag partData,
                 String partMetaIdentifier,
                 Vector3 offset,
                 ItemStack cost,
@@ -385,7 +386,7 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
         public Class<Packet> getMessageClass() { return Packet.class; }
 
         @Override
-        public void encode(Packet message, PacketBuffer buffer) {
+        public void encode(Packet message, FriendlyByteBuf buffer) {
             TilePartInfo.Serializer.write(message.info, buffer);
             StringSerializer.instance.write(message.partData.getAsString(), buffer);
             StringSerializer.instance.write(message.partMetaIdentifier, buffer);
@@ -395,11 +396,11 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
         }
 
         @Override
-        public Packet decode(PacketBuffer buffer) {
+        public Packet decode(FriendlyByteBuf buffer) {
             try {
                 return new Packet(
                     TilePartInfo.Serializer.read(buffer),
-                    JsonToNBT.parseTag(StringSerializer.instance.read(buffer)),
+                    TagParser.parseTag(StringSerializer.instance.read(buffer)),
                     StringSerializer.instance.read(buffer),
                     Vector3.Serializer.read(buffer),
                     buffer.readItem(),
@@ -456,13 +457,13 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
         public Class<Packet> getMessageClass() { return Packet.class; }
 
         @Override
-        public void encode(Packet message, PacketBuffer buffer) {
+        public void encode(Packet message, FriendlyByteBuf buffer) {
             TilePartInfo.Serializer.write(message.info, buffer);
             buffer.writeBoolean(message.shouldDropItem);
         }
 
         @Override
-        public Packet decode(PacketBuffer buffer) {
+        public Packet decode(FriendlyByteBuf buffer) {
             return new Packet(TilePartInfo.Serializer.read(buffer), buffer.readBoolean());
         }
 
@@ -477,9 +478,9 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
                         BlockPartInstance oldPart = tile.removePart(message.info.identifier);
                         if(oldPart != null && !tile.getLevel().isClientSide() && !context.getSender().isCreative() && message.shouldDropItem){
                             for(ItemStack item : (Collection<ItemStack>) oldPart.blockPart.getDrops(tile)) {
-                                if(!context.getSender().inventory.add(item))
-                                    if(tile.getLevel() instanceof ServerWorld) {
-                                        ServerWorld serverWorld = (ServerWorld) tile.getLevel();
+                                if(!context.getSender().getInventory().add(item))
+                                    if(tile.getLevel() instanceof ServerLevel) {
+                                        ServerLevel serverWorld = (ServerLevel) tile.getLevel();
                                         BlockPos pos = message.info.pos;
                                         ItemEntity itementity = new ItemEntity(
                                             serverWorld,
@@ -506,19 +507,19 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
 
         public static class Packet {
             public final TilePartInfo info;
-            public final CompoundNBT data;
+            public final CompoundTag data;
             public final String partMetaIdentifier;
             public final Optional<Vector3> offset;
 
-            public Packet(TilePartInfo info, CompoundNBT data, String partMetaIdentifier) {
+            public Packet(TilePartInfo info, CompoundTag data, String partMetaIdentifier) {
                 this(info, data, partMetaIdentifier, Optional.empty());
             }
 
-            public Packet(TilePartInfo info, CompoundNBT data, String partMetaIdentifier, Vector3 offset) {
+            public Packet(TilePartInfo info, CompoundTag data, String partMetaIdentifier, Vector3 offset) {
                 this(info, data, partMetaIdentifier, Optional.of(offset));
             }
 
-            public Packet(TilePartInfo info, CompoundNBT data, String partMetaIdentifier, Optional<Vector3> offset) {
+            public Packet(TilePartInfo info, CompoundTag data, String partMetaIdentifier, Optional<Vector3> offset) {
                 this.info = info;
                 this.data = data;
                 this.partMetaIdentifier = partMetaIdentifier;
@@ -530,7 +531,7 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
         public Class<Packet> getMessageClass() { return Packet.class; }
 
         @Override
-        public void encode(Packet message, PacketBuffer buffer) {
+        public void encode(Packet message, FriendlyByteBuf buffer) {
             TilePartInfo.Serializer.write(message.info, buffer);
             StringSerializer.instance.write(message.data.toString(), buffer);
             StringSerializer.instance.write(message.partMetaIdentifier, buffer);
@@ -538,11 +539,11 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
         }
 
         @Override
-        public Packet decode(PacketBuffer buffer) {
+        public Packet decode(FriendlyByteBuf buffer) {
             try {
                 return new Packet(
                     TilePartInfo.Serializer.read(buffer),
-                    JsonToNBT.parseTag(StringSerializer.instance.read(buffer)),
+                    TagParser.parseTag(StringSerializer.instance.read(buffer)),
                     StringSerializer.instance.read(buffer),
                     Vector3.Serializer.optional().read(buffer)
                 );

@@ -5,27 +5,26 @@ import gollorum.signpost.utils.Delay;
 import gollorum.signpost.utils.Either;
 import gollorum.signpost.utils.WorldLocation;
 import net.minecraft.client.Minecraft;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.util.Optional;
 import java.util.function.Consumer;
 
 public class TileEntityUtils {
 
-    public static <T> Optional<T> findTileEntity(IWorld world, BlockPos pos, Class<T> c){
-        TileEntity tileEntity = world.getBlockEntity(pos);
+    public static <T> Optional<T> findTileEntity(Level world, BlockPos pos, Class<T> c){
+        BlockEntity tileEntity = world.getBlockEntity(pos);
         if(tileEntity != null && c.isAssignableFrom(tileEntity.getClass())){
             return Optional.of((T) tileEntity);
         } else return Optional.empty();
     }
 
-    public static <T> void delayUntilTileEntityExists(IWorld world, BlockPos pos, Class<T> c, Consumer<T> action, int timeout, Optional<Runnable> onTimeOut) {
+    public static <T> void delayUntilTileEntityExists(Level world, BlockPos pos, Class<T> c, Consumer<T> action, int timeout, Optional<Runnable> onTimeOut) {
         Delay.untilIsPresent(() -> findTileEntity(world, pos, c), action, timeout, world.isClientSide(), onTimeOut);
     }
 
@@ -33,18 +32,18 @@ public class TileEntityUtils {
         return findWorld(dimensionKeyLocation, isRemote).flatMap(world -> findTileEntity(world, blockPos, c));
     }
 
-    public static Optional<World> findWorld(ResourceLocation dimensionKeyLocation, boolean isRemote) {
+    public static Optional<Level> findWorld(ResourceLocation dimensionKeyLocation, boolean isRemote) {
         return isRemote
             ? (Minecraft.getInstance().level.dimension().location().equals(dimensionKeyLocation)
                 ? Optional.of(Minecraft.getInstance().level)
                 : Optional.empty())
             : (Signpost.getServerType().isServer
                 ? Optional.ofNullable(Signpost.getServerInstance()
-                    .getLevel(RegistryKey.create(Registry.DIMENSION_REGISTRY, dimensionKeyLocation)))
+                    .getLevel(ResourceKey.create(Registry.DIMENSION_REGISTRY, dimensionKeyLocation)))
                 : Optional.empty());
     }
 
-    public static Optional<World> toWorld(Either<World, ResourceLocation> either, boolean onClient) {
+    public static Optional<Level> toWorld(Either<Level, ResourceLocation> either, boolean onClient) {
         return either.match(
             Optional::of,
             right -> findWorld(right, onClient)

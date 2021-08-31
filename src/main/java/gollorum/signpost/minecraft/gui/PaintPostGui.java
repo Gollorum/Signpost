@@ -3,7 +3,7 @@ package gollorum.signpost.minecraft.gui;
 import gollorum.signpost.blockpartdata.types.PostBlockPart;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.UUID;
 

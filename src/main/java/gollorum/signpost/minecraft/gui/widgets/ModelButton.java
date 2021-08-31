@@ -1,13 +1,13 @@
 package gollorum.signpost.minecraft.gui.widgets;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.minecraft.gui.utils.TextureResource;
 import gollorum.signpost.minecraft.rendering.FlippableModel;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.client.gui.widget.button.ImageButton;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,7 @@ public class ModelButton extends ImageButton {
         Rect rect,
         float scale,
         Function<Rect, Rect> rectBuilder,
-        Button.IPressable onPress,
+        Button.OnPress onPress,
         ModelData... modelData
     ){
         super(
@@ -63,7 +63,7 @@ public class ModelButton extends ImageButton {
     }
 
     @Override
-    public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void renderButton(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         super.renderButton(matrixStack, mouseX, mouseY, partialTicks);
         for(GuiModelRenderer model : modelRenderers) {
             model.render(matrixStack, mouseX, mouseY, partialTicks);

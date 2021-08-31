@@ -4,21 +4,21 @@ import com.google.gson.JsonObject;
 import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.utils.serialization.StringSerializer;
-import net.minecraft.block.Block;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.IRecipeSerializer;
-import net.minecraft.item.crafting.Ingredient;
-import net.minecraft.item.crafting.StonecuttingRecipe;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.JSONUtils;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.World;
+import net.minecraft.core.Registry;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.StonecutterRecipe;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.ForgeRegistryEntry;
 
-public class CutWaystoneRecipe extends StonecuttingRecipe {
+public class CutWaystoneRecipe extends StonecutterRecipe {
 
     public static final String RegistryName = "cut_waystone";
 
@@ -27,12 +27,12 @@ public class CutWaystoneRecipe extends StonecuttingRecipe {
     }
 
     @Override
-    public boolean matches(IInventory inv, World world) {
+    public boolean matches(Container inv, Level world) {
         return super.matches(inv, world) && isAllowed(result);
     }
 
     @Override
-    public IRecipeSerializer<?> getSerializer() {
+    public RecipeSerializer<?> getSerializer() {
         return Serializer.INSTANCE;
     }
 
@@ -43,22 +43,22 @@ public class CutWaystoneRecipe extends StonecuttingRecipe {
         return Config.Server.allowedWaystones.get().contains(((ModelWaystone)block).variant.name);
     }
 
-    public static class Serializer extends ForgeRegistryEntry<IRecipeSerializer<?>> implements IRecipeSerializer<CutWaystoneRecipe> {
+    public static class Serializer extends ForgeRegistryEntry<RecipeSerializer<?>> implements RecipeSerializer<CutWaystoneRecipe> {
 
         public static Serializer INSTANCE = new Serializer();
 
         @Override
         public CutWaystoneRecipe fromJson(ResourceLocation recipeId, JsonObject json) {
-            String group = JSONUtils.getAsString(json, "group", "");
+            String group = GsonHelper.getAsString(json, "group", "");
             Ingredient ingredient;
-            if (JSONUtils.isArrayNode(json, "ingredient")) {
-                ingredient = Ingredient.fromJson(JSONUtils.getAsJsonArray(json, "ingredient"));
+            if (GsonHelper.isArrayNode(json, "ingredient")) {
+                ingredient = Ingredient.fromJson(GsonHelper.getAsJsonArray(json, "ingredient"));
             } else {
-                ingredient = Ingredient.fromJson(JSONUtils.getAsJsonArray(json, "ingredient"));
+                ingredient = Ingredient.fromJson(GsonHelper.getAsJsonArray(json, "ingredient"));
             }
 
-            String resultLoc = JSONUtils.getAsString(json, "result");
-            int count = JSONUtils.getAsInt(json, "count");
+            String resultLoc = GsonHelper.getAsString(json, "result");
+            int count = GsonHelper.getAsInt(json, "count");
             ItemStack result = new ItemStack(Registry.ITEM.get(new ResourceLocation(resultLoc)), count);
             return isAllowed(result)
                 ? new CutWaystoneRecipe(recipeId, group, ingredient, result)
@@ -66,7 +66,7 @@ public class CutWaystoneRecipe extends StonecuttingRecipe {
         }
 
         @Override
-        public CutWaystoneRecipe fromNetwork(ResourceLocation recipeId, PacketBuffer buffer) {
+        public CutWaystoneRecipe fromNetwork(ResourceLocation recipeId, FriendlyByteBuf buffer) {
             String group = StringSerializer.instance.read(buffer);
             Ingredient ingredient = Ingredient.fromNetwork(buffer);
             ItemStack result = buffer.readItem();
@@ -74,7 +74,7 @@ public class CutWaystoneRecipe extends StonecuttingRecipe {
         }
 
         @Override
-        public void toNetwork(PacketBuffer buffer, CutWaystoneRecipe recipe) {
+        public void toNetwork(FriendlyByteBuf buffer, CutWaystoneRecipe recipe) {
             StringSerializer.instance.write(recipe.group, buffer);
             recipe.ingredient.toNetwork(buffer);
             buffer.writeItem(recipe.result);

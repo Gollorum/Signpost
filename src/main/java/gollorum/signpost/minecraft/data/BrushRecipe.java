@@ -2,11 +2,11 @@ package gollorum.signpost.minecraft.data;
 
 import gollorum.signpost.minecraft.registry.ItemRegistry;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.data.IFinishedRecipe;
-import net.minecraft.data.RecipeProvider;
-import net.minecraft.data.ShapedRecipeBuilder;
-import net.minecraft.item.Items;
+import net.minecraft.data.recipes.FinishedRecipe;
+import net.minecraft.data.recipes.RecipeProvider;
+import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.world.item.Items;
 
 import java.util.function.Consumer;
 
@@ -17,7 +17,7 @@ public class BrushRecipe extends RecipeProvider {
     }
 
     @Override
-    protected void buildShapelessRecipes(Consumer<IFinishedRecipe> consumer) {
+    protected void buildCraftingRecipes(Consumer<FinishedRecipe> consumer) {
         ShapedRecipeBuilder.shaped(ItemRegistry.BRUSH.get(), 1)
             .define('w', ItemTags.WOOL)
             .define('i', Items.IRON_INGOT)

@@ -6,24 +6,26 @@ import gollorum.signpost.minecraft.worldgen.SignpostJigsawPiece;
 import gollorum.signpost.minecraft.worldgen.WaystoneJigsawPiece;
 import gollorum.signpost.utils.CollectionUtils;
 import gollorum.signpost.utils.Tuple;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.WorldGenRegistries;
-import net.minecraft.world.gen.feature.jigsaw.JigsawPattern;
-import net.minecraft.world.gen.feature.jigsaw.JigsawPiece;
-import net.minecraft.world.gen.feature.jigsaw.SingleJigsawPiece;
-import net.minecraft.world.gen.feature.structure.VillagesPools;
-import net.minecraft.world.gen.feature.template.ProcessorLists;
-import net.minecraft.world.gen.feature.template.StructureProcessorList;
+import net.minecraft.core.Registry;
+import net.minecraft.data.BuiltinRegistries;
+import net.minecraft.data.worldgen.ProcessorLists;
+import net.minecraft.data.worldgen.VillagePools;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.levelgen.feature.structures.SinglePoolElement;
+import net.minecraft.world.level.levelgen.feature.structures.StructurePoolElement;
+import net.minecraft.world.level.levelgen.feature.structures.StructureTemplatePool;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Random;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class Villages {
 
 	public static final Villages instance = new Villages();
-	private Villages() { VillagesPools.bootstrap(); }
+	private Villages() { VillagePools.bootstrap(); }
 
 	private enum VillageType {
 		Desert("desert", () -> instance.waystoneProcessorListDesert),
@@ -74,12 +76,12 @@ public class Villages {
 			ImmutableList.of(
 				Tuple.of(
 					new WaystoneJigsawPiece(villageType.getStructureResourceLocation("waystone"),
-						villageType.processorList, JigsawPattern.PlacementBehaviour.RIGID),
+						villageType.processorList, StructureTemplatePool.Projection.RIGID),
 					5
 				),
 				Tuple.of(
 					new SignpostJigsawPiece(villageType.getStructureResourceLocation("signpost"),
-						villageType.processorList, JigsawPattern.PlacementBehaviour.TERRAIN_MATCHING, isZombie),
+						villageType.processorList, StructureTemplatePool.Projection.TERRAIN_MATCHING, isZombie),
 					5
 				)
 			),
@@ -96,22 +98,22 @@ public class Villages {
 	}
 
 	private void addToPool(
-		Collection<Tuple<SingleJigsawPiece, Integer>> houses, ResourceLocation pool
+		Collection<Tuple<SinglePoolElement, Integer>> houses, ResourceLocation pool
 	) {
-		JigsawPattern oldPattern = WorldGenRegistries.TEMPLATE_POOL.get(pool);
+		StructureTemplatePool oldPattern = BuiltinRegistries.TEMPLATE_POOL.get(pool);
 		if(oldPattern == null) {
 			Signpost.LOGGER.error("Tried to add elements to village pool " + pool + ", but it was not found in the registry.");
 			return;
 		}
-		Map<JigsawPiece, Integer> allPieces = CollectionUtils.group(oldPattern.getShuffledTemplates(new Random(0)));
-		for(Tuple<SingleJigsawPiece, Integer> tuple : houses) {
+		Map<StructurePoolElement, Integer> allPieces = CollectionUtils.group(oldPattern.getShuffledTemplates(new Random(0)));
+		for(Tuple<SinglePoolElement, Integer> tuple : houses) {
 			allPieces.put(tuple._1, tuple._2);
 		}
 		registerPoolEntries(allPieces, pool, oldPattern.getName());
 	}
 
-	private static void registerPoolEntries(Map<JigsawPiece, Integer> pieces, ResourceLocation pool, ResourceLocation patternName) {
-		Registry.register(WorldGenRegistries.TEMPLATE_POOL, pool, new JigsawPattern(pool, patternName, pieces.entrySet().stream().map(e -> com.mojang.datafixers.util.Pair
+	private static void registerPoolEntries(Map<StructurePoolElement, Integer> pieces, ResourceLocation pool, ResourceLocation patternName) {
+		Registry.register(BuiltinRegistries.TEMPLATE_POOL, pool, new StructureTemplatePool(pool, patternName, pieces.entrySet().stream().map(e -> com.mojang.datafixers.util.Pair
 			.of(e.getKey(), e.getValue())).collect(Collectors.toList())));
 	}
 

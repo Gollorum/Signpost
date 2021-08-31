@@ -1,9 +1,11 @@
 package gollorum.signpost.minecraft.data;
 
 import gollorum.signpost.Signpost;
-import gollorum.signpost.minecraft.block.*;
+import gollorum.signpost.minecraft.block.ModelWaystone;
+import gollorum.signpost.minecraft.block.PostBlock;
+import gollorum.signpost.minecraft.block.WaystoneBlock;
+import net.minecraft.core.Direction;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.util.Direction;
 import net.minecraftforge.client.model.generators.*;
 import net.minecraftforge.common.data.ExistingFileHelper;
 

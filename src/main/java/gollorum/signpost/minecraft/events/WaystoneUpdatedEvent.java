@@ -4,12 +4,10 @@ import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.utils.WaystoneLocationData;
 import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.serialization.BufferSerializable;
-import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.StringSerializer;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 
 import java.util.Optional;
-import java.util.UUID;
 
 public abstract class WaystoneUpdatedEvent {
 
@@ -52,7 +50,7 @@ public abstract class WaystoneUpdatedEvent {
             return WaystoneUpdatedEvent.class;
         }
 
-        public void write(WaystoneUpdatedEvent event, PacketBuffer buffer) {
+        public void write(WaystoneUpdatedEvent event, FriendlyByteBuf buffer) {
             buffer.writeEnum(event.getType());
             WaystoneLocationData.SERIALIZER.write(event.location, buffer);
             StringSerializer.instance.write(event.name, buffer);
@@ -65,7 +63,7 @@ public abstract class WaystoneUpdatedEvent {
                 buffer.writeBoolean(((WaystoneAddedOrRenamedEvent) event).isLocked);
         }
 
-        public WaystoneUpdatedEvent read(PacketBuffer buffer) {
+        public WaystoneUpdatedEvent read(FriendlyByteBuf buffer) {
             Type type = buffer.readEnum(Type.class);
             WaystoneLocationData location = WaystoneLocationData.SERIALIZER.read(buffer);
             String name = StringSerializer.instance.read(buffer);

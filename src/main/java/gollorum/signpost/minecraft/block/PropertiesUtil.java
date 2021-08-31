@@ -1,9 +1,9 @@
 package gollorum.signpost.minecraft.block;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.material.MaterialColor;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.material.MaterialColor;
 
 public class PropertiesUtil {
 
@@ -23,17 +23,16 @@ public class PropertiesUtil {
     }
 
     private static MaterialColor colorFor(WoodType type){
-        switch (type) {
-            case Oak: return MaterialColor.WOOD;
-            case DarkOak: return MaterialColor.COLOR_BROWN;
-            case Spruce: return MaterialColor.PODZOL;
-            case Birch: return MaterialColor.SAND;
-            case Jungle: return MaterialColor.DIRT;
-            case Acacia: return MaterialColor.COLOR_ORANGE;
-            case Warped: return MaterialColor.WARPED_STEM;
-            case Crimson: return MaterialColor.CRIMSON_STEM;
-            default: throw new RuntimeException("Wood type " + type + "is not supported.");
-        }
+        return switch (type) {
+            case Oak -> MaterialColor.WOOD;
+            case DarkOak -> MaterialColor.COLOR_BROWN;
+            case Spruce -> MaterialColor.PODZOL;
+            case Birch -> MaterialColor.SAND;
+            case Jungle -> MaterialColor.DIRT;
+            case Acacia -> MaterialColor.COLOR_ORANGE;
+            case Warped -> MaterialColor.WARPED_STEM;
+            case Crimson -> MaterialColor.CRIMSON_STEM;
+        };
     }
 
     public static Block.Properties wood(WoodType type){

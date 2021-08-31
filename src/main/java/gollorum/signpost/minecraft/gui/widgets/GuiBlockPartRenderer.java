@@ -1,18 +1,18 @@
 package gollorum.signpost.minecraft.gui.widgets;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.blockpartdata.types.renderers.BlockPartRenderer;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.utils.math.Angle;
-import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.client.gui.IRenderable;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.network.chat.TextComponent;
 
 import java.util.Collection;
 
-public class GuiBlockPartRenderer extends Widget implements IRenderable {
+public class GuiBlockPartRenderer extends AbstractWidget {
 
     private final Collection<BlockPartInstance> partsToRender;
     private final Point center;
@@ -21,7 +21,7 @@ public class GuiBlockPartRenderer extends Widget implements IRenderable {
     private float scale;
 
     public GuiBlockPartRenderer(Collection<BlockPartInstance> partsToRender, Point center, Angle yaw, Angle pitch, float scale) {
-        super(center.x - widthFor(scale) / 2, center.y - heightFor(scale) / 2, widthFor(scale), heightFor(scale), new StringTextComponent(""));
+        super(center.x - widthFor(scale) / 2, center.y - heightFor(scale) / 2, widthFor(scale), heightFor(scale), new TextComponent(""));
         this.partsToRender = partsToRender;
         this.center = center;
         this.yaw = yaw;
@@ -33,9 +33,9 @@ public class GuiBlockPartRenderer extends Widget implements IRenderable {
     private static int heightFor(float scale) { return (int)(scale * 1.5f); }
 
     @Override
-    public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void renderButton(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         if(isHovered())
-            AbstractGui.fill(matrixStack, x, y, x + width, y + height, 0x20ffffff);
+            GuiComponent.fill(matrixStack, x, y, x + width, y + height, 0x20ffffff);
         for(BlockPartInstance bpi : partsToRender) {
             BlockPartRenderer.renderGuiDynamic(
                 bpi.blockPart,
@@ -48,5 +48,10 @@ public class GuiBlockPartRenderer extends Widget implements IRenderable {
     protected void onDrag(double mouseX, double mouseY, double dragX, double dragY) {
         yaw = yaw.add(Angle.fromDegrees((float) (dragX * 3)));
         pitch = pitch.add(Angle.fromDegrees((float) (dragY * 3)));
+    }
+
+    @Override
+    public void updateNarration(NarrationElementOutput p_169152_) {
+
     }
 }

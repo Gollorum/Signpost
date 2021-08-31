@@ -1,27 +1,30 @@
 package gollorum.signpost.minecraft.rendering;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-import gollorum.signpost.minecraft.block.tiles.PostTile;
+import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.blockpartdata.types.renderers.BlockPartRenderer;
+import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.utils.BlockPartInstance;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
-import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 
 import java.util.Random;
 
-public class PostRenderer extends TileEntityRenderer<PostTile> {
+public class PostRenderer implements BlockEntityRenderer<PostTile> {
 
     private static final double randomOffset = 0.001;
 
-    public PostRenderer(TileEntityRendererDispatcher rendererDispatcherIn) {
-        super(rendererDispatcherIn);
+    private final BlockEntityRenderDispatcher renderer;
+
+    public PostRenderer(BlockEntityRendererProvider.Context ctx) {
+        renderer = ctx.getBlockEntityRenderDispatcher();
     }
 
     @Override
     public void render(
-        PostTile tile, float partialTicks, MatrixStack matrixStack,
-        IRenderTypeBuffer buffer, int combinedLight, int combinedOverlay
+        PostTile tile, float partialTicks, PoseStack matrixStack,
+        MultiBufferSource buffer, int combinedLight, int combinedOverlay
     ) {
         Random random = new Random();
         long rand = tile.hashCode();

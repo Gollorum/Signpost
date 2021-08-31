@@ -2,8 +2,8 @@ package gollorum.signpost.utils;
 
 import gollorum.signpost.utils.serialization.BufferSerializable;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -171,7 +171,7 @@ public abstract class Either<Left, Right> {
         }
 
         @Override
-        public void write(Either<Left, Right> leftRightEither, PacketBuffer buffer) {
+        public void write(Either<Left, Right> leftRightEither, FriendlyByteBuf buffer) {
             buffer.writeBoolean(leftRightEither.isLeft());
             leftRightEither.consume(
                 l -> leftS.write(l, buffer),
@@ -180,7 +180,7 @@ public abstract class Either<Left, Right> {
         }
 
         @Override
-        public Either<Left, Right> read(PacketBuffer buffer) {
+        public Either<Left, Right> read(FriendlyByteBuf buffer) {
             return buffer.readBoolean()
                 ? Either.left(leftS.read(buffer))
                 : Either.right(rightS.read(buffer));
@@ -203,14 +203,14 @@ public abstract class Either<Left, Right> {
         }
 
         @Override
-        public CompoundNBT write(Either<Left, Right> leftRightEither, CompoundNBT compound) {
+        public CompoundTag write(Either<Left, Right> leftRightEither, CompoundTag compound) {
             compound.putBoolean("IsLeft", leftRightEither.isLeft());
             compound.put("Data", leftRightEither.match(leftS::write, rightS::write));
             return compound;
         }
 
         @Override
-        public boolean isContainedIn(CompoundNBT compound) {
+        public boolean isContainedIn(CompoundTag compound) {
             return compound.contains("IsLeft") && compound.contains("Data") &&
                 compound.getBoolean("IsLeft")
                     ? leftS.isContainedIn(compound.getCompound("Data"))
@@ -218,7 +218,7 @@ public abstract class Either<Left, Right> {
         }
 
         @Override
-        public Either<Left, Right> read(CompoundNBT compound) {
+        public Either<Left, Right> read(CompoundTag compound) {
             return compound.getBoolean("IsLeft")
                 ? Either.left(leftS.read(compound.getCompound("Data")))
                 : Either.right(rightS.read(compound.getCompound("Data")));

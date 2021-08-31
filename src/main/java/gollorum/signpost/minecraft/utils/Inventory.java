@@ -1,11 +1,11 @@
 package gollorum.signpost.minecraft.utils;
 
 import gollorum.signpost.Signpost;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.Util;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,15 +13,15 @@ import java.util.function.Consumer;
 
 public class Inventory {
 
-	private static List<ItemStack> getAllItemStack(PlayerEntity player) {
+	private static List<ItemStack> getAllItemStack(Player player) {
 		List<ItemStack> ret = new ArrayList<>();
 		ret.add(player.getMainHandItem());
 		ret.add(player.getOffhandItem());
-		ret.addAll(player.inventory.items);
+		ret.addAll(player.getInventory().items);
 		return ret;
 	}
 
-	public static int getItemCount(PlayerEntity player, Item item) {
+	public static int getItemCount(Player player, Item item) {
 		int count = 0;
 		for(ItemStack currentStack : getAllItemStack(player)) {
 			if(currentStack.getItem().equals(item))
@@ -30,19 +30,19 @@ public class Inventory {
 		return count;
 	}
 
-	public static void tryPay(PlayerEntity player, ItemStack itemStack, Consumer<PlayerEntity> onSuccess) {
+	public static void tryPay(Player player, ItemStack itemStack, Consumer<Player> onSuccess) {
 		if(!player.isCreative()) {
 			if(Inventory.tryConsume(player, itemStack))
 				onSuccess.accept(player);
-			else player.sendMessage(new TranslationTextComponent(
+			else player.sendMessage(new TranslatableComponent(
 				LangKeys.tooExpensive,
 				itemStack.getCount(),
-				new TranslationTextComponent(itemStack.getItem().getDescriptionId())
+				new TranslatableComponent(itemStack.getItem().getDescriptionId())
 			), Util.NIL_UUID);
 		} else onSuccess.accept(player);
 	}
 
-	public static boolean tryConsume(PlayerEntity player, ItemStack itemStack) {
+	public static boolean tryConsume(Player player, ItemStack itemStack) {
 		if(itemStack.getCount() <= 0) return true;
 		if(getItemCount(player, itemStack.getItem()) >= itemStack.getCount()) {
 			int remainingItems = itemStack.getCount();

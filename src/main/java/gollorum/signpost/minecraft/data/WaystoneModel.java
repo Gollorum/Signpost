@@ -4,8 +4,8 @@ import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.block.WaystoneBlock;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.data.IDataProvider;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.data.DataProvider;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.model.generators.*;
 import net.minecraftforge.client.model.generators.loaders.OBJLoaderBuilder;
 import net.minecraftforge.common.data.ExistingFileHelper;
@@ -78,7 +78,7 @@ public class WaystoneModel extends BlockModelProvider {
 		}
 	}
 
-	private IDataProvider makeItem(DataGenerator generator, ExistingFileHelper fileHelper) {
+	private DataProvider makeItem(DataGenerator generator, ExistingFileHelper fileHelper) {
 		return new Item(generator, fileHelper);
 	}
 

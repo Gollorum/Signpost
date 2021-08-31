@@ -1,7 +1,7 @@
 package gollorum.signpost.utils.modelGeneration;
 
 import gollorum.signpost.utils.Tuple;
-import net.minecraft.util.Direction;
+import net.minecraft.core.Direction;
 
 import java.util.Arrays;
 import java.util.List;

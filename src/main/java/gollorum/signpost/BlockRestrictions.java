@@ -12,19 +12,19 @@ import gollorum.signpost.utils.Tuple;
 import gollorum.signpost.utils.serialization.BooleanSerializer;
 import gollorum.signpost.utils.serialization.IntSerializer;
 import gollorum.signpost.utils.serialization.StringSerializer;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraft.world.storage.DimensionSavedDataManager;
-import net.minecraft.world.storage.WorldSavedData;
+import net.minecraft.Util;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.fml.network.NetworkEvent;
-import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraftforge.fmllegacy.network.NetworkEvent;
+import net.minecraftforge.fmllegacy.network.PacketDistributor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -65,14 +65,14 @@ public class BlockRestrictions {
 		public final String unlimitedRemainingLangKeyOther;
 		public final Function<Object, Optional<PlayerHandle>> tryGetOwner;
 
-		public TranslationTextComponent getRemainingTextComponent(int count, Optional<ITextComponent> subject) {
-			return subject.map(s -> new TranslationTextComponent(remainingLangKeyOther, count, s))
-				.orElseGet(() -> new TranslationTextComponent(remainingLangKey, count));
+		public TranslatableComponent getRemainingTextComponent(int count, Optional<Component> subject) {
+			return subject.map(s -> new TranslatableComponent(remainingLangKeyOther, count, s))
+				.orElseGet(() -> new TranslatableComponent(remainingLangKey, count));
 		}
 
-		public TranslationTextComponent getUnlimitedRemainingTextComponent(Optional<ITextComponent> subject) {
-			return subject.map(s -> new TranslationTextComponent(unlimitedRemainingLangKeyOther, s))
-				.orElseGet(() -> new TranslationTextComponent(unlimitedRemainingLangKey));
+		public TranslatableComponent getUnlimitedRemainingTextComponent(Optional<Component> subject) {
+			return subject.map(s -> new TranslatableComponent(unlimitedRemainingLangKeyOther, s))
+				.orElseGet(() -> new TranslatableComponent(unlimitedRemainingLangKey));
 		}
 
 		Type(
@@ -104,7 +104,7 @@ public class BlockRestrictions {
 	private static BlockRestrictions instance;
 	public static BlockRestrictions getInstance() { return instance; }
 
-	private WorldSavedData savedData = null;
+	private SavedData savedData = null;
 	public boolean hasStorageBeenSetup() { return savedData != null; }
 
 	public static void initialize() {
@@ -130,9 +130,13 @@ public class BlockRestrictions {
 		}
 	}
 
-	public void setupStorage(ServerWorld world){
-		DimensionSavedDataManager storage = world.getDataStorage();
-		savedData = storage.computeIfAbsent(BlockRestrictionsStorage::new, BlockRestrictionsStorage.NAME);
+	public void setupStorage(ServerLevel world){
+		DimensionDataStorage storage = world.getDataStorage();
+		savedData = storage.computeIfAbsent(
+			compound -> new BlockRestrictionsStorage().load(compound),
+			BlockRestrictionsStorage::new,
+			BlockRestrictionsStorage.NAME
+		);
 	}
 
 	private final Map<PlayerHandle, Entry> values = new HashMap<>();
@@ -170,7 +174,7 @@ public class BlockRestrictions {
 		if(prevCount >= 0) {
 			type.setCount.accept(entry, prevCount + 1);
 			PacketHandler.send(
-				PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player.asEntity()),
+				PacketDistributor.PLAYER.with(() -> (ServerPlayer) player.asEntity()),
 				new NotifyCountChanged(type.remainingLangKey, prevCount + 1, type == Type.Waystone)
 			);
 		}
@@ -183,13 +187,13 @@ public class BlockRestrictions {
 		if(prevCount >= 1) {
 			type.setCount.accept(entry, prevCount - 1);
 			PacketHandler.send(
-				PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player.asEntity()),
+				PacketDistributor.PLAYER.with(() -> (ServerPlayer) player.asEntity()),
 				new NotifyCountChanged(type.remainingLangKey, prevCount - 1, type == Type.Waystone)
 			);
 			return true;
 		} else {
 			if(prevCount == 0)
-				player.asEntity().sendMessage(new TranslationTextComponent(type.errorLangKey), Util.NIL_UUID);
+				player.asEntity().sendMessage(new TranslatableComponent(type.errorLangKey), Util.NIL_UUID);
 			return prevCount < 0;
 		}
 	}
@@ -224,10 +228,10 @@ public class BlockRestrictions {
 
 	private void markDirty() { savedData.setDirty(); }
 
-	public CompoundNBT saveTo(CompoundNBT compound) {
-		ListNBT list = new ListNBT();
+	public CompoundTag saveTo(CompoundTag compound) {
+		ListTag list = new ListTag();
 		list.addAll(values.entrySet().stream().map(e -> {
-			CompoundNBT elementComp = new CompoundNBT();
+			CompoundTag elementComp = new CompoundTag();
 			PlayerHandle.Serializer.write(e.getKey(), elementComp);
 			elementComp.putInt("remaining_waystones", e.getValue().waystonesLeft);
 			elementComp.putInt("remaining_signposts", e.getValue().signpostsLeft);
@@ -237,13 +241,13 @@ public class BlockRestrictions {
 		return compound;
 	}
 
-	public void readFrom(CompoundNBT compound) {
-		INBT nbt = compound.get("blockRestrictions");
-		if(nbt instanceof ListNBT) {
-			ListNBT list = (ListNBT) nbt;
+	public void readFrom(CompoundTag compound) {
+		Tag nbt = compound.get("blockRestrictions");
+		if(nbt instanceof ListTag) {
+			ListTag list = (ListTag) nbt;
 			values.clear();
 			values.putAll(list.stream().map(i -> {
-				CompoundNBT elementCompound = (CompoundNBT) i;
+				CompoundTag elementCompound = (CompoundTag) i;
 				return Tuple.of(PlayerHandle.Serializer.read(elementCompound),
 					new Entry(elementCompound.getInt("remaining_waystones"), elementCompound.getInt("remaining_signposts")));
 			}).collect(Tuple.mapCollector()));
@@ -283,7 +287,7 @@ public class BlockRestrictions {
 				? Config.Client.enableWaystoneLimitNotifications
 				: Config.Client.enableSignpostLimitNotifications
 			).get())
-				ClientFrameworkAdapter.showStatusMessage(new TranslationTextComponent(message.langKey, message.count), true);
+				ClientFrameworkAdapter.showStatusMessage(new TranslatableComponent(message.langKey, message.count), true);
 		}
 	}
 

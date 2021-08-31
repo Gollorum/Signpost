@@ -7,20 +7,20 @@ import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.RequestSignGui;
 import gollorum.signpost.minecraft.gui.RequestWaystoneGui;
 import gollorum.signpost.utils.EventDispatcher;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.Connection;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Unit;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.network.NetworkDirection;
-import net.minecraftforge.fml.network.NetworkEvent;
-import net.minecraftforge.fml.network.NetworkRegistry;
-import net.minecraftforge.fml.network.PacketDistributor;
-import net.minecraftforge.fml.network.simple.SimpleChannel;
+import net.minecraftforge.fmllegacy.network.NetworkDirection;
+import net.minecraftforge.fmllegacy.network.NetworkEvent;
+import net.minecraftforge.fmllegacy.network.NetworkRegistry;
+import net.minecraftforge.fmllegacy.network.PacketDistributor;
+import net.minecraftforge.fmllegacy.network.simple.SimpleChannel;
 
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -66,8 +66,8 @@ public class PacketHandler {
 
     public static <T> void register(
         Class<T> messageClass,
-        BiConsumer<T, PacketBuffer> encode,
-        Function<PacketBuffer, T> decode,
+        BiConsumer<T, FriendlyByteBuf> encode,
+        Function<FriendlyByteBuf, T> decode,
         BiConsumer<T, Supplier<NetworkEvent.Context>> handle,
         int id
     ){
@@ -78,7 +78,7 @@ public class PacketHandler {
         channel.sendToServer(message);
     }
 
-    public static <T> void sendTo(T message, NetworkManager manager, NetworkDirection direction) {
+    public static <T> void sendTo(T message, Connection manager, NetworkDirection direction) {
         channel.sendTo(message, manager, direction);
     }
 
@@ -86,13 +86,13 @@ public class PacketHandler {
         channel.send(target, message);
     }
 
-    public static <T> void sendToTracing(World world, BlockPos pos, Supplier<T> t) {
+    public static <T> void sendToTracing(Level world, BlockPos pos, Supplier<T> t) {
         if(world == null) Signpost.LOGGER.warn("No world to notify mutation");
         else if(pos == null) Signpost.LOGGER.warn("No position to notify mutation");
         else PacketHandler.send(PacketDistributor.TRACKING_CHUNK.with(() -> world.getChunkAt(pos)), t.get());
     }
 
-    public static <T> void sendToTracing(TileEntity tile, Supplier<T> t) {
+    public static <T> void sendToTracing(BlockEntity tile, Supplier<T> t) {
         sendToTracing(tile.getLevel(), tile.getBlockPos(), t);
     }
 
@@ -106,8 +106,8 @@ public class PacketHandler {
 
     public static interface Event<T> {
         Class<T> getMessageClass();
-        void encode(T message, PacketBuffer buffer);
-        T decode(PacketBuffer buffer);
+        void encode(T message, FriendlyByteBuf buffer);
+        T decode(FriendlyByteBuf buffer);
         void handle(T message, NetworkEvent.Context context);
 
         default void handle(T message, Supplier<NetworkEvent.Context> context) {

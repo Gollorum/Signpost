@@ -3,12 +3,12 @@ package gollorum.signpost.utils;
 import gollorum.signpost.utils.serialization.BlockPosSerializer;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.WorldSerializer;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -16,21 +16,21 @@ import java.util.Optional;
 
 public class WorldLocation {
 
-    public static Optional<WorldLocation> from(@Nullable TileEntity tile) {
+    public static Optional<WorldLocation> from(@Nullable BlockEntity tile) {
         return tile != null && tile.hasLevel()
             ? Optional.of(new WorldLocation(tile.getBlockPos(), tile.getLevel()))
             : Optional.empty();
     }
 
     public final BlockPos blockPos;
-    public final Either<World, ResourceLocation> world;
+    public final Either<Level, ResourceLocation> world;
 
-    public WorldLocation(BlockPos blockPos, Either<World, ResourceLocation> world) {
+    public WorldLocation(BlockPos blockPos, Either<Level, ResourceLocation> world) {
         this.blockPos = blockPos;
         this.world = world;
     }
 
-    public WorldLocation(BlockPos blockPos, World world) {
+    public WorldLocation(BlockPos blockPos, Level world) {
         this.blockPos = blockPos;
         this.world = Either.left(world);
     }
@@ -59,7 +59,7 @@ public class WorldLocation {
     public String toString() {
         return String.format("(%d %d %d) in %s",
             blockPos.getX(), blockPos.getY(), blockPos.getZ(),
-            world.match(World::gatherChunkSourceStats, ResourceLocation::toString)
+            world.match(Level::gatherChunkSourceStats, ResourceLocation::toString)
         );
     }
 
@@ -68,25 +68,25 @@ public class WorldLocation {
     public static final class Serializer implements CompoundSerializable<WorldLocation>{
 
         @Override
-        public CompoundNBT write(WorldLocation worldLocation, CompoundNBT compound) {
+        public CompoundTag write(WorldLocation worldLocation, CompoundTag compound) {
             compound.put("Pos", BlockPosSerializer.INSTANCE.write(worldLocation.blockPos));
-            compound.put("World", WorldSerializer.INSTANCE.write(worldLocation.world));
+            compound.put("Level", WorldSerializer.INSTANCE.write(worldLocation.world));
             return compound;
         }
 
         @Override
-        public boolean isContainedIn(CompoundNBT compound) {
+        public boolean isContainedIn(CompoundTag compound) {
             return compound.contains("Pos")
                 && BlockPosSerializer.INSTANCE.isContainedIn(compound.getCompound("Pos"))
-                && compound.contains("World")
-                && WorldSerializer.INSTANCE.isContainedIn(compound.getCompound("World"));
+                && compound.contains("Level")
+                && WorldSerializer.INSTANCE.isContainedIn(compound.getCompound("Level"));
         }
 
         @Override
-        public WorldLocation read(CompoundNBT compound) {
+        public WorldLocation read(CompoundTag compound) {
             return new WorldLocation(
                 BlockPosSerializer.INSTANCE.read(compound.getCompound("Pos")),
-                WorldSerializer.INSTANCE.read(compound.getCompound("World"))
+                WorldSerializer.INSTANCE.read(compound.getCompound("Level"))
             );
         }
 
@@ -96,13 +96,13 @@ public class WorldLocation {
         }
 
         @Override
-        public void write(WorldLocation worldLocation, PacketBuffer buffer) {
+        public void write(WorldLocation worldLocation, FriendlyByteBuf buffer) {
             BlockPosSerializer.INSTANCE.write(worldLocation.blockPos, buffer);
             WorldSerializer.INSTANCE.write(worldLocation.world, buffer);
         }
 
         @Override
-        public WorldLocation read(PacketBuffer buffer) {
+        public WorldLocation read(FriendlyByteBuf buffer) {
             return new WorldLocation(
                 BlockPosSerializer.INSTANCE.read(buffer),
                 WorldSerializer.INSTANCE.read(buffer)

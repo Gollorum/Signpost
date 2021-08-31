@@ -2,7 +2,7 @@ package gollorum.signpost.utils;
 
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 
 public class WaystoneLocationData {
 
@@ -22,20 +22,20 @@ public class WaystoneLocationData {
         private Serializer() {}
 
         @Override
-        public CompoundNBT write(WaystoneLocationData data, CompoundNBT compound) {
+        public CompoundTag write(WaystoneLocationData data, CompoundTag compound) {
             compound.put("Block", WorldLocation.SERIALIZER.write(data.block));
             compound.put("Spawn", Vector3.Serializer.write(data.spawn));
             return compound;
         }
 
         @Override
-        public boolean isContainedIn(CompoundNBT compound) {
+        public boolean isContainedIn(CompoundTag compound) {
             return compound.contains("Block") && WorldLocation.SERIALIZER.isContainedIn(compound.getCompound("Block"))
                 && compound.contains("Spawn") && Vector3.Serializer.isContainedIn(compound.getCompound("Spawn"));
         }
 
         @Override
-        public WaystoneLocationData read(CompoundNBT compound) {
+        public WaystoneLocationData read(CompoundTag compound) {
             return new WaystoneLocationData(
                 WorldLocation.SERIALIZER.read(compound.getCompound("Block")),
                 Vector3.Serializer.read(compound.getCompound("Spawn"))

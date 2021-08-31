@@ -1,7 +1,7 @@
 package gollorum.signpost.utils;
 
 import gollorum.signpost.utils.serialization.CompoundSerializable;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -9,14 +9,14 @@ import java.util.function.Function;
 public final class BlockPartMetadata<T extends BlockPart> implements CompoundSerializable<T> {
 
     public final String identifier;
-    public final BiConsumer<T,CompoundNBT> writeTo;
-    public final Function<CompoundNBT, T> read;
+    public final BiConsumer<T,CompoundTag> writeTo;
+    public final Function<CompoundTag, T> read;
     private final Class<T> targetClass;
 
     public BlockPartMetadata(
         String identifier,
-        BiConsumer<T, CompoundNBT> writeTo,
-        Function<CompoundNBT, T> read,
+        BiConsumer<T, CompoundTag> writeTo,
+        Function<CompoundTag, T> read,
         Class<T> targetClass) {
         this.identifier = identifier;
         this.writeTo = writeTo;
@@ -25,18 +25,18 @@ public final class BlockPartMetadata<T extends BlockPart> implements CompoundSer
     }
 
     @Override
-    public CompoundNBT write(T t, CompoundNBT compound) {
+    public CompoundTag write(T t, CompoundTag compound) {
         writeTo.accept(t, compound);
         return compound;
     }
 
     @Override
-    public boolean isContainedIn(CompoundNBT compound) {
+    public boolean isContainedIn(CompoundTag compound) {
         return true;
     }
 
     @Override
-    public T read(CompoundNBT compound) {
+    public T read(CompoundTag compound) {
         return read.apply(compound);
     }
 

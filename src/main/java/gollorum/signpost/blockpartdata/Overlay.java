@@ -7,10 +7,10 @@ import gollorum.signpost.blockpartdata.types.SmallShortSignBlockPart;
 import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
 import gollorum.signpost.minecraft.registry.ColorRegistry;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -38,7 +38,7 @@ public abstract class Overlay {
 
     public abstract ResourceLocation textureFor(Class<? extends SignBlockPart> signClass);
 
-    public int getTintAt(World world, BlockPos pos) {
+    public int getTintAt(Level world, BlockPos pos) {
         return ColorRegistry.getOverlayColor(tintIndex, world, pos);
     }
 
@@ -100,18 +100,18 @@ public abstract class Overlay {
         }
 
         @Override
-        public CompoundNBT write(Overlay overlay, CompoundNBT compound) {
+        public CompoundTag write(Overlay overlay, CompoundTag compound) {
             compound.putString("Id", overlay.id);
             return compound;
         }
 
         @Override
-        public boolean isContainedIn(CompoundNBT compound) {
+        public boolean isContainedIn(CompoundTag compound) {
             return compound.contains("Id");
         }
 
         @Override
-        public Overlay read(CompoundNBT compound) {
+        public Overlay read(CompoundTag compound) {
             String id = compound.getString("Id");
             if(!overlayRegistry.containsKey(id)) {
                 Signpost.LOGGER.error("Tried to read overlay with id " + id + ", but it was not registered.");

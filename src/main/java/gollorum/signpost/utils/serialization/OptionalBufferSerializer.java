@@ -1,6 +1,6 @@
 package gollorum.signpost.utils.serialization;
 
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 
 import java.util.Optional;
 
@@ -22,7 +22,7 @@ public class OptionalBufferSerializer<T> implements BufferSerializable<Optional<
     }
 
     @Override
-    public void write(Optional<T> t, PacketBuffer buffer) {
+    public void write(Optional<T> t, FriendlyByteBuf buffer) {
         if(t.isPresent()) {
             buffer.writeBoolean(true);
             valueSerializer.write(t.get(), buffer);
@@ -30,7 +30,7 @@ public class OptionalBufferSerializer<T> implements BufferSerializable<Optional<
     }
 
     @Override
-    public Optional<T> read(PacketBuffer buffer) {
+    public Optional<T> read(FriendlyByteBuf buffer) {
         if(buffer.readBoolean())
             return Optional.ofNullable(valueSerializer.read(buffer));
         else return Optional.empty();

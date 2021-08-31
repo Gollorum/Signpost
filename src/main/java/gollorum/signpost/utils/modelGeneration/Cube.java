@@ -1,7 +1,7 @@
 package gollorum.signpost.utils.modelGeneration;
 
 import gollorum.signpost.utils.math.geometry.Vector3;
-import net.minecraft.util.Direction;
+import net.minecraft.core.Direction;
 
 import java.util.List;
 import java.util.Map;

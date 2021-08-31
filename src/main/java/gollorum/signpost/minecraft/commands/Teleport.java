@@ -8,15 +8,15 @@ import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.utils.LangKeys;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
-import net.minecraft.command.arguments.EntityArgument;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.world.entity.player.Player;
 
 public class Teleport {
 
-	public static ArgumentBuilder<CommandSource, ?> register() {
+	public static ArgumentBuilder<CommandSourceStack, ?> register() {
 		return Commands.literal("teleport")
 			.requires(source -> source.hasPermission(3))
 			.then(Commands.argument("waystone", new WaystoneArgument())
@@ -31,9 +31,9 @@ public class Teleport {
 					))));
 	}
 
-	private static int execute(String name, PlayerEntity player) throws CommandSyntaxException {
+	private static int execute(String name, Player player) throws CommandSyntaxException {
 		WaystoneHandle handle = WaystoneLibrary.getInstance().getHandleByName(name)
-			.orElseThrow(() -> new SimpleCommandExceptionType(new TranslationTextComponent(LangKeys.waystoneNotFound, Colors.wrap(name, Colors.highlight))).create());
+			.orElseThrow(() -> new SimpleCommandExceptionType(new TranslatableComponent(LangKeys.waystoneNotFound, Colors.wrap(name, Colors.highlight))).create());
 		gollorum.signpost.Teleport.toWaystone(handle, player);
 		return Command.SINGLE_SUCCESS;
 	}

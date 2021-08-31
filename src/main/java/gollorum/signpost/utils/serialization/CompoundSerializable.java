@@ -1,31 +1,31 @@
 package gollorum.signpost.utils.serialization;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.TagParser;
+import net.minecraft.network.FriendlyByteBuf;
 
 public interface CompoundSerializable<T> extends BufferSerializable<T> {
 
-    CompoundNBT write(T t, CompoundNBT compound);
+    CompoundTag write(T t, CompoundTag compound);
 
-    default CompoundNBT write(T t){
-        CompoundNBT ret = new CompoundNBT();
+    default CompoundTag write(T t){
+        CompoundTag ret = new CompoundTag();
         write(t, ret);
         return ret;
     }
 
-    boolean isContainedIn(CompoundNBT compound);
+    boolean isContainedIn(CompoundTag compound);
 
-    T read(CompoundNBT compound);
-
-    @Override
-    default void write(T t, PacketBuffer buffer){ StringSerializer.instance.write(write(t).toString(), buffer); }
+    T read(CompoundTag compound);
 
     @Override
-    default T read(PacketBuffer buffer){
+    default void write(T t, FriendlyByteBuf buffer){ StringSerializer.instance.write(write(t).toString(), buffer); }
+
+    @Override
+    default T read(FriendlyByteBuf buffer){
         try {
-            return read(JsonToNBT.parseTag(StringSerializer.instance.read(buffer)));
+            return read(TagParser.parseTag(StringSerializer.instance.read(buffer)));
         } catch (CommandSyntaxException e) {
             throw new RuntimeException(e);
         }

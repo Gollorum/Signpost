@@ -11,23 +11,21 @@ public enum FaceRotation {
     public final ModelBuilder.FaceRotation asMinecraft;
 
     public FaceRotation inverse() {
-        switch(this) {
-            case Zero: return Zero;
-            case Clockwise90: return CounterClockwise90;
-            case CounterClockwise90: return Clockwise90;
-            case UpsideDown: return UpsideDown;
-            default: throw new RuntimeException("Face rotation " + this + " is not supported");
-        }
+        return switch (this) {
+            case Zero -> Zero;
+            case Clockwise90 -> CounterClockwise90;
+            case CounterClockwise90 -> Clockwise90;
+            case UpsideDown -> UpsideDown;
+        };
     }
 
     public FaceRotation rotate180() {
-        switch(this) {
-            case Zero: return UpsideDown;
-            case Clockwise90: return CounterClockwise90;
-            case CounterClockwise90: return Clockwise90;
-            case UpsideDown: return Zero;
-            default: throw new RuntimeException("Face rotation " + this + " is not supported");
-        }
+        return switch (this) {
+            case Zero -> UpsideDown;
+            case Clockwise90 -> CounterClockwise90;
+            case CounterClockwise90 -> Clockwise90;
+            case UpsideDown -> Zero;
+        };
     }
 
     FaceRotation(ModelBuilder.FaceRotation asMinecraft) {

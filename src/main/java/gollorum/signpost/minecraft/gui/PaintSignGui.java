@@ -6,10 +6,10 @@ import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.widget.button.Button;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.UUID;
 
@@ -35,15 +35,15 @@ public class PaintSignGui<T extends SignBlockPart<T>> extends PaintBlockPartGui<
     protected void init() {
         super.init();
         Rect buttonRect = new Rect(new Point(width / 4, height / 4), 125, 20, Rect.XAlignment.Center, Rect.YAlignment.Center);
-        addButton(new Button(
+        addRenderableWidget(new Button(
             buttonRect.point.x, buttonRect.point.y,
             buttonRect.width, buttonRect.height,
-            new TranslationTextComponent(LangKeys.mainTex),
+            new TranslatableComponent(LangKeys.mainTex),
             b -> {
                 isTargetingMainTexture = !isTargetingMainTexture;
                 oldSprite = isTargetingMainTexture ? oldMainSprite : oldSecSprite;
                 clearSelection();
-                b.setMessage(new TranslationTextComponent(isTargetingMainTexture ? LangKeys.mainTex : LangKeys.secondaryTex));
+                b.setMessage(new TranslatableComponent(isTargetingMainTexture ? LangKeys.mainTex : LangKeys.secondaryTex));
             }
         ));
     }

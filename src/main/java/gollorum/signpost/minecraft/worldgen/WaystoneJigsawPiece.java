@@ -16,32 +16,32 @@ import gollorum.signpost.utils.serialization.BlockPosSerializer;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.ResourceLocationSerializer;
 import gollorum.signpost.worldgen.VillageNamesProvider;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Rotation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.MutableBoundingBox;
-import net.minecraft.world.ISeedReader;
-import net.minecraft.world.gen.ChunkGenerator;
-import net.minecraft.world.gen.feature.jigsaw.IJigsawDeserializer;
-import net.minecraft.world.gen.feature.jigsaw.JigsawPattern;
-import net.minecraft.world.gen.feature.jigsaw.SingleJigsawPiece;
-import net.minecraft.world.gen.feature.structure.StructureManager;
-import net.minecraft.world.gen.feature.template.PlacementSettings;
-import net.minecraft.world.gen.feature.template.StructureProcessorList;
-import net.minecraft.world.gen.feature.template.Template;
-import net.minecraft.world.gen.feature.template.TemplateManager;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.StructureFeatureManager;
+import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.feature.structures.SinglePoolElement;
+import net.minecraft.world.level.levelgen.feature.structures.StructurePoolElementType;
+import net.minecraft.world.level.levelgen.feature.structures.StructureTemplatePool;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class WaystoneJigsawPiece extends SingleJigsawPiece {
+public class WaystoneJigsawPiece extends SinglePoolElement {
 
 	public static class ChunkEntryKey {
 		public final ChunkPos chunkPos;
@@ -74,7 +74,7 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 			}
 
 			@Override
-			public CompoundNBT write(ChunkEntryKey key, CompoundNBT compound) {
+			public CompoundTag write(ChunkEntryKey key, CompoundTag compound) {
 				compound.putInt("x", key.chunkPos.x);
 				compound.putInt("z", key.chunkPos.z);
 				ResourceLocationSerializer.Instance.write(key.dimensionKey, compound);
@@ -82,13 +82,13 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 			}
 
 			@Override
-			public boolean isContainedIn(CompoundNBT compound) {
+			public boolean isContainedIn(CompoundTag compound) {
 				return compound.contains("x") && compound.contains("z") &&
 					ResourceLocationSerializer.Instance.isContainedIn(compound);
 			}
 
 			@Override
-			public ChunkEntryKey read(CompoundNBT compound) {
+			public ChunkEntryKey read(CompoundTag compound) {
 				return new ChunkEntryKey(
 					new ChunkPos(compound.getInt("x"), compound.getInt("z")),
 					ResourceLocationSerializer.Instance.read(compound)
@@ -104,15 +104,16 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 
 	public static void reset() {
 		generatedWaystones.clear();
+		WaystoneDiscoveryEventListener.initialize();
 	}
 
-	public static INBT serialize() {
-		ListNBT ret = new ListNBT();
+	public static Tag serialize() {
+		ListTag ret = new ListTag();
 		ret.addAll(Streams.zip(
 			generatedWaystones.entrySet().stream(),
 			generatedWaystonesByChunk.keySet().stream(),
 			(e, c) -> {
-				CompoundNBT compound = new CompoundNBT();
+				CompoundTag compound = new CompoundTag();
 				compound.put("refPos", BlockPosSerializer.INSTANCE.write(e.getKey()));
 				compound.put("chunkEntryKey", ChunkEntryKey.serializer.write(c));
 				compound.put("waystone", WaystoneHandle.Vanilla.Serializer.write(e.getValue()));
@@ -121,18 +122,18 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 		return ret;
 	}
 
-	public static void deserialize(ListNBT nbt) {
+	public static void deserialize(ListTag nbt) {
 		generatedWaystones.clear();
 		generatedWaystones.putAll(
 			nbt.stream().collect(Collectors.toMap(
-				entry -> BlockPosSerializer.INSTANCE.read(((CompoundNBT) entry).getCompound("refPos")),
-				entry -> WaystoneHandle.Vanilla.Serializer.read(((CompoundNBT) entry).getCompound("waystone"))
+				entry -> BlockPosSerializer.INSTANCE.read(((CompoundTag) entry).getCompound("refPos")),
+				entry -> WaystoneHandle.Vanilla.Serializer.read(((CompoundTag) entry).getCompound("waystone"))
 			)));
 		generatedWaystonesByChunk.clear();
 		generatedWaystonesByChunk.putAll(
 			nbt.stream().collect(Collectors.toMap(
-				entry -> ChunkEntryKey.serializer.read(((CompoundNBT) entry).getCompound("chunkEntryKey")),
-				entry -> WaystoneHandle.Vanilla.Serializer.read(((CompoundNBT) entry).getCompound("waystone"))
+				entry -> ChunkEntryKey.serializer.read(((CompoundTag) entry).getCompound("chunkEntryKey")),
+				entry -> WaystoneHandle.Vanilla.Serializer.read(((CompoundTag) entry).getCompound("waystone"))
 			)));
 	}
 
@@ -142,29 +143,29 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 	public WaystoneJigsawPiece(
 		ResourceLocation location,
 		Supplier<StructureProcessorList> structureProcessorListSupplier,
-		JigsawPattern.PlacementBehaviour placementBehaviour
+		StructureTemplatePool.Projection placementBehaviour
 	) {
 		this(Either.left(location), structureProcessorListSupplier, placementBehaviour);
 	}
 
 	public WaystoneJigsawPiece(
-		Either<ResourceLocation, Template> template,
+		Either<ResourceLocation, StructureTemplate> template,
 		Supplier<StructureProcessorList> structureProcessorListSupplier,
-		JigsawPattern.PlacementBehaviour placementBehaviour
+		StructureTemplatePool.Projection placementBehaviour
 	) {
 		super(template, structureProcessorListSupplier, placementBehaviour);
 	}
 
 	@Override
 	public boolean place(
-		TemplateManager templateManager,
-		ISeedReader seedReader,
-		StructureManager structureManager,
+		StructureManager templateManager,
+		WorldGenLevel seedReader,
+		StructureFeatureManager structureManager,
 		ChunkGenerator chunkGenerator,
 		BlockPos pieceLocation,
 		BlockPos villageLocation,
 		Rotation rotation,
-		MutableBoundingBox boundingBox,
+		BoundingBox boundingBox,
 		Random random,
 		boolean shouldUseJigsawReplacementStructureProcessor
 	) {
@@ -176,7 +177,7 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 			Signpost.LOGGER.warn("Tried to generate a waystone, but the list of allowed waystones was empty.");
 			return false;
 		}
-		PlacementSettings placementSettings = this.getSettings(rotation, boundingBox, shouldUseJigsawReplacementStructureProcessor);
+		StructurePlaceSettings placementSettings = this.getSettings(rotation, boundingBox, shouldUseJigsawReplacementStructureProcessor);
 		Direction facing = placementSettings.getRotation().rotate(Direction.WEST);
 		Direction left = placementSettings.getRotation().rotate(Direction.SOUTH);
 		BlockPos pos = pieceLocation.relative(facing.getOpposite()).relative(left).above();
@@ -189,7 +190,7 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 		}
 		String name = optionalName.get();
 
-		Template template = this.template.map(templateManager::get, Function.identity());
+		StructureTemplate template = this.template.map(templateManager::getOrCreate, Function.identity());
 		if (template.placeInWorld(seedReader, pieceLocation, villageLocation, placementSettings, random, 18)) {
 			seedReader.setBlock(pos, waystone.defaultBlockState().setValue(ModelWaystone.Facing, facing.getOpposite()), 18);
 			WaystoneLibrary.getInstance().update(
@@ -200,7 +201,7 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 			);
 			registerGenerated(name, villageLocation, new ChunkEntryKey(new ChunkPos(pos), seedReader.getLevel().dimension().location()));
 
-			for(Template.BlockInfo blockInfo : Template.processBlockInfos(
+			for(StructureTemplate.StructureBlockInfo blockInfo : StructureTemplate.processBlockInfos(
 				seedReader, pieceLocation, villageLocation, placementSettings,
 				this.getDataMarkers(templateManager, pieceLocation, rotation, false), template
 			)) {
@@ -213,11 +214,11 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 		}
 	}
 
-	private static WaystoneLocationData locationDataFor(BlockPos pos, ISeedReader world, Direction facing) {
+	private static WaystoneLocationData locationDataFor(BlockPos pos, WorldGenLevel world, Direction facing) {
 		return new WaystoneLocationData(new WorldLocation(pos, world.getLevel()), spawnPosFor(world, pos, facing));
 	}
 
-	private static Vector3 spawnPosFor(ISeedReader world, BlockPos waystonePos, Direction facing) {
+	private static Vector3 spawnPosFor(WorldGenLevel world, BlockPos waystonePos, Direction facing) {
 		BlockPos spawnBlockPos = waystonePos.relative(facing, 2);
 		int maxOffset = 10;
 		int offset = 0;
@@ -256,7 +257,7 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 			.collect(Collectors.toList());
 	}
 
-	public IJigsawDeserializer<?> getType() {
+	public StructurePoolElementType<?> getType() {
 		return JigsawDeserializers.waystone;
 	}
 

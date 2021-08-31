@@ -1,8 +1,8 @@
 package gollorum.signpost.utils.math;
 
 import gollorum.signpost.utils.serialization.CompoundSerializable;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 
 public final class Angle {
 
@@ -80,28 +80,28 @@ public final class Angle {
         private static final String key = "Radians";
 
         @Override
-        public CompoundNBT write(Angle angle, CompoundNBT compound) {
+        public CompoundTag write(Angle angle, CompoundTag compound) {
             compound.putFloat(key, angle.radians);
             return compound;
         }
 
         @Override
-        public boolean isContainedIn(CompoundNBT compound) {
+        public boolean isContainedIn(CompoundTag compound) {
             return compound.contains(key);
         }
 
         @Override
-        public Angle read(CompoundNBT compound) {
+        public Angle read(CompoundTag compound) {
             return Angle.fromRadians(compound.getFloat(key));
         }
 
         @Override
-        public void write(Angle angle, PacketBuffer buffer) {
+        public void write(Angle angle, FriendlyByteBuf buffer) {
             buffer.writeFloat(angle.radians);
         }
 
         @Override
-        public Angle read(PacketBuffer buffer) {
+        public Angle read(FriendlyByteBuf buffer) {
             return Angle.fromRadians(buffer.readFloat());
         }
     };

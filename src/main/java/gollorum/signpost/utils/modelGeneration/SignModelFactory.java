@@ -2,7 +2,7 @@ package gollorum.signpost.utils.modelGeneration;
 
 import gollorum.signpost.utils.Tuple;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import net.minecraft.util.Direction;
+import net.minecraft.core.Direction;
 import net.minecraftforge.client.model.generators.BlockModelBuilder;
 import net.minecraftforge.client.model.generators.ModelBuilder;
 
@@ -38,40 +38,26 @@ public class SignModelFactory<TextureIdentifier> {
         addCube(min, max, directions.stream().collect(Collectors.toMap(
             cubeFacesData -> cubeFacesData.direction,
             cubeFacesData -> {
-                TextureArea texCoords;
-                switch (cubeFacesData.direction) {
-                    case DOWN:
-                        texCoords = new TextureArea(
-                            new TextureSegment(minU, maxFrontU, clampCoords),
-                            new TextureSegment(maxFrontV, maxFrontV + textureDepth, clampCoords));
-                        break;
-                    case UP:
-                        texCoords = new TextureArea(
-                            new TextureSegment(minU, maxFrontU, clampCoords),
-                            new TextureSegment(minV - textureDepth, minV, clampCoords));
-                        break;
-                    case SOUTH:
-                        texCoords = new TextureArea(
-                            new TextureSegment(minU, maxFrontU, clampCoords),
-                            new TextureSegment(minV, maxFrontV, clampCoords));
-                        break;
-                    case NORTH:
-                        texCoords = new TextureArea(
-                            new TextureSegment(maxFrontU, minU, clampCoords),
-                            new TextureSegment(minV, maxFrontV, clampCoords));
-                        break;
-                    case WEST:
-                        texCoords = new TextureArea(
-                            new TextureSegment(minU - textureDepth, minU, clampCoords),
-                            new TextureSegment(minV, maxFrontV, clampCoords));
-                        break;
-                    case EAST:
-                        texCoords = new TextureArea(
-                            new TextureSegment(maxFrontU, maxFrontU + textureDepth, clampCoords),
-                            new TextureSegment(minV, maxFrontV, clampCoords));
-                        break;
-                    default: throw new RuntimeException("Direction " + cubeFacesData.direction + " is not supported");
-                }
+                TextureArea texCoords = switch (cubeFacesData.direction) {
+                    case DOWN -> new TextureArea(
+                        new TextureSegment(minU, maxFrontU, clampCoords),
+                        new TextureSegment(maxFrontV, maxFrontV + textureDepth, clampCoords));
+                    case UP -> new TextureArea(
+                        new TextureSegment(minU, maxFrontU, clampCoords),
+                        new TextureSegment(minV - textureDepth, minV, clampCoords));
+                    case SOUTH -> new TextureArea(
+                        new TextureSegment(minU, maxFrontU, clampCoords),
+                        new TextureSegment(minV, maxFrontV, clampCoords));
+                    case NORTH -> new TextureArea(
+                        new TextureSegment(maxFrontU, minU, clampCoords),
+                        new TextureSegment(minV, maxFrontV, clampCoords));
+                    case WEST -> new TextureArea(
+                        new TextureSegment(minU - textureDepth, minU, clampCoords),
+                        new TextureSegment(minV, maxFrontV, clampCoords));
+                    case EAST -> new TextureArea(
+                        new TextureSegment(maxFrontU, maxFrontU + textureDepth, clampCoords),
+                        new TextureSegment(minV, maxFrontV, clampCoords));
+                };
                 return new FaceData<>(texCoords, cubeFacesData.rotation, cubeFacesData.texture);
             })));
         return this;

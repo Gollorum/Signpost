@@ -1,6 +1,6 @@
 package gollorum.signpost.utils.serialization;
 
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 
 public final class StringSerializer implements BufferSerializable<String> {
 
@@ -12,12 +12,12 @@ public final class StringSerializer implements BufferSerializable<String> {
     }
 
     @Override
-    public void write(String s, PacketBuffer buffer) {
+    public void write(String s, FriendlyByteBuf buffer) {
         buffer.writeUtf(s);
     }
 
     @Override
-    public String read(PacketBuffer buffer) {
+    public String read(FriendlyByteBuf buffer) {
         return buffer.readUtf();
     }
 }

@@ -1,24 +1,24 @@
 package gollorum.signpost.minecraft.gui.widgets;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.minecraft.gui.utils.Flippable;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.minecraft.rendering.FlippableModel;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.IRenderable;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.model.ItemCameraTransforms;
-import net.minecraft.client.renderer.texture.AtlasTexture;
+import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nonnull;
 
-public class GuiModelRenderer implements IRenderable, Flippable {
+public class GuiModelRenderer implements Widget, Flippable {
 
     private final FlippableModel model;
     private final float modelSpaceXOffset;
@@ -52,16 +52,13 @@ public class GuiModelRenderer implements IRenderable, Flippable {
         this.isFlipped = isFlipped;
     }
 
-    public void render(@Nonnull MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        matrixStack = new MatrixStack();
-        Minecraft.getInstance().getTextureManager().bind(AtlasTexture.LOCATION_BLOCKS);
-        Minecraft.getInstance().getTextureManager().getTexture(AtlasTexture.LOCATION_BLOCKS).setBlurMipmap(false, false);
-        RenderSystem.enableRescaleNormal();
-        RenderSystem.enableAlphaTest();
-        RenderSystem.defaultAlphaFunc();
+    public void render(@Nonnull PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+        matrixStack = new PoseStack();
+        Minecraft.getInstance().getTextureManager().bindForSetup(InventoryMenu.BLOCK_ATLAS);
+        Minecraft.getInstance().getTextureManager().getTexture(InventoryMenu.BLOCK_ATLAS).setBlurMipmap(false, false);
         RenderSystem.enableBlend();
         RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         matrixStack.translate(center.x, center.y, 100);
         float scale = Math.min(width, height);
         matrixStack.scale(scale, -scale, scale);
@@ -71,12 +68,12 @@ public class GuiModelRenderer implements IRenderable, Flippable {
             matrixStack.scale(-1, 1, -1);
         }
         matrixStack.translate(0.5f, 0.5f, 0);
-        IRenderTypeBuffer.Impl renderTypeBuffer = Minecraft.getInstance().renderBuffers().bufferSource();
-        RenderHelper.setupForFlatItems();
+        MultiBufferSource.BufferSource renderTypeBuffer = Minecraft.getInstance().renderBuffers().bufferSource();
+        Lighting.setupForFlatItems();
 
         Minecraft.getInstance().getItemRenderer().render(
             stack,
-            ItemCameraTransforms.TransformType.GUI,
+            ItemTransforms.TransformType.GUI,
             false,
             matrixStack,
             renderTypeBuffer,
@@ -86,10 +83,6 @@ public class GuiModelRenderer implements IRenderable, Flippable {
         );
         renderTypeBuffer.endBatch();
         RenderSystem.enableDepthTest();
-        RenderHelper.setupFor3DItems();
-
-        RenderSystem.disableAlphaTest();
-        RenderSystem.disableRescaleNormal();
     }
 
 }

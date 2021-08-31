@@ -1,8 +1,9 @@
 package gollorum.signpost.minecraft.gui.utils;
 
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
+import net.minecraft.network.chat.TextComponent;
 
 import java.util.function.Function;
 
@@ -32,7 +33,7 @@ public class Colors {
      * <div style="border:1px solid black;width:40px;height:20px;background-color:#000000;float:right;margin: 0 10px 0 0"></div><br/><br/>
      */
     public static final int black = 0x000000;
-    public static final int highlight = TextFormatting.AQUA.getColor();
+    public static final int highlight = ChatFormatting.AQUA.getColor();
 
     /**
      * <div style="border:1px solid black;width:40px;height:20px;background-color:#ffffff;float:right;margin: 0 10px 0 0"></div><br/><br/>
@@ -98,9 +99,9 @@ public class Colors {
     public static int getGreen(int color) { return (color >>> 8) & 0xff; }
     public static int getBlue(int color) { return color & 0xff; }
 
-    public static ITextComponent wrap(String text, int color) {
-        StringTextComponent ret = new StringTextComponent(text);
-        ret.setStyle(ret.getStyle().withColor(net.minecraft.util.text.Color.fromRgb(color)));
+    public static Component wrap(String text, int color) {
+        TextComponent ret = new TextComponent(text);
+        ret.setStyle(ret.getStyle().withColor(TextColor.fromRgb(color)));
         return ret;
     }
 

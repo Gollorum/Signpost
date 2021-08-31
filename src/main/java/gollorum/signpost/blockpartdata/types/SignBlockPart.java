@@ -23,17 +23,17 @@ import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.ItemStackSerializer;
 import gollorum.signpost.utils.serialization.OptionalSerializer;
-import net.minecraft.entity.item.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraftforge.fmllegacy.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -88,7 +88,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
         public static final class Serializer implements CompoundSerializable<CoreData> {
             private Serializer(){}
             @Override
-            public CompoundNBT write(CoreData coreData, CompoundNBT compound) {
+            public CompoundTag write(CoreData coreData, CompoundTag compound) {
                 compound.put("Angle", Angle.Serializer.write(coreData.angle));
                 compound.putBoolean("Flip", coreData.flip);
                 compound.putString("Texture", coreData.mainTexture.toString());
@@ -96,7 +96,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
                 compound.put("Overlay", Overlay.Serializer.optional().write(coreData.overlay));
                 compound.putInt("Color", coreData.color);
 
-                CompoundNBT dest = new CompoundNBT();
+                CompoundTag dest = new CompoundTag();
                 dest.putBoolean("IsPresent", coreData.destination.isPresent());
                 coreData.destination.ifPresent(d -> d.write(dest));
                 compound.put("Destination", dest);
@@ -108,7 +108,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
             }
 
             @Override
-            public boolean isContainedIn(CompoundNBT compound) {
+            public boolean isContainedIn(CompoundTag compound) {
                 return compound.contains("Angle")
                     && compound.contains("Flip")
                     && compound.contains("Texture")
@@ -121,8 +121,8 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
             }
 
             @Override
-            public CoreData read(CompoundNBT compound) {
-                CompoundNBT dest = compound.getCompound("Destination");
+            public CoreData read(CompoundTag compound) {
+                CompoundTag dest = compound.getCompound("Destination");
                 Optional<WaystoneHandle> destination;
                 if(dest.getBoolean("IsPresent")){
                     Optional<WaystoneHandle> d2 = WaystoneHandle.read(dest);
@@ -208,7 +208,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
 
     public boolean isLocked() { return coreData.isLocked; }
 
-    public boolean hasThePermissionToEdit(WithOwner tile, @Nullable PlayerEntity player) {
+    public boolean hasThePermissionToEdit(WithOwner tile, @Nullable Player player) {
         return !(tile instanceof WithOwner.OfSignpost) || !coreData.isLocked || player == null
             || ((WithOwner.OfSignpost)tile).getSignpostOwner().map(o -> o.id.equals(player.getUUID())).orElse(true)
             || player.hasPermissions(Config.Server.permissions.editLockedSignCommandPermissionLevel.get());
@@ -258,13 +258,13 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
                     notifyAngleChanged(info);
                 }
             } else if(!isBrush(heldItem))
-                tryTeleport((ServerPlayerEntity) info.player, info.getTilePartInfo());
+                tryTeleport((ServerPlayer) info.player, info.getTilePartInfo());
         } else if(isBrush(heldItem))
             paint(info);
         return InteractionResult.Accepted;
     }
 
-    private void tryTeleport(ServerPlayerEntity player, PostTile.TilePartInfo tilePartInfo) {
+    private void tryTeleport(ServerPlayer player, PostTile.TilePartInfo tilePartInfo) {
         if(Config.Server.teleport.enableTeleport.get() && coreData.destination.isPresent() && (!(coreData.destination.get() instanceof WaystoneHandle.Vanilla) || WaystoneLibrary.getInstance().contains((WaystoneHandle.Vanilla) coreData.destination.get()))) {
             WaystoneHandle dest = coreData.destination.get();
             Optional<WaystoneHandle.Vanilla> vanillaHandle = dest instanceof WaystoneHandle.Vanilla ? Optional.of((WaystoneHandle.Vanilla) dest) : Optional.empty();
@@ -312,26 +312,26 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
     }
 
     protected void notifyAngleChanged(InteractionInfo info) {
-        CompoundNBT compound = new CompoundNBT();
+        CompoundTag compound = new CompoundTag();
         compound.put("Angle", Angle.Serializer.write(coreData.angle));
         info.mutationDistributor.accept(compound);
     }
 
     protected void notifyTextureChanged(InteractionInfo info) {
-        CompoundNBT compound = new CompoundNBT();
+        CompoundTag compound = new CompoundTag();
         compound.putString("Texture", coreData.mainTexture.toString());
         compound.putString("TextureDark", coreData.secondaryTexture.toString());
         info.mutationDistributor.accept(compound);
     }
 
     protected void notifyFlipChanged(InteractionInfo info) {
-        CompoundNBT compound = new CompoundNBT();
+        CompoundTag compound = new CompoundTag();
         compound.putBoolean("Flip", coreData.flip);
         info.mutationDistributor.accept(compound);
     }
 
     @Override
-    public void readMutationUpdate(CompoundNBT compound, TileEntity tile, PlayerEntity editingPlayer) {
+    public void readMutationUpdate(CompoundTag compound, BlockEntity tile, Player editingPlayer) {
         if(compound.contains("CoreData")) compound = compound.getCompound("CoreData");
         if(compound.contains("Angle"))
             setAngle(Angle.Serializer.read(compound.getCompound("Angle")));
@@ -350,7 +350,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
         if(compound.contains("Flip")) setFlip(compound.getBoolean("Flip"));
         if(compound.contains("Color")) setColor(compound.getInt("Color"));
         if(compound.contains("Destination")) {
-            CompoundNBT dest = compound.getCompound("Destination");
+            CompoundTag dest = compound.getCompound("Destination");
             Optional<WaystoneHandle> destination;
             if(dest.getBoolean("IsPresent")){
                 Optional<WaystoneHandle> d2 = WaystoneHandle.read(dest);
@@ -385,7 +385,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
         return Collections.singleton(coreData.itemToDropOnBreak);
     }
 
-    private void dropOn(World world, BlockPos pos) {
+    private void dropOn(Level world, BlockPos pos) {
         if(!coreData.itemToDropOnBreak.isEmpty() && !world.isClientSide()) {
             ItemEntity itementity = new ItemEntity(
                 world,

@@ -4,16 +4,16 @@ import gollorum.signpost.Signpost;
 import gollorum.signpost.blockpartdata.types.SignBlockPart;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.BlockPartInstance;
-import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.utils.Tuple;
 import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.ItemStackSerializer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.fmllegacy.network.NetworkEvent;
 
 import java.util.Optional;
 
@@ -31,12 +31,12 @@ public class RequestSignGui implements PacketHandler.Event<RequestSignGui.Packag
 	public Class<Package> getMessageClass() { return Package.class; }
 
 	@Override
-	public void encode(Package message, PacketBuffer buffer) {
+	public void encode(Package message, FriendlyByteBuf buffer) {
 		PostTile.TilePartInfo.Serializer.write(message.tilePartInfo, buffer);
 	}
 
 	@Override
-	public Package decode(PacketBuffer buffer) {
+	public Package decode(FriendlyByteBuf buffer) {
 		return new Package(PostTile.TilePartInfo.Serializer.read(buffer));
 	}
 
@@ -76,7 +76,7 @@ public class RequestSignGui implements PacketHandler.Event<RequestSignGui.Packag
 		public Class<Package> getMessageClass() { return Package.class; }
 
 		@Override
-		public void encode(Package message, PacketBuffer buffer) {
+		public void encode(Package message, FriendlyByteBuf buffer) {
 			WorldLocation.SERIALIZER.write(message.loc, buffer);
 			PostBlock.ModelType.Serializer.write(message.modelType, buffer);
 			Vector3.Serializer.write(message.localHitPos, buffer);
@@ -84,7 +84,7 @@ public class RequestSignGui implements PacketHandler.Event<RequestSignGui.Packag
 		}
 
 		@Override
-		public Package decode(PacketBuffer buffer) {
+		public Package decode(FriendlyByteBuf buffer) {
 			return new Package(
 				WorldLocation.SERIALIZER.read(buffer),
 				PostBlock.ModelType.Serializer.read(buffer),

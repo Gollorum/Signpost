@@ -6,10 +6,10 @@ import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.StringSerializer;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.Optional;
 
@@ -29,17 +29,17 @@ public class WaystoneData {
 
     public WaystoneData withName(String newName) { return new WaystoneData(handle, newName, location, isLocked); }
 
-    public boolean hasThePermissionToEdit(PlayerEntity player) {
+    public boolean hasThePermissionToEdit(Player player) {
         return hasThePermissionToEdit(player, location, isLocked);
     }
 
-    public static boolean hasThePermissionToEdit(PlayerEntity player, WaystoneLocationData locationData, boolean isLocked) {
+    public static boolean hasThePermissionToEdit(Player player, WaystoneLocationData locationData, boolean isLocked) {
         return !isLocked || hasSecurityPermissions(player, locationData);
     }
 
-    public static boolean hasSecurityPermissions(PlayerEntity player, WaystoneLocationData locationData) {
+    public static boolean hasSecurityPermissions(Player player, WaystoneLocationData locationData) {
         return player.hasPermissions(Config.Server.permissions.editLockedWaystoneCommandPermissionLevel.get())
-            || TileEntityUtils.toWorld(locationData.block.world, !(player instanceof ServerPlayerEntity))
+            || TileEntityUtils.toWorld(locationData.block.world, !(player instanceof ServerPlayer))
                 .map(w -> w.getBlockEntity(locationData.block.blockPos))
                 .flatMap(tile -> tile instanceof WithOwner.OfWaystone ? ((WithOwner.OfWaystone)tile).getWaystoneOwner() : Optional.empty())
                 .map(owner -> owner.id.equals(player.getUUID()))
@@ -51,7 +51,7 @@ public class WaystoneData {
     public static final class Serializer implements CompoundSerializable<WaystoneData> {
 
         @Override
-        public CompoundNBT write(WaystoneData data, CompoundNBT compound) {
+        public CompoundTag write(WaystoneData data, CompoundTag compound) {
             compound.put("Handle" , WaystoneHandle.Vanilla.Serializer.write(data.handle));
             compound.putString("Name", data.name);
             compound.put("Location", WaystoneLocationData.SERIALIZER.write(data.location));
@@ -60,7 +60,7 @@ public class WaystoneData {
         }
 
         @Override
-        public WaystoneData read(CompoundNBT compound) {
+        public WaystoneData read(CompoundTag compound) {
             return new WaystoneData(
                 WaystoneHandle.Vanilla.Serializer.read(compound.getCompound("Handle")),
                 compound.getString("Name"),
@@ -70,7 +70,7 @@ public class WaystoneData {
         }
 
         @Override
-        public boolean isContainedIn(CompoundNBT compound) {
+        public boolean isContainedIn(CompoundTag compound) {
             return
                 compound.contains("Handle") && WaystoneHandle.Vanilla.Serializer.isContainedIn(compound.getCompound("Handle")) &&
                 compound.contains("Name") &&
@@ -84,7 +84,7 @@ public class WaystoneData {
         }
 
         @Override
-        public void write(WaystoneData data, PacketBuffer buffer) {
+        public void write(WaystoneData data, FriendlyByteBuf buffer) {
             WaystoneHandle.Vanilla.Serializer.write(data.handle, buffer);
             StringSerializer.instance.write(data.name, buffer);
             WaystoneLocationData.SERIALIZER.write(data.location, buffer);
@@ -92,7 +92,7 @@ public class WaystoneData {
         }
 
         @Override
-        public WaystoneData read(PacketBuffer buffer) {
+        public WaystoneData read(FriendlyByteBuf buffer) {
             return new WaystoneData(
                 WaystoneHandle.Vanilla.Serializer.read(buffer),
                 StringSerializer.instance.read(buffer),

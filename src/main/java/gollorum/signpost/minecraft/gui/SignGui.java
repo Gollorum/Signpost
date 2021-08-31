@@ -6,6 +6,7 @@ import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
+import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.blockpartdata.types.*;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
@@ -17,21 +18,21 @@ import gollorum.signpost.minecraft.gui.widgets.*;
 import gollorum.signpost.minecraft.rendering.FlippableModel;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.relations.ExternalWaystoneLibrary;
 import gollorum.signpost.utils.Delay;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.client.gui.widget.button.ImageButton;
-import net.minecraft.client.gui.widget.button.LockIconButton;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.client.gui.components.LockIconButton;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -146,7 +147,7 @@ public class SignGui extends ExtendedScreen {
     }
 
     public SignGui(PostTile tile, PostBlock.ModelType modelType, Vector3 localHitPos, ItemStack itemToDropOnBreak) {
-        super(new TranslationTextComponent(LangKeys.signGuiTitle));
+        super(new TranslatableComponent(LangKeys.signGuiTitle));
         this.tile = tile;
         this.modelType = modelType;
         this.localHitPos = localHitPos;
@@ -157,7 +158,7 @@ public class SignGui extends ExtendedScreen {
     }
 
     public SignGui(PostTile tile, SignBlockPart oldSign, Vector3 oldOffset, PostTile.TilePartInfo oldTilePartInfo) {
-        super(new TranslationTextComponent(LangKeys.signGuiTitle));
+        super(new TranslatableComponent(LangKeys.signGuiTitle));
         this.tile = tile;
         this.modelType = oldSign.getModelType();
         this.localHitPos = oldOffset;
@@ -177,19 +178,12 @@ public class SignGui extends ExtendedScreen {
         Angle currentAngle;
         if(hasBeenInitialized) {
             currentType = selectedType;
-            currentWaystone = waystoneInputBox.getText();
-            switch (currentType) {
-                case Short:
-                    currentText = new String[]{shortSignInputBox.getText()};
-                    break;
-                case Large:
-                    currentText = largeSignInputBoxes.stream().map(InputBox::getText).toArray(String[]::new);
-                    break;
-                case Wide:
-                default:
-                    currentText = new String[]{wideSignInputBox.getText()};
-                    break;
-            }
+            currentWaystone = waystoneInputBox.getValue();
+            currentText = switch (currentType) {
+                case Short -> new String[]{shortSignInputBox.getValue()};
+                case Large -> largeSignInputBoxes.stream().map(InputBox::getValue).toArray(String[]::new);
+                default -> new String[]{wideSignInputBox.getValue()};
+            };
             isFlipped = widgetsToFlip.get(0).isFlipped();
             currentColor = colorInputBox.getCurrentColor();
             currentAngle = rotationInputField.getCurrentAngle();
@@ -222,8 +216,7 @@ public class SignGui extends ExtendedScreen {
                 selectedOverlay = Optional.empty();
             }
         }
-
-        additionalRenderables.clear();
+        super.init();
         selectedType = null;
 
         int signTypeSelectionTopY = typeSelectionButtonsY;
@@ -247,7 +240,7 @@ public class SignGui extends ExtendedScreen {
             PostModel.largeLocation, PostModel.largeFlippedLocation, mainTexture, secondaryTexture
         );
 
-        addButton(
+        addRenderableWidget(
             new ModelButton(
                 TextureResource.signTypeSelection,
                 new Point(getCenterX() - centerOffset, signTypeSelectionTopY),
@@ -260,7 +253,7 @@ public class SignGui extends ExtendedScreen {
             )
         );
 
-        addButton(
+        addRenderableWidget(
             new ModelButton(
                 TextureResource.signTypeSelection,
                 new Point(getCenterX(), signTypeSelectionTopY),
@@ -273,7 +266,7 @@ public class SignGui extends ExtendedScreen {
             )
         );
 
-        addButton(
+        addRenderableWidget(
             new ModelButton(
                 TextureResource.signTypeSelection,
                 new Point(getCenterX() + centerOffset, signTypeSelectionTopY),
@@ -292,24 +285,24 @@ public class SignGui extends ExtendedScreen {
             int buttonsWidth = doneRect.width;
             doneButton = new Button(
                 getCenterX() + centerGap / 2, doneRect.point.y, buttonsWidth, doneRect.height,
-                new TranslationTextComponent(LangKeys.done),
+                new TranslatableComponent(LangKeys.done),
                 b -> done()
             );
             Button removeSignButton = new Button(
                 getCenterX() - centerGap / 2 - buttonsWidth, doneRect.point.y, buttonsWidth, doneRect.height,
-                new TranslationTextComponent(LangKeys.removeSign),
+                new TranslatableComponent(LangKeys.removeSign),
                 b -> removeSign()
             );
             removeSignButton.setFGColor(Colors.invalid);
-            addButton(removeSignButton);
+            addRenderableWidget(removeSignButton);
         } else {
             doneButton = new Button(
                 doneRect.point.x, doneRect.point.y, doneRect.width, doneRect.height,
-                new TranslationTextComponent(LangKeys.done),
+                new TranslatableComponent(LangKeys.done),
                 b -> done()
             );
         }
-        addButton(doneButton);
+        addRenderableWidget(doneButton);
 
         lockButton = new LockIconButton(
             getCenterX() - 10,
@@ -317,7 +310,7 @@ public class SignGui extends ExtendedScreen {
             b -> lockButton.setLocked(!lockButton.isLocked())
         );
         lockButton.setLocked(oldSign.map(SignBlockPart::isLocked).orElse(false));
-        addButton(lockButton);
+        addRenderableWidget(lockButton);
 
         Collection<WaystoneEntry> waystoneDropdownEntry = hasBeenInitialized
             ? waystoneDropdown.getAllEntries()
@@ -330,15 +323,15 @@ public class SignGui extends ExtendedScreen {
             100,
             (int)((waystoneNameTexture.size.height * waystoneBoxScale) - DropDownSelection.size.height) / 2,
             e -> {
-                children.add(e);
+                addWidget(e);
                 hideStuffOccludedByWaystoneDropdown();
             },
             o -> {
-                children.remove(o);
+                removeWidget(o);
                 showStuffOccludedByWaystoneDropdown();
             },
             entry -> {
-                waystoneInputBox.setText(entry.displayName);
+                waystoneInputBox.setValue(entry.displayName);
                 waystoneDropdown.hideList();
             },
             false);
@@ -355,9 +348,10 @@ public class SignGui extends ExtendedScreen {
                 Rect.XAlignment.Center, Rect.YAlignment.Center),
             Rect.XAlignment.Center, Rect.YAlignment.Center,
             waystoneNameTexture,
-            true, 100);
-        waystoneInputBox.setMaxStringLength(200);
-        waystoneInputBox.setTextChangedCallback(this::onWaystoneSelected);
+            true);
+        waystoneInputBox.setBlitOffset(100);
+        waystoneInputBox.setMaxLength(200);
+        waystoneInputBox.setResponder(this::onWaystoneSelected);
         noWaystonesInfo = new TextDisplay(
             I18n.get(LangKeys.noWaystones),
             waystoneDropdown.rect.max(),
@@ -370,8 +364,8 @@ public class SignGui extends ExtendedScreen {
         Rect rotationInputBoxRect = waystoneInputRect.offset(
             new Point(rotationLabelWidth + 10, waystoneInputRect.height + 20),
             new Point(0, waystoneInputRect.height + 20));
-        rotationInputField = new AngleInputBox(font, rotationInputBoxRect, 0);
-        addButton(rotationInputField);
+        rotationInputField = new AngleInputBox(font, rotationInputBoxRect);
+        addRenderableWidget(rotationInputField);
         angleDropDown = new DropDownSelection<>(
             font,
             new Point(getCenterX() - centerGap, rotationInputBoxRect.center().y),
@@ -381,29 +375,31 @@ public class SignGui extends ExtendedScreen {
             75,
             (int)((waystoneNameTexture.size.height * waystoneBoxScale) - DropDownSelection.size.height) / 2,
             e -> {
-                children.add(e);
-                removeButtons(overlaySelectionButtons);
+                addWidget(e);
+                for(GuiEventListener b : overlaySelectionButtons)
+                    removeWidget(b);
             },
             o -> {
-                children.remove(o);
-                addButtons(overlaySelectionButtons);
+                addWidget(o);
+                for(GuiEventListener b : overlaySelectionButtons)
+                    removeWidget(b);
             },
             entry -> {
-                rotationInputField.setText(entry.angleToString());
+                rotationInputField.setValue(entry.angleToString());
                 angleDropDown.hideList();
             },
             false
         );
         angleDropDown.setEntries(new HashSet<>());
         angleDropDown.addEntry(angleEntryForPlayer());
-        addButton(angleDropDown);
+        addRenderableWidget(angleDropDown);
         rotationLabel = new TextDisplay(
             I18n.get(LangKeys.rotationLabel),
             rotationInputBoxRect.at(Rect.XAlignment.Left, Rect.YAlignment.Center).add(-10, 0),
             Rect.XAlignment.Right, Rect.YAlignment.Center,
             font
         );
-        additionalRenderables.add(rotationLabel);
+        addRenderableOnly(rotationLabel);
 
         Rect modelRect = new Rect(
             new Point(getCenterX() + centerGap + 3 * inputSignsScale, getCenterY() - centralAreaHeight / 2),
@@ -415,15 +411,15 @@ public class SignGui extends ExtendedScreen {
             0, -0.5f,
             new ItemStack(PostBlock.OAK.block.asItem())
         );
-        additionalRenderables.add(postRenderer);
+        addRenderableOnly(postRenderer);
         Point modelRectTop = modelRect.at(Rect.XAlignment.Center, Rect.YAlignment.Top);
 
         Rect wideInputRect = new Rect(
             modelRectTop.add(-7 * inputSignsScale, 2 * inputSignsScale),
             modelRectTop.add(11 * inputSignsScale, 6 * inputSignsScale));
-        wideSignInputBox = new InputBox(font,
-            wideInputRect,
-            false, false, 100);
+        wideSignInputBox = new InputBox(font, wideInputRect, false);
+        wideSignInputBox.setBordered(false);
+        wideSignInputBox.setBlitOffset(100);
         wideSignInputBox.setTextColor(Colors.black);
         widgetsToFlip.add(new FlippableAtPivot(wideSignInputBox, modelRectTop.x));
 
@@ -437,11 +433,9 @@ public class SignGui extends ExtendedScreen {
         Rect shortInputRect = new Rect(
             modelRectTop.add(3 * inputSignsScale, 2 * inputSignsScale),
             modelRectTop.add(14 * inputSignsScale, 6 * inputSignsScale));
-        shortSignInputBox = new InputBox(
-            font,
-            shortInputRect,
-            false, false, 100
-        );
+        shortSignInputBox = new InputBox(font, shortInputRect, false);
+        shortSignInputBox.setBordered(false);
+        shortSignInputBox.setBlitOffset(100);
         shortSignInputBox.setTextColor(Colors.black);
         widgetsToFlip.add(new FlippableAtPivot(shortSignInputBox, modelRectTop.x));
 
@@ -456,16 +450,24 @@ public class SignGui extends ExtendedScreen {
             modelRectTop.add(-7 * inputSignsScale, 3 * inputSignsScale),
             modelRectTop.add(9 * inputSignsScale, 14 * inputSignsScale))
             .withHeight(height -> height / 4 - 1);
-        InputBox firstLarge = new InputBox(font, largeInputRect, false, false, 100);
+        InputBox firstLarge = new InputBox(font, largeInputRect, false);
+        firstLarge.setBordered(false);
+        firstLarge.setBlitOffset(100);
         firstLarge.setTextColor(Colors.black);
         largeInputRect = largeInputRect.withPoint(p -> p.withY(Math.round(modelRectTop.y + (13 - 3 * 2.5f) * inputSignsScale)));
-        InputBox secondLarge = new InputBox(font, largeInputRect, false, false, 100);
+        InputBox secondLarge = new InputBox(font, largeInputRect, false);
+        secondLarge.setBordered(false);
+        secondLarge.setBlitOffset(100);
         secondLarge.setTextColor(Colors.black);
         largeInputRect = largeInputRect.withPoint(p -> p.withY(Math.round(modelRectTop.y + (13 - 2 * 2.5f) * inputSignsScale)));
-        InputBox thirdLarge = new InputBox(font, largeInputRect, false, false, 100);
+        InputBox thirdLarge = new InputBox(font, largeInputRect, false);
+        thirdLarge.setBordered(false);
+        thirdLarge.setBlitOffset(100);
         thirdLarge.setTextColor(Colors.black);
         largeInputRect = largeInputRect.withPoint(p -> p.withY(Math.round(modelRectTop.y + (13 - 1 * 2.5f) * inputSignsScale)));
-        InputBox fourthLarge = new InputBox(font, largeInputRect, false, false, 100);
+        InputBox fourthLarge = new InputBox(font, largeInputRect, false);
+        fourthLarge.setBordered(false);
+        fourthLarge.setBlitOffset(100);
         fourthLarge.setTextColor(Colors.black);
         firstLarge.addKeyCodeListener(KeyCodes.Down, () -> setInitialFocus(secondLarge));
         secondLarge.addKeyCodeListener(KeyCodes.Up, () -> setInitialFocus(firstLarge));
@@ -496,16 +498,16 @@ public class SignGui extends ExtendedScreen {
             Rect.XAlignment.Left, Rect.YAlignment.Top,
             this::flip
         );
-        addButton(switchDirectionButton);
+        addRenderableWidget(switchDirectionButton);
 
         colorInputBox = new ColorInputBox(font,
             new Rect(
                 new Point(switchDirectionButton.x + switchDirectionButton.getWidth() + 20, switchDirectionButton.y + switchDirectionButton.getHeight() / 2),
                 80, 20,
                 Rect.XAlignment.Left, Rect.YAlignment.Center
-            ), 0);
+            ));
         colorInputBox.setColorResponder(color -> allSignInputBoxes.forEach(b -> b.setTextColor(color)));
-        addButton(colorInputBox);
+        addRenderableWidget(colorInputBox);
 
         overlaySelectionButtons.clear();
         int i = 0;
@@ -533,22 +535,22 @@ public class SignGui extends ExtendedScreen {
                 new ModelButton.ModelData(postModel, 0, -0.5f, itemStack),
                 new ModelButton.ModelData(wideModel, 0, 0.25f, itemStack)
             ));
-        addButtons(overlaySelectionButtons);
+        for(Button button : overlaySelectionButtons) addWidget(button);
 
 
         switchTo(currentType);
         switchOverlay(selectedOverlay);
-        waystoneInputBox.setText(currentWaystone);
+        waystoneInputBox.setValue(currentWaystone);
         switch (currentType) {
             case Wide:
-                wideSignInputBox.setText(currentText[0]);
+                wideSignInputBox.setValue(currentText[0]);
                 break;
             case Short:
-                shortSignInputBox.setText(currentText[0]);
+                shortSignInputBox.setValue(currentText[0]);
                 break;
             case Large:
                 for(i = 0; i < largeSignInputBoxes.size(); i++) {
-                    largeSignInputBoxes.get(i).setText(currentText[i]);
+                    largeSignInputBoxes.get(i).setValue(currentText[i]);
                 }
                 break;
         }
@@ -564,7 +566,7 @@ public class SignGui extends ExtendedScreen {
                 oldSign.flatMap(s -> (Optional<WaystoneHandle>) s.getDestination()).ifPresent(id -> {
                     Optional<String> name = map.apply(id);
                     if (name.isPresent() && !name.get().equals(""))
-                        waystoneInputBox.setText(name.get());
+                        waystoneInputBox.setValue(name.get());
                 });
                 onWaystoneCountChanged();
             };
@@ -587,12 +589,12 @@ public class SignGui extends ExtendedScreen {
             Rect.XAlignment.Center, Rect.YAlignment.Center,
             font
         );
-        additionalRenderables.add(newSignHint);
+        addRenderableOnly(newSignHint);
         GuiItemRenderer ir = new GuiItemRenderer(
             new Rect(newSignHint.rect.at(Rect.XAlignment.Right, Rect.YAlignment.Center), newSignItemSize, newSignItemSize, Rect.XAlignment.Left, Rect.YAlignment.Center),
             itemToDropOnBreak
         );
-        additionalRenderables.add(ir);
+        addRenderableOnly(ir);
         AtomicReference<Runnable> cycleItem = new AtomicReference<>();
         AtomicInteger cycleItemIndex = new AtomicInteger(0);
         AtomicInteger cycleItemIngredientIndex = new AtomicInteger(0);
@@ -617,10 +619,10 @@ public class SignGui extends ExtendedScreen {
 
     private void onWaystoneCountChanged() {
         if(waystoneDropdown.getAllEntries().isEmpty()){
-            additionalRenderables.add(noWaystonesInfo);
+            addRenderableOnly(noWaystonesInfo);
         } else {
-            addButton(waystoneDropdown);
-            addButton(waystoneInputBox);
+            addRenderableWidget(waystoneDropdown);
+            addRenderableWidget(waystoneInputBox);
         }
     }
 
@@ -630,7 +632,7 @@ public class SignGui extends ExtendedScreen {
             - rotationInputField.getCurrentAngle().degrees())) <= 1;
         widgetsToFlip.forEach(Flippable::flip);
         if(shouldPointAtPlayer)
-            rotationInputField.setText(playerAngleEntry.angleToString());
+            rotationInputField.setValue(playerAngleEntry.angleToString());
     }
 
     private void onWaystoneSelected(String waystoneName) {
@@ -643,10 +645,10 @@ public class SignGui extends ExtendedScreen {
         Optional<WaystoneEntry> validWaystone = asValidWaystone(waystoneName);
         if(waystoneName.equals("") || validWaystone.isPresent()) {
             waystoneInputBox.setTextColor(Colors.valid);
-            waystoneInputBox.setDisabledTextColour(Colors.validInactive);
+            waystoneInputBox.setTextColorUneditable(Colors.validInactive);
             waystoneDropdown.setFilter(name -> true);
-            if(currentSignInputBox != null && lastWaystone.equals(currentSignInputBox.getText()))
-                currentSignInputBox.setText(waystoneName);
+            if(currentSignInputBox != null && lastWaystone.equals(currentSignInputBox.getValue()))
+                currentSignInputBox.setValue(waystoneName);
             if(!waystoneName.equals("")) {
                 waystoneRotationEntry = angleEntryForWaystone(validWaystone.get());
                 angleDropDown.addEntry(waystoneRotationEntry);
@@ -656,10 +658,10 @@ public class SignGui extends ExtendedScreen {
             lastWaystone = waystoneName;
         } else {
             waystoneInputBox.setTextColor(Colors.invalid);
-            waystoneInputBox.setDisabledTextColour(Colors.invalidInactive);
+            waystoneInputBox.setTextColorUneditable(Colors.invalidInactive);
             waystoneDropdown.setFilter(e -> e.entryName.toLowerCase().contains(waystoneName.toLowerCase()));
-            if(currentSignInputBox != null && lastWaystone.equals(currentSignInputBox.getText()))
-                currentSignInputBox.setText("");
+            if(currentSignInputBox != null && lastWaystone.equals(currentSignInputBox.getValue()))
+                currentSignInputBox.setValue("");
         }
     }
 
@@ -695,7 +697,7 @@ public class SignGui extends ExtendedScreen {
     private int getCenterX() { return this.width / 2; }
     private int getCenterY() { return this.height / 2; }
 
-    private final List<Widget> selectionDependentWidgets = Lists.newArrayList();
+    private final List<AbstractWidget> selectionDependentWidgets = Lists.newArrayList();
 
     private void switchTo(SignType type) {
         switch (type) {
@@ -721,7 +723,7 @@ public class SignGui extends ExtendedScreen {
         switchSignInputBoxTo(wideSignInputBox);
 
         addTypeDependentChild(wideSignInputBox);
-        additionalRenderables.add(wideSignRenderer);
+        addRenderableOnly(wideSignRenderer);
         currentSignRenderer = wideSignRenderer;
         switchOverlay(selectedOverlay);
     }
@@ -734,7 +736,7 @@ public class SignGui extends ExtendedScreen {
         switchSignInputBoxTo(shortSignInputBox);
 
         addTypeDependentChild(shortSignInputBox);
-        additionalRenderables.add(shortSignRenderer);
+        addRenderableOnly(shortSignRenderer);
         currentSignRenderer = shortSignRenderer;
         switchOverlay(selectedOverlay);
     }
@@ -747,7 +749,7 @@ public class SignGui extends ExtendedScreen {
         switchSignInputBoxTo(largeSignInputBoxes.get(0));
 
         addTypeDependentChildren(largeSignInputBoxes);
-        additionalRenderables.add(largeSignRenderer);
+        addRenderableOnly(largeSignRenderer);
         currentSignRenderer = largeSignRenderer;
         switchOverlay(selectedOverlay);
     }
@@ -756,7 +758,7 @@ public class SignGui extends ExtendedScreen {
 
     private void switchOverlay(Optional<Overlay> overlay) {
         if(currentOverlay != null) {
-            additionalRenderables.remove(currentOverlay);
+            renderables.remove(currentOverlay);
             widgetsToFlip.remove(currentOverlay);
         }
         this.selectedOverlay = overlay;
@@ -788,46 +790,46 @@ public class SignGui extends ExtendedScreen {
                 );
                 break;
         }
-        additionalRenderables.add(currentOverlay);
+        addRenderableOnly(currentOverlay);
         if(currentSignRenderer.isFlipped()) currentOverlay.flip();
         widgetsToFlip.add(currentOverlay);
     }
 
     private void hideStuffOccludedByWaystoneDropdown() {
-        additionalRenderables.remove(rotationLabel);
-        removeButton(rotationInputField);
+        renderables.remove(rotationLabel);
+        removeWidget(rotationInputField);
         angleDropDown.hideList();
-        removeButton(angleDropDown);
-        removeButtons(overlaySelectionButtons);
+        removeWidget(angleDropDown);
+        for(Button b : overlaySelectionButtons) removeWidget(b);
     }
 
     private void showStuffOccludedByWaystoneDropdown() {
-        additionalRenderables.add(rotationLabel);
-        addButton(rotationInputField);
-        addButton(angleDropDown);
-        addButtons(overlaySelectionButtons);
+        addRenderableOnly(rotationLabel);
+        addRenderableWidget(rotationInputField);
+        addRenderableWidget(angleDropDown);
+        for(Button b : overlaySelectionButtons) removeWidget(b);
     }
 
     private void switchSignInputBoxTo(InputBox box) {
         if(currentSignInputBox != null)
-            box.setText(currentSignInputBox.getText());
+            box.setValue(currentSignInputBox.getValue());
         currentSignInputBox = box;
     }
 
     private void clearTypeDependentChildren(){
-        removeButtons(selectionDependentWidgets);
-        additionalRenderables.remove(currentSignRenderer);
+        for(AbstractWidget b : selectionDependentWidgets) removeWidget(b);
+        renderables.remove(currentSignRenderer);
         selectionDependentWidgets.clear();
     }
 
-    private void addTypeDependentChildren(Collection<? extends Widget> widgets){
+    private void addTypeDependentChildren(Collection<? extends AbstractWidget> widgets){
         selectionDependentWidgets.addAll(widgets);
-        addButtons(widgets);
+        for(AbstractWidget w : widgets) addWidget(w);
     }
 
-    private void addTypeDependentChild(Widget widget){
+    private void addTypeDependentChild(AbstractWidget widget){
         selectionDependentWidgets.add(widget);
-        addButton(widget);
+        addRenderableWidget(widget);
     }
 
     @Override
@@ -846,23 +848,23 @@ public class SignGui extends ExtendedScreen {
     }
 
     private void done() {
-        apply(asValidWaystone(waystoneInputBox.getText()).map(w -> w.handle));
+        apply(asValidWaystone(waystoneInputBox.getValue()).map(w -> w.handle));
         getMinecraft().setScreen(null);
     }
 
     private void apply(Optional<WaystoneHandle> destinationId) {
         PostTile.TilePartInfo tilePartInfo = oldTilePartInfo.orElseGet(() ->
             new PostTile.TilePartInfo(tile.getLevel().dimension().location(), tile.getBlockPos(), UUID.randomUUID()));
-        CompoundNBT data;
+        CompoundTag data;
         boolean isLocked = lockButton.isLocked();
         ResourceLocation mainTex = oldSign.map(SignBlockPart::getMainTexture).orElse(modelType.mainTexture);
         ResourceLocation secondaryTex = oldSign.map(SignBlockPart::getSecondaryTexture).orElse(modelType.secondaryTexture);
         switch (selectedType) {
-            case Wide:
+            case Wide -> {
                 data = SmallWideSignBlockPart.METADATA.write(
                     new SmallWideSignBlockPart(
                         rotationInputField.getCurrentAngle(),
-                        wideSignInputBox.getText(),
+                        wideSignInputBox.getValue(),
                         wideSignRenderer.isFlipped(),
                         mainTex,
                         secondaryTex,
@@ -874,7 +876,7 @@ public class SignGui extends ExtendedScreen {
                         isLocked
                     )
                 );
-                if(oldSign.isPresent()) {
+                if (oldSign.isPresent()) {
                     PacketHandler.sendToServer(new PostTile.PartMutatedEvent.Packet(
                         tilePartInfo, data,
                         SmallWideSignBlockPart.METADATA.identifier,
@@ -887,12 +889,12 @@ public class SignGui extends ExtendedScreen {
                         new Vector3(0, localHitPos.y > 0.5f ? 0.75f : 0.25f, 0), itemToDropOnBreak, PlayerHandle.from(getMinecraft().player)
                     ));
                 }
-                break;
-            case Short:
+            }
+            case Short -> {
                 data = SmallShortSignBlockPart.METADATA.write(
                     new SmallShortSignBlockPart(
                         rotationInputField.getCurrentAngle(),
-                        shortSignInputBox.getText(),
+                        shortSignInputBox.getValue(),
                         shortSignRenderer.isFlipped(),
                         mainTex,
                         secondaryTex,
@@ -904,7 +906,7 @@ public class SignGui extends ExtendedScreen {
                         isLocked
                     )
                 );
-                if(oldSign.isPresent()) {
+                if (oldSign.isPresent()) {
                     PacketHandler.sendToServer(new PostTile.PartMutatedEvent.Packet(
                         tilePartInfo, data,
                         SmallShortSignBlockPart.METADATA.identifier,
@@ -917,16 +919,16 @@ public class SignGui extends ExtendedScreen {
                         new Vector3(0, localHitPos.y > 0.5f ? 0.75f : 0.25f, 0), itemToDropOnBreak, PlayerHandle.from(getMinecraft().player)
                     ));
                 }
-                break;
-            case Large:
+            }
+            case Large -> {
                 data = LargeSignBlockPart.METADATA.write(
                     new LargeSignBlockPart(
                         rotationInputField.getCurrentAngle(),
-                        new String[] {
-                            largeSignInputBoxes.get(0).getText(),
-                            largeSignInputBoxes.get(1).getText(),
-                            largeSignInputBoxes.get(2).getText(),
-                            largeSignInputBoxes.get(3).getText(),
+                        new String[]{
+                            largeSignInputBoxes.get(0).getValue(),
+                            largeSignInputBoxes.get(1).getValue(),
+                            largeSignInputBoxes.get(2).getValue(),
+                            largeSignInputBoxes.get(3).getValue(),
                         },
                         currentSignRenderer.isFlipped(),
                         mainTex,
@@ -939,7 +941,7 @@ public class SignGui extends ExtendedScreen {
                         isLocked
                     )
                 );
-                if(oldSign.isPresent()) {
+                if (oldSign.isPresent()) {
                     PacketHandler.sendToServer(new PostTile.PartMutatedEvent.Packet(
                         tilePartInfo, data,
                         LargeSignBlockPart.METADATA.identifier,
@@ -952,7 +954,7 @@ public class SignGui extends ExtendedScreen {
                         new Vector3(0, 0.5f, 0), itemToDropOnBreak, PlayerHandle.from(getMinecraft().player)
                     ));
                 }
-                break;
+            }
         }
     }
 
@@ -966,7 +968,7 @@ public class SignGui extends ExtendedScreen {
         AtomicReference<Angle> angleWhenFlipped = new AtomicReference<>(Angle.fromDegrees(404));
         AtomicReference<Angle> angleWhenNotFlipped = new AtomicReference<>(Angle.fromDegrees(404));
         Delay.onClientUntil(() -> getMinecraft() != null && getMinecraft().player != null, () -> {
-            angleWhenFlipped.set(Angle.fromDegrees(-getMinecraft().player.yRot).normalized());
+            angleWhenFlipped.set(Angle.fromDegrees(-getMinecraft().player.getYRot()).normalized());
             angleWhenNotFlipped.set(angleWhenFlipped.get().add(Angle.fromRadians((float) Math.PI)).normalized());
 
             if(!oldSign.isPresent() && rotationInputField.getCurrentAngle().equals(Angle.ZERO)) {

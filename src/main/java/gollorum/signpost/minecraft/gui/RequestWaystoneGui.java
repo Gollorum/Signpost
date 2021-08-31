@@ -3,8 +3,8 @@ package gollorum.signpost.minecraft.gui;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.WaystoneData;
 import gollorum.signpost.utils.WorldLocation;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.fmllegacy.network.NetworkEvent;
 
 import java.util.Optional;
 
@@ -24,13 +24,13 @@ public class RequestWaystoneGui implements PacketHandler.Event<RequestWaystoneGu
 	public Class<RequestWaystoneGui.Package> getMessageClass() { return RequestWaystoneGui.Package.class; }
 
 	@Override
-	public void encode(RequestWaystoneGui.Package message, PacketBuffer buffer) {
+	public void encode(RequestWaystoneGui.Package message, FriendlyByteBuf buffer) {
 		WorldLocation.SERIALIZER.write(message.location, buffer);
 		WaystoneData.SERIALIZER.optional().write(message.oldData, buffer);
 	}
 
 	@Override
-	public RequestWaystoneGui.Package decode(PacketBuffer buffer) {
+	public RequestWaystoneGui.Package decode(FriendlyByteBuf buffer) {
 		return new RequestWaystoneGui.Package(
 			WorldLocation.SERIALIZER.read(buffer),
 			WaystoneData.SERIALIZER.optional().read(buffer)

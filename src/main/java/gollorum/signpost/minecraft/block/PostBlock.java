@@ -8,57 +8,55 @@ import gollorum.signpost.interactions.Interactable;
 import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.RequestSignGui;
+import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.security.WithCountRestriction;
 import gollorum.signpost.utils.BlockPartInstance;
-import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.utils.Delay;
 import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.BufferSerializable;
 import gollorum.signpost.utils.serialization.StringSerializer;
-import net.minecraft.block.*;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.fluid.Fluids;
-import net.minecraft.item.BlockItemUseContext;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.crafting.Ingredient;
-import net.minecraft.loot.LootContext;
-import net.minecraft.loot.LootParameters;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.state.BooleanProperty;
-import net.minecraft.state.StateContainer;
-import net.minecraft.state.properties.BlockStateProperties;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Hand;
-import net.minecraft.util.IStringSerializable;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.shapes.ISelectionContext;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.math.shapes.VoxelShapes;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.World;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.common.util.Lazy;
-import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraftforge.fmllegacy.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class PostBlock extends Block implements IWaterLoggable, WithCountRestriction {
+public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock, WithCountRestriction {
 
-    public static class ModelType implements IStringSerializable {
+    public static class ModelType {
 
         private static final Map<String, ModelType> allTypes = new HashMap<>();
 
@@ -210,10 +208,10 @@ public class PostBlock extends Block implements IWaterLoggable, WithCountRestric
             );
         }
 
-        @Override
-        public String getSerializedName() {
-            return name;
-        }
+//        @Override
+//        public String getSerializedName() {
+//            return name;
+//        }
 
         public static BufferSerializable<ModelType> Serializer = new SerializerImpl();
         public static final class SerializerImpl implements BufferSerializable<ModelType> {
@@ -223,7 +221,7 @@ public class PostBlock extends Block implements IWaterLoggable, WithCountRestric
             }
 
             @Override
-            public void write(ModelType modelType, PacketBuffer buffer) {
+            public void write(ModelType modelType, FriendlyByteBuf buffer) {
                 StringSerializer.instance.write(modelType.name, buffer);
                 buffer.writeResourceLocation(modelType.postTexture);
                 buffer.writeResourceLocation(modelType.mainTexture);
@@ -235,7 +233,7 @@ public class PostBlock extends Block implements IWaterLoggable, WithCountRestric
 
             private <T> Lazy<T> constLazy(T t) { return Lazy.of(() -> t); }
             @Override
-            public ModelType read(PacketBuffer buffer) {
+            public ModelType read(FriendlyByteBuf buffer) {
                 return new ModelType(
                     StringSerializer.instance.read(buffer),
                     buffer.readResourceLocation(),
@@ -293,7 +291,7 @@ public class PostBlock extends Block implements IWaterLoggable, WithCountRestric
     }
 
     @Override
-    public void setPlacedBy(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+    public void setPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(world, pos, state, placer, stack);
         Delay.forFrames(6, world.isClientSide(), () ->
             TileEntityUtils.delayUntilTileEntityExists(world, pos, PostTile.class, tile -> {
@@ -307,7 +305,7 @@ public class PostBlock extends Block implements IWaterLoggable, WithCountRestric
                     tile.setChanged();
                     world.sendBlockUpdated(pos, state, state, 3);
                     PacketHandler.send(
-                        PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) placer),
+                        PacketDistributor.PLAYER.with(() -> (ServerPlayer) placer),
                         new RequestSignGui.ForNewSign.Package(
                             new WorldLocation(pos, world),
                             tile.modelType,
@@ -316,12 +314,12 @@ public class PostBlock extends Block implements IWaterLoggable, WithCountRestric
                         )
                     );
                 }
-            }, 100, Optional.of(() -> Signpost.LOGGER.error("Could not initialize placed signpost: TileEntity never appeared."))));
+            }, 100, Optional.of(() -> Signpost.LOGGER.error("Could not initialize placed signpost: BlockEntity never appeared."))));
     }
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
-        TileEntity tileentity = builder.getParameter(LootParameters.BLOCK_ENTITY);
+        BlockEntity tileentity = builder.getParameter(LootContextParams.BLOCK_ENTITY);
         List<ItemStack> result = (tileentity instanceof PostTile)
             ? new ArrayList<>(((PostTile) tileentity).getDrops())
             : Collections.singletonList(new ItemStack(this));
@@ -330,11 +328,11 @@ public class PostBlock extends Block implements IWaterLoggable, WithCountRestric
 
     @SuppressWarnings("deprecation")
     @Override
-    public VoxelShape getShape(BlockState state, IBlockReader world, BlockPos pos, ISelectionContext context) {
-        TileEntity t = world.getBlockEntity(pos);
+    public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+        BlockEntity t = world.getBlockEntity(pos);
         return t instanceof PostTile
             ? ((PostTile) t).getBounds()
-            : VoxelShapes.empty();
+            : Shapes.empty();
     }
 
     @SuppressWarnings("deprecation")
@@ -343,39 +341,36 @@ public class PostBlock extends Block implements IWaterLoggable, WithCountRestric
         return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
     }
 
-    @Override
-    public boolean hasTileEntity(BlockState state) { return true; }
-
     @Nullable
     @Override
-    public TileEntity createTileEntity(BlockState state, IBlockReader world) {
-        return new PostTile(type, new ItemStack(this));
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new PostTile(type, new ItemStack(this), pos, state);
     }
 
     @Override
-    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(WATERLOGGED);
     }
 
     @Override
-    public BlockRenderType getRenderShape(BlockState state) {
-        return BlockRenderType.ENTITYBLOCK_ANIMATED;
+    public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.ENTITYBLOCK_ANIMATED;
     }
 
     @Override
-    public VoxelShape getCollisionShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
+    public VoxelShape getCollisionShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context) {
         return getShape(state, worldIn, pos, context);
     }
 
     @Override
-    public ActionResultType use(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
-        TileEntity tileEntity = world.getBlockEntity(pos);
-        if(!(tileEntity instanceof PostTile)) return ActionResultType.SUCCESS;
+    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        BlockEntity tileEntity = world.getBlockEntity(pos);
+        if(!(tileEntity instanceof PostTile)) return InteractionResult.SUCCESS;
         PostTile tile = (PostTile) tileEntity;
         return onActivate(tile, world, player, hand);
     }
 
-    public static ActionResultType onActivate(PostTile tile, World world, PlayerEntity player, Hand hand) {
+    public static InteractionResult onActivate(PostTile tile, Level world, Player player, InteractionHand hand) {
         switch (tile
             .trace(player)
             .map(p -> p.part.blockPart.interact(new InteractionInfo(
@@ -387,21 +382,21 @@ public class PostBlock extends Block implements IWaterLoggable, WithCountRestric
             .orElse(Interactable.InteractionResult.Ignored)
         ){
             case Accepted:
-                return ActionResultType.SUCCESS;
+                return InteractionResult.SUCCESS;
             case Ignored:
             default:
-                return ActionResultType.PASS;
+                return InteractionResult.PASS;
         }
     }
 
     @Override
-    public BlockState getStateForPlacement(BlockItemUseContext context) {
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
         return super.getStateForPlacement(context)
             .setValue(WATERLOGGED, context.getLevel().getFluidState(context.getClickedPos()).getType() == Fluids.WATER);
     }
 
     @Override
-    public boolean propagatesSkylightDown(BlockState state, IBlockReader reader, BlockPos pos) {
+    public boolean propagatesSkylightDown(BlockState state, BlockGetter reader, BlockPos pos) {
         return !state.getValue(WATERLOGGED);
     }
 

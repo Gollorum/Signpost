@@ -1,33 +1,33 @@
 package gollorum.signpost.utils.serialization;
 
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 
 public class ResourceLocationSerializer implements CompoundSerializable<ResourceLocation> {
 
     public static ResourceLocationSerializer Instance = new ResourceLocationSerializer();
 
-    public CompoundNBT write(net.minecraft.util.ResourceLocation location, CompoundNBT compound) {
+    public CompoundTag write(ResourceLocation location, CompoundTag compound) {
         compound.putString("ResourceLocation", location.toString());
         return compound;
     }
 
-    public boolean isContainedIn(CompoundNBT compound) {
+    public boolean isContainedIn(CompoundTag compound) {
         return compound.contains("ResourceLocation");
     }
 
-    public net.minecraft.util.ResourceLocation read(CompoundNBT compound) {
+    public ResourceLocation read(CompoundTag compound) {
         return new ResourceLocation(compound.getString("ResourceLocation"));
     }
 
     @Override
-    public void write(ResourceLocation resourceLocation, PacketBuffer buffer) {
+    public void write(ResourceLocation resourceLocation, FriendlyByteBuf buffer) {
         buffer.writeResourceLocation(resourceLocation);
     }
 
     @Override
-    public ResourceLocation read(PacketBuffer buffer) {
+    public ResourceLocation read(FriendlyByteBuf buffer) {
         return buffer.readResourceLocation();
     }
 

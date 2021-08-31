@@ -1,6 +1,6 @@
 package gollorum.signpost.minecraft.gui;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.events.WaystoneRenamedEvent;
 import gollorum.signpost.minecraft.events.WaystoneUpdatedEvent;
@@ -12,10 +12,10 @@ import gollorum.signpost.utils.WaystoneLocationData;
 import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.client.gui.widget.button.LockIconButton;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.LockIconButton;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -43,22 +43,18 @@ public class WaystoneGui extends ExtendedScreen {
 
     private final Consumer<WaystoneUpdatedEvent> waystoneUpdateListener = event ->
         allWaystoneNames.ifPresent(names -> {
-            switch(event.getType()) {
-                case Added:
+            switch (event.getType()) {
+                case Added -> names.add(event.name);
+                case Removed -> names.remove(event.name);
+                case Renamed -> {
+                    names.remove(((WaystoneRenamedEvent) event).oldName);
                     names.add(event.name);
-                    break;
-                case Removed:
-                    names.remove(event.name);
-                    break;
-                case Renamed:
-                    names.remove(((WaystoneRenamedEvent)event).oldName);
-                    names.add(event.name);
-                    break;
+                }
             }
         });
 
     public WaystoneGui(WorldLocation location, Optional<WaystoneData> oldData) {
-        super(new StringTextComponent("Waystone"));
+        super(new TextComponent("Waystone"));
         this.location = location;
         this.oldData = oldData;
     }
@@ -88,15 +84,15 @@ public class WaystoneGui extends ExtendedScreen {
                 Rect.XAlignment.Center, Rect.YAlignment.Center),
             Rect.XAlignment.Center, Rect.YAlignment.Center,
             texture,
-            true, 0);
+            true);
         lockButton = new LockIconButton(
             inputBox.x + inputBox.width() + 10,
             inputBox.y + inputBox.getHeight() / 2 - 10,
             b -> lockButton.setLocked(!lockButton.isLocked())
         );
-        addButton(lockButton);
+        addWidget(lockButton);
         oldData.ifPresent(data -> {
-            inputBox.setText(data.name);
+            inputBox.setValue(data.name);
             lockButton.setLocked(data.isLocked);
         });
         doneButton = new Button(
@@ -104,22 +100,22 @@ public class WaystoneGui extends ExtendedScreen {
             getCenterY() - buttonsSize.height / 2 + buttonsYOffset,
             buttonsSize.width,
             buttonsSize.height,
-            new TranslationTextComponent(LangKeys.done),
+            new TranslatableComponent(LangKeys.done),
             b -> done()
         );
-        addButton(inputBox);
-        addButton(doneButton);
+        addWidget(inputBox);
+        addWidget(doneButton);
         inputBox.setTextColor(Colors.valid);
-        inputBox.setDisabledTextColour(Colors.validInactive);
-        inputBox.setMaxStringLength(200);
-        inputBox.setTextChangedCallback(name -> {
+        inputBox.setTextColorUneditable(Colors.validInactive);
+        inputBox.setMaxLength(200);
+        inputBox.setResponder(name -> {
             if(isValid(name)){
                 inputBox.setTextColor(Colors.valid);
-                inputBox.setDisabledTextColour(Colors.validInactive);
+                inputBox.setTextColorUneditable(Colors.validInactive);
                 doneButton.active = true;
             } else {
                 inputBox.setTextColor(Colors.invalid);
-                inputBox.setDisabledTextColour(Colors.invalidInactive);
+                inputBox.setTextColorUneditable(Colors.invalidInactive);
                 doneButton.active = false;
             }
         });
@@ -132,7 +128,7 @@ public class WaystoneGui extends ExtendedScreen {
     }
 
     @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         renderBackground(matrixStack);
         super.render(matrixStack, mouseX, mouseY, partialTicks);
     }
@@ -144,9 +140,9 @@ public class WaystoneGui extends ExtendedScreen {
     }
 
     private void done() {
-        if(inputBox != null && !inputBox.getText().equals("") && isValid(inputBox.getText()))
+        if(inputBox != null && !inputBox.getValue().equals("") && isValid(inputBox.getValue()))
             WaystoneLibrary.getInstance().requestUpdate(
-                inputBox.getText(),
+                inputBox.getValue(),
                 new WaystoneLocationData(location, Vector3.fromVec3d(getMinecraft().player.position())),
                 lockButton.isLocked()
             );

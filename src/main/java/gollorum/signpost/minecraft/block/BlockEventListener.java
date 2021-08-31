@@ -6,12 +6,12 @@ import gollorum.signpost.blockpartdata.types.PostBlockPart;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.security.WithCountRestriction;
 import gollorum.signpost.utils.Delay;
-import net.minecraft.block.Block;
-import net.minecraft.entity.item.ItemEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -36,7 +36,7 @@ public class BlockEventListener {
     @SubscribeEvent
     public static void onBlockRemoved(BlockEvent.BreakEvent event) {
         Block block = event.getState().getBlock();
-        TileEntity tile = event.getWorld().getBlockEntity(event.getPos());
+        BlockEntity tile = event.getWorld().getBlockEntity(event.getPos());
         if(!event.isCanceled() && tile instanceof PostTile) {
             PostTile postTile = (PostTile) tile;
             Optional<PostTile.TraceResult> traceResult = postTile.trace(event.getPlayer());
@@ -44,8 +44,8 @@ public class BlockEventListener {
                 event.setCanceled(true);
                 Delay.onServerForFrames(1, () -> {
                     postTile.removePart(traceResult.get().id);
-                    if (event.getWorld() instanceof ServerWorld) {
-                        ServerWorld world = (ServerWorld) event.getWorld();
+                    if (event.getWorld() instanceof ServerLevel) {
+                        ServerLevel world = (ServerLevel) event.getWorld();
                         if (!event.getPlayer().isCreative()) {
                             BlockPos pos = tile.getBlockPos();
                             for (ItemStack item : (Collection<ItemStack>) traceResult.get().part.blockPart.getDrops(postTile)) {

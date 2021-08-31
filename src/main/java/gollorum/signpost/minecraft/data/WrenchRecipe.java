@@ -2,22 +2,22 @@ package gollorum.signpost.minecraft.data;
 
 import gollorum.signpost.minecraft.registry.ItemRegistry;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.data.IFinishedRecipe;
-import net.minecraft.data.ShapedRecipeBuilder;
-import net.minecraft.item.Items;
+import net.minecraft.data.recipes.FinishedRecipe;
+import net.minecraft.data.recipes.RecipeProvider;
+import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.tags.ItemTags;
-import net.minecraftforge.common.data.ForgeRecipeProvider;
+import net.minecraft.world.item.Items;
 
 import java.util.function.Consumer;
 
-public class WrenchRecipe extends ForgeRecipeProvider {
+public class WrenchRecipe extends RecipeProvider {
 
-    public WrenchRecipe(DataGenerator generatorIn) {
-        super(generatorIn);
+    public WrenchRecipe(DataGenerator generator) {
+        super(generator);
     }
 
     @Override
-    protected void buildShapelessRecipes(Consumer<IFinishedRecipe> consumer) {
+    protected void buildCraftingRecipes(Consumer<FinishedRecipe> consumer) {
         ShapedRecipeBuilder.shaped(ItemRegistry.WRENCH.get(), 1)
             .define('s', ItemTags.SIGNS)
             .define('i', Items.IRON_INGOT)

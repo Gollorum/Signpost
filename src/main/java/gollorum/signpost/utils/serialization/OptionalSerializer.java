@@ -1,6 +1,6 @@
 package gollorum.signpost.utils.serialization;
 
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 
 import java.util.Optional;
 
@@ -20,19 +20,19 @@ public final class OptionalSerializer<T> extends OptionalBufferSerializer<T> imp
     }
 
     @Override
-    public CompoundNBT write(Optional<T> t, CompoundNBT compound) {
+    public CompoundTag write(Optional<T> t, CompoundTag compound) {
         compound.putBoolean("IsPresent", t.isPresent());
         t.ifPresent(value -> compound.put("Value", valueSerializer.write(value)));
         return compound;
     }
 
     @Override
-    public boolean isContainedIn(CompoundNBT compound) {
+    public boolean isContainedIn(CompoundTag compound) {
         return compound.contains("IsPresent");
     }
 
     @Override
-    public Optional<T> read(CompoundNBT compound) {
+    public Optional<T> read(CompoundTag compound) {
         if(compound.getBoolean("IsPresent"))
             return Optional.ofNullable(valueSerializer.read(compound.getCompound("Value")));
         else return Optional.empty();

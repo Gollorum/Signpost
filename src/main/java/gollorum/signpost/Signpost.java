@@ -12,29 +12,27 @@ import gollorum.signpost.minecraft.rendering.PostRenderer;
 import gollorum.signpost.minecraft.worldgen.WaystoneDiscoveryEventListener;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.relations.ExternalWaystoneLibrary;
-import gollorum.signpost.relations.WaystonesAdapter;
 import gollorum.signpost.utils.ServerType;
 import gollorum.signpost.worldgen.Villages;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
-import net.minecraftforge.fml.event.server.FMLServerStoppedEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.network.NetworkEvent;
-import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraftforge.fmllegacy.network.NetworkEvent;
+import net.minecraftforge.fmllegacy.network.PacketDistributor;
+import net.minecraftforge.fmlserverevents.FMLServerAboutToStartEvent;
+import net.minecraftforge.fmlserverevents.FMLServerStoppedEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -73,8 +71,9 @@ public class Signpost {
 
         Villages.instance.initialize();
 
-        if(ModList.get().isLoaded("waystones"))
-            WaystonesAdapter.register();
+        // Disabled until waystones gets updated
+//        if(ModList.get().isLoaded("waystones"))
+//            WaystonesAdapter.register();
     }
 
     private static class ModBusEvents {
@@ -89,7 +88,7 @@ public class Signpost {
 
         @SubscribeEvent
         public void doClientStuff(final FMLClientSetupEvent event) {
-            ClientRegistry.bindTileEntityRenderer(PostTile.type, PostRenderer::new);
+            BlockEntityRenderers.register(PostTile.type, PostRenderer::new);
         }
 
     }
@@ -108,7 +107,7 @@ public class Signpost {
         public void joinServer(PlayerEvent.PlayerLoggedInEvent e) {
             if(!e.getPlayer().level.isClientSide && serverInstance.isDedicatedServer())
                 PacketHandler.send(
-                    PacketDistributor.PLAYER.with((() -> (ServerPlayerEntity) e.getPlayer())),
+                    PacketDistributor.PLAYER.with((() -> (ServerPlayer) e.getPlayer())),
                     new JoinServerEvent.Package()
                 );
         }
@@ -120,9 +119,8 @@ public class Signpost {
 
         @SubscribeEvent
         public void onWorldLoad(WorldEvent.Load event) {
-            if (event.getWorld() instanceof ServerWorld &&
-                ((ServerWorld) event.getWorld()).dimension().equals(World.OVERWORLD)) {
-                ServerWorld world = (ServerWorld) event.getWorld();
+            if (event.getWorld() instanceof ServerLevel world &&
+                ((ServerLevel) event.getWorld()).dimension().equals(Level.OVERWORLD)) {
                 if(!WaystoneLibrary.getInstance().hasStorageBeenSetup())
                     WaystoneLibrary.getInstance().setupStorage(world);
                 if(!BlockRestrictions.getInstance().hasStorageBeenSetup())
@@ -140,10 +138,10 @@ public class Signpost {
         public Class<Package> getMessageClass() { return Package.class; }
 
         @Override
-        public void encode(Package message, PacketBuffer buffer) { }
+        public void encode(Package message, FriendlyByteBuf buffer) { }
 
         @Override
-        public Package decode(PacketBuffer buffer) { return new Package(); }
+        public Package decode(FriendlyByteBuf buffer) { return new Package(); }
 
         @Override
         public void handle(

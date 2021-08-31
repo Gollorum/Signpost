@@ -13,9 +13,9 @@ import gollorum.signpost.utils.Either;
 import gollorum.signpost.utils.Tuple;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.client.gui.widget.button.ImageButton;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.network.chat.TranslatableComponent;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -51,7 +51,7 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 		Either<String, Teleport.RequestGui.Package.Info> data,
 		Optional<SignInfo> signInfo
 	) {
-		super(new TranslationTextComponent(LangKeys.confirmTeleportGuiTitle));
+		super(new TranslatableComponent(LangKeys.confirmTeleportGuiTitle));
 		this.data = data;
 		this.signInfo = signInfo;
 	}
@@ -69,7 +69,7 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 		AtomicInteger editButtonTop = new AtomicInteger();
 		data.consume(
 			langKey -> {
-				additionalRenderables.add(new TextDisplay(
+				addRenderableOnly(new TextDisplay(
 					new Point(width / 2, height / 2 - 20),
 					Rect.XAlignment.Center, Rect.YAlignment.Bottom,
 					font,
@@ -80,7 +80,7 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 			d -> {
 				boolean isTooFarAway = d.maxDistance > 0 && d.distance > d.maxDistance;
 				if(d.isDiscovered && !isTooFarAway) {
-					additionalRenderables.add(new TextDisplay(
+					addRenderableOnly(new TextDisplay(
 						new Point(width / 2, height / 2 - 20),
 						Rect.XAlignment.Center, Rect.YAlignment.Bottom,
 						font,
@@ -88,7 +88,7 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 					));
 
 					if (!d.cost.isEmpty()) {
-						additionalRenderables.add(new TextDisplay(
+						addRenderableOnly(new TextDisplay(
 							new Point(width / 2 - costCenterSpace / 2, height / 2),
 							Rect.XAlignment.Right, Rect.YAlignment.Center,
 							font,
@@ -99,11 +99,11 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 							TextureResource.itemBackground.size,
 							Rect.XAlignment.Left, Rect.YAlignment.Center
 						);
-						additionalRenderables.add(new ImageView(
+						addRenderableOnly(new ImageView(
 							TextureResource.itemBackground,
 							itemRect
 						));
-						additionalRenderables.add(new GuiItemRenderer(
+						addRenderableOnly(new GuiItemRenderer(
 							new Rect(itemRect.center(), 16, 16, Rect.XAlignment.Center, Rect.YAlignment.Center),
 							d.cost
 						));
@@ -121,20 +121,20 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 						Rect.XAlignment.Right,
 						Rect.YAlignment.Top
 					);
-					addButton(new Button(
+					addRenderableWidget(new Button(
 						confirmRect.point.x, confirmRect.point.y, confirmRect.width, confirmRect.height,
-						new TranslationTextComponent(LangKeys.proceed),
+						new TranslatableComponent(LangKeys.proceed),
 						b -> confirm()
 					));
-					addButton(new Button(
+					addRenderableWidget(new Button(
 						cancelRect.point.x, cancelRect.point.y, cancelRect.width, cancelRect.height,
-						new TranslationTextComponent(LangKeys.cancel),
+						new TranslatableComponent(LangKeys.cancel),
 						b -> cancel()
 					));
 					editButtonTop.set(cancelRect.max().y + 20);
 				} else {
 					if(!d.isDiscovered)
-						additionalRenderables.add(new TextDisplay(
+						addRenderableOnly(new TextDisplay(
 							new Point(width / 2, height / 2 - 20),
 							Rect.XAlignment.Center, Rect.YAlignment.Bottom,
 							font,
@@ -142,7 +142,7 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 							new Tuple<>(d.waystoneName, Colors.highlight)
 						));
 					if(isTooFarAway)
-						additionalRenderables.add(new TextDisplay(
+						addRenderableOnly(new TextDisplay(
 							new Point(width / 2, height / 2 - (d.isDiscovered ? 20 : 40)),
 							Rect.XAlignment.Center, Rect.YAlignment.Bottom,
 							font,
@@ -157,7 +157,7 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 		signInfo.ifPresent(info -> {
 			Rect editRect = new Rect(new Point(width / 2, editButtonTop.get()), TextureResource.edit.size, Rect.XAlignment.Center, Rect.YAlignment.Top);
 			if(info.sign.hasThePermissionToEdit(info.tile, getMinecraft().player)) {
-				addButton(new ImageButton(
+				addRenderableWidget(new ImageButton(
 					editRect.point.x, editRect.point.y,
 					editRect.width, editRect.height,
 					0, 0, TextureResource.edit.size.height,
@@ -172,7 +172,7 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 	private void confirm() {
 		getMinecraft().setScreen(null);
 		data.consume(
-			langKey -> getMinecraft().player.displayClientMessage(new TranslationTextComponent(langKey), true),
+			langKey -> getMinecraft().player.displayClientMessage(new TranslatableComponent(langKey), true),
 			data -> PacketHandler.sendToServer(new Teleport.Request.Package(data.waystoneName))
 		);
 	}

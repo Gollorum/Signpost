@@ -1,7 +1,7 @@
 package gollorum.signpost.minecraft.gui.utils;
 
 import gollorum.signpost.Signpost;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 public class TextureResource {
 

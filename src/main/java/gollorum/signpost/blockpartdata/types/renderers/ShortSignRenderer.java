@@ -1,15 +1,15 @@
 package gollorum.signpost.blockpartdata.types.renderers;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-import gollorum.signpost.minecraft.rendering.ModelRegistry;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Vector3f;
 import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.blockpartdata.types.SmallShortSignBlockPart;
+import gollorum.signpost.minecraft.rendering.ModelRegistry;
 import gollorum.signpost.utils.math.MathUtils;
 import gollorum.signpost.utils.modelGeneration.SignModel;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.resources.model.BakedModel;
 
 import static gollorum.signpost.minecraft.utils.CoordinatesUtil.FontToVoxelSize;
 import static gollorum.signpost.minecraft.utils.CoordinatesUtil.VoxelSize;
@@ -24,12 +24,12 @@ public class ShortSignRenderer extends SignRenderer<SmallShortSignBlockPart> {
 	private static final float FONT_SIZE_VOXELS = 2 / TEXT_RATIO;
 
 	@Override
-	protected IBakedModel makeBakedModel(SmallShortSignBlockPart sign) {
+	protected BakedModel makeBakedModel(SmallShortSignBlockPart sign) {
 		return ModelRegistry.ShortBakedSign.makeModel(sign);
 	}
 
 	@Override
-	protected IBakedModel makeBakedOverlayModel(SmallShortSignBlockPart sign, Overlay overlay) {
+	protected BakedModel makeBakedOverlayModel(SmallShortSignBlockPart sign, Overlay overlay) {
 		return ModelRegistry.ShortBakedSign.makeOverlayModel(sign, overlay);
 	}
 
@@ -44,7 +44,7 @@ public class ShortSignRenderer extends SignRenderer<SmallShortSignBlockPart> {
 	}
 
 	@Override
-	protected void renderText(SmallShortSignBlockPart sign, MatrixStack matrix, FontRenderer fontRenderer, IRenderTypeBuffer buffer, int combinedLights) {
+	protected void renderText(SmallShortSignBlockPart sign, PoseStack matrix, Font fontRenderer, MultiBufferSource buffer, int combinedLights) {
 		matrix.pushPose();
 		renderText(true, sign, matrix, fontRenderer, buffer, combinedLights);
 		matrix.popPose();
@@ -53,7 +53,7 @@ public class ShortSignRenderer extends SignRenderer<SmallShortSignBlockPart> {
 		matrix.popPose();
 	}
 
-	private void renderText(boolean isFlipped, SmallShortSignBlockPart sign, MatrixStack matrix, FontRenderer fontRenderer, IRenderTypeBuffer buffer, int combinedLights) {
+	private void renderText(boolean isFlipped, SmallShortSignBlockPart sign, PoseStack matrix, Font fontRenderer, MultiBufferSource buffer, int combinedLights) {
 		matrix.mulPose(Vector3f.ZP.rotationDegrees(180));
 		float scale = FONT_SIZE_VOXELS * FontToVoxelSize;
 		float MAX_WIDTH_FRAC = fontRenderer.width(sign.getText()) * scale / MAXIMUM_TEXT_WIDTH;

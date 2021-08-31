@@ -8,9 +8,9 @@ import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.modelGeneration.SignModelFactory;
+import net.minecraft.core.Direction;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.model.generators.*;
 import net.minecraftforge.common.data.ExistingFileHelper;
 

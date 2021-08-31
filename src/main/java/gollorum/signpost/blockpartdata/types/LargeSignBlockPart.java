@@ -13,13 +13,19 @@ import gollorum.signpost.utils.math.geometry.AABB;
 import gollorum.signpost.utils.math.geometry.Matrix4x4;
 import gollorum.signpost.utils.math.geometry.TransformedBox;
 import gollorum.signpost.utils.math.geometry.Vector3;
+import net.minecraft.Util;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.util.Optional;
 
@@ -90,7 +96,7 @@ public class LargeSignBlockPart extends SignBlockPart<LargeSignBlockPart> {
     }
 
     private void notifyTextChanged(InteractionInfo info) {
-        CompoundNBT compound = new CompoundNBT();
+        CompoundTag compound = new CompoundTag();
         compound.putString("Text0", text[0]);
         compound.putString("Text1", text[1]);
         compound.putString("Text2", text[2]);
@@ -99,14 +105,14 @@ public class LargeSignBlockPart extends SignBlockPart<LargeSignBlockPart> {
     }
 
     @Override
-    public void readMutationUpdate(CompoundNBT compound, TileEntity tile, PlayerEntity editingPlayer) {
+    public void readMutationUpdate(CompoundTag compound, BlockEntity tile, Player editingPlayer) {
         if(editingPlayer != null
             && !editingPlayer.level.isClientSide()
             && tile instanceof WithOwner.OfSignpost
             && !hasThePermissionToEdit(((WithOwner.OfSignpost)tile), editingPlayer)
         ) {
             // This should not happen unless a player tries to hacc
-            editingPlayer.sendMessage(new TranslationTextComponent(LangKeys.noPermissionSignpost), Util.NIL_UUID);
+            editingPlayer.sendMessage(new TranslatableComponent(LangKeys.noPermissionSignpost), Util.NIL_UUID);
             return;
         }
         if (compound.contains("Text0")) {
@@ -135,7 +141,7 @@ public class LargeSignBlockPart extends SignBlockPart<LargeSignBlockPart> {
     }
 
     @Override
-    public void writeTo(CompoundNBT compound) {
+    public void writeTo(CompoundTag compound) {
         METADATA.write(this, compound);
     }
 

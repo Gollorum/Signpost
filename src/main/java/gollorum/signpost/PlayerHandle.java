@@ -1,12 +1,12 @@
 package gollorum.signpost;
 
 import gollorum.signpost.utils.serialization.CompoundSerializable;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.Util;
+import net.minecraft.Util;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -43,7 +43,7 @@ public class PlayerHandle {
         return id.hashCode();
     }
 
-    public PlayerEntity asEntity() {
+    public Player asEntity() {
         return Signpost.getServerInstance().getPlayerList().getPlayer(id);
     }
 
@@ -51,18 +51,18 @@ public class PlayerHandle {
     public static final class SerializerImpl implements CompoundSerializable<PlayerHandle> {
 
         @Override
-        public CompoundNBT write(PlayerHandle playerHandle, CompoundNBT compound) {
+        public CompoundTag write(PlayerHandle playerHandle, CompoundTag compound) {
             compound.putUUID("Id", playerHandle.id);
             return compound;
         }
 
         @Override
-        public boolean isContainedIn(CompoundNBT compound) {
+        public boolean isContainedIn(CompoundTag compound) {
             return compound.contains("Id");
         }
 
         @Override
-        public PlayerHandle read(CompoundNBT compound) {
+        public PlayerHandle read(CompoundTag compound) {
             return new PlayerHandle(compound.getUUID("Id"));
         }
 
@@ -72,12 +72,12 @@ public class PlayerHandle {
         }
 
         @Override
-        public void write(PlayerHandle playerHandle, PacketBuffer buffer) {
+        public void write(PlayerHandle playerHandle, FriendlyByteBuf buffer) {
             buffer.writeUUID(playerHandle.id);
         }
 
         @Override
-        public PlayerHandle read(PacketBuffer buffer) {
+        public PlayerHandle read(FriendlyByteBuf buffer) {
             return new PlayerHandle(buffer.readUUID());
         }
     };

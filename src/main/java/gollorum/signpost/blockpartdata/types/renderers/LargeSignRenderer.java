@@ -1,14 +1,14 @@
 package gollorum.signpost.blockpartdata.types.renderers;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-import gollorum.signpost.minecraft.rendering.ModelRegistry;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Vector3f;
 import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.blockpartdata.types.LargeSignBlockPart;
+import gollorum.signpost.minecraft.rendering.ModelRegistry;
 import gollorum.signpost.utils.modelGeneration.SignModel;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.resources.model.BakedModel;
 
 import static gollorum.signpost.minecraft.utils.CoordinatesUtil.FontToVoxelSize;
 import static gollorum.signpost.minecraft.utils.CoordinatesUtil.VoxelSize;
@@ -25,12 +25,12 @@ public class LargeSignRenderer extends SignRenderer<LargeSignBlockPart> {
 	private static final float FONT_SIZE_VOXELS = 2 / TEXT_RATIO;
 
 	@Override
-	protected IBakedModel makeBakedModel(LargeSignBlockPart sign) {
+	protected BakedModel makeBakedModel(LargeSignBlockPart sign) {
 		return ModelRegistry.LargeBakedSign.makeModel(sign);
 	}
 
 	@Override
-	protected IBakedModel makeBakedOverlayModel(LargeSignBlockPart sign, Overlay overlay) {
+	protected BakedModel makeBakedOverlayModel(LargeSignBlockPart sign, Overlay overlay) {
 		return ModelRegistry.LargeBakedSign.makeOverlayModel(sign, overlay);
 	}
 
@@ -45,7 +45,7 @@ public class LargeSignRenderer extends SignRenderer<LargeSignBlockPart> {
 	}
 
 	@Override
-	public void renderText(LargeSignBlockPart sign, MatrixStack matrix, FontRenderer fontRenderer, IRenderTypeBuffer buffer, int combinedLights) {
+	public void renderText(LargeSignBlockPart sign, PoseStack matrix, Font fontRenderer, MultiBufferSource buffer, int combinedLights) {
 		matrix.mulPose(Vector3f.ZP.rotationDegrees(180));
 		matrix.mulPose(Vector3f.YP.rotation((float) (
 			sign.isFlipped()
@@ -73,7 +73,7 @@ public class LargeSignRenderer extends SignRenderer<LargeSignBlockPart> {
 		matrix.popPose();
 	}
 
-	private void render(LargeSignBlockPart sign, FontRenderer fontRenderer, String text, MatrixStack matrix, IRenderTypeBuffer buffer, int combinedLights, boolean isLong) {
+	private void render(LargeSignBlockPart sign, Font fontRenderer, String text, PoseStack matrix, MultiBufferSource buffer, int combinedLights, boolean isLong) {
 		float scale = FONT_SIZE_VOXELS * FontToVoxelSize;
 		float MAX_WIDTH_FRAC = fontRenderer.width(text) * scale / (isLong ? MAXIMUM_TEXT_WIDTH_LONG : MAXIMUM_TEXT_WIDTH_SHORT);
 		scale /= Math.max(1, MAX_WIDTH_FRAC);

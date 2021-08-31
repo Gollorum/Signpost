@@ -2,8 +2,8 @@ package gollorum.signpost.networking;
 
 import gollorum.signpost.utils.Tuple;
 import gollorum.signpost.utils.serialization.BufferSerializable;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.fmllegacy.network.NetworkEvent;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -39,7 +39,7 @@ public abstract class ReflectionEvent<Self extends ReflectionEvent<Self>> implem
     }
 
     @Override
-    public final void encode(Self self, PacketBuffer buffer) {
+    public final void encode(Self self, FriendlyByteBuf buffer) {
         try {
             for(Tuple<Field, BufferSerializable> tuple : fieldsAndSerializers) {
                 tuple._2.write(tuple._1.get(self), buffer);
@@ -50,7 +50,7 @@ public abstract class ReflectionEvent<Self extends ReflectionEvent<Self>> implem
     }
 
     @Override
-    public final Self decode(PacketBuffer buffer) {
+    public final Self decode(FriendlyByteBuf buffer) {
         try {
             Self self = (Self) getClass().newInstance();
             for(Tuple<Field, BufferSerializable> tuple : fieldsAndSerializers) {

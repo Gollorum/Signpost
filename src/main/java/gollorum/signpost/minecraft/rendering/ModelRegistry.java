@@ -8,8 +8,8 @@ import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
 import gollorum.signpost.minecraft.data.PostModel;
 import gollorum.signpost.utils.modelGeneration.SignModel;
 import gollorum.signpost.utils.modelGeneration.SignModelFactory;
-import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -64,7 +64,7 @@ public class ModelRegistry<M> {
 		SmallShortSignBlockPart.class
 	);
 
-	public static ModelRegistry<IBakedModel> LargeBakedSign = new ModelRegistry<>(
+	public static ModelRegistry<BakedModel> LargeBakedSign = new ModelRegistry<>(
 		(mainTexture, secondaryTexture) -> RenderingUtil.loadModel(
 			PostModel.largeLocation, mainTexture, secondaryTexture
 		),
@@ -76,7 +76,7 @@ public class ModelRegistry<M> {
 		LargeSignBlockPart.class
 	);
 
-	public static ModelRegistry<IBakedModel> WideBakedSign = new ModelRegistry<>(
+	public static ModelRegistry<BakedModel> WideBakedSign = new ModelRegistry<>(
 		(mainTexture, secondaryTexture) -> RenderingUtil.loadModel(
 			PostModel.wideLocation, mainTexture, secondaryTexture
 		),
@@ -88,7 +88,7 @@ public class ModelRegistry<M> {
 		SmallWideSignBlockPart.class
 	);
 
-	public static ModelRegistry<IBakedModel> ShortBakedSign = new ModelRegistry<>(
+	public static ModelRegistry<BakedModel> ShortBakedSign = new ModelRegistry<>(
 		(mainTexture, secondaryTexture) -> RenderingUtil.loadModel(
 			PostModel.shortLocation, mainTexture, secondaryTexture
 		),

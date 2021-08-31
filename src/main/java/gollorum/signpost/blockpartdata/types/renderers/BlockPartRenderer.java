@@ -1,15 +1,15 @@
 package gollorum.signpost.blockpartdata.types.renderers;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blockpartdata.types.*;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.utils.BlockPart;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.util.Map;
 import java.util.Optional;
@@ -40,10 +40,10 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
 
     public static <T extends BlockPart<T>> void renderDynamic(
         T part,
-        TileEntity tileEntity,
-        TileEntityRendererDispatcher renderDispatcher,
-        MatrixStack matrix,
-        IRenderTypeBuffer buffer,
+        BlockEntity tileEntity,
+        BlockEntityRenderDispatcher renderDispatcher,
+        PoseStack matrix,
+        MultiBufferSource buffer,
         int combinedLights,
         int combinedOverlay,
         Random random,
@@ -87,10 +87,10 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
 
     public abstract void render(
         T part,
-        TileEntity tileEntity,
-        TileEntityRendererDispatcher renderDispatcher,
-        MatrixStack matrix,
-        IRenderTypeBuffer buffer,
+        BlockEntity tileEntity,
+        BlockEntityRenderDispatcher renderDispatcher,
+        PoseStack matrix,
+        MultiBufferSource buffer,
         int combinedLights,
         int combinedOverlay,
         Random random,

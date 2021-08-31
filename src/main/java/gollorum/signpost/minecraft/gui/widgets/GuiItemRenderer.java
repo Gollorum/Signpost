@@ -1,22 +1,24 @@
 package gollorum.signpost.minecraft.gui.widgets;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.minecraft.gui.utils.Rect;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.client.renderer.ItemRenderer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.client.RenderProperties;
 
-public class GuiItemRenderer extends Widget {
+public class GuiItemRenderer extends AbstractWidget {
 
 	private ItemStack itemStack;
 
 	private final ItemRenderer itemRenderer = Minecraft.getInstance().getItemRenderer();
 
 	public GuiItemRenderer(Rect rect, ItemStack itemStack) {
-		super(rect.point.x, rect.point.y, rect.width, rect.height, new StringTextComponent("GuiItemRenderer"));
+		super(rect.point.x, rect.point.y, rect.width, rect.height, new TextComponent("GuiItemRenderer"));
 		this.itemStack = itemStack;
 	}
 
@@ -25,8 +27,8 @@ public class GuiItemRenderer extends Widget {
 	}
 
 	@Override
-	public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-		FontRenderer font = itemStack.getItem().getFontRenderer(itemStack);
+	public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+		Font font = RenderProperties.get(itemStack).getFont(itemStack);
 		if (font == null) font = Minecraft.getInstance().font;
 		this.setBlitOffset(200);
 		this.itemRenderer.blitOffset = 200.0F;
@@ -34,5 +36,10 @@ public class GuiItemRenderer extends Widget {
 		itemRenderer.renderGuiItemDecorations(font, itemStack, x, y, null);
 		this.itemRenderer.blitOffset = 0.0F;
 		this.setBlitOffset(0);
+	}
+
+	@Override
+	public void updateNarration(NarrationElementOutput p_169152_) {
+
 	}
 }

@@ -9,16 +9,16 @@ import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.utils.LangKeys;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
-import net.minecraft.command.arguments.EntityArgument;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.Util;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.world.entity.player.Player;
 
 public class DiscoverWaystone {
 
-	public static ArgumentBuilder<CommandSource, ?> register() {
+	public static ArgumentBuilder<CommandSourceStack, ?> register() {
 		return Commands.literal("discover")
 			.requires(source -> source.hasPermission(3))
 			.then(Commands.argument("waystone", new WaystoneArgument())
@@ -42,11 +42,11 @@ public class DiscoverWaystone {
 					))));
 	}
 
-	private static int execute(String name, PlayerEntity player) throws CommandSyntaxException {
+	private static int execute(String name, Player player) throws CommandSyntaxException {
 		WaystoneHandle.Vanilla handle = WaystoneLibrary.getInstance().getHandleByName(name)
-			.orElseThrow(() -> new SimpleCommandExceptionType(new TranslationTextComponent(LangKeys.waystoneNotFound, Colors.wrap(name, Colors.highlight))).create());
+			.orElseThrow(() -> new SimpleCommandExceptionType(new TranslatableComponent(LangKeys.waystoneNotFound, Colors.wrap(name, Colors.highlight))).create());
 		if(WaystoneLibrary.getInstance().addDiscovered(new PlayerHandle(player), handle)) {
-			player.sendMessage(new TranslationTextComponent(LangKeys.discovered, Colors.wrap(name, Colors.highlight)), Util.NIL_UUID);
+			player.sendMessage(new TranslatableComponent(LangKeys.discovered, Colors.wrap(name, Colors.highlight)), Util.NIL_UUID);
 		}
 		return Command.SINGLE_SUCCESS;
 	}

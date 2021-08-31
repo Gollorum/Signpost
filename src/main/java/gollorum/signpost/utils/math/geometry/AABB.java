@@ -1,7 +1,5 @@
 package gollorum.signpost.utils.math.geometry;
 
-import net.minecraft.util.math.AxisAlignedBB;
-
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
@@ -40,8 +38,8 @@ public class AABB implements Intersectable<Ray, Float> {
 
     public AABB offset(Vector3 v){ return new AABB(v.add(min), v.add(max)); }
 
-    public AxisAlignedBB asMinecraftBB(){
-        return new AxisAlignedBB(min.asVec3d(), max.asVec3d());
+    public net.minecraft.world.phys.AABB asMinecraftBB(){
+        return new net.minecraft.world.phys.AABB(min.asVec3(), max.asVec3());
     }
 
     public Vector3[] allCorners(){

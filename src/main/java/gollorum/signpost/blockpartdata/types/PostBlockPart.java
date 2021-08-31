@@ -21,12 +21,12 @@ import gollorum.signpost.utils.math.geometry.AABB;
 import gollorum.signpost.utils.math.geometry.Intersectable;
 import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -133,24 +133,24 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
     }
 
     @Override
-    public void writeTo(CompoundNBT compound) {
+    public void writeTo(CompoundTag compound) {
         METADATA.write(this, compound);
     }
 
     private void notifyTextureChanged(InteractionInfo info) {
-        CompoundNBT compound = new CompoundNBT();
+        CompoundTag compound = new CompoundTag();
         compound.putString("type", "texture");
         compound.putString("texture", texture.toString());
         info.mutationDistributor.accept(compound);
     }
 
     @Override
-    public void readMutationUpdate(CompoundNBT compound, TileEntity tile, PlayerEntity editingPlayer) {
+    public void readMutationUpdate(CompoundTag compound, BlockEntity tile, Player editingPlayer) {
         setTexture(new ResourceLocation(compound.getString("texture")));
     }
 
     @Override
-    public boolean hasThePermissionToEdit(WithOwner owner, PlayerEntity player) { return true; }
+    public boolean hasThePermissionToEdit(WithOwner owner, Player player) { return true; }
 
     @Override
     public Collection<ItemStack> getDrops(PostTile tile) {

@@ -7,25 +7,24 @@ import gollorum.signpost.minecraft.block.WaystoneBlock;
 import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.WaystoneContainer;
 import gollorum.signpost.utils.WorldLocation;
-import net.minecraft.block.BlockState;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.Optional;
 
-public class WaystoneTile extends TileEntity implements WithOwner.OfWaystone, WaystoneContainer {
+public class WaystoneTile extends BlockEntity implements WithOwner.OfWaystone, WaystoneContainer {
 
     public static final String REGISTRY_NAME = "waystone";
 
-    public static final TileEntityType<WaystoneTile> type = TileEntityType.Builder.of(WaystoneTile::new, WaystoneBlock.INSTANCE).build(null);
+    public static final BlockEntityType<WaystoneTile> type = BlockEntityType.Builder.of(WaystoneTile::new, WaystoneBlock.INSTANCE).build(null);
 
     private Optional<PlayerHandle> owner = Optional.empty();
 
-    public WaystoneTile() {
-        super(type);
+    public WaystoneTile(BlockPos pos, BlockState state) {
+        super(type, pos, state);
     }
 
     @Override
@@ -41,27 +40,6 @@ public class WaystoneTile extends TileEntity implements WithOwner.OfWaystone, Wa
     }
 
     @Override
-    public void setLevelAndPosition(World world, BlockPos pos) {
-        if(!world.isClientSide()) {
-            Optional<WorldLocation> oldLocation = WorldLocation.from(this);
-            oldLocation.ifPresent(worldLocation -> WaystoneLibrary.getInstance().updateLocation(
-                worldLocation,
-                new WorldLocation(pos, world)
-            ));
-        }
-        super.setLevelAndPosition(world, pos);
-    }
-
-    @Override
-    public void setPosition(BlockPos pos) {
-        Optional<WorldLocation> oldLocation = WorldLocation.from(this);
-        super.setPosition(pos);
-        Optional<WorldLocation> newLocation = WorldLocation.from(this); // getLevel() has to be non-null if this is present.
-        if(oldLocation.isPresent() && newLocation.isPresent() && !getLevel().isClientSide())
-            WaystoneLibrary.getInstance().updateLocation(oldLocation.get(), newLocation.get());
-    }
-
-    @Override
     public Optional<PlayerHandle> getWaystoneOwner() {
         return owner;
     }
@@ -71,14 +49,14 @@ public class WaystoneTile extends TileEntity implements WithOwner.OfWaystone, Wa
     }
 
     @Override
-    public CompoundNBT save(CompoundNBT compound) {
+    public CompoundTag save(CompoundTag compound) {
         compound.put("Owner", PlayerHandle.Serializer.optional().write(owner));
         return super.save(compound);
     }
 
     @Override
-    public void load(BlockState state, CompoundNBT compound) {
-        super.load(state, compound);
+    public void load(CompoundTag compound) {
+        super.load(compound);
         owner = PlayerHandle.Serializer.optional().read(compound.getCompound("Owner"));
     }
 }

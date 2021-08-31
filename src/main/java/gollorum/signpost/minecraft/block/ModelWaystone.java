@@ -1,42 +1,44 @@
 package gollorum.signpost.minecraft.block;
 
 import gollorum.signpost.BlockRestrictions;
-import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
+import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.security.WithCountRestriction;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.IWaterLoggable;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.material.MaterialColor;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.fluid.Fluids;
-import net.minecraft.item.BlockItemUseContext;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-import net.minecraft.loot.LootContext;
-import net.minecraft.state.BooleanProperty;
-import net.minecraft.state.DirectionProperty;
-import net.minecraft.state.StateContainer;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.*;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.shapes.ISelectionContext;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.math.shapes.VoxelShapes;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.NonNullList;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.material.MaterialColor;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class ModelWaystone extends Block implements IWaterLoggable, WithCountRestriction {
+public class ModelWaystone extends BaseEntityBlock implements SimpleWaterloggedBlock, WithCountRestriction {
 
 	public static final BooleanProperty Waterlogged = BlockStateProperties.WATERLOGGED;
 	public static final DirectionProperty Facing = BlockStateProperties.HORIZONTAL_FACING;
@@ -64,14 +66,14 @@ public class ModelWaystone extends Block implements IWaterLoggable, WithCountRes
 		public int hashCode() { return name.hashCode(); }
 	}
 	public static final List<Variant> variants = new ArrayList<>();
-	public static Variant simple_0 = new Variant("simple_0", "0", VoxelShapes.box(0.25f, 0, 0.25f, 0.75f, 0.5f, 0.75f), 1);
-	public static Variant simple_1 = new Variant("simple_1", "0", VoxelShapes.box(0.25f, 0, 0.25f, 0.75f, 0.5f, 0.75f), 1);
-	public static Variant simple_2 = new Variant("simple_2", "0", VoxelShapes.box(0.3125f, 0, 0.3125f, 0.75f, 0.6875f, 0.6875f), 0);
-	public static Variant detailed_0 = new Variant("detailed_0", "1", VoxelShapes.box(0.25f, 0, 0.25f, 0.75f, 0.5f, 0.75f), 2);
-	public static Variant detailed_1 = new Variant("detailed_1", "1", VoxelShapes.box(0.25f, 0, 0.25f, 0.75f, 0.75f, 0.75f), 0);
-	public static Variant aer = new Variant("aer", "2", VoxelShapes.box(0.05f, 0, 0.05f, 0.95f, 0.6f, 0.95f), 0);
-	public static Variant dwarf = new Variant("dwarf", "2", VoxelShapes.box(0.05f, 0, 0.05f, 0.95f, 0.4375f, 0.95f), 2);
-	public static Variant ygnar = new Variant("ygnar", "2", VoxelShapes.box(0.125f, 0, 0.125f, 0.875f, 1f, 0.875f), 0);
+	public static Variant simple_0 = new Variant("simple_0", "0", Shapes.box(0.25f, 0, 0.25f, 0.75f, 0.5f, 0.75f), 1);
+	public static Variant simple_1 = new Variant("simple_1", "0", Shapes.box(0.25f, 0, 0.25f, 0.75f, 0.5f, 0.75f), 1);
+	public static Variant simple_2 = new Variant("simple_2", "0", Shapes.box(0.3125f, 0, 0.3125f, 0.75f, 0.6875f, 0.6875f), 0);
+	public static Variant detailed_0 = new Variant("detailed_0", "1", Shapes.box(0.25f, 0, 0.25f, 0.75f, 0.5f, 0.75f), 2);
+	public static Variant detailed_1 = new Variant("detailed_1", "1", Shapes.box(0.25f, 0, 0.25f, 0.75f, 0.75f, 0.75f), 0);
+	public static Variant aer = new Variant("aer", "2", Shapes.box(0.05f, 0, 0.05f, 0.95f, 0.6f, 0.95f), 0);
+	public static Variant dwarf = new Variant("dwarf", "2", Shapes.box(0.05f, 0, 0.05f, 0.95f, 0.4375f, 0.95f), 2);
+	public static Variant ygnar = new Variant("ygnar", "2", Shapes.box(0.125f, 0, 0.125f, 0.875f, 1f, 0.875f), 0);
 	public static final Variant generationMarker = simple_0;
 	static {
 		variants.add(simple_0);
@@ -106,19 +108,19 @@ public class ModelWaystone extends Block implements IWaterLoggable, WithCountRes
 	}
 
 	@Override
-	public ActionResultType use(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
+	public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
 		WaystoneBlock.onRightClick(world, pos, player);
-		return ActionResultType.CONSUME;
+		return InteractionResult.CONSUME;
 	}
 
 	@Override
-	protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
+	protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
 		builder.add(Waterlogged).add(Facing);
 	}
 
 	@Nullable
 	@Override
-	public BlockState getStateForPlacement(BlockItemUseContext context) {
+	public BlockState getStateForPlacement(BlockPlaceContext context) {
 		return defaultBlockState().setValue(Facing, context.getHorizontalDirection());
 	}
 
@@ -126,12 +128,12 @@ public class ModelWaystone extends Block implements IWaterLoggable, WithCountRes
 	public BlockState rotate(BlockState state, Rotation rot) {
 		if(!state.hasProperty(Facing)) return state;
 		Direction dir = state.getValue(Facing);
-		switch (rot) {
-			case CLOCKWISE_90: return state.setValue(Facing, dir.getClockWise());
-			case CLOCKWISE_180: return state.setValue(Facing, dir.getClockWise().getClockWise());
-			case COUNTERCLOCKWISE_90: return state.setValue(Facing, dir.getCounterClockWise());
-			default: return state;
-		}
+		return switch (rot) {
+			case CLOCKWISE_90 -> state.setValue(Facing, dir.getClockWise());
+			case CLOCKWISE_180 -> state.setValue(Facing, dir.getClockWise().getClockWise());
+			case COUNTERCLOCKWISE_90 -> state.setValue(Facing, dir.getCounterClockWise());
+			default -> state;
+		};
 	}
 
 	@Override
@@ -140,24 +142,21 @@ public class ModelWaystone extends Block implements IWaterLoggable, WithCountRes
 		return state.setValue(Facing, state.getValue(Facing).getOpposite());
 	}
 
-	@Override
-	public boolean hasTileEntity(BlockState state) { return true; }
-
 	@Nullable
 	@Override
-	public TileEntity createTileEntity(BlockState state, IBlockReader world) {
-		return new WaystoneTile();
+	public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+		return new WaystoneTile(pos, state);
 	}
 
 	@Override
-	public void setPlacedBy(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+	public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
 		super.setPlacedBy(world, pos, state, placer, stack);
 		WaystoneBlock.registerOwnerAndRequestGui(world, pos, placer);
 	}
 
 	@Override
 	public void fillItemCategory(
-		ItemGroup group, NonNullList<ItemStack> items
+		CreativeModeTab group, NonNullList<ItemStack> items
 	) {
 		if(Config.Server.allowedWaystones.get().contains(variant.name))
 			super.fillItemCategory(group, items);
@@ -170,13 +169,13 @@ public class ModelWaystone extends Block implements IWaterLoggable, WithCountRes
 	}
 
 	@Override
-	public boolean propagatesSkylightDown(BlockState state, IBlockReader reader, BlockPos pos) {
+	public boolean propagatesSkylightDown(BlockState state, BlockGetter reader, BlockPos pos) {
 		return !state.getValue(Waterlogged);
 	}
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public VoxelShape getShape(BlockState state, IBlockReader world, BlockPos pos, ISelectionContext context) {
+	public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
 		return variant.shape;
 	}
 

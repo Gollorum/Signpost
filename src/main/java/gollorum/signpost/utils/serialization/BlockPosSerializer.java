@@ -1,8 +1,8 @@
 package gollorum.signpost.utils.serialization;
 
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 
 public class BlockPosSerializer implements CompoundSerializable<BlockPos> {
 
@@ -11,7 +11,7 @@ public class BlockPosSerializer implements CompoundSerializable<BlockPos> {
     private BlockPosSerializer(){}
 
     @Override
-    public CompoundNBT write(BlockPos blockPos, CompoundNBT compound) {
+    public CompoundTag write(BlockPos blockPos, CompoundTag compound) {
         compound.putInt("X", blockPos.getX());
         compound.putInt("Y", blockPos.getY());
         compound.putInt("Z", blockPos.getZ());
@@ -19,14 +19,14 @@ public class BlockPosSerializer implements CompoundSerializable<BlockPos> {
     }
 
     @Override
-    public boolean isContainedIn(CompoundNBT compound) {
+    public boolean isContainedIn(CompoundTag compound) {
         return compound.contains("X") &&
             compound.contains("Y") &&
             compound.contains("Z");
     }
 
     @Override
-    public BlockPos read(CompoundNBT compound) {
+    public BlockPos read(CompoundTag compound) {
         return new BlockPos(
             compound.getInt("X"),
             compound.getInt("Y"),
@@ -40,14 +40,14 @@ public class BlockPosSerializer implements CompoundSerializable<BlockPos> {
     }
 
     @Override
-    public void write(BlockPos blockPos, PacketBuffer buffer) {
+    public void write(BlockPos blockPos, FriendlyByteBuf buffer) {
         buffer.writeInt(blockPos.getX());
         buffer.writeInt(blockPos.getY());
         buffer.writeInt(blockPos.getZ());
     }
 
     @Override
-    public BlockPos read(PacketBuffer buffer) {
+    public BlockPos read(FriendlyByteBuf buffer) {
         return new BlockPos(
             buffer.readInt(),
             buffer.readInt(),

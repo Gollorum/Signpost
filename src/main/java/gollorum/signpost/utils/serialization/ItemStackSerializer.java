@@ -1,9 +1,9 @@
 package gollorum.signpost.utils.serialization;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.item.ItemStack;
 
 public final class ItemStackSerializer implements CompoundSerializable<ItemStack> {
 
@@ -12,21 +12,21 @@ public final class ItemStackSerializer implements CompoundSerializable<ItemStack
 	private ItemStackSerializer() {}
 
 	@Override
-	public CompoundNBT write(net.minecraft.item.ItemStack itemStack, CompoundNBT compound) {
-		compound.put("ItemStack", itemStack.save(new CompoundNBT()));
+	public CompoundTag write(ItemStack itemStack, CompoundTag compound) {
+		compound.put("ItemStack", itemStack.save(new CompoundTag()));
 		return compound;
 	}
 
 	@Override
-	public boolean isContainedIn(CompoundNBT compound) {
+	public boolean isContainedIn(CompoundTag compound) {
 		return compound.contains("ItemStack");
 	}
 
 	@Override
-	public net.minecraft.item.ItemStack read(CompoundNBT compound) {
-		INBT readCompound = compound.get("ItemStack");
-		if(readCompound instanceof CompoundNBT)
-			return net.minecraft.item.ItemStack.of((CompoundNBT) readCompound);
+	public ItemStack read(CompoundTag compound) {
+		Tag readCompound = compound.get("ItemStack");
+		if(readCompound instanceof CompoundTag)
+			return ItemStack.of((CompoundTag) readCompound);
 		else return ItemStack.EMPTY;
 	}
 
@@ -36,12 +36,12 @@ public final class ItemStackSerializer implements CompoundSerializable<ItemStack
 	}
 
 	@Override
-	public void write(ItemStack itemStack, PacketBuffer buffer) {
+	public void write(ItemStack itemStack, FriendlyByteBuf buffer) {
 		buffer.writeItem(itemStack);
 	}
 
 	@Override
-	public ItemStack read(PacketBuffer buffer) {
+	public ItemStack read(FriendlyByteBuf buffer) {
 		return buffer.readItem();
 	}
 

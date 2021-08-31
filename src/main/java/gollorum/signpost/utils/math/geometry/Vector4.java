@@ -1,8 +1,8 @@
 package gollorum.signpost.utils.math.geometry;
 
 import gollorum.signpost.utils.serialization.CompoundSerializable;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 
 import java.util.Objects;
 import java.util.function.Function;
@@ -101,7 +101,7 @@ public final class Vector4 {
         private Serializer(){}
 
         @Override
-        public CompoundNBT write(Vector4 Vector4, CompoundNBT compound) {
+        public CompoundTag write(Vector4 Vector4, CompoundTag compound) {
             compound.putFloat("X", Vector4.x);
             compound.putFloat("Y", Vector4.y);
             compound.putFloat("Z", Vector4.z);
@@ -110,7 +110,7 @@ public final class Vector4 {
         }
 
         @Override
-        public boolean isContainedIn(CompoundNBT compound) {
+        public boolean isContainedIn(CompoundTag compound) {
             return compound.contains("X") &&
                 compound.contains("Y") &&
                 compound.contains("Z") &&
@@ -118,7 +118,7 @@ public final class Vector4 {
         }
 
         @Override
-        public Vector4 read(CompoundNBT compound) {
+        public Vector4 read(CompoundTag compound) {
             return new Vector4(
                 compound.getFloat("X"),
                 compound.getFloat("Y"),
@@ -133,7 +133,7 @@ public final class Vector4 {
         }
 
         @Override
-        public void write(Vector4 vec, PacketBuffer buffer) {
+        public void write(Vector4 vec, FriendlyByteBuf buffer) {
             buffer.writeFloat(vec.x);
             buffer.writeFloat(vec.y);
             buffer.writeFloat(vec.z);
@@ -141,7 +141,7 @@ public final class Vector4 {
         }
 
         @Override
-        public Vector4 read(PacketBuffer buffer) {
+        public Vector4 read(FriendlyByteBuf buffer) {
             return new Vector4(
                 buffer.readFloat(),
                 buffer.readFloat(),

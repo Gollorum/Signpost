@@ -1,14 +1,14 @@
 package gollorum.signpost.blockpartdata.types.renderers;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-import gollorum.signpost.minecraft.rendering.ModelRegistry;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Vector3f;
 import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
+import gollorum.signpost.minecraft.rendering.ModelRegistry;
 import gollorum.signpost.utils.modelGeneration.SignModel;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.resources.model.BakedModel;
 
 import static gollorum.signpost.minecraft.utils.CoordinatesUtil.FontToVoxelSize;
 import static gollorum.signpost.minecraft.utils.CoordinatesUtil.VoxelSize;
@@ -23,12 +23,12 @@ public class WideSignRenderer extends SignRenderer<SmallWideSignBlockPart> {
 	private static final float FONT_SIZE_VOXELS = 2 / TEXT_RATIO;
 
 	@Override
-	protected IBakedModel makeBakedModel(SmallWideSignBlockPart sign) {
+	protected BakedModel makeBakedModel(SmallWideSignBlockPart sign) {
 		return ModelRegistry.WideBakedSign.makeModel(sign);
 	}
 
 	@Override
-	protected IBakedModel makeBakedOverlayModel(SmallWideSignBlockPart sign, Overlay overlay) {
+	protected BakedModel makeBakedOverlayModel(SmallWideSignBlockPart sign, Overlay overlay) {
 		return ModelRegistry.WideBakedSign.makeOverlayModel(sign, overlay);
 	}
 
@@ -43,7 +43,7 @@ public class WideSignRenderer extends SignRenderer<SmallWideSignBlockPart> {
 	}
 
 	@Override
-	protected void renderText(SmallWideSignBlockPart sign, MatrixStack matrix, FontRenderer fontRenderer, IRenderTypeBuffer buffer, int combinedLights) {
+	protected void renderText(SmallWideSignBlockPart sign, PoseStack matrix, Font fontRenderer, MultiBufferSource buffer, int combinedLights) {
 		matrix.mulPose(Vector3f.ZP.rotationDegrees(180));
 		float scale = FONT_SIZE_VOXELS * FontToVoxelSize;
 		float MAX_WIDTH_FRAC = fontRenderer.width(sign.getText()) * scale / MAXIMUM_TEXT_WIDTH;

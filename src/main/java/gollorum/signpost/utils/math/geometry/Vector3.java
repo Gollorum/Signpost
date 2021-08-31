@@ -1,12 +1,14 @@
 package gollorum.signpost.utils.math.geometry;
 
+import com.mojang.math.Vector3d;
+import com.mojang.math.Vector3f;
 import com.sun.javafx.geom.Matrix3f;
+import com.sun.javafx.geom.Vec3d;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Objects;
 import java.util.function.Function;
@@ -15,12 +17,16 @@ public final class Vector3 {
 
     public static final Vector3 ZERO = new Vector3(0,0,0);
 
+    public static Vector3 fromVec3d(Vec3 vec){
+        return new Vector3((float)vec.x, (float)vec.y, (float)vec.z);
+    }
+
     public static Vector3 fromVec3d(Vector3d vec){
         return new Vector3((float)vec.x, (float)vec.y, (float)vec.z);
     }
 
-    public Vector3d asVec3d() {
-        return new Vector3d(x, y, z);
+    public Vec3 asVec3() {
+        return new Vec3(x, y, z);
     }
 
     public Vector3f asVec3f() {
@@ -155,7 +161,7 @@ public final class Vector3 {
     public static final class SerializerImpl implements CompoundSerializable<Vector3> {
 
         @Override
-        public CompoundNBT write(Vector3 vector3, CompoundNBT compound) {
+        public CompoundTag write(Vector3 vector3, CompoundTag compound) {
             compound.putFloat("X", vector3.x);
             compound.putFloat("Y", vector3.y);
             compound.putFloat("Z", vector3.z);
@@ -163,14 +169,14 @@ public final class Vector3 {
         }
 
         @Override
-        public boolean isContainedIn(CompoundNBT compound) {
+        public boolean isContainedIn(CompoundTag compound) {
             return compound.contains("X")
                 && compound.contains("Y")
                 && compound.contains("Z");
         }
 
         @Override
-        public Vector3 read(CompoundNBT compound) {
+        public Vector3 read(CompoundTag compound) {
             return new Vector3(
                 compound.getFloat("X"),
                 compound.getFloat("Y"),
@@ -184,14 +190,14 @@ public final class Vector3 {
         }
 
         @Override
-        public void write(Vector3 vec, PacketBuffer buffer) {
+        public void write(Vector3 vec, FriendlyByteBuf buffer) {
             buffer.writeFloat(vec.x);
             buffer.writeFloat(vec.y);
             buffer.writeFloat(vec.z);
         }
 
         @Override
-        public Vector3 read(PacketBuffer buffer) {
+        public Vector3 read(FriendlyByteBuf buffer) {
             return new Vector3(
                 buffer.readFloat(),
                 buffer.readFloat(),

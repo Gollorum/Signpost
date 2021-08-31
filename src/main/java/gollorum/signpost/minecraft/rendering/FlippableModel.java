@@ -1,19 +1,19 @@
 package gollorum.signpost.minecraft.rendering;
 
-import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.resources.ResourceLocation;
 
 public class FlippableModel {
 
-	public final IBakedModel model;
-	public final IBakedModel flippedModel;
+	public final BakedModel model;
+	public final BakedModel flippedModel;
 
-	public FlippableModel(IBakedModel model, IBakedModel flippedModel) {
+	public FlippableModel(BakedModel model, BakedModel flippedModel) {
 		this.model = model;
 		this.flippedModel = flippedModel;
 	}
 
-	public IBakedModel get(boolean isFlipped) { return isFlipped ? flippedModel : model; }
+	public BakedModel get(boolean isFlipped) { return isFlipped ? flippedModel : model; }
 
 	public FlippableModel withTintIndex(int tintIndex) {
 		return new FlippableModel(
@@ -37,12 +37,12 @@ public class FlippableModel {
 	}
 
 	public static FlippableModel loadSymmetrical(ResourceLocation modelLocation, ResourceLocation texture) {
-		IBakedModel model = RenderingUtil.loadModel(modelLocation, texture);
+		BakedModel model = RenderingUtil.loadModel(modelLocation, texture);
 		return new FlippableModel(model, model);
 	}
 
 	public static FlippableModel loadSymmetrical(ResourceLocation modelLocation, ResourceLocation mainTexture, ResourceLocation secondaryTexture) {
-		IBakedModel model = RenderingUtil.loadModel(modelLocation, mainTexture, secondaryTexture);
+		BakedModel model = RenderingUtil.loadModel(modelLocation, mainTexture, secondaryTexture);
 		return new FlippableModel(model, model);
 	}
 

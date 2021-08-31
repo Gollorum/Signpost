@@ -22,23 +22,23 @@ import gollorum.signpost.utils.Tuple;
 import gollorum.signpost.utils.WaystoneData;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Rotation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MutableBoundingBox;
-import net.minecraft.world.ISeedReader;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.gen.ChunkGenerator;
-import net.minecraft.world.gen.feature.jigsaw.IJigsawDeserializer;
-import net.minecraft.world.gen.feature.jigsaw.JigsawPattern;
-import net.minecraft.world.gen.feature.jigsaw.SingleJigsawPiece;
-import net.minecraft.world.gen.feature.structure.StructureManager;
-import net.minecraft.world.gen.feature.template.PlacementSettings;
-import net.minecraft.world.gen.feature.template.StructureProcessorList;
-import net.minecraft.world.gen.feature.template.Template;
-import net.minecraft.world.gen.feature.template.TemplateManager;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.StructureFeatureManager;
+import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.feature.structures.SinglePoolElement;
+import net.minecraft.world.level.levelgen.feature.structures.StructurePoolElementType;
+import net.minecraft.world.level.levelgen.feature.structures.StructureTemplatePool;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -46,7 +46,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class SignpostJigsawPiece extends SingleJigsawPiece {
+public class SignpostJigsawPiece extends SinglePoolElement {
 
 	private static final float smallSignRatio = 0.5f;
 	private static Map<BlockPos, List<WaystoneHandle.Vanilla>> waystonesTargetedByVillage;
@@ -68,16 +68,16 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 	public SignpostJigsawPiece(
 		ResourceLocation location,
 		Supplier<StructureProcessorList> structureProcessorListSupplier,
-		JigsawPattern.PlacementBehaviour placementBehaviour,
+		StructureTemplatePool.Projection placementBehaviour,
 		boolean isZombie
 	) {
 		this(Either.left(location), structureProcessorListSupplier, placementBehaviour, isZombie);
 	}
 
 	public SignpostJigsawPiece(
-		Either<ResourceLocation, Template> template,
+		Either<ResourceLocation, StructureTemplate> template,
 		Supplier<StructureProcessorList> structureProcessorListSupplier,
-		JigsawPattern.PlacementBehaviour placementBehaviour,
+		StructureTemplatePool.Projection placementBehaviour,
 		boolean isZombie
 	) {
 		super(template, structureProcessorListSupplier, placementBehaviour);
@@ -86,14 +86,14 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 
 	@Override
 	public boolean place(
-		TemplateManager templateManager,
-		ISeedReader seedReader,
-		StructureManager structureManager,
+		StructureManager templateManager,
+		WorldGenLevel seedReader,
+		StructureFeatureManager structureManager,
 		ChunkGenerator chunkGenerator,
 		BlockPos pieceLocation,
 		BlockPos villageLocation,
 		Rotation rotation,
-		MutableBoundingBox boundingBox,
+		BoundingBox boundingBox,
 		Random random,
 		boolean shouldUseJigsawReplacementStructureProcessor
 	) {
@@ -103,8 +103,8 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 		Queue<Map.Entry<BlockPos, WaystoneHandle.Vanilla>> possibleTargets = fetchPossibleTargets(pieceLocation, villageLocation, random);
 		if(possibleTargets.isEmpty()) return false;
 
-		Template template = this.template.map(templateManager::get, Function.identity());
-		PlacementSettings placementSettings = this.getSettings(rotation, boundingBox, shouldUseJigsawReplacementStructureProcessor);
+		StructureTemplate template = this.template.map(templateManager::getOrCreate, Function.identity());
+		StructurePlaceSettings placementSettings = this.getSettings(rotation, boundingBox, shouldUseJigsawReplacementStructureProcessor);
 		if (template.placeInWorld(seedReader, pieceLocation, villageLocation, placementSettings, random, 18)) {
 			Collection<WaystoneHandle.Vanilla> freshlyUsedWaystones = populateSignPostGeneration(
 				placementSettings, pieceLocation, seedReader, random, possibleTargets
@@ -112,7 +112,7 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 			waystonesTargetedByVillage.computeIfAbsent(villageLocation, k -> new ArrayList<>())
 				.addAll(freshlyUsedWaystones);
 
-			for(Template.BlockInfo blockInfo : Template.processBlockInfos(
+			for(StructureTemplate.StructureBlockInfo blockInfo : StructureTemplate.processBlockInfos(
 				seedReader, pieceLocation, villageLocation, placementSettings,
 				this.getDataMarkers(templateManager, pieceLocation, rotation, false), template
 			)) {
@@ -139,9 +139,9 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 	}
 
 	private Collection<WaystoneHandle.Vanilla> populateSignPostGeneration(
-		PlacementSettings placementSettings,
+		StructurePlaceSettings placementSettings,
 		BlockPos pieceLocation,
-		ISeedReader world,
+		WorldGenLevel world,
 		Random random,
 		Queue<Map.Entry<BlockPos, WaystoneHandle.Vanilla>> possibleTargets
 	) {
@@ -170,7 +170,7 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 	public Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> makeSign(
 		Random random,
 		Direction facing,
-		ISeedReader world,
+		WorldGenLevel world,
 		BlockPos tilePos,
 		Queue<Map.Entry<BlockPos, WaystoneHandle.Vanilla>> possibleTargets,
 		float y
@@ -183,7 +183,7 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 
 	private Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> makeWideSign(
 		Direction facing,
-		ISeedReader world,
+		WorldGenLevel world,
 		BlockPos tilePos,
 		Queue<Map.Entry<BlockPos, WaystoneHandle.Vanilla>> possibleTargets,
 		float y
@@ -216,7 +216,7 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 
 	private Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> makeShortSigns(
 		Direction facing,
-		ISeedReader world,
+		WorldGenLevel world,
 		BlockPos tilePos,
 		Queue<Map.Entry<BlockPos, WaystoneHandle.Vanilla>> possibleTargets,
 		float y
@@ -287,17 +287,17 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 		return degrees < -90 || degrees > 90;
 	}
 
-	private Optional<Overlay> overlayFor(ISeedReader world, BlockPos pos) {
+	private Optional<Overlay> overlayFor(WorldGenLevel world, BlockPos pos) {
 		Biome biome = world.getBiome(pos);
 		if(biome.shouldSnow(world, pos)
-			|| biome.getPrecipitation() == Biome.RainType.SNOW
-			|| biome.getBiomeCategory() == Biome.Category.ICY) return Optional.of(Overlay.Snow);
-		else if (biome.getBiomeCategory() == Biome.Category.JUNGLE) return Optional.of(Overlay.Vine);
+			|| biome.getPrecipitation() == Biome.Precipitation.SNOW
+			|| biome.getBiomeCategory() == Biome.BiomeCategory.ICY) return Optional.of(Overlay.Snow);
+		else if (biome.getBiomeCategory() == Biome.BiomeCategory.JUNGLE) return Optional.of(Overlay.Vine);
 		else if(biome.isHumid() || isZombie) return Optional.of(Overlay.Gras);
 		else return Optional.empty();
 	}
 
-	public IJigsawDeserializer<?> getType() {
+	public StructurePoolElementType<?> getType() {
 		return JigsawDeserializers.signpost;
 	}
 

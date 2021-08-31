@@ -1,16 +1,11 @@
 package gollorum.signpost.utils.modelGeneration;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
+import com.mojang.math.Matrix3f;
+import com.mojang.math.Matrix4f;
+import com.mojang.math.Vector3f;
+import com.mojang.math.Vector4f;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.model.RenderMaterial;
-import net.minecraft.inventory.container.PlayerContainer;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.vector.Matrix3f;
-import net.minecraft.util.math.vector.Matrix4f;
-import net.minecraft.util.math.vector.Vector3f;
-import net.minecraft.util.math.vector.Vector4f;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.*;
 
@@ -84,23 +79,22 @@ public class SignModel {
 			public Vertex(Vector3f pos, float u, float v, FaceRotation rotation) {
 				this.pos = pos;
 				switch (rotation) {
-					case Clockwise90:
+					case Clockwise90 -> {
 						this.u = 1 - v;
 						this.v = u;
-						break;
-					case CounterClockwise90:
+					}
+					case CounterClockwise90 -> {
 						this.u = v;
 						this.v = 1 - u;
-						break;
-					case UpsideDown:
+					}
+					case UpsideDown -> {
 						this.u = 1 - u;
 						this.v = 1 - v;
-						break;
-					case Zero:
-					default:
+					}
+					default -> {
 						this.u = u;
 						this.v = v;
-						break;
+					}
 				}
 			}
 		}

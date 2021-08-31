@@ -16,10 +16,10 @@ import gollorum.signpost.utils.math.geometry.AABB;
 import gollorum.signpost.utils.math.geometry.Intersectable;
 import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -58,18 +58,18 @@ public class WaystoneBlockPart implements BlockPart<WaystoneBlockPart>, WithOwne
 	public BlockPartMetadata<WaystoneBlockPart> getMeta() { return METADATA; }
 
 	@Override
-	public void writeTo(CompoundNBT compound) {
-		compound.put("owner", PlayerHandle.Serializer.optional().write(owner, new CompoundNBT()));
+	public void writeTo(CompoundTag compound) {
+		compound.put("owner", PlayerHandle.Serializer.optional().write(owner, new CompoundTag()));
 	}
 
 	@Override
-	public void readMutationUpdate(CompoundNBT compound, TileEntity tile, PlayerEntity editingPlayer) {
+	public void readMutationUpdate(CompoundTag compound, BlockEntity tile, Player editingPlayer) {
 		if(compound.contains("owner"))
 			owner = PlayerHandle.Serializer.optional().read(compound.getCompound("owner"));
 	}
 
 	@Override
-	public boolean hasThePermissionToEdit(WithOwner tile, @Nullable PlayerEntity player) { return true; }
+	public boolean hasThePermissionToEdit(WithOwner tile, @Nullable Player player) { return true; }
 
 	@Override
 	public Collection<ItemStack> getDrops(PostTile tile) {

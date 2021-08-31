@@ -1,8 +1,8 @@
 package gollorum.signpost.worldgen;
 
 import gollorum.signpost.minecraft.config.Config;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import org.apache.commons.lang3.text.WordUtils;
 
 import java.util.*;
@@ -16,7 +16,7 @@ public class DefaultVillageNamesProvider implements VillageNamesProvider {
 
 	@Override
 	public Optional<String> getFor(
-		BlockPos blockPos, BlockPos villagePos, ServerWorld world, Predicate<String> validator, Random random
+		BlockPos blockPos, BlockPos villagePos, ServerLevel world, Predicate<String> validator, Random random
 	) {
 		if(cachedNames.containsKey(villagePos)) return Optional.of(cachedNames.get(villagePos));
 		List<? extends String> prefixes = Config.Server.worldGen.naming.villageNamePrefixes.get();
