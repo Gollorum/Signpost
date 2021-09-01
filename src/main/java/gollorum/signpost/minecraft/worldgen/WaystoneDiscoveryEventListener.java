@@ -3,8 +3,8 @@ package gollorum.signpost.minecraft.worldgen;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
-import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.utils.LangKeys;
+import gollorum.signpost.minecraft.utils.TextComponents;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.ChunkPos;
@@ -31,7 +31,7 @@ public class WaystoneDiscoveryEventListener {
                     event.getEntity().sendMessage(
                         new TranslationTextComponent(
                             LangKeys.discovered,
-                            Colors.wrap(WaystoneLibrary.getInstance().getData(handle).name, Colors.highlight)
+                            TextComponents.waystone((ServerPlayerEntity) event.getEntity(), WaystoneLibrary.getInstance().getData(handle).name)
                         ), Util.NIL_UUID);
                 }
             }

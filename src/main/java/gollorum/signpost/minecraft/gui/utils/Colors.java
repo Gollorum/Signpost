@@ -2,6 +2,7 @@ package gollorum.signpost.minecraft.gui.utils;
 
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextComponent;
 import net.minecraft.util.text.TextFormatting;
 
 import java.util.function.Function;
@@ -98,7 +99,7 @@ public class Colors {
     public static int getGreen(int color) { return (color >>> 8) & 0xff; }
     public static int getBlue(int color) { return color & 0xff; }
 
-    public static ITextComponent wrap(String text, int color) {
+    public static TextComponent wrap(String text, int color) {
         StringTextComponent ret = new StringTextComponent(text);
         ret.setStyle(ret.getStyle().withColor(net.minecraft.util.text.Color.fromRgb(color)));
         return ret;

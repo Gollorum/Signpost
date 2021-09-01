@@ -4,6 +4,7 @@ import gollorum.signpost.utils.serialization.CompoundSerializable;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.Util;
@@ -43,7 +44,7 @@ public class PlayerHandle {
         return id.hashCode();
     }
 
-    public PlayerEntity asEntity() {
+    public ServerPlayerEntity asEntity() {
         return Signpost.getServerInstance().getPlayerList().getPlayer(id);
     }
 
