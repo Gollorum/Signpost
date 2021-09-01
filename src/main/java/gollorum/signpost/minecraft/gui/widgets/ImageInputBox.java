@@ -3,7 +3,6 @@ package gollorum.signpost.minecraft.gui.widgets;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.minecraft.gui.utils.*;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 
 public final class ImageInputBox extends InputBox implements Flippable {
@@ -20,12 +19,14 @@ public final class ImageInputBox extends InputBox implements Flippable {
         Rect.XAlignment backXAlignment,
         Rect.YAlignment backYAlignment,
         TextureResource texture,
-        boolean shouldDropShadow
+        boolean shouldDropShadow,
+        double zOffset
     ) {
         super(
             fontRenderer,
             inputFieldRect,
-            shouldDropShadow
+            shouldDropShadow,
+            zOffset
         );
         this.texture = texture;
         setBordered(false);
@@ -50,7 +51,8 @@ public final class ImageInputBox extends InputBox implements Flippable {
     @Override
     public void renderButton(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        Minecraft.getInstance().getTextureManager().bindForSetup(texture.location);
+        RenderSystem.setShaderTexture(0, texture.location);
+        RenderSystem.enableDepthTest();
         blit(matrixStack, backgroundRect.point.x, backgroundRect.point.y, 0, 0, backgroundRect.width, backgroundRect.height, isFlipped ? -backgroundRect.width : backgroundRect.width, backgroundRect.height);
 
         super.renderButton(matrixStack, mouseX, mouseY, partialTicks);

@@ -15,14 +15,14 @@ public class AngleInputBox extends InputBox {
 
     private float currentResult;
 
-    public AngleInputBox(Font fontRenderer, Rect inputFieldRect) {
+    public AngleInputBox(Font fontRenderer, Rect inputFieldRect, double zOffset) {
         super(
             fontRenderer,
             new Rect(
                 new Point(inputFieldRect.point.x + inputFieldRect.height, inputFieldRect.point.y),
                 inputFieldRect.width - inputFieldRect.height, inputFieldRect.height
             ),
-            true
+            true, zOffset
         );
         setFilter(null);
         setValue("0" + degreeSign);

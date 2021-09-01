@@ -152,7 +152,7 @@ public class DropDownSelection<EntryType> extends ImageButton {
     @Override
     public void renderButton(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         Minecraft minecraft = Minecraft.getInstance();
-        minecraft.getTextureManager().bindForSetup(texture.location);
+        RenderSystem.setShaderTexture(0, texture.location);
         RenderSystem.disableDepthTest();
         int yTexStart = this.isHovered() ? texture.size.height : 0;
         int xTexStart = this.isListVisible ? texture.size.width : 0;
@@ -213,23 +213,19 @@ public class DropDownSelection<EntryType> extends ImageButton {
             this.renderStripe(new Point(x0 - 2, y0 - rimHeight), new Point(x0, y1 + rimHeight));
             this.renderStripe(new Point(x0, y0 - rimHeight), new Point(x1, y0));
             this.renderStripe(new Point(x0, y1), new Point(x1, y1 + rimHeight));
-            RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
-            RenderSystem.setShaderTexture(0, GuiComponent.BACKGROUND_LOCATION);
-            RenderSystem.enableDepthTest();
-            RenderSystem.depthFunc(519);
-            bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-            bufferbuilder.vertex(this.x0, this.y0 + 4, 0.0D).uv(0.0F, 1.0F).color(0, 0, 0, 0).endVertex();
-            bufferbuilder.vertex(this.x1, this.y0 + 4, 0.0D).uv(1.0F, 1.0F).color(0, 0, 0, 0).endVertex();
-            bufferbuilder.vertex(this.x1, this.y0, 0.0D).uv(1.0F, 0.0F).color(0, 0, 0, 255).endVertex();
-            bufferbuilder.vertex(this.x0, this.y0, 0.0D).uv(0.0F, 0.0F).color(0, 0, 0, 255).endVertex();
-            tesselator.end();
+
             RenderSystem.depthFunc(515);
             RenderSystem.disableDepthTest();
             RenderSystem.enableBlend();
             RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ZERO, GlStateManager.DestFactor.ONE);
             RenderSystem.disableTexture();
             RenderSystem.setShader(GameRenderer::getPositionColorShader);
-            int i1 = 4;
+            bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+            bufferbuilder.vertex(this.x0, this.y0 + 4, 0.0D).uv(0.0F, 1.0F).color(0, 0, 0, 0).endVertex();
+            bufferbuilder.vertex(this.x1, this.y0 + 4, 0.0D).uv(1.0F, 1.0F).color(0, 0, 0, 0).endVertex();
+            bufferbuilder.vertex(this.x1, this.y0, 0.0D).uv(1.0F, 0.0F).color(0, 0, 0, 255).endVertex();
+            bufferbuilder.vertex(this.x0, this.y0, 0.0D).uv(0.0F, 0.0F).color(0, 0, 0, 255).endVertex();
+            tesselator.end();
             bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
             bufferbuilder.vertex(this.x0, this.y1, 0.0D).uv(0.0F, 1.0F).color(0, 0, 0, 255).endVertex();
             bufferbuilder.vertex(this.x1, this.y1, 0.0D).uv(1.0F, 1.0F).color(0, 0, 0, 255).endVertex();
@@ -275,9 +271,10 @@ public class DropDownSelection<EntryType> extends ImageButton {
         protected void renderStripe(Point min, Point max) {
             Tesselator tessellator = Tesselator.getInstance();
             BufferBuilder bufferbuilder = tessellator.getBuilder();
+            RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
             RenderSystem.setShaderTexture(0, TextureResource.background.location);
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-            bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+            bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
             bufferbuilder.vertex(min.x, max.y, 0.0D).uv(min.x / 32f, max.y / 32.0f).color(255, 255, 255, 255).endVertex();
             bufferbuilder.vertex(max.x, max.y, 0.0D).uv(max.x / 32f, max.y / 32.0f).color(255, 255, 255, 255).endVertex();
             bufferbuilder.vertex(max.x, min.y, 0.0D).uv(max.x / 32f, min.y / 32.0f).color(255, 255, 255, 255).endVertex();

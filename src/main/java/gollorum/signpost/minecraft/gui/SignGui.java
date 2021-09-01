@@ -27,7 +27,6 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.LockIconButton;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.TranslatableComponent;
@@ -348,7 +347,7 @@ public class SignGui extends ExtendedScreen {
                 Rect.XAlignment.Center, Rect.YAlignment.Center),
             Rect.XAlignment.Center, Rect.YAlignment.Center,
             waystoneNameTexture,
-            true);
+            true, 100);
         waystoneInputBox.setBlitOffset(100);
         waystoneInputBox.setMaxLength(200);
         waystoneInputBox.setResponder(this::onWaystoneSelected);
@@ -364,7 +363,7 @@ public class SignGui extends ExtendedScreen {
         Rect rotationInputBoxRect = waystoneInputRect.offset(
             new Point(rotationLabelWidth + 10, waystoneInputRect.height + 20),
             new Point(0, waystoneInputRect.height + 20));
-        rotationInputField = new AngleInputBox(font, rotationInputBoxRect);
+        rotationInputField = new AngleInputBox(font, rotationInputBoxRect, 0);
         addRenderableWidget(rotationInputField);
         angleDropDown = new DropDownSelection<>(
             font,
@@ -376,13 +375,13 @@ public class SignGui extends ExtendedScreen {
             (int)((waystoneNameTexture.size.height * waystoneBoxScale) - DropDownSelection.size.height) / 2,
             e -> {
                 addWidget(e);
-                for(GuiEventListener b : overlaySelectionButtons)
+                for(AbstractWidget b : overlaySelectionButtons)
                     removeWidget(b);
             },
             o -> {
-                addWidget(o);
-                for(GuiEventListener b : overlaySelectionButtons)
-                    removeWidget(b);
+                removeWidget(o);
+                for(AbstractWidget b : overlaySelectionButtons)
+                    addRenderableWidget(b);
             },
             entry -> {
                 rotationInputField.setValue(entry.angleToString());
@@ -414,12 +413,13 @@ public class SignGui extends ExtendedScreen {
         addRenderableOnly(postRenderer);
         Point modelRectTop = modelRect.at(Rect.XAlignment.Center, Rect.YAlignment.Top);
 
+        final int inputBoxesZOffset = 100;
         Rect wideInputRect = new Rect(
             modelRectTop.add(-7 * inputSignsScale, 2 * inputSignsScale),
-            modelRectTop.add(11 * inputSignsScale, 6 * inputSignsScale));
-        wideSignInputBox = new InputBox(font, wideInputRect, false);
+            modelRectTop.add(11 * inputSignsScale, 6 * inputSignsScale)
+        );
+        wideSignInputBox = new InputBox(font, wideInputRect, false, inputBoxesZOffset);
         wideSignInputBox.setBordered(false);
-        wideSignInputBox.setBlitOffset(100);
         wideSignInputBox.setTextColor(Colors.black);
         widgetsToFlip.add(new FlippableAtPivot(wideSignInputBox, modelRectTop.x));
 
@@ -432,10 +432,10 @@ public class SignGui extends ExtendedScreen {
 
         Rect shortInputRect = new Rect(
             modelRectTop.add(3 * inputSignsScale, 2 * inputSignsScale),
-            modelRectTop.add(14 * inputSignsScale, 6 * inputSignsScale));
-        shortSignInputBox = new InputBox(font, shortInputRect, false);
+            modelRectTop.add(14 * inputSignsScale, 6 * inputSignsScale)
+        );
+        shortSignInputBox = new InputBox(font, shortInputRect, false, inputBoxesZOffset);
         shortSignInputBox.setBordered(false);
-        shortSignInputBox.setBlitOffset(100);
         shortSignInputBox.setTextColor(Colors.black);
         widgetsToFlip.add(new FlippableAtPivot(shortSignInputBox, modelRectTop.x));
 
@@ -450,24 +450,20 @@ public class SignGui extends ExtendedScreen {
             modelRectTop.add(-7 * inputSignsScale, 3 * inputSignsScale),
             modelRectTop.add(9 * inputSignsScale, 14 * inputSignsScale))
             .withHeight(height -> height / 4 - 1);
-        InputBox firstLarge = new InputBox(font, largeInputRect, false);
+        InputBox firstLarge = new InputBox(font, largeInputRect, false, inputBoxesZOffset);
         firstLarge.setBordered(false);
-        firstLarge.setBlitOffset(100);
         firstLarge.setTextColor(Colors.black);
         largeInputRect = largeInputRect.withPoint(p -> p.withY(Math.round(modelRectTop.y + (13 - 3 * 2.5f) * inputSignsScale)));
-        InputBox secondLarge = new InputBox(font, largeInputRect, false);
+        InputBox secondLarge = new InputBox(font, largeInputRect, false, inputBoxesZOffset);
         secondLarge.setBordered(false);
-        secondLarge.setBlitOffset(100);
         secondLarge.setTextColor(Colors.black);
         largeInputRect = largeInputRect.withPoint(p -> p.withY(Math.round(modelRectTop.y + (13 - 2 * 2.5f) * inputSignsScale)));
-        InputBox thirdLarge = new InputBox(font, largeInputRect, false);
+        InputBox thirdLarge = new InputBox(font, largeInputRect, false, inputBoxesZOffset);
         thirdLarge.setBordered(false);
-        thirdLarge.setBlitOffset(100);
         thirdLarge.setTextColor(Colors.black);
         largeInputRect = largeInputRect.withPoint(p -> p.withY(Math.round(modelRectTop.y + (13 - 1 * 2.5f) * inputSignsScale)));
-        InputBox fourthLarge = new InputBox(font, largeInputRect, false);
+        InputBox fourthLarge = new InputBox(font, largeInputRect, false, inputBoxesZOffset);
         fourthLarge.setBordered(false);
-        fourthLarge.setBlitOffset(100);
         fourthLarge.setTextColor(Colors.black);
         firstLarge.addKeyCodeListener(KeyCodes.Down, () -> setInitialFocus(secondLarge));
         secondLarge.addKeyCodeListener(KeyCodes.Up, () -> setInitialFocus(firstLarge));
@@ -505,7 +501,7 @@ public class SignGui extends ExtendedScreen {
                 new Point(switchDirectionButton.x + switchDirectionButton.getWidth() + 20, switchDirectionButton.y + switchDirectionButton.getHeight() / 2),
                 80, 20,
                 Rect.XAlignment.Left, Rect.YAlignment.Center
-            ));
+            ), 0);
         colorInputBox.setColorResponder(color -> allSignInputBoxes.forEach(b -> b.setTextColor(color)));
         addRenderableWidget(colorInputBox);
 
@@ -535,7 +531,7 @@ public class SignGui extends ExtendedScreen {
                 new ModelButton.ModelData(postModel, 0, -0.5f, itemStack),
                 new ModelButton.ModelData(wideModel, 0, 0.25f, itemStack)
             ));
-        for(Button button : overlaySelectionButtons) addWidget(button);
+        for(Button button : overlaySelectionButtons) addRenderableWidget(button);
 
 
         switchTo(currentType);
@@ -701,17 +697,10 @@ public class SignGui extends ExtendedScreen {
 
     private void switchTo(SignType type) {
         switch (type) {
-            case Wide:
-                switchToWide();
-                break;
-            case Short:
-                switchToShort();
-                break;
-            case Large:
-                switchToLarge();
-                break;
-            default:
-                throw new RuntimeException("Sign type " + type + " is not supported");
+            case Wide -> switchToWide();
+            case Short -> switchToShort();
+            case Large -> switchToLarge();
+            default -> throw new RuntimeException("Sign type " + type + " is not supported");
         }
     }
 
@@ -824,7 +813,7 @@ public class SignGui extends ExtendedScreen {
 
     private void addTypeDependentChildren(Collection<? extends AbstractWidget> widgets){
         selectionDependentWidgets.addAll(widgets);
-        for(AbstractWidget w : widgets) addWidget(w);
+        for(AbstractWidget w : widgets) addRenderableWidget(w);
     }
 
     private void addTypeDependentChild(AbstractWidget widget){

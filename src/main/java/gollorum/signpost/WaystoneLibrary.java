@@ -63,7 +63,7 @@ public class WaystoneLibrary {
 
     public void setupStorage(ServerLevel world){
         DimensionDataStorage storage = world.getDataStorage();
-        savedData = storage.computeIfAbsent(WaystoneLibraryStorage::new, WaystoneLibraryStorage.NAME);
+        savedData = storage.computeIfAbsent(tag -> new WaystoneLibraryStorage().load(tag), WaystoneLibraryStorage::new, WaystoneLibraryStorage.NAME);
     }
 
     private WaystoneLibrary() {

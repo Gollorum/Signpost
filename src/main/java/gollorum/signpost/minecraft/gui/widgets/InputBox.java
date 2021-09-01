@@ -1,5 +1,6 @@
 package gollorum.signpost.minecraft.gui.widgets;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.minecraft.gui.utils.ConfigurableFont;
 import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.minecraft.gui.utils.Ticking;
@@ -20,18 +21,22 @@ public class InputBox extends EditBox implements WithMutableX, Ticking {
 
     private final List<Function<Integer, Boolean>> keyCodeConsumers = new ArrayList<>();
 
+    private final double zOffset;
+
     public InputBox(
         Font configFont,
         Rect inputFieldRect,
-        boolean shouldDropShadow
+        boolean shouldDropShadow,
+        double zOffset
     ) {
-        this(new ConfigurableFont(configFont, !shouldDropShadow), inputFieldRect, shouldDropShadow);
+        this(new ConfigurableFont(configFont, !shouldDropShadow), inputFieldRect, shouldDropShadow, zOffset);
     }
 
     private InputBox(
         ConfigurableFont configFont,
         Rect inputFieldRect,
-        boolean shouldDropShadow
+        boolean shouldDropShadow,
+        double zOffset
     ) {
         super(
             configFont,
@@ -41,6 +46,7 @@ public class InputBox extends EditBox implements WithMutableX, Ticking {
         );
         this.configFont = configFont;
         this.shouldDropShadow = shouldDropShadow;
+        this.zOffset = zOffset;
     }
 
     @Override
@@ -72,6 +78,27 @@ public class InputBox extends EditBox implements WithMutableX, Ticking {
                 return true;
             } else return false;
         });
+    }
+
+    @Override
+    public void renderButton(PoseStack matrixStack, int p_94161_, int p_94162_, float p_94163_) {
+        matrixStack.pushPose();
+        matrixStack.translate(0, 0, zOffset);
+        super.renderButton(matrixStack, p_94161_, p_94162_, p_94163_);
+        matrixStack.popPose();
+    }
+
+    @Override
+    public void setBordered(boolean shouldBeBordered) {
+        super.setBordered(shouldBeBordered);
+        if(!shouldBeBordered) {
+            y += (this.height - 8) / 2;
+            x += 4;
+        }
+        else {
+            y -= (this.height - 8) / 2;
+            x -= 4;
+        }
     }
 
     @Override

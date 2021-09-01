@@ -2,8 +2,6 @@ package gollorum.signpost.utils.math.geometry;
 
 import com.mojang.math.Vector3d;
 import com.mojang.math.Vector3f;
-import com.sun.javafx.geom.Matrix3f;
-import com.sun.javafx.geom.Vec3d;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -84,13 +82,13 @@ public final class Vector3 {
         return new Vector3(x * other.x, y * other.y, z * other.z);
     }
 
-    public Vector3 mul(Matrix3f mat) {
-        return new Vector3(
-            mat.m00 * x + mat.m01 * y + mat.m02 * z,
-            mat.m10 * x + mat.m11 * y + mat.m12 * z,
-            mat.m20 * x + mat.m21 * y + mat.m22 * z
-        );
-    }
+//    public Vector3 mul(Matrix3f mat) {
+//        return new Vector3(
+//            mat.m00 * x + mat.m01 * y + mat.m02 * z,
+//            mat.m10 * x + mat.m11 * y + mat.m12 * z,
+//            mat.m20 * x + mat.m21 * y + mat.m22 * z
+//        );
+//    }
 
     public float distanceTo(Vector3 other) {
         Vector3 distance = other.subtract(this);

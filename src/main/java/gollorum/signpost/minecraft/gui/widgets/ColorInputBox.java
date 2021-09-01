@@ -1,5 +1,6 @@
 package gollorum.signpost.minecraft.gui.widgets;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.gui.utils.Point;
@@ -7,6 +8,7 @@ import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.minecraft.gui.utils.TextureResource;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.GameRenderer;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -17,13 +19,14 @@ public class ColorInputBox extends InputBox {
 
     private int currentResult;
 
-    public ColorInputBox(Font fontRenderer, Rect inputFieldRect) {
+    public ColorInputBox(Font fontRenderer, Rect inputFieldRect, double zOffset) {
         super(fontRenderer,
             new Rect(
                 new Point(inputFieldRect.point.x + inputFieldRect.height, inputFieldRect.point.y),
                 inputFieldRect.width - inputFieldRect.height, inputFieldRect.height
             ),
-            true
+            true,
+            zOffset
         );
         setFilter(null);
         setResponder(null);
@@ -70,10 +73,12 @@ public class ColorInputBox extends InputBox {
     public void renderButton(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         Tesselator tessellator = Tesselator.getInstance();
         BufferBuilder bufferbuilder = tessellator.getBuilder();
-        Minecraft.getInstance().getTextureManager().bindForSetup(TextureResource.background.location);
+        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+        RenderSystem.setShaderTexture(0, TextureResource.background.location);
         int red = Colors.getRed(currentResult);
         int green = Colors.getGreen(currentResult);
         int blue = Colors.getBlue(currentResult);
+        RenderSystem.setShaderColor(1, 1, 1, 1);
         bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
         bufferbuilder.vertex(x - height, y + height, 0.0D).uv(0, 1).color(red, green, blue, 255).endVertex();
         bufferbuilder.vertex(x, y + height, 0.0D).uv(1, 1).color(red, green, blue, 255).endVertex();

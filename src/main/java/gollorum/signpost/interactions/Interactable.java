@@ -15,7 +15,7 @@ public interface Interactable {
     Intersectable<Ray, Float> getIntersection();
 
     default Optional<Float> intersectWith(Ray ray, Vector3 offset) {
-        return getIntersection().IntersectWith(ray.offset(offset.mul(-1)));
+        return getIntersection().IntersectWith(ray.offset(offset.mul(-1f)));
     }
 
     InteractionResult interact(InteractionInfo info);

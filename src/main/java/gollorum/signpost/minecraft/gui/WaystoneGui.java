@@ -84,7 +84,8 @@ public class WaystoneGui extends ExtendedScreen {
                 Rect.XAlignment.Center, Rect.YAlignment.Center),
             Rect.XAlignment.Center, Rect.YAlignment.Center,
             texture,
-            true);
+            true, 0
+        );
         lockButton = new LockIconButton(
             inputBox.x + inputBox.width() + 10,
             inputBox.y + inputBox.getHeight() / 2 - 10,

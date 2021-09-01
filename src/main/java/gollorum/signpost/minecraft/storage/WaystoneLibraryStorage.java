@@ -12,10 +12,6 @@ public class WaystoneLibraryStorage extends SavedData {
 
     public static final String NAME = Signpost.MOD_ID + "_WaystoneLibrary";
 
-    public WaystoneLibraryStorage(CompoundTag compound) {
-        load(compound);
-    }
-
     @Override
     public CompoundTag save(CompoundTag compound) {
         WaystoneLibrary.getInstance().saveTo(compound);
@@ -23,11 +19,12 @@ public class WaystoneLibraryStorage extends SavedData {
         return compound;
     }
 
-    public void load(CompoundTag compound) {
+    public WaystoneLibraryStorage load(CompoundTag compound) {
         WaystoneLibrary.getInstance().readFrom(compound);
         Tag villageWaystones = compound.get("villageWaystones");
         if(villageWaystones instanceof ListTag)
             WaystoneJigsawPiece.deserialize((ListTag) villageWaystones);
+        return this;
     }
 
 }
