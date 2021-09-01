@@ -4,8 +4,8 @@ import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
-import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.utils.LangKeys;
+import gollorum.signpost.minecraft.utils.TextComponents;
 import io.netty.util.internal.PlatformDependent;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -70,7 +70,7 @@ public class WaystoneDiscoveryEventListener {
                         map.getKey().sendMessage(
                             new TranslatableComponent(
                                 LangKeys.discovered,
-                                Colors.wrap(WaystoneLibrary.getInstance().getData(inner.getKey()).name, Colors.highlight)
+                                TextComponents.waystone(map.getKey(), WaystoneLibrary.getInstance().getData(inner.getKey()).name)
                             ), Util.NIL_UUID);
                     }
                     map.getValue().remove(inner.getKey());

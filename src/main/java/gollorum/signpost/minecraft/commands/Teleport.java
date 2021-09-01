@@ -6,6 +6,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
+import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import net.minecraft.commands.CommandSourceStack;
@@ -18,7 +19,7 @@ public class Teleport {
 
 	public static ArgumentBuilder<CommandSourceStack, ?> register() {
 		return Commands.literal("teleport")
-			.requires(source -> source.hasPermission(3))
+			.requires(source -> source.hasPermission(Config.Server.permissions.teleportPermissionLevel.get()))
 			.then(Commands.argument("waystone", new WaystoneArgument())
 				.executes(context -> execute(
 					context.getArgument("waystone", String.class),

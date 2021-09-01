@@ -8,6 +8,7 @@ import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
 import gollorum.signpost.minecraft.gui.RequestWaystoneGui;
 import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.utils.LangKeys;
+import gollorum.signpost.minecraft.utils.TextComponents;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.security.WithCountRestriction;
@@ -84,18 +85,17 @@ public class WaystoneBlock extends BaseEntityBlock implements WithCountRestricti
             openGuiIfHasPermission((ServerPlayer) player, new WorldLocation(pos, world));
     }
 
-    private static void discover(Player player, WaystoneData data) {
-        assert Signpost.getServerType().isServer;
+    private static void discover(ServerPlayer player, WaystoneData data) {
         if(WaystoneLibrary.getInstance().addDiscovered(new PlayerHandle(player.getUUID()), data.handle))
-            player.sendMessage(new TranslatableComponent(LangKeys.discovered, Colors.wrap(data.name, Colors.highlight)), Util.NIL_UUID);
+            player.sendMessage(new TranslatableComponent(LangKeys.discovered, TextComponents.waystone(player, data.name)), Util.NIL_UUID);
     }
 
     public static void discover(PlayerHandle player, WaystoneData data) {
         assert Signpost.getServerType().isServer;
         if(WaystoneLibrary.getInstance().addDiscovered(player, data.handle)) {
-            Player playerEntity = player.asEntity();
+            ServerPlayer playerEntity = player.asEntity();
             if(playerEntity != null)
-                playerEntity.sendMessage(new TranslatableComponent(LangKeys.discovered, Colors.wrap(data.name, Colors.highlight)), Util.NIL_UUID);
+                playerEntity.sendMessage(new TranslatableComponent(LangKeys.discovered, TextComponents.waystone(playerEntity, data.name)), Util.NIL_UUID);
         }
     }
 

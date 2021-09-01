@@ -5,10 +5,12 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import gollorum.signpost.PlayerHandle;
+import gollorum.signpost.minecraft.config.Config;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.Optional;
@@ -65,10 +67,10 @@ public class BlockRestrictions {
 
 	private static ArgumentBuilder<CommandSourceStack, ?> setter(gollorum.signpost.BlockRestrictions.Type type) {
 		return LiteralArgumentBuilder.<CommandSourceStack>literal("set")
-			.requires(source -> source.hasPermission(3))
+			.requires(source -> source.hasPermission(Config.Server.permissions.setBlockResPermissionLevel.get()))
 			.then(Commands.argument("count", IntegerArgumentType.integer(-1))
 				.executes(context -> {
-					Player player = context.getSource().getPlayerOrException();
+					ServerPlayer player = context.getSource().getPlayerOrException();
 					return set(type, context.getSource(), player, IntegerArgumentType.getInteger(context, "count"));
 				})
 				.then(Commands.argument("player", EntityArgument.player())
@@ -80,7 +82,7 @@ public class BlockRestrictions {
 					))));
 	}
 
-	private static int set(gollorum.signpost.BlockRestrictions.Type type, CommandSourceStack commandSource, Player targetedPlayer, int count) {
+	private static int set(gollorum.signpost.BlockRestrictions.Type type, CommandSourceStack commandSource, ServerPlayer targetedPlayer, int count) {
 		PlayerHandle tHandle = PlayerHandle.from(targetedPlayer);
 		gollorum.signpost.BlockRestrictions.getInstance().setRemaining(type, tHandle, c -> count);
 		Optional<Component> subject = PlayerHandle.from(commandSource.getEntity()).equals(tHandle) || targetedPlayer == null
