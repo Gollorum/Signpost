@@ -49,8 +49,9 @@ public class LargeSignRenderer extends SignRenderer<LargeSignBlockPart> {
 		matrix.mulPose(Vector3f.ZP.rotationDegrees(180));
 		matrix.mulPose(Vector3f.YP.rotation((float) (
 			sign.isFlipped()
-				? sign.getAngle().radians()
-				: Math.PI - sign.getAngle().radians())));
+				? -sign.getAngle().radians() // No idea why this works. It does though, so I'm not touching it.
+				: Math.PI - sign.getAngle().radians()
+		)));
 		matrix.translate(0, 3.5f * VoxelSize, -3.005 * VoxelSize);
 
 		matrix.pushPose();

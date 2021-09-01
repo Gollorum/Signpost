@@ -91,7 +91,7 @@ public class WaystoneGui extends ExtendedScreen {
             inputBox.y + inputBox.getHeight() / 2 - 10,
             b -> lockButton.setLocked(!lockButton.isLocked())
         );
-        addWidget(lockButton);
+        addRenderableWidget(lockButton);
         oldData.ifPresent(data -> {
             inputBox.setValue(data.name);
             lockButton.setLocked(data.isLocked);
@@ -104,8 +104,8 @@ public class WaystoneGui extends ExtendedScreen {
             new TranslatableComponent(LangKeys.done),
             b -> done()
         );
-        addWidget(inputBox);
-        addWidget(doneButton);
+        addRenderableWidget(inputBox);
+        addRenderableWidget(doneButton);
         inputBox.setTextColor(Colors.valid);
         inputBox.setTextColorUneditable(Colors.validInactive);
         inputBox.setMaxLength(200);

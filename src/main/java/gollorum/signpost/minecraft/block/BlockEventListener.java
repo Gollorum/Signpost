@@ -62,7 +62,7 @@ public class BlockEventListener {
                         }
                     }
                 });
-            }
+            } else postTile.onDestroy();
         }
         if(!event.isCanceled() && block instanceof WithCountRestriction) {
             BlockRestrictions.Type restrictionType = ((WithCountRestriction)block).getBlockRestrictionType();

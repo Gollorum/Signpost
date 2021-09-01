@@ -10,6 +10,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.util.Optional;
@@ -17,14 +18,14 @@ import java.util.function.Consumer;
 
 public class TileEntityUtils {
 
-    public static <T> Optional<T> findTileEntity(Level world, BlockPos pos, Class<T> c){
+    public static <T> Optional<T> findTileEntity(LevelAccessor world, BlockPos pos, Class<T> c){
         BlockEntity tileEntity = world.getBlockEntity(pos);
         if(tileEntity != null && c.isAssignableFrom(tileEntity.getClass())){
             return Optional.of((T) tileEntity);
         } else return Optional.empty();
     }
 
-    public static <T> void delayUntilTileEntityExists(Level world, BlockPos pos, Class<T> c, Consumer<T> action, int timeout, Optional<Runnable> onTimeOut) {
+    public static <T> void delayUntilTileEntityExists(LevelAccessor world, BlockPos pos, Class<T> c, Consumer<T> action, int timeout, Optional<Runnable> onTimeOut) {
         Delay.untilIsPresent(() -> findTileEntity(world, pos, c), action, timeout, world.isClientSide(), onTimeOut);
     }
 

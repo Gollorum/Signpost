@@ -1,6 +1,7 @@
 package gollorum.signpost.minecraft.worldgen;
 
 import gollorum.signpost.PlayerHandle;
+import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.gui.utils.Colors;
@@ -9,6 +10,7 @@ import io.netty.util.internal.PlatformDependent;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.world.ChunkWatchEvent;
@@ -40,7 +42,7 @@ public class WaystoneDiscoveryEventListener {
         );
         if(handle != null && !WaystoneLibrary.getInstance().isDiscovered(PlayerHandle.from(event.getPlayer()), handle)) {
             trackedPlayers.computeIfAbsent(event.getPlayer(), p -> PlatformDependent.newConcurrentHashMap())
-                .put(handle, WaystoneLibrary.getInstance().getData(handle).location.block.blockPos);
+                .putIfAbsent(handle, WaystoneLibrary.getInstance().getData(handle).location.block.blockPos);
         }
     }
 
@@ -78,4 +80,13 @@ public class WaystoneDiscoveryEventListener {
         }
     }
 
+    public static void registerNew(WaystoneHandle.Vanilla handle, ServerLevel world, BlockPos pos) {
+        Signpost.getServerInstance().getPlayerList().getPlayers().forEach(
+            player -> {
+                if(player.getLevel().equals(world) && player.blockPosition().closerThan(pos, 100))
+                    trackedPlayers.computeIfAbsent(player, p -> PlatformDependent.newConcurrentHashMap())
+                        .putIfAbsent(handle, pos);
+            }
+        );
+    }
 }

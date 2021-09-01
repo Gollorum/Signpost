@@ -93,11 +93,9 @@ public class InputBox extends EditBox implements WithMutableX, Ticking {
         super.setBordered(shouldBeBordered);
         if(!shouldBeBordered) {
             y += (this.height - 8) / 2;
-            x += 4;
         }
         else {
             y -= (this.height - 8) / 2;
-            x -= 4;
         }
     }
 

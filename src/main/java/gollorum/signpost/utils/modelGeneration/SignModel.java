@@ -6,6 +6,7 @@ import com.mojang.math.Matrix3f;
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Vector3f;
 import com.mojang.math.Vector4f;
+import gollorum.signpost.minecraft.gui.utils.TextureResource;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.model.Material;
@@ -18,15 +19,14 @@ public class SignModel {
 
 	private final Map<Material, List<Quad>> quads = new HashMap<>();
 
-	private static final float pixelToWorld = 1 / 16f;
 	public void addCube(Cube<ResourceLocation> cube) {
 		for(Cube.Quad<ResourceLocation> q: cube.getQuads()) {
 			Quad quad = new Quad(
 				q.normal.asVec3f(),
 				Arrays.stream(q.vertices).map(v -> new Quad.Vertex(
-					v.pos.mul(pixelToWorld).asVec3f(),
-					v.u * pixelToWorld,
-					v.v * pixelToWorld,
+					v.pos.div((float) TextureResource.defaultTextureSize).asVec3f(),
+					v.u / (float) TextureResource.defaultTextureSize,
+					v.v / (float) TextureResource.defaultTextureSize,
 					q.faceData.rotation
 				)).toArray(Quad.Vertex[]::new)
 			);

@@ -48,6 +48,6 @@ public class WaystoneRenderer extends BlockPartRenderer<WaystoneBlockPart> {
 
 	@Override
 	public void renderGui(WaystoneBlockPart part, Point center, Angle yaw, Angle pitch, float scale, Vector3 offset) {
-		RenderingUtil.renderGui(model.get(), center, yaw, pitch, scale, offset);
+		RenderingUtil.renderGui(model.get(), center, yaw, pitch, scale, offset, false, RenderType.solid());
 	}
 }

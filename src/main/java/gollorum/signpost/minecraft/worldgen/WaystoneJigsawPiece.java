@@ -22,6 +22,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.StructureFeatureManager;
 import net.minecraft.world.level.WorldGenLevel;
@@ -199,7 +200,7 @@ public class WaystoneJigsawPiece extends SinglePoolElement {
 				null,
 				false
 			);
-			registerGenerated(name, villageLocation, new ChunkEntryKey(new ChunkPos(pos), seedReader.getLevel().dimension().location()));
+			registerGenerated(name, villageLocation, seedReader.getLevel(), pos);
 
 			for(StructureTemplate.StructureBlockInfo blockInfo : StructureTemplate.processBlockInfos(
 				seedReader, pieceLocation, villageLocation, placementSettings,
@@ -238,11 +239,13 @@ public class WaystoneJigsawPiece extends SinglePoolElement {
 		return allowedWaystones.get(random.nextInt(allowedWaystones.size()));
 	}
 
-	private static void registerGenerated(String name, BlockPos referencePos, ChunkEntryKey chunkInfo) {
+	private static void registerGenerated(String name, BlockPos referencePos, ServerLevel world, BlockPos blockPos) {
 		WaystoneLibrary.getInstance().getHandleByName(name).ifPresent(handle -> {
+			ChunkEntryKey key = new ChunkEntryKey(new ChunkPos(blockPos), world.dimension().location());
 			generatedWaystones.put(referencePos, handle);
-			generatedWaystonesByChunk.put(chunkInfo, handle);
+			generatedWaystonesByChunk.put(key, handle);
 			WaystoneLibrary.getInstance().markDirty();
+			WaystoneDiscoveryEventListener.registerNew(handle, world, blockPos);
 		});
 	}
 

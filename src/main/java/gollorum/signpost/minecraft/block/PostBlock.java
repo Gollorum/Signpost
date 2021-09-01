@@ -371,7 +371,7 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
     }
 
     public static InteractionResult onActivate(PostTile tile, Level world, Player player, InteractionHand hand) {
-        switch (tile
+        return switch (tile
             .trace(player)
             .map(p -> p.part.blockPart.interact(new InteractionInfo(
                 InteractionInfo.Type.RightClick,
@@ -380,13 +380,10 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
                 world.isClientSide()
             )))
             .orElse(Interactable.InteractionResult.Ignored)
-        ){
-            case Accepted:
-                return InteractionResult.SUCCESS;
-            case Ignored:
-            default:
-                return InteractionResult.PASS;
-        }
+            ) {
+            case Accepted -> InteractionResult.SUCCESS;
+            case Ignored -> InteractionResult.PASS;
+        };
     }
 
     @Override

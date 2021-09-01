@@ -27,6 +27,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.LockIconButton;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.TranslatableComponent;
@@ -247,8 +248,8 @@ public class SignGui extends ExtendedScreen {
                 Rect.XAlignment.Center, Rect.YAlignment.Top,
                 rect -> rect.withPoint(p -> p.add(-4, 0)).scaleCenter(0.75f),
                 this::switchToWide,
-                new ModelButton.ModelData(postModel, 0, -0.5f, itemStack),
-                new ModelButton.ModelData(wideModel, 0, 0.25f, itemStack)
+                new ModelButton.ModelData(postModel, 0, -0.5f, itemStack, RenderType.solid()),
+                new ModelButton.ModelData(wideModel, 0, 0.25f, itemStack, RenderType.solid())
             )
         );
 
@@ -260,8 +261,8 @@ public class SignGui extends ExtendedScreen {
                 Rect.XAlignment.Center, Rect.YAlignment.Top,
                 rect -> rect.withPoint(p -> p.add(-11, 0)).scaleCenter(0.75f),
                 this::switchToShort,
-                new ModelButton.ModelData(postModel, 0, -0.5f, itemStack),
-                new ModelButton.ModelData(shortModel, 0, 0.25f, itemStack)
+                new ModelButton.ModelData(postModel, 0, -0.5f, itemStack, RenderType.solid()),
+                new ModelButton.ModelData(shortModel, 0, 0.25f, itemStack, RenderType.solid())
             )
         );
 
@@ -273,8 +274,8 @@ public class SignGui extends ExtendedScreen {
                 Rect.XAlignment.Center, Rect.YAlignment.Top,
                 rect -> rect.withPoint(p -> p.add(-3, 0)).scaleCenter(0.75f),
                 this::switchToLarge,
-                new ModelButton.ModelData(postModel, 0, -0.5f, itemStack),
-                new ModelButton.ModelData(largeModel, 0, 0, itemStack)
+                new ModelButton.ModelData(postModel, 0, -0.5f, itemStack, RenderType.solid()),
+                new ModelButton.ModelData(largeModel, 0, 0, itemStack, RenderType.solid())
             )
         );
 
@@ -342,7 +343,7 @@ public class SignGui extends ExtendedScreen {
         waystoneInputBox = new ImageInputBox(font,
             waystoneInputRect,
             new Rect(
-                Point.zero,
+                new Point(-4, 0),
                 waystoneNameTexture.size.scale(waystoneBoxScale),
                 Rect.XAlignment.Center, Rect.YAlignment.Center),
             Rect.XAlignment.Center, Rect.YAlignment.Center,
@@ -408,7 +409,7 @@ public class SignGui extends ExtendedScreen {
         GuiModelRenderer postRenderer = new GuiModelRenderer(
             modelRect, postModel,
             0, -0.5f,
-            new ItemStack(PostBlock.OAK.block.asItem())
+            RenderType.solid()
         );
         addRenderableOnly(postRenderer);
         Point modelRectTop = modelRect.at(Rect.XAlignment.Center, Rect.YAlignment.Top);
@@ -426,7 +427,7 @@ public class SignGui extends ExtendedScreen {
         wideSignRenderer = new GuiModelRenderer(
             modelRect, wideModel,
             0, 0.25f,
-            itemStack
+            RenderType.solid()
         );
         widgetsToFlip.add(wideSignRenderer);
 
@@ -442,7 +443,7 @@ public class SignGui extends ExtendedScreen {
         shortSignRenderer = new GuiModelRenderer(
             modelRect, shortModel,
             0, 0.25f,
-            itemStack
+            RenderType.solid()
         );
         widgetsToFlip.add(shortSignRenderer);
 
@@ -479,7 +480,7 @@ public class SignGui extends ExtendedScreen {
         largeSignRenderer = new GuiModelRenderer(
             modelRect, largeModel,
             0, 0,
-            itemStack
+            RenderType.solid()
         );
         widgetsToFlip.add(largeSignRenderer);
 
@@ -516,9 +517,9 @@ public class SignGui extends ExtendedScreen {
                 overlayButtonsScale, Rect.XAlignment.Right, Rect.YAlignment.Top,
                 rect -> rect.withPoint(p -> p.add(Math.round(-4 / typeSelectionButtonsScale * overlayButtonsScale), 0)).scaleCenter(0.75f),
                 () -> switchOverlay(Optional.of(overlay)),
-                new ModelButton.ModelData(postModel, 0, -0.5f, itemStack),
-                new ModelButton.ModelData(wideModel, 0, 0.25f, itemStack),
-                new ModelButton.ModelData(overlayModel, 0, 0.25f, itemStack)
+                new ModelButton.ModelData(postModel, 0, -0.5f, itemStack, RenderType.solid()),
+                new ModelButton.ModelData(wideModel, 0, 0.25f, itemStack, RenderType.solid()),
+                new ModelButton.ModelData(overlayModel, 0, 0.25f, itemStack, RenderType.cutout())
             ));
             i++;
         }
@@ -528,8 +529,8 @@ public class SignGui extends ExtendedScreen {
                 overlayButtonsScale, Rect.XAlignment.Right, Rect.YAlignment.Top,
                 rect -> rect.withPoint(p -> p.add(Math.round(-4 / typeSelectionButtonsScale * overlayButtonsScale), 0)).scaleCenter(0.75f),
                 () -> switchOverlay(Optional.empty()),
-                new ModelButton.ModelData(postModel, 0, -0.5f, itemStack),
-                new ModelButton.ModelData(wideModel, 0, 0.25f, itemStack)
+                new ModelButton.ModelData(postModel, 0, -0.5f, itemStack, RenderType.solid()),
+                new ModelButton.ModelData(wideModel, 0, 0.25f, itemStack, RenderType.solid())
             ));
         for(Button button : overlaySelectionButtons) addRenderableWidget(button);
 
@@ -568,7 +569,7 @@ public class SignGui extends ExtendedScreen {
             };
             WaystoneLibrary.getInstance().requestAllWaystones(n -> {
                 waystoneDropdown.addEntries(n.entrySet().stream().map(e -> new WaystoneEntry(e.getValue()._1, e.getValue()._1, e.getKey(), e.getValue()._2.block)).collect(Collectors.toList()));
-                setupFromSign.accept(id -> id instanceof WaystoneHandle.Vanilla ? Optional.ofNullable(n.get(id)._1) : Optional.empty());
+                setupFromSign.accept(id -> id instanceof WaystoneHandle.Vanilla ? Optional.ofNullable(n.get(id)).map(t -> t._1) : Optional.empty());
             }, Optional.of(PlayerHandle.from(getMinecraft().player)));
             ExternalWaystoneLibrary.getInstance().requestKnownWaystones(n -> {
                 List<WaystoneEntry> entries = n.stream().map(w -> new WaystoneEntry(w.name() + " " + w.handle().modMark(), w.name(), w.handle(), w.loc())).collect(Collectors.toList());
@@ -759,7 +760,8 @@ public class SignGui extends ExtendedScreen {
                     wideSignRenderer.rect,
                     FlippableModel.loadFrom(PostModel.wideOverlayLocation, PostModel.wideOverlayFlippedLocation, o.textureFor(SmallWideSignBlockPart.class))
                         .withTintIndex(o.tintIndex),
-                    0, 0.25f, itemStack
+                    0, 0.25f,
+                    RenderType.cutout()
                 );
                 break;
             case Short:
@@ -767,7 +769,8 @@ public class SignGui extends ExtendedScreen {
                     shortSignRenderer.rect,
                     FlippableModel.loadFrom(PostModel.shortOverlayLocation, PostModel.shortOverlayFlippedLocation, o.textureFor(SmallShortSignBlockPart.class))
                         .withTintIndex(o.tintIndex),
-                    0, 0.25f, itemStack
+                    0, 0.25f,
+                    RenderType.cutout()
                 );
                 break;
             case Large:
@@ -775,7 +778,8 @@ public class SignGui extends ExtendedScreen {
                     largeSignRenderer.rect,
                     FlippableModel.loadFrom(PostModel.largeOverlayLocation, PostModel.largeOverlayFlippedLocation, o.textureFor(LargeSignBlockPart.class))
                         .withTintIndex(o.tintIndex),
-                    0, 0, itemStack
+                    0, 0,
+                    RenderType.cutout()
                 );
                 break;
         }
@@ -796,7 +800,7 @@ public class SignGui extends ExtendedScreen {
         addRenderableOnly(rotationLabel);
         addRenderableWidget(rotationInputField);
         addRenderableWidget(angleDropDown);
-        for(Button b : overlaySelectionButtons) removeWidget(b);
+        for(Button b : overlaySelectionButtons) addRenderableWidget(b);
     }
 
     private void switchSignInputBoxTo(InputBox box) {

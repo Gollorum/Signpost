@@ -198,32 +198,13 @@ public class BlockRestrictions {
 		}
 	}
 
-	public boolean hasRemaining(Type type, PlayerHandle player) {
-		if(player.equals(PlayerHandle.Invalid)) return true;
-		Entry entry = getEntry(player);
-		int remaining;
-		switch (type) {
-			case Waystone: remaining = entry.waystonesLeft;
-				break;
-			case Signpost: remaining = entry.signpostsLeft;
-				break;
-			default: throw new IllegalArgumentException();
-		}
-		return remaining != 0;
-	}
-
 	public int getRemaining(Type type, PlayerHandle player) {
 		if(player.equals(PlayerHandle.Invalid)) return -1;
 		Entry entry = getEntry(player);
-		int remaining;
-		switch (type) {
-			case Waystone: remaining = entry.waystonesLeft;
-				break;
-			case Signpost: remaining = entry.signpostsLeft;
-				break;
-			default: throw new IllegalArgumentException();
-		}
-		return remaining;
+		return switch (type) {
+			case Waystone -> entry.waystonesLeft;
+			case Signpost -> entry.signpostsLeft;
+		};
 	}
 
 	private void markDirty() { savedData.setDirty(); }

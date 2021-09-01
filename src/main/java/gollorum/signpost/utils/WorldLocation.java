@@ -27,17 +27,15 @@ public class WorldLocation {
 
     public WorldLocation(BlockPos blockPos, Either<Level, ResourceLocation> world) {
         this.blockPos = blockPos;
-        this.world = world;
+        this.world = world.mapRight(loc -> loc.getPath().equals("") ? Level.OVERWORLD.location() : loc);
     }
 
     public WorldLocation(BlockPos blockPos, Level world) {
-        this.blockPos = blockPos;
-        this.world = Either.left(world);
+        this(blockPos, Either.left(world));
     }
 
     public WorldLocation(BlockPos blockPos, ResourceLocation dimensionKeyLocation) {
-        this.blockPos = blockPos;
-        this.world = Either.right(dimensionKeyLocation);
+        this(blockPos, Either.right(dimensionKeyLocation));
     }
 
     @Override

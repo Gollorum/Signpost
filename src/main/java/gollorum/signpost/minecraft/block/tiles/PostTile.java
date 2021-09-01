@@ -125,8 +125,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         return oldPart;
     }
 
-    @Override
-    public void setRemoved() {
+    public void onDestroy() {
         for (BlockPartInstance part: parts.values()) part.blockPart.removeFrom(this);
         super.setRemoved();
     }

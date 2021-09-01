@@ -1,7 +1,6 @@
 package gollorum.signpost.minecraft.block.tiles;
 
 import gollorum.signpost.PlayerHandle;
-import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.block.WaystoneBlock;
 import gollorum.signpost.security.WithOwner;
@@ -9,6 +8,7 @@ import gollorum.signpost.utils.WaystoneContainer;
 import gollorum.signpost.utils.WorldLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -27,16 +27,9 @@ public class WaystoneTile extends BlockEntity implements WithOwner.OfWaystone, W
         super(type, pos, state);
     }
 
-    @Override
-    public void setRemoved() {
-        super.setRemoved();
-        if(Signpost.getServerType().isServer) {
-            Optional<WorldLocation> location = WorldLocation.from(this);
-            if(location.isPresent())
-                WaystoneLibrary.getInstance().removeAt(location.get(), PlayerHandle.Invalid);
-            else Signpost.LOGGER.error("Waystone tile at "+ getBlockPos() +"  was removed but world was null. " +
-                "This means that the waystone has not been cleaned up correctly.");
-        }
+    public static void onRemoved(ServerLevel world, BlockPos pos) {
+        if(!world.isClientSide())
+            WaystoneLibrary.getInstance().removeAt(new WorldLocation(pos, world), PlayerHandle.Invalid);
     }
 
     @Override

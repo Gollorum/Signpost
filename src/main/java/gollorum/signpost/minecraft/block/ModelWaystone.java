@@ -7,6 +7,7 @@ import gollorum.signpost.security.WithCountRestriction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -16,6 +17,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -182,6 +184,19 @@ public class ModelWaystone extends BaseEntityBlock implements SimpleWaterloggedB
 	@Override
 	public BlockRestrictions.Type getBlockRestrictionType() {
 		return BlockRestrictions.Type.Waystone;
+	}
+
+	@Override
+	public RenderShape getRenderShape(BlockState state) {
+		return RenderShape.MODEL;
+	}
+
+	@Override
+	public void destroy(LevelAccessor world, BlockPos pos, BlockState state) {
+		super.destroy(world, pos, state);
+		if(!world.isClientSide() && world instanceof Level) {
+			WaystoneTile.onRemoved((ServerLevel) world, pos);
+		}
 	}
 
 }

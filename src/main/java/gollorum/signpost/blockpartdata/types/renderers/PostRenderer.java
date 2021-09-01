@@ -85,6 +85,6 @@ public class PostRenderer extends BlockPartRenderer<PostBlockPart> {
 
 	@Override
 	public void renderGui(PostBlockPart post, Point center, Angle yaw, Angle pitch, float scale, Vector3 offset) {
-		RenderingUtil.renderGui(makeBakedModel(post), center, yaw, pitch, scale, offset);
+		RenderingUtil.renderGui(makeBakedModel(post), center, yaw, pitch, scale, offset, false, RenderType.solid());
 	}
 }

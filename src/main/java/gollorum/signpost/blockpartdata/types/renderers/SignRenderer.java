@@ -77,7 +77,7 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
 
 	@Override
 	public void renderGui(T part, Point center, Angle yaw, Angle pitch, float scale, Vector3 offset) {
-		RenderingUtil.renderGui(makeBakedModel(part), center, yaw.add(part.getAngle()), pitch, scale, offset);
+		RenderingUtil.renderGui(makeBakedModel(part), center, yaw.add(part.getAngle()), pitch, scale, offset, false, RenderType.solid());
 	}
 
 }

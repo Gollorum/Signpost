@@ -2,16 +2,18 @@ package gollorum.signpost.blockpartdata.types;
 
 import gollorum.signpost.BlockRestrictions;
 import gollorum.signpost.PlayerHandle;
+import gollorum.signpost.Signpost;
 import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.WaystoneBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.PaintPostGui;
+import gollorum.signpost.minecraft.gui.RequestWaystoneGui;
 import gollorum.signpost.minecraft.gui.SignGui;
-import gollorum.signpost.minecraft.gui.WaystoneGui;
 import gollorum.signpost.minecraft.items.Brush;
 import gollorum.signpost.minecraft.utils.CoordinatesUtil;
 import gollorum.signpost.minecraft.utils.SideUtils;
+import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.BlockPart;
 import gollorum.signpost.utils.BlockPartInstance;
@@ -23,10 +25,12 @@ import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraftforge.fmllegacy.network.PacketDistributor;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -76,7 +80,7 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
     }
 
     private InteractionResult attachWaystone(InteractionInfo info, ItemStack heldItem, PlayerHandle playerHandle) {
-        if(info.tile.getParts().stream().noneMatch(p -> p.blockPart instanceof WaystoneBlock)) {
+        if(info.tile.getParts().stream().noneMatch(p -> p.blockPart instanceof WaystoneBlockPart)) {
             if (!info.isRemote && BlockRestrictions.getInstance().tryDecrementRemaining(BlockRestrictions.Type.Waystone, playerHandle)) {
                 info.tile.addPart(
                     new BlockPartInstance(new WaystoneBlockPart(playerHandle), Vector3.ZERO),
@@ -85,7 +89,13 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
                 );
                 info.tile.setChanged();
                 SideUtils.makePlayerPay(info.player, new ItemStack(WaystoneBlock.INSTANCE));
-            } else WaystoneGui.display(new WorldLocation(info.tile.getBlockPos(), info.player.level), Optional.empty());
+                if(info.player instanceof ServerPlayer)
+                    PacketHandler.send(
+                        PacketDistributor.PLAYER.with(() -> (ServerPlayer) info.player),
+                        new RequestWaystoneGui.Package(new WorldLocation(info.tile.getBlockPos(), info.player.level), Optional.empty())
+                    );
+                else Signpost.LOGGER.error("Tried to ask player to open the waystone GUI, but it was a " + info.player.getClass().getName());
+            }
             return InteractionResult.Accepted;
         } else return InteractionResult.Ignored;
     }

@@ -7,6 +7,7 @@ import gollorum.signpost.minecraft.gui.utils.TextureResource;
 import gollorum.signpost.minecraft.rendering.FlippableModel;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -57,7 +58,7 @@ public class ModelButton extends ImageButton {
                 model.model,
                 model.modelSpaceXOffset,
                 model.modelSpaceYOffset,
-                model.itemStack
+                model.renderType
             ));
         }
     }
@@ -70,19 +71,12 @@ public class ModelButton extends ImageButton {
         }
     }
 
-    public static class ModelData {
-
-        public final FlippableModel model;
-        public final float modelSpaceXOffset;
-        public final float modelSpaceYOffset;
-        public final ItemStack itemStack;
-
-        public ModelData(FlippableModel model, float modelSpaceXOffset, float modelSpaceYOffset, ItemStack itemStack) {
-            this.model = model;
-            this.modelSpaceXOffset = modelSpaceXOffset;
-            this.modelSpaceYOffset = modelSpaceYOffset;
-            this.itemStack = itemStack;
-        }
-    }
+    public record ModelData(
+        FlippableModel model,
+        float modelSpaceXOffset,
+        float modelSpaceYOffset,
+        ItemStack itemStack,
+        RenderType renderType
+    ) {}
 
 }
