@@ -10,6 +10,7 @@ import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.utils.LangKeys;
+import gollorum.signpost.minecraft.utils.TextComponents;
 import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -47,7 +48,7 @@ public class DiscoverWaystone {
 		WaystoneHandle.Vanilla handle = WaystoneLibrary.getInstance().getHandleByName(name)
 			.orElseThrow(() -> new SimpleCommandExceptionType(new TranslatableComponent(LangKeys.waystoneNotFound, Colors.wrap(name, Colors.highlight))).create());
 		if(WaystoneLibrary.getInstance().addDiscovered(new PlayerHandle(player), handle)) {
-			player.sendMessage(new TranslatableComponent(LangKeys.discovered, Colors.wrap(name, Colors.highlight)), Util.NIL_UUID);
+			player.sendMessage(new TranslatableComponent(LangKeys.discovered, TextComponents.waystone(player, name)), Util.NIL_UUID);
 		}
 		return Command.SINGLE_SUCCESS;
 	}
