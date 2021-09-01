@@ -4,6 +4,7 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
+import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.data.PostModel;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.utils.Rect;
@@ -26,6 +27,7 @@ import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.math.vector.Quaternion;
 import net.minecraft.util.math.vector.TransformationMatrix;
 import net.minecraft.util.math.vector.Vector3f;
+import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.SimpleModelTransform;
 import net.minecraftforge.common.util.Lazy;
@@ -141,41 +143,41 @@ public class RenderingUtil {
         return i;
     }
 
-    public static void renderGui(IBakedModel model, Point center, Angle yaw, Angle pitch, float scale, Vector3 offset) {
+    public static void renderGui(IBakedModel model, Point center, Angle yaw, Angle pitch, float scale, Vector3 offset, boolean flip, RenderType renderType) {
         MatrixStack matrixStack = new MatrixStack();
         Minecraft.getInstance().getTextureManager().bind(AtlasTexture.LOCATION_BLOCKS);
         Minecraft.getInstance().getTextureManager().getTexture(AtlasTexture.LOCATION_BLOCKS).setBlurMipmap(false, false);
-        RenderSystem.enableRescaleNormal();
-        RenderSystem.enableAlphaTest();
-        RenderSystem.defaultAlphaFunc();
-        RenderSystem.enableBlend();
-        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
         RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
         matrixStack.translate(center.x, center.y, 100);
         matrixStack.scale(scale, -scale, scale);
         matrixStack.mulPose(new Quaternion(Vector3f.XP, pitch.radians(), false));
         matrixStack.mulPose(new Quaternion(Vector3f.YP, yaw.radians(), false));
         matrixStack.translate(offset.x, offset.y, offset.z);
+        if(flip) {
+            matrixStack.translate(0, 0, -1f);
+            matrixStack.scale(-1, 1, -1);
+        }
         matrixStack.translate(0.5f, 0.5f, 0);
         IRenderTypeBuffer.Impl renderTypeBuffer = Minecraft.getInstance().renderBuffers().bufferSource();
         RenderHelper.setupForFlatItems();
 
-        Minecraft.getInstance().getItemRenderer().render(
-            new ItemStack(Blocks.OAK_LOG),
-            ItemCameraTransforms.TransformType.GUI,
-            false,
-            matrixStack,
-            renderTypeBuffer,
-            0xf000f0,
-            OverlayTexture.NO_OVERLAY,
-            model
+        model = ForgeHooksClient.handleCameraTransforms(matrixStack, model, ItemCameraTransforms.TransformType.GUI, false);
+        matrixStack.translate(-0.5D, -0.5D, -0.5D);
+        Minecraft.getInstance().getItemRenderer().renderModelLists(
+            model, new ItemStack(PostBlock.OAK.block), 0xf000f0, OverlayTexture.NO_OVERLAY, matrixStack, renderTypeBuffer.getBuffer(renderType)
         );
+//        Minecraft.getInstance().getItemRenderer().render(
+//            new ItemStack(Blocks.OAK_LOG),
+//            ItemCameraTransforms.TransformType.GUI,
+//            false,
+//            matrixStack,
+//            renderTypeBuffer,
+//            0xf000f0,
+//            OverlayTexture.NO_OVERLAY,
+//            model
+//        );
         renderTypeBuffer.endBatch();
         RenderSystem.enableDepthTest();
-        RenderHelper.setupFor3DItems();
-
-        RenderSystem.disableAlphaTest();
-        RenderSystem.disableRescaleNormal();
     }
 
     public static IBakedModel withTintIndex(IBakedModel original, int tintIndex) {

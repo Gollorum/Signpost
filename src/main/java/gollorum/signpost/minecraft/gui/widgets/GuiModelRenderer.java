@@ -7,10 +7,14 @@ import gollorum.signpost.minecraft.gui.utils.Flippable;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.minecraft.rendering.FlippableModel;
+import gollorum.signpost.minecraft.rendering.RenderingUtil;
+import gollorum.signpost.utils.math.Angle;
+import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.IRenderable;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -31,8 +35,9 @@ public class GuiModelRenderer implements IRenderable, Flippable {
     private final int height;
 
     public final Rect rect;
+    private final RenderType renderType;
 
-    public GuiModelRenderer(Rect rect, FlippableModel model, float modelSpaceXOffset, float modelSpaceYOffset, ItemStack stack) {
+    public GuiModelRenderer(Rect rect, FlippableModel model, float modelSpaceXOffset, float modelSpaceYOffset, ItemStack stack, RenderType renderType) {
         this.rect = rect;
         center = rect.center();
         width = rect.width;
@@ -41,6 +46,7 @@ public class GuiModelRenderer implements IRenderable, Flippable {
         this.modelSpaceXOffset = modelSpaceXOffset;
         this.modelSpaceYOffset = modelSpaceYOffset;
         this.stack = stack;
+        this.renderType = renderType;
     }
 
 
@@ -53,43 +59,17 @@ public class GuiModelRenderer implements IRenderable, Flippable {
     }
 
     public void render(@Nonnull MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        matrixStack = new MatrixStack();
-        Minecraft.getInstance().getTextureManager().bind(AtlasTexture.LOCATION_BLOCKS);
-        Minecraft.getInstance().getTextureManager().getTexture(AtlasTexture.LOCATION_BLOCKS).setBlurMipmap(false, false);
-        RenderSystem.enableRescaleNormal();
-        RenderSystem.enableAlphaTest();
-        RenderSystem.defaultAlphaFunc();
-        RenderSystem.enableBlend();
-        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-        matrixStack.translate(center.x, center.y, 100);
         float scale = Math.min(width, height);
-        matrixStack.scale(scale, -scale, scale);
-        matrixStack.translate(modelSpaceXOffset, modelSpaceYOffset, 0);
-        if(isFlipped) {
-            matrixStack.translate(0, 0, -1f);
-            matrixStack.scale(-1, 1, -1);
-        }
-        matrixStack.translate(0.5f, 0.5f, 0);
-        IRenderTypeBuffer.Impl renderTypeBuffer = Minecraft.getInstance().renderBuffers().bufferSource();
-        RenderHelper.setupForFlatItems();
-
-        Minecraft.getInstance().getItemRenderer().render(
-            stack,
-            ItemCameraTransforms.TransformType.GUI,
-            false,
-            matrixStack,
-            renderTypeBuffer,
-            0xf000f0,
-            OverlayTexture.NO_OVERLAY,
-            model.get(isFlipped)
+        RenderingUtil.renderGui(
+            model.get(isFlipped),
+            center,
+            Angle.ZERO,
+            Angle.ZERO,
+            scale,
+            new Vector3(modelSpaceXOffset, modelSpaceYOffset, 0),
+            isFlipped,
+            renderType
         );
-        renderTypeBuffer.endBatch();
-        RenderSystem.enableDepthTest();
-        RenderHelper.setupFor3DItems();
-
-        RenderSystem.disableAlphaTest();
-        RenderSystem.disableRescaleNormal();
     }
 
 }
