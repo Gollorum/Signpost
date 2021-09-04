@@ -28,7 +28,7 @@ public abstract class ExtendedScreen extends Screen {
 			.filter(o -> o instanceof Ticking)
 			.map(o -> (Ticking) o)
 			.distinct()
-			.forEach(Ticking::tick);
+			.forEach(Ticking::doTick);
 	}
 
 	@Override

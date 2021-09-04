@@ -50,7 +50,7 @@ public class InputBox extends EditBox implements WithMutableX, Ticking {
     }
 
     @Override
-    public void tick() {
+    public void doTick() {
         super.tick();
     }
 
