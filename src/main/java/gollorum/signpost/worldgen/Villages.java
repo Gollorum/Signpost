@@ -18,7 +18,6 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProc
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Random;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -105,7 +104,7 @@ public class Villages {
 			Signpost.LOGGER.error("Tried to add elements to village pool " + pool + ", but it was not found in the registry.");
 			return;
 		}
-		Map<StructurePoolElement, Integer> allPieces = CollectionUtils.group(oldPattern.getShuffledTemplates(new Random(0)));
+		Map<StructurePoolElement, Integer> allPieces = CollectionUtils.group(oldPattern.templates);
 		for(Tuple<SinglePoolElement, Integer> tuple : houses) {
 			allPieces.put(tuple._1, tuple._2);
 		}

@@ -2,39 +2,15 @@ package gollorum.signpost.minecraft.gui.utils;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.font.FontSet;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
-
-import java.lang.reflect.Field;
-import java.util.function.Function;
 
 public class ConfigurableFont extends Font {
 
     private boolean shouldProhibitShadows;
 
-    private static Field fontsField;
-
-    static {
-        try {
-            fontsField = Font.class.getDeclaredField("fonts");
-            fontsField.setAccessible(true);
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static Function<ResourceLocation, FontSet> getFonts(Font font) {
-        try {
-            return (Function<ResourceLocation, FontSet>) fontsField.get(font);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e); // I know. Don't judge me.
-        }
-    }
-
     public ConfigurableFont(Font font, boolean shouldProhibitShadows) {
-        super(getFonts(font));
+        super(font.fonts);
         this.shouldProhibitShadows = shouldProhibitShadows;
     }
 
