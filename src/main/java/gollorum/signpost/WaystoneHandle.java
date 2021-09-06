@@ -5,6 +5,7 @@ import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.StringSerializer;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.Util;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -29,6 +30,7 @@ public interface WaystoneHandle {
 
     public static class Vanilla implements WaystoneHandle {
         public static final String typeTag = "vanilla";
+        public static final Vanilla NIL = new Vanilla(Util.NIL_UUID);
 
         public final UUID id;
 

@@ -52,9 +52,9 @@ public class CutWaystoneRecipe extends StonecuttingRecipe {
             String group = JSONUtils.getAsString(json, "group", "");
             Ingredient ingredient;
             if (JSONUtils.isArrayNode(json, "ingredient")) {
-                ingredient = Ingredient.fromJson(JSONUtils.getAsJsonArray(json, "ingredient"));
+                ingredient = Ingredient.fromJson(JSONUtils.getAsJsonObject(json, "ingredient"));
             } else {
-                ingredient = Ingredient.fromJson(JSONUtils.getAsJsonArray(json, "ingredient"));
+                ingredient = Ingredient.fromJson(JSONUtils.getAsJsonObject(json, "ingredient"));
             }
 
             String resultLoc = JSONUtils.getAsString(json, "result");

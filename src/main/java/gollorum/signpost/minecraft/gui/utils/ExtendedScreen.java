@@ -51,7 +51,7 @@ public abstract class ExtendedScreen extends Screen {
 		Streams.concat(children.stream().map(c -> (Object)c), additionalRenderables.stream().map(a -> (Object)a))
 			.filter(o -> o instanceof Ticking)
 			.map(o -> (Ticking) o)
-			.forEach(Ticking::tick);
+			.forEach(Ticking::doTick);
 	}
 
 	@Override

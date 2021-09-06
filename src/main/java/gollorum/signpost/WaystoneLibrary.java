@@ -9,6 +9,7 @@ import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.*;
 import gollorum.signpost.utils.math.geometry.Vector3;
+import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.StringSerializer;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
@@ -137,7 +138,7 @@ public class WaystoneLibrary {
         new EventDispatcher.Impl.WithPublicDispatch<>();
 
     public void requestUpdate(String newName, WaystoneLocationData location, boolean isLocked) {
-        PacketHandler.sendToServer(new WaystoneUpdatedEventEvent.Packet(WaystoneUpdatedEvent.fromUpdated(location, newName, isLocked, new WaystoneHandle.Vanilla(Util.NIL_UUID))));
+        PacketHandler.sendToServer(new WaystoneUpdatedEventEvent.Packet(WaystoneUpdatedEvent.fromUpdated(location, newName, isLocked, WaystoneHandle.Vanilla.NIL)));
     }
 
     public Optional<String> update(String newName, WaystoneLocationData location, @Nullable PlayerEntity editingPlayer, boolean isLocked) {
@@ -253,21 +254,25 @@ public class WaystoneLibrary {
             .filter(e -> e.getValue().locationData.block.equals(location)).findFirst();
     }
 
-    public void requestAllWaystoneNames(Consumer<Map<WaystoneHandle.Vanilla, String>> onReply, Optional<PlayerHandle> onlyKnownBy) {
-        if(Signpost.getServerType().isServer) {
-            onReply.accept(getAllWaystoneNamesAndHandles(onlyKnownBy));
-        } else {
+    public void requestAllWaystoneNames(Consumer<Map<WaystoneHandle.Vanilla, String>> onReply, Optional<PlayerHandle> onlyKnownBy, boolean isClient) {
+        if (isClient) {
             requestedAllNamesEventDispatcher.addListener(onReply);
             PacketHandler.sendToServer(new RequestAllWaystoneNamesEvent.Packet(onlyKnownBy));
+        } else {
+            onReply.accept(getAllWaystoneNamesAndHandles(onlyKnownBy));
         }
     }
 
-    public void requestAllWaystones(Consumer<Map<WaystoneHandle.Vanilla, Tuple<String, WaystoneLocationData>>> onReply, Optional<PlayerHandle> onlyKnownBy) {
-        if(Signpost.getServerType().isServer) {
-            onReply.accept(getAllWaystones(onlyKnownBy));
-        } else {
+    public void requestAllWaystones(
+        Consumer<Map<WaystoneHandle.Vanilla, Tuple<String, WaystoneLocationData>>> onReply,
+        Optional<PlayerHandle> onlyKnownBy,
+        boolean isClient
+    ) {
+        if (isClient) {
             requestedAllWaystonesEventDispatcher.addListener(onReply);
             PacketHandler.sendToServer(new RequestAllWaystonesEvent.Packet(onlyKnownBy));
+        } else {
+            onReply.accept(getAllWaystones(onlyKnownBy));
         }
     }
 
@@ -301,7 +306,8 @@ public class WaystoneLibrary {
         Map<WaystoneHandle.Vanilla, Tuple<String, WaystoneLocationData>> ret = getInstance().allWaystones.entrySet().stream()
             .collect(Collectors.toMap(Map.Entry::getKey, e -> Tuple.of(e.getValue().name, e.getValue().locationData)));
         if(onlyKnownBy.isPresent() && Config.Server.teleport.enforceDiscovery.get()) {
-            Set<WaystoneHandle.Vanilla> known = playerMemory.computeIfAbsent(onlyKnownBy.get(), h -> new HashSet<>());
+            PlayerHandle player = onlyKnownBy.get();
+            Set<WaystoneHandle.Vanilla> known = playerMemory.computeIfAbsent(player, h -> new HashSet<>());
             return ret.entrySet().stream()
                 .filter(e -> known.contains(e.getKey()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -309,9 +315,9 @@ public class WaystoneLibrary {
         return ret;
     }
 
-    public Optional<Set<String>> getAllWaystoneNames() {
+    public Optional<Set<String>> getAllWaystoneNames(boolean isClient) {
         if(isWaystoneNameCacheDirty) {
-            requestAllWaystoneNames(c -> {}, Optional.empty());
+            requestAllWaystoneNames(c -> {}, Optional.empty(), isClient);
         }
         return isWaystoneNameCacheDirty
             ? Optional.empty()
@@ -424,10 +430,14 @@ public class WaystoneLibrary {
 
     private static final class RequestAllWaystonesEvent implements PacketHandler.Event<RequestAllWaystonesEvent.Packet> {
 
+        private static final CompoundSerializable<Optional<PlayerHandle>> serializer = PlayerHandle.Serializer.optional();
+
         public static final class Packet {
             public final Optional<PlayerHandle> onlyKnownBy;
 
-            public Packet(Optional<PlayerHandle> onlyKnownBy) { this.onlyKnownBy = onlyKnownBy; }
+            public Packet(Optional<PlayerHandle> onlyKnownBy) {
+                this.onlyKnownBy = onlyKnownBy;
+            }
         }
 
         @Override
@@ -435,12 +445,12 @@ public class WaystoneLibrary {
 
         @Override
         public void encode(Packet message, PacketBuffer buffer) {
-            PlayerHandle.Serializer.optional().write(message.onlyKnownBy, buffer);
+            serializer.write(message.onlyKnownBy, buffer);
         }
 
         @Override
         public Packet decode(PacketBuffer buffer) {
-            return new Packet(PlayerHandle.Serializer.optional().read(buffer));
+            return new Packet(serializer.read(buffer));
         }
 
         @Override

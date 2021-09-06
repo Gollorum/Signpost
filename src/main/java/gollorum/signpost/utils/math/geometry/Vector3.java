@@ -1,6 +1,7 @@
 package gollorum.signpost.utils.math.geometry;
 
 import com.sun.javafx.geom.Matrix3f;
+import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
@@ -83,6 +84,14 @@ public final class Vector3 {
             mat.m00 * x + mat.m01 * y + mat.m02 * z,
             mat.m10 * x + mat.m11 * y + mat.m12 * z,
             mat.m20 * x + mat.m21 * y + mat.m22 * z
+        );
+    }
+
+    public Vector3 rotateY(Angle angle) {
+        return new Vector3(
+            (float)(angle.cos() * x + angle.sin() * z),
+            y,
+            (float)(angle.sin() * x + angle.cos() * z)
         );
     }
 

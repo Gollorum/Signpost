@@ -7,6 +7,7 @@ import net.minecraft.client.gui.FontRenderer;
 
 import javax.annotation.Nullable;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class AngleInputBox extends InputBox {
 
@@ -22,8 +23,13 @@ public class AngleInputBox extends InputBox {
             new Point(inputFieldRect.point.x + inputFieldRect.height, inputFieldRect.point.y),
             inputFieldRect.width - inputFieldRect.height, inputFieldRect.height
         ), true, true, zOffset);
-        setValidator(text -> text.endsWith(degreeSign) ? canParse(text.substring(0, text.length() - 1)) : canParse(text));
-        setText("0" + degreeSign);
+        setFilter(null);
+        setValue("0" + degreeSign);
+        setResponder(null);
+    }
+
+    private static boolean isValidValue(String text) {
+        return text.endsWith(degreeSign) ? canParse(text.substring(0, text.length() - 1)) : canParse(text);
     }
 
     private static boolean canParse(String text) {
@@ -37,28 +43,34 @@ public class AngleInputBox extends InputBox {
     }
 
     private float getResult() {
-        String text = getText().endsWith(degreeSign)
-            ? getText().substring(0, getText().length() - 1)
-            : getText();
+        String text = getValue().endsWith(degreeSign)
+            ? getValue().substring(0, getValue().length() - 1)
+            : getValue();
         return text.equals("") ? 0 : Integer.parseInt(text);
     }
 
     public Angle getCurrentAngle() { return Angle.fromDegrees(currentResult); }
 
     @Override
-    protected void onTextChanged() {
-        currentResult = getResult();
-        if(responder != null) {
-            responder.accept(Angle.fromDegrees(currentResult));
-        }
-        super.onTextChanged();
+    public void setResponder(@Nullable Consumer<String> responder) {
+        super.setResponder(value -> {
+            currentResult = getResult();
+            if(responder != null) {
+                responder.accept(value);
+            }
+        });
+    }
+
+    @Override
+    public void setFilter(@Nullable Predicate<String> filter) {
+        super.setFilter(value -> isValidValue(value) && (filter == null || filter.test(value)));
     }
 
     public void setAngleResponder(@Nullable Consumer<Angle> responder) {
-        this.responder = responder;
+        setResponder(responder == null ? null : value -> responder.accept(Angle.fromDegrees(currentResult)));
     }
 
     public void setSelectedAngle(Angle angle) {
-        setText(Math.round(angle.degrees()) + degreeSign);
+        setValue(Math.round(angle.degrees()) + degreeSign);
     }
 }

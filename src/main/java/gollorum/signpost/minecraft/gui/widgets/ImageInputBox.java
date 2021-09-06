@@ -31,7 +31,6 @@ public final class ImageInputBox extends InputBox implements Flippable {
             zOffset
         );
         this.texture = texture;
-        setEnableBackgroundDrawing(false);
         setTextColor(Colors.black);
         int x = backgroundRect.point.x + inputFieldRect.point.x;
         switch(backXAlignment) {

@@ -9,12 +9,14 @@ import gollorum.signpost.minecraft.gui.utils.TextureResource;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class ColorInputBox extends InputBox {
 
@@ -28,8 +30,18 @@ public class ColorInputBox extends InputBox {
             new Point(inputFieldRect.point.x + inputFieldRect.height, inputFieldRect.point.y),
             inputFieldRect.width - inputFieldRect.height, inputFieldRect.height
         ), true, true, zOffset);
-        setValidator(text -> text.startsWith("#") && text.length() <= 7 && canParse(text.substring(1)));
-        setText("#000000");
+        setFilter(null);
+        setResponder(null);
+        setValue("#000000");
+    }
+
+    private static boolean isValidColor(String text) {
+        return text.startsWith("#") && text.length() <= 7 && canParse(text.substring(1));
+    }
+
+    @Override
+    public void setFilter(@Nullable Predicate<String> filter) {
+        super.setFilter(text -> isValidColor(text) && (filter == null || filter.test(text)));
     }
 
     private static boolean canParse(String text) {
@@ -43,19 +55,20 @@ public class ColorInputBox extends InputBox {
     }
 
     private int getResult() {
-        if(getText().equals("#")) return 0;
-        return Integer.parseInt(getText().substring(1), 16);
+        if(getValue().equals("#")) return 0;
+        return Integer.parseInt(getValue().substring(1), 16);
     }
 
     public int getCurrentColor() { return currentResult; }
 
     @Override
-    protected void onTextChanged() {
-        currentResult = getResult();
-        if(responder != null) {
-            responder.accept(currentResult);
-        }
-        super.onTextChanged();
+    public void setResponder(@Nullable Consumer<String> responder) {
+        super.setResponder(text -> {
+            currentResult = getResult();
+            if(responder != null) {
+                responder.accept(text);
+            }
+        });
     }
 
     @Override
@@ -77,7 +90,9 @@ public class ColorInputBox extends InputBox {
     }
 
     public void setColorResponder(@Nullable Consumer<Integer> responder) {
-        this.responder = responder;
+        setResponder(text -> {
+            if(responder != null) responder.accept(currentResult);
+        });
     }
 
     public void setSelectedColor(int color) {
@@ -85,6 +100,6 @@ public class ColorInputBox extends InputBox {
         if(text.length() < 6) {
             text = String.join("", Collections.nCopies(6 - text.length(), "0")) + text;
         }
-        setText("#" + text);
+        setValue("#" + text);
     }
 }

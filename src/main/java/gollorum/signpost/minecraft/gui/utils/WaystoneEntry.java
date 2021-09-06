@@ -2,21 +2,22 @@ package gollorum.signpost.minecraft.gui.utils;
 
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.utils.WorldLocation;
+import net.minecraft.util.math.BlockPos;
 
 import java.util.Objects;
 
 public final class WaystoneEntry {
 
-    public final String entryName;
-    public final String displayName;
+    public String entryName;
+    public String displayName;
     public final WaystoneHandle handle;
-    public final WorldLocation loc;
+    public BlockPos pos;
 
-    public WaystoneEntry(String entryName, String displayName, WaystoneHandle handle, WorldLocation loc) {
+    public WaystoneEntry(String entryName, String displayName, WaystoneHandle handle, BlockPos pos) {
         this.entryName = entryName;
         this.displayName = displayName;
         this.handle = handle;
-        this.loc = loc;
+        this.pos = pos;
     }
 
     @Override

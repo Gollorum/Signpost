@@ -103,7 +103,7 @@ public class Villages {
 			Signpost.LOGGER.error("Tried to add elements to village pool " + pool + ", but it was not found in the registry.");
 			return;
 		}
-		Map<JigsawPiece, Integer> allPieces = CollectionUtils.group(oldPattern.getShuffledTemplates(new Random(0)));
+		Map<JigsawPiece, Integer> allPieces = CollectionUtils.group(oldPattern.templates);
 		for(Tuple<SingleJigsawPiece, Integer> tuple : houses) {
 			allPieces.put(tuple._1, tuple._2);
 		}

@@ -34,7 +34,8 @@ public class ListWaystones {
 								return l;
 							}).orElseGet(() -> new TranslationTextComponent(LangKeys.noWaystones)),
 						false
-					), Optional.empty()
+					), Optional.empty(),
+					false
 				);
 				return Command.SINGLE_SUCCESS;
 			});

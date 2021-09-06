@@ -20,7 +20,7 @@ public class FlippableAtPivot implements Flippable {
     public void setFlipped(boolean isFlipped) {
         if(isFlipped != this.isFlipped) {
             this.isFlipped = isFlipped;
-            wrapped.setX(pivotX + pivotX - (wrapped.getX() + wrapped.width()));
+            wrapped.setXPos(pivotX + pivotX - (wrapped.getXPos() + wrapped.width()));
         }
     }
 }

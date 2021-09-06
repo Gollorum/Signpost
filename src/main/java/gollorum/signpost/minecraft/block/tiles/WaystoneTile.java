@@ -31,7 +31,7 @@ public class WaystoneTile extends TileEntity implements WithOwner.OfWaystone, Wa
     @Override
     public void setRemoved() {
         super.setRemoved();
-        if(Signpost.getServerType().isServer) {
+        if(hasLevel() && !getLevel().isClientSide()) {
             Optional<WorldLocation> location = WorldLocation.from(this);
             if(location.isPresent())
                 WaystoneLibrary.getInstance().removeAt(location.get(), PlayerHandle.Invalid);

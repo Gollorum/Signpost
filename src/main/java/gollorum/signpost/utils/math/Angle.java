@@ -52,6 +52,9 @@ public final class Angle {
         return fromRadians(r);
     }
 
+    public double cos() { return Math.cos(radians()); }
+    public double sin() { return Math.sin(radians()); }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

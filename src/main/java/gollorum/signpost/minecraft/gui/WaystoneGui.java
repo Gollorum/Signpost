@@ -75,7 +75,7 @@ public class WaystoneGui extends ExtendedScreen {
         super.init();
         WaystoneLibrary.getInstance()
             .requestAllWaystoneNames(names -> allWaystoneNames = Optional.of(
-                new HashSet<>(names.values())), Optional.empty());
+                new HashSet<>(names.values())), Optional.empty(), true);
         WaystoneLibrary.getInstance().updateEventDispatcher.addListener(waystoneUpdateListener);
         inputBox = new ImageInputBox(font,
             new Rect(
@@ -110,16 +110,16 @@ public class WaystoneGui extends ExtendedScreen {
         addButton(inputBox);
         addButton(doneButton);
         inputBox.setTextColor(Colors.valid);
-        inputBox.setDisabledTextColour(Colors.validInactive);
-        inputBox.setMaxStringLength(200);
-        inputBox.setTextChangedCallback(name -> {
+        inputBox.setTextColorUneditable(Colors.validInactive);
+        inputBox.setMaxLength(200);
+        inputBox.setResponder(name -> {
             if(isValid(name)){
                 inputBox.setTextColor(Colors.valid);
-                inputBox.setDisabledTextColour(Colors.validInactive);
+                inputBox.setTextColorUneditable(Colors.validInactive);
                 doneButton.active = true;
             } else {
                 inputBox.setTextColor(Colors.invalid);
-                inputBox.setDisabledTextColour(Colors.invalidInactive);
+                inputBox.setTextColorUneditable(Colors.invalidInactive);
                 doneButton.active = false;
             }
         });
