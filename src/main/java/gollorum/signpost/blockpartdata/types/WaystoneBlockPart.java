@@ -78,7 +78,7 @@ public class WaystoneBlockPart implements BlockPart<WaystoneBlockPart>, WithOwne
 
 	@Override
 	public void removeFrom(PostTile tile) {
-		if(tile.hasLevel() && tile.getLevel().isClientSide()) {
+		if(tile.hasLevel() && !tile.getLevel().isClientSide()) {
 			Optional<WorldLocation> location = WorldLocation.from(tile);
 			if(location.isPresent())
 				WaystoneLibrary.getInstance().removeAt(location.get(), PlayerHandle.Invalid);

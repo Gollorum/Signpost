@@ -29,6 +29,12 @@ public class WaystoneArgument implements ArgumentType<String> {
 		ArgumentTypes.register(Signpost.MOD_ID + ":waystone", WaystoneArgument.class, new ArgumentSerializer<>(WaystoneArgument::new));
 	}
 
+	public static void bootstrap() {
+		// Wirklich nichts zu sehen.
+		// Ich weiß, das kommt jetzt überraschend,
+		// dumdidum ...
+	}
+
 	private static final Pattern nonLiteralPattern = Pattern.compile("[^a-z0-9]", Pattern.CASE_INSENSITIVE);
 
 	@Override
@@ -51,7 +57,7 @@ public class WaystoneArgument implements ArgumentType<String> {
 				builder
 			).thenAccept(ret::complete),
 			Optional.empty(),
-			false
+			Signpost.getServerType().isClient
 		);
 		return ret;
 	}

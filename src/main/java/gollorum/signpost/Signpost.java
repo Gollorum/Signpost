@@ -2,6 +2,7 @@ package gollorum.signpost;
 
 import gollorum.signpost.minecraft.block.BlockEventListener;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.commands.WaystoneArgument;
 import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.data.DataGeneration;
 import gollorum.signpost.minecraft.registry.BlockRegistry;
@@ -72,6 +73,8 @@ public class Signpost {
         WaystoneDiscoveryEventListener.register(forgeBus);
 
         Villages.instance.initialize();
+
+        WaystoneArgument.bootstrap();
 
         if(ModList.get().isLoaded("waystones"))
             WaystonesAdapter.register();
