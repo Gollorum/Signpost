@@ -20,6 +20,7 @@ import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.relations.ExternalWaystoneLibrary;
 import gollorum.signpost.utils.Delay;
+import gollorum.signpost.utils.Tuple;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
@@ -30,6 +31,7 @@ import net.minecraft.client.gui.components.LockIconButton;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -43,6 +45,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class SignGui extends ExtendedScreen {
 
@@ -76,7 +79,7 @@ public class SignGui extends ExtendedScreen {
     private final ItemStack itemToDropOnBreak;
 
     private final Consumer<WaystoneUpdatedEvent> waystoneUpdateListener = event -> {
-        WaystoneEntry newEntry = new WaystoneEntry(event.name, event.name, event.handle, event.location.block);
+        WaystoneEntry newEntry = new WaystoneEntry(event.name, event.name, event.handle, event.location.block.blockPos);
         switch(event.getType()) {
             case Added:
                 waystoneDropdown.addEntry(newEntry);
@@ -88,7 +91,7 @@ public class SignGui extends ExtendedScreen {
                 break;
             case Renamed:
                 String oldName = ((WaystoneRenamedEvent)event).oldName;
-                WaystoneEntry oldEntry = new WaystoneEntry(oldName, oldName, event.handle, event.location.block);
+                WaystoneEntry oldEntry = new WaystoneEntry(oldName, oldName, event.handle, event.location.block.blockPos);
                 waystoneDropdown.removeEntry(oldEntry);
                 waystoneDropdown.addEntry(newEntry);
                 break;
@@ -559,22 +562,59 @@ public class SignGui extends ExtendedScreen {
         if(hasBeenInitialized) {
             onWaystoneCountChanged();
         } else {
-            Consumer<Function<WaystoneHandle, Optional<String>>> setupFromSign = map -> {
-                oldSign.flatMap(s -> (Optional<WaystoneHandle>) s.getDestination()).ifPresent(id -> {
-                    Optional<String> name = map.apply(id);
-                    if (name.isPresent() && !name.get().equals(""))
-                        waystoneInputBox.setValue(name.get());
+            String unknownWaystone = new TranslatableComponent(LangKeys.unknownWaystone)
+                .withStyle(style -> style.withColor(TextColor.fromRgb(Colors.darkGrey)))
+                .getString();
+            Optional<WaystoneEntry> oldWaystone = oldSign
+                .<WaystoneHandle>flatMap(SignBlockPart::getDestination)
+                .map(handle -> new WaystoneEntry(
+                    unknownWaystone,
+                    unknownWaystone,
+                    handle,
+                    tile.getBlockPos().offset(
+                        new Vector3(100, 0, 0).rotateY(oldSign.get().getAngle()).toBlockPos()
+                    )
+                ));
+            oldWaystone.ifPresent(text -> {
+                waystoneDropdown.addEntry(text);
+                waystoneInputBox.setText(text.entryName);
+            });
+            Consumer<Function<WaystoneHandle, Optional<Tuple<Tuple<String, String>, BlockPos>>>> setupFromSign = map -> {
+                oldWaystone.ifPresent(oldWs -> {
+                    Optional<Tuple<Tuple<String, String>, BlockPos>> name = map.apply(oldWs.handle);
+                    if (name.isPresent()) {
+                        oldWs.entryName = name.get()._1._1;
+                        oldWs.displayName = name.get()._1._2;
+                        oldWs.pos = name.get()._2;
+                        waystoneInputBox.setValue(oldWs.entryName);
+                    }
                 });
                 onWaystoneCountChanged();
             };
             WaystoneLibrary.getInstance().requestAllWaystones(n -> {
-                waystoneDropdown.addEntries(n.entrySet().stream().map(e -> new WaystoneEntry(e.getValue()._1, e.getValue()._1, e.getKey(), e.getValue()._2.block)).collect(Collectors.toList()));
-                setupFromSign.accept(id -> id instanceof WaystoneHandle.Vanilla ? Optional.ofNullable(n.get(id)).map(t -> t._1) : Optional.empty());
-            }, Optional.of(PlayerHandle.from(getMinecraft().player)));
+                waystoneDropdown.addEntries(n.entrySet().stream().map(e -> new WaystoneEntry(
+                    e.getValue()._1,
+                    e.getValue()._1,
+                    e.getKey(),
+                    e.getValue()._2.block.blockPos
+                )).filter(e -> oldWaystone.map(oldE -> !e.handle.equals(oldE.handle)).orElse(true))
+                    .collect(Collectors.toList()));
+                setupFromSign.accept(id ->
+                    id instanceof WaystoneHandle.Vanilla
+                        ? Optional.ofNullable(n.get(id))
+                            .map(e -> Tuple.of(e._1, e._1, e._2.block.blockPos))
+                        : Optional.empty());
+            }, Optional.of(PlayerHandle.from(getMinecraft().player)), true);
             ExternalWaystoneLibrary.getInstance().requestKnownWaystones(n -> {
-                List<WaystoneEntry> entries = n.stream().map(w -> new WaystoneEntry(w.name() + " " + w.handle().modMark(), w.name(), w.handle(), w.loc())).collect(Collectors.toList());
-                waystoneDropdown.addEntries(entries);
-                setupFromSign.accept(id -> entries.stream().filter(e -> e.handle.equals(id)).findFirst().map(e -> e.displayName));
+                Stream<WaystoneEntry> entries = n.stream().map(w -> new WaystoneEntry(
+                    w.name() + " " + w.handle().modMark(),
+                    w.name(),
+                    w.handle(),
+                    w.loc().blockPos
+                ));
+                waystoneDropdown.addEntries(entries.filter(e -> oldWaystone.map(oldE -> !e.handle.equals(oldE.handle)).orElse(true))
+                    .collect(Collectors.toList()));
+                setupFromSign.accept(id -> entries.filter(e -> e.handle.equals(id)).findFirst().map(e -> Tuple.of(e.entryName, e.displayName, e.pos)));
             });
             WaystoneLibrary.getInstance().updateEventDispatcher.addListener(waystoneUpdateListener);
         }
@@ -953,7 +993,7 @@ public class SignGui extends ExtendedScreen {
 
     private AngleSelectionEntry angleEntryForWaystone(WaystoneEntry waystone) {
         AtomicReference<Angle> angle = new AtomicReference<>(Angle.fromDegrees(404));
-        angle.set(SignBlockPart.pointingAt(tile.getBlockPos(), waystone.loc.blockPos));
+        angle.set(SignBlockPart.pointingAt(tile.getBlockPos(), waystone.pos));
         return new AngleSelectionEntry(LangKeys.rotationWaystone, angle::get);
     }
 

@@ -71,7 +71,7 @@ public class WaystoneGui extends ExtendedScreen {
         super.init();
         WaystoneLibrary.getInstance()
             .requestAllWaystoneNames(names -> allWaystoneNames = Optional.of(
-                new HashSet<>(names.values())), Optional.empty());
+                new HashSet<>(names.values())), Optional.empty(), true);
         WaystoneLibrary.getInstance().updateEventDispatcher.addListener(waystoneUpdateListener);
         inputBox = new ImageInputBox(font,
             new Rect(

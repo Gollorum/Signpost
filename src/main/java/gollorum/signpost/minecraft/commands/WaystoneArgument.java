@@ -46,7 +46,7 @@ public class WaystoneArgument implements ArgumentType<String> {
 	@Override
 	public String parse(StringReader reader) throws CommandSyntaxException {
 		String name = reader.readString();
-		if(WaystoneLibrary.hasInstance() && WaystoneLibrary.getInstance().getAllWaystoneNames().map(n -> n.contains(name)).orElse(true))
+		if(WaystoneLibrary.hasInstance() && WaystoneLibrary.getInstance().getAllWaystoneNames(false).map(n -> n.contains(name)).orElse(true))
 			return name;
 		else throw new SimpleCommandExceptionType(new TranslatableComponent(LangKeys.waystoneNotFound, Colors.wrap(name, Colors.highlight))).create();
 	}
@@ -62,7 +62,8 @@ public class WaystoneArgument implements ArgumentType<String> {
 				names.values().stream().map(s -> nonLiteralPattern.matcher(s).find() ? "\"" + s + "\"" : s).collect(Collectors.toSet()),
 				builder
 			).thenAccept(ret::complete),
-			Optional.empty()
+			Optional.empty(),
+			false
 		);
 		return ret;
 	}

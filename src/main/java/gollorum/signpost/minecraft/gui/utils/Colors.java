@@ -100,9 +100,8 @@ public class Colors {
     public static int getBlue(int color) { return color & 0xff; }
 
     public static BaseComponent wrap(String text, int color) {
-        TextComponent ret = new TextComponent(text);
-        ret.setStyle(ret.getStyle().withColor(TextColor.fromRgb(color)));
-        return ret;
+        return new TextComponent(text)
+            .withStyle(style -> style.withColor(TextColor.fromRgb(color)));
     }
 
 }

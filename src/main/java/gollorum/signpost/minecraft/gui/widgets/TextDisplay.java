@@ -33,7 +33,14 @@ public class TextDisplay implements Widget {
             translationKey,
             Arrays.stream(args).map(Tuple::getLeft).toArray(Object[]::new)
         ).visit(t -> {
-            texts.add(new Tuple<>(t, Arrays.stream(args).filter(p -> p._1.equals(t)).map(Tuple::getRight).findFirst().orElse(Colors.white)));
+            texts.add(new Tuple<>(
+                t,
+                Arrays.stream(args)
+                    .filter(p -> p._1.equals(t))
+                    .map(Tuple::getRight)
+                    .findFirst()
+                    .orElse(Colors.white)
+            ));
             return Optional.empty();
         });
         return texts;

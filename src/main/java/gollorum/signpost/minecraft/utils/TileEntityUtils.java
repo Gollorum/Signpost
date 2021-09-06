@@ -33,8 +33,8 @@ public class TileEntityUtils {
         return findWorld(dimensionKeyLocation, isRemote).flatMap(world -> findTileEntity(world, blockPos, c));
     }
 
-    public static Optional<Level> findWorld(ResourceLocation dimensionKeyLocation, boolean isRemote) {
-        return isRemote
+    public static Optional<Level> findWorld(ResourceLocation dimensionKeyLocation, boolean isClient) {
+        return isClient
             ? (Minecraft.getInstance().level.dimension().location().equals(dimensionKeyLocation)
                 ? Optional.of(Minecraft.getInstance().level)
                 : Optional.empty())

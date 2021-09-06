@@ -1,5 +1,6 @@
 package gollorum.signpost.utils.math.geometry;
 
+import gollorum.signpost.utils.math.Angle;
 import com.mojang.math.Vector3d;
 import com.mojang.math.Vector3f;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
@@ -89,6 +90,14 @@ public final class Vector3 {
 //            mat.m20 * x + mat.m21 * y + mat.m22 * z
 //        );
 //    }
+
+    public Vector3 rotateY(Angle angle) {
+        return new Vector3(
+            (float)(angle.cos() * x + angle.sin() * z),
+            y,
+            (float)(angle.sin() * x + angle.cos() * z)
+        );
+    }
 
     public float distanceTo(Vector3 other) {
         Vector3 distance = other.subtract(this);
