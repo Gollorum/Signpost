@@ -23,6 +23,8 @@ import gollorum.signpost.utils.serialization.StringSerializer;
 import io.netty.util.internal.ConcurrentSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.Connection;
 import net.minecraft.network.FriendlyByteBuf;
@@ -43,6 +45,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fmllegacy.network.NetworkEvent;
 
 import javax.annotation.Nullable;
@@ -175,21 +178,27 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         return compound;
     }
 
-    private void writeSelf(CompoundTag compound){
+    public Tag writeParts(boolean includeIDs) {
+        CompoundTag compound = new CompoundTag();
         for(Map.Entry<BlockPartMetadata, List<Map.Entry<UUID, BlockPartInstance>>> entry: parts.entrySet().stream()
             .collect(Collectors.groupingBy(p -> p.getValue().blockPart.getMeta())).entrySet()
         ){
             List<Map.Entry<UUID, BlockPartInstance>> instances = entry.getValue();
-            compound.putInt(entry.getKey().identifier, instances.size());
-            for(int i=0; i<instances.size(); i++){
-                Map.Entry<UUID, BlockPartInstance> e = instances.get(i);
+            ListTag list = new ListTag();
+            for (Map.Entry<UUID, BlockPartInstance> e : instances) {
                 BlockPartInstance instance = e.getValue();
                 CompoundTag subComp = instance.blockPart.write();
                 subComp.put("Offset", Vector3.Serializer.write(instance.offset));
-                compound.put(entry.getKey().identifier + "_" + i, subComp);
-                subComp.putUUID("PartId", e.getKey());
+                if(includeIDs) subComp.putUUID("PartId", e.getKey());
+                list.add(subComp);
             }
+            compound.put(entry.getKey().identifier, list);
         }
+        return compound;
+    }
+
+    private void writeSelf(CompoundTag compound){
+        compound.put("Parts", writeParts(true));
         compound.put("Drop", ItemStackSerializer.Instance.write(drop));
         compound.put("Owner", PlayerHandle.Serializer.optional().write(owner));
     }
@@ -200,22 +209,29 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         readSelf(compound);
     }
 
-    private void readSelf(CompoundTag compound){
+    public void readParts(CompoundTag compound) {
         parts.clear();
         for(BlockPartMetadata<?> meta : partsMetadata){
-            for(int i = 0; i < compound.getInt(meta.identifier); i++){
-                CompoundTag comp = compound.getCompound(meta.identifier + "_" + i);
-                addPart(
-                    comp.getUUID("PartId"),
-                    new BlockPartInstance(
-                        meta.read(comp),
-                        Vector3.Serializer.read(comp.getCompound("Offset"))
-                    ),
-                    ItemStack.EMPTY,
-                    PlayerHandle.Invalid
-                );
+            if(compound.contains(meta.identifier)) {
+                ListTag list = compound.getList(meta.identifier, Constants.NBT.TAG_COMPOUND);
+                for(int i = 0; i < list.size(); i++){
+                    CompoundTag comp = list.getCompound(i);
+                    addPart(
+                        comp.contains("PartId") ? comp.getUUID("PartId") : UUID.randomUUID(),
+                        new BlockPartInstance(
+                            meta.read(comp),
+                            Vector3.Serializer.read(comp.getCompound("Offset"))
+                        ),
+                        ItemStack.EMPTY,
+                        PlayerHandle.Invalid
+                    );
+                }
             }
         }
+    }
+
+    private void readSelf(CompoundTag compound){
+        readParts(compound.getCompound("Parts"));
         drop = ItemStackSerializer.Instance.read(compound.getCompound("Drop"));
         owner = PlayerHandle.Serializer.optional().read(compound.getCompound("Owner"));
     }
