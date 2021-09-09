@@ -1,7 +1,7 @@
 package gollorum.signpost.minecraft.gui.utils;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.BaseComponent;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.network.chat.TextComponent;
 
@@ -99,7 +99,7 @@ public class Colors {
     public static int getGreen(int color) { return (color >>> 8) & 0xff; }
     public static int getBlue(int color) { return color & 0xff; }
 
-    public static BaseComponent wrap(String text, int color) {
+    public static MutableComponent wrap(String text, int color) {
         return new TextComponent(text)
             .withStyle(style -> style.withColor(TextColor.fromRgb(color)));
     }

@@ -1,8 +1,8 @@
 package gollorum.signpost.utils;
 
 import gollorum.signpost.utils.serialization.CompoundSerializable;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 
 import java.util.Map;
 import java.util.stream.Collector;
@@ -50,14 +50,14 @@ public class Tuple<T1, T2> {
         }
 
         @Override
-        public CompoundNBT write(Tuple<T1, T2> tuple, CompoundNBT compound) {
+        public CompoundTag write(Tuple<T1, T2> tuple, CompoundTag compound) {
             compound.put("left", serializer1.write(tuple._1));
             compound.put("right", serializer2.write(tuple._2));
             return compound;
         }
 
         @Override
-        public boolean isContainedIn(CompoundNBT compound) {
+        public boolean isContainedIn(CompoundTag compound) {
             return compound.contains("left")
                 && compound.contains("right")
                 && serializer1.isContainedIn(compound.getCompound("left"))
@@ -65,7 +65,7 @@ public class Tuple<T1, T2> {
         }
 
         @Override
-        public Tuple<T1, T2> read(CompoundNBT compound) {
+        public Tuple<T1, T2> read(CompoundTag compound) {
             return new Tuple<>(
                 serializer1.read(compound.getCompound("left")),
                 serializer2.read(compound.getCompound("right"))
@@ -73,13 +73,13 @@ public class Tuple<T1, T2> {
         }
 
         @Override
-        public void write(Tuple<T1, T2> tuple, PacketBuffer buffer) {
+        public void write(Tuple<T1, T2> tuple, FriendlyByteBuf buffer) {
             serializer1.write(tuple._1, buffer);
             serializer2.write(tuple._2, buffer);
         }
 
         @Override
-        public Tuple<T1, T2> read(PacketBuffer buffer) {
+        public Tuple<T1, T2> read(FriendlyByteBuf buffer) {
             return new Tuple<>(
                 serializer1.read(buffer),
                 serializer2.read(buffer)

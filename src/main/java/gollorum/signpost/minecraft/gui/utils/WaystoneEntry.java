@@ -1,8 +1,7 @@
 package gollorum.signpost.minecraft.gui.utils;
 
 import gollorum.signpost.WaystoneHandle;
-import gollorum.signpost.utils.WorldLocation;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 
 import java.util.Objects;
 

@@ -30,6 +30,7 @@ import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.LockIconButton;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.language.I18n;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.network.chat.TranslatableComponent;
@@ -570,14 +571,14 @@ public class SignGui extends ExtendedScreen {
                 .map(handle -> new WaystoneEntry(
                     unknownWaystone,
                     unknownWaystone,
-                    handle,
+                    (WaystoneHandle) handle,
                     tile.getBlockPos().offset(
                         new Vector3(100, 0, 0).rotateY(oldSign.get().getAngle()).toBlockPos()
                     )
                 ));
             oldWaystone.ifPresent(text -> {
                 waystoneDropdown.addEntry(text);
-                waystoneInputBox.setText(text.entryName);
+                waystoneInputBox.setValue(text.entryName);
             });
             Consumer<Function<WaystoneHandle, Optional<Tuple<Tuple<String, String>, BlockPos>>>> setupFromSign = map -> {
                 oldWaystone.ifPresent(oldWs -> {

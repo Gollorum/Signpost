@@ -3,6 +3,7 @@ package gollorum.signpost;
 import gollorum.signpost.relations.ExternalWaystoneLibrary;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.StringSerializer;
+import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 
@@ -29,6 +30,7 @@ public interface WaystoneHandle {
 
     public static class Vanilla implements WaystoneHandle {
         public static final String typeTag = "vanilla";
+        public static final Vanilla NIL = new Vanilla(Util.NIL_UUID);
 
         public final UUID id;
 

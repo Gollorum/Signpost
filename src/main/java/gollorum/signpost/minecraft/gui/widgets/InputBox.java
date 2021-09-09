@@ -100,7 +100,7 @@ public class InputBox extends EditBox implements WithMutableX, Ticking {
     }
 
     @Override
-    public int getX() {
+    public int getXPos() {
         return x;
     }
 
@@ -110,7 +110,7 @@ public class InputBox extends EditBox implements WithMutableX, Ticking {
     }
 
     @Override
-    public void setX(int x) {
+    public void setXPos(int x) {
         this.x = x;
     }
 }
