@@ -10,6 +10,7 @@ import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 
@@ -18,7 +19,7 @@ import java.util.function.Consumer;
 
 public class TileEntityUtils {
 
-    public static <T> Optional<T> findTileEntity(IWorld world, BlockPos pos, Class<T> c){
+    public static <T> Optional<T> findTileEntity(IBlockReader world, BlockPos pos, Class<T> c){
         TileEntity tileEntity = world.getBlockEntity(pos);
         if(tileEntity != null && c.isAssignableFrom(tileEntity.getClass())){
             return Optional.of((T) tileEntity);

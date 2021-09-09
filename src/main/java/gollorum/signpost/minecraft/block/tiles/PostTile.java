@@ -28,7 +28,9 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.JsonToNBT;
+import net.minecraft.nbt.ListNBT;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
@@ -43,6 +45,7 @@ import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import javax.annotation.Nullable;
@@ -175,21 +178,27 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
         return compound;
     }
 
-    private void writeSelf(CompoundNBT compound){
+    public INBT writeParts(boolean includeIDs) {
+        CompoundNBT compound = new CompoundNBT();
         for(Map.Entry<BlockPartMetadata, List<Map.Entry<UUID, BlockPartInstance>>> entry: parts.entrySet().stream()
             .collect(Collectors.groupingBy(p -> p.getValue().blockPart.getMeta())).entrySet()
         ){
             List<Map.Entry<UUID, BlockPartInstance>> instances = entry.getValue();
-            compound.putInt(entry.getKey().identifier, instances.size());
-            for(int i=0; i<instances.size(); i++){
-                Map.Entry<UUID, BlockPartInstance> e = instances.get(i);
+            ListNBT list = new ListNBT();
+            for (Map.Entry<UUID, BlockPartInstance> e : instances) {
                 BlockPartInstance instance = e.getValue();
                 CompoundNBT subComp = instance.blockPart.write();
                 subComp.put("Offset", Vector3.Serializer.write(instance.offset));
-                compound.put(entry.getKey().identifier + "_" + i, subComp);
-                subComp.putUUID("PartId", e.getKey());
+                if(includeIDs) subComp.putUUID("PartId", e.getKey());
+                list.add(subComp);
             }
+            compound.put(entry.getKey().identifier, list);
         }
+        return compound;
+    }
+
+    private void writeSelf(CompoundNBT compound){
+        compound.put("Parts", writeParts(true));
         compound.put("Drop", ItemStackSerializer.Instance.write(drop));
         compound.put("Owner", PlayerHandle.Serializer.optional().write(owner));
     }
@@ -200,22 +209,29 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
         readSelf(compound);
     }
 
-    private void readSelf(CompoundNBT compound){
+    public void readParts(CompoundNBT compound) {
         parts.clear();
         for(BlockPartMetadata<?> meta : partsMetadata){
-            for(int i = 0; i < compound.getInt(meta.identifier); i++){
-                CompoundNBT comp = compound.getCompound(meta.identifier + "_" + i);
-                addPart(
-                    comp.getUUID("PartId"),
-                    new BlockPartInstance(
-                        meta.read(comp),
-                        Vector3.Serializer.read(comp.getCompound("Offset"))
-                    ),
-                    ItemStack.EMPTY,
-                    PlayerHandle.Invalid
-                );
+            if(compound.contains(meta.identifier)) {
+                ListNBT list = compound.getList(meta.identifier, Constants.NBT.TAG_COMPOUND);
+                for(int i = 0; i < list.size(); i++){
+                    CompoundNBT comp = list.getCompound(i);
+                    addPart(
+                        comp.contains("PartId") ? comp.getUUID("PartId") : UUID.randomUUID(),
+                        new BlockPartInstance(
+                            meta.read(comp),
+                            Vector3.Serializer.read(comp.getCompound("Offset"))
+                        ),
+                        ItemStack.EMPTY,
+                        PlayerHandle.Invalid
+                    );
+                }
             }
         }
+    }
+
+    private void readSelf(CompoundNBT compound){
+        readParts(compound.getCompound("Parts"));
         drop = ItemStackSerializer.Instance.read(compound.getCompound("Drop"));
         owner = PlayerHandle.Serializer.optional().read(compound.getCompound("Owner"));
     }
