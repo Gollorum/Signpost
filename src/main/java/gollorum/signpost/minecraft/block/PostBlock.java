@@ -339,11 +339,12 @@ public class PostBlock extends Block implements IWaterLoggable, WithCountRestric
 
     @Override
     public ItemStack getPickBlock(BlockState state, RayTraceResult target, IBlockReader world, BlockPos pos, PlayerEntity player) {
-        TileEntityUtils.findTileEntity(world, pos, PostTile.class).map(tile -> {
-            CompoundNBT compound = new CompoundNBT();
-            return new ItemStack(this, 1, compound);
+        ItemStack ret = super.getPickBlock(state, target, world, pos, player);
+        TileEntityUtils.findTileEntity(world, pos, PostTile.class).ifPresent(tile -> {
+            if(!ret.hasTag()) ret.setTag(new CompoundNBT());
+            ret.getTag().put("Parts", tile.writeParts(false));
         });
-        return super.getPickBlock(state, target, world, pos, player);
+        return ret;
     }
 
     @SuppressWarnings("deprecation")
