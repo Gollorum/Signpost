@@ -31,6 +31,7 @@ import net.minecraft.item.Items;
 import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.loot.LootContext;
 import net.minecraft.loot.LootParameters;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.StateContainer;
@@ -43,6 +44,7 @@ import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
@@ -298,23 +300,30 @@ public class PostBlock extends Block implements IWaterLoggable, WithCountRestric
         Delay.forFrames(6, world.isClientSide(), () ->
             TileEntityUtils.delayUntilTileEntityExists(world, pos, PostTile.class, tile -> {
                 tile.setSignpostOwner(Optional.of(PlayerHandle.from(placer)));
+                boolean shouldAddNewSign = placer instanceof ServerPlayerEntity;
                 if (!world.isClientSide()) {
-                    tile.addPart(
-                        new BlockPartInstance(new PostBlockPart(type.postTexture), Vector3.ZERO),
-                        ItemStack.EMPTY,
-                        PlayerHandle.from(placer)
-                    );
+                    if(stack.hasTag() && stack.getTag().contains("Parts")) {
+                        tile.readParts(stack.getTag().getCompound("Parts"));
+                        shouldAddNewSign = false;
+                    } else {
+                        tile.addPart(
+                            new BlockPartInstance(new PostBlockPart(type.postTexture), Vector3.ZERO),
+                            ItemStack.EMPTY,
+                            PlayerHandle.from(placer)
+                        );
+                    }
                     tile.setChanged();
                     world.sendBlockUpdated(pos, state, state, 3);
-                    PacketHandler.send(
-                        PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) placer),
-                        new RequestSignGui.ForNewSign.Package(
-                            new WorldLocation(pos, world),
-                            tile.modelType,
-                            new Vector3(0, 1, 0),
-                            ItemStack.EMPTY
-                        )
-                    );
+                    if(shouldAddNewSign)
+                        PacketHandler.send(
+                            PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) placer),
+                            new RequestSignGui.ForNewSign.Package(
+                                new WorldLocation(pos, world),
+                                tile.modelType,
+                                new Vector3(0, 1, 0),
+                                ItemStack.EMPTY
+                            )
+                        );
                 }
             }, 100, Optional.of(() -> Signpost.LOGGER.error("Could not initialize placed signpost: TileEntity never appeared."))));
     }
@@ -326,6 +335,15 @@ public class PostBlock extends Block implements IWaterLoggable, WithCountRestric
             ? new ArrayList<>(((PostTile) tileentity).getDrops())
             : Collections.singletonList(new ItemStack(this));
         return result;
+    }
+
+    @Override
+    public ItemStack getPickBlock(BlockState state, RayTraceResult target, IBlockReader world, BlockPos pos, PlayerEntity player) {
+        TileEntityUtils.findTileEntity(world, pos, PostTile.class).map(tile -> {
+            CompoundNBT compound = new CompoundNBT();
+            return new ItemStack(this, 1, compound);
+        });
+        return super.getPickBlock(state, target, world, pos, player);
     }
 
     @SuppressWarnings("deprecation")
