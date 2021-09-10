@@ -337,11 +337,12 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
 
     @Override
     public ItemStack getPickBlock(BlockState state, HitResult target, BlockGetter world, BlockPos pos, Player player) {
-        TileEntityUtils.findTileEntity(world, pos, PostTile.class).map(tile -> {
-            CompoundTag compound = new CompoundTag();
-            return new ItemStack(this, 1, compound);
+        ItemStack ret = super.getPickBlock(state, target, world, pos, player);
+        TileEntityUtils.findTileEntity(world, pos, PostTile.class).ifPresent(tile -> {
+            if(!ret.hasTag()) ret.setTag(new CompoundTag());
+            ret.getTag().put("Parts", tile.writeParts(false));
         });
-        return super.getPickBlock(state, target, world, pos, player);
+        return ret;
     }
 
     @SuppressWarnings("deprecation")
