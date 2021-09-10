@@ -9,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -18,7 +19,7 @@ import java.util.function.Consumer;
 
 public class TileEntityUtils {
 
-    public static <T> Optional<T> findTileEntity(LevelAccessor world, BlockPos pos, Class<T> c){
+    public static <T> Optional<T> findTileEntity(BlockGetter world, BlockPos pos, Class<T> c){
         BlockEntity tileEntity = world.getBlockEntity(pos);
         if(tileEntity != null && c.isAssignableFrom(tileEntity.getClass())){
             return Optional.of((T) tileEntity);
