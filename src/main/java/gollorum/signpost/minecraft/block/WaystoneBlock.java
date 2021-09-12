@@ -130,11 +130,6 @@ public class WaystoneBlock extends Block implements WithCountRestriction {
     }
 
     @Override
-    public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
-        return Collections.singletonList(new ItemStack(this.asItem()));
-    }
-
-    @Override
     public BlockRestrictions.Type getBlockRestrictionType() {
         return BlockRestrictions.Type.Waystone;
     }

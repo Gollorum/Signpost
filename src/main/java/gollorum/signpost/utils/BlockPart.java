@@ -7,6 +7,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ResourceLocation;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -28,5 +29,7 @@ public interface BlockPart<T extends BlockPart<T>> extends Interactable {
     Collection<ItemStack> getDrops(PostTile tile);
 
     default void removeFrom(PostTile tile) {}
+
+    Collection<ResourceLocation> getAllTextures();
 
 }

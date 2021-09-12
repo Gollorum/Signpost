@@ -33,6 +33,8 @@ public final class DataGeneration {
             datagenerator.addProvider(new WaystoneRecipe(datagenerator));
             datagenerator.addProvider(new WrenchRecipe(datagenerator));
             datagenerator.addProvider(new BrushRecipe(datagenerator));
+
+            datagenerator.addProvider(new LootTables(datagenerator));
         }
         if(event.includeClient()) {
             PostModel postModel = new PostModel(datagenerator, fileHelper);

@@ -3,6 +3,7 @@ package gollorum.signpost.minecraft.registry;
 import gollorum.signpost.minecraft.items.Brush;
 import gollorum.signpost.minecraft.items.Wrench;
 import gollorum.signpost.minecraft.block.*;
+import gollorum.signpost.minecraft.rendering.PostItemRenderer;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
@@ -49,7 +50,7 @@ public class ItemRegistry {
     private static RegistryObject<Item> registerPostItem(PostBlock.Variant postVariant){
         return REGISTER.register(
             postVariant.registryName,
-            () -> new BlockItem(postVariant.block, new Item.Properties().tab(ITEM_GROUP)));
+            () -> new BlockItem(postVariant.block, new Item.Properties().tab(ITEM_GROUP).setISTER(() -> PostItemRenderer::getInstance)));
     }
 
     private static RegistryObject<Item> registerModelWaystoneItem(ModelWaystone.Variant variant){

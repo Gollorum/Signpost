@@ -157,4 +157,9 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
         return Collections.emptySet();
     }
 
+    @Override
+    public Collection<ResourceLocation> getAllTextures() {
+        return Collections.singleton(getTexture());
+    }
+
 }

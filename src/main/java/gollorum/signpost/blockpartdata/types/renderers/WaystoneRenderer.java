@@ -36,7 +36,9 @@ public class WaystoneRenderer extends BlockPartRenderer<WaystoneBlockPart> {
 	) {
 		RenderingUtil.render(matrix, renderModel -> renderModel.render(
 			model.get(),
-			tileEntity,
+			tileEntity.getLevel(),
+			tileEntity.getBlockState(),
+			tileEntity.getBlockPos(),
 			buffer.getBuffer(RenderType.solid()),
 			false,
 			random,
@@ -47,7 +49,13 @@ public class WaystoneRenderer extends BlockPartRenderer<WaystoneBlockPart> {
 	}
 
 	@Override
-	public void renderGui(WaystoneBlockPart part, Point center, Angle yaw, Angle pitch, float scale, Vector3 offset) {
-		RenderingUtil.renderGui(model.get(), center, yaw, pitch, scale, offset, false, RenderType.solid());
+	public void renderGui(WaystoneBlockPart part, MatrixStack matrixStack, Point center, Angle yaw, Angle pitch, boolean isFlipped, float scale, Vector3 offset) {
+		RenderingUtil.renderGui(model.get(), matrixStack, 0xffffff, center, yaw, pitch, isFlipped, scale, offset, RenderType.solid(), m -> {});
 	}
+
+	@Override
+	public void renderGui(WaystoneBlockPart waystone, MatrixStack matrixStack, Vector3 offset, IRenderTypeBuffer buffer, int combinedLight, int combinedOverlay) {
+		RenderingUtil.renderGui(model.get(), matrixStack, 0xffffff, offset, Angle.ZERO, buffer.getBuffer(RenderType.solid()), combinedLight, combinedOverlay, m -> {});
+	}
+
 }

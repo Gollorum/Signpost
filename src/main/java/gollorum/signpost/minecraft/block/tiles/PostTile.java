@@ -209,6 +209,25 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
         readSelf(compound);
     }
 
+    public static List<BlockPartInstance> readPartInstances(CompoundNBT compound) {
+        List<BlockPartInstance> parts = new ArrayList<>();
+        for(BlockPartMetadata<?> meta : partsMetadata){
+            if(compound.contains(meta.identifier)) {
+                ListNBT list = compound.getList(meta.identifier, Constants.NBT.TAG_COMPOUND);
+                for(int i = 0; i < list.size(); i++){
+                    CompoundNBT comp = list.getCompound(i);
+                    parts.add(
+                        new BlockPartInstance(
+                            meta.read(comp),
+                            Vector3.Serializer.read(comp.getCompound("Offset"))
+                        )
+                    );
+                }
+            }
+        }
+        return parts;
+    }
+
     public void readParts(CompoundNBT compound) {
         parts.clear();
         for(BlockPartMetadata<?> meta : partsMetadata){
@@ -279,7 +298,6 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
     public Collection<ItemStack> getDrops() {
         List<ItemStack> ret = parts.values().stream().flatMap(p -> (Stream<ItemStack>) p.blockPart.getDrops(this).stream())
             .collect(Collectors.toList());
-        ret.add(drop);
         return ret;
     }
 

@@ -5,6 +5,7 @@ import gollorum.signpost.minecraft.gui.utils.ConfigurableFont;
 import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.minecraft.gui.utils.Ticking;
 import gollorum.signpost.minecraft.gui.utils.WithMutableX;
+import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.util.text.StringTextComponent;
@@ -87,6 +88,10 @@ public class InputBox extends TextFieldWidget implements WithMutableX, Ticking {
     public void renderButton(MatrixStack matrixStack, int p_94161_, int p_94162_, float p_94163_) {
         matrixStack.pushPose();
         matrixStack.translate(0, 0, zOffset);
+        if(isHovered() && !isBordered()) {
+            int fromY = y + (configFont.lineHeight - height) / 2;
+            AbstractGui.fill(matrixStack, x, fromY, x + width, fromY + height, 0x40ffffff);
+        }
         super.renderButton(matrixStack, p_94161_, p_94162_, p_94163_);
         matrixStack.popPose();
     }

@@ -18,12 +18,15 @@ import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.BufferSerializable;
 import gollorum.signpost.utils.serialization.StringSerializer;
 import net.minecraft.block.*;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
+import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -38,16 +41,14 @@ import net.minecraft.state.StateContainer;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Hand;
-import net.minecraft.util.IStringSerializable;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
+import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
@@ -295,8 +296,9 @@ public class PostBlock extends Block implements IWaterLoggable, WithCountRestric
     }
 
     @Override
-    public void setPlacedBy(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
-        super.setPlacedBy(world, pos, state, placer, stack);
+    public void setPlacedBy(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack currentStack) {
+        super.setPlacedBy(world, pos, state, placer, currentStack);
+        ItemStack stack = currentStack.copy();
         Delay.forFrames(6, world.isClientSide(), () ->
             TileEntityUtils.delayUntilTileEntityExists(world, pos, PostTile.class, tile -> {
                 tile.setSignpostOwner(Optional.of(PlayerHandle.from(placer)));
@@ -328,13 +330,23 @@ public class PostBlock extends Block implements IWaterLoggable, WithCountRestric
             }, 100, Optional.of(() -> Signpost.LOGGER.error("Could not initialize placed signpost: TileEntity never appeared."))));
     }
 
+    private void dropPartItems(PostTile tile, World world, BlockPos pos) {
+        NonNullList<ItemStack> drops = NonNullList.create();
+        drops.addAll(tile.getDrops());
+
+        InventoryHelper.dropContents(
+            world,
+            pos,
+            drops
+        );
+    }
+
     @Override
-    public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
-        TileEntity tileentity = builder.getParameter(LootParameters.BLOCK_ENTITY);
-        List<ItemStack> result = (tileentity instanceof PostTile)
-            ? new ArrayList<>(((PostTile) tileentity).getDrops())
-            : Collections.singletonList(new ItemStack(this));
-        return result;
+    public void playerDestroy(World world, PlayerEntity player, BlockPos pos, BlockState state, @Nullable TileEntity tile, ItemStack item) {
+        if(!player.isCreative() && tile instanceof PostTile && !EnchantmentHelper.getEnchantments(item).containsKey(Enchantments.SILK_TOUCH)) {
+            dropPartItems((PostTile) tile, world, pos);
+        }
+        super.playerDestroy(world, player, pos, state, tile, item);
     }
 
     @Override

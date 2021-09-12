@@ -64,7 +64,9 @@ public class PostRenderer extends BlockPartRenderer<PostBlockPart> {
 			if(shouldRenderBaked)
 				renderModel.render(
 					makeBakedModel(post),
-					tileEntity,
+					tileEntity.getLevel(),
+					tileEntity.getBlockState(),
+					tileEntity.getBlockPos(),
 					buffer.getBuffer(RenderType.solid()),
 					false,
 					random,
@@ -84,7 +86,13 @@ public class PostRenderer extends BlockPartRenderer<PostBlockPart> {
 	}
 
 	@Override
-	public void renderGui(PostBlockPart post, Point center, Angle yaw, Angle pitch, float scale, Vector3 offset) {
-		RenderingUtil.renderGui(makeBakedModel(post), center, yaw, pitch, scale, offset, false, RenderType.solid());
+	public void renderGui(PostBlockPart post, MatrixStack matrixStack, Point center, Angle yaw, Angle pitch, boolean isFlipped, float scale, Vector3 offset) {
+		RenderingUtil.renderGui(makeBakedModel(post), matrixStack, 0xffffff, center, yaw, pitch, isFlipped, scale, offset, RenderType.solid(), m -> {});
 	}
+
+	@Override
+	public void renderGui(PostBlockPart post, MatrixStack matrixStack, Vector3 offset, IRenderTypeBuffer buffer, int combinedLight, int combinedOverlay) {
+		RenderingUtil.renderGui(makeBakedModel(post), matrixStack, 0xffffff, offset, Angle.ZERO, buffer.getBuffer(RenderType.solid()), combinedLight, combinedOverlay, m -> {});
+	}
+
 }

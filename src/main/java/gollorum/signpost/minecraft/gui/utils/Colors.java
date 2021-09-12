@@ -96,6 +96,14 @@ public class Colors {
     public static int getGreen(int color) { return (color >>> 8) & 0xff; }
     public static int getBlue(int color) { return color & 0xff; }
 
+    public static int mul(int c1, int c2) {
+        return from(
+            getGreen(c1) * getGreen(c2) / 0xff,
+            getGreen(c1) * getGreen(c2) / 0xff,
+            getBlue(c1) * getBlue(c2) / 0xff
+        );
+    }
+
     public static IFormattableTextComponent wrap(String text, int color) {
         return new StringTextComponent(text)
             .withStyle(style -> style.withColor(net.minecraft.util.text.Color.fromRgb(color)));

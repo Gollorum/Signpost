@@ -101,11 +101,6 @@ public class ModelWaystone extends Block implements IWaterLoggable, WithCountRes
 	}
 
 	@Override
-	public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
-		return Collections.singletonList(new ItemStack(this.asItem()));
-	}
-
-	@Override
 	public ActionResultType use(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
 		WaystoneBlock.onRightClick(world, pos, player);
 		return ActionResultType.CONSUME;

@@ -7,6 +7,7 @@ import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.WaystoneBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.gui.utils.TextureResource;
 import gollorum.signpost.minecraft.utils.CoordinatesUtil;
 import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.BlockPart;
@@ -20,6 +21,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ResourceLocation;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -92,4 +94,10 @@ public class WaystoneBlockPart implements BlockPart<WaystoneBlockPart>, WithOwne
 	public Optional<PlayerHandle> getWaystoneOwner() {
 		return owner;
 	}
+
+	@Override
+	public Collection<ResourceLocation> getAllTextures() {
+		return Collections.singleton(TextureResource.waystoneTextureLocation);
+	}
+
 }
