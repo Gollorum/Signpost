@@ -36,6 +36,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.fmllegacy.network.PacketDistributor;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
@@ -405,4 +406,8 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
 
     public abstract Self copy();
 
+    @Override
+    public Collection<ResourceLocation> getAllTextures() {
+        return Arrays.asList(getMainTexture(), getSecondaryTexture());
+    }
 }

@@ -130,7 +130,6 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
 
     public void onDestroy() {
         for (BlockPartInstance part: parts.values()) part.blockPart.removeFrom(this);
-        super.setRemoved();
     }
 
     public Collection<BlockPartInstance> getParts(){ return parts.values(); }
@@ -209,6 +208,25 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         readSelf(compound);
     }
 
+    public static List<BlockPartInstance> readPartInstances(CompoundTag compound) {
+        List<BlockPartInstance> parts = new ArrayList<>();
+        for(BlockPartMetadata<?> meta : partsMetadata){
+            if(compound.contains(meta.identifier)) {
+                ListTag list = compound.getList(meta.identifier, Constants.NBT.TAG_COMPOUND);
+                for(int i = 0; i < list.size(); i++){
+                    CompoundTag comp = list.getCompound(i);
+                    parts.add(
+                        new BlockPartInstance(
+                            meta.read(comp),
+                            Vector3.Serializer.read(comp.getCompound("Offset"))
+                        )
+                    );
+                }
+            }
+        }
+        return parts;
+    }
+
     public void readParts(CompoundTag compound) {
         parts.clear();
         for(BlockPartMetadata<?> meta : partsMetadata){
@@ -279,7 +297,6 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     public Collection<ItemStack> getDrops() {
         List<ItemStack> ret = parts.values().stream().flatMap(p -> (Stream<ItemStack>) p.blockPart.getDrops(this).stream())
             .collect(Collectors.toList());
-        ret.add(drop);
         return ret;
     }
 
@@ -423,7 +440,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
                 );
             } catch (CommandSyntaxException e) {
                 e.printStackTrace();
-                throw new RuntimeException("An exception occurred in PostTile Packet NBT decoding");
+                throw new RuntimeException("An exception occurred in PostTile Packet Tag decoding");
             }
         }
 

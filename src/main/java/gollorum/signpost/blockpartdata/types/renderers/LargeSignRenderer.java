@@ -5,6 +5,7 @@ import com.mojang.math.Vector3f;
 import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.blockpartdata.types.LargeSignBlockPart;
 import gollorum.signpost.minecraft.rendering.ModelRegistry;
+import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.utils.modelGeneration.SignModel;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -46,47 +47,38 @@ public class LargeSignRenderer extends SignRenderer<LargeSignBlockPart> {
 
 	@Override
 	public void renderText(LargeSignBlockPart sign, PoseStack matrix, Font fontRenderer, MultiBufferSource buffer, int combinedLights) {
-		matrix.mulPose(Vector3f.ZP.rotationDegrees(180));
-		matrix.mulPose(Vector3f.YP.rotation((float) (
-			sign.isFlipped()
-				? -sign.getAngle().radians() // No idea why this works. It does though, so I'm not touching it.
-				: Math.PI - sign.getAngle().radians()
-		)));
-		matrix.translate(0, 3.5f * VoxelSize, -3.005 * VoxelSize);
+		RenderingUtil.wrapInMatrixEntry(matrix, () -> {
+			matrix.mulPose(Vector3f.ZP.rotationDegrees(180));
+			matrix.translate(0, 3.5f * VoxelSize, -3.005 * VoxelSize);
 
-		matrix.pushPose();
-		render(sign, fontRenderer, sign.getText()[3], matrix, buffer, combinedLights, false);
-		matrix.popPose();
-		matrix.translate(0, -7 / 3f * VoxelSize, 0);
+			RenderingUtil.wrapInMatrixEntry(matrix, () -> render(sign, fontRenderer, sign.getText()[3], matrix, buffer, combinedLights, false));
+			matrix.translate(0, -7 / 3f * VoxelSize, 0);
 
-		matrix.pushPose();
-		render(sign, fontRenderer, sign.getText()[2], matrix, buffer, combinedLights, true);
-		matrix.popPose();
-		matrix.translate(0, -7 / 3f * VoxelSize, 0);
+			RenderingUtil.wrapInMatrixEntry(matrix, () -> render(sign, fontRenderer, sign.getText()[2], matrix, buffer, combinedLights, false));
+			matrix.translate(0, -7 / 3f * VoxelSize, 0);
 
-		matrix.pushPose();
-		render(sign, fontRenderer, sign.getText()[1], matrix, buffer, combinedLights, true);
-		matrix.popPose();
-		matrix.translate(0, -7 / 3f * VoxelSize, 0);
+			RenderingUtil.wrapInMatrixEntry(matrix, () -> render(sign, fontRenderer, sign.getText()[1], matrix, buffer, combinedLights, false));
+			matrix.translate(0, -7 / 3f * VoxelSize, 0);
 
-		matrix.pushPose();
-		render(sign, fontRenderer, sign.getText()[0], matrix, buffer, combinedLights, false);
-		matrix.popPose();
+			RenderingUtil.wrapInMatrixEntry(matrix, () -> render(sign, fontRenderer, sign.getText()[0], matrix, buffer, combinedLights, false));
+		});
 	}
 
 	private void render(LargeSignBlockPart sign, Font fontRenderer, String text, PoseStack matrix, MultiBufferSource buffer, int combinedLights, boolean isLong) {
-		float scale = FONT_SIZE_VOXELS * FontToVoxelSize;
-		float MAX_WIDTH_FRAC = fontRenderer.width(text) * scale / (isLong ? MAXIMUM_TEXT_WIDTH_LONG : MAXIMUM_TEXT_WIDTH_SHORT);
-		scale /= Math.max(1, MAX_WIDTH_FRAC);
-		float offset = TEXT_OFFSET_RIGHT * Math.min(1, MAX_WIDTH_FRAC);
-		matrix.translate(
-			sign.isFlipped() ? offset - fontRenderer.width(text) * scale : -offset,
-			-scale * 4 * TEXT_RATIO,
-			0
-		);
-		matrix.scale(scale, scale * TEXT_RATIO, scale);
-		fontRenderer.drawInBatch(text, 0, 0,
-			sign.getColor(), false, matrix.last().pose(), buffer, false, 0, combinedLights);
+		RenderingUtil.wrapInMatrixEntry(matrix, () -> {
+			float scale = FONT_SIZE_VOXELS * FontToVoxelSize;
+			float MAX_WIDTH_FRAC = fontRenderer.width(text) * scale / (isLong ? MAXIMUM_TEXT_WIDTH_LONG : MAXIMUM_TEXT_WIDTH_SHORT);
+			scale /= Math.max(1, MAX_WIDTH_FRAC);
+			float offset = TEXT_OFFSET_RIGHT * Math.min(1, MAX_WIDTH_FRAC);
+			matrix.translate(
+				sign.isFlipped() ? offset - fontRenderer.width(text) * scale : -offset,
+				-scale * 4 * TEXT_RATIO,
+				0
+			);
+			matrix.scale(scale, scale * TEXT_RATIO, scale);
+			fontRenderer.drawInBatch(text, 0, 0,
+				sign.getColor(), false, matrix.last().pose(), buffer, false, 0, combinedLights);
+		});
 	}
 
 }

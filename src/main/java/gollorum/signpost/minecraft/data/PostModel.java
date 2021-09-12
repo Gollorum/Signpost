@@ -68,7 +68,41 @@ public class PostModel extends BlockModelProvider {
         @Override
         protected void registerModels() {
             for (Map.Entry<PostBlock.Variant, BlockModelBuilder> entry : allModels.entrySet()) {
-                getBuilder(entry.getKey().registryName).parent(entry.getValue());
+                getBuilder(entry.getKey().registryName)
+                    .parent(new ModelFile.UncheckedModelFile("builtin/entity"))
+                    .transforms()
+                        .transform(ModelBuilder.Perspective.GUI)
+                            .rotation(30, 35, 0)
+                            .translation(0, 0, 0)
+                            .scale(0.625f)
+                        .end()
+                        .transform(ModelBuilder.Perspective.GROUND)
+                            .rotation(0, 0, 0)
+                            .translation(0, 3, 0)
+                            .scale(0.25f)
+                        .end()
+                        .transform(ModelBuilder.Perspective.FIXED)
+                            .rotation(0, 180, 0)
+                            .translation(0, 0, 0)
+                            .scale(0.5f)
+                        .end()
+                        .transform(ModelBuilder.Perspective.THIRDPERSON_RIGHT)
+                            .rotation(75, 135, 0)
+                            .translation(0, 2.5f, 0)
+                            .scale(0.375f)
+                        .end()
+                        .transform(ModelBuilder.Perspective.FIRSTPERSON_RIGHT)
+                            .rotation(0, 315, 0)
+                            .translation(0, 0, 0)
+                            .scale(0.4f)
+                        .end()
+                        .transform(ModelBuilder.Perspective.FIRSTPERSON_LEFT)
+                            .rotation(0, 315, 0)
+                            .translation(0, 0, 0)
+                            .scale(0.4f)
+                        .end()
+                    .end();
+//                    .parent(entry.getValue());
             }
         }
     }

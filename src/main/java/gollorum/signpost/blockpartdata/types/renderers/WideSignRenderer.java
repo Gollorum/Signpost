@@ -5,6 +5,7 @@ import com.mojang.math.Vector3f;
 import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
 import gollorum.signpost.minecraft.rendering.ModelRegistry;
+import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.utils.modelGeneration.SignModel;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -44,21 +45,19 @@ public class WideSignRenderer extends SignRenderer<SmallWideSignBlockPart> {
 
 	@Override
 	protected void renderText(SmallWideSignBlockPart sign, PoseStack matrix, Font fontRenderer, MultiBufferSource buffer, int combinedLights) {
-		matrix.mulPose(Vector3f.ZP.rotationDegrees(180));
-		float scale = FONT_SIZE_VOXELS * FontToVoxelSize;
-		float MAX_WIDTH_FRAC = fontRenderer.width(sign.getText()) * scale / MAXIMUM_TEXT_WIDTH;
-		scale /= Math.max(1, MAX_WIDTH_FRAC);
-		matrix.mulPose(Vector3f.YP.rotation((float) (
-			sign.isFlipped()
-				? -sign.getAngle().radians()
-				: Math.PI - sign.getAngle().radians())));
-		float offset = TEXT_OFFSET_RIGHT * Math.min(1, MAX_WIDTH_FRAC);
-		matrix.translate(
-			sign.isFlipped() ? offset - fontRenderer.width(sign.getText()) * scale : -offset,
-			-scale * 4 * TEXT_RATIO,
-			-3.005 * VoxelSize);
-		matrix.scale(scale, scale * TEXT_RATIO, scale);
-		fontRenderer.drawInBatch(sign.getText(), 0, 0, sign.getColor(), false, matrix.last().pose(), buffer, false, 0, combinedLights);
+		RenderingUtil.wrapInMatrixEntry(matrix, () -> {
+			matrix.mulPose(Vector3f.ZP.rotationDegrees(180));
+			float scale = FONT_SIZE_VOXELS * FontToVoxelSize;
+			float MAX_WIDTH_FRAC = fontRenderer.width(sign.getText()) * scale / MAXIMUM_TEXT_WIDTH;
+			scale /= Math.max(1, MAX_WIDTH_FRAC);
+			float offset = TEXT_OFFSET_RIGHT * Math.min(1, MAX_WIDTH_FRAC);
+			matrix.translate(
+				sign.isFlipped() ? offset - fontRenderer.width(sign.getText()) * scale : -offset,
+				-scale * 4 * TEXT_RATIO,
+				-3.005 * VoxelSize);
+			matrix.scale(scale, scale * TEXT_RATIO, scale);
+			fontRenderer.drawInBatch(sign.getText(), 0, 0, sign.getColor(), false, matrix.last().pose(), buffer, false, 0, combinedLights);
+		});
 	}
 
 }

@@ -1,6 +1,8 @@
 package gollorum.signpost.minecraft.gui.widgets;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Vector3f;
 import gollorum.signpost.minecraft.gui.utils.Flippable;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.utils.Rect;
@@ -27,7 +29,13 @@ public class GuiModelRenderer implements Widget, Flippable {
     public final Rect rect;
     private final RenderType renderType;
 
+    private final int color;
+
     public GuiModelRenderer(Rect rect, FlippableModel model, float modelSpaceXOffset, float modelSpaceYOffset, RenderType renderType) {
+        this(rect, model, modelSpaceXOffset, modelSpaceYOffset, renderType, 0xffffff);
+    }
+
+    public GuiModelRenderer(Rect rect, FlippableModel model, float modelSpaceXOffset, float modelSpaceYOffset, RenderType renderType, int color) {
         this.rect = rect;
         center = rect.center();
         width = rect.width;
@@ -36,6 +44,7 @@ public class GuiModelRenderer implements Widget, Flippable {
         this.modelSpaceXOffset = modelSpaceXOffset;
         this.modelSpaceYOffset = modelSpaceYOffset;
         this.renderType = renderType;
+        this.color = color;
     }
 
 
@@ -47,18 +56,27 @@ public class GuiModelRenderer implements Widget, Flippable {
         this.isFlipped = isFlipped;
     }
 
-    public void render(@Nonnull PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void render(@Nonnull PoseStack unused, int mouseX, int mouseY, float partialTicks) {
         float scale = Math.min(width, height);
-        RenderingUtil.renderGui(
-            model.get(isFlipped),
-            center,
-            Angle.ZERO,
-            Angle.ZERO,
-            scale,
-            new Vector3(modelSpaceXOffset, modelSpaceYOffset, 0),
-            isFlipped,
-            renderType
-        );
+        PoseStack matrixStack = new PoseStack();
+        RenderSystem.enableBlend();
+        RenderingUtil.wrapInMatrixEntry(matrixStack, () -> {
+            matrixStack.translate(0, 0 ,-200);
+            if(isFlipped) matrixStack.mulPose(Vector3f.YP.rotation((float) Math.PI));
+            RenderingUtil.renderGui(
+                model.get(isFlipped),
+                new PoseStack(),
+                color,
+                center,
+                Angle.ZERO,
+                Angle.ZERO,
+                isFlipped,
+                scale,
+                new Vector3(modelSpaceXOffset, modelSpaceYOffset, 0),
+                renderType,
+                m -> {}
+            );
+        });
     }
 
 }

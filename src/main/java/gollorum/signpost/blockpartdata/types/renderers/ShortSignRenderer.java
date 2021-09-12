@@ -5,6 +5,7 @@ import com.mojang.math.Vector3f;
 import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.blockpartdata.types.SmallShortSignBlockPart;
 import gollorum.signpost.minecraft.rendering.ModelRegistry;
+import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.utils.math.MathUtils;
 import gollorum.signpost.utils.modelGeneration.SignModel;
 import net.minecraft.client.gui.Font;
@@ -45,30 +46,26 @@ public class ShortSignRenderer extends SignRenderer<SmallShortSignBlockPart> {
 
 	@Override
 	protected void renderText(SmallShortSignBlockPart sign, PoseStack matrix, Font fontRenderer, MultiBufferSource buffer, int combinedLights) {
-		matrix.pushPose();
 		renderText(true, sign, matrix, fontRenderer, buffer, combinedLights);
-		matrix.popPose();
-		matrix.pushPose();
 		renderText(false, sign, matrix, fontRenderer, buffer, combinedLights);
-		matrix.popPose();
 	}
 
 	private void renderText(boolean isFlipped, SmallShortSignBlockPart sign, PoseStack matrix, Font fontRenderer, MultiBufferSource buffer, int combinedLights) {
-		matrix.mulPose(Vector3f.ZP.rotationDegrees(180));
-		float scale = FONT_SIZE_VOXELS * FontToVoxelSize;
-		float MAX_WIDTH_FRAC = fontRenderer.width(sign.getText()) * scale / MAXIMUM_TEXT_WIDTH;
-		scale /= Math.max(1, MAX_WIDTH_FRAC);
-		matrix.mulPose(Vector3f.YP.rotation((float) (
-			isFlipped
-				? -sign.getAngle().radians()
-				: Math.PI - sign.getAngle().radians())));
-		float offset = MathUtils.lerp(TEXT_OFFSET_RIGHT, (TEXT_OFFSET_RIGHT - TEXT_OFFSET_LEFT) / 2f, 1 - Math.min(1, MAX_WIDTH_FRAC));
-		matrix.translate(
-			isFlipped ? offset - fontRenderer.width(sign.getText()) * scale : -offset,
-			-scale * 4 * TEXT_RATIO,
-			-0.505 * VoxelSize);
-		matrix.scale(scale, scale * TEXT_RATIO, scale);
-		fontRenderer.drawInBatch(sign.getText(), 0, 0, sign.getColor(), false, matrix.last().pose(), buffer, false, 0, combinedLights);
+		RenderingUtil.wrapInMatrixEntry(matrix, () -> {
+			matrix.mulPose(Vector3f.ZP.rotationDegrees(180));
+			float scale = FONT_SIZE_VOXELS * FontToVoxelSize;
+			float MAX_WIDTH_FRAC = fontRenderer.width(sign.getText()) * scale / MAXIMUM_TEXT_WIDTH;
+			scale /= Math.max(1, MAX_WIDTH_FRAC);
+			boolean flipped = isFlipped ^ sign.isFlipped();
+			if(isFlipped) matrix.mulPose(Vector3f.YP.rotation((float) Math.PI));
+			float offset = MathUtils.lerp(TEXT_OFFSET_RIGHT, (TEXT_OFFSET_RIGHT - TEXT_OFFSET_LEFT) / 2f, 1 - Math.min(1, MAX_WIDTH_FRAC));
+			matrix.translate(
+				flipped ? offset - fontRenderer.width(sign.getText()) * scale : -offset,
+				-scale * 4 * TEXT_RATIO,
+				-0.505 * VoxelSize);
+			matrix.scale(scale, scale * TEXT_RATIO, scale);
+			fontRenderer.drawInBatch(sign.getText(), 0, 0, sign.getColor(), false, matrix.last().pose(), buffer, false, 0, combinedLights);
+		});
 	}
 
 }

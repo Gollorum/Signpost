@@ -10,6 +10,8 @@ import gollorum.signpost.utils.serialization.CompoundSerializable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.FoliageColor;
+import net.minecraft.world.level.GrassColor;
 import net.minecraft.world.level.Level;
 
 import java.util.Collection;
@@ -40,6 +42,16 @@ public abstract class Overlay {
 
     public int getTintAt(Level world, BlockPos pos) {
         return ColorRegistry.getOverlayColor(tintIndex, world, pos);
+    }
+
+    public int getDefaultTint() {
+        switch (tintIndex) {
+            case GrasTint: return GrassColor.get(0.8, 0.4);
+            case FoliageTint: return FoliageColor.getDefaultColor();
+            case WaterTint: return 0x3F76E4;
+            case NoTint:
+            default: return 0xffffff;
+        }
     }
 
     private static <T> T logErrorAndReturn(String error, T t) {

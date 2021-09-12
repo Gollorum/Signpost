@@ -46,7 +46,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class SignGui extends ExtendedScreen {
 
@@ -189,6 +188,7 @@ public class SignGui extends ExtendedScreen {
                 default -> new String[]{wideSignInputBox.getValue()};
             };
             isFlipped = widgetsToFlip.get(0).isFlipped();
+            widgetsToFlip.clear();
             currentColor = colorInputBox.getCurrentColor();
             currentAngle = rotationInputField.getCurrentAngle();
         } else {
@@ -430,7 +430,7 @@ public class SignGui extends ExtendedScreen {
 
         wideSignRenderer = new GuiModelRenderer(
             modelRect, wideModel,
-            0, 0.25f,
+            0, 0.24f,
             RenderType.solid()
         );
         widgetsToFlip.add(wideSignRenderer);
@@ -446,7 +446,7 @@ public class SignGui extends ExtendedScreen {
 
         shortSignRenderer = new GuiModelRenderer(
             modelRect, shortModel,
-            0, 0.25f,
+            0, 0.24f,
             RenderType.solid()
         );
         widgetsToFlip.add(shortSignRenderer);
@@ -483,7 +483,7 @@ public class SignGui extends ExtendedScreen {
 
         largeSignRenderer = new GuiModelRenderer(
             modelRect, largeModel,
-            0, 0,
+            0, -0.01f,
             RenderType.solid()
         );
         widgetsToFlip.add(largeSignRenderer);
@@ -523,7 +523,7 @@ public class SignGui extends ExtendedScreen {
                 () -> switchOverlay(Optional.of(overlay)),
                 new ModelButton.ModelData(postModel, 0, -0.5f, itemStack, RenderType.solid()),
                 new ModelButton.ModelData(wideModel, 0, 0.25f, itemStack, RenderType.solid()),
-                new ModelButton.ModelData(overlayModel, 0, 0.25f, itemStack, RenderType.cutout())
+                new ModelButton.ModelData(overlayModel, 0, 0.25f, itemStack, RenderType.cutout(), overlay.getTintAt(tile.getLevel(), tile.getBlockPos()))
             ));
             i++;
         }
@@ -555,7 +555,7 @@ public class SignGui extends ExtendedScreen {
                 }
                 break;
         }
-        if(isFlipped) flip();
+        if(isFlipped ^ widgetsToFlip.get(0).isFlipped()) flip();
         colorInputBox.setSelectedColor(currentColor);
         rotationInputField.setSelectedAngle(Angle.fromDegrees(Math.round(currentAngle.degrees())));
 
@@ -578,7 +578,9 @@ public class SignGui extends ExtendedScreen {
                 ));
             oldWaystone.ifPresent(text -> {
                 waystoneDropdown.addEntry(text);
+                waystoneInputBox.setResponder(x -> {});
                 waystoneInputBox.setValue(text.entryName);
+                waystoneInputBox.setResponder(this::onWaystoneSelected);
             });
             Consumer<Function<WaystoneHandle, Optional<Tuple<Tuple<String, String>, BlockPos>>>> setupFromSign = map -> {
                 oldWaystone.ifPresent(oldWs -> {
@@ -607,15 +609,15 @@ public class SignGui extends ExtendedScreen {
                         : Optional.empty());
             }, Optional.of(PlayerHandle.from(getMinecraft().player)), true);
             ExternalWaystoneLibrary.getInstance().requestKnownWaystones(n -> {
-                Stream<WaystoneEntry> entries = n.stream().map(w -> new WaystoneEntry(
+                List<WaystoneEntry> entries = n.stream().map(w -> new WaystoneEntry(
                     w.name() + " " + w.handle().modMark(),
                     w.name(),
                     w.handle(),
                     w.loc().blockPos
-                ));
-                waystoneDropdown.addEntries(entries.filter(e -> oldWaystone.map(oldE -> !e.handle.equals(oldE.handle)).orElse(true))
+                )).collect(Collectors.toList());
+                waystoneDropdown.addEntries(entries.stream().filter(e -> oldWaystone.map(oldE -> !e.handle.equals(oldE.handle)).orElse(true))
                     .collect(Collectors.toList()));
-                setupFromSign.accept(id -> entries.filter(e -> e.handle.equals(id)).findFirst().map(e -> Tuple.of(e.entryName, e.displayName, e.pos)));
+                setupFromSign.accept(id -> entries.stream().filter(e -> e.handle.equals(id)).findFirst().map(e -> Tuple.of(e.entryName, e.displayName, e.pos)));
             });
             WaystoneLibrary.getInstance().updateEventDispatcher.addListener(waystoneUpdateListener);
         }
@@ -653,6 +655,8 @@ public class SignGui extends ExtendedScreen {
         cycleItem.get().run();
 
         hasBeenInitialized = true;
+        setFocused(currentSignInputBox);
+        currentSignInputBox.setFocus(true);
     }
 
     private void onWaystoneCountChanged() {
@@ -674,8 +678,8 @@ public class SignGui extends ExtendedScreen {
     }
 
     private void onWaystoneSelected(String waystoneName) {
-        boolean shouldOverrideRotation = rotationInputField.getCurrentAngle().equals(Angle.ZERO)
-            || rotationInputField.getCurrentAngle().isNearly(angleEntryForPlayer().angleGetter.get(), Angle.fromDegrees(1));
+        boolean shouldOverrideRotation = !oldSign.isPresent() && (rotationInputField.getCurrentAngle().equals(Angle.ZERO)
+            || rotationInputField.getCurrentAngle().isNearly(angleEntryForPlayer().angleGetter.get(), Angle.fromDegrees(1)));
         if(waystoneRotationEntry != null) {
             shouldOverrideRotation |= waystoneRotationEntry.angleGetter.get().isNearly(rotationInputField.getCurrentAngle(), Angle.fromDegrees(1));
             angleDropDown.removeEntry(waystoneRotationEntry);
@@ -802,7 +806,8 @@ public class SignGui extends ExtendedScreen {
                     FlippableModel.loadFrom(PostModel.wideOverlayLocation, PostModel.wideOverlayFlippedLocation, o.textureFor(SmallWideSignBlockPart.class))
                         .withTintIndex(o.tintIndex),
                     0, 0.25f,
-                    RenderType.cutout()
+                    RenderType.cutout(),
+                    o.getTintAt(tile.getLevel(), tile.getBlockPos())
                 );
                 break;
             case Short:
@@ -811,7 +816,8 @@ public class SignGui extends ExtendedScreen {
                     FlippableModel.loadFrom(PostModel.shortOverlayLocation, PostModel.shortOverlayFlippedLocation, o.textureFor(SmallShortSignBlockPart.class))
                         .withTintIndex(o.tintIndex),
                     0, 0.25f,
-                    RenderType.cutout()
+                    RenderType.cutout(),
+                    o.getTintAt(tile.getLevel(), tile.getBlockPos())
                 );
                 break;
             case Large:
@@ -820,7 +826,8 @@ public class SignGui extends ExtendedScreen {
                     FlippableModel.loadFrom(PostModel.largeOverlayLocation, PostModel.largeOverlayFlippedLocation, o.textureFor(LargeSignBlockPart.class))
                         .withTintIndex(o.tintIndex),
                     0, 0,
-                    RenderType.cutout()
+                    RenderType.cutout(),
+                    o.getTintAt(tile.getLevel(), tile.getBlockPos())
                 );
                 break;
         }

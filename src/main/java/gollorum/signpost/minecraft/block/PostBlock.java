@@ -18,11 +18,13 @@ import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.BufferSerializable;
 import gollorum.signpost.utils.serialization.StringSerializer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -32,6 +34,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.*;
@@ -42,8 +46,6 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -293,8 +295,9 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
     }
 
     @Override
-    public void setPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
-        super.setPlacedBy(world, pos, state, placer, stack);
+    public void setPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack currentStack) {
+        super.setPlacedBy(world, pos, state, placer, currentStack);
+        ItemStack stack = currentStack.copy();
         Delay.forFrames(6, world.isClientSide(), () ->
             TileEntityUtils.delayUntilTileEntityExists(world, pos, PostTile.class, tile -> {
                 tile.setSignpostOwner(Optional.of(PlayerHandle.from(placer)));
@@ -326,13 +329,23 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
             }, 100, Optional.of(() -> Signpost.LOGGER.error("Could not initialize placed signpost: BlockEntity never appeared."))));
     }
 
+    private void dropPartItems(PostTile tile, Level world, BlockPos pos) {
+        NonNullList<ItemStack> drops = NonNullList.create();
+        drops.addAll(tile.getDrops());
+
+        Containers.dropContents(
+            world,
+            pos,
+            drops
+        );
+    }
+
     @Override
-    public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
-        BlockEntity tileentity = builder.getParameter(LootContextParams.BLOCK_ENTITY);
-        List<ItemStack> result = (tileentity instanceof PostTile)
-            ? new ArrayList<>(((PostTile) tileentity).getDrops())
-            : Collections.singletonList(new ItemStack(this));
-        return result;
+    public void playerDestroy(Level world, Player player, BlockPos pos, BlockState state, @Nullable BlockEntity tile, ItemStack item) {
+        if(!player.isCreative() && tile instanceof PostTile && !EnchantmentHelper.getEnchantments(item).containsKey(Enchantments.SILK_TOUCH)) {
+            dropPartItems((PostTile) tile, world, pos);
+        }
+        super.playerDestroy(world, player, pos, state, tile, item);
     }
 
     @Override

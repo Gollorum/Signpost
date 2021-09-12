@@ -29,7 +29,6 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.material.MaterialColor;
-import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -37,7 +36,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class ModelWaystone extends BaseEntityBlock implements SimpleWaterloggedBlock, WithCountRestriction {
@@ -102,11 +100,6 @@ public class ModelWaystone extends BaseEntityBlock implements SimpleWaterloggedB
 	@Override
 	public String getDescriptionId() {
 		return WaystoneBlock.INSTANCE.getDescriptionId() + "_" + variant.langPrefix + "_" + variant.name;
-	}
-
-	@Override
-	public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
-		return Collections.singletonList(new ItemStack(this.asItem()));
 	}
 
 	@Override

@@ -1,6 +1,7 @@
 package gollorum.signpost.minecraft.gui;
 
 import com.google.common.collect.Streams;
+import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.utils.ExtendedScreen;
 import gollorum.signpost.minecraft.gui.utils.Point;
@@ -26,10 +27,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -66,9 +64,13 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
 
         List<Tuple<List<TextureAtlasSprite>, ItemStack>> blocksToRender = getMinecraft().player.getInventory().items.stream()
             .filter(i -> !i.isEmpty() && i.getItem() instanceof BlockItem)
-            .map(i -> new ItemStack(i.getItem()))
+            .map(i -> {
+                ItemStack ret = i.copy();
+                ret.setCount(1);
+                return ret;
+            })
             .distinct()
-            .map(is -> Tuple.of(allSpritesFor((BlockItem) is.getItem()), is))
+            .map(is -> Tuple.of(allSpritesFor((BlockItem) is.getItem(), is), is))
             .filter(p -> p._1.size() > 0)
             .collect(Collectors.toList());
 
@@ -102,13 +104,20 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
 
     private static final Direction[] faces = new Direction[]{null, Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP, Direction.DOWN};
 
-    private List<TextureAtlasSprite> allSpritesFor(BlockItem item) {
+    private List<TextureAtlasSprite> allSpritesFor(BlockItem item, ItemStack stack) {
         Block block = ((BlockItem) item.asItem()).getBlock();
-        BlockState state = block.defaultBlockState();
-        BakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
-        return Arrays.stream(faces)
-            .flatMap(side -> model.getQuads(null, side, font.random).stream())
-            .map(BakedQuad::getSprite)
+        Stream<TextureAtlasSprite> stream;
+        if(block instanceof PostBlock && stack.hasTag() && stack.getTag().contains("Parts")) {
+            stream = PostTile.readPartInstances(stack.getTag().getCompound("Parts"))
+                .stream().flatMap(i -> ((Collection<ResourceLocation>) i.blockPart.getAllTextures()).stream().map(this::spriteFrom));
+        } else {
+            BlockState state = block.defaultBlockState();
+            BakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
+            stream = Arrays.stream(faces)
+                .flatMap(side -> model.getQuads(null, side, font.random).stream())
+                .map(BakedQuad::getSprite);
+        }
+        return stream
             .distinct()
             .collect(Collectors.toList());
     }

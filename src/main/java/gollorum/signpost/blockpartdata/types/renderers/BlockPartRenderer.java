@@ -68,17 +68,37 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
     }
 
     public static <T extends BlockPart<T>> void renderGuiDynamic(
-        T part, Point center, Angle yaw, Angle pitch, float scale, Vector3 offset
+        T part, PoseStack matrixStack, Point center, Angle yaw, Angle pitch, boolean isFlipped, float scale, Vector3 offset
     ) {
         Optional<BlockPartRenderer<T>> renderer = BlockPartRenderer.getFor((Class<T>) part.getClass());
         if(renderer.isPresent()) {
             renderer.get().renderGui(
                 part,
+                matrixStack,
                 center,
                 yaw,
                 pitch,
+                isFlipped,
                 scale,
                 offset
+            );
+        } else {
+            Signpost.LOGGER.error("Block part renderer was not found for " + part.getClass());
+        }
+    }
+
+    public static <T extends BlockPart<T>> void renderGuiDynamic(
+        T part, PoseStack matrixStack, Vector3 offset, MultiBufferSource buffer, int combinedLight, int combinedOverlay
+    ) {
+        Optional<BlockPartRenderer<T>> renderer = BlockPartRenderer.getFor((Class<T>) part.getClass());
+        if(renderer.isPresent()) {
+            renderer.get().renderGui(
+                part,
+                matrixStack,
+                offset,
+                buffer,
+                combinedLight,
+                combinedOverlay
             );
         } else {
             Signpost.LOGGER.error("Block part renderer was not found for " + part.getClass());
@@ -98,7 +118,11 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
     );
 
     public abstract void renderGui(
-        T part, Point center, Angle yaw, Angle pitch, float scale, Vector3 offset
+        T part, PoseStack matrixStack, Point center, Angle yaw, Angle pitch, boolean isFlipped, float scale, Vector3 offset
+    );
+
+    public abstract void renderGui(
+        T part, PoseStack matrixStack, Vector3 offset, MultiBufferSource buffer, int combinedLight, int combinedOverlay
     );
 
 }

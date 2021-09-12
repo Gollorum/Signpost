@@ -4,6 +4,7 @@ import gollorum.signpost.interactions.Interactable;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.security.WithOwner;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -28,5 +29,7 @@ public interface BlockPart<T extends BlockPart<T>> extends Interactable {
     Collection<ItemStack> getDrops(PostTile tile);
 
     default void removeFrom(PostTile tile) {}
+
+    Collection<ResourceLocation> getAllTextures();
 
 }

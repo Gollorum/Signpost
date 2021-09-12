@@ -3,6 +3,7 @@ package gollorum.signpost.minecraft.gui.widgets;
 import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.blockpartdata.types.renderers.BlockPartRenderer;
 import gollorum.signpost.minecraft.gui.utils.Point;
+import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.utils.math.Angle;
 import net.minecraft.client.gui.GuiComponent;
@@ -36,12 +37,18 @@ public class GuiBlockPartRenderer extends AbstractWidget {
     public void renderButton(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         if(isHovered())
             GuiComponent.fill(matrixStack, x, y, x + width, y + height, 0x20ffffff);
-        for(BlockPartInstance bpi : partsToRender) {
-            BlockPartRenderer.renderGuiDynamic(
-                bpi.blockPart,
-                center, yaw, pitch, scale, bpi.offset.add(0, -0.5f, 0.5f)
-            );
-        }
+
+        PoseStack ms = new PoseStack();
+        RenderingUtil.wrapInMatrixEntry(ms, () -> {
+            ms.translate(0, 0, 100);
+            for(BlockPartInstance bpi : partsToRender) {
+                BlockPartRenderer.renderGuiDynamic(
+                    bpi.blockPart,
+                    ms,
+                    center, yaw, pitch, false, scale, bpi.offset.withY(y -> y - 0.5f)
+                );
+            }
+        });
     }
 
     @Override
