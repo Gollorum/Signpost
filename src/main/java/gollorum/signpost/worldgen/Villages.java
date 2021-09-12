@@ -76,12 +76,12 @@ public class Villages {
 				Tuple.of(
 					new WaystoneJigsawPiece(villageType.getStructureResourceLocation("waystone"),
 						villageType.processorList, StructureTemplatePool.Projection.RIGID),
-					5
+					1
 				),
 				Tuple.of(
 					new SignpostJigsawPiece(villageType.getStructureResourceLocation("signpost"),
 						villageType.processorList, StructureTemplatePool.Projection.TERRAIN_MATCHING, isZombie),
-					5
+					3
 				)
 			),
 			isZombie ? getZombieVillagePool(villageType) : getVillagePool(villageType)
