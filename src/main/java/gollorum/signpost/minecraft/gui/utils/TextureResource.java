@@ -5,6 +5,12 @@ import net.minecraft.util.ResourceLocation;
 
 public class TextureResource {
 
+    public static final int defaultTextureSize = 16;
+
+    public static final int wideOverlaySize = 27;
+    public static final int shortOverlaySize = 18;
+    public static final int largeOverlaySize = 24;
+
     public static final TextureResource waystoneNameField = new TextureResource(
         "textures/gui/base_gui.png", new TextureSize(50, 11)
     );
