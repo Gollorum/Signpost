@@ -351,7 +351,7 @@ public class SignModelFactory<TextureIdentifier> {
                 TextureArea textureArea = faceData.textureArea.rotate(faceData.rotation, true);
                 ModelBuilder<BlockModelBuilder>.ElementBuilder.FaceBuilder faceBuilder = builder.face(dir)
                     .texture(faceData.texture)
-                    .uvs(textureArea.u.to, textureArea.v.from, textureArea.u.from, textureArea.v.to);
+                    .uvs(textureArea.u.from, textureArea.v.from, textureArea.u.to, textureArea.v.to);
                 if(!faceData.rotation.equals(FaceRotation.Zero))
                     faceBuilder.rotation(faceData.rotation.asMinecraft);
             }
@@ -377,7 +377,7 @@ public class SignModelFactory<TextureIdentifier> {
                 textureArea = textureArea.rotate(faceData.rotation, true);
                 ModelBuilder<BlockModelBuilder>.ElementBuilder.FaceBuilder faceBuilder = builder.face(dir)
                     .texture(faceData.texture)
-                    .uvs(textureArea.u.to, textureArea.v.from, textureArea.u.from, textureArea.v.to);
+                    .uvs(textureArea.u.from, textureArea.v.from, textureArea.u.to, textureArea.v.to);
                 if(!faceData.rotation.equals(FaceRotation.Zero))
                     faceBuilder.rotation(faceData.rotation.asMinecraft);
             }
