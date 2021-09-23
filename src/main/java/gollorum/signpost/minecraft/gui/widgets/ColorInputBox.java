@@ -20,9 +20,6 @@ import java.util.function.Predicate;
 
 public class ColorInputBox extends InputBox {
 
-    @Nullable
-    private Consumer<Integer> responder;
-
     private int currentResult;
 
     public ColorInputBox(FontRenderer fontRenderer, Rect inputFieldRect, double zOffset) {

@@ -168,8 +168,6 @@ public class RenderingUtil {
                 RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
                 Minecraft.getInstance().getTextureManager().bind(AtlasTexture.LOCATION_BLOCKS);
                 Minecraft.getInstance().getTextureManager().getTexture(AtlasTexture.LOCATION_BLOCKS).setBlurMipmap(false, false);
-//                RenderHelper.setupFor3DItems();
-//                RenderSystem.enableDepthTest();
                 float r = Colors.getRed(color) / 255f;
                 float g = Colors.getGreen(color) / 255f;
                 float b = Colors.getBlue(color) / 255f;
