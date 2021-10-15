@@ -6,7 +6,6 @@ import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
 import gollorum.signpost.minecraft.gui.RequestWaystoneGui;
-import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.minecraft.utils.TextComponents;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
@@ -38,13 +37,10 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.material.MaterialColor;
-import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.fmllegacy.network.PacketDistributor;
 
 import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 public class WaystoneBlock extends BaseEntityBlock implements WithCountRestriction {
@@ -56,7 +52,9 @@ public class WaystoneBlock extends BaseEntityBlock implements WithCountRestricti
 
     private WaystoneBlock() {
         super(Properties.of(Material.PISTON, MaterialColor.STONE)
-            .strength(1.5F, 6.0F));
+            .strength(1.5F, 6.0F)
+            .requiresCorrectToolForDrops()
+        );
     }
 
 	public static void openGuiIfHasPermission(ServerPlayer player, WorldLocation worldLocation) {

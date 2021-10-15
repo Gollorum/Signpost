@@ -32,8 +32,8 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Tuple;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
@@ -152,7 +152,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
             : shape.bounds().move(getBlockPos());
     }
 
-    public Optional<TraceResult> trace(Player player){
+    public Optional<TraceResult> trace(Entity player){
         Vec3 head = player.position();
         head = head.add(0, player.getEyeHeight(), 0);
         if (player.isCrouching())

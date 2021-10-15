@@ -1,0 +1,17 @@
+{
+  "replace": false,
+  "values": [
+    "signpost:post_stone",
+    "signpost:post_iron",
+    "signpost:post_sandstone",
+    "signpost:waystone_model_simple_0",
+    "signpost:waystone_model_simple_1",
+    "signpost:waystone_model_simple_2",
+    "signpost:waystone_model_detailed_0",
+    "signpost:waystone_model_detailed_1",
+    "signpost:waystone_model_aer",
+    "signpost:waystone_model_dwarf",
+    "signpost:waystone_model_ygnar",
+    "signpost:waystone"
+  ]
+}

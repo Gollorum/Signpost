@@ -1,15 +1,19 @@
 package gollorum.signpost.minecraft.rendering;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import gollorum.signpost.blockpartdata.types.PostBlockPart;
 import gollorum.signpost.blockpartdata.types.renderers.BlockPartRenderer;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.utils.BlockPartInstance;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.server.level.BlockDestructionProgress;
 
-import java.util.Random;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class PostRenderer implements BlockEntityRenderer<PostTile> {
 
@@ -29,6 +33,15 @@ public class PostRenderer implements BlockEntityRenderer<PostTile> {
         Random random = new Random();
         long rand = tile.hashCode();
         random.setSeed(rand);
+        SortedSet<BlockDestructionProgress> destructionProgresses = Minecraft.getInstance().levelRenderer.destructionProgress.get(tile.getBlockPos().asLong());
+        Set<BlockPartInstance> partsBeingBroken = destructionProgresses == null ? null : destructionProgresses.stream()
+            .map(progress -> Optional.ofNullable(tile.getLevel().getEntity(progress.getId()))
+                .flatMap(tile::trace)
+                .map(res -> res.part))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(Collectors.toSet());
+        boolean shouldUseOriginalBuffer = partsBeingBroken == null || partsBeingBroken.isEmpty() || partsBeingBroken.stream().anyMatch(i -> i.blockPart instanceof PostBlockPart);
         RenderingUtil.wrapInMatrixEntry(matrixStack, () -> {
             matrixStack.translate(0.5, 0, 0.5);
             for (BlockPartInstance now: tile.getParts()) {
@@ -39,7 +52,7 @@ public class PostRenderer implements BlockEntityRenderer<PostTile> {
                         tile,
                         renderer,
                         matrixStack,
-                        buffer,
+                        shouldUseOriginalBuffer || partsBeingBroken.contains(now) ? buffer : Minecraft.getInstance().renderBuffers().bufferSource(),
                         combinedLight,
                         combinedOverlay,
                         random,

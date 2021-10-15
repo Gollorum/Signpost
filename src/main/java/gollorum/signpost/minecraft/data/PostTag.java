@@ -1,7 +1,9 @@
 package gollorum.signpost.minecraft.data;
 
 import gollorum.signpost.Signpost;
+import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.block.PostBlock;
+import gollorum.signpost.minecraft.block.WaystoneBlock;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.tags.BlockTagsProvider;
 import net.minecraft.data.tags.ItemTagsProvider;
@@ -40,6 +42,14 @@ public class PostTag extends ItemTagsProvider {
         protected void addTags() {
             this.tag(Tag)
                 .add(PostBlock.AllVariants.stream().map(i -> i.block).toArray(Block[]::new));
+            this.tag(BlockTags.MINEABLE_WITH_AXE).add(PostBlock.AllVariants.stream()
+                .filter(v -> v.tool == PostBlock.Variant.RequiredTool.Axe)
+                .map(i -> i.block).toArray(Block[]::new));
+            this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(PostBlock.AllVariants.stream()
+                    .filter(v -> v.tool == PostBlock.Variant.RequiredTool.Pickaxe)
+                    .map(i -> i.block).toArray(Block[]::new))
+                .add(ModelWaystone.variants.stream().map(i -> i.block).toArray(Block[]::new))
+                .add(WaystoneBlock.INSTANCE);;
         }
 
     }

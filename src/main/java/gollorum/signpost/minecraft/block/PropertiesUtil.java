@@ -12,10 +12,10 @@ public class PropertiesUtil {
     }
 
     public static Block.Properties STONE = Block.Properties.of(Material.STONE, MaterialColor.STONE)
-        .strength(1.5F, 6.0F);
+        .strength(1.5F, 6.0F).requiresCorrectToolForDrops();
 
     public static Block.Properties IRON = Block.Properties.of(Material.METAL, MaterialColor.METAL)
-        .strength(5.0F, 6.0F).sound(SoundType.METAL);
+        .strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops();
 
     private static Block.Properties wood(MaterialColor color){
         return Block.Properties.of(Material.WOOD, color)

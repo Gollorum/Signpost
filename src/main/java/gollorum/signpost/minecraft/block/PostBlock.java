@@ -212,11 +212,6 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
             );
         }
 
-//        @Override
-//        public String getSerializedName() {
-//            return name;
-//        }
-
         public static BufferSerializable<ModelType> Serializer = new SerializerImpl();
         public static final class SerializerImpl implements BufferSerializable<ModelType> {
             @Override
@@ -255,14 +250,21 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
     private static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
     public static class Variant {
+
+        public static enum RequiredTool {
+            Axe, Pickaxe
+        }
+
         public final PostBlock block;
         public final String registryName;
         public final Properties properties;
         public final ModelType type;
+        public final RequiredTool tool;
 
-        public Variant(Properties properties, ModelType type, String registryName) {
+        public Variant(Properties properties, ModelType type, String registryName, RequiredTool tool) {
             this.properties = properties;
             this.type = type;
+            this.tool = tool;
             this.block = new PostBlock(properties, type);
             this.registryName = REGISTRY_NAME + "_" + registryName;
         }
@@ -271,17 +273,17 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
 
     public static final String REGISTRY_NAME = "post";
 
-    public static final Variant STONE = new Variant(PropertiesUtil.STONE, ModelType.Stone, "stone");
-    public static final Variant IRON = new Variant(PropertiesUtil.IRON, ModelType.Iron, "iron");
-    public static final Variant OAK = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Oak), ModelType.Oak, "oak");
-    public static final Variant DARK_OAK = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.DarkOak), ModelType.DarkOak, "dark_oak");
-    public static final Variant SPRUCE = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Spruce), ModelType.Spruce, "spruce");
-    public static final Variant BIRCH = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Birch), ModelType.Birch, "birch");
-    public static final Variant JUNGLE = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Jungle), ModelType.Jungle, "jungle");
-    public static final Variant ACACIA = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Acacia), ModelType.Acacia, "acacia");
-    public static final Variant WARPED = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Warped), ModelType.Warped, "warped");
-    public static final Variant CRIMSON = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Crimson), ModelType.Crimson, "crimson");
-    public static final Variant SANDSTONE = new Variant(PropertiesUtil.STONE, ModelType.Sandstone, "sandstone");
+    public static final Variant STONE = new Variant(PropertiesUtil.STONE, ModelType.Stone, "stone", Variant.RequiredTool.Pickaxe);
+    public static final Variant IRON = new Variant(PropertiesUtil.IRON, ModelType.Iron, "iron", Variant.RequiredTool.Pickaxe);
+    public static final Variant OAK = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Oak), ModelType.Oak, "oak", Variant.RequiredTool.Axe);
+    public static final Variant DARK_OAK = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.DarkOak), ModelType.DarkOak, "dark_oak", Variant.RequiredTool.Axe);
+    public static final Variant SPRUCE = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Spruce), ModelType.Spruce, "spruce", Variant.RequiredTool.Axe);
+    public static final Variant BIRCH = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Birch), ModelType.Birch, "birch", Variant.RequiredTool.Axe);
+    public static final Variant JUNGLE = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Jungle), ModelType.Jungle, "jungle", Variant.RequiredTool.Axe);
+    public static final Variant ACACIA = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Acacia), ModelType.Acacia, "acacia", Variant.RequiredTool.Axe);
+    public static final Variant WARPED = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Warped), ModelType.Warped, "warped", Variant.RequiredTool.Axe);
+    public static final Variant CRIMSON = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Crimson), ModelType.Crimson, "crimson", Variant.RequiredTool.Axe);
+    public static final Variant SANDSTONE = new Variant(PropertiesUtil.STONE, ModelType.Sandstone, "sandstone", Variant.RequiredTool.Pickaxe);
 
     public static final List<Variant> AllVariants = Arrays.asList(OAK, BIRCH, SPRUCE, JUNGLE, DARK_OAK, ACACIA, STONE, IRON, WARPED, CRIMSON, SANDSTONE);
     public static final List<Block> ALL = AllVariants.stream().map(i -> i.block).collect(Collectors.toList());
