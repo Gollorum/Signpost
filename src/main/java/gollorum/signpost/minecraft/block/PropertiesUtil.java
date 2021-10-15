@@ -4,6 +4,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.material.MaterialColor;
+import net.minecraftforge.common.ToolType;
 
 public class PropertiesUtil {
 
@@ -12,14 +13,22 @@ public class PropertiesUtil {
     }
 
     public static Block.Properties STONE = Block.Properties.of(Material.STONE, MaterialColor.STONE)
-        .strength(1.5F, 6.0F);
+        .strength(1.5F, 6.0F)
+        .sound(SoundType.STONE)
+        .harvestTool(ToolType.PICKAXE)
+        .requiresCorrectToolForDrops();
 
     public static Block.Properties IRON = Block.Properties.of(Material.METAL, MaterialColor.METAL)
-        .strength(5.0F, 6.0F).sound(SoundType.METAL);
+        .strength(5.0F, 6.0F)
+        .sound(SoundType.METAL)
+        .harvestTool(ToolType.PICKAXE)
+        .requiresCorrectToolForDrops();
 
     private static Block.Properties wood(MaterialColor color){
         return Block.Properties.of(Material.WOOD, color)
-            .strength(2.0F, 3.0F).sound(SoundType.WOOD);
+            .strength(2.0F, 3.0F)
+            .sound(SoundType.WOOD)
+            .harvestTool(ToolType.AXE);
     }
 
     private static MaterialColor colorFor(WoodType type){

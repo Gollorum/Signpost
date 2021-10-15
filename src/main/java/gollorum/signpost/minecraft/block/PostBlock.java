@@ -8,10 +8,10 @@ import gollorum.signpost.interactions.Interactable;
 import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.RequestSignGui;
+import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.security.WithCountRestriction;
 import gollorum.signpost.utils.BlockPartInstance;
-import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.utils.Delay;
 import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.math.geometry.Vector3;
@@ -23,7 +23,6 @@ import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.inventory.InventoryHelper;
@@ -32,8 +31,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.crafting.Ingredient;
-import net.minecraft.loot.LootContext;
-import net.minecraft.loot.LootParameters;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.state.BooleanProperty;
@@ -48,9 +45,7 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
-import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockReader;
-import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.fml.network.PacketDistributor;
@@ -256,6 +251,7 @@ public class PostBlock extends Block implements IWaterLoggable, WithCountRestric
     private static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
     public static class Variant {
+
         public final PostBlock block;
         public final String registryName;
         public final Properties properties;

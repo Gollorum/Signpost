@@ -7,11 +7,11 @@ import gollorum.signpost.blockpartdata.types.*;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.items.Wrench;
 import gollorum.signpost.minecraft.utils.SideUtils;
+import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.utils.BlockPartMetadata;
-import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.utils.WaystoneContainer;
 import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.math.geometry.Ray;
@@ -23,8 +23,8 @@ import gollorum.signpost.utils.serialization.StringSerializer;
 import io.netty.util.internal.ConcurrentSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
@@ -153,7 +153,7 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
             : shape.bounds().move(getBlockPos());
     }
 
-    public Optional<TraceResult> trace(PlayerEntity player){
+    public Optional<TraceResult> trace(Entity player){
         Vector3d head = player.position();
         head = head.add(0, player.getEyeHeight(), 0);
         if (player.isCrouching())

@@ -20,6 +20,8 @@ import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.inventory.container.PlayerContainer;
 import net.minecraft.item.BlockItem;
+import net.minecraft.item.BucketItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
@@ -61,14 +63,14 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
         super.init();
 
         List<Tuple<List<TextureAtlasSprite>, ItemStack>> blocksToRender = getMinecraft().player.inventory.items.stream()
-            .filter(i -> !i.isEmpty() && i.getItem() instanceof BlockItem)
+            .filter(i -> !i.isEmpty() && (i.getItem() instanceof BlockItem || i.getItem() instanceof BucketItem))
             .map(i -> {
                 ItemStack ret = i.copy();
                 ret.setCount(1);
                 return ret;
             })
             .distinct()
-            .map(is -> Tuple.of(allSpritesFor((BlockItem) is.getItem(), is), is))
+            .map(is -> Tuple.of(allSpritesFor(is), is))
             .filter(p -> p._1.size() > 0)
             .collect(Collectors.toList());
 
@@ -102,20 +104,35 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
 
     private static final Direction[] faces = new Direction[]{null, Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP, Direction.DOWN};
 
+    private List<TextureAtlasSprite> allSpritesFor(ItemStack stack) {
+        Item item = stack.getItem();
+        if(item instanceof BlockItem) return allSpritesFor((BlockItem) item, stack);
+        else if(item instanceof BucketItem) return allSpritesFor((BucketItem) item);
+        else throw new RuntimeException("Item type of " + item.getClass() + " not supported");
+    }
+
     private List<TextureAtlasSprite> allSpritesFor(BlockItem item, ItemStack stack) {
-        Block block = ((BlockItem) item.getItem()).getBlock();
-        Stream<TextureAtlasSprite> stream;
-        if(block instanceof PostBlock && stack.hasTag() && stack.getTag().contains("Parts")) {
-            stream = PostTile.readPartInstances(stack.getTag().getCompound("Parts"))
-                .stream().flatMap(i -> ((Collection<ResourceLocation>) i.blockPart.getAllTextures()).stream().map(this::spriteFrom));
-        } else {
-            BlockState state = block.defaultBlockState();
-            IBakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
-            stream = Arrays.stream(faces)
-                .flatMap(side -> model.getQuads(null, side, font.random).stream())
-                .map(BakedQuad::getSprite);
-        }
-        return stream
+        Block block = item.getBlock();
+        return block instanceof PostBlock && stack.hasTag() && stack.getTag().contains("Parts")
+            ? PostTile.readPartInstances(stack.getTag().getCompound("Parts"))
+                .stream().flatMap(i -> ((Collection<ResourceLocation>) i.blockPart.getAllTextures())
+                    .stream().map(this::spriteFrom)
+                ).collect(Collectors.toList())
+            : allSpritesFor(block.defaultBlockState());
+    }
+
+    private List<TextureAtlasSprite> allSpritesFor(BucketItem item) {
+        return item.getFluid().getAttributes()
+            .getTextures()
+            .map(this::spriteFrom)
+            .collect(Collectors.toList());
+    }
+
+    private List<TextureAtlasSprite> allSpritesFor(BlockState state) {
+        IBakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
+        return Arrays.stream(faces)
+            .flatMap(side -> model.getQuads(null, side, font.random).stream())
+            .map(BakedQuad::getSprite)
             .distinct()
             .collect(Collectors.toList());
     }

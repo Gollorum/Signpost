@@ -20,7 +20,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemStack;
-import net.minecraft.loot.LootContext;
 import net.minecraft.state.DirectionProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.state.properties.BlockStateProperties;
@@ -36,8 +35,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 public class WaystoneBlock extends Block implements WithCountRestriction {
@@ -49,7 +46,9 @@ public class WaystoneBlock extends Block implements WithCountRestriction {
 
     private WaystoneBlock() {
         super(Properties.of(Material.PISTON, MaterialColor.STONE)
-            .strength(1.5F, 6.0F));
+            .strength(1.5F, 6.0F)
+            .requiresCorrectToolForDrops()
+        );
     }
 
 	public static void openGuiIfHasPermission(ServerPlayerEntity player, WorldLocation worldLocation) {

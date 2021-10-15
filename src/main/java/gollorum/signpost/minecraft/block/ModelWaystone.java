@@ -90,7 +90,9 @@ public class ModelWaystone extends Block implements IWaterLoggable, WithCountRes
 		super(Properties.of(Material.PISTON, MaterialColor.STONE)
 			.strength(1.5F, 6.0F)
 			.noOcclusion()
-			.isViewBlocking((x, y, z) -> false));
+			.isViewBlocking((x, y, z) -> false)
+			.requiresCorrectToolForDrops()
+		);
 		this.variant = variant;
 		this.registerDefaultState(this.defaultBlockState().setValue(Waterlogged, false).setValue(Facing, Direction.NORTH));
 	}
