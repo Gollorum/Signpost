@@ -61,7 +61,7 @@ public class GuiModelRenderer implements Widget, Flippable {
         PoseStack matrixStack = new PoseStack();
         RenderSystem.enableBlend();
         RenderingUtil.wrapInMatrixEntry(matrixStack, () -> {
-            matrixStack.translate(0, 0 ,-200);
+            matrixStack.translate(0, 0, -10);
             if(isFlipped) matrixStack.mulPose(Vector3f.YP.rotation((float) Math.PI));
             RenderingUtil.renderGui(
                 model.get(isFlipped),

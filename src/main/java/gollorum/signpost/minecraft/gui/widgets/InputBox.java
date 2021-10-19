@@ -1,6 +1,5 @@
 package gollorum.signpost.minecraft.gui.widgets;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.minecraft.gui.utils.ConfigurableFont;
 import gollorum.signpost.minecraft.gui.utils.Rect;
@@ -85,7 +84,6 @@ public class InputBox extends EditBox implements WithMutableX, Ticking {
     @Override
     public void renderButton(PoseStack matrixStack, int p_94161_, int p_94162_, float p_94163_) {
         matrixStack.pushPose();
-        RenderSystem.enableBlend();
         matrixStack.translate(0, 0, zOffset);
         if(isHovered() && !isBordered()) {
             int fromY = y + (configFont.lineHeight - height) / 2;

@@ -38,7 +38,7 @@ public class PaintSignGui<T extends SignBlockPart<T>> extends PaintBlockPartGui<
         addRenderableWidget(new Button(
             buttonRect.point.x, buttonRect.point.y,
             buttonRect.width, buttonRect.height,
-            new TranslatableComponent(LangKeys.mainTex),
+            new TranslatableComponent(isTargetingMainTexture ? LangKeys.mainTex : LangKeys.secondaryTex),
             b -> {
                 isTargetingMainTexture = !isTargetingMainTexture;
                 oldSprite = isTargetingMainTexture ? oldMainSprite : oldSecSprite;

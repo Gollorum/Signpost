@@ -757,8 +757,8 @@ public class SignGui extends ExtendedScreen {
 
         switchSignInputBoxTo(wideSignInputBox);
 
-        addTypeDependentChild(wideSignInputBox);
         addRenderableOnly(wideSignRenderer);
+        addTypeDependentChild(wideSignInputBox);
         currentSignRenderer = wideSignRenderer;
         switchOverlay(selectedOverlay);
     }
@@ -770,8 +770,8 @@ public class SignGui extends ExtendedScreen {
 
         switchSignInputBoxTo(shortSignInputBox);
 
-        addTypeDependentChild(shortSignInputBox);
         addRenderableOnly(shortSignRenderer);
+        addTypeDependentChild(shortSignInputBox);
         currentSignRenderer = shortSignRenderer;
         switchOverlay(selectedOverlay);
     }
@@ -783,8 +783,8 @@ public class SignGui extends ExtendedScreen {
 
         switchSignInputBoxTo(largeSignInputBoxes.get(0));
 
-        addTypeDependentChildren(largeSignInputBoxes);
         addRenderableOnly(largeSignRenderer);
+        addTypeDependentChildren(largeSignInputBoxes);
         currentSignRenderer = largeSignRenderer;
         switchOverlay(selectedOverlay);
     }
