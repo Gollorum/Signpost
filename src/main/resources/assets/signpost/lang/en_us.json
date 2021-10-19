@@ -34,7 +34,7 @@
   "gui.signpost.rotation_waystone": "%d (point at waystone)",
   "gui.signpost.rotation_player": "%d (face the player)",
   "gui.signpost.main_material": "Front",
-  "gui.signpost.secondary_material": "Back",
+  "gui.signpost.secondary_material": "Back / Rim",
   "gui.signpost.unknownWaystone": "Unknown Waystone",
 
   "signpost.discovered": "You can now travel to %s using sign posts.",

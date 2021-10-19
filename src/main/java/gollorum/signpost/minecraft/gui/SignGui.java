@@ -6,6 +6,7 @@ import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
+import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.blockpartdata.types.*;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
@@ -13,12 +14,10 @@ import gollorum.signpost.minecraft.data.PostModel;
 import gollorum.signpost.minecraft.events.WaystoneRenamedEvent;
 import gollorum.signpost.minecraft.events.WaystoneUpdatedEvent;
 import gollorum.signpost.minecraft.gui.utils.*;
-import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.widgets.*;
 import gollorum.signpost.minecraft.rendering.FlippableModel;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.relations.ExternalWaystoneLibrary;
 import gollorum.signpost.utils.Delay;
 import gollorum.signpost.utils.Tuple;
@@ -40,7 +39,6 @@ import net.minecraft.util.text.TranslationTextComponent;
 
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -48,7 +46,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class SignGui extends ExtendedScreen {
 
@@ -426,12 +423,13 @@ public class SignGui extends ExtendedScreen {
         additionalRenderables.add(postRenderer);
         Point modelRectTop = modelRect.at(Rect.XAlignment.Center, Rect.YAlignment.Top);
 
+        final int inputBoxesZOffset = 100;
         Rect wideInputRect = new Rect(
             modelRectTop.add(-7 * inputSignsScale, 2 * inputSignsScale),
             modelRectTop.add(11 * inputSignsScale, 6 * inputSignsScale));
         wideSignInputBox = new InputBox(font,
             wideInputRect,
-            false, false, 100);
+            false, false, inputBoxesZOffset);
         wideSignInputBox.setTextColor(Colors.black);
         widgetsToFlip.add(new FlippableAtPivot(wideSignInputBox, modelRectTop.x));
 
@@ -448,7 +446,7 @@ public class SignGui extends ExtendedScreen {
         shortSignInputBox = new InputBox(
             font,
             shortInputRect,
-            false, false, 100
+            false, false, inputBoxesZOffset
         );
         shortSignInputBox.setTextColor(Colors.black);
         widgetsToFlip.add(new FlippableAtPivot(shortSignInputBox, modelRectTop.x));
@@ -464,16 +462,16 @@ public class SignGui extends ExtendedScreen {
             modelRectTop.add(-7 * inputSignsScale, 3 * inputSignsScale),
             modelRectTop.add(9 * inputSignsScale, 14 * inputSignsScale))
             .withHeight(height -> height / 4 - 1);
-        InputBox firstLarge = new InputBox(font, largeInputRect, false, false, 100);
+        InputBox firstLarge = new InputBox(font, largeInputRect, false, false, inputBoxesZOffset);
         firstLarge.setTextColor(Colors.black);
         largeInputRect = largeInputRect.withPoint(p -> p.withY(Math.round(modelRectTop.y + (13 - 3 * 2.5f) * inputSignsScale)));
-        InputBox secondLarge = new InputBox(font, largeInputRect, false, false, 100);
+        InputBox secondLarge = new InputBox(font, largeInputRect, false, false, inputBoxesZOffset);
         secondLarge.setTextColor(Colors.black);
         largeInputRect = largeInputRect.withPoint(p -> p.withY(Math.round(modelRectTop.y + (13 - 2 * 2.5f) * inputSignsScale)));
-        InputBox thirdLarge = new InputBox(font, largeInputRect, false, false, 100);
+        InputBox thirdLarge = new InputBox(font, largeInputRect, false, false, inputBoxesZOffset);
         thirdLarge.setTextColor(Colors.black);
         largeInputRect = largeInputRect.withPoint(p -> p.withY(Math.round(modelRectTop.y + (13 - 1 * 2.5f) * inputSignsScale)));
-        InputBox fourthLarge = new InputBox(font, largeInputRect, false, false, 100);
+        InputBox fourthLarge = new InputBox(font, largeInputRect, false, false, inputBoxesZOffset);
         fourthLarge.setTextColor(Colors.black);
         firstLarge.addKeyCodeListener(KeyCodes.Down, () -> setInitialFocus(secondLarge));
         secondLarge.addKeyCodeListener(KeyCodes.Up, () -> setInitialFocus(firstLarge));
@@ -769,8 +767,8 @@ public class SignGui extends ExtendedScreen {
 
         switchSignInputBoxTo(wideSignInputBox);
 
-        addTypeDependentChild(wideSignInputBox);
         additionalRenderables.add(wideSignRenderer);
+        addTypeDependentChild(wideSignInputBox);
         currentSignRenderer = wideSignRenderer;
         switchOverlay(selectedOverlay);
     }
@@ -782,8 +780,8 @@ public class SignGui extends ExtendedScreen {
 
         switchSignInputBoxTo(shortSignInputBox);
 
-        addTypeDependentChild(shortSignInputBox);
         additionalRenderables.add(shortSignRenderer);
+        addTypeDependentChild(shortSignInputBox);
         currentSignRenderer = shortSignRenderer;
         switchOverlay(selectedOverlay);
     }
@@ -795,8 +793,8 @@ public class SignGui extends ExtendedScreen {
 
         switchSignInputBoxTo(largeSignInputBoxes.get(0));
 
-        addTypeDependentChildren(largeSignInputBoxes);
         additionalRenderables.add(largeSignRenderer);
+        addTypeDependentChildren(largeSignInputBoxes);
         currentSignRenderer = largeSignRenderer;
         switchOverlay(selectedOverlay);
     }

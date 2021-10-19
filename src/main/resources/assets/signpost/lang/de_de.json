@@ -34,7 +34,7 @@
   "gui.signpost.rotation_waystone": "%d (auf Wegstein zeigen)",
   "gui.signpost.rotation_player": "%d (Blickwinkel des Spielers)",
   "gui.signpost.main_material": "Vorderseite",
-  "gui.signpost.secondary_material": "Rückseite",
+  "gui.signpost.secondary_material": "Rückseite / Rand",
   "gui.signpost.unknownWaystone": "Unbekannter Wegweiser",
 
   "signpost.discovered": "Du kannst mit Wegweisern nun nach %s reisen.",
