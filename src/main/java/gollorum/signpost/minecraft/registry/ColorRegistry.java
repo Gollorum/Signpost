@@ -5,10 +5,11 @@ import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.blockpartdata.Overlay;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.color.IBlockColor;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockDisplayReader;
+import net.minecraft.world.ILightReader;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeColors;
 import net.minecraftforge.api.distmarker.Dist;
@@ -26,7 +27,7 @@ public class ColorRegistry {
     @SubscribeEvent
     static void onBlockColor(ColorHandlerEvent.Block event) {
         for(PostBlock.Variant variant : PostBlock.AllVariants) {
-            event.getBlockColors().register(ColorRegistry::getOverlayBlockColor, variant.block);
+            event.getBlockColors().register(getOverlayBlockColor, variant.block);
         }
     }
 
@@ -34,11 +35,11 @@ public class ColorRegistry {
     static void onItemColor(ColorHandlerEvent.Item event) {
         for(PostBlock.Variant variant : PostBlock.AllVariants) {
             event.getItemColors().register(ColorRegistry::getOverlayItemColor, variant.block);
-            event.getBlockColors().register(ColorRegistry::getOverlayBlockColor, variant.block);
+            event.getBlockColors().register(getOverlayBlockColor, variant.block);
         }
     }
 
-    private static int getOverlayBlockColor(BlockState blockState, @Nullable IBlockDisplayReader world, @Nullable BlockPos blockPos, int tintIndex) {
+    private static final IBlockColor getOverlayBlockColor = (BlockState blockState, @Nullable ILightReader world, @Nullable BlockPos blockPos, int tintIndex) -> {
         if(world == null || blockPos == null) return -1;
         switch(tintIndex) {
             case Overlay.GrasTint: return BiomeColors.getAverageGrassColor(world, blockPos);
@@ -46,16 +47,16 @@ public class ColorRegistry {
             case Overlay.WaterTint: return BiomeColors.getAverageWaterColor(world, blockPos);
             default: return -1;
         }
-    }
+    };
 
     private static int getOverlayItemColor(ItemStack itemStack, int tintIndex) {
         World world = Minecraft.getInstance().level;
         PlayerEntity player = Minecraft.getInstance().player;
         if(world == null || player == null) return -1;
         switch(tintIndex) {
-            case Overlay.GrasTint: return BiomeColors.getAverageGrassColor(world, player.blockPosition());
-            case Overlay.FoliageTint: return BiomeColors.getAverageFoliageColor(world, player.blockPosition());
-            case Overlay.WaterTint: return BiomeColors.getAverageWaterColor(world, player.blockPosition());
+            case Overlay.GrasTint: return BiomeColors.getAverageGrassColor(world, player.getCommandSenderBlockPosition());
+            case Overlay.FoliageTint: return BiomeColors.getAverageFoliageColor(world, player.getCommandSenderBlockPosition());
+            case Overlay.WaterTint: return BiomeColors.getAverageWaterColor(world, player.getCommandSenderBlockPosition());
             default: return -1;
         }
     }

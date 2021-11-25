@@ -84,7 +84,7 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 						new Point(width / 2, height / 2 - 20),
 						Rect.XAlignment.Center, Rect.YAlignment.Bottom,
 						font,
-						LangKeys.confirmTeleport, Tuple.of(d.waystoneName, Colors.highlight)
+						LangKeys.confirmTeleport, Tuple.of(d.waystoneName, Colors.highlight.getColor())
 					));
 
 					if (!d.cost.isEmpty()) {
@@ -123,12 +123,12 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 					);
 					addButton(new Button(
 						confirmRect.point.x, confirmRect.point.y, confirmRect.width, confirmRect.height,
-						new TranslationTextComponent(LangKeys.proceed),
+						new TranslationTextComponent(LangKeys.proceed).getString(),
 						b -> confirm()
 					));
 					addButton(new Button(
 						cancelRect.point.x, cancelRect.point.y, cancelRect.width, cancelRect.height,
-						new TranslationTextComponent(LangKeys.cancel),
+						new TranslationTextComponent(LangKeys.cancel).getString(),
 						b -> cancel()
 					));
 					editButtonTop.set(cancelRect.max().y + 20);
@@ -139,7 +139,7 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 							Rect.XAlignment.Center, Rect.YAlignment.Bottom,
 							font,
 							LangKeys.notDiscovered,
-							new Tuple<>(d.waystoneName, Colors.highlight)
+							new Tuple<>(d.waystoneName, Colors.highlight.getColor())
 						));
 					if(isTooFarAway)
 						additionalRenderables.add(new TextDisplay(
@@ -147,8 +147,8 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 							Rect.XAlignment.Center, Rect.YAlignment.Bottom,
 							font,
 							LangKeys.tooFarAway,
-							new Tuple<>(Integer.toString(d.distance), Colors.highlight),
-							new Tuple<>(Integer.toString(d.maxDistance), Colors.highlight)
+							new Tuple<>(Integer.toString(d.distance), Colors.highlight.getColor()),
+							new Tuple<>(Integer.toString(d.maxDistance), Colors.highlight.getColor())
 						));
 					editButtonTop.set(height / 2 + 20);
 				}

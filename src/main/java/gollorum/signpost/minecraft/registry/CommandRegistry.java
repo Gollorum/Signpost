@@ -5,9 +5,9 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.commands.*;
 import net.minecraft.command.CommandSource;
-import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 
 import static net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus.FORGE;
 
@@ -15,8 +15,8 @@ import static net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus.FORGE;
 public class CommandRegistry {
 
 	@SubscribeEvent
-	public static void onRegisterCommands(RegisterCommandsEvent event) {
-		CommandDispatcher<CommandSource> dispatcher = event.getDispatcher();
+	public static void onRegisterCommands(FMLServerStartingEvent event) {
+		CommandDispatcher<CommandSource> dispatcher = event.getCommandDispatcher();
 		dispatcher.register(
 			LiteralArgumentBuilder.<CommandSource>literal(Signpost.MOD_ID)
 				.then(ListWaystones.register())

@@ -11,6 +11,7 @@ import gollorum.signpost.utils.*;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.StringSerializer;
+import gollorum.signpost.utils.serialization.UuidSerializer;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
@@ -158,7 +159,7 @@ public class WaystoneLibrary {
             WaystoneEntry oldEntry = allWaystones.get(oldWaystones[0]);
             if(editingPlayer != null && !oldEntry.hasThePermissionToEdit(editingPlayer)) {
                 // This should not happen unless a player tries to hacc
-                editingPlayer.sendMessage(new TranslationTextComponent(LangKeys.noPermissionWaystone), Util.NIL_UUID);
+                editingPlayer.sendMessage(new TranslationTextComponent(LangKeys.noPermissionWaystone));
                 return Optional.empty();
             }
             if(editingPlayer != null && !WaystoneData.hasSecurityPermissions(editingPlayer, location))
@@ -778,7 +779,7 @@ public class WaystoneLibrary {
         memory.addAll(
             playerMemory.entrySet().stream().map(entry -> {
                 CompoundNBT entryCompound = new CompoundNBT();
-                entryCompound.putUUID("Player", entry.getKey().id);
+                entryCompound.put("Player", UuidSerializer.INSTANCE.write(entry.getKey().id));
                 ListNBT known = new ListNBT();
                 known.addAll(entry.getValue().stream().map(WaystoneHandle.Vanilla.Serializer::write).collect(Collectors.toSet()));
                 entryCompound.put("DiscoveredWaystones", known);
@@ -811,7 +812,7 @@ public class WaystoneLibrary {
             for(INBT dynamicEntry : ((ListNBT) dynamicPlayerMemory)) {
                 if (dynamicEntry instanceof CompoundNBT) {
                     CompoundNBT entry = (CompoundNBT) dynamicEntry;
-                    UUID player = entry.getUUID("Player");
+                    UUID player = UuidSerializer.INSTANCE.read(entry.getCompound("Player"));
                     INBT dynamicKnown = entry.get("DiscoveredWaystones");
                     Set<WaystoneHandle.Vanilla> known = dynamicKnown instanceof ListNBT
                         ?  ((ListNBT) dynamicKnown).stream()

@@ -67,9 +67,9 @@ public class Teleport {
             );
             Angle pitch = Angle.fromRadians((float) (Math.PI / 2 + Math.atan(Math.sqrt(diff.x * diff.x + diff.z * diff.z) / diff.y)));
             World oldWorld = player.level;
-            BlockPos oldPos = player.blockPosition();
-            if(!player.level.dimensionType().equals(world.dimensionType()))
-                player.changeDimension(world, new ITeleporter() {});
+            BlockPos oldPos = player.getCommandSenderBlockPosition();
+            if(!player.level.getDimension().getType().equals(world.getDimension().getType()))
+                player.changeDimension(world.getDimension().getType(), new ITeleporter() {});
             player.yRot = yaw.degrees();
             player.xRot = pitch.degrees();
             player.teleportTo(location.x, location.y, location.z);
@@ -147,8 +147,8 @@ public class Teleport {
                 int distance = (int) waystoneData.spawn.distanceTo(Vector3.fromVec3d(player.position()));
                 int maxDistance = Config.Server.teleport.maximumDistance.get();
                 boolean isTooFarAway = maxDistance > 0 && distance > maxDistance;
-                if(!isDiscovered) player.sendMessage(new TranslationTextComponent(LangKeys.notDiscovered, message.waystoneName), Util.NIL_UUID);
-                if(isTooFarAway) player.sendMessage(new TranslationTextComponent(LangKeys.tooFarAway, Integer.toString(distance), Integer.toString(maxDistance)), Util.NIL_UUID);
+                if(!isDiscovered) player.sendMessage(new TranslationTextComponent(LangKeys.notDiscovered, message.waystoneName));
+                if(isTooFarAway) player.sendMessage(new TranslationTextComponent(LangKeys.tooFarAway, Integer.toString(distance), Integer.toString(maxDistance)));
                 if(!isDiscovered || isTooFarAway) return;
 
                 Inventory.tryPay(
@@ -157,8 +157,7 @@ public class Teleport {
                     p -> Teleport.toWaystone(waystoneData, p)
                 );
             } else player.sendMessage(
-                new TranslationTextComponent(LangKeys.waystoneNotFound, Colors.wrap(message.waystoneName, Colors.highlight)),
-                Util.NIL_UUID
+                new TranslationTextComponent(LangKeys.waystoneNotFound, Colors.wrap(message.waystoneName, Colors.highlight))
             );
         }
 

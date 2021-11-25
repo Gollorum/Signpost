@@ -14,7 +14,7 @@ import static gollorum.signpost.Signpost.MOD_ID;
 
 public class BlockRegistry {
 
-    private static final DeferredRegister<Block> Register = DeferredRegister.create(ForgeRegistries.BLOCKS, MOD_ID);
+    private static final DeferredRegister<Block> Register = new DeferredRegister<>(ForgeRegistries.BLOCKS, MOD_ID);
 
     private static final RegistryObject<Block> WaystoneBlock =
         Register.register(gollorum.signpost.minecraft.block.WaystoneBlock.REGISTRY_NAME, () -> gollorum.signpost.minecraft.block.WaystoneBlock.INSTANCE);

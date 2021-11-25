@@ -30,7 +30,7 @@ public class Colors {
      * <div style="border:1px solid black;width:40px;height:20px;background-color:#000000;float:right;margin: 0 10px 0 0"></div><br/><br/>
      */
     public static final int black = 0x000000;
-    public static final int highlight = TextFormatting.AQUA.getColor();
+    public static final TextFormatting highlight = TextFormatting.AQUA;
 
     /**
      * <div style="border:1px solid black;width:40px;height:20px;background-color:#ffffff;float:right;margin: 0 10px 0 0"></div><br/><br/>
@@ -104,9 +104,9 @@ public class Colors {
         );
     }
 
-    public static IFormattableTextComponent wrap(String text, int color) {
+    public static ITextComponent wrap(String text, TextFormatting color) {
         return new StringTextComponent(text)
-            .withStyle(style -> style.withColor(net.minecraft.util.text.Color.fromRgb(color)));
+            .withStyle(style -> style.setColor(color));
     }
 
 }

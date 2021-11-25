@@ -77,8 +77,8 @@ public class WaystoneTile extends TileEntity implements WithOwner.OfWaystone, Wa
     }
 
     @Override
-    public void load(BlockState state, CompoundNBT compound) {
-        super.load(state, compound);
+    public void load(CompoundNBT compound) {
+        super.load(compound);
         owner = PlayerHandle.Serializer.optional().read(compound.getCompound("Owner"));
     }
 }

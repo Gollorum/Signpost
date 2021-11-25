@@ -22,12 +22,12 @@ public abstract class ExtendedScreen extends Screen {
 	}
 
 	@Override
-	public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-		renderBackground(matrixStack);
+	public void render(int mouseX, int mouseY, float partialTicks) {
+		renderBackground();
 		for(IRenderable toRender : additionalRenderables) {
-			toRender.render(matrixStack, mouseX, mouseY, partialTicks);
+			toRender.render(mouseX, mouseY, partialTicks);
 		}
-		super.render(matrixStack, mouseX, mouseY, partialTicks);
+		super.render(mouseX, mouseY, partialTicks);
 	}
 
 	protected void addButtons(Collection<? extends Widget> widgets) {

@@ -14,9 +14,7 @@ import gollorum.signpost.minecraft.utils.TextComponents;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.command.arguments.EntityArgument;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.Util;
 import net.minecraft.util.text.TranslationTextComponent;
 
 public class DiscoverWaystone {
@@ -49,7 +47,7 @@ public class DiscoverWaystone {
 		WaystoneHandle.Vanilla handle = WaystoneLibrary.getInstance().getHandleByName(name)
 			.orElseThrow(() -> new SimpleCommandExceptionType(new TranslationTextComponent(LangKeys.waystoneNotFound, Colors.wrap(name, Colors.highlight))).create());
 		if(WaystoneLibrary.getInstance().addDiscovered(new PlayerHandle(player), handle)) {
-			player.sendMessage(new TranslationTextComponent(LangKeys.discovered, TextComponents.waystone(player, name)), Util.NIL_UUID);
+			player.sendMessage(new TranslationTextComponent(LangKeys.discovered, TextComponents.waystone(player, name)));
 		}
 		return Command.SINGLE_SUCCESS;
 	}

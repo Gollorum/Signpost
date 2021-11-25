@@ -69,7 +69,7 @@ public class ColorInputBox extends InputBox {
     }
 
     @Override
-    public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void renderButton(int mouseX, int mouseY, float partialTicks) {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferbuilder = tessellator.getBuilder();
         Minecraft.getInstance().getTextureManager().bind(TextureResource.background.location);
@@ -83,7 +83,7 @@ public class ColorInputBox extends InputBox {
         bufferbuilder.vertex(x, y, 0.0D).uv(1, 0).color(red, green, blue, 255).endVertex();
         bufferbuilder.vertex(x - height, y, 0.0D).uv(0, 0).color(red, green, blue, 255).endVertex();
         tessellator.end();
-        super.renderButton(matrixStack, mouseX, mouseY, partialTicks);
+        super.renderButton(mouseX, mouseY, partialTicks);
     }
 
     public void setColorResponder(@Nullable Consumer<Integer> responder) {

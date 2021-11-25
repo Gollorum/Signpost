@@ -23,8 +23,8 @@ import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
+import net.minecraft.fluid.IFluidState;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.Item;
@@ -134,22 +134,6 @@ public class PostBlock extends Block implements IWaterLoggable, WithCountRestric
             Lazy.of(() -> Ingredient.of(Items.STONE)),
             Lazy.of(() -> Ingredient.of(Items.STONE))
         );
-        public static final ModelType Warped = new ModelType("warped",
-            new ResourceLocation("warped_stem"),
-            new ResourceLocation("stripped_warped_stem"),
-            new ResourceLocation("warped_stem"),
-            Lazy.of(() -> Ingredient.of(Items.WARPED_SIGN)),
-            Lazy.of(() -> Ingredient.of(ItemTags.WARPED_STEMS)),
-            Lazy.of(() -> Ingredient.of(Items.WARPED_SIGN))
-        );
-        public static final ModelType Crimson = new ModelType("crimson",
-            new ResourceLocation("crimson_stem"),
-            new ResourceLocation("stripped_crimson_stem"),
-            new ResourceLocation("crimson_stem"),
-            Lazy.of(() -> Ingredient.of(Items.CRIMSON_SIGN)),
-            Lazy.of(() -> Ingredient.of(ItemTags.CRIMSON_STEMS)),
-            Lazy.of(() -> Ingredient.of(Items.CRIMSON_SIGN))
-        );
         private static final Lazy<Ingredient> sandstone = Lazy.of(() ->
             Ingredient.of(Blocks.SANDSTONE, Blocks.CUT_SANDSTONE, Blocks.CHISELED_SANDSTONE, Blocks.SMOOTH_SANDSTONE));
         public static final ModelType Sandstone = new ModelType("sandstone",
@@ -176,8 +160,6 @@ public class PostBlock extends Block implements IWaterLoggable, WithCountRestric
             register(Oak);
             register(DarkOak);
             register(Spruce);
-            register(Warped);
-            register(Crimson);
             register(Sandstone);
         }
 
@@ -276,11 +258,9 @@ public class PostBlock extends Block implements IWaterLoggable, WithCountRestric
     public static final Variant BIRCH = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Birch), ModelType.Birch, "birch");
     public static final Variant JUNGLE = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Jungle), ModelType.Jungle, "jungle");
     public static final Variant ACACIA = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Acacia), ModelType.Acacia, "acacia");
-    public static final Variant WARPED = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Warped), ModelType.Warped, "warped");
-    public static final Variant CRIMSON = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Crimson), ModelType.Crimson, "crimson");
     public static final Variant SANDSTONE = new Variant(PropertiesUtil.STONE, ModelType.Sandstone, "sandstone");
 
-    public static final List<Variant> AllVariants = Arrays.asList(OAK, BIRCH, SPRUCE, JUNGLE, DARK_OAK, ACACIA, STONE, IRON, WARPED, CRIMSON, SANDSTONE);
+    public static final List<Variant> AllVariants = Arrays.asList(OAK, BIRCH, SPRUCE, JUNGLE, DARK_OAK, ACACIA, STONE, IRON, SANDSTONE);
     public static final List<Block> ALL = AllVariants.stream().map(i -> i.block).collect(Collectors.toList());
 
     public final ModelType type;
@@ -366,7 +346,7 @@ public class PostBlock extends Block implements IWaterLoggable, WithCountRestric
 
     @SuppressWarnings("deprecation")
     @Override
-    public FluidState getFluidState(BlockState state) {
+    public IFluidState getFluidState(BlockState state) {
         return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
     }
 

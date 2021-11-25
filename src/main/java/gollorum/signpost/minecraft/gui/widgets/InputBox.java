@@ -45,7 +45,7 @@ public class InputBox extends TextFieldWidget implements WithMutableX, Ticking {
             configFont,
             inputFieldRect.point.x, inputFieldRect.point.y,
             inputFieldRect.width, inputFieldRect.height,
-            new StringTextComponent("")
+            ""
         );
         this.configFont = configFont;
         this.shouldDropShadow = shouldDropShadow;
@@ -85,14 +85,15 @@ public class InputBox extends TextFieldWidget implements WithMutableX, Ticking {
     }
 
     @Override
-    public void renderButton(MatrixStack matrixStack, int p_94161_, int p_94162_, float p_94163_) {
+    public void renderButton(int p_94161_, int p_94162_, float p_94163_) {
+        MatrixStack matrixStack = new MatrixStack();
         matrixStack.pushPose();
         matrixStack.translate(0, 0, zOffset);
         if(isHovered() && !isBordered()) {
             int fromY = y + (configFont.lineHeight - height) / 2;
-            AbstractGui.fill(matrixStack, x, fromY, x + width, fromY + height, 0x40ffffff);
+            AbstractGui.fill(matrixStack.last().pose(), x, fromY, x + width, fromY + height, 0x40ffffff);
         }
-        super.renderButton(matrixStack, p_94161_, p_94162_, p_94163_);
+        super.renderButton(p_94161_, p_94162_, p_94163_);
         matrixStack.popPose();
     }
 

@@ -3,6 +3,7 @@ package gollorum.signpost;
 import gollorum.signpost.relations.ExternalWaystoneLibrary;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.StringSerializer;
+import gollorum.signpost.utils.serialization.UuidSerializer;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.Util;
@@ -30,7 +31,7 @@ public interface WaystoneHandle {
 
     public static class Vanilla implements WaystoneHandle {
         public static final String typeTag = "vanilla";
-        public static final Vanilla NIL = new Vanilla(Util.NIL_UUID);
+        public static final Vanilla NIL = new Vanilla(PlayerHandle.InvalidId);
 
         public final UUID id;
 
@@ -69,18 +70,18 @@ public interface WaystoneHandle {
             @Override
             public CompoundNBT write(Vanilla playerHandle, CompoundNBT compound) {
                 compound.putString("type", typeTag);
-                compound.putUUID("Id", playerHandle.id);
+                UuidSerializer.INSTANCE.write(playerHandle.id, compound);
                 return compound;
             }
 
             @Override
             public boolean isContainedIn(CompoundNBT compound) {
-                return compound.contains("Id");
+                return UuidSerializer.INSTANCE.isContainedIn(compound);
             }
 
             @Override
             public Vanilla read(CompoundNBT compound) {
-                return new Vanilla(compound.getUUID("Id"));
+                return new Vanilla(UuidSerializer.INSTANCE.read(compound));
             }
 
             @Override
@@ -90,12 +91,12 @@ public interface WaystoneHandle {
 
             @Override
             public void write(Vanilla playerHandle, PacketBuffer buffer) {
-                buffer.writeUUID(playerHandle.id);
+                UuidSerializer.INSTANCE.write(playerHandle.id, buffer);
             }
 
             @Override
             public Vanilla read(PacketBuffer buffer) {
-                return new Vanilla(buffer.readUUID());
+                return new Vanilla(UuidSerializer.INSTANCE.read(buffer));
             }
         };
 

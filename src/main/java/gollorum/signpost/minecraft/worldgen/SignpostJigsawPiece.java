@@ -1,9 +1,7 @@
 package gollorum.signpost.minecraft.worldgen;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.datafixers.util.Either;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.datafixers.Dynamic;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneHandle;
@@ -24,26 +22,23 @@ import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MutableBoundingBox;
-import net.minecraft.world.ISeedReader;
+import net.minecraft.world.IWorld;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.ChunkGenerator;
+import net.minecraft.world.gen.feature.Feature;
 import net.minecraft.world.gen.feature.jigsaw.IJigsawDeserializer;
 import net.minecraft.world.gen.feature.jigsaw.JigsawPattern;
 import net.minecraft.world.gen.feature.jigsaw.SingleJigsawPiece;
-import net.minecraft.world.gen.feature.structure.StructureManager;
 import net.minecraft.world.gen.feature.template.PlacementSettings;
-import net.minecraft.world.gen.feature.template.StructureProcessorList;
+import net.minecraft.world.gen.feature.template.StructureProcessor;
 import net.minecraft.world.gen.feature.template.Template;
 import net.minecraft.world.gen.feature.template.TemplateManager;
 
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class SignpostJigsawPiece extends SingleJigsawPiece {
@@ -56,27 +51,11 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 		signpostCountForVillage = new HashMap<>();
 	}
 
-	public static final Codec<SignpostJigsawPiece> codec = RecordCodecBuilder.create((codecBuilder) ->
-		codecBuilder.group(templateCodec(), processorsCodec(), projectionCodec(), isZombieCodec()).apply(codecBuilder, SignpostJigsawPiece::new));
-
-	private static RecordCodecBuilder<SignpostJigsawPiece, Boolean> isZombieCodec() {
-		return Codec.BOOL.fieldOf("isZombie").forGetter(o -> o.isZombie);
-	}
-
 	public final boolean isZombie;
 
 	public SignpostJigsawPiece(
-		ResourceLocation location,
-		Supplier<StructureProcessorList> structureProcessorListSupplier,
-		JigsawPattern.PlacementBehaviour placementBehaviour,
-		boolean isZombie
-	) {
-		this(Either.left(location), structureProcessorListSupplier, placementBehaviour, isZombie);
-	}
-
-	public SignpostJigsawPiece(
-		Either<ResourceLocation, Template> template,
-		Supplier<StructureProcessorList> structureProcessorListSupplier,
+		String template,
+		List<StructureProcessor> structureProcessorListSupplier,
 		JigsawPattern.PlacementBehaviour placementBehaviour,
 		boolean isZombie
 	) {
@@ -84,28 +63,31 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 		this.isZombie = isZombie;
 	}
 
+	public SignpostJigsawPiece(Dynamic<?> dynamic) {
+		super(dynamic);
+		isZombie = dynamic.get("isZombie").asBoolean(false);
+	}
+
 	@Override
 	public boolean place(
 		TemplateManager templateManager,
-		ISeedReader seedReader,
-		StructureManager structureManager,
-		ChunkGenerator chunkGenerator,
+		IWorld seedReader,
+		ChunkGenerator<?> chunkGenerator,
 		BlockPos pieceLocation,
-		BlockPos villageLocation,
 		Rotation rotation,
 		MutableBoundingBox boundingBox,
-		Random random,
-		boolean shouldUseJigsawReplacementStructureProcessor
+		Random random
 	) {
 		if(!Config.Server.worldGen.isVillageGenerationEnabled.get()) return false;
+		BlockPos villageLocation = Feature.VILLAGE.getNearestGeneratedFeature(seedReader.getLevel(), chunkGenerator, pieceLocation, 100, false); // hakk
 		if(signpostCountForVillage.getOrDefault(villageLocation, 0) >= Config.Server.worldGen.maxSignpostsPerVillage.get())
 			return false;
 		Queue<Map.Entry<BlockPos, WaystoneHandle.Vanilla>> possibleTargets = fetchPossibleTargets(pieceLocation, villageLocation, random);
 		if(possibleTargets.isEmpty()) return false;
 
-		Template template = this.template.map(templateManager::get, Function.identity());
-		PlacementSettings placementSettings = this.getSettings(rotation, boundingBox, shouldUseJigsawReplacementStructureProcessor);
-		if (template.placeInWorld(seedReader, pieceLocation, villageLocation, placementSettings, random, 18)) {
+		Template template = templateManager.getOrCreate(this.location);
+		PlacementSettings placementSettings = this.getSettings(rotation, boundingBox);
+		if (template.placeInWorld(seedReader, pieceLocation, placementSettings, 18)) {
 			Collection<WaystoneHandle.Vanilla> freshlyUsedWaystones = populateSignPostGeneration(
 				placementSettings, pieceLocation, seedReader, random, possibleTargets
 			);
@@ -113,8 +95,8 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 				.addAll(freshlyUsedWaystones);
 
 			for(Template.BlockInfo blockInfo : Template.processBlockInfos(
-				seedReader, pieceLocation, villageLocation, placementSettings,
-				this.getDataMarkers(templateManager, pieceLocation, rotation, false), template
+				template, seedReader, pieceLocation, placementSettings,
+				this.getDataMarkers(templateManager, pieceLocation, rotation, false)
 			)) {
 				this.handleDataMarker(seedReader, blockInfo, pieceLocation, rotation, random, boundingBox);
 			}
@@ -141,7 +123,7 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 	private Collection<WaystoneHandle.Vanilla> populateSignPostGeneration(
 		PlacementSettings placementSettings,
 		BlockPos pieceLocation,
-		ISeedReader world,
+		IWorld world,
 		Random random,
 		Queue<Map.Entry<BlockPos, WaystoneHandle.Vanilla>> possibleTargets
 	) {
@@ -170,7 +152,7 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 	public Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> makeSign(
 		Random random,
 		Direction facing,
-		ISeedReader world,
+		IWorld world,
 		BlockPos tilePos,
 		Queue<Map.Entry<BlockPos, WaystoneHandle.Vanilla>> possibleTargets,
 		float y
@@ -183,7 +165,7 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 
 	private Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> makeWideSign(
 		Direction facing,
-		ISeedReader world,
+		IWorld world,
 		BlockPos tilePos,
 		Queue<Map.Entry<BlockPos, WaystoneHandle.Vanilla>> possibleTargets,
 		float y
@@ -216,7 +198,7 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 
 	private Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> makeShortSigns(
 		Direction facing,
-		ISeedReader world,
+		IWorld world,
 		BlockPos tilePos,
 		Queue<Map.Entry<BlockPos, WaystoneHandle.Vanilla>> possibleTargets,
 		float y
@@ -287,7 +269,7 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 		return degrees < -90 || degrees > 90;
 	}
 
-	private Optional<Overlay> overlayFor(ISeedReader world, BlockPos pos) {
+	private Optional<Overlay> overlayFor(IWorld world, BlockPos pos) {
 		Biome biome = world.getBiome(pos);
 		if(biome.shouldSnow(world, pos)
 			|| biome.getPrecipitation() == Biome.RainType.SNOW
@@ -297,12 +279,12 @@ public class SignpostJigsawPiece extends SingleJigsawPiece {
 		else return Optional.empty();
 	}
 
-	public IJigsawDeserializer<?> getType() {
+	public IJigsawDeserializer getType() {
 		return JigsawDeserializers.signpost;
 	}
 
 	public String toString() {
-		return "SingleSignpost[" + this.template + "]";
+		return "SingleSignpost[" + this.location + "]";
 	}
 
 }

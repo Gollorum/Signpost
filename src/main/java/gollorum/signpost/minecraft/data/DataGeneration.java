@@ -1,7 +1,7 @@
 package gollorum.signpost.minecraft.data;
 
 import net.minecraft.data.DataGenerator;
-import net.minecraftforge.common.data.ExistingFileHelper;
+import net.minecraftforge.client.model.generators.ExistingFileHelper;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
@@ -21,13 +21,13 @@ public final class DataGeneration {
 
         if (event.includeServer()) {
 
-            PostTag.Blocks postBlocksTagProvider = new PostTag.Blocks(datagenerator, fileHelper);
+            PostTag.Blocks postBlocksTagProvider = new PostTag.Blocks(datagenerator);
             datagenerator.addProvider(postBlocksTagProvider);
-            datagenerator.addProvider(new PostTag(datagenerator, postBlocksTagProvider, fileHelper));
+            datagenerator.addProvider(new PostTag(datagenerator));
 
-            WaystoneTag.Blocks waystoneBlocksTagProvider = new WaystoneTag.Blocks(datagenerator, fileHelper);
+            WaystoneTag.Blocks waystoneBlocksTagProvider = new WaystoneTag.Blocks(datagenerator);
             datagenerator.addProvider(waystoneBlocksTagProvider);
-            datagenerator.addProvider(new WaystoneTag(datagenerator, waystoneBlocksTagProvider, fileHelper));
+            datagenerator.addProvider(new WaystoneTag(datagenerator));
 
             datagenerator.addProvider(new PostRecipe(datagenerator));
             datagenerator.addProvider(new WaystoneRecipe(datagenerator));

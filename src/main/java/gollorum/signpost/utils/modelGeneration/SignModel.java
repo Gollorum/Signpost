@@ -2,21 +2,16 @@ package gollorum.signpost.utils.modelGeneration;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.model.RenderMaterial;
+import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.model.Material;
 import net.minecraft.inventory.container.PlayerContainer;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.vector.Matrix3f;
-import net.minecraft.util.math.vector.Matrix4f;
-import net.minecraft.util.math.vector.Vector3f;
-import net.minecraft.util.math.vector.Vector4f;
 
 import java.util.*;
 
 public class SignModel {
 
-	private final Map<RenderMaterial, List<Quad>> quads = new HashMap<>();
+	private final Map<Material, List<Quad>> quads = new HashMap<>();
 
 	private static final float pixelToWorld = 1 / 16f;
 	public void addCube(Cube<ResourceLocation> cube) {
@@ -30,7 +25,7 @@ public class SignModel {
 					q.faceData.rotation
 				)).toArray(Quad.Vertex[]::new)
 			);
-			quads.computeIfAbsent(new RenderMaterial(PlayerContainer.BLOCK_ATLAS, q.faceData.texture), k -> new ArrayList<>())
+			quads.computeIfAbsent(new Material(PlayerContainer.BLOCK_ATLAS, q.faceData.texture), k -> new ArrayList<>())
 				.add(quad);
 		}
 	}
@@ -39,7 +34,7 @@ public class SignModel {
 		Matrix4f matrix4f = matrixEntry.pose();
 		Matrix3f matrixNormal = matrixEntry.normal();
 
-		for(Map.Entry<RenderMaterial, List<Quad>> entry : quads.entrySet()) {
+		for(Map.Entry<Material, List<Quad>> entry : quads.entrySet()) {
 			for(Quad quad : entry.getValue()) {
 				Vector3f normal = quad.normal.copy();
 				normal.transform(matrixNormal);

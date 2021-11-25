@@ -1,6 +1,6 @@
 {
   "textures": {
-    "post": "minecraft:block/oak_log"
+    "post": "block/oak_log"
   },
   "elements": [
     {

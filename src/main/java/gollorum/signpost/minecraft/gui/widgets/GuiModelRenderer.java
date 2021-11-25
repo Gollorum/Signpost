@@ -10,7 +10,7 @@ import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.gui.IRenderable;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.client.renderer.Vector3f;
 
 import javax.annotation.Nonnull;
 
@@ -55,7 +55,8 @@ public class GuiModelRenderer implements IRenderable, Flippable {
         this.isFlipped = isFlipped;
     }
 
-    public void render(@Nonnull MatrixStack unused, int mouseX, int mouseY, float partialTicks) {
+    @Override
+    public void render(int mouseX, int mouseY, float partialTicks) {
         float scale = Math.min(width, height);
         MatrixStack matrixStack = new MatrixStack();
         RenderingUtil.wrapInMatrixEntry(matrixStack, () -> {

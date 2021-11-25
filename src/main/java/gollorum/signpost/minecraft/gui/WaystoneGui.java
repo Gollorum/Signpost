@@ -104,7 +104,7 @@ public class WaystoneGui extends ExtendedScreen {
             getCenterY() - buttonsSize.height / 2 + buttonsYOffset,
             buttonsSize.width,
             buttonsSize.height,
-            new TranslationTextComponent(LangKeys.done),
+            new TranslationTextComponent(LangKeys.done).getString(),
             b -> done()
         );
         addButton(inputBox);
@@ -132,9 +132,9 @@ public class WaystoneGui extends ExtendedScreen {
     }
 
     @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        renderBackground(matrixStack);
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
+    public void render(int mouseX, int mouseY, float partialTicks) {
+        renderBackground();
+        super.render(mouseX, mouseY, partialTicks);
     }
 
     @Override

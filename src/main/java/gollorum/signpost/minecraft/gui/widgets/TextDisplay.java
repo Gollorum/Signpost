@@ -32,7 +32,8 @@ public class TextDisplay implements IRenderable {
         new TranslationTextComponent(
             translationKey,
             Arrays.stream(args).map(Tuple::getLeft).toArray(Object[]::new)
-        ).visit(t -> {
+        ).flatStream().forEachOrdered(tt -> {
+            String t = tt.getString();
             texts.add(new Tuple<>(
                 t,
                 Arrays.stream(args)
@@ -41,7 +42,6 @@ public class TextDisplay implements IRenderable {
                     .findFirst()
                     .orElse(Colors.white)
             ));
-            return Optional.empty();
         });
         return texts;
     }
@@ -58,11 +58,11 @@ public class TextDisplay implements IRenderable {
     }
 
     @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void render(int mouseX, int mouseY, float partialTicks) {
         int x = rect.point.x;
         for(int i = 0; i < texts.size(); i++) {
             Tuple<String, Integer> textAndColor = texts.get(i);
-            fontRenderer.drawShadow(matrixStack, textAndColor._1, x, rect.point.y, textAndColor._2);
+            fontRenderer.drawShadow(textAndColor._1, x, rect.point.y, textAndColor._2);
             x += widths.get(i);
         }
     }

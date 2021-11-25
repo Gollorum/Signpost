@@ -1,6 +1,7 @@
 package gollorum.signpost;
 
 import gollorum.signpost.utils.serialization.CompoundSerializable;
+import gollorum.signpost.utils.serialization.UuidSerializer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -16,6 +17,7 @@ import java.util.UUID;
 
 public class PlayerHandle {
 
+    public static final UUID InvalidId = new UUID(0L, 0L);
 	public static final PlayerHandle Invalid = new PlayerHandle((LivingEntity) null);
 	public final UUID id;
 
@@ -24,7 +26,7 @@ public class PlayerHandle {
     }
 
     public PlayerHandle(@Nullable Entity player) {
-        this.id = player == null ? Util.NIL_UUID : player.getUUID();
+        this.id = player == null ? InvalidId : player.getUUID();
     }
 
     public static PlayerHandle from(@Nullable Entity player) {
@@ -53,18 +55,17 @@ public class PlayerHandle {
 
         @Override
         public CompoundNBT write(PlayerHandle playerHandle, CompoundNBT compound) {
-            compound.putUUID("Id", playerHandle.id);
-            return compound;
+            return UuidSerializer.INSTANCE.write(playerHandle.id, compound);
         }
 
         @Override
         public boolean isContainedIn(CompoundNBT compound) {
-            return compound.contains("Id");
+            return UuidSerializer.INSTANCE.isContainedIn(compound);
         }
 
         @Override
         public PlayerHandle read(CompoundNBT compound) {
-            return new PlayerHandle(compound.getUUID("Id"));
+            return new PlayerHandle(UuidSerializer.INSTANCE.read(compound));
         }
 
         @Override
@@ -74,12 +75,12 @@ public class PlayerHandle {
 
         @Override
         public void write(PlayerHandle playerHandle, PacketBuffer buffer) {
-            buffer.writeUUID(playerHandle.id);
+            UuidSerializer.INSTANCE.write(playerHandle.id, buffer);
         }
 
         @Override
         public PlayerHandle read(PacketBuffer buffer) {
-            return new PlayerHandle(buffer.readUUID());
+            return new PlayerHandle(UuidSerializer.INSTANCE.read(buffer));
         }
     };
 

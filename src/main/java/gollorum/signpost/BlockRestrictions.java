@@ -189,7 +189,7 @@ public class BlockRestrictions {
 			return true;
 		} else {
 			if(prevCount == 0)
-				player.asEntity().sendMessage(new TranslationTextComponent(type.errorLangKey), Util.NIL_UUID);
+				player.asEntity().sendMessage(new TranslationTextComponent(type.errorLangKey));
 			return prevCount < 0;
 		}
 	}

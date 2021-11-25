@@ -7,8 +7,6 @@ import net.minecraft.data.DataGenerator;
 import net.minecraft.data.IDataProvider;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.generators.*;
-import net.minecraftforge.client.model.generators.loaders.OBJLoaderBuilder;
-import net.minecraftforge.common.data.ExistingFileHelper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,38 +46,17 @@ public class WaystoneModel extends BlockModelProvider {
 
 		for(ModelWaystone.Variant variant : ModelWaystone.variants) {
 			ResourceLocation loc = new ResourceLocation(Signpost.MOD_ID, "block/" + variant.registryName);
-			BlockModelBuilder builder = getBuilder(loc.toString())
-				.parent(new ModelFile.ExistingModelFile(new ResourceLocation("block/block"), existingFileHelper))
-				.texture("particle", waystoneTexture)
-				.customLoader(OBJLoaderBuilder::begin)
-				.modelLocation(new ResourceLocation(loc.getNamespace(), "models/block/" + variant.registryName + ".obj"))
-				.flipV(true)
-				.diffuseLighting(true)
-				.ambientToFullbright(false)
-				.end()
-				.transforms()
-					.transform(ModelBuilder.Perspective.GUI)
-						.rotation(30, 315, 0)
-						.translation(0, variant.modelYOffset, 0)
-						.scale(0.625f)
-					.end()
-					.transform(ModelBuilder.Perspective.FIRSTPERSON_RIGHT)
-						.rotation(0, 315, 0)
-						.translation(0, variant.modelYOffset, 0)
-						.scale(0.4f)
-					.end()
-					.transform(ModelBuilder.Perspective.FIRSTPERSON_LEFT)
-						.rotation(0, 315, 0)
-						.translation(0, variant.modelYOffset, 0)
-						.scale(0.4f)
-					.end()
-				.end();
-			variantModels.put(variant, builder);
+			variantModels.put(variant, new ModelFile.ExistingModelFile(loc, existingFileHelper));
 		}
 	}
 
 	private IDataProvider makeItem(DataGenerator generator, ExistingFileHelper fileHelper) {
 		return new Item(generator, fileHelper);
+	}
+
+	@Override
+	public String getName() {
+		return "waystone model block";
 	}
 
 	private class Item extends ItemModelProvider {
@@ -94,6 +71,11 @@ public class WaystoneModel extends BlockModelProvider {
 			for(Map.Entry<ModelWaystone.Variant, ModelFile> variant : variantModels.entrySet()) {
 				getBuilder(variant.getKey().registryName).parent(variant.getValue());
 			}
+		}
+
+		@Override
+		public String getName() {
+			return "waystone model item";
 		}
 	}
 

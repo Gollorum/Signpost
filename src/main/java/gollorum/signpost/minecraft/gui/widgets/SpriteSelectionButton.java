@@ -1,18 +1,16 @@
 package gollorum.signpost.minecraft.gui.widgets;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import gollorum.signpost.minecraft.gui.utils.Rect;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.widget.button.AbstractButton;
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.Matrix4f;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.WorldVertexBufferUploader;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.util.math.vector.Matrix4f;
-import net.minecraft.util.text.StringTextComponent;
 
 import java.util.function.Consumer;
 
@@ -28,7 +26,7 @@ public class SpriteSelectionButton extends AbstractButton {
         super(
             rect.point.x, rect.point.y,
             rect.width, rect.height,
-            new StringTextComponent("")
+            ""
         );
         onPressed = pressedAction;
         if(sprite.getWidth() > sprite.getHeight())
@@ -39,7 +37,7 @@ public class SpriteSelectionButton extends AbstractButton {
     }
 
     @Override
-    public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void renderButton(int mouseX, int mouseY, float partialTicks) {
         RenderSystem.color4f(1.0F, 1.0F, 1.0F, this.alpha);
 
         Minecraft.getInstance().getTextureManager().bind(sprite.atlas().location());
@@ -47,7 +45,8 @@ public class SpriteSelectionButton extends AbstractButton {
         RenderSystem.defaultBlendFunc();
         RenderSystem.enableDepthTest();
 
-        Matrix4f matrix = matrixStack.last().pose();
+        Matrix4f matrix = new Matrix4f();
+        matrix.setIdentity();
         float blitOffset = 0f;
         BufferBuilder bufferbuilder = Tessellator.getInstance().getBuilder();
         bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX);
@@ -62,7 +61,7 @@ public class SpriteSelectionButton extends AbstractButton {
         bufferbuilder.end();
         RenderSystem.enableAlphaTest();
         WorldVertexBufferUploader.end(bufferbuilder);
-        if(isHovered()) AbstractGui.fill(matrixStack, xMin, yMin, xMax, yMax, 0x50ffffff);
+        if(isHovered()) AbstractGui.fill(xMin, yMin, xMax, yMax, 0x50ffffff);
 
     }
 

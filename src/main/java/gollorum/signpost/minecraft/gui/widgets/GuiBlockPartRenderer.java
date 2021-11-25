@@ -22,7 +22,7 @@ public class GuiBlockPartRenderer extends Widget implements IRenderable {
     private float scale;
 
     public GuiBlockPartRenderer(Collection<BlockPartInstance> partsToRender, Point center, Angle yaw, Angle pitch, float scale) {
-        super(center.x - widthFor(scale) / 2, center.y - heightFor(scale) / 2, widthFor(scale), heightFor(scale), new StringTextComponent(""));
+        super(center.x - widthFor(scale) / 2, center.y - heightFor(scale) / 2, widthFor(scale), heightFor(scale), "");
         this.partsToRender = partsToRender;
         this.center = center;
         this.yaw = yaw;
@@ -34,9 +34,9 @@ public class GuiBlockPartRenderer extends Widget implements IRenderable {
     private static int heightFor(float scale) { return (int)(scale * 1.5f); }
 
     @Override
-    public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void renderButton(int mouseX, int mouseY, float partialTicks) {
         if(isHovered())
-            AbstractGui.fill(matrixStack, x, y, x + width, y + height, 0x20ffffff);
+            AbstractGui.fill(x, y, x + width, y + height, 0x20ffffff);
 
         MatrixStack ms = new MatrixStack();
         RenderingUtil.wrapInMatrixEntry(ms, () -> {

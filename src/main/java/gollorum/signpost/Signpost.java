@@ -19,7 +19,7 @@ import gollorum.signpost.worldgen.Villages;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.World;
+import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -124,7 +124,7 @@ public class Signpost {
         @SubscribeEvent
         public void onWorldLoad(WorldEvent.Load event) {
             if (event.getWorld() instanceof ServerWorld &&
-                ((ServerWorld) event.getWorld()).dimension().equals(World.OVERWORLD)) {
+                event.getWorld().getDimension().getType().equals(DimensionType.OVERWORLD)) {
                 ServerWorld world = (ServerWorld) event.getWorld();
                 if(!WaystoneLibrary.getInstance().hasStorageBeenSetup())
                     WaystoneLibrary.getInstance().setupStorage(world);

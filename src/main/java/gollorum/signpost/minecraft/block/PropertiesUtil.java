@@ -16,13 +16,15 @@ public class PropertiesUtil {
         .strength(1.5F, 6.0F)
         .sound(SoundType.STONE)
         .harvestTool(ToolType.PICKAXE)
-        .requiresCorrectToolForDrops();
+//        .requiresCorrectToolForDrops()
+        ;
 
     public static Block.Properties IRON = Block.Properties.of(Material.METAL, MaterialColor.METAL)
         .strength(5.0F, 6.0F)
         .sound(SoundType.METAL)
         .harvestTool(ToolType.PICKAXE)
-        .requiresCorrectToolForDrops();
+//        .requiresCorrectToolForDrops()
+        ;
 
     private static Block.Properties wood(MaterialColor color){
         return Block.Properties.of(Material.WOOD, color)
@@ -39,8 +41,6 @@ public class PropertiesUtil {
             case Birch: return MaterialColor.SAND;
             case Jungle: return MaterialColor.DIRT;
             case Acacia: return MaterialColor.COLOR_ORANGE;
-            case Warped: return MaterialColor.WARPED_STEM;
-            case Crimson: return MaterialColor.CRIMSON_STEM;
             default: throw new RuntimeException("Wood type " + type + "is not supported.");
         }
     }

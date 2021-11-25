@@ -34,7 +34,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.Color;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 
 import javax.annotation.Nullable;
@@ -297,12 +297,12 @@ public class SignGui extends ExtendedScreen {
             int buttonsWidth = doneRect.width;
             doneButton = new Button(
                 getCenterX() + centerGap / 2, doneRect.point.y, buttonsWidth, doneRect.height,
-                new TranslationTextComponent(LangKeys.done),
+                new TranslationTextComponent(LangKeys.done).getString(),
                 b -> done()
             );
             Button removeSignButton = new Button(
                 getCenterX() - centerGap / 2 - buttonsWidth, doneRect.point.y, buttonsWidth, doneRect.height,
-                new TranslationTextComponent(LangKeys.removeSign),
+                new TranslationTextComponent(LangKeys.removeSign).getString(),
                 b -> removeSign()
             );
             removeSignButton.setFGColor(Colors.invalid);
@@ -310,7 +310,7 @@ public class SignGui extends ExtendedScreen {
         } else {
             doneButton = new Button(
                 doneRect.point.x, doneRect.point.y, doneRect.width, doneRect.height,
-                new TranslationTextComponent(LangKeys.done),
+                new TranslationTextComponent(LangKeys.done).getString(),
                 b -> done()
             );
         }
@@ -567,7 +567,7 @@ public class SignGui extends ExtendedScreen {
             onWaystoneCountChanged();
         } else {
             String unknownWaystone = new TranslationTextComponent(LangKeys.unknownWaystone)
-                .withStyle(style -> style.withColor(Color.fromRgb(Colors.darkGrey)))
+                .withStyle(style -> style.setColor(TextFormatting.DARK_GRAY))
                 .getString();
             Optional<WaystoneEntry> oldWaystone = oldSign
                 .<WaystoneHandle>flatMap(SignBlockPart::getDestination)
@@ -905,7 +905,7 @@ public class SignGui extends ExtendedScreen {
 
     private void apply(Optional<WaystoneHandle> destinationId) {
         PostTile.TilePartInfo tilePartInfo = oldTilePartInfo.orElseGet(() ->
-            new PostTile.TilePartInfo(tile.getLevel().dimension().location(), tile.getBlockPos(), UUID.randomUUID()));
+            new PostTile.TilePartInfo(tile.getLevel().getDimension().getType().getRegistryName(), tile.getBlockPos(), UUID.randomUUID()));
         CompoundNBT data;
         boolean isLocked = lockButton.isLocked();
         ResourceLocation mainTex = oldSign.map(SignBlockPart::getMainTexture).orElse(modelType.mainTexture);

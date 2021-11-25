@@ -1,9 +1,9 @@
 {
   "parent": "signpost:block/post_preview",
   "textures": {
-    "particle": "minecraft:block/stone",
-    "post": "minecraft:block/stone",
-    "texture": "minecraft:block/stone",
+    "particle": "block/stone",
+    "post": "block/stone",
+    "texture": "block/stone",
     "secondary_texture": "signpost:block/stone_dark"
   }
 }

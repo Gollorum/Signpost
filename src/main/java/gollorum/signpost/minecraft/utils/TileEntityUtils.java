@@ -6,13 +6,12 @@ import gollorum.signpost.utils.Either;
 import gollorum.signpost.utils.WorldLocation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
+import net.minecraft.world.dimension.DimensionType;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -36,12 +35,11 @@ public class TileEntityUtils {
 
     public static Optional<World> findWorld(ResourceLocation dimensionKeyLocation, boolean isClient) {
         return isClient
-            ? (Minecraft.getInstance().level.dimension().location().equals(dimensionKeyLocation)
+            ? (Minecraft.getInstance().level.getDimension().getType().getRegistryName().equals(dimensionKeyLocation)
                 ? Optional.of(Minecraft.getInstance().level)
                 : Optional.empty())
             : (Signpost.getServerType().isServer
-                ? Optional.ofNullable(Signpost.getServerInstance()
-                    .getLevel(RegistryKey.create(Registry.DIMENSION_REGISTRY, dimensionKeyLocation)))
+                ? Optional.ofNullable(DimensionType.getByName(dimensionKeyLocation)).map(Signpost.getServerInstance()::getLevel)
                 : Optional.empty());
     }
 
@@ -63,7 +61,7 @@ public class TileEntityUtils {
     }
 
     public static <T> Optional<T> findTileEntityClient(ResourceLocation dimensionKeyLocation, BlockPos pos, Class<T> c){
-        return Minecraft.getInstance().level.dimension().location().equals(dimensionKeyLocation)
+        return Minecraft.getInstance().level.getDimension().getType().getRegistryName().equals(dimensionKeyLocation)
             ? findTileEntity(Minecraft.getInstance().level, pos, c)
             : Optional.empty();
     }

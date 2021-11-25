@@ -27,7 +27,7 @@ public class ItemRegistry {
         }
     };
 
-    private static final DeferredRegister<Item> REGISTER = DeferredRegister.create(ForgeRegistries.ITEMS, MOD_ID);
+    private static final DeferredRegister<Item> REGISTER = new DeferredRegister<>(ForgeRegistries.ITEMS, MOD_ID);
 
     private static final RegistryObject<Item> WAYSTONE_ITEM =
         REGISTER.register(WaystoneBlock.REGISTRY_NAME,

@@ -1,9 +1,7 @@
 package gollorum.signpost.minecraft.worldgen;
 
 import com.google.common.collect.Streams;
-import com.mojang.datafixers.util.Either;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.datafixers.Dynamic;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
@@ -25,20 +23,19 @@ import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MutableBoundingBox;
-import net.minecraft.world.ISeedReader;
+import net.minecraft.world.IWorld;
 import net.minecraft.world.gen.ChunkGenerator;
+import net.minecraft.world.gen.feature.Feature;
 import net.minecraft.world.gen.feature.jigsaw.IJigsawDeserializer;
 import net.minecraft.world.gen.feature.jigsaw.JigsawPattern;
 import net.minecraft.world.gen.feature.jigsaw.SingleJigsawPiece;
-import net.minecraft.world.gen.feature.structure.StructureManager;
 import net.minecraft.world.gen.feature.template.PlacementSettings;
-import net.minecraft.world.gen.feature.template.StructureProcessorList;
+import net.minecraft.world.gen.feature.template.StructureProcessor;
 import net.minecraft.world.gen.feature.template.Template;
 import net.minecraft.world.gen.feature.template.TemplateManager;
+import net.minecraft.world.server.ServerWorld;
 
 import java.util.*;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class WaystoneJigsawPiece extends SingleJigsawPiece {
@@ -136,39 +133,28 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 			)));
 	}
 
-	public static final Codec<WaystoneJigsawPiece> codec = RecordCodecBuilder.create((codecBuilder) ->
-		codecBuilder.group(templateCodec(), processorsCodec(), projectionCodec()).apply(codecBuilder, WaystoneJigsawPiece::new));
-
 	public WaystoneJigsawPiece(
-		ResourceLocation location,
-		Supplier<StructureProcessorList> structureProcessorListSupplier,
-		JigsawPattern.PlacementBehaviour placementBehaviour
-	) {
-		this(Either.left(location), structureProcessorListSupplier, placementBehaviour);
-	}
-
-	public WaystoneJigsawPiece(
-		Either<ResourceLocation, Template> template,
-		Supplier<StructureProcessorList> structureProcessorListSupplier,
+		String template,
+		List<StructureProcessor> structureProcessorListSupplier,
 		JigsawPattern.PlacementBehaviour placementBehaviour
 	) {
 		super(template, structureProcessorListSupplier, placementBehaviour);
 	}
 
+	public WaystoneJigsawPiece(Dynamic<?> dynamic) { super(dynamic); }
+
 	@Override
 	public boolean place(
 		TemplateManager templateManager,
-		ISeedReader seedReader,
-		StructureManager structureManager,
-		ChunkGenerator chunkGenerator,
+		IWorld seedReader,
+		ChunkGenerator<?> chunkGenerator,
 		BlockPos pieceLocation,
-		BlockPos villageLocation,
 		Rotation rotation,
 		MutableBoundingBox boundingBox,
-		Random random,
-		boolean shouldUseJigsawReplacementStructureProcessor
+		Random random
 	) {
 		if(!Config.Server.worldGen.isVillageGenerationEnabled.get()) return false;
+		BlockPos villageLocation = Feature.VILLAGE.getNearestGeneratedFeature(seedReader.getLevel(), chunkGenerator, pieceLocation, 100, false); // hakk
 		if(generatedWaystones.containsKey(villageLocation)) return false;
 
 		List<ModelWaystone> allowedWaystones = getAllowedWaystones();
@@ -176,21 +162,21 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 			Signpost.LOGGER.warn("Tried to generate a waystone, but the list of allowed waystones was empty.");
 			return false;
 		}
-		PlacementSettings placementSettings = this.getSettings(rotation, boundingBox, shouldUseJigsawReplacementStructureProcessor);
+		PlacementSettings placementSettings = this.getSettings(rotation, boundingBox);
 		Direction facing = placementSettings.getRotation().rotate(Direction.WEST);
 		Direction left = placementSettings.getRotation().rotate(Direction.SOUTH);
 		BlockPos pos = pieceLocation.relative(facing.getOpposite()).relative(left).above();
 
 		ModelWaystone waystone = getWaystoneType(random, allowedWaystones);
-		Optional<String> optionalName = VillageNamesProvider.requestFor(pos, villageLocation, seedReader.getLevel(), random);
+		Optional<String> optionalName = VillageNamesProvider.requestFor(pos, villageLocation, (ServerWorld) seedReader.getLevel(), random);
 		if(!optionalName.isPresent()) {
 			Signpost.LOGGER.warn("No name could be generated for waystone at " + pos + ".");
 			return false;
 		}
 		String name = optionalName.get();
 
-		Template template = this.template.map(templateManager::get, Function.identity());
-		if (template.placeInWorld(seedReader, pieceLocation, villageLocation, placementSettings, random, 18)) {
+		Template template = templateManager.getOrCreate(this.location);
+		if (template.placeInWorld(seedReader, pieceLocation, placementSettings, 18)) {
 			seedReader.setBlock(pos, waystone.defaultBlockState().setValue(ModelWaystone.Facing, facing.getOpposite()), 18);
 			WaystoneLibrary.getInstance().update(
 				name,
@@ -198,11 +184,11 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 				null,
 				false
 			);
-			registerGenerated(name, villageLocation, new ChunkEntryKey(new ChunkPos(pos), seedReader.getLevel().dimension().location()));
+			registerGenerated(name, villageLocation, new ChunkEntryKey(new ChunkPos(pos), seedReader.getLevel().getDimension().getType().getRegistryName()));
 
 			for(Template.BlockInfo blockInfo : Template.processBlockInfos(
-				seedReader, pieceLocation, villageLocation, placementSettings,
-				this.getDataMarkers(templateManager, pieceLocation, rotation, false), template
+				template, seedReader, pieceLocation, placementSettings,
+				this.getDataMarkers(templateManager, pieceLocation, rotation, false)
 			)) {
 				this.handleDataMarker(seedReader, blockInfo, pieceLocation, rotation, random, boundingBox);
 			}
@@ -213,11 +199,11 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 		}
 	}
 
-	private static WaystoneLocationData locationDataFor(BlockPos pos, ISeedReader world, Direction facing) {
+	private static WaystoneLocationData locationDataFor(BlockPos pos, IWorld world, Direction facing) {
 		return new WaystoneLocationData(new WorldLocation(pos, world.getLevel()), spawnPosFor(world, pos, facing));
 	}
 
-	private static Vector3 spawnPosFor(ISeedReader world, BlockPos waystonePos, Direction facing) {
+	private static Vector3 spawnPosFor(IWorld world, BlockPos waystonePos, Direction facing) {
 		BlockPos spawnBlockPos = waystonePos.relative(facing, 2);
 		int maxOffset = 10;
 		int offset = 0;
@@ -256,12 +242,12 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 			.collect(Collectors.toList());
 	}
 
-	public IJigsawDeserializer<?> getType() {
+	public IJigsawDeserializer getType() {
 		return JigsawDeserializers.waystone;
 	}
 
 	public String toString() {
-		return "SingleSignpostWaystone[" + this.template + "]";
+		return "SingleSignpostWaystone[" + this.location + "]";
 	}
 
 }

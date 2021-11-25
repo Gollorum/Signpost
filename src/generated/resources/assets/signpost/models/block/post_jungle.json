@@ -1,9 +1,9 @@
 {
   "parent": "signpost:block/post_preview",
   "textures": {
-    "particle": "minecraft:block/jungle_log",
-    "post": "minecraft:block/jungle_log",
-    "texture": "minecraft:block/stripped_jungle_log",
-    "secondary_texture": "minecraft:block/jungle_log"
+    "particle": "block/jungle_log",
+    "post": "block/jungle_log",
+    "texture": "block/stripped_jungle_log",
+    "secondary_texture": "block/jungle_log"
   }
 }

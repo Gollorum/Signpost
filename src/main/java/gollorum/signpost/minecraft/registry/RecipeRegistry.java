@@ -11,7 +11,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 public class RecipeRegistry {
 
 	private static final DeferredRegister<IRecipeSerializer<?>> Register =
-		DeferredRegister.create(ForgeRegistries.RECIPE_SERIALIZERS, Signpost.MOD_ID);
+		new DeferredRegister<>(ForgeRegistries.RECIPE_SERIALIZERS, Signpost.MOD_ID);
 
 	public static final RegistryObject<CutWaystoneRecipe.Serializer> CutWaystoneSerializer =
 		Register.register(

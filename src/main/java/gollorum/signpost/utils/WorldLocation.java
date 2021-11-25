@@ -46,13 +46,13 @@ public class WorldLocation {
         if (o == null || getClass() != o.getClass()) return false;
         WorldLocation that = (WorldLocation) o;
         return blockPos.equals(that.blockPos) &&
-            world.rightOr(w -> w.dimension().location())
-                .equals(that.world.rightOr(w -> w.dimension().location()));
+            world.rightOr(w -> w.getDimension().getType().getRegistryName())
+                .equals(that.world.rightOr(w -> w.getDimension().getType().getRegistryName()));
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(blockPos, world.rightOr(w -> w.dimension().location()));
+        return Objects.hash(blockPos, world.rightOr(w -> w.getDimension().getType().getRegistryName()));
     }
 
     @Override

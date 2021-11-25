@@ -25,7 +25,7 @@ public class BrushRecipe extends RecipeProvider {
             .pattern("w")
             .pattern("i")
             .pattern("s")
-            .unlockedBy("has_signpost", has(PostTag.Tag))
+            .unlocks("has_signpost", has(PostTag.Tag))
             .save(consumer);
     }
 

@@ -31,9 +31,9 @@ public class PostRecipe extends RecipeProvider {
             .pattern("s")
             .pattern("s")
             .pattern("b")
-            .unlockedBy("has_sign", has(ItemTags.SIGNS))
-            .unlockedBy("has_signpost", has(PostTag.Tag))
-            .unlockedBy("has_waystone", has(WaystoneBlock.INSTANCE))
+            .unlocks("has_sign", has(ItemTags.SIGNS))
+            .unlocks("has_signpost", has(PostTag.Tag))
+            .unlocks("has_waystone", has(WaystoneBlock.INSTANCE))
             .group("Signpost");
     }
 

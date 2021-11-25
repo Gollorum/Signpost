@@ -1,8 +1,8 @@
 package gollorum.signpost.minecraft.block;
 
 import gollorum.signpost.BlockRestrictions;
-import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
+import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.security.WithCountRestriction;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -11,12 +11,11 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.material.MaterialColor;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
+import net.minecraft.fluid.IFluidState;
 import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
-import net.minecraft.loot.LootContext;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.DirectionProperty;
 import net.minecraft.state.StateContainer;
@@ -33,7 +32,6 @@ import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class ModelWaystone extends Block implements IWaterLoggable, WithCountRestriction {
@@ -90,8 +88,8 @@ public class ModelWaystone extends Block implements IWaterLoggable, WithCountRes
 		super(Properties.of(Material.PISTON, MaterialColor.STONE)
 			.strength(1.5F, 6.0F)
 			.noOcclusion()
-			.isViewBlocking((x, y, z) -> false)
-			.requiresCorrectToolForDrops()
+//			.isViewBlocking((x, y, z) -> false)
+//			.requiresCorrectToolForDrops()
 		);
 		this.variant = variant;
 		this.registerDefaultState(this.defaultBlockState().setValue(Waterlogged, false).setValue(Facing, Direction.NORTH));
@@ -162,7 +160,7 @@ public class ModelWaystone extends Block implements IWaterLoggable, WithCountRes
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public FluidState getFluidState(BlockState state) {
+	public IFluidState getFluidState(BlockState state) {
 		return state.getValue(Waterlogged) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
 	}
 

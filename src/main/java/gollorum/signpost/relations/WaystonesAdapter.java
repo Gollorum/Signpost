@@ -7,8 +7,10 @@ import gollorum.signpost.networking.ReflectionEvent;
 import gollorum.signpost.utils.EventDispatcher;
 import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.serialization.StringSerializer;
+import gollorum.signpost.utils.serialization.UuidSerializer;
 import net.blay09.mods.waystones.api.IWaystone;
 import net.blay09.mods.waystones.core.PlayerWaystoneManager;
+import net.blay09.mods.waystones.core.WaystoneProxy;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
@@ -47,12 +49,12 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
 
     @Override
     public WaystoneHandle read(PacketBuffer buffer) {
-        return new Handle(buffer.readUUID());
+        return new Handle(UuidSerializer.INSTANCE.read(buffer));
     }
 
     @Override
     public WaystoneHandle read(CompoundNBT compound) {
-        return new Handle(compound.getUUID("id"));
+        return new Handle(UuidSerializer.INSTANCE.read(compound));
     }
 
     public static class Waystone implements ExternalWaystone {
@@ -68,7 +70,7 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
 
         @Override
         public WorldLocation loc() {
-            return new WorldLocation(wrapped.getPos(), wrapped.getDimension().location());
+            return new WorldLocation(wrapped.getPos(), wrapped.getDimensionType().getRegistryName());
         }
 
         @Override
@@ -96,13 +98,13 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
         @Override
         public void write(PacketBuffer buffer) {
             StringSerializer.instance.write(instance.typeTag(), buffer);
-            buffer.writeUUID(id);
+            UuidSerializer.INSTANCE.write(id, buffer);
         }
 
         @Override
         public void write(CompoundNBT compound) {
             compound.putString("type", instance.typeTag());
-            compound.putUUID("id", id);
+            UuidSerializer.INSTANCE.write(id, compound);
         }
 
         @Override
@@ -157,14 +159,14 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
         public void encode(Packet message, PacketBuffer buffer) {
             buffer.writeInt(message.waystones.size());
             for(Waystone waystone : message.waystones)
-                net.blay09.mods.waystones.core.Waystone.write(buffer, waystone.wrapped);
+                buffer.writeUUID(waystone.wrapped.getWaystoneUid());
         }
 
         @Override
         public Packet decode(PacketBuffer buffer) {
             int size = buffer.readInt();
             List<Waystone> waystones = new ArrayList<>();
-            for(int i = 0; i < size; i++) waystones.add(new Waystone(net.blay09.mods.waystones.core.Waystone.read(buffer)));
+            for(int i = 0; i < size; i++) waystones.add(new Waystone(new WaystoneProxy(buffer.readUUID())));
             return new Packet(waystones);
         }
 

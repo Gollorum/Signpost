@@ -26,8 +26,8 @@ public class WaystoneRecipe extends RecipeProvider {
             .pattern("sss")
             .pattern("ses")
             .pattern("sss")
-            .unlockedBy("has_ender_pearl", has(Items.ENDER_PEARL))
-            .unlockedBy("has_signpost", has(PostTag.Tag))
+            .unlocks("has_ender_pearl", has(Items.ENDER_PEARL))
+            .unlocks("has_signpost", has(PostTag.Tag))
         .save(consumer);
 
         for(ModelWaystone.Variant v : ModelWaystone.variants) {

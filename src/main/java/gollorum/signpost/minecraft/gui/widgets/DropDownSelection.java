@@ -140,23 +140,20 @@ public class DropDownSelection<EntryType> extends ImageButton {
     }
 
     @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        matrixStack.pushPose();
-        matrixStack.translate(0, 0, 100);
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
-        if(isListVisible) list.render(matrixStack, mouseX, mouseY, partialTicks);
-        matrixStack.popPose();
+    public void render(int mouseX, int mouseY, float partialTicks) {
+        super.render(mouseX, mouseY, partialTicks);
+        if(isListVisible) list.render(mouseX, mouseY, partialTicks);
     }
 
     @Override
-    public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void renderButton(int mouseX, int mouseY, float partialTicks) {
         Minecraft minecraft = Minecraft.getInstance();
         minecraft.getTextureManager().bind(texture.location);
         RenderSystem.disableDepthTest();
         int yTexStart = this.isHovered() ? texture.size.height : 0;
         int xTexStart = this.isListVisible ? texture.size.width : 0;
 
-        blit(matrixStack, this.x, this.y, 100, xTexStart, yTexStart, this.width, this.height, texture.fileSize.height, texture.fileSize.width);
+        blit(this.x, this.y, 100, xTexStart, yTexStart, this.width, this.height, texture.fileSize.height, texture.fileSize.width);
         RenderSystem.enableDepthTest();
     }
 
@@ -188,8 +185,8 @@ public class DropDownSelection<EntryType> extends ImageButton {
         }
 
         @Override
-        public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-            this.renderBackground(matrixStack);
+        public void render(int mouseX, int mouseY, float partialTicks) {
+            this.renderBackground();
             int i = this.getScrollbarPosition();
             int j = i + 6;
             Tessellator tessellator = Tessellator.getInstance();
@@ -206,7 +203,7 @@ public class DropDownSelection<EntryType> extends ImageButton {
             int k = this.getRowLeft();
             int l = this.y0 + 4 - (int)this.getScrollAmount();
 
-            this.renderList(matrixStack, k, l, mouseX, mouseY, partialTicks);
+            this.renderList( k, l, mouseX, mouseY, partialTicks);
             RenderSystem.disableDepthTest();
             this.renderStripe(new Point(x0 - 2, y0 - rimHeight), new Point(x0, y1 + rimHeight));
             this.renderStripe(new Point(x0, y0 - rimHeight), new Point(x1, y0));
@@ -257,7 +254,7 @@ public class DropDownSelection<EntryType> extends ImageButton {
                 tessellator.end();
             }
 
-            this.renderDecorations(matrixStack, mouseX, mouseY);
+            this.renderDecorations(mouseX, mouseY);
             RenderSystem.enableTexture();
             RenderSystem.shadeModel(7424);
             RenderSystem.enableAlphaTest();
@@ -278,7 +275,7 @@ public class DropDownSelection<EntryType> extends ImageButton {
         }
 
         @Override
-        protected void renderList(MatrixStack matrixStack, int p_renderList_1_, int p_renderList_2_, int mouseX, int mouseY, float p_renderList_5_) {
+        protected void renderList(int p_renderList_1_, int p_renderList_2_, int mouseX, int mouseY, float p_renderList_5_) {
             int itemCount = this.getItemCount();
             for(int i = 0; i < itemCount; ++i) {
                 int rowTop = this.getRowTop(i);
@@ -288,7 +285,7 @@ public class DropDownSelection<EntryType> extends ImageButton {
                     Entry e = this.getEntry(i);
                     int width = this.getRowWidth();
                     int left = this.getRowLeft();
-                    e.render(matrixStack, i, rowTop, left, width, height, mouseX, mouseY, this.isMouseOver(mouseX, mouseY) && Objects.equals(this.getEntryAtPosition(mouseX, mouseY), e), p_renderList_5_);
+                    e.render(i, rowTop, left, width, height, mouseX, mouseY, this.isMouseOver(mouseX, mouseY) && Objects.equals(this.getEntryAtPosition(mouseX, mouseY), e), p_renderList_5_);
                 }
             }
 
@@ -308,7 +305,7 @@ public class DropDownSelection<EntryType> extends ImageButton {
             }
 
             @Override
-            public void render(MatrixStack matrixStack, int i, int p_render_2_, int p_render_3_, int p_render_4_, int p_render_5_, int mouseX, int mouseY, boolean p_render_8_, float p_render_9_) {
+            public void render(int i, int p_render_2_, int p_render_3_, int p_render_4_, int p_render_5_, int mouseX, int mouseY, boolean p_render_8_, float p_render_9_) {
                 int brightness = 255;
                 if(this.isMouseOver(mouseX, mouseY))
                     brightness = (int) (brightness * 0.8f);

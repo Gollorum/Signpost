@@ -14,7 +14,7 @@ public class WorldSerializer implements CompoundSerializable<Either<World, Resou
 
     @Override
     public CompoundNBT write(Either<World, ResourceLocation> world, CompoundNBT compound) {
-        compound.putString("DimensionId", world.rightOr(w -> w.dimension().location()).toString());
+        compound.putString("DimensionId", world.rightOr(w -> w.getDimension().getType().getRegistryName()).toString());
         return compound;
     }
 
@@ -35,7 +35,7 @@ public class WorldSerializer implements CompoundSerializable<Either<World, Resou
 
     @Override
     public void write(Either<World, ResourceLocation> world, PacketBuffer buffer) {
-        buffer.writeResourceLocation(world.rightOr(w -> w.dimension().location()));
+        buffer.writeResourceLocation(world.rightOr(w -> w.getDimension().getType().getRegistryName()));
     }
 
     @Override

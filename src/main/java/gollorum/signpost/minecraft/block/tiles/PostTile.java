@@ -16,10 +16,7 @@ import gollorum.signpost.utils.WaystoneContainer;
 import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import gollorum.signpost.utils.serialization.BlockPosSerializer;
-import gollorum.signpost.utils.serialization.CompoundSerializable;
-import gollorum.signpost.utils.serialization.ItemStackSerializer;
-import gollorum.signpost.utils.serialization.StringSerializer;
+import gollorum.signpost.utils.serialization.*;
 import io.netty.util.internal.ConcurrentSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -40,10 +37,10 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.shapes.IBooleanFunction;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
-import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.network.NetworkEvent;
@@ -154,11 +151,11 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
     }
 
     public Optional<TraceResult> trace(Entity player){
-        Vector3d head = player.position();
+        Vec3d head = player.position();
         head = head.add(0, player.getEyeHeight(), 0);
         if (player.isCrouching())
             head = head.subtract(0, 0.08, 0);
-        Vector3d look = player.getLookAngle();
+        Vec3d look = player.getLookAngle();
         Ray ray = new Ray(Vector3.fromVec3d(head).subtract(Vector3.fromBlockPos(getBlockPos())), Vector3.fromVec3d(look));
 
         Optional<Tuple<UUID, Float>> closestTrace = Optional.empty();
@@ -189,7 +186,7 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
                 BlockPartInstance instance = e.getValue();
                 CompoundNBT subComp = instance.blockPart.write();
                 subComp.put("Offset", Vector3.Serializer.write(instance.offset));
-                if(includeIDs) subComp.putUUID("PartId", e.getKey());
+                if(includeIDs) UuidSerializer.INSTANCE.write(e.getKey(), subComp);
                 list.add(subComp);
             }
             compound.put(entry.getKey().identifier, list);
@@ -204,8 +201,8 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
     }
 
     @Override
-    public void load(BlockState blockState, CompoundNBT compound) {
-        super.load(blockState, compound);
+    public void load(CompoundNBT compound) {
+        super.load(compound);
         readSelf(compound);
     }
 
@@ -236,7 +233,7 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
                 for(int i = 0; i < list.size(); i++){
                     CompoundNBT comp = list.getCompound(i);
                     addPart(
-                        comp.contains("PartId") ? comp.getUUID("PartId") : UUID.randomUUID(),
+                        UuidSerializer.INSTANCE.isContainedIn(comp) ? UuidSerializer.INSTANCE.read(comp) : UUID.randomUUID(),
                         new BlockPartInstance(
                             meta.read(comp),
                             Vector3.Serializer.read(comp.getCompound("Offset"))
@@ -271,8 +268,8 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
     }
 
     @Override
-    public void handleUpdateTag(BlockState blockState, CompoundNBT compound) {
-        super.handleUpdateTag(blockState, compound);
+    public void handleUpdateTag(CompoundNBT compound) {
+        super.handleUpdateTag(compound);
         readSelf(compound);
     }
 
@@ -326,7 +323,7 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
         public final UUID identifier;
 
         public TilePartInfo(TileEntity tile, UUID identifier) {
-            this.dimensionKey = tile.getLevel().dimension().location();
+            this.dimensionKey = tile.getLevel().getDimension().getType().getRegistryName();
             this.pos = tile.getBlockPos();
             this.identifier = identifier;
         }
@@ -344,7 +341,7 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
             public CompoundNBT write(TilePartInfo tilePartInfo, CompoundNBT compound) {
                 compound.putString("Dimension", tilePartInfo.dimensionKey.toString());
                 compound.put("Pos", BlockPosSerializer.INSTANCE.write(tilePartInfo.pos, compound));
-                compound.putUUID("Id", tilePartInfo.identifier);
+                compound.put("Id", UuidSerializer.INSTANCE.write(tilePartInfo.identifier));
                 return compound;
             }
 
@@ -360,7 +357,7 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
                 return new TilePartInfo(
                     new ResourceLocation(compound.getString("Dimension")),
                     BlockPosSerializer.INSTANCE.read(compound.getCompound("Pos")),
-                    compound.getUUID("Id")
+                    UuidSerializer.INSTANCE.read(compound.getCompound("Id"))
                 );
             }
 
@@ -373,7 +370,7 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
             public void write(TilePartInfo tilePartInfo, PacketBuffer buffer) {
                 buffer.writeResourceLocation(tilePartInfo.dimensionKey);
                 BlockPosSerializer.INSTANCE.write(tilePartInfo.pos, buffer);
-                buffer.writeUUID(tilePartInfo.identifier);
+                UuidSerializer.INSTANCE.write(tilePartInfo.identifier, buffer);
             }
 
             @Override
@@ -381,7 +378,7 @@ public class PostTile extends TileEntity implements WithOwner.OfSignpost, WithOw
                 return new TilePartInfo(
                     buffer.readResourceLocation(),
                     BlockPosSerializer.INSTANCE.read(buffer),
-                    buffer.readUUID()
+                    UuidSerializer.INSTANCE.read(buffer)
                 );
             }
         };

@@ -25,7 +25,7 @@ public class WrenchRecipe extends RecipeProvider {
             .pattern("i ")
             .pattern("ii")
             .pattern("s ")
-            .unlockedBy("has_signpost", has(PostTag.Tag))
+            .unlocks("has_signpost", has(PostTag.Tag))
             .save(consumer);
     }
 

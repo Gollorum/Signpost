@@ -38,7 +38,7 @@ public class Inventory {
 				LangKeys.tooExpensive,
 				itemStack.getCount(),
 				new TranslationTextComponent(itemStack.getItem().getDescriptionId())
-			), Util.NIL_UUID);
+			));
 		} else onSuccess.accept(player);
 	}
 

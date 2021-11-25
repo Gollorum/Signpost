@@ -18,7 +18,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Util;
 import net.minecraft.util.text.TranslationTextComponent;
 
 import java.util.Optional;
@@ -95,7 +94,7 @@ public class SmallWideSignBlockPart extends SignBlockPart<SmallWideSignBlockPart
             && !hasThePermissionToEdit(((WithOwner.OfSignpost)tile), editingPlayer)
         ) {
             // This should not happen unless a player tries to hacc
-            editingPlayer.sendMessage(new TranslationTextComponent(LangKeys.noPermissionSignpost), Util.NIL_UUID);
+            editingPlayer.sendMessage(new TranslationTextComponent(LangKeys.noPermissionSignpost));
             return;
         }
         if (compound.contains("Text")) {

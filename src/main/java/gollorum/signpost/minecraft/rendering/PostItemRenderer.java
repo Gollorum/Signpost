@@ -1,7 +1,6 @@
 package gollorum.signpost.minecraft.rendering;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blockpartdata.types.PostBlockPart;
 import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
@@ -13,13 +12,10 @@ import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.tileentity.ItemStackTileEntityRenderer;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.vector.Quaternion;
-import net.minecraft.util.math.vector.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,10 +31,10 @@ public class PostItemRenderer extends ItemStackTileEntityRenderer {
     private PostItemRenderer() {}
 
     @Override
-    public void renderByItem(ItemStack stack, ItemCameraTransforms.TransformType transformType, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, int combinedLight, int combinedOverlay) {
+    public void renderByItem(ItemStack stack, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, int combinedLight, int combinedOverlay) {
         if(stack.isEmpty() || !(stack.getItem() instanceof BlockItem && ((BlockItem)stack.getItem()).getBlock() instanceof PostBlock)) {
             Signpost.LOGGER.error("Tried to render a non-post item with the post renderer");
-            super.renderByItem(stack, transformType, matrixStack, renderTypeBuffer, combinedLight, combinedOverlay);
+            super.renderByItem(stack, matrixStack, renderTypeBuffer, combinedLight, combinedOverlay);
             return;
         }
         List<BlockPartInstance> parts;

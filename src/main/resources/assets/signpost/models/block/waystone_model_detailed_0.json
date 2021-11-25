@@ -1,10 +1,15 @@
 {
-  "parent": "minecraft:block/block",
+  "parent": "forge:block/default",
   "display": {
     "gui": {
       "rotation": [
         30,
         315,
+        0
+      ],
+      "translation": [
+        0,
+        2,
         0
       ],
       "scale": [
@@ -19,6 +24,11 @@
         315,
         0
       ],
+      "translation": [
+        0,
+        2,
+        0
+      ],
       "scale": [
         0.4,
         0.4,
@@ -29,6 +39,11 @@
       "rotation": [
         0,
         315,
+        0
+      ],
+      "translation": [
+        0,
+        2,
         0
       ],
       "scale": [
@@ -42,7 +57,7 @@
     "particle": "signpost:block/waystone"
   },
   "loader": "forge:obj",
-  "model": "signpost:models/block/waystone_model_aer.obj",
+  "model": "signpost:models/block/waystone_model_detailed_0.obj",
   "diffuseLighting": true,
   "flip-v": true,
   "ambientToFullbright": false

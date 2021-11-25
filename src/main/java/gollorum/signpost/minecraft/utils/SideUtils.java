@@ -20,10 +20,9 @@ public class SideUtils {
 		PlayerEntity player = isRemote ? SideUtils.getClientPlayer().get() : sender;
 		if (player.getUUID().equals(playerHandle.id)) {
 			if (!player.isCreative())
-				player.inventory.clearOrCountMatchingItems(
+				player.inventory.clearInventory(
 					i -> i.getItem().equals(cost.getItem()),
-					cost.getCount(),
-					player.inventoryMenu.getCraftSlots()
+					cost.getCount()
 				);
 		} else {
 			Signpost.LOGGER.error(
@@ -36,10 +35,9 @@ public class SideUtils {
 
 	public static void makePlayerPay(PlayerEntity player, ItemStack cost) {
 		if (!player.isCreative())
-			player.inventory.clearOrCountMatchingItems(
+			player.inventory.clearInventory(
 				i -> i.getItem().equals(cost.getItem()),
-				cost.getCount(),
-				player.inventoryMenu.getCraftSlots()
+				cost.getCount()
 			);
 	}
 

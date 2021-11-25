@@ -1,6 +1,9 @@
 package gollorum.signpost.minecraft.block;
 
-import gollorum.signpost.*;
+import gollorum.signpost.BlockRestrictions;
+import gollorum.signpost.PlayerHandle;
+import gollorum.signpost.Signpost;
+import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
 import gollorum.signpost.minecraft.gui.RequestWaystoneGui;
 import gollorum.signpost.minecraft.utils.LangKeys;
@@ -26,7 +29,6 @@ import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.text.TranslationTextComponent;
@@ -47,7 +49,7 @@ public class WaystoneBlock extends Block implements WithCountRestriction {
     private WaystoneBlock() {
         super(Properties.of(Material.PISTON, MaterialColor.STONE)
             .strength(1.5F, 6.0F)
-            .requiresCorrectToolForDrops()
+//            .requiresCorrectToolForDrops()
         );
     }
 
@@ -79,7 +81,7 @@ public class WaystoneBlock extends Block implements WithCountRestriction {
 
     private static void discover(ServerPlayerEntity player, WaystoneData data) {
         if(WaystoneLibrary.getInstance().addDiscovered(new PlayerHandle(player.getUUID()), data.handle))
-            player.sendMessage(new TranslationTextComponent(LangKeys.discovered, TextComponents.waystone(player, data.name)), Util.NIL_UUID);
+            player.sendMessage(new TranslationTextComponent(LangKeys.discovered, TextComponents.waystone(player, data.name)));
     }
 
     public static void discover(PlayerHandle player, WaystoneData data) {
@@ -87,7 +89,7 @@ public class WaystoneBlock extends Block implements WithCountRestriction {
         if(WaystoneLibrary.getInstance().addDiscovered(player, data.handle)) {
             ServerPlayerEntity playerEntity = player.asEntity();
             if(playerEntity != null)
-                playerEntity.sendMessage(new TranslationTextComponent(LangKeys.discovered, TextComponents.waystone(playerEntity, data.name)), Util.NIL_UUID);
+                playerEntity.sendMessage(new TranslationTextComponent(LangKeys.discovered, TextComponents.waystone(playerEntity, data.name)));
         }
     }
 

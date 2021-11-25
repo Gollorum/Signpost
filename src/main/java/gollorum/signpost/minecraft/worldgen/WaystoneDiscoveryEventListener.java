@@ -23,7 +23,7 @@ public class WaystoneDiscoveryEventListener {
             WaystoneHandle.Vanilla handle = WaystoneJigsawPiece.generatedWaystonesByChunk.get(
                 new WaystoneJigsawPiece.ChunkEntryKey(
                     new ChunkPos(event.getNewChunkX(), event.getNewChunkZ()),
-                    event.getEntity().level.dimension().location()
+                    event.getEntity().level.getDimension().getType().getRegistryName()
                 )
             );
             if(handle != null) {
@@ -32,7 +32,7 @@ public class WaystoneDiscoveryEventListener {
                         new TranslationTextComponent(
                             LangKeys.discovered,
                             TextComponents.waystone((ServerPlayerEntity) event.getEntity(), WaystoneLibrary.getInstance().getData(handle).name)
-                        ), Util.NIL_UUID);
+                        ));
                 }
             }
         }

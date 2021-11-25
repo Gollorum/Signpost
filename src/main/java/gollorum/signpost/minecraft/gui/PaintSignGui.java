@@ -38,12 +38,12 @@ public class PaintSignGui<T extends SignBlockPart<T>> extends PaintBlockPartGui<
         addButton(new Button(
             buttonRect.point.x, buttonRect.point.y,
             buttonRect.width, buttonRect.height,
-            new TranslationTextComponent(isTargetingMainTexture ? LangKeys.mainTex : LangKeys.secondaryTex),
+            new TranslationTextComponent(isTargetingMainTexture ? LangKeys.mainTex : LangKeys.secondaryTex).getString(),
             b -> {
                 isTargetingMainTexture = !isTargetingMainTexture;
                 oldSprite = isTargetingMainTexture ? oldMainSprite : oldSecSprite;
                 clearSelection();
-                b.setMessage(new TranslationTextComponent(isTargetingMainTexture ? LangKeys.mainTex : LangKeys.secondaryTex));
+                b.setMessage(new TranslationTextComponent(isTargetingMainTexture ? LangKeys.mainTex : LangKeys.secondaryTex).getString());
             }
         ));
     }

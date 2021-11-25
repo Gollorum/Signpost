@@ -12,7 +12,6 @@ import net.minecraft.data.DataGenerator;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.generators.*;
-import net.minecraftforge.common.data.ExistingFileHelper;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -57,6 +56,11 @@ public class PostModel extends BlockModelProvider {
             i -> new BlockModelBuilder(new ResourceLocation(Signpost.MOD_ID, "block/" + i.registryName), fileHelper)
         ));
         generator.addProvider(new Item(generator, fileHelper));
+    }
+
+    @Override
+    public String getName() {
+        return "signpost post model";
     }
 
     private class Item extends ItemModelProvider {
@@ -104,6 +108,11 @@ public class PostModel extends BlockModelProvider {
                     .end();
 //                    .parent(entry.getValue());
             }
+        }
+
+        @Override
+        public String getName() {
+            return "signpost post item model";
         }
     }
 

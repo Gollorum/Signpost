@@ -1,5 +1,5 @@
 {
-  "parent": "minecraft:block/block",
+  "parent": "forge:block/default",
   "display": {
     "gui": {
       "rotation": [
@@ -42,7 +42,7 @@
     "particle": "signpost:block/waystone"
   },
   "loader": "forge:obj",
-  "model": "signpost:models/block/waystone_model_detailed_1.obj",
+  "model": "signpost:models/block/waystone_model_aer.obj",
   "diffuseLighting": true,
   "flip-v": true,
   "ambientToFullbright": false

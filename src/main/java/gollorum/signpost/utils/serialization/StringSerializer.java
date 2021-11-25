@@ -18,6 +18,6 @@ public final class StringSerializer implements BufferSerializable<String> {
 
     @Override
     public String read(PacketBuffer buffer) {
-        return buffer.readUtf();
+        return buffer.readUtf(32767);
     }
 }
