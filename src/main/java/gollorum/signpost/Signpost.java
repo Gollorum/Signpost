@@ -23,6 +23,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.server.ServerAboutToStartEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -30,10 +32,8 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fmllegacy.network.NetworkEvent;
-import net.minecraftforge.fmllegacy.network.PacketDistributor;
-import net.minecraftforge.fmlserverevents.FMLServerAboutToStartEvent;
-import net.minecraftforge.fmlserverevents.FMLServerStoppedEvent;
+import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.network.PacketDistributor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -100,7 +100,7 @@ public class Signpost {
     private static class ForgeEvents {
 
         @SubscribeEvent
-        public void serverAboutToStart(FMLServerAboutToStartEvent e) {
+        public void serverAboutToStart(ServerAboutToStartEvent e) {
             serverInstance = e.getServer();
             WaystoneLibrary.initialize();
             BlockRestrictions.initialize();
@@ -117,7 +117,7 @@ public class Signpost {
         }
 
         @SubscribeEvent
-        public void onServerStopped(FMLServerStoppedEvent event) {
+        public void onServerStopped(ServerStoppedEvent event) {
             serverInstance = null;
         }
 

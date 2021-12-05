@@ -85,7 +85,7 @@ public class InputBox extends EditBox implements WithMutableX, Ticking {
     public void renderButton(PoseStack matrixStack, int p_94161_, int p_94162_, float p_94163_) {
         matrixStack.pushPose();
         matrixStack.translate(0, 0, zOffset);
-        if(isHovered() && !isBordered()) {
+        if(isHovered && !isBordered()) {
             int fromY = y + (configFont.lineHeight - height) / 2;
             GuiComponent.fill(matrixStack, x, fromY, x + width, fromY + height, 0x40ffffff);
         }

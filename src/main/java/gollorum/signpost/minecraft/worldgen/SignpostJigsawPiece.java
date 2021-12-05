@@ -101,7 +101,10 @@ public class SignpostJigsawPiece extends SinglePoolElement {
 		if(signpostCountForVillage.getOrDefault(villageLocation, 0) >= Config.Server.worldGen.maxSignpostsPerVillage.get())
 			return false;
 		Queue<Map.Entry<BlockPos, WaystoneHandle.Vanilla>> possibleTargets = fetchPossibleTargets(pieceLocation, villageLocation, random);
-		if(possibleTargets.isEmpty()) return false;
+		if(possibleTargets.isEmpty()) {
+			Signpost.LOGGER.debug("Did not generate signpost because no targets were found.");
+			return false;
+		}
 
 		StructureTemplate template = this.template.map(templateManager::getOrCreate, Function.identity());
 		StructurePlaceSettings placementSettings = this.getSettings(rotation, boundingBox, shouldUseJigsawReplacementStructureProcessor);

@@ -38,6 +38,7 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -52,7 +53,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.common.util.Lazy;
-import net.minecraftforge.fmllegacy.network.PacketDistributor;
+import net.minecraftforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -351,8 +352,8 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
     }
 
     @Override
-    public ItemStack getPickBlock(BlockState state, HitResult target, BlockGetter world, BlockPos pos, Player player) {
-        ItemStack ret = super.getPickBlock(state, target, world, pos, player);
+    public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter world, BlockPos pos, Player player) {
+        ItemStack ret = super.getCloneItemStack(state, target, world, pos, player);
         TileEntityUtils.findTileEntity(world, pos, PostTile.class).ifPresent(tile -> {
             if(!ret.hasTag()) ret.setTag(new CompoundTag());
             ret.getTag().put("Parts", tile.writeParts(false));

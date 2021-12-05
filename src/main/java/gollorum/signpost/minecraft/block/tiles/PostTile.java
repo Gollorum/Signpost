@@ -45,8 +45,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.fmllegacy.network.NetworkEvent;
+import net.minecraftforge.network.NetworkEvent;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -171,10 +170,8 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     }
 
     @Override
-    public CompoundTag save(CompoundTag compound) {
-        super.save(compound);
+    public void saveAdditional(CompoundTag compound) {
         writeSelf(compound);
-        return compound;
     }
 
     public Tag writeParts(boolean includeIDs) {
@@ -212,7 +209,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         List<BlockPartInstance> parts = new ArrayList<>();
         for(BlockPartMetadata<?> meta : partsMetadata){
             if(compound.contains(meta.identifier)) {
-                ListTag list = compound.getList(meta.identifier, Constants.NBT.TAG_COMPOUND);
+                ListTag list = compound.getList(meta.identifier, Tag.TAG_COMPOUND);
                 for(int i = 0; i < list.size(); i++){
                     CompoundTag comp = list.getCompound(i);
                     parts.add(
@@ -231,7 +228,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         parts.clear();
         for(BlockPartMetadata<?> meta : partsMetadata){
             if(compound.contains(meta.identifier)) {
-                ListTag list = compound.getList(meta.identifier, Constants.NBT.TAG_COMPOUND);
+                ListTag list = compound.getList(meta.identifier, Tag.TAG_COMPOUND);
                 for(int i = 0; i < list.size(); i++){
                     CompoundTag comp = list.getCompound(i);
                     addPart(
@@ -266,7 +263,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     public ClientboundBlockEntityDataPacket getUpdatePacket() {
         CompoundTag ret = new CompoundTag();
         writeSelf(ret);
-        return new ClientboundBlockEntityDataPacket(getBlockPos(), 1, ret);
+        return ClientboundBlockEntityDataPacket.create(this, unused -> ret);
     }
 
     @Override

@@ -154,7 +154,7 @@ public class DropDownSelection<EntryType> extends ImageButton {
         Minecraft minecraft = Minecraft.getInstance();
         RenderSystem.setShaderTexture(0, texture.location);
         RenderSystem.disableDepthTest();
-        int yTexStart = this.isHovered() ? texture.size.height : 0;
+        int yTexStart = this.isHovered ? texture.size.height : 0;
         int xTexStart = this.isListVisible ? texture.size.width : 0;
 
         blit(matrixStack, this.x, this.y, 100, xTexStart, yTexStart, this.width, this.height, texture.fileSize.height, texture.fileSize.width);

@@ -31,7 +31,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.client.model.ForgeModelBakery;
 import net.minecraftforge.client.model.SimpleModelState;
 import net.minecraftforge.client.model.data.EmptyModelData;
 import net.minecraftforge.common.util.Lazy;
@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
 public class RenderingUtil {
 
     public static BakedModel loadModel(ResourceLocation location) {
-        return ModelLoader.instance().bake(
+        return ForgeModelBakery.instance().bake(
             location,
             new SimpleModelState(Transformation.identity()),
             Material::sprite
@@ -56,8 +56,8 @@ public class RenderingUtil {
 
     public static BakedModel loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation) {
         final ResourceLocation textLoc = trim(textureLocation);
-        return ModelLoader.instance().getModel(modelLocation).bake(
-            ModelLoader.instance(),
+        return ForgeModelBakery.instance().getModel(modelLocation).bake(
+            ForgeModelBakery.instance(),
             m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(textLoc),
             new SimpleModelState(Transformation.identity()),
             modelLocation
@@ -67,8 +67,8 @@ public class RenderingUtil {
     public static BakedModel loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation1, ResourceLocation textureLocation2) {
         final ResourceLocation textLoc1 = trim(textureLocation1);
         final ResourceLocation textLoc2 = trim(textureLocation2);
-        return ModelLoader.instance().getModel(modelLocation).bake(
-            ModelLoader.instance(),
+        return ForgeModelBakery.instance().getModel(modelLocation).bake(
+            ForgeModelBakery.instance(),
             m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(
                 m.texture().equals(PostModel.mainTextureMarker)
                     ? textLoc1 : textLoc2

@@ -13,7 +13,7 @@ import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.ItemStackSerializer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.fmllegacy.network.NetworkEvent;
+import net.minecraftforge.network.NetworkEvent;
 
 import java.util.Optional;
 

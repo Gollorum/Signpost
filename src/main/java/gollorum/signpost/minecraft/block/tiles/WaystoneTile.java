@@ -42,9 +42,8 @@ public class WaystoneTile extends BlockEntity implements WithOwner.OfWaystone, W
     }
 
     @Override
-    public CompoundTag save(CompoundTag compound) {
+    public void saveAdditional(CompoundTag compound) {
         compound.put("Owner", PlayerHandle.Serializer.optional().write(owner));
-        return super.save(compound);
     }
 
     @Override

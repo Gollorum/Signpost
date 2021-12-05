@@ -59,7 +59,7 @@ public class SpriteSelectionButton extends AbstractButton {
         bufferbuilder.vertex(matrix, xMin, yMin, blitOffset).uv(sprite.getU0(), sprite.getV0()).endVertex();
         bufferbuilder.end();
         BufferUploader.end(bufferbuilder);
-        if(isHovered()) GuiComponent.fill(matrixStack, xMin, yMin, xMax, yMax, 0x50ffffff);
+        if(isHovered) GuiComponent.fill(matrixStack, xMin, yMin, xMax, yMax, 0x50ffffff);
 
     }
 

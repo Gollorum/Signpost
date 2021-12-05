@@ -4,7 +4,7 @@ import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.WaystoneData;
 import gollorum.signpost.utils.WorldLocation;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.fmllegacy.network.NetworkEvent;
+import net.minecraftforge.network.NetworkEvent;
 
 import java.util.Optional;
 

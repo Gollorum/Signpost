@@ -3,7 +3,7 @@ package gollorum.signpost.networking;
 import gollorum.signpost.utils.Tuple;
 import gollorum.signpost.utils.serialization.BufferSerializable;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.fmllegacy.network.NetworkEvent;
+import net.minecraftforge.network.NetworkEvent;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;

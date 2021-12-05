@@ -31,10 +31,10 @@ public class ResourceRegistry {
 
     @SubscribeEvent
     static void onTextureStitch(TextureStitchEvent.Pre event) {
-        if(event.getMap().location().equals(InventoryMenu.BLOCK_ATLAS))
+        if(event.getAtlas().location().equals(InventoryMenu.BLOCK_ATLAS))
             for(ResourceLocation texture: Overlay.getAllOverlays().stream().flatMap(o ->
                 signTypesToHandle.stream().map(o::textureFor)
-            ).collect(Collectors.toList()))
+            ).toList())
                 event.addSprite(texture);
     }
 

@@ -35,7 +35,7 @@ public class GuiBlockPartRenderer extends AbstractWidget {
 
     @Override
     public void renderButton(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        if(isHovered())
+        if(isHovered)
             GuiComponent.fill(matrixStack, x, y, x + width, y + height, 0x20ffffff);
 
         PoseStack ms = new PoseStack();
