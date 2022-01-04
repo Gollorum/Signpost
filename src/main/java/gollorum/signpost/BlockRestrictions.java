@@ -222,7 +222,10 @@ public class BlockRestrictions {
 		return remaining;
 	}
 
-	private void markDirty() { savedData.setDirty(); }
+	private void markDirty() {
+		// savedData is null on dedicated clients
+		if(savedData != null) savedData.setDirty();
+	}
 
 	public CompoundNBT saveTo(CompoundNBT compound) {
 		ListNBT list = new ListNBT();
