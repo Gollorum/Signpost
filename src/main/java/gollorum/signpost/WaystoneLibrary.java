@@ -33,9 +33,16 @@ import java.util.stream.Collectors;
 public class WaystoneLibrary {
 
     private static WaystoneLibrary instance;
-    public static WaystoneLibrary getInstance() { return instance; }
+    public static WaystoneLibrary getInstance() {
+        if(instance == null) {
+            initialize();
+            Signpost.LOGGER.warn("Force-initialized waystone library. This should not happen.");
+        }
+        return instance;
+    }
     public static boolean hasInstance() { return instance != null; }
 
+    // Server only
     private WorldSavedData savedData;
     public boolean hasStorageBeenSetup() { return savedData != null; }
 
@@ -355,7 +362,10 @@ public class WaystoneLibrary {
         return allWaystones.containsKey(waystone);
     }
 
-    public void markDirty(){ savedData.setDirty(); }
+    public void markDirty(){
+        // savedData is null on dedicated clients
+        if(savedData != null) savedData.setDirty();
+    }
 
     private static final class RequestAllWaystoneNamesEvent implements PacketHandler.Event<RequestAllWaystoneNamesEvent.Packet> {
 
