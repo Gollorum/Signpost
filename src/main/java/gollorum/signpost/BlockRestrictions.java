@@ -207,7 +207,10 @@ public class BlockRestrictions {
 		};
 	}
 
-	private void markDirty() { savedData.setDirty(); }
+	private void markDirty() {
+		// savedData is null on dedicated clients
+		if(savedData != null) savedData.setDirty();
+	}
 
 	public CompoundTag saveTo(CompoundTag compound) {
 		ListTag list = new ListTag();
