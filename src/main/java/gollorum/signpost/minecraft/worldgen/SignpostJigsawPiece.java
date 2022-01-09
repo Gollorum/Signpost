@@ -142,8 +142,8 @@ public class SignpostJigsawPiece extends SinglePoolElement {
 		return (Config.Server.worldGen.villagesOnlyTargetVillages.get()
 			? villageWaystones
 			: Streams.concat(villageWaystones, nonVillageWaystones())
-		).filter(e -> waystonesTargetedByVillage.containsKey(villageLocation)
-			&& waystonesTargetedByVillage.get(villageLocation).contains(e._2));
+		).filter(e -> !(waystonesTargetedByVillage.containsKey(villageLocation)
+			&& waystonesTargetedByVillage.get(villageLocation).contains(e._2)));
 	}
 	private static Stream<Tuple<BlockPos, WaystoneHandle.Vanilla>> villageWaystonesExceptSelf(BlockPos villageLocation) {
 		return WaystoneJigsawPiece.getAllEntries().stream()
