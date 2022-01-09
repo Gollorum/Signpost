@@ -4,7 +4,7 @@ import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import net.minecraft.nbt.CompoundNBT;
 
-public class WaystoneLocationData {
+public final class WaystoneLocationData {
 
     public final WorldLocation block;
     /// Global.
