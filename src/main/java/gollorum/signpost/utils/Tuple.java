@@ -22,6 +22,10 @@ public class Tuple<T1, T2> {
         return new Tuple<>(pair.getLeft(), pair.getRight());
     }
 
+    public static <T1, T2> Tuple<T1, T2> from(Map.Entry<T1, T2> pair) {
+        return new Tuple<>(pair.getKey(), pair.getValue());
+    }
+
     public T1 getLeft() { return _1; }
     public T2 getRight() { return _2; }
 

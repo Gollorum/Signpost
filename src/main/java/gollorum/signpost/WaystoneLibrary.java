@@ -123,6 +123,18 @@ public class WaystoneLibrary {
 
     }
 
+    public static final class WaystoneInfo {
+        public final String name;
+        public final WaystoneLocationData locationData;
+        public final WaystoneHandle.Vanilla handle;
+
+        public WaystoneInfo(String name, WaystoneLocationData locationData, WaystoneHandle.Vanilla handle) {
+            this.name = name;
+            this.locationData = locationData;
+            this.handle = handle;
+        }
+    }
+
     private final Map<WaystoneHandle.Vanilla, WaystoneEntry> allWaystones = new ConcurrentHashMap<>();
     private final Map<PlayerHandle, Set<WaystoneHandle.Vanilla>> playerMemory = new ConcurrentHashMap<>();
 
@@ -329,6 +341,16 @@ public class WaystoneLibrary {
         return isWaystoneNameCacheDirty
             ? Optional.empty()
             : Optional.of(new HashSet<>(cachedWaystoneNames));
+    }
+
+    // Only on server
+    public Set<WaystoneInfo> getAllWaystoneInfo() {
+        assert Signpost.getServerType().isServer;
+        return allWaystones.entrySet().stream().map(entry -> new WaystoneInfo(
+            entry.getValue().name,
+            entry.getValue().locationData,
+            entry.getKey()
+        )).collect(Collectors.toSet());
     }
 
     private Optional<WaystoneData> tryGetWaystoneDataAt(WorldLocation location) {

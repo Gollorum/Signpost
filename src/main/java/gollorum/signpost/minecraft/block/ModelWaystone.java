@@ -68,7 +68,7 @@ public class ModelWaystone extends BaseEntityBlock implements SimpleWaterloggedB
 	public static final List<Variant> variants = new ArrayList<>();
 	public static Variant simple_0 = new Variant("simple_0", "0", Shapes.box(0.25f, 0, 0.25f, 0.75f, 0.5f, 0.75f), 1);
 	public static Variant simple_1 = new Variant("simple_1", "0", Shapes.box(0.25f, 0, 0.25f, 0.75f, 0.5f, 0.75f), 1);
-	public static Variant simple_2 = new Variant("simple_2", "0", Shapes.box(0.3125f, 0, 0.3125f, 0.75f, 0.6875f, 0.6875f), 0);
+	public static Variant simple_2 = new Variant("simple_2", "0", Shapes.box(0.3125f, 0, 0.3125f, 0.6875f, 0.75f, 0.6875f), 0);
 	public static Variant detailed_0 = new Variant("detailed_0", "1", Shapes.box(0.25f, 0, 0.25f, 0.75f, 0.5f, 0.75f), 2);
 	public static Variant detailed_1 = new Variant("detailed_1", "1", Shapes.box(0.25f, 0, 0.25f, 0.75f, 0.75f, 0.75f), 0);
 	public static Variant aer = new Variant("aer", "2", Shapes.box(0.05f, 0, 0.05f, 0.95f, 0.6f, 0.95f), 0);
