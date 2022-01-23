@@ -36,8 +36,15 @@ public abstract class Either<Left, Right> {
     public abstract Right rightOr(Function<Left, Right> func);
     public abstract Left leftOr(Function<Right, Left> func);
 
-    public abstract <NewRight> Either<Left, NewRight> mapRight(Function<Right, NewRight> mapping);
-    public abstract <NewLeft> Either<NewLeft, Right> mapLeft(Function<Left, NewLeft> mapping);
+    public abstract <NewRight> Either<Left, NewRight> flatMapRight(Function<Right, Either<Left, NewRight>> mapping);
+    public abstract <NewLeft> Either<NewLeft, Right> flatMapLeft(Function<Left, Either<NewLeft, Right>> mapping);
+
+    public final <NewRight> Either<Left, NewRight> mapRight(Function<Right, NewRight> mapping) {
+        return flatMapRight(r -> Either.right(mapping.apply(r)));
+    }
+    public final <NewLeft> Either<NewLeft, Right> mapLeft(Function<Left, NewLeft> mapping) {
+        return flatMapLeft(l -> Either.left(mapping.apply(l)));
+    }
 
     public abstract <Out> Out match(Function<Left, Out> leftMapping, Function<Right, Out> rightMapping);
 
@@ -61,13 +68,13 @@ public abstract class Either<Left, Right> {
         public Left leftOr(Function<Right, Left> func) { return left; }
 
         @Override
-        public <NewRight> Either<Left, NewRight> mapRight(Function<Right, NewRight> mapping) {
+        public <NewRight> Either<Left, NewRight> flatMapRight(Function<Right, Either<Left, NewRight>> mapping) {
             return Either.left(left);
         }
 
         @Override
-        public <NewLeft> Either<NewLeft, Right> mapLeft(Function<Left, NewLeft> mapping) {
-            return Either.left(mapping.apply(left));
+        public <NewLeft> Either<NewLeft, Right> flatMapLeft(Function<Left, Either<NewLeft, Right>> mapping) {
+            return mapping.apply(left);
         }
 
         @Override
@@ -113,12 +120,12 @@ public abstract class Either<Left, Right> {
         public Left leftOr(Function<Right, Left> func) { return func.apply(right); }
 
         @Override
-        public <NewRight> Either<Left, NewRight> mapRight(Function<Right, NewRight> mapping) {
-            return Either.right(mapping.apply(right));
+        public <NewRight> Either<Left, NewRight> flatMapRight(Function<Right, Either<Left, NewRight>> mapping) {
+            return mapping.apply(right);
         }
 
         @Override
-        public <NewLeft> Either<NewLeft, Right> mapLeft(Function<Left, NewLeft> mapping) {
+        public <NewLeft> Either<NewLeft, Right> flatMapLeft(Function<Left, Either<NewLeft, Right>> mapping) {
             return Either.right(right);
         }
 

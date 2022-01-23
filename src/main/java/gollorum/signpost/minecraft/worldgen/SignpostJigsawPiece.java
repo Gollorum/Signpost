@@ -209,9 +209,11 @@ public class SignpostJigsawPiece extends SinglePoolElement {
 		Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> possibleTargets,
 		float y
 	) {
-		Tuple<BlockPos, WaystoneHandle.Vanilla> target = possibleTargets.poll();
-		if(target == null) return new Tuple<>(Collections.emptySet(), x -> {});
-		WaystoneData targetData = WaystoneLibrary.getInstance().getData(target._2);
+		Optional<Tuple<Tuple<BlockPos, WaystoneHandle.Vanilla>, WaystoneData>> nextTargetOption = fetchNextTarget(possibleTargets);
+		if(nextTargetOption.isEmpty()) return new Tuple<>(Collections.emptySet(), x -> {});
+		Tuple<BlockPos, WaystoneHandle.Vanilla> target = nextTargetOption.get()._1;
+		WaystoneData targetData = nextTargetOption.get()._2;
+
 		Angle rotation = SignBlockPart.pointingAt(tilePos, target._1);
 		Consumer<PostTile> onTileFetched = tile -> {
 			if(tile.getParts().stream().anyMatch(instance -> !(instance.blockPart instanceof PostBlockPart) && isNearly(instance.offset.y, y)))
@@ -242,9 +244,11 @@ public class SignpostJigsawPiece extends SinglePoolElement {
 		Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> possibleTargets,
 		float y
 	) {
-		Tuple<BlockPos, WaystoneHandle.Vanilla> target = possibleTargets.poll();
-		if(target == null) return new Tuple<>(Collections.emptySet(), x -> {});
-		WaystoneData targetData = WaystoneLibrary.getInstance().getData(target._2);
+		Optional<Tuple<Tuple<BlockPos, WaystoneHandle.Vanilla>, WaystoneData>> nextTargetOption = fetchNextTarget(possibleTargets);
+		if(nextTargetOption.isEmpty()) return new Tuple<>(Collections.emptySet(), x -> {});
+		Tuple<BlockPos, WaystoneHandle.Vanilla> target = nextTargetOption.get()._1;
+		WaystoneData targetData = nextTargetOption.get()._2;
+
 		Angle rotation = SignBlockPart.pointingAt(tilePos, target._1);
 		boolean shouldFlip = shouldFlip(facing, rotation);
 		Optional<Overlay> overlay = overlayFor(world, tilePos);
@@ -262,15 +266,20 @@ public class SignpostJigsawPiece extends SinglePoolElement {
 			ItemStack.EMPTY,
 			PlayerHandle.Invalid
 		));
-		Tuple<BlockPos, WaystoneHandle.Vanilla> secondTarget = possibleTargets.poll();
+
+		Optional<Tuple<Tuple<BlockPos, WaystoneHandle.Vanilla>, WaystoneData>> secondNextTargetOption = fetchNextTarget(possibleTargets);
+		if(secondNextTargetOption.isEmpty()) return new Tuple<>(Collections.emptySet(), x -> {});
+		Tuple<BlockPos, WaystoneHandle.Vanilla> secondTarget = secondNextTargetOption.get()._1;
+
 		List<Tuple<BlockPos, WaystoneHandle.Vanilla>> skippedTargets = new ArrayList<>();
 		while(secondTarget != null) {
-			WaystoneData secondTargetData = WaystoneLibrary.getInstance().getData(secondTarget._2);
+			WaystoneData secondTargetData = secondNextTargetOption.get()._2;
 			Angle secondRotation = SignBlockPart.pointingAt(tilePos, secondTarget._1);
 			boolean shouldSecondFlip = shouldFlip(facing, secondRotation);
 			if(shouldSecondFlip == shouldFlip) {
 				skippedTargets.add(secondTarget);
-				secondTarget = possibleTargets.poll();
+				secondNextTargetOption = fetchNextTarget(possibleTargets);
+				secondTarget = secondNextTargetOption.isEmpty() ? null : secondNextTargetOption.get()._1;
 				continue;
 			}
 			WaystoneHandle.Vanilla secondTargetHandle = secondTarget._2;
@@ -301,6 +310,19 @@ public class SignpostJigsawPiece extends SinglePoolElement {
 					for(Consumer<PostTile> now : onTileFetched) now.accept(tile);
 			}
 		);
+	}
+
+	private Optional<Tuple<Tuple<BlockPos, WaystoneHandle.Vanilla>, WaystoneData>> fetchNextTarget(Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> possibleTargets) {
+		Tuple<BlockPos, WaystoneHandle.Vanilla> target = null;
+		WaystoneData targetData = null;
+		while(target == null && possibleTargets.size() > 0) {
+			target = possibleTargets.poll();
+			if(target == null) continue;
+			Optional<WaystoneData> dataOptional = WaystoneLibrary.getInstance().getData(target._2);
+			if(dataOptional.isPresent()) targetData = dataOptional.get();
+			else target = null;
+		}
+		return target == null ? Optional.empty() : Optional.of(Tuple.of(target, targetData));
 	}
 
 	private static boolean shouldFlip(Direction facing, Angle signRotation) {
