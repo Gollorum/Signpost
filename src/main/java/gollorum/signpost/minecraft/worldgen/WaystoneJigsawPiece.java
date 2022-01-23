@@ -99,8 +99,8 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 
 	// Key is not the position of the block, it's a reference position.
 	// This is usually the village's position.
-	public static final Map<BlockPos, WaystoneHandle.Vanilla> generatedWaystones = new HashMap<>();
-	public static final Map<ChunkEntryKey, WaystoneHandle.Vanilla> generatedWaystonesByChunk = new HashMap<>();
+	private static final Map<BlockPos, WaystoneHandle.Vanilla> generatedWaystones = new HashMap<>();
+	private static final Map<ChunkEntryKey, WaystoneHandle.Vanilla> generatedWaystonesByChunk = new HashMap<>();
 
 	public static void reset() {
 		generatedWaystones.clear();
@@ -246,7 +246,21 @@ public class WaystoneJigsawPiece extends SingleJigsawPiece {
 	}
 
 	public static Set<Map.Entry<BlockPos, WaystoneHandle.Vanilla>> getAllEntries() {
+		List<BlockPos> toRemove = generatedWaystones.entrySet().stream()
+			.filter(e -> !WaystoneLibrary.getInstance().getData(e.getValue()).isPresent())
+			.map(Map.Entry::getKey)
+			.collect(Collectors.toList());
+		for(BlockPos key : toRemove) generatedWaystones.remove(key);
 		return generatedWaystones.entrySet();
+	}
+
+	public static Map<ChunkEntryKey, WaystoneHandle.Vanilla> getAllEntriesByChunk() {
+		List<ChunkEntryKey> toRemove = generatedWaystonesByChunk.entrySet().stream()
+			.filter(e -> !WaystoneLibrary.getInstance().getData(e.getValue()).isPresent())
+			.map(Map.Entry::getKey)
+			.collect(Collectors.toList());
+		for(ChunkEntryKey key : toRemove) generatedWaystonesByChunk.remove(key);
+		return generatedWaystonesByChunk;
 	}
 
 	private static List<ModelWaystone> getAllowedWaystones() {
