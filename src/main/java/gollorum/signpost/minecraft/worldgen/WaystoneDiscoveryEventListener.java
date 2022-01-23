@@ -6,6 +6,7 @@ import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.minecraft.utils.TextComponents;
+import gollorum.signpost.utils.WaystoneData;
 import io.netty.util.internal.PlatformDependent;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -18,6 +19,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentMap;
 
 public class WaystoneDiscoveryEventListener {
@@ -34,15 +36,19 @@ public class WaystoneDiscoveryEventListener {
     @SubscribeEvent
     public static void onWatchChunk(ChunkWatchEvent.Watch event) {
         if(!WaystoneLibrary.hasInstance()) return;
-        WaystoneHandle.Vanilla handle = WaystoneJigsawPiece.generatedWaystonesByChunk.get(
-            new WaystoneJigsawPiece.ChunkEntryKey(
-                event.getPos(),
-                event.getPlayer().level.dimension().location()
-            )
+        WaystoneJigsawPiece.ChunkEntryKey key = new WaystoneJigsawPiece.ChunkEntryKey(
+            event.getPos(),
+            event.getPlayer().level.dimension().location()
         );
+        Map<WaystoneJigsawPiece.ChunkEntryKey, WaystoneHandle.Vanilla> allEntries = WaystoneJigsawPiece.getAllEntriesByChunk();
+        WaystoneHandle.Vanilla handle = allEntries.get(key);
         if(handle != null && !WaystoneLibrary.getInstance().isDiscovered(PlayerHandle.from(event.getPlayer()), handle)) {
-            trackedPlayers.computeIfAbsent(event.getPlayer(), p -> PlatformDependent.newConcurrentHashMap())
-                .putIfAbsent(handle, WaystoneLibrary.getInstance().getData(handle).location.block.blockPos);
+            Optional<WaystoneData> dataOption = WaystoneLibrary.getInstance().getData(handle);
+            dataOption.ifPresentOrElse(
+                data -> trackedPlayers.computeIfAbsent(event.getPlayer(), p -> PlatformDependent.newConcurrentHashMap())
+                    .putIfAbsent(handle, data.location.block.blockPos),
+                () -> allEntries.remove(key)
+            );
         }
     }
 
@@ -50,7 +56,7 @@ public class WaystoneDiscoveryEventListener {
     public static void onUnWatchChunk(ChunkWatchEvent.UnWatch event) {
         ConcurrentMap<WaystoneHandle.Vanilla, BlockPos> set = trackedPlayers.get(event.getPlayer());
         if(set == null) return;
-        WaystoneHandle.Vanilla handle = WaystoneJigsawPiece.generatedWaystonesByChunk.get(
+        WaystoneHandle.Vanilla handle = WaystoneJigsawPiece.getAllEntriesByChunk().get(
             new WaystoneJigsawPiece.ChunkEntryKey(
                 event.getPos(),
                 event.getPlayer().level.dimension().location()
@@ -66,13 +72,15 @@ public class WaystoneDiscoveryEventListener {
         for(Map.Entry<ServerPlayer, ConcurrentMap<WaystoneHandle.Vanilla, BlockPos>> map : trackedPlayers.entrySet()) {
             for(Map.Entry<WaystoneHandle.Vanilla, BlockPos> inner : map.getValue().entrySet()) {
                 if(inner.getValue().closerThan(map.getKey().blockPosition(), discoveryDistance)) {
-                    if(WaystoneLibrary.getInstance().addDiscovered(new PlayerHandle(map.getKey()), inner.getKey())) {
-                        map.getKey().sendMessage(
-                            new TranslatableComponent(
-                                LangKeys.discovered,
-                                TextComponents.waystone(map.getKey(), WaystoneLibrary.getInstance().getData(inner.getKey()).name)
-                            ), Util.NIL_UUID);
-                    }
+                    WaystoneLibrary.getInstance().getData(inner.getKey()).ifPresent(data -> {
+                        if(WaystoneLibrary.getInstance().addDiscovered(new PlayerHandle(map.getKey()), inner.getKey())) {
+                            map.getKey().sendMessage(
+                                new TranslatableComponent(
+                                    LangKeys.discovered,
+                                    TextComponents.waystone(map.getKey(), data.name)
+                                ), Util.NIL_UUID);
+                        }
+                    });
                     map.getValue().remove(inner.getKey());
                 }
             }

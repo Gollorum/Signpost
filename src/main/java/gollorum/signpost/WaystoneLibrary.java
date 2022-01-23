@@ -97,10 +97,12 @@ public class WaystoneLibrary {
         return allWaystones.get(waystoneId).locationData;
     }
 
-    public WaystoneData getData(WaystoneHandle.Vanilla waystoneId) {
+    public Optional<WaystoneData> getData(WaystoneHandle.Vanilla waystoneId) {
         assert Signpost.getServerType().isServer;
         WaystoneEntry entry = allWaystones.get(waystoneId);
-        return new WaystoneData(waystoneId, entry.name, entry.locationData, entry.isLocked);
+        return Optional.ofNullable(
+            entry == null ? null : new WaystoneData(waystoneId, entry.name, entry.locationData, entry.isLocked)
+        );
     }
 
     private static class WaystoneEntry {

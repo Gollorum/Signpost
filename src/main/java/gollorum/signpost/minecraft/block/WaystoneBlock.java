@@ -61,8 +61,8 @@ public class WaystoneBlock extends BaseEntityBlock implements WithCountRestricti
         assert Signpost.getServerType().isServer;
         Optional<WaystoneData> data = WaystoneLibrary.getInstance()
             .getHandleByLocation(worldLocation)
-            .map(WaystoneLibrary.getInstance()::getData);
-        boolean wantsToOpenGui = !data.isPresent()
+            .flatMap(WaystoneLibrary.getInstance()::getData);
+        boolean wantsToOpenGui = data.isEmpty()
             || WaystoneLibrary.getInstance().isDiscovered(PlayerHandle.from(player), data.get().handle);
         boolean mayOpenGui = data.map(d -> d.hasThePermissionToEdit(player)).orElse(true);
         if(wantsToOpenGui && mayOpenGui){
