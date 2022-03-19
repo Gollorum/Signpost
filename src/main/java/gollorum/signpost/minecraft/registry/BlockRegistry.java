@@ -18,7 +18,8 @@ public class BlockRegistry {
     private static final DeferredRegister<Block> Register = DeferredRegister.create(ForgeRegistries.BLOCKS, MOD_ID);
 
     private static final RegistryObject<Block> WaystoneBlock =
-        Register.register(gollorum.signpost.minecraft.block.WaystoneBlock.REGISTRY_NAME, () -> gollorum.signpost.minecraft.block.WaystoneBlock.INSTANCE);
+        Register.register(gollorum.signpost.minecraft.block.WaystoneBlock.REGISTRY_NAME,
+            gollorum.signpost.minecraft.block.WaystoneBlock::createInstance);
 
     private static final List<RegistryObject<Block>> ModelWaystoneBlocks =
         ModelWaystone.variants.stream()
@@ -30,12 +31,12 @@ public class BlockRegistry {
             .map(BlockRegistry::registerPostBlock)
             .collect(Collectors.toList());
 
-    private static RegistryObject<Block> registerPostBlock(PostBlock.Variant postVariant) {
-        return Register.register(postVariant.registryName, () -> postVariant.block);
+    private static RegistryObject<Block> registerPostBlock(PostBlock.Variant variant) {
+        return Register.register(variant.registryName, variant::createBlock);
     }
 
     private static RegistryObject<Block> registerModelWaystone(ModelWaystone.Variant variant) {
-        return Register.register(variant.registryName, () -> variant.block);
+        return Register.register(variant.registryName, variant::createBlock);
     }
 
     public static void register(IEventBus bus){

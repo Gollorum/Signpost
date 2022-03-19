@@ -43,24 +43,24 @@ public class LootTables extends LootTableProvider {
     private void generateBlockLootTables(BiConsumer<ResourceLocation, LootTable.Builder> builder) {
         for(PostBlock.Variant variant : PostBlock.AllVariants)
             builder.accept(
-                new ResourceLocation(Signpost.MOD_ID, "blocks/" + variant.block.getRegistryName().getPath()),
+                new ResourceLocation(Signpost.MOD_ID, "blocks/" + variant.getBlock().getRegistryName().getPath()),
                 LootTable.lootTable()
                     .withPool(LootPool.lootPool()
                         .setRolls(ConstantValue.exactly(1))
-                        .add(LootItem.lootTableItem(variant.block)
+                        .add(LootItem.lootTableItem(variant.getBlock())
                             .apply(CopyNbtFunction.copyData(ContextNbtProvider.BLOCK_ENTITY).copy("Parts", "Parts"))
                             .when(BlockLoot.HAS_SILK_TOUCH)
-                            .otherwise(LootItem.lootTableItem(variant.block))
+                            .otherwise(LootItem.lootTableItem(variant.getBlock()))
                         )
                     )
             );
         builder.accept(
-            new ResourceLocation(Signpost.MOD_ID, "blocks/" + WaystoneBlock.INSTANCE.getRegistryName().getPath()),
-            BlockLoot.createSingleItemTable(WaystoneBlock.INSTANCE, ConstantValue.exactly(1)));
+            new ResourceLocation(Signpost.MOD_ID, "blocks/" + WaystoneBlock.getInstance().getRegistryName().getPath()),
+            BlockLoot.createSingleItemTable(WaystoneBlock.getInstance(), ConstantValue.exactly(1)));
         for(ModelWaystone.Variant variant : ModelWaystone.variants)
             builder.accept(
-                new ResourceLocation(Signpost.MOD_ID, "blocks/" + variant.block.getRegistryName().getPath()),
-                BlockLoot.createSingleItemTable(variant.block, ConstantValue.exactly(1)));
+                new ResourceLocation(Signpost.MOD_ID, "blocks/" + variant.getBlock().getRegistryName().getPath()),
+                BlockLoot.createSingleItemTable(variant.getBlock(), ConstantValue.exactly(1)));
     }
 
 }

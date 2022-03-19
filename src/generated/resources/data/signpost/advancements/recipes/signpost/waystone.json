@@ -23,7 +23,7 @@
       "conditions": {
         "items": [
           {
-            "tag": "minecraft:signpost"
+            "tag": "signpost:signpost"
           }
         ]
       }

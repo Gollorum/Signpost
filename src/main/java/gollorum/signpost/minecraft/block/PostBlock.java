@@ -38,7 +38,6 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -256,7 +255,7 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
             Axe, Pickaxe
         }
 
-        public final PostBlock block;
+        private PostBlock block = null;
         public final String registryName;
         public final Properties properties;
         public final ModelType type;
@@ -266,8 +265,17 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
             this.properties = properties;
             this.type = type;
             this.tool = tool;
-            this.block = new PostBlock(properties, type);
             this.registryName = REGISTRY_NAME + "_" + registryName;
+        }
+
+        public PostBlock createBlock() {
+            assert block == null;
+            return block = new PostBlock(properties, type);
+        }
+
+        public PostBlock getBlock() {
+            assert block != null;
+            return block;
         }
 
     }
@@ -287,7 +295,9 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
     public static final Variant SANDSTONE = new Variant(PropertiesUtil.STONE, ModelType.Sandstone, "sandstone", Variant.RequiredTool.Pickaxe);
 
     public static final List<Variant> AllVariants = Arrays.asList(OAK, BIRCH, SPRUCE, JUNGLE, DARK_OAK, ACACIA, STONE, IRON, WARPED, CRIMSON, SANDSTONE);
-    public static final List<Block> ALL = AllVariants.stream().map(i -> i.block).collect(Collectors.toList());
+    public static Block[] getAllBlocks() {
+        return AllVariants.stream().map(Variant::getBlock).toArray(Block[]::new);
+    }
 
     public final ModelType type;
 

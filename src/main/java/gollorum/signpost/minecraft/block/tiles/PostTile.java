@@ -58,14 +58,22 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
 
     public static final String REGISTRY_NAME = "post";
 
-    public static final BlockEntityType<PostTile> type = BlockEntityType.Builder.of(
-        (pos, state) -> new PostTile(
-            PostBlock.ModelType.Oak,
-            ItemStack.EMPTY,
-            pos, state
-        ),
-        PostBlock.ALL.toArray(new Block[0])
-    ).build(null);
+    private static BlockEntityType<PostTile> type = null;
+    public static BlockEntityType<PostTile> createType() {
+        assert type == null;
+        return type = BlockEntityType.Builder.of(
+            (pos, state) -> new PostTile(
+                PostBlock.ModelType.Oak,
+                ItemStack.EMPTY,
+                pos, state
+            ),
+            PostBlock.getAllBlocks()
+        ).build(null);
+    }
+    public static BlockEntityType<PostTile> getBlockEntityType() {
+        assert type != null;
+        return type;
+    }
 
     private final Map<UUID, BlockPartInstance> parts = new ConcurrentHashMap<>();
     public static final Set<BlockPartMetadata<?>> partsMetadata = new ConcurrentSet<>();

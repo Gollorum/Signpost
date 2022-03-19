@@ -20,7 +20,7 @@ public class PostRecipe extends RecipeProvider {
     @Override
     protected void buildCraftingRecipes(Consumer<FinishedRecipe> consumer) {
         for(PostBlock.Variant variant : PostBlock.AllVariants) {
-            postBuilder(variant.block, variant.type).save(consumer);
+            postBuilder(variant.getBlock(), variant.type).save(consumer);
         }
     }
 
@@ -33,7 +33,7 @@ public class PostRecipe extends RecipeProvider {
             .pattern("b")
             .unlockedBy("has_sign", has(ItemTags.SIGNS))
             .unlockedBy("has_signpost", has(PostTag.Tag))
-            .unlockedBy("has_waystone", has(WaystoneBlock.INSTANCE))
+            .unlockedBy("has_waystone", has(WaystoneBlock.getInstance()))
             .group("Signpost");
     }
 

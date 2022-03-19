@@ -19,7 +19,10 @@ public class WaystoneTile extends BlockEntity implements WithOwner.OfWaystone, W
 
     public static final String REGISTRY_NAME = "waystone";
 
-    public static final BlockEntityType<WaystoneTile> type = BlockEntityType.Builder.of(WaystoneTile::new, WaystoneBlock.INSTANCE).build(null);
+    private static BlockEntityType<WaystoneTile> type = null;
+    public static BlockEntityType<WaystoneTile> createType() {
+        return type = BlockEntityType.Builder.of(WaystoneTile::new, WaystoneBlock.getInstance()).build(null);
+    }
 
     private Optional<PlayerHandle> owner = Optional.empty();
 

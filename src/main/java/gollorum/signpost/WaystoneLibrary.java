@@ -100,9 +100,9 @@ public class WaystoneLibrary {
     public Optional<WaystoneData> getData(WaystoneHandle.Vanilla waystoneId) {
         assert Signpost.getServerType().isServer;
         WaystoneEntry entry = allWaystones.get(waystoneId);
-        return Optional.ofNullable(
-            entry == null ? null : new WaystoneData(waystoneId, entry.name, entry.locationData, entry.isLocked)
-        );
+        return entry == null
+            ? Optional.empty()
+            : Optional.of(new WaystoneData(waystoneId, entry.name, entry.locationData, entry.isLocked));
     }
 
     private static class WaystoneEntry {

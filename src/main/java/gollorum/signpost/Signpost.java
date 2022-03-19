@@ -10,6 +10,7 @@ import gollorum.signpost.minecraft.registry.ItemRegistry;
 import gollorum.signpost.minecraft.registry.RecipeRegistry;
 import gollorum.signpost.minecraft.registry.TileEntityRegistry;
 import gollorum.signpost.minecraft.rendering.PostRenderer;
+import gollorum.signpost.minecraft.worldgen.JigsawDeserializers;
 import gollorum.signpost.minecraft.worldgen.WaystoneDiscoveryEventListener;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.relations.ExternalWaystoneLibrary;
@@ -55,7 +56,6 @@ public class Signpost {
     }
 
     public Signpost() {
-        Config.register();
 
         IEventBus forgeBus = MinecraftForge.EVENT_BUS;
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -69,12 +69,13 @@ public class Signpost {
         DataGeneration.register(modBus);
         BlockEventListener.register(forgeBus);
         WaystoneDiscoveryEventListener.register(forgeBus);
+        Config.register();
 
         Villages.instance.initialize();
 
         WaystoneArgument.bootstrap();
 
-        // Disabled until waystones gets updated
+        // Disabled until I manage to integrate the new version of waystones
 //        if(ModList.get().isLoaded("waystones"))
 //            WaystonesAdapter.register();
 
@@ -88,11 +89,12 @@ public class Signpost {
             PacketHandler.register(new JoinServerEvent(), -50);
             ExternalWaystoneLibrary.initialize();
             WaystoneLibrary.registerNetworkPackets();
+            JigsawDeserializers.register();
         }
 
         @SubscribeEvent
         public void doClientStuff(final FMLClientSetupEvent event) {
-            BlockEntityRenderers.register(PostTile.type, PostRenderer::new);
+            BlockEntityRenderers.register(PostTile.getBlockEntityType(), PostRenderer::new);
         }
 
     }

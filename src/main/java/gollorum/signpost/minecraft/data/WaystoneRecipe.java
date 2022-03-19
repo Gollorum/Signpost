@@ -24,7 +24,7 @@ public class WaystoneRecipe extends RecipeProvider {
 
     @Override
     protected void buildCraftingRecipes(Consumer<FinishedRecipe> consumer) {
-        ShapedRecipeBuilder.shaped(WaystoneBlock.INSTANCE)
+        ShapedRecipeBuilder.shaped(WaystoneBlock.getInstance())
             .define('s', Items.STONE)
             .define('e', Items.ENDER_PEARL)
             .pattern("sss")
@@ -38,7 +38,7 @@ public class WaystoneRecipe extends RecipeProvider {
             new SingleItemRecipeBuilder(
                 RecipeRegistry.CutWaystoneSerializer.get(),
                 Ingredient.of(WaystoneTag.Tag),
-                v.block,
+                v.getBlock(),
                 1
             ).unlockedBy("has_waystone", has(WaystoneTag.Tag))
             .save(consumer, new ResourceLocation(Signpost.MOD_ID, "cut_into_" + v.name));
@@ -46,7 +46,7 @@ public class WaystoneRecipe extends RecipeProvider {
         new SingleItemRecipeBuilder(
             RecipeSerializer.STONECUTTER,
             Ingredient.of(WaystoneTag.Tag),
-            WaystoneBlock.INSTANCE,
+            WaystoneBlock.getInstance(),
             1
         ).unlockedBy("has_waystone", has(WaystoneTag.Tag))
             .save(consumer, new ResourceLocation(Signpost.MOD_ID, "cut_into_full_block"));

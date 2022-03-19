@@ -18,6 +18,7 @@ import gollorum.signpost.utils.serialization.ResourceLocationSerializer;
 import gollorum.signpost.worldgen.VillageNamesProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -28,10 +29,10 @@ import net.minecraft.world.level.StructureFeatureManager;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.feature.structures.SinglePoolElement;
-import net.minecraft.world.level.levelgen.feature.structures.StructurePoolElementType;
-import net.minecraft.world.level.levelgen.feature.structures.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement;
+import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElementType;
+import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
@@ -143,7 +144,7 @@ public class WaystoneJigsawPiece extends SinglePoolElement {
 
 	public WaystoneJigsawPiece(
 		ResourceLocation location,
-		Supplier<StructureProcessorList> structureProcessorListSupplier,
+		Holder<StructureProcessorList> structureProcessorListSupplier,
 		StructureTemplatePool.Projection placementBehaviour
 	) {
 		this(Either.left(location), structureProcessorListSupplier, placementBehaviour);
@@ -151,7 +152,7 @@ public class WaystoneJigsawPiece extends SinglePoolElement {
 
 	public WaystoneJigsawPiece(
 		Either<ResourceLocation, StructureTemplate> template,
-		Supplier<StructureProcessorList> structureProcessorListSupplier,
+		Holder<StructureProcessorList> structureProcessorListSupplier,
 		StructureTemplatePool.Projection placementBehaviour
 	) {
 		super(template, structureProcessorListSupplier, placementBehaviour);
@@ -253,7 +254,7 @@ public class WaystoneJigsawPiece extends SinglePoolElement {
 		List<BlockPos> toRemove = generatedWaystones.entrySet().stream()
 			.filter(e -> WaystoneLibrary.getInstance().getData(e.getValue()).isEmpty())
 			.map(Map.Entry::getKey)
-			.toList();
+			.collect(Collectors.toList());
 		for(BlockPos key : toRemove) generatedWaystones.remove(key);
 		return generatedWaystones.entrySet();
 	}
@@ -262,7 +263,7 @@ public class WaystoneJigsawPiece extends SinglePoolElement {
 		List<ChunkEntryKey> toRemove = generatedWaystonesByChunk.entrySet().stream()
 			.filter(e -> WaystoneLibrary.getInstance().getData(e.getValue()).isEmpty())
 			.map(Map.Entry::getKey)
-			.toList();
+			.collect(Collectors.toList());
 		for(ChunkEntryKey key : toRemove) generatedWaystonesByChunk.remove(key);
 		return generatedWaystonesByChunk;
 	}
@@ -270,7 +271,7 @@ public class WaystoneJigsawPiece extends SinglePoolElement {
 	private static List<ModelWaystone> getAllowedWaystones() {
 		return ModelWaystone.variants.stream()
 			.filter(v -> Config.Server.worldGen.allowedVillageWaystones.get().contains(v.name))
-			.map(v -> v.block)
+			.map(v -> v.getBlock())
 			.collect(Collectors.toList());
 	}
 

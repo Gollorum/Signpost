@@ -48,7 +48,7 @@ public class ModelWaystone extends BaseEntityBlock implements SimpleWaterloggedB
 		public final String name;
 		public final String registryName;
 		public final String langPrefix;
-		public final ModelWaystone block;
+		private ModelWaystone block = null;
 		public final VoxelShape shape;
 		public final float modelYOffset;
 
@@ -58,8 +58,18 @@ public class ModelWaystone extends BaseEntityBlock implements SimpleWaterloggedB
 			this.langPrefix = langPrefix;
 			this.shape = shape;
 			this.modelYOffset = modelYOffset;
-			block = new ModelWaystone(this);
 		}
+
+		public ModelWaystone createBlock() {
+			assert block == null;
+			return block = new ModelWaystone(this);
+		}
+
+		public ModelWaystone getBlock() {
+			assert block != null;
+			return block;
+		}
+
 		@Override
 		public boolean equals(Object o) { return this == o || o instanceof Variant && name.equals(((Variant)o).name); }
 		@Override
@@ -101,7 +111,7 @@ public class ModelWaystone extends BaseEntityBlock implements SimpleWaterloggedB
 
 	@Override
 	public String getDescriptionId() {
-		return WaystoneBlock.INSTANCE.getDescriptionId() + "_" + variant.langPrefix + "_" + variant.name;
+		return WaystoneBlock.getInstance().getDescriptionId() + "_" + variant.langPrefix + "_" + variant.name;
 	}
 
 	@Override

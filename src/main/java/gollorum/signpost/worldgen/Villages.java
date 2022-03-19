@@ -6,19 +6,19 @@ import gollorum.signpost.minecraft.worldgen.SignpostJigsawPiece;
 import gollorum.signpost.minecraft.worldgen.WaystoneJigsawPiece;
 import gollorum.signpost.utils.CollectionUtils;
 import gollorum.signpost.utils.Tuple;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.data.BuiltinRegistries;
 import net.minecraft.data.worldgen.ProcessorLists;
 import net.minecraft.data.worldgen.VillagePools;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.levelgen.feature.structures.SinglePoolElement;
-import net.minecraft.world.level.levelgen.feature.structures.StructurePoolElement;
-import net.minecraft.world.level.levelgen.feature.structures.StructureTemplatePool;
+import net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement;
+import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
+import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class Villages {
@@ -27,15 +27,15 @@ public class Villages {
 	private Villages() { VillagePools.bootstrap(); }
 
 	private enum VillageType {
-		Desert("desert", () -> instance.waystoneProcessorListDesert),
-		Plains("plains", () -> instance.waystoneProcessorListPlains),
-		Savanna("savanna", () -> instance.waystoneProcessorListSavanna),
-		Snowy("snowy", () -> instance.waystoneProcessorListSnowyOrTaiga),
-		Taiga("taiga", () -> instance.waystoneProcessorListSnowyOrTaiga);
+		Desert("desert", instance.waystoneProcessorListDesert),
+		Plains("plains", instance.waystoneProcessorListPlains),
+		Savanna("savanna", instance.waystoneProcessorListSavanna),
+		Snowy("snowy", instance.waystoneProcessorListSnowyOrTaiga),
+		Taiga("taiga", instance.waystoneProcessorListSnowyOrTaiga);
 		public final String name;
-		public final Supplier<StructureProcessorList> processorList;
+		public final Holder<StructureProcessorList> processorList;
 
-		VillageType(String name, Supplier<StructureProcessorList> processorList) {
+		VillageType(String name, Holder<StructureProcessorList> processorList) {
 			this.name = name;
 			this.processorList = processorList;
 		}
@@ -45,10 +45,10 @@ public class Villages {
 		}
 	}
 
-	private StructureProcessorList waystoneProcessorListDesert;
-	private StructureProcessorList waystoneProcessorListPlains;
-	private StructureProcessorList waystoneProcessorListSavanna;
-	private StructureProcessorList waystoneProcessorListSnowyOrTaiga;
+	private Holder<StructureProcessorList> waystoneProcessorListDesert;
+	private Holder<StructureProcessorList> waystoneProcessorListPlains;
+	private Holder<StructureProcessorList> waystoneProcessorListSavanna;
+	private Holder<StructureProcessorList> waystoneProcessorListSnowyOrTaiga;
 
 	private void registerProcessorLists() {
 		waystoneProcessorListDesert = ProcessorLists.EMPTY;
@@ -75,7 +75,7 @@ public class Villages {
 			ImmutableList.of(
 				Tuple.of(
 					new WaystoneJigsawPiece(villageType.getStructureResourceLocation("waystone"),
-						villageType.processorList, StructureTemplatePool.Projection.RIGID),
+					    villageType.processorList, StructureTemplatePool.Projection.RIGID),
 					1
 				),
 				Tuple.of(

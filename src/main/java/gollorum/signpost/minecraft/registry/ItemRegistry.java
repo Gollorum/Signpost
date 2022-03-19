@@ -33,7 +33,7 @@ public class ItemRegistry {
 
     private static final RegistryObject<Item> WAYSTONE_ITEM =
         REGISTER.register(WaystoneBlock.REGISTRY_NAME,
-            () -> new BlockItem(WaystoneBlock.INSTANCE, new Item.Properties().tab(ITEM_GROUP)));
+            () -> new BlockItem(WaystoneBlock.getInstance(), new Item.Properties().tab(ITEM_GROUP)));
 
     private static final List<RegistryObject<Item>> ModelWaystoneItems =
         ModelWaystone.variants.stream()
@@ -52,13 +52,13 @@ public class ItemRegistry {
     private static RegistryObject<Item> registerPostItem(PostBlock.Variant postVariant){
         return REGISTER.register(
             postVariant.registryName,
-            () -> new PostItem(postVariant.block, new Item.Properties().tab(ITEM_GROUP)));
+            () -> new PostItem(postVariant.getBlock(), new Item.Properties().tab(ITEM_GROUP)));
     }
 
     private static RegistryObject<Item> registerModelWaystoneItem(ModelWaystone.Variant variant){
         return REGISTER.register(
             variant.registryName,
-            () -> new BlockItem(variant.block, new Item.Properties().tab(ITEM_GROUP)));
+            () -> new BlockItem(variant.getBlock(), new Item.Properties().tab(ITEM_GROUP)));
     }
 
     public static void register(IEventBus bus){

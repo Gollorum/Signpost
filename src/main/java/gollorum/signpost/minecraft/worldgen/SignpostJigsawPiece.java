@@ -25,6 +25,7 @@ import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.StructureFeatureManager;
@@ -32,10 +33,10 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.feature.structures.SinglePoolElement;
-import net.minecraft.world.level.levelgen.feature.structures.StructurePoolElementType;
-import net.minecraft.world.level.levelgen.feature.structures.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement;
+import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElementType;
+import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
@@ -69,7 +70,7 @@ public class SignpostJigsawPiece extends SinglePoolElement {
 
 	public SignpostJigsawPiece(
 		ResourceLocation location,
-		Supplier<StructureProcessorList> structureProcessorListSupplier,
+		Holder<StructureProcessorList> structureProcessorListSupplier,
 		StructureTemplatePool.Projection placementBehaviour,
 		boolean isZombie
 	) {
@@ -78,7 +79,7 @@ public class SignpostJigsawPiece extends SinglePoolElement {
 
 	public SignpostJigsawPiece(
 		Either<ResourceLocation, StructureTemplate> template,
-		Supplier<StructureProcessorList> structureProcessorListSupplier,
+		Holder<StructureProcessorList> structureProcessorListSupplier,
 		StructureTemplatePool.Projection placementBehaviour,
 		boolean isZombie
 	) {
@@ -331,11 +332,13 @@ public class SignpostJigsawPiece extends SinglePoolElement {
 	}
 
 	private Optional<Overlay> overlayFor(WorldGenLevel world, BlockPos pos) {
-		Biome biome = world.getBiome(pos);
+		Holder<Biome> biomeHolder = world.getBiome(pos);
+		Biome biome = biomeHolder.value();
+		Biome.BiomeCategory biomeCategory = Biome.getBiomeCategory(biomeHolder);
 		if(biome.shouldSnow(world, pos)
 			|| biome.getPrecipitation() == Biome.Precipitation.SNOW
-			|| biome.getBiomeCategory() == Biome.BiomeCategory.ICY) return Optional.of(Overlay.Snow);
-		else if (biome.getBiomeCategory() == Biome.BiomeCategory.JUNGLE) return Optional.of(Overlay.Vine);
+			|| biomeCategory == Biome.BiomeCategory.ICY) return Optional.of(Overlay.Snow);
+		else if (biomeCategory == Biome.BiomeCategory.JUNGLE) return Optional.of(Overlay.Vine);
 		else if(biome.isHumid() || isZombie) return Optional.of(Overlay.Gras);
 		else return Optional.empty();
 	}

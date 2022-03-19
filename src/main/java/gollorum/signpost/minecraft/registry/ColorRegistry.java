@@ -25,15 +25,15 @@ public class ColorRegistry {
     @SubscribeEvent
     static void onBlockColor(ColorHandlerEvent.Block event) {
         for(PostBlock.Variant variant : PostBlock.AllVariants) {
-            event.getBlockColors().register(overlayBlockColor, variant.block);
+            event.getBlockColors().register(overlayBlockColor, variant.getBlock());
         }
     }
 
     @SubscribeEvent
     static void onItemColor(ColorHandlerEvent.Item event) {
         for(PostBlock.Variant variant : PostBlock.AllVariants) {
-            event.getItemColors().register(overlayItemColor, variant.block);
-            event.getBlockColors().register(overlayBlockColor, variant.block);
+            event.getItemColors().register(overlayItemColor, variant.getBlock());
+            event.getBlockColors().register(overlayBlockColor, variant.getBlock());
         }
     }
 

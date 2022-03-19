@@ -75,7 +75,7 @@ public class WaystoneBlockPart implements BlockPart<WaystoneBlockPart>, WithOwne
 
 	@Override
 	public Collection<ItemStack> getDrops(PostTile tile) {
-		return Collections.singleton(new ItemStack(WaystoneBlock.INSTANCE.asItem()));
+		return Collections.singleton(new ItemStack(WaystoneBlock.getInstance().asItem()));
 	}
 
 	@Override

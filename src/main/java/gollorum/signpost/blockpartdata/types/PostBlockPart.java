@@ -88,7 +88,7 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
                     PlayerHandle.from(info.player)
                 );
                 info.tile.setChanged();
-                SideUtils.makePlayerPay(info.player, new ItemStack(WaystoneBlock.INSTANCE));
+                SideUtils.makePlayerPay(info.player, new ItemStack(WaystoneBlock.getInstance()));
                 if(info.player instanceof ServerPlayer)
                     PacketHandler.send(
                         PacketDistributor.PLAYER.with(() -> (ServerPlayer) info.player),
@@ -128,7 +128,7 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
     private static boolean isWaystone(ItemStack itemStack) {
         if(itemStack == null || itemStack.getCount() < 1) return false;
         Item item = itemStack.getItem();
-        return item.equals(WaystoneBlock.INSTANCE.asItem());
+        return item.equals(WaystoneBlock.getInstance().asItem());
     }
 
     private static boolean isBrush(ItemStack itemStack) {

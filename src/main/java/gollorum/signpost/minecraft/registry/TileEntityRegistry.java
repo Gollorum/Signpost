@@ -15,10 +15,10 @@ public class TileEntityRegistry {
     private static final DeferredRegister<BlockEntityType<?>> REGISTER = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITIES, MOD_ID);
 
     private static final RegistryObject<BlockEntityType<PostTile>> POST =
-        REGISTER.register(PostTile.REGISTRY_NAME, () -> PostTile.type);
+        REGISTER.register(PostTile.REGISTRY_NAME, PostTile::createType);
 
     private static final RegistryObject<BlockEntityType<WaystoneTile>> WAYSTONE =
-        REGISTER.register(WaystoneTile.REGISTRY_NAME, () -> WaystoneTile.type);
+        REGISTER.register(WaystoneTile.REGISTRY_NAME, WaystoneTile::createType);
 
     public static void register(IEventBus bus){
         REGISTER.register(bus);

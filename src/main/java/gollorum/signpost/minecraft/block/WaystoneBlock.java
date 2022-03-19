@@ -48,7 +48,17 @@ public class WaystoneBlock extends BaseEntityBlock implements WithCountRestricti
     private static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final String REGISTRY_NAME = "waystone";
 
-    public static final WaystoneBlock INSTANCE = new WaystoneBlock();
+    private static WaystoneBlock instance = null;
+    public static WaystoneBlock createInstance() {
+        assert instance == null;
+        return instance = new WaystoneBlock();
+    }
+
+    public static WaystoneBlock getInstance() {
+        assert instance != null;
+        return instance;
+    }
+
 
     private WaystoneBlock() {
         super(Properties.of(Material.PISTON, MaterialColor.STONE)
