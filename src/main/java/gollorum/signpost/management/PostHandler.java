@@ -209,9 +209,10 @@ public class PostHandler {
 		if(ClientConfigStorage.INSTANCE.getCost() == null || ConfigHandler.isCreative(player)){
 			return true;
 		}else{
+			Item paymentItem = ClientConfigStorage.INSTANCE.getCost();
 			int playerItemCount = 0;
 			for(ItemStack now: player.inventory.mainInventory){
-				if(now != null && now.getItem() !=null && now.getItem().getClass() == ClientConfigStorage.INSTANCE.getCost().getClass()){
+				if(now != null && now.getItem() !=null && now.getItem() == paymentItem){
 					playerItemCount += now.getCount();
 				}
 			}
