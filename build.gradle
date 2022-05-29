@@ -126,6 +126,8 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
 //    implementation fg.deobf("curse.maven:waystone-245755:3332276")
+    implementation fg.deobf("curse.maven:cloth-config-348521:3782782")
+    implementation fg.deobf("curse.maven:antique-atlas-227795:3525008")
 
 }
 
