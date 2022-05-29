@@ -42,4 +42,5 @@ public class LangKeys {
 	public static final String unlimitedSignpostsOther = "signpost.unlimited_signposts_other";
 
 	public static final String noTeleportWaystoneMod = "signpost.no_teleport_waystones_mod";
+	public static final String noTeleportAntiqueAtlasMod = "signpost.no_teleport_antiqueatlas_mod";
 }

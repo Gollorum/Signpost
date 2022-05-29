@@ -9,7 +9,7 @@ import gollorum.signpost.minecraft.utils.Inventory;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.relations.ExternalWaystone;
+import gollorum.signpost.compat.ExternalWaystone;
 import gollorum.signpost.utils.Delay;
 import gollorum.signpost.utils.Either;
 import gollorum.signpost.utils.WaystoneLocationData;
@@ -190,6 +190,21 @@ public class Teleport {
                     this.isDiscovered = isDiscovered;
                     this.waystoneName = waystoneName;
                     this.cost = cost;
+                }
+
+                public static Either<String, Info> from(ServerPlayer player, WaystoneHandle.Vanilla handle) {
+                    return Either.rightIfPresent(WaystoneLibrary.getInstance().getData(handle), () -> LangKeys.waystoneNotFound).mapRight(data -> {
+                        boolean isDiscovered = WaystoneLibrary.getInstance()
+                            .isDiscovered(new PlayerHandle(player), handle) || !Config.Server.teleport.enforceDiscovery.get();
+                        int distance = (int) data.location.spawn.distanceTo(Vector3.fromVec3d(player.position()));
+                        return new Info(
+                            Config.Server.teleport.maximumDistance.get(),
+                            distance,
+                            isDiscovered,
+                            data.name,
+                            Teleport.getCost(player, Vector3.fromBlockPos(data.location.block.blockPos), data.location.spawn)
+                        );
+                    });
                 }
 
                 public static final Serializer serializer = new Serializer();

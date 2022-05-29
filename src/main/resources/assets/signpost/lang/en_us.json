@@ -60,5 +60,6 @@
 
   "itemGroup.signpost": "Sign post",
 
-  "signpost.no_teleport_waystones_mod": "You cannot use a sign post to travel to this waystone. Use a Warp Scroll or similar."
+  "signpost.no_teleport_waystones_mod": "You cannot use a sign post to travel to this waystone. Use a Warp Scroll or similar.",
+  "signpost.no_teleport_antiqueatlas_mod": "Find a sign post to travel there."
 }
