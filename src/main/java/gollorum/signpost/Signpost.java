@@ -1,5 +1,6 @@
 package gollorum.signpost;
 
+import gollorum.signpost.compat.AntiqueAtlasAdapter;
 import gollorum.signpost.minecraft.block.BlockEventListener;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.commands.WaystoneArgument;
@@ -12,7 +13,8 @@ import gollorum.signpost.minecraft.registry.TileEntityRegistry;
 import gollorum.signpost.minecraft.rendering.PostRenderer;
 import gollorum.signpost.minecraft.worldgen.WaystoneDiscoveryEventListener;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.relations.ExternalWaystoneLibrary;
+import gollorum.signpost.compat.ExternalWaystoneLibrary;
+import gollorum.signpost.utils.EventDispatcher;
 import gollorum.signpost.utils.ServerType;
 import gollorum.signpost.worldgen.Villages;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
@@ -26,6 +28,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -54,6 +57,9 @@ public class Signpost {
                 : ServerType.HostingClient;
     }
 
+    private static final EventDispatcher.Impl.WithPublicDispatch<ServerLevel> _onServerOverworldLoad = new EventDispatcher.Impl.WithPublicDispatch<>();
+    public static final EventDispatcher<ServerLevel> onServerOverworldLoad = _onServerOverworldLoad;
+
     public Signpost() {
         Config.register();
 
@@ -78,6 +84,9 @@ public class Signpost {
 //        if(ModList.get().isLoaded("waystones"))
 //            WaystonesAdapter.register();
 
+        if(ModList.get().isLoaded("antiqueatlas"))
+            AntiqueAtlasAdapter.register();
+
     }
 
     private static class ModBusEvents {
@@ -88,6 +97,8 @@ public class Signpost {
             PacketHandler.register(new JoinServerEvent(), -50);
             ExternalWaystoneLibrary.initialize();
             WaystoneLibrary.registerNetworkPackets();
+            if(ModList.get().isLoaded("antiqueatlas"))
+                AntiqueAtlasAdapter.registerNetworkPacket();
         }
 
         @SubscribeEvent
@@ -129,6 +140,7 @@ public class Signpost {
                     WaystoneLibrary.getInstance().setupStorage(world);
                 if(!BlockRestrictions.getInstance().hasStorageBeenSetup())
                     BlockRestrictions.getInstance().setupStorage(world);
+                _onServerOverworldLoad.dispatch(world, false);
             }
         }
 

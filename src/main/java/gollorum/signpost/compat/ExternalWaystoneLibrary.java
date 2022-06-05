@@ -1,4 +1,4 @@
-package gollorum.signpost.relations;
+package gollorum.signpost.compat;
 
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.utils.EventDispatcher;

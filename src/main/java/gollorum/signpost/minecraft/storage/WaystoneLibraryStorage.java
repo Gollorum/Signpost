@@ -19,12 +19,12 @@ public class WaystoneLibraryStorage extends SavedData {
         return compound;
     }
 
-    public WaystoneLibraryStorage load(CompoundTag compound) {
+    public static WaystoneLibraryStorage load(CompoundTag compound) {
         WaystoneLibrary.getInstance().readFrom(compound);
         Tag villageWaystones = compound.get("villageWaystones");
         if(villageWaystones instanceof ListTag)
             WaystoneJigsawPiece.deserialize((ListTag) villageWaystones);
-        return this;
+        return new WaystoneLibraryStorage();
     }
 
 }

@@ -18,7 +18,7 @@ import gollorum.signpost.minecraft.gui.widgets.*;
 import gollorum.signpost.minecraft.rendering.FlippableModel;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.relations.ExternalWaystoneLibrary;
+import gollorum.signpost.compat.ExternalWaystoneLibrary;
 import gollorum.signpost.utils.Delay;
 import gollorum.signpost.utils.Tuple;
 import gollorum.signpost.utils.math.Angle;

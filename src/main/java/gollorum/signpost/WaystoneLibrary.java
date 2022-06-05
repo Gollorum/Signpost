@@ -24,6 +24,7 @@ import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraftforge.fmllegacy.network.NetworkEvent;
 import net.minecraftforge.fmllegacy.network.PacketDistributor;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,16 +43,27 @@ public class WaystoneLibrary {
     }
     public static boolean hasInstance() { return instance != null; }
 
+    private static final EventDispatcher.Impl.WithPublicDispatch<WaystoneLibrary> _initializeEventDispatcher =
+        new EventDispatcher.Impl.WithPublicDispatch<>() {
+            @Override
+            public boolean addListener(@Nonnull Consumer<WaystoneLibrary> listener) {
+                if(hasInstance()) listener.accept(instance);
+                return super.addListener(listener);
+            }
+        };
+    public static EventDispatcher<WaystoneLibrary> onInitializeDo = _initializeEventDispatcher;
+
     // Server only
     private SavedData savedData;
     public boolean hasStorageBeenSetup() { return savedData != null; }
 
     public static void initialize() {
         instance = new WaystoneLibrary();
+        _initializeEventDispatcher.dispatch(instance, false);
     }
 
-    private final EventDispatcher.Impl.WithPublicDispatch<WaystoneUpdatedEvent> _updateEventDispatcher = new EventDispatcher.Impl.WithPublicDispatch<>();
-
+    private final EventDispatcher.Impl.WithPublicDispatch<WaystoneUpdatedEvent> _updateEventDispatcher =
+        new EventDispatcher.Impl.WithPublicDispatch<>();
     public final EventDispatcher<WaystoneUpdatedEvent> updateEventDispatcher = _updateEventDispatcher;
 
     public static void registerNetworkPackets() {
@@ -71,7 +83,7 @@ public class WaystoneLibrary {
 
     public void setupStorage(ServerLevel world){
         DimensionDataStorage storage = world.getDataStorage();
-        savedData = storage.computeIfAbsent(tag -> new WaystoneLibraryStorage().load(tag), WaystoneLibraryStorage::new, WaystoneLibraryStorage.NAME);
+        savedData = storage.computeIfAbsent(WaystoneLibraryStorage::load, WaystoneLibraryStorage::new, WaystoneLibraryStorage.NAME);
     }
 
     private WaystoneLibrary() {

@@ -1,7 +1,11 @@
 package gollorum.signpost.blockpartdata.types;
 
-import gollorum.signpost.*;
+import gollorum.signpost.Signpost;
+import gollorum.signpost.Teleport;
+import gollorum.signpost.WaystoneHandle;
+import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.blockpartdata.Overlay;
+import gollorum.signpost.compat.ExternalWaystone;
 import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
@@ -9,13 +13,10 @@ import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.gui.PaintSignGui;
 import gollorum.signpost.minecraft.gui.RequestSignGui;
 import gollorum.signpost.minecraft.items.Brush;
-import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.relations.ExternalWaystone;
 import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.BlockPart;
 import gollorum.signpost.utils.Either;
-import gollorum.signpost.utils.WaystoneData;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Intersectable;
 import gollorum.signpost.utils.math.geometry.Ray;
@@ -276,20 +277,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
                 PacketDistributor.PLAYER.with(() -> player),
                 new Teleport.RequestGui.Package(
                     Either.rightIfPresent(vanillaHandle, () -> ((ExternalWaystone.Handle) dest).noTeleportLangKey())
-                        .flatMapRight(h ->
-                            Either.rightIfPresent(WaystoneLibrary.getInstance().getData(h), () -> LangKeys.waystoneNotFound).mapRight(data -> {
-                                boolean isDiscovered = WaystoneLibrary.getInstance()
-                                    .isDiscovered(new PlayerHandle(player), h) || !Config.Server.teleport.enforceDiscovery.get();
-                                int distance = (int) data.location.spawn.distanceTo(Vector3.fromVec3d(player.position()));
-                                return new Teleport.RequestGui.Package.Info(
-                                    Config.Server.teleport.maximumDistance.get(),
-                                    distance,
-                                    isDiscovered,
-                                    data.name,
-                                    Teleport.getCost(player, Vector3.fromBlockPos(data.location.block.blockPos), data.location.spawn)
-                                );
-                            })
-                        ),
+                        .flatMapRight(h -> Teleport.RequestGui.Package.Info.from(player, h)),
                     Optional.of(tilePartInfo)
                 )
             );

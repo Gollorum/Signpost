@@ -45,7 +45,6 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fmllegacy.network.NetworkEvent;
 
 import javax.annotation.Nullable;
@@ -212,7 +211,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         List<BlockPartInstance> parts = new ArrayList<>();
         for(BlockPartMetadata<?> meta : partsMetadata){
             if(compound.contains(meta.identifier)) {
-                ListTag list = compound.getList(meta.identifier, Constants.NBT.TAG_COMPOUND);
+                ListTag list = compound.getList(meta.identifier, Tag.TAG_COMPOUND);
                 for(int i = 0; i < list.size(); i++){
                     CompoundTag comp = list.getCompound(i);
                     parts.add(
@@ -231,7 +230,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         parts.clear();
         for(BlockPartMetadata<?> meta : partsMetadata){
             if(compound.contains(meta.identifier)) {
-                ListTag list = compound.getList(meta.identifier, Constants.NBT.TAG_COMPOUND);
+                ListTag list = compound.getList(meta.identifier, Tag.TAG_COMPOUND);
                 for(int i = 0; i < list.size(); i++){
                     CompoundTag comp = list.getCompound(i);
                     addPart(

@@ -36,6 +36,7 @@ public class Config {
 		public final TeleportConfig teleport;
 		public final WorldGenConfig worldGen;
 		public final PermissionConfig permissions;
+		public final CompatConfig compat;
 
 		public final ForgeConfigSpec.ConfigValue<List<? extends String>> allowedWaystones;
 
@@ -64,6 +65,10 @@ public class Config {
 
 			builder.push("world_gen");
 			worldGen = new WorldGenConfig(builder);
+			builder.pop();
+
+			builder.push("compat");
+			compat = new CompatConfig(builder);
 			builder.pop();
 		}
 
