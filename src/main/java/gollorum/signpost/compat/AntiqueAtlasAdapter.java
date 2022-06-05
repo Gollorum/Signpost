@@ -76,7 +76,10 @@ public class AntiqueAtlasAdapter {
                         BlockPos expectedMarkerPos = WaystoneLibrary.getInstance().getLocationData(handle).block.blockPos;
                         return marker.getX() == expectedMarkerPos.getX() && marker.getZ() == expectedMarkerPos.getZ();
                     }).ifPresentOrElse(
-                        handle -> storage.registeredMarkers.putIfAbsent(handle, marker.getId()),
+                        handle -> {
+                            if(!Objects.equals(storage.registeredMarkers.putIfAbsent(handle, marker.getId()), marker.getId()))
+                                storage.setDirty();
+                        },
                         () -> toRemove.add(marker)
                     );
             for(Marker marker : toRemove) dimensionMarkersData.removeMarker(marker);
@@ -89,7 +92,7 @@ public class AntiqueAtlasAdapter {
                 info.locationData.block.world
                     .mapRight(rl -> TileEntityUtils.findWorld(rl, false))
                     .rightOr(Optional::of)
-                    .ifPresent(level -> addMarker(level, info.name, info.locationData.block.blockPos));
+                    .ifPresent(level -> addMarker(level, info.name, info.locationData.block.blockPos, info.handle));
             }
         }
     }
@@ -108,20 +111,23 @@ public class AntiqueAtlasAdapter {
         if((event.getType() == WaystoneUpdatedEvent.Type.Removed
             || event.getType() == WaystoneUpdatedEvent.Type.Renamed
             || event.getType() == WaystoneUpdatedEvent.Type.Moved
-        ) && storage != null && storage.registeredMarkers.containsKey(event.handle)
-        ) AtlasAPI.getMarkerAPI().deleteGlobalMarker(level, storage.registeredMarkers.get(event.handle));
+        ) && storage != null && storage.registeredMarkers.containsKey(event.handle)) {
+            AtlasAPI.getMarkerAPI().deleteGlobalMarker(level, storage.registeredMarkers.get(event.handle));
+            storage.registeredMarkers.remove(event.handle);
+            storage.setDirty();
+        }
     }
 
     private static void addMarkerIfNecessary(Level level, WaystoneUpdatedEvent event) {
         if(event.getType() != WaystoneUpdatedEvent.Type.Removed) {
             WorldLocation loc = event instanceof WaystoneMovedEvent moved ? moved.newLocation : event.location.block;
-            addMarker(level, event.name, loc.blockPos);
+            addMarker(level, event.name, loc.blockPos, event.handle);
         }
     }
 
-    private static void addMarker(Level level, String name, BlockPos pos) {
-        if(Config.Server.compat.atlas.shouldAddIcons.get())
-            AtlasAPI.getMarkerAPI().putGlobalMarker(
+    private static void addMarker(Level level, String name, BlockPos pos, WaystoneHandle handle) {
+        if(Config.Server.compat.atlas.shouldAddIcons.get()) {
+            Marker marker = AtlasAPI.getMarkerAPI().putGlobalMarker(
                 level,
                 false,
                 markerType,
@@ -129,6 +135,11 @@ public class AntiqueAtlasAdapter {
                 pos.getX(),
                 pos.getZ()
             );
+            if(marker != null) {
+                storage.registeredMarkers.put(handle, marker.getId());
+                storage.setDirty();
+            }
+        }
     }
 
     private static final class Storage extends SavedData {

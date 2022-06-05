@@ -127,7 +127,7 @@ dependencies {
 
 //    implementation fg.deobf("curse.maven:waystone-245755:3332276")
     implementation fg.deobf("curse.maven:cloth-config-348521:3782782")
-    implementation fg.deobf("curse.maven:antique-atlas-227795:3525008")
+    compileOnly(files("libs/hunternif.mc.atlas-6.1.0-forge-mc1.17.1.jar")) // It no work :(
 
 }
 

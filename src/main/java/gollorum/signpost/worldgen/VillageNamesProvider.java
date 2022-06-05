@@ -16,10 +16,10 @@ public interface VillageNamesProvider {
 	List<VillageNamesProvider> activeProviders = Lists.newArrayList(new DefaultVillageNamesProvider());
 
 	/* villagePos might be blockPos if no village has been found. */
-	static Optional<String> requestFor(BlockPos blockPos, BlockPos villagePos, ServerLevel world, Random random) {
+	static Optional<String> requestFor(BlockPos blockPos, BlockPos villagePos, ServerLevel world) {
 		Set<String> allTakenNames = WaystoneLibrary.getInstance().getAllWaystoneNames(false).get();
 		for(VillageNamesProvider provider : activeProviders) {
-			Optional<String> name = provider.getFor(blockPos, villagePos, world, n -> !allTakenNames.contains(n), random);
+			Optional<String> name = provider.getFor(blockPos, villagePos, world, n -> !allTakenNames.contains(n), new Random(villagePos.asLong() ^ world.getSeed()));
 			if(name.isPresent()) {
 				return name;
 			}
