@@ -1,21 +1,23 @@
 {
   "parent": "minecraft:block/block",
+  "ambientToFullbright": false,
+  "diffuseLighting": true,
   "display": {
-    "gui": {
+    "firstperson_lefthand": {
       "rotation": [
-        30,
+        0,
         315,
         0
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
       ],
       "translation": [
         0,
         2,
         0
-      ],
-      "scale": [
-        0.625,
-        0.625,
-        0.625
       ]
     },
     "firstperson_righthand": {
@@ -24,41 +26,39 @@
         315,
         0
       ],
-      "translation": [
-        0,
-        2,
-        0
-      ],
       "scale": [
         0.4,
         0.4,
         0.4
+      ],
+      "translation": [
+        0,
+        2,
+        0
       ]
     },
-    "firstperson_lefthand": {
+    "gui": {
       "rotation": [
-        0,
+        30,
         315,
         0
       ],
+      "scale": [
+        0.625,
+        0.625,
+        0.625
+      ],
       "translation": [
         0,
         2,
         0
-      ],
-      "scale": [
-        0.4,
-        0.4,
-        0.4
       ]
     }
   },
-  "textures": {
-    "particle": "signpost:block/waystone"
-  },
+  "flip-v": true,
   "loader": "forge:obj",
   "model": "signpost:models/block/waystone_model_dwarf.obj",
-  "diffuseLighting": true,
-  "flip-v": true,
-  "ambientToFullbright": false
+  "textures": {
+    "particle": "signpost:block/waystone"
+  }
 }

@@ -28,6 +28,7 @@ import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -88,7 +89,7 @@ public class RenderingUtil {
             BlockPos pos,
             VertexConsumer buffer,
             boolean checkSides,
-            Random random,
+            RandomSource random,
             long rand,
             int combinedOverlay,
             Matrix4f rotationMatrix
@@ -175,7 +176,7 @@ public class RenderingUtil {
                 float r = Colors.getRed(color) / 255f;
                 float g = Colors.getGreen(color) / 255f;
                 float b = Colors.getBlue(color) / 255f;
-                Random random = new Random();
+                RandomSource random = RandomSource.create();
                 for(Direction dir : allDirections) {
                     random.setSeed(42L);
                     for(BakedQuad quad: model.getQuads(null, dir, random, EmptyModelData.INSTANCE)) {
@@ -198,7 +199,7 @@ public class RenderingUtil {
     public static BakedModel withTintIndex(BakedModel original, int tintIndex) {
         return new BakedModel() {
             @Override
-            public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, Random rand) {
+            public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand) {
                 return original.getQuads(state, side, rand)
                        .stream().map(q -> new BakedQuad(q.getVertices(), tintIndex, q.getDirection(), q.getSprite(), q.isShade()))
                        .collect(Collectors.toList());

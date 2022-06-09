@@ -8,7 +8,7 @@ import gollorum.signpost.minecraft.utils.LangKeys;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.UUID;
@@ -38,12 +38,12 @@ public class PaintSignGui<T extends SignBlockPart<T>> extends PaintBlockPartGui<
         addRenderableWidget(new Button(
             buttonRect.point.x, buttonRect.point.y,
             buttonRect.width, buttonRect.height,
-            new TranslatableComponent(isTargetingMainTexture ? LangKeys.mainTex : LangKeys.secondaryTex),
+            Component.translatable(isTargetingMainTexture ? LangKeys.mainTex : LangKeys.secondaryTex),
             b -> {
                 isTargetingMainTexture = !isTargetingMainTexture;
                 oldSprite = isTargetingMainTexture ? oldMainSprite : oldSecSprite;
                 clearSelection();
-                b.setMessage(new TranslatableComponent(isTargetingMainTexture ? LangKeys.mainTex : LangKeys.secondaryTex));
+                b.setMessage(Component.translatable(isTargetingMainTexture ? LangKeys.mainTex : LangKeys.secondaryTex));
             }
         ));
     }

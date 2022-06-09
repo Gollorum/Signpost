@@ -18,6 +18,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.util.Random;
@@ -32,7 +33,7 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
 	protected abstract SignModel makeOverlayModel(T sign, Overlay overlay);
 
 	@Override
-	public void render(T sign, BlockEntity tileEntity, BlockEntityRenderDispatcher renderDispatcher, PoseStack matrix, MultiBufferSource buffer, int combinedLights, int combinedOverlay, Random random, long randomSeed) {
+	public void render(T sign, BlockEntity tileEntity, BlockEntityRenderDispatcher renderDispatcher, PoseStack matrix, MultiBufferSource buffer, int combinedLights, int combinedOverlay, RandomSource random, long randomSeed) {
 		RenderingUtil.render(matrix, renderModel -> {
 			if(!tileEntity.hasLevel()) throw new RuntimeException("TileEntity without world cannot be rendered.");
 			RenderingUtil.wrapInMatrixEntry(matrix, () -> {

@@ -1,15 +1,7 @@
 {
   "type": "minecraft:crafting_shaped",
   "group": "Signpost",
-  "pattern": [
-    "s",
-    "s",
-    "b"
-  ],
   "key": {
-    "s": {
-      "tag": "minecraft:signs"
-    },
     "b": [
       {
         "item": "minecraft:sandstone"
@@ -23,10 +15,18 @@
       {
         "item": "minecraft:smooth_sandstone"
       }
-    ]
+    ],
+    "s": {
+      "tag": "minecraft:signs"
+    }
   },
+  "pattern": [
+    "s",
+    "s",
+    "b"
+  ],
   "result": {
-    "item": "signpost:post_sandstone",
-    "count": 2
+    "count": 2,
+    "item": "signpost:post_sandstone"
   }
 }

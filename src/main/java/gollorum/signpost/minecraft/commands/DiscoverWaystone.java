@@ -15,7 +15,7 @@ import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
 public class DiscoverWaystone {
@@ -46,9 +46,9 @@ public class DiscoverWaystone {
 
 	private static int execute(String name, ServerPlayer player) throws CommandSyntaxException {
 		WaystoneHandle.Vanilla handle = WaystoneLibrary.getInstance().getHandleByName(name)
-			.orElseThrow(() -> new SimpleCommandExceptionType(new TranslatableComponent(LangKeys.waystoneNotFound, Colors.wrap(name, Colors.highlight))).create());
+			.orElseThrow(() -> new SimpleCommandExceptionType(Component.translatable(LangKeys.waystoneNotFound, Colors.wrap(name, Colors.highlight))).create());
 		if(WaystoneLibrary.getInstance().addDiscovered(new PlayerHandle(player), handle)) {
-			player.sendMessage(new TranslatableComponent(LangKeys.discovered, TextComponents.waystone(player, name)), Util.NIL_UUID);
+			player.sendSystemMessage(Component.translatable(LangKeys.discovered, TextComponents.waystone(player, name)));
 		}
 		return Command.SINGLE_SUCCESS;
 	}

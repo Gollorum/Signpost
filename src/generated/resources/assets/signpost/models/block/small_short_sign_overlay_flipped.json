@@ -1,25 +1,39 @@
 {
-  "textures": {
-    "texture": "signpost:block/sign_overlay_grass_short"
-  },
   "elements": [
     {
-      "from": [
-        1.9,
-        -4.1,
-        -0.6
-      ],
-      "to": [
-        14.099999,
-        3.1,
-        0.6
-      ],
       "faces": {
         "down": {
           "texture": "#texture",
           "uv": [
             1.0,
             4.5,
+            7.0,
+            4.0
+          ]
+        },
+        "east": {
+          "texture": "#texture",
+          "uv": [
+            7.5,
+            0.5,
+            7.0,
+            4.0
+          ]
+        },
+        "north": {
+          "texture": "#texture",
+          "uv": [
+            7.0,
+            0.5,
+            1.0,
+            4.0
+          ]
+        },
+        "south": {
+          "texture": "#texture",
+          "uv": [
+            1.0,
+            0.5,
             7.0,
             4.0
           ]
@@ -33,24 +47,6 @@
             0.0
           ]
         },
-        "north": {
-          "texture": "#texture",
-          "uv": [
-            7.0,
-            0.5,
-            1.0,
-            4.0
-          ]
-        },
-        "south": {
-          "texture": "#texture",
-          "uv": [
-            1.0,
-            0.5,
-            7.0,
-            4.0
-          ]
-        },
         "west": {
           "texture": "#texture",
           "uv": [
@@ -59,62 +55,26 @@
             0.5,
             4.0
           ]
-        },
-        "east": {
-          "texture": "#texture",
-          "uv": [
-            7.5,
-            0.5,
-            7.0,
-            4.0
-          ]
         }
-      }
-    },
-    {
+      },
       "from": [
-        14.1,
-        -3.1,
+        1.9,
+        -4.1,
         -0.6
       ],
       "to": [
-        16.1,
-        2.1,
+        14.099999,
+        3.1,
         0.6
-      ],
+      ]
+    },
+    {
       "faces": {
         "down": {
           "texture": "#texture",
           "uv": [
             7.0,
             4.0,
-            8.0,
-            3.5
-          ]
-        },
-        "up": {
-          "texture": "#texture",
-          "uv": [
-            7.0,
-            1.0,
-            8.0,
-            0.5
-          ]
-        },
-        "north": {
-          "texture": "#texture",
-          "uv": [
-            8.0,
-            1.0,
-            7.0,
-            3.5
-          ]
-        },
-        "south": {
-          "texture": "#texture",
-          "uv": [
-            7.0,
-            1.0,
             8.0,
             3.5
           ]
@@ -127,20 +87,47 @@
             8.0,
             3.5
           ]
+        },
+        "north": {
+          "texture": "#texture",
+          "uv": [
+            8.0,
+            1.0,
+            7.0,
+            3.5
+          ]
+        },
+        "south": {
+          "texture": "#texture",
+          "uv": [
+            7.0,
+            1.0,
+            8.0,
+            3.5
+          ]
+        },
+        "up": {
+          "texture": "#texture",
+          "uv": [
+            7.0,
+            1.0,
+            8.0,
+            0.5
+          ]
         }
-      }
-    },
-    {
+      },
       "from": [
-        16.1,
-        -2.1,
+        14.1,
+        -3.1,
         -0.6
       ],
       "to": [
-        18.1,
-        1.0999999,
+        16.1,
+        2.1,
         0.6
-      ],
+      ]
+    },
+    {
       "faces": {
         "down": {
           "texture": "#texture",
@@ -151,13 +138,13 @@
             3.0
           ]
         },
-        "up": {
+        "east": {
           "texture": "#texture",
           "uv": [
-            8.0,
+            9.5,
             1.5,
             9.0,
-            1.0
+            3.0
           ]
         },
         "north": {
@@ -178,16 +165,29 @@
             3.0
           ]
         },
-        "east": {
+        "up": {
           "texture": "#texture",
           "uv": [
-            9.5,
+            8.0,
             1.5,
             9.0,
-            3.0
+            1.0
           ]
         }
-      }
+      },
+      "from": [
+        16.1,
+        -2.1,
+        -0.6
+      ],
+      "to": [
+        18.1,
+        1.0999999,
+        0.6
+      ]
     }
-  ]
+  ],
+  "textures": {
+    "texture": "signpost:block/sign_overlay_grass_short"
+  }
 }

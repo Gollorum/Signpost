@@ -12,12 +12,10 @@ import gollorum.signpost.utils.Tuple;
 import gollorum.signpost.utils.serialization.BooleanSerializer;
 import gollorum.signpost.utils.serialization.IntSerializer;
 import gollorum.signpost.utils.serialization.StringSerializer;
-import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.saveddata.SavedData;
@@ -65,14 +63,14 @@ public class BlockRestrictions {
 		public final String unlimitedRemainingLangKeyOther;
 		public final Function<Object, Optional<PlayerHandle>> tryGetOwner;
 
-		public TranslatableComponent getRemainingTextComponent(int count, Optional<Component> subject) {
-			return subject.map(s -> new TranslatableComponent(remainingLangKeyOther, count, s))
-				.orElseGet(() -> new TranslatableComponent(remainingLangKey, count));
+		public Component getRemainingTextComponent(int count, Optional<Component> subject) {
+			return subject.map(s -> Component.translatable(remainingLangKeyOther, count, s))
+				.orElseGet(() -> Component.translatable(remainingLangKey, count));
 		}
 
-		public TranslatableComponent getUnlimitedRemainingTextComponent(Optional<Component> subject) {
-			return subject.map(s -> new TranslatableComponent(unlimitedRemainingLangKeyOther, s))
-				.orElseGet(() -> new TranslatableComponent(unlimitedRemainingLangKey));
+		public Component getUnlimitedRemainingTextComponent(Optional<Component> subject) {
+			return subject.map(s -> Component.translatable(unlimitedRemainingLangKeyOther, s))
+				.orElseGet(() -> Component.translatable(unlimitedRemainingLangKey));
 		}
 
 		Type(
@@ -193,7 +191,7 @@ public class BlockRestrictions {
 			return true;
 		} else {
 			if(prevCount == 0)
-				player.asEntity().sendMessage(new TranslatableComponent(type.errorLangKey), Util.NIL_UUID);
+				player.asEntity().sendSystemMessage(Component.translatable(type.errorLangKey));
 			return prevCount < 0;
 		}
 	}
@@ -271,7 +269,7 @@ public class BlockRestrictions {
 				? Config.Client.enableWaystoneLimitNotifications
 				: Config.Client.enableSignpostLimitNotifications
 			).get())
-				ClientFrameworkAdapter.showStatusMessage(new TranslatableComponent(message.langKey, message.count), true);
+				ClientFrameworkAdapter.showStatusMessage(Component.translatable(message.langKey, message.count), true);
 		}
 	}
 

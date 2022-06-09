@@ -1,5 +1,4 @@
 {
-  "replace": false,
   "values": [
     "signpost:post_oak",
     "signpost:post_birch",
@@ -7,6 +6,7 @@
     "signpost:post_jungle",
     "signpost:post_dark_oak",
     "signpost:post_acacia",
+    "signpost:post_mangrove",
     "signpost:post_stone",
     "signpost:post_iron",
     "signpost:post_warped",

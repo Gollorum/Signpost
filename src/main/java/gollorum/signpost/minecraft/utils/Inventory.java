@@ -2,7 +2,7 @@ package gollorum.signpost.minecraft.utils;
 
 import gollorum.signpost.Signpost;
 import net.minecraft.Util;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -34,11 +34,11 @@ public class Inventory {
 		if(!player.isCreative()) {
 			if(Inventory.tryConsume(player, itemStack))
 				onSuccess.accept(player);
-			else player.sendMessage(new TranslatableComponent(
+			else player.sendSystemMessage(Component.translatable(
 				LangKeys.tooExpensive,
 				itemStack.getCount(),
-				new TranslatableComponent(itemStack.getItem().getDescriptionId())
-			), Util.NIL_UUID);
+				Component.translatable(itemStack.getItem().getDescriptionId())
+			));
 		} else onSuccess.accept(player);
 	}
 

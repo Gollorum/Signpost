@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "Signpost",
+  "key": {
+    "b": {
+      "tag": "minecraft:mangrove_logs"
+    },
+    "s": {
+      "item": "minecraft:mangrove_sign"
+    }
+  },
+  "pattern": [
+    "s",
+    "s",
+    "b"
+  ],
+  "result": {
+    "count": 2,
+    "item": "signpost:post_mangrove"
+  }
+}

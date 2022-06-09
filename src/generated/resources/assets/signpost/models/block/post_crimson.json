@@ -3,7 +3,7 @@
   "textures": {
     "particle": "minecraft:block/crimson_stem",
     "post": "minecraft:block/crimson_stem",
-    "texture": "minecraft:block/stripped_crimson_stem",
-    "secondary_texture": "minecraft:block/crimson_stem"
+    "secondary_texture": "minecraft:block/crimson_stem",
+    "texture": "minecraft:block/stripped_crimson_stem"
   }
 }

@@ -7,7 +7,7 @@ import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.utils.Tuple;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.Widget;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -29,7 +29,7 @@ public class TextDisplay implements Widget {
 
     private static List<Tuple<String, Integer>> getTextsFor(String translationKey, Tuple<String, Integer>... args) {
         List<Tuple<String, Integer>> texts = new ArrayList<>();
-        new TranslatableComponent(
+        Component.translatable(
             translationKey,
             Arrays.stream(args).map(Tuple::getLeft).toArray(Object[]::new)
         ).visit(t -> {

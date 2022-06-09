@@ -32,8 +32,8 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
@@ -150,7 +150,7 @@ public class SignGui extends ExtendedScreen {
     }
 
     public SignGui(PostTile tile, PostBlock.ModelType modelType, Vector3 localHitPos, ItemStack itemToDropOnBreak) {
-        super(new TranslatableComponent(LangKeys.signGuiTitle));
+        super(Component.translatable(LangKeys.signGuiTitle));
         this.tile = tile;
         this.modelType = modelType;
         this.localHitPos = localHitPos;
@@ -161,7 +161,7 @@ public class SignGui extends ExtendedScreen {
     }
 
     public SignGui(PostTile tile, SignBlockPart oldSign, Vector3 oldOffset, PostTile.TilePartInfo oldTilePartInfo) {
-        super(new TranslatableComponent(LangKeys.signGuiTitle));
+        super(Component.translatable(LangKeys.signGuiTitle));
         this.tile = tile;
         this.modelType = oldSign.getModelType();
         this.localHitPos = oldOffset;
@@ -289,12 +289,12 @@ public class SignGui extends ExtendedScreen {
             int buttonsWidth = doneRect.width;
             doneButton = new Button(
                 getCenterX() + centerGap / 2, doneRect.point.y, buttonsWidth, doneRect.height,
-                new TranslatableComponent(LangKeys.done),
+                Component.translatable(LangKeys.done),
                 b -> done()
             );
             Button removeSignButton = new Button(
                 getCenterX() - centerGap / 2 - buttonsWidth, doneRect.point.y, buttonsWidth, doneRect.height,
-                new TranslatableComponent(LangKeys.removeSign),
+                Component.translatable(LangKeys.removeSign),
                 b -> removeSign()
             );
             removeSignButton.setFGColor(Colors.invalid);
@@ -302,7 +302,7 @@ public class SignGui extends ExtendedScreen {
         } else {
             doneButton = new Button(
                 doneRect.point.x, doneRect.point.y, doneRect.width, doneRect.height,
-                new TranslatableComponent(LangKeys.done),
+                Component.translatable(LangKeys.done),
                 b -> done()
             );
         }
@@ -563,7 +563,7 @@ public class SignGui extends ExtendedScreen {
         if(hasBeenInitialized) {
             onWaystoneCountChanged();
         } else {
-            String unknownWaystone = new TranslatableComponent(LangKeys.unknownWaystone)
+            String unknownWaystone = Component.translatable(LangKeys.unknownWaystone)
                 .withStyle(style -> style.withColor(TextColor.fromRgb(Colors.darkGrey)))
                 .getString();
             Optional<WaystoneEntry> oldWaystone = oldSign

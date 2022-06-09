@@ -15,7 +15,7 @@ import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ImageButton;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -51,7 +51,7 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 		Either<String, Teleport.RequestGui.Package.Info> data,
 		Optional<SignInfo> signInfo
 	) {
-		super(new TranslatableComponent(LangKeys.confirmTeleportGuiTitle));
+		super(Component.translatable(LangKeys.confirmTeleportGuiTitle));
 		this.data = data;
 		this.signInfo = signInfo;
 	}
@@ -123,12 +123,12 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 					);
 					addRenderableWidget(new Button(
 						confirmRect.point.x, confirmRect.point.y, confirmRect.width, confirmRect.height,
-						new TranslatableComponent(LangKeys.proceed),
+						Component.translatable(LangKeys.proceed),
 						b -> confirm()
 					));
 					addRenderableWidget(new Button(
 						cancelRect.point.x, cancelRect.point.y, cancelRect.width, cancelRect.height,
-						new TranslatableComponent(LangKeys.cancel),
+						Component.translatable(LangKeys.cancel),
 						b -> cancel()
 					));
 					editButtonTop.set(cancelRect.max().y + 20);
@@ -172,7 +172,7 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 	private void confirm() {
 		getMinecraft().setScreen(null);
 		data.consume(
-			langKey -> getMinecraft().player.displayClientMessage(new TranslatableComponent(langKey), true),
+			langKey -> getMinecraft().player.displayClientMessage(Component.translatable(langKey), true),
 			data -> PacketHandler.sendToServer(new Teleport.Request.Package(data.waystoneName))
 		);
 	}

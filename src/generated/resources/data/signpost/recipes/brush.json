@@ -1,21 +1,21 @@
 {
   "type": "minecraft:crafting_shaped",
-  "pattern": [
-    "w",
-    "i",
-    "s"
-  ],
   "key": {
-    "w": {
-      "tag": "minecraft:wool"
-    },
     "i": {
       "item": "minecraft:iron_ingot"
     },
     "s": {
       "item": "minecraft:stick"
+    },
+    "w": {
+      "tag": "minecraft:wool"
     }
   },
+  "pattern": [
+    "w",
+    "i",
+    "s"
+  ],
   "result": {
     "item": "signpost:brush"
   }

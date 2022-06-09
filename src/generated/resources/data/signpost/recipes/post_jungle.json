@@ -1,21 +1,21 @@
 {
   "type": "minecraft:crafting_shaped",
   "group": "Signpost",
+  "key": {
+    "b": {
+      "tag": "minecraft:jungle_logs"
+    },
+    "s": {
+      "item": "minecraft:jungle_sign"
+    }
+  },
   "pattern": [
     "s",
     "s",
     "b"
   ],
-  "key": {
-    "s": {
-      "item": "minecraft:jungle_sign"
-    },
-    "b": {
-      "tag": "minecraft:jungle_logs"
-    }
-  },
   "result": {
-    "item": "signpost:post_jungle",
-    "count": 2
+    "count": 2,
+    "item": "signpost:post_jungle"
   }
 }

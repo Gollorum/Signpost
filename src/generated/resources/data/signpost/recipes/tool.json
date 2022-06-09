@@ -1,18 +1,18 @@
 {
   "type": "minecraft:crafting_shaped",
+  "key": {
+    "i": {
+      "item": "minecraft:iron_ingot"
+    },
+    "s": {
+      "tag": "minecraft:signs"
+    }
+  },
   "pattern": [
     "i ",
     "ii",
     "s "
   ],
-  "key": {
-    "s": {
-      "tag": "minecraft:signs"
-    },
-    "i": {
-      "item": "minecraft:iron_ingot"
-    }
-  },
   "result": {
     "item": "signpost:tool"
   }

@@ -7,7 +7,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.RenderProperties;
 
@@ -18,7 +18,7 @@ public class GuiItemRenderer extends AbstractWidget {
 	private final ItemRenderer itemRenderer = Minecraft.getInstance().getItemRenderer();
 
 	public GuiItemRenderer(Rect rect, ItemStack itemStack) {
-		super(rect.point.x, rect.point.y, rect.width, rect.height, new TextComponent("GuiItemRenderer"));
+		super(rect.point.x, rect.point.y, rect.width, rect.height, Component.literal("GuiItemRenderer"));
 		this.itemStack = itemStack;
 	}
 

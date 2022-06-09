@@ -16,7 +16,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.saveddata.SavedData;
@@ -179,7 +179,7 @@ public class WaystoneLibrary {
             WaystoneEntry oldEntry = allWaystones.get(oldWaystones[0]);
             if(editingPlayer != null && !oldEntry.hasThePermissionToEdit(editingPlayer)) {
                 // This should not happen unless a player tries to hacc
-                editingPlayer.sendMessage(new TranslatableComponent(LangKeys.noPermissionWaystone), Util.NIL_UUID);
+                editingPlayer.sendSystemMessage(Component.translatable(LangKeys.noPermissionWaystone));
                 return Optional.empty();
             }
             if(editingPlayer != null && !WaystoneData.hasSecurityPermissions(editingPlayer, location))

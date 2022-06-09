@@ -15,7 +15,7 @@ import gollorum.signpost.utils.math.geometry.TransformedBox;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -95,7 +95,7 @@ public class SmallWideSignBlockPart extends SignBlockPart<SmallWideSignBlockPart
             && !hasThePermissionToEdit(((WithOwner.OfSignpost)tile), editingPlayer)
         ) {
             // This should not happen unless a player tries to hacc
-            editingPlayer.sendMessage(new TranslatableComponent(LangKeys.noPermissionSignpost), Util.NIL_UUID);
+            editingPlayer.sendSystemMessage(Component.translatable(LangKeys.noPermissionSignpost));
             return;
         }
         if (compound.contains("Text")) {

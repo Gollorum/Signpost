@@ -1,21 +1,21 @@
 {
   "type": "minecraft:crafting_shaped",
   "group": "Signpost",
+  "key": {
+    "b": {
+      "tag": "minecraft:acacia_logs"
+    },
+    "s": {
+      "item": "minecraft:acacia_sign"
+    }
+  },
   "pattern": [
     "s",
     "s",
     "b"
   ],
-  "key": {
-    "s": {
-      "item": "minecraft:acacia_sign"
-    },
-    "b": {
-      "tag": "minecraft:acacia_logs"
-    }
-  },
   "result": {
-    "item": "signpost:post_acacia",
-    "count": 2
+    "count": 2,
+    "item": "signpost:post_acacia"
   }
 }

@@ -10,7 +10,7 @@ import gollorum.signpost.utils.WaystoneData;
 import io.netty.util.internal.PlatformDependent;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.TickEvent;
@@ -74,11 +74,11 @@ public class WaystoneDiscoveryEventListener {
                 if(inner.getValue().closerThan(map.getKey().blockPosition(), discoveryDistance)) {
                     WaystoneLibrary.getInstance().getData(inner.getKey()).ifPresent(data -> {
                         if(WaystoneLibrary.getInstance().addDiscovered(new PlayerHandle(map.getKey()), inner.getKey())) {
-                            map.getKey().sendMessage(
-                                new TranslatableComponent(
+                            map.getKey().sendSystemMessage(
+                                Component.translatable(
                                     LangKeys.discovered,
                                     TextComponents.waystone(map.getKey(), data.name)
-                                ), Util.NIL_UUID);
+                                ));
                         }
                     });
                     map.getValue().remove(inner.getKey());

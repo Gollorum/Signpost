@@ -19,7 +19,7 @@ import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.BlockItem;
@@ -47,7 +47,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
     private Function<ResourceLocation, TextureAtlasSprite> atlasSpriteGetter;
 
     public PaintBlockPartGui(PostTile tile, T part, T displayPart, UUID identifier, ResourceLocation oldTexture) {
-        super(new TextComponent("Paint Post"));
+        super(Component.literal("Paint Post"));
         this.tile = tile;
         this.part = part;
         this.displayPart = displayPart;

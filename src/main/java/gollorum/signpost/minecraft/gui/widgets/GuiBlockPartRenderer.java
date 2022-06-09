@@ -9,7 +9,7 @@ import gollorum.signpost.utils.math.Angle;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 
 import java.util.Collection;
 
@@ -22,7 +22,7 @@ public class GuiBlockPartRenderer extends AbstractWidget {
     private float scale;
 
     public GuiBlockPartRenderer(Collection<BlockPartInstance> partsToRender, Point center, Angle yaw, Angle pitch, float scale) {
-        super(center.x - widthFor(scale) / 2, center.y - heightFor(scale) / 2, widthFor(scale), heightFor(scale), new TextComponent(""));
+        super(center.x - widthFor(scale) / 2, center.y - heightFor(scale) / 2, widthFor(scale), heightFor(scale), Component.literal(""));
         this.partsToRender = partsToRender;
         this.center = center;
         this.yaw = yaw;

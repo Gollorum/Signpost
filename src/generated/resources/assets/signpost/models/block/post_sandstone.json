@@ -3,7 +3,7 @@
   "textures": {
     "particle": "minecraft:block/sandstone",
     "post": "minecraft:block/sandstone",
-    "texture": "minecraft:block/stripped_jungle_log",
-    "secondary_texture": "minecraft:block/sandstone_bottom"
+    "secondary_texture": "minecraft:block/sandstone_bottom",
+    "texture": "minecraft:block/stripped_jungle_log"
   }
 }

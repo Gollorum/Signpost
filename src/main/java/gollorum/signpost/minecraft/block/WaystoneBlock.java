@@ -16,7 +16,7 @@ import gollorum.signpost.utils.WaystoneData;
 import gollorum.signpost.utils.WorldLocation;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -95,7 +95,7 @@ public class WaystoneBlock extends BaseEntityBlock implements WithCountRestricti
 
     private static void discover(ServerPlayer player, WaystoneData data) {
         if(WaystoneLibrary.getInstance().addDiscovered(new PlayerHandle(player.getUUID()), data.handle))
-            player.sendMessage(new TranslatableComponent(LangKeys.discovered, TextComponents.waystone(player, data.name)), Util.NIL_UUID);
+            player.sendSystemMessage(Component.translatable(LangKeys.discovered, TextComponents.waystone(player, data.name)));
     }
 
     public static void discover(PlayerHandle player, WaystoneData data) {
@@ -103,7 +103,7 @@ public class WaystoneBlock extends BaseEntityBlock implements WithCountRestricti
         if(WaystoneLibrary.getInstance().addDiscovered(player, data.handle)) {
             ServerPlayer playerEntity = player.asEntity();
             if(playerEntity != null)
-                playerEntity.sendMessage(new TranslatableComponent(LangKeys.discovered, TextComponents.waystone(playerEntity, data.name)), Util.NIL_UUID);
+                playerEntity.sendSystemMessage(Component.translatable(LangKeys.discovered, TextComponents.waystone(playerEntity, data.name)));
         }
     }
 

@@ -1,8 +1,8 @@
 {
   "type": "signpost:cut_waystone",
+  "count": 1,
   "ingredient": {
     "tag": "signpost:waystone"
   },
-  "result": "signpost:waystone_model_detailed_0",
-  "count": 1
+  "result": "signpost:waystone_model_detailed_0"
 }

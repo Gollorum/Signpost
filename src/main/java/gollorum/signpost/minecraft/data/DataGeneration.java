@@ -22,27 +22,27 @@ public final class DataGeneration {
         if (event.includeServer()) {
 
             PostTag.Blocks postBlocksTagProvider = new PostTag.Blocks(datagenerator, fileHelper);
-            datagenerator.addProvider(postBlocksTagProvider);
-            datagenerator.addProvider(new PostTag(datagenerator, postBlocksTagProvider, fileHelper));
+            datagenerator.addProvider(true, postBlocksTagProvider);
+            datagenerator.addProvider(true, new PostTag(datagenerator, postBlocksTagProvider, fileHelper));
 
             WaystoneTag.Blocks waystoneBlocksTagProvider = new WaystoneTag.Blocks(datagenerator, fileHelper);
-            datagenerator.addProvider(waystoneBlocksTagProvider);
-            datagenerator.addProvider(new WaystoneTag(datagenerator, waystoneBlocksTagProvider, fileHelper));
+            datagenerator.addProvider(true, waystoneBlocksTagProvider);
+            datagenerator.addProvider(true, new WaystoneTag(datagenerator, waystoneBlocksTagProvider, fileHelper));
 
-            datagenerator.addProvider(new PostRecipe(datagenerator));
-            datagenerator.addProvider(new WaystoneRecipe(datagenerator));
-            datagenerator.addProvider(new WrenchRecipe(datagenerator));
-            datagenerator.addProvider(new BrushRecipe(datagenerator));
+            datagenerator.addProvider(true, new PostRecipe(datagenerator));
+            datagenerator.addProvider(true, new WaystoneRecipe(datagenerator));
+            datagenerator.addProvider(true, new WrenchRecipe(datagenerator));
+            datagenerator.addProvider(true, new BrushRecipe(datagenerator));
 
-            datagenerator.addProvider(new LootTables(datagenerator));
+            datagenerator.addProvider(true, new LootTables(datagenerator));
         }
         if(event.includeClient()) {
             PostModel postModel = new PostModel(datagenerator, fileHelper);
-            datagenerator.addProvider(postModel);
+            datagenerator.addProvider(true, postModel);
             WaystoneModel waystoneModel = WaystoneModel.addTo(datagenerator, fileHelper);
-            datagenerator.addProvider(new WrenchModel(datagenerator, fileHelper));
-            datagenerator.addProvider(new BrushModel(datagenerator, fileHelper));
-            datagenerator.addProvider(new PostBlockState(datagenerator, fileHelper, postModel, waystoneModel));
+            datagenerator.addProvider(true, new WrenchModel(datagenerator, fileHelper));
+            datagenerator.addProvider(true, new BrushModel(datagenerator, fileHelper));
+            datagenerator.addProvider(true, new PostBlockState(datagenerator, fileHelper, postModel, waystoneModel));
         }
     }
 

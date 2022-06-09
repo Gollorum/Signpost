@@ -22,7 +22,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -147,8 +147,8 @@ public class Teleport {
                 int distance = (int) waystoneData.spawn.distanceTo(Vector3.fromVec3d(player.position()));
                 int maxDistance = Config.Server.teleport.maximumDistance.get();
                 boolean isTooFarAway = maxDistance > 0 && distance > maxDistance;
-                if(!isDiscovered) player.sendMessage(new TranslatableComponent(LangKeys.notDiscovered, message.waystoneName), Util.NIL_UUID);
-                if(isTooFarAway) player.sendMessage(new TranslatableComponent(LangKeys.tooFarAway, Integer.toString(distance), Integer.toString(maxDistance)), Util.NIL_UUID);
+                if(!isDiscovered) player.sendSystemMessage(Component.translatable(LangKeys.notDiscovered, message.waystoneName));
+                if(isTooFarAway) player.sendSystemMessage(Component.translatable(LangKeys.tooFarAway, Integer.toString(distance), Integer.toString(maxDistance)));
                 if(!isDiscovered || isTooFarAway) return;
 
                 Inventory.tryPay(
@@ -156,9 +156,8 @@ public class Teleport {
                     Teleport.getCost(player, Vector3.fromBlockPos(waystoneData.block.blockPos), waystoneData.spawn),
                     p -> Teleport.toWaystone(waystoneData, p)
                 );
-            } else player.sendMessage(
-                new TranslatableComponent(LangKeys.waystoneNotFound, Colors.wrap(message.waystoneName, Colors.highlight)),
-                Util.NIL_UUID
+            } else player.sendSystemMessage(
+                Component.translatable(LangKeys.waystoneNotFound, Colors.wrap(message.waystoneName, Colors.highlight))
             );
         }
 
@@ -256,7 +255,7 @@ public class Teleport {
                         ? Optional.of(new ConfirmTeleportGui.SignInfo(tile, (SignBlockPart) part.blockPart, info, part.offset)) : Optional.empty()
                     ))));
             else message.data.consume(
-                l -> Minecraft.getInstance().player.displayClientMessage(new TranslatableComponent(l), true),
+                l -> Minecraft.getInstance().player.displayClientMessage(Component.translatable(l), true),
                 r -> PacketHandler.sendToServer(new Request.Package(r.waystoneName))
             );
         }

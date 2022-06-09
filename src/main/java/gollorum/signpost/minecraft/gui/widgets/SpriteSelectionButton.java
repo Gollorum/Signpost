@@ -9,7 +9,7 @@ import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 
 import java.util.function.Consumer;
 
@@ -25,7 +25,7 @@ public class SpriteSelectionButton extends AbstractButton {
         super(
             rect.point.x, rect.point.y,
             rect.width, rect.height,
-            new TextComponent("")
+            Component.literal("")
         );
         onPressed = pressedAction;
         if(sprite.getWidth() > sprite.getHeight())
@@ -37,9 +37,11 @@ public class SpriteSelectionButton extends AbstractButton {
 
     @Override
     public void renderButton(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
+        BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
 
+        RenderSystem.enableTexture();
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderTexture(0, sprite.atlas().location());
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
@@ -47,18 +49,18 @@ public class SpriteSelectionButton extends AbstractButton {
 
         Matrix4f matrix = matrixStack.last().pose();
         float blitOffset = 0f;
-        BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
-        bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
         int xMin = x;
         int xMax = xMin + width;
         int yMin = y;
         int yMax = yMin + height;
+        bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
         bufferbuilder.vertex(matrix, xMin, yMax, blitOffset).uv(sprite.getU0(), sprite.getV1()).endVertex();
         bufferbuilder.vertex(matrix, xMax, yMax, blitOffset).uv(sprite.getU1(), sprite.getV1()).endVertex();
         bufferbuilder.vertex(matrix, xMax, yMin, blitOffset).uv(sprite.getU1(), sprite.getV0()).endVertex();
         bufferbuilder.vertex(matrix, xMin, yMin, blitOffset).uv(sprite.getU0(), sprite.getV0()).endVertex();
-        bufferbuilder.end();
-        BufferUploader.end(bufferbuilder);
+        BufferUploader.drawWithShader(bufferbuilder.end());
+        RenderSystem.disableBlend();
+//        BufferUploader.end(bufferbuilder);
         if(isHovered) GuiComponent.fill(matrixStack, xMin, yMin, xMax, yMax, 0x50ffffff);
 
     }

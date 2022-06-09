@@ -8,7 +8,7 @@ import net.minecraft.world.level.material.MaterialColor;
 public class PropertiesUtil {
 
     public enum WoodType{
-        Oak, DarkOak, Spruce, Birch, Jungle, Acacia, Warped, Crimson
+        Oak, DarkOak, Spruce, Birch, Jungle, Acacia, Mangrove, Warped, Crimson
     }
 
     public static Block.Properties STONE = Block.Properties.of(Material.STONE, MaterialColor.STONE)
@@ -30,6 +30,7 @@ public class PropertiesUtil {
             case Birch -> MaterialColor.SAND;
             case Jungle -> MaterialColor.DIRT;
             case Acacia -> MaterialColor.COLOR_ORANGE;
+            case Mangrove -> MaterialColor.COLOR_RED;
             case Warped -> MaterialColor.WARPED_STEM;
             case Crimson -> MaterialColor.CRIMSON_STEM;
         };

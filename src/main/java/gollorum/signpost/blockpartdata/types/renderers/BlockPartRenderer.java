@@ -9,6 +9,7 @@ import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.util.Map;
@@ -46,7 +47,7 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
         MultiBufferSource buffer,
         int combinedLights,
         int combinedOverlay,
-        Random random,
+        RandomSource random,
         long randomSeed
     ) {
         Optional<BlockPartRenderer<T>> renderer = BlockPartRenderer.getFor((Class<T>) part.getClass());
@@ -113,7 +114,7 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
         MultiBufferSource buffer,
         int combinedLights,
         int combinedOverlay,
-        Random random,
+        RandomSource random,
         long randomSeed
     );
 

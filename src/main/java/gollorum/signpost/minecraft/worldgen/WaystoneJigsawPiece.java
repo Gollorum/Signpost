@@ -24,8 +24,9 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.StructureFeatureManager;
+import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
@@ -33,14 +34,13 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElementType;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class WaystoneJigsawPiece extends SinglePoolElement {
@@ -160,15 +160,15 @@ public class WaystoneJigsawPiece extends SinglePoolElement {
 
 	@Override
 	public boolean place(
-		StructureManager templateManager,
+		StructureTemplateManager templateManager,
 		WorldGenLevel seedReader,
-		StructureFeatureManager structureManager,
+		StructureManager structureManager,
 		ChunkGenerator chunkGenerator,
 		BlockPos pieceLocation,
 		BlockPos villageLocation,
 		Rotation rotation,
 		BoundingBox boundingBox,
-		Random random,
+		RandomSource random,
 		boolean shouldUseJigsawReplacementStructureProcessor
 	) {
 		if(!Config.Server.worldGen.isVillageGenerationEnabled.get()) return false;
@@ -185,7 +185,7 @@ public class WaystoneJigsawPiece extends SinglePoolElement {
 		BlockPos pos = pieceLocation.relative(facing.getOpposite()).relative(left).above();
 
 		ModelWaystone waystone = getWaystoneType(random, allowedWaystones);
-		Optional<String> optionalName = VillageNamesProvider.requestFor(pos, villageLocation, seedReader.getLevel(), random);
+		Optional<String> optionalName = VillageNamesProvider.requestFor(pos, villageLocation, seedReader.getLevel(), new Random(villageLocation.asLong()));
 		if(!optionalName.isPresent()) {
 			Signpost.LOGGER.warn("No name could be generated for waystone at " + pos + ".");
 			return false;
@@ -236,7 +236,7 @@ public class WaystoneJigsawPiece extends SinglePoolElement {
 		return Vector3.fromBlockPos(spawnBlockPos).add(0.5f, 0, 0.5f);
 	}
 
-	private static ModelWaystone getWaystoneType(Random random, List<ModelWaystone> allowedWaystones) {
+	private static ModelWaystone getWaystoneType(RandomSource random, List<ModelWaystone> allowedWaystones) {
 		return allowedWaystones.get(random.nextInt(allowedWaystones.size()));
 	}
 

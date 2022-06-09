@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.util.Lazy;
 
@@ -31,7 +32,7 @@ public class WaystoneRenderer extends BlockPartRenderer<WaystoneBlockPart> {
 		MultiBufferSource buffer,
 		int combinedLights,
 		int combinedOverlay,
-		Random random,
+		RandomSource random,
 		long randomSeed
 	) {
 		RenderingUtil.render(matrix, renderModel -> renderModel.render(

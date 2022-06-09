@@ -1,19 +1,6 @@
 {
-  "textures": {
-    "post": "minecraft:block/oak_log"
-  },
   "elements": [
     {
-      "from": [
-        -2,
-        0,
-        -2
-      ],
-      "to": [
-        2,
-        16,
-        2
-      ],
       "faces": {
         "down": {
           "texture": "#post",
@@ -24,13 +11,13 @@
             0.0
           ]
         },
-        "up": {
+        "east": {
           "texture": "#post",
           "uv": [
-            0.0,
-            16.0,
             4.0,
-            12.0
+            0.0,
+            8.0,
+            16.0
           ]
         },
         "north": {
@@ -51,6 +38,15 @@
             16.0
           ]
         },
+        "up": {
+          "texture": "#post",
+          "uv": [
+            0.0,
+            16.0,
+            4.0,
+            12.0
+          ]
+        },
         "west": {
           "texture": "#post",
           "uv": [
@@ -59,17 +55,21 @@
             16.0,
             16.0
           ]
-        },
-        "east": {
-          "texture": "#post",
-          "uv": [
-            4.0,
-            0.0,
-            8.0,
-            16.0
-          ]
         }
-      }
+      },
+      "from": [
+        -2,
+        0,
+        -2
+      ],
+      "to": [
+        2,
+        16,
+        2
+      ]
     }
-  ]
+  ],
+  "textures": {
+    "post": "minecraft:block/oak_log"
+  }
 }

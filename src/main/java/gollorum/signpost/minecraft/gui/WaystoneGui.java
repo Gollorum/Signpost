@@ -5,6 +5,7 @@ import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.events.WaystoneRenamedEvent;
 import gollorum.signpost.minecraft.events.WaystoneUpdatedEvent;
 import gollorum.signpost.minecraft.gui.utils.*;
+import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.widgets.ImageInputBox;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.utils.WaystoneData;
@@ -14,8 +15,7 @@ import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.LockIconButton;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -54,7 +54,7 @@ public class WaystoneGui extends ExtendedScreen {
         });
 
     public WaystoneGui(WorldLocation location, Optional<WaystoneData> oldData) {
-        super(new TextComponent("Waystone"));
+        super(Component.literal("Waystone"));
         this.location = location;
         this.oldData = oldData;
     }
@@ -101,7 +101,7 @@ public class WaystoneGui extends ExtendedScreen {
             getCenterY() - buttonsSize.height / 2 + buttonsYOffset,
             buttonsSize.width,
             buttonsSize.height,
-            new TranslatableComponent(LangKeys.done),
+            Component.translatable(LangKeys.done),
             b -> done()
         );
         addRenderableWidget(inputBox);

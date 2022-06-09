@@ -26,9 +26,12 @@ import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
+import net.minecraft.data.worldgen.placement.VegetationPlacements;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.StructureFeatureManager;
+import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Rotation;
@@ -37,15 +40,14 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElementType;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -89,21 +91,21 @@ public class SignpostJigsawPiece extends SinglePoolElement {
 
 	@Override
 	public boolean place(
-		StructureManager templateManager,
+		StructureTemplateManager templateManager,
 		WorldGenLevel seedReader,
-		StructureFeatureManager structureManager,
+		StructureManager structureManager,
 		ChunkGenerator chunkGenerator,
 		BlockPos pieceLocation,
 		BlockPos villageLocation,
 		Rotation rotation,
 		BoundingBox boundingBox,
-		Random random,
+		RandomSource random,
 		boolean shouldUseJigsawReplacementStructureProcessor
 	) {
 		if(!Config.Server.worldGen.isVillageGenerationEnabled.get()) return false;
 		if(signpostCountForVillage.getOrDefault(villageLocation, 0) >= Config.Server.worldGen.maxSignpostsPerVillage.get())
 			return false;
-		Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> possibleTargets = fetchPossibleTargets(pieceLocation, villageLocation, random);
+		Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> possibleTargets = fetchPossibleTargets(pieceLocation, villageLocation, new Random(villageLocation.asLong()));
 		if(possibleTargets.isEmpty()) {
 			Signpost.LOGGER.debug("Did not generate signpost because no targets were found.");
 			return false;
@@ -132,7 +134,9 @@ public class SignpostJigsawPiece extends SinglePoolElement {
 		}
 	}
 
-	private static Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> fetchPossibleTargets(BlockPos pieceLocation, BlockPos villageLocation, Random random) {
+	private static Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> fetchPossibleTargets(
+		BlockPos pieceLocation, BlockPos villageLocation, Random random
+	) {
 		return allWaystoneTargets(villageLocation)
 			.map(e -> new Tuple<>(e, (float) Math.sqrt(e._1.distSqr(pieceLocation)) * (0.5f + random.nextFloat())))
 			.sorted((e1, e2) -> Float.compare(e1._2, e2._2))
@@ -164,7 +168,7 @@ public class SignpostJigsawPiece extends SinglePoolElement {
 		StructurePlaceSettings placementSettings,
 		BlockPos pieceLocation,
 		WorldGenLevel world,
-		Random random,
+		RandomSource random,
 		Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> possibleTargets
 	) {
 		Direction facing = placementSettings.getRotation().rotate(Direction.WEST);
@@ -190,7 +194,7 @@ public class SignpostJigsawPiece extends SinglePoolElement {
 	}
 
 	public Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> makeSign(
-		Random random,
+		RandomSource random,
 		Direction facing,
 		WorldGenLevel world,
 		BlockPos tilePos,
@@ -334,11 +338,11 @@ public class SignpostJigsawPiece extends SinglePoolElement {
 	private Optional<Overlay> overlayFor(WorldGenLevel world, BlockPos pos) {
 		Holder<Biome> biomeHolder = world.getBiome(pos);
 		Biome biome = biomeHolder.value();
-		Biome.BiomeCategory biomeCategory = Biome.getBiomeCategory(biomeHolder);
+		boolean isJungle = biome.getGenerationSettings().features().stream().flatMap(HolderSet::stream)
+			.anyMatch(f -> f.get().equals(VegetationPlacements.TREES_JUNGLE.get()));
 		if(biome.shouldSnow(world, pos)
-			|| biome.getPrecipitation() == Biome.Precipitation.SNOW
-			|| biomeCategory == Biome.BiomeCategory.ICY) return Optional.of(Overlay.Snow);
-		else if (biomeCategory == Biome.BiomeCategory.JUNGLE) return Optional.of(Overlay.Vine);
+			|| biome.getPrecipitation() == Biome.Precipitation.SNOW) return Optional.of(Overlay.Snow);
+		else if (isJungle) return Optional.of(Overlay.Vine);
 		else if(biome.isHumid() || isZombie) return Optional.of(Overlay.Gras);
 		else return Optional.empty();
 	}

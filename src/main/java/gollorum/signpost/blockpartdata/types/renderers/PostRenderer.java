@@ -16,6 +16,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.util.Map;
@@ -57,7 +58,7 @@ public class PostRenderer extends BlockPartRenderer<PostBlockPart> {
 		MultiBufferSource buffer,
 		int combinedLights,
 		int combinedOverlay,
-		Random random,
+		RandomSource random,
 		long randomSeed
 	) {
 		RenderingUtil.render(matrix, renderModel -> {

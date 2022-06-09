@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.server.level.BlockDestructionProgress;
+import net.minecraft.util.RandomSource;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -30,9 +31,8 @@ public class PostRenderer implements BlockEntityRenderer<PostTile> {
         PostTile tile, float partialTicks, PoseStack matrixStack,
         MultiBufferSource buffer, int combinedLight, int combinedOverlay
     ) {
-        Random random = new Random();
-        long rand = tile.hashCode();
-        random.setSeed(rand);
+        long randomSeed = tile.hashCode();
+        RandomSource random = RandomSource.create(randomSeed);
         SortedSet<BlockDestructionProgress> destructionProgresses = Minecraft.getInstance().levelRenderer.destructionProgress.get(tile.getBlockPos().asLong());
         Set<BlockPartInstance> partsBeingBroken = destructionProgresses == null ? null : destructionProgresses.stream()
             .map(progress -> Optional.ofNullable(tile.getLevel().getEntity(progress.getId()))
@@ -56,7 +56,7 @@ public class PostRenderer implements BlockEntityRenderer<PostTile> {
                         combinedLight,
                         combinedOverlay,
                         random,
-                        rand
+                        randomSeed
                     );
                 });
             }

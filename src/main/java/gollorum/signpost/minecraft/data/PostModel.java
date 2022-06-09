@@ -56,7 +56,7 @@ public class PostModel extends BlockModelProvider {
             i -> i,
             i -> new BlockModelBuilder(new ResourceLocation(Signpost.MOD_ID, "block/" + i.registryName), fileHelper)
         ));
-        generator.addProvider(new Item(generator, fileHelper));
+        generator.addProvider(true, new Item(generator, fileHelper));
     }
 
     private class Item extends ItemModelProvider {

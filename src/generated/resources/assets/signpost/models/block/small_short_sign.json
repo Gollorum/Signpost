@@ -1,10 +1,58 @@
 {
-  "textures": {
-    "texture": "minecraft:block/stripped_oak_log",
-    "secondary_texture": "minecraft:block/oak_log"
-  },
   "elements": [
     {
+      "faces": {
+        "down": {
+          "rotation": 90,
+          "texture": "#secondary_texture",
+          "uv": [
+            11.0,
+            12.0,
+            12.0,
+            0.0
+          ]
+        },
+        "east": {
+          "rotation": 90,
+          "texture": "#secondary_texture",
+          "uv": [
+            10.0,
+            13.0,
+            11.0,
+            12.0
+          ]
+        },
+        "north": {
+          "rotation": 90,
+          "texture": "#secondary_texture",
+          "uv": [
+            10.0,
+            0.0,
+            11.0,
+            12.0
+          ]
+        },
+        "south": {
+          "rotation": 90,
+          "texture": "#secondary_texture",
+          "uv": [
+            10.0,
+            12.0,
+            11.0,
+            0.0
+          ]
+        },
+        "west": {
+          "rotation": 90,
+          "texture": "#secondary_texture",
+          "uv": [
+            10.0,
+            16.0,
+            11.0,
+            15.0
+          ]
+        }
+      },
       "from": [
         2,
         -3,
@@ -14,61 +62,61 @@
         14,
         -2,
         0.5
-      ],
-      "faces": {
-        "down": {
-          "texture": "#secondary_texture",
-          "uv": [
-            11.0,
-            12.0,
-            12.0,
-            0.0
-          ],
-          "rotation": 90
-        },
-        "north": {
-          "texture": "#secondary_texture",
-          "uv": [
-            10.0,
-            0.0,
-            11.0,
-            12.0
-          ],
-          "rotation": 90
-        },
-        "south": {
-          "texture": "#secondary_texture",
-          "uv": [
-            10.0,
-            12.0,
-            11.0,
-            0.0
-          ],
-          "rotation": 90
-        },
-        "west": {
-          "texture": "#secondary_texture",
-          "uv": [
-            10.0,
-            16.0,
-            11.0,
-            15.0
-          ],
-          "rotation": 90
-        },
-        "east": {
-          "texture": "#secondary_texture",
-          "uv": [
-            10.0,
-            13.0,
-            11.0,
-            12.0
-          ],
-          "rotation": 90
-        }
-      }
+      ]
     },
     {
+      "faces": {
+        "east": {
+          "rotation": 90,
+          "texture": "#secondary_texture",
+          "uv": [
+            5.0,
+            13.0,
+            6.0,
+            12.0
+          ]
+        },
+        "north": {
+          "rotation": 90,
+          "texture": "#secondary_texture",
+          "uv": [
+            5.0,
+            0.0,
+            6.0,
+            12.0
+          ]
+        },
+        "south": {
+          "rotation": 90,
+          "texture": "#secondary_texture",
+          "uv": [
+            5.0,
+            12.0,
+            6.0,
+            0.0
+          ]
+        },
+        "up": {
+          "rotation": 90,
+          "texture": "#secondary_texture",
+          "uv": [
+            4.0,
+            12.0,
+            5.0,
+            0.0
+          ]
+        },
+        "west": {
+          "rotation": 90,
+          "texture": "#secondary_texture",
+          "uv": [
+            5.0,
+            16.0,
+            6.0,
+            15.0
+          ]
+        }
+      },
       "from": [
         2,
         2,
@@ -78,61 +126,71 @@
         14,
         3,
         0.5
-      ],
-      "faces": {
-        "up": {
-          "texture": "#secondary_texture",
-          "uv": [
-            4.0,
-            12.0,
-            5.0,
-            0.0
-          ],
-          "rotation": 90
-        },
-        "north": {
-          "texture": "#secondary_texture",
-          "uv": [
-            5.0,
-            0.0,
-            6.0,
-            12.0
-          ],
-          "rotation": 90
-        },
-        "south": {
-          "texture": "#secondary_texture",
-          "uv": [
-            5.0,
-            12.0,
-            6.0,
-            0.0
-          ],
-          "rotation": 90
-        },
-        "west": {
-          "texture": "#secondary_texture",
-          "uv": [
-            5.0,
-            16.0,
-            6.0,
-            15.0
-          ],
-          "rotation": 90
-        },
-        "east": {
-          "texture": "#secondary_texture",
-          "uv": [
-            5.0,
-            13.0,
-            6.0,
-            12.0
-          ],
-          "rotation": 90
-        }
-      }
+      ]
     },
     {
+      "faces": {
+        "down": {
+          "rotation": 90,
+          "texture": "#texture",
+          "uv": [
+            10.0,
+            12.0,
+            11.0,
+            0.0
+          ]
+        },
+        "east": {
+          "rotation": 90,
+          "texture": "#texture",
+          "uv": [
+            6.0,
+            13.0,
+            10.0,
+            12.0
+          ]
+        },
+        "north": {
+          "rotation": 90,
+          "texture": "#texture",
+          "uv": [
+            6.0,
+            0.0,
+            10.0,
+            12.0
+          ]
+        },
+        "south": {
+          "rotation": 90,
+          "texture": "#texture",
+          "uv": [
+            6.0,
+            12.0,
+            10.0,
+            0.0
+          ]
+        },
+        "up": {
+          "rotation": 90,
+          "texture": "#texture",
+          "uv": [
+            5.0,
+            12.0,
+            6.0,
+            0.0
+          ]
+        },
+        "west": {
+          "rotation": 90,
+          "texture": "#texture",
+          "uv": [
+            6.0,
+            16.0,
+            10.0,
+            15.0
+          ]
+        }
+      },
       "from": [
         2,
         -2,
@@ -142,71 +200,51 @@
         14,
         2,
         0.5
-      ],
-      "faces": {
-        "down": {
-          "texture": "#texture",
-          "uv": [
-            10.0,
-            12.0,
-            11.0,
-            0.0
-          ],
-          "rotation": 90
-        },
-        "up": {
-          "texture": "#texture",
-          "uv": [
-            5.0,
-            12.0,
-            6.0,
-            0.0
-          ],
-          "rotation": 90
-        },
-        "north": {
-          "texture": "#texture",
-          "uv": [
-            6.0,
-            0.0,
-            10.0,
-            12.0
-          ],
-          "rotation": 90
-        },
-        "south": {
-          "texture": "#texture",
-          "uv": [
-            6.0,
-            12.0,
-            10.0,
-            0.0
-          ],
-          "rotation": 90
-        },
-        "west": {
-          "texture": "#texture",
-          "uv": [
-            6.0,
-            16.0,
-            10.0,
-            15.0
-          ],
-          "rotation": 90
-        },
-        "east": {
-          "texture": "#texture",
-          "uv": [
-            6.0,
-            13.0,
-            10.0,
-            12.0
-          ],
-          "rotation": 90
-        }
-      }
+      ]
     },
     {
+      "faces": {
+        "down": {
+          "rotation": 90,
+          "texture": "#secondary_texture",
+          "uv": [
+            10.0,
+            14.0,
+            11.0,
+            12.0
+          ]
+        },
+        "east": {
+          "rotation": 90,
+          "texture": "#secondary_texture",
+          "uv": [
+            9.0,
+            15.0,
+            10.0,
+            14.0
+          ]
+        },
+        "north": {
+          "rotation": 90,
+          "texture": "#secondary_texture",
+          "uv": [
+            9.0,
+            12.0,
+            10.0,
+            14.0
+          ]
+        },
+        "south": {
+          "rotation": 90,
+          "texture": "#secondary_texture",
+          "uv": [
+            9.0,
+            14.0,
+            10.0,
+            12.0
+          ]
+        }
+      },
       "from": [
         14,
         -2,
@@ -216,51 +254,51 @@
         16,
         -1,
         0.5
-      ],
-      "faces": {
-        "down": {
-          "texture": "#secondary_texture",
-          "uv": [
-            10.0,
-            14.0,
-            11.0,
-            12.0
-          ],
-          "rotation": 90
-        },
-        "north": {
-          "texture": "#secondary_texture",
-          "uv": [
-            9.0,
-            12.0,
-            10.0,
-            14.0
-          ],
-          "rotation": 90
-        },
-        "south": {
-          "texture": "#secondary_texture",
-          "uv": [
-            9.0,
-            14.0,
-            10.0,
-            12.0
-          ],
-          "rotation": 90
-        },
-        "east": {
-          "texture": "#secondary_texture",
-          "uv": [
-            9.0,
-            15.0,
-            10.0,
-            14.0
-          ],
-          "rotation": 90
-        }
-      }
+      ]
     },
     {
+      "faces": {
+        "east": {
+          "rotation": 90,
+          "texture": "#secondary_texture",
+          "uv": [
+            6.0,
+            15.0,
+            7.0,
+            14.0
+          ]
+        },
+        "north": {
+          "rotation": 90,
+          "texture": "#secondary_texture",
+          "uv": [
+            6.0,
+            12.0,
+            7.0,
+            14.0
+          ]
+        },
+        "south": {
+          "rotation": 90,
+          "texture": "#secondary_texture",
+          "uv": [
+            6.0,
+            14.0,
+            7.0,
+            12.0
+          ]
+        },
+        "up": {
+          "rotation": 90,
+          "texture": "#secondary_texture",
+          "uv": [
+            5.0,
+            14.0,
+            6.0,
+            12.0
+          ]
+        }
+      },
       "from": [
         14,
         1,
@@ -270,125 +308,135 @@
         16,
         2,
         0.5
-      ],
-      "faces": {
-        "up": {
-          "texture": "#secondary_texture",
-          "uv": [
-            5.0,
-            14.0,
-            6.0,
-            12.0
-          ],
-          "rotation": 90
-        },
-        "north": {
-          "texture": "#secondary_texture",
-          "uv": [
-            6.0,
-            12.0,
-            7.0,
-            14.0
-          ],
-          "rotation": 90
-        },
-        "south": {
-          "texture": "#secondary_texture",
-          "uv": [
-            6.0,
-            14.0,
-            7.0,
-            12.0
-          ],
-          "rotation": 90
-        },
-        "east": {
-          "texture": "#secondary_texture",
-          "uv": [
-            6.0,
-            15.0,
-            7.0,
-            14.0
-          ],
-          "rotation": 90
-        }
-      }
+      ]
     },
     {
-      "from": [
-        14,
-        -1,
-        -0.5
-      ],
-      "to": [
-        16,
-        1,
-        0.5
-      ],
       "faces": {
         "down": {
+          "rotation": 90,
           "texture": "#texture",
           "uv": [
             9.0,
             14.0,
             10.0,
             12.0
-          ],
-          "rotation": 90
+          ]
         },
-        "up": {
+        "east": {
+          "rotation": 90,
           "texture": "#texture",
           "uv": [
-            6.0,
-            14.0,
             7.0,
-            12.0
-          ],
-          "rotation": 90
+            15.0,
+            9.0,
+            14.0
+          ]
         },
         "north": {
+          "rotation": 90,
           "texture": "#texture",
           "uv": [
             7.0,
             12.0,
             9.0,
             14.0
-          ],
-          "rotation": 90
+          ]
         },
         "south": {
+          "rotation": 90,
           "texture": "#texture",
           "uv": [
             7.0,
             14.0,
             9.0,
             12.0
-          ],
-          "rotation": 90
+          ]
+        },
+        "up": {
+          "rotation": 90,
+          "texture": "#texture",
+          "uv": [
+            6.0,
+            14.0,
+            7.0,
+            12.0
+          ]
         },
         "west": {
+          "rotation": 90,
           "texture": "#texture",
           "uv": [
             7.0,
             12.0,
             9.0,
             11.0
-          ],
-          "rotation": 90
-        },
-        "east": {
-          "texture": "#texture",
-          "uv": [
-            7.0,
-            15.0,
-            9.0,
-            14.0
-          ],
-          "rotation": 90
+          ]
         }
-      }
+      },
+      "from": [
+        14,
+        -1,
+        -0.5
+      ],
+      "to": [
+        16,
+        1,
+        0.5
+      ]
     },
     {
+      "faces": {
+        "down": {
+          "rotation": 90,
+          "texture": "#secondary_texture",
+          "uv": [
+            9.0,
+            16.0,
+            10.0,
+            14.0
+          ]
+        },
+        "east": {
+          "rotation": 90,
+          "texture": "#secondary_texture",
+          "uv": [
+            7.0,
+            1.0,
+            9.0,
+            0.0
+          ]
+        },
+        "north": {
+          "rotation": 90,
+          "texture": "#secondary_texture",
+          "uv": [
+            7.0,
+            14.0,
+            9.0,
+            16.0
+          ]
+        },
+        "south": {
+          "rotation": 90,
+          "texture": "#secondary_texture",
+          "uv": [
+            7.0,
+            16.0,
+            9.0,
+            14.0
+          ]
+        },
+        "up": {
+          "rotation": 90,
+          "texture": "#secondary_texture",
+          "uv": [
+            6.0,
+            16.0,
+            7.0,
+            14.0
+          ]
+        }
+      },
       "from": [
         16,
         -1,
@@ -398,59 +446,11 @@
         18,
         1,
         0.5
-      ],
-      "faces": {
-        "down": {
-          "texture": "#secondary_texture",
-          "uv": [
-            9.0,
-            16.0,
-            10.0,
-            14.0
-          ],
-          "rotation": 90
-        },
-        "up": {
-          "texture": "#secondary_texture",
-          "uv": [
-            6.0,
-            16.0,
-            7.0,
-            14.0
-          ],
-          "rotation": 90
-        },
-        "north": {
-          "texture": "#secondary_texture",
-          "uv": [
-            7.0,
-            14.0,
-            9.0,
-            16.0
-          ],
-          "rotation": 90
-        },
-        "south": {
-          "texture": "#secondary_texture",
-          "uv": [
-            7.0,
-            16.0,
-            9.0,
-            14.0
-          ],
-          "rotation": 90
-        },
-        "east": {
-          "texture": "#secondary_texture",
-          "uv": [
-            7.0,
-            1.0,
-            9.0,
-            0.0
-          ],
-          "rotation": 90
-        }
-      }
+      ]
     }
-  ]
+  ],
+  "textures": {
+    "secondary_texture": "minecraft:block/oak_log",
+    "texture": "minecraft:block/stripped_oak_log"
+  }
 }

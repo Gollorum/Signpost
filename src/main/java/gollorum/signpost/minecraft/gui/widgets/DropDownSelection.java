@@ -7,12 +7,10 @@ import gollorum.signpost.minecraft.gui.utils.*;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.util.Mth;
 
 import java.util.ArrayList;
@@ -332,7 +330,7 @@ public class DropDownSelection<EntryType> extends ImageButton {
 
             @Override
             public Component getNarration() {
-                return new TextComponent("");
+                return Component.literal("");
             }
 
             @Override

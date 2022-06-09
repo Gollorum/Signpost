@@ -21,8 +21,8 @@ public class WaystoneModel extends BlockModelProvider {
 
 	public static WaystoneModel addTo(DataGenerator generator, ExistingFileHelper fileHelper) {
 		WaystoneModel self = new WaystoneModel(generator, fileHelper);
-		generator.addProvider(self);
-		generator.addProvider(self.makeItem(generator, fileHelper));
+		generator.addProvider(true, self);
+		generator.addProvider(true, self.makeItem(generator, fileHelper));
 		return self;
 	}
 

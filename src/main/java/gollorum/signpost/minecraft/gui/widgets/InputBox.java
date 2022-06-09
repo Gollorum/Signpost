@@ -8,7 +8,7 @@ import gollorum.signpost.minecraft.gui.utils.WithMutableX;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +43,7 @@ public class InputBox extends EditBox implements WithMutableX, Ticking {
             configFont,
             inputFieldRect.point.x, inputFieldRect.point.y,
             inputFieldRect.width, inputFieldRect.height,
-            new TextComponent("")
+            Component.literal("")
         );
         this.configFont = configFont;
         this.shouldDropShadow = shouldDropShadow;

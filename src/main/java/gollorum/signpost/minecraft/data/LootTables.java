@@ -6,6 +6,7 @@ import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.WaystoneBlock;
+import net.minecraft.core.Registry;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.loot.BlockLoot;
 import net.minecraft.data.loot.LootTableProvider;
@@ -43,7 +44,7 @@ public class LootTables extends LootTableProvider {
     private void generateBlockLootTables(BiConsumer<ResourceLocation, LootTable.Builder> builder) {
         for(PostBlock.Variant variant : PostBlock.AllVariants)
             builder.accept(
-                new ResourceLocation(Signpost.MOD_ID, "blocks/" + variant.getBlock().getRegistryName().getPath()),
+                new ResourceLocation(Signpost.MOD_ID, "blocks/" + Registry.BLOCK.getKey(variant.getBlock()).getPath()),
                 LootTable.lootTable()
                     .withPool(LootPool.lootPool()
                         .setRolls(ConstantValue.exactly(1))
@@ -55,11 +56,11 @@ public class LootTables extends LootTableProvider {
                     )
             );
         builder.accept(
-            new ResourceLocation(Signpost.MOD_ID, "blocks/" + WaystoneBlock.getInstance().getRegistryName().getPath()),
+            new ResourceLocation(Signpost.MOD_ID, "blocks/" + Registry.BLOCK.getKey(WaystoneBlock.getInstance()).getPath()),
             BlockLoot.createSingleItemTable(WaystoneBlock.getInstance(), ConstantValue.exactly(1)));
         for(ModelWaystone.Variant variant : ModelWaystone.variants)
             builder.accept(
-                new ResourceLocation(Signpost.MOD_ID, "blocks/" + variant.getBlock().getRegistryName().getPath()),
+                new ResourceLocation(Signpost.MOD_ID, "blocks/" + Registry.BLOCK.getKey(variant.getBlock()).getPath()),
                 BlockLoot.createSingleItemTable(variant.getBlock(), ConstantValue.exactly(1)));
     }
 

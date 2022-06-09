@@ -73,7 +73,7 @@ public class Signpost {
 
         Villages.instance.initialize();
 
-        WaystoneArgument.bootstrap();
+        WaystoneArgument.register(modBus);
 
         // Disabled until I manage to integrate the new version of waystones
 //        if(ModList.get().isLoaded("waystones"))

@@ -16,7 +16,7 @@ public class RecipeRegistry {
 	public static final RegistryObject<CutWaystoneRecipe.Serializer> CutWaystoneSerializer =
 		Register.register(
 			CutWaystoneRecipe.RegistryName,
-			() -> CutWaystoneRecipe.Serializer.INSTANCE
+			CutWaystoneRecipe.Serializer::new
 		);
 
 	public static void register(IEventBus bus){
