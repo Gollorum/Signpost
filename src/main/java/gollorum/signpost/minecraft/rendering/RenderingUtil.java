@@ -25,6 +25,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -32,23 +33,23 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.model.ForgeModelBakery;
 import net.minecraftforge.client.model.SimpleModelState;
-import net.minecraftforge.client.model.data.EmptyModelData;
+import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.common.util.Lazy;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class RenderingUtil {
+    
+    private static ModelBakery modelBakery = Minecraft.getInstance().getModelManager().getModelBakery();
 
     public static BakedModel loadModel(ResourceLocation location) {
-        return ForgeModelBakery.instance().bake(
+        return modelBakery.bake(
             location,
             new SimpleModelState(Transformation.identity()),
             Material::sprite
@@ -57,8 +58,8 @@ public class RenderingUtil {
 
     public static BakedModel loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation) {
         final ResourceLocation textLoc = trim(textureLocation);
-        return ForgeModelBakery.instance().getModel(modelLocation).bake(
-            ForgeModelBakery.instance(),
+        return modelBakery.getModel(modelLocation).bake(
+            modelBakery,
             m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(textLoc),
             new SimpleModelState(Transformation.identity()),
             modelLocation
@@ -68,8 +69,8 @@ public class RenderingUtil {
     public static BakedModel loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation1, ResourceLocation textureLocation2) {
         final ResourceLocation textLoc1 = trim(textureLocation1);
         final ResourceLocation textLoc2 = trim(textureLocation2);
-        return ForgeModelBakery.instance().getModel(modelLocation).bake(
-            ForgeModelBakery.instance(),
+        return modelBakery.getModel(modelLocation).bake(
+            modelBakery,
             m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(
                 m.texture().equals(PostModel.mainTextureMarker)
                     ? textLoc1 : textLoc2
@@ -156,12 +157,12 @@ public class RenderingUtil {
             matrixStack.mulPose(new Quaternion(Vector3f.XP, pitch.radians(), false));
             if(isFlipped) matrixStack.mulPose(new Quaternion(Vector3f.YP, (float) Math.PI, false));
             MultiBufferSource.BufferSource renderTypeBuffer = Minecraft.getInstance().renderBuffers().bufferSource();
-            renderGui(model, matrixStack, color, offset, yaw, renderTypeBuffer.getBuffer(renderType), 0xf000f0, OverlayTexture.NO_OVERLAY, alsoDo);
+            renderGui(model, matrixStack, color, offset, yaw, renderTypeBuffer.getBuffer(renderType), renderType, 0xf000f0, OverlayTexture.NO_OVERLAY, alsoDo);
             renderTypeBuffer.endBatch();
         });
     }
 
-    public static void renderGui(BakedModel model, PoseStack matrixStack, int color, Vector3 offset, Angle yaw, VertexConsumer builder, int combinedLight, int combinedOverlay, Consumer<PoseStack> alsoDo) {
+    public static void renderGui(BakedModel model, PoseStack matrixStack, int color, Vector3 offset, Angle yaw, VertexConsumer builder, RenderType renderType, int combinedLight, int combinedOverlay, Consumer<PoseStack> alsoDo) {
         wrapInMatrixEntry(matrixStack, () -> {
             matrixStack.mulPose(new Quaternion(Vector3f.YP, yaw.radians(), false));
             matrixStack.translate(offset.x, offset.y, offset.z);
@@ -179,7 +180,7 @@ public class RenderingUtil {
                 RandomSource random = RandomSource.create();
                 for(Direction dir : allDirections) {
                     random.setSeed(42L);
-                    for(BakedQuad quad: model.getQuads(null, dir, random, EmptyModelData.INSTANCE)) {
+                    for(BakedQuad quad: model.getQuads(null, dir, random, ModelData.EMPTY, renderType)) {
                         builder.putBulkData(matrixStack.last(), quad, r, g, b, combinedLight, combinedOverlay);
                     }
 

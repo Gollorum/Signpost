@@ -12,7 +12,7 @@ import static gollorum.signpost.Signpost.MOD_ID;
 
 public class TileEntityRegistry {
 
-    private static final DeferredRegister<BlockEntityType<?>> REGISTER = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITIES, MOD_ID);
+    private static final DeferredRegister<BlockEntityType<?>> REGISTER = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, MOD_ID);
 
     private static final RegistryObject<BlockEntityType<PostTile>> POST =
         REGISTER.register(PostTile.REGISTRY_NAME, PostTile::createType);

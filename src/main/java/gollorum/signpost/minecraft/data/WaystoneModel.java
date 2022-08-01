@@ -3,11 +3,12 @@ package gollorum.signpost.minecraft.data;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.block.WaystoneBlock;
+import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.model.generators.*;
-import net.minecraftforge.client.model.generators.loaders.OBJLoaderBuilder;
+import net.minecraftforge.client.model.generators.loaders.ObjModelBuilder;
 import net.minecraftforge.common.data.ExistingFileHelper;
 
 import java.util.HashMap;
@@ -51,24 +52,23 @@ public class WaystoneModel extends BlockModelProvider {
 			BlockModelBuilder builder = getBuilder(loc.toString())
 				.parent(new ModelFile.ExistingModelFile(new ResourceLocation("block/block"), existingFileHelper))
 				.texture("particle", waystoneTexture)
-				.customLoader(OBJLoaderBuilder::begin)
+				.customLoader(ObjModelBuilder::begin)
 				.modelLocation(new ResourceLocation(loc.getNamespace(), "models/block/" + variant.registryName + ".obj"))
 				.flipV(true)
-				.diffuseLighting(true)
-				.ambientToFullbright(false)
+				.shadeQuads(true)
 				.end()
 				.transforms()
-					.transform(ModelBuilder.Perspective.GUI)
+					.transform(ItemTransforms.TransformType.GUI)
 						.rotation(30, 315, 0)
 						.translation(0, variant.modelYOffset, 0)
 						.scale(0.625f)
 					.end()
-					.transform(ModelBuilder.Perspective.FIRSTPERSON_RIGHT)
+					.transform(ItemTransforms.TransformType.FIRST_PERSON_RIGHT_HAND)
 						.rotation(0, 315, 0)
 						.translation(0, variant.modelYOffset, 0)
 						.scale(0.4f)
 					.end()
-					.transform(ModelBuilder.Perspective.FIRSTPERSON_LEFT)
+					.transform(ItemTransforms.TransformType.FIRST_PERSON_LEFT_HAND)
 						.rotation(0, 315, 0)
 						.translation(0, variant.modelYOffset, 0)
 						.scale(0.4f)

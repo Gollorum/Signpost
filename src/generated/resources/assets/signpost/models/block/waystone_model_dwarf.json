@@ -1,7 +1,5 @@
 {
   "parent": "minecraft:block/block",
-  "ambientToFullbright": false,
-  "diffuseLighting": true,
   "display": {
     "firstperson_lefthand": {
       "rotation": [
@@ -55,9 +53,10 @@
       ]
     }
   },
-  "flip-v": true,
+  "flip_v": true,
   "loader": "forge:obj",
   "model": "signpost:models/block/waystone_model_dwarf.obj",
+  "shade_quads": true,
   "textures": {
     "particle": "signpost:block/waystone"
   }

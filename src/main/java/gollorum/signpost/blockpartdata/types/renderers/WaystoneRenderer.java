@@ -17,8 +17,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.util.Lazy;
 
-import java.util.Random;
-
 public class WaystoneRenderer extends BlockPartRenderer<WaystoneBlockPart> {
 
 	private static final Lazy<BakedModel> model = Lazy.of(() -> RenderingUtil.loadModel(WaystoneModel.inPostLocation));
@@ -56,7 +54,7 @@ public class WaystoneRenderer extends BlockPartRenderer<WaystoneBlockPart> {
 
 	@Override
 	public void renderGui(WaystoneBlockPart waystone, PoseStack matrixStack, Vector3 offset, MultiBufferSource buffer, int combinedLight, int combinedOverlay) {
-		RenderingUtil.renderGui(model.get(), matrixStack, 0xffffff, offset, Angle.ZERO, buffer.getBuffer(RenderType.solid()), combinedLight, combinedOverlay, m -> {});
+		RenderingUtil.renderGui(model.get(), matrixStack, 0xffffff, offset, Angle.ZERO, buffer.getBuffer(RenderType.solid()), RenderType.solid(), combinedLight, combinedOverlay, m -> {});
 	}
 
 }

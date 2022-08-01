@@ -28,6 +28,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 
 import java.util.*;
 import java.util.function.Function;
@@ -124,7 +125,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
     }
 
     private List<TextureAtlasSprite> allSpritesFor(BucketItem item) {
-        return item.getFluid().getAttributes()
+        return IClientFluidTypeExtensions.of(item.getFluid())
             .getTextures()
             .map(this::spriteFrom)
             .collect(Collectors.toList());

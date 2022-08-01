@@ -13,7 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.ColorHandlerEvent;
+import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -23,14 +23,14 @@ import static net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus.MOD;
 public class ColorRegistry {
 
     @SubscribeEvent
-    static void onBlockColor(ColorHandlerEvent.Block event) {
+    static void onBlockColor(RegisterColorHandlersEvent.Block event) {
         for(PostBlock.Variant variant : PostBlock.AllVariants) {
             event.getBlockColors().register(overlayBlockColor, variant.getBlock());
         }
     }
 
     @SubscribeEvent
-    static void onItemColor(ColorHandlerEvent.Item event) {
+    static void onItemColor(RegisterColorHandlersEvent.Item event) {
         for(PostBlock.Variant variant : PostBlock.AllVariants) {
             event.getItemColors().register(overlayItemColor, variant.getBlock());
             event.getBlockColors().register(overlayBlockColor, variant.getBlock());

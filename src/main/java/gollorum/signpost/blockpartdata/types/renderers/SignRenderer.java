@@ -21,8 +21,6 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-import java.util.Random;
-
 public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPartRenderer<T> {
 
 	private final boolean shouldRenderBaked = false;
@@ -102,7 +100,7 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
 
 	@Override
 	public void renderGui(T sign, PoseStack matrixStack, Vector3 offset, MultiBufferSource buffer, int combinedLight, int combinedOverlay) {
-		RenderingUtil.renderGui(makeBakedModel(sign), matrixStack, 0xffffff, offset, sign.getAngle(), buffer.getBuffer(RenderType.solid()), combinedLight, combinedOverlay,
+		RenderingUtil.renderGui(makeBakedModel(sign), matrixStack, 0xffffff, offset, sign.getAngle(), buffer.getBuffer(RenderType.solid()), RenderType.solid(), combinedLight, combinedOverlay,
 			ms -> RenderingUtil.wrapInMatrixEntry(matrixStack, () -> {
 				if(!sign.isFlipped())
 					matrixStack.mulPose(new Quaternion(Vector3f.YP, 180, true));
@@ -110,7 +108,7 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
 			})
 		);
 		sign.getOverlay().ifPresent(o -> {
-			RenderingUtil.renderGui(makeBakedOverlayModel(sign, o), matrixStack, o.getDefaultTint(), offset, sign.getAngle(), buffer.getBuffer(RenderType.cutout()), combinedLight, combinedOverlay, m -> {});
+			RenderingUtil.renderGui(makeBakedOverlayModel(sign, o), matrixStack, o.getDefaultTint(), offset, sign.getAngle(), buffer.getBuffer(RenderType.cutout()), RenderType.solid(), combinedLight, combinedOverlay, m -> {});
 		});
 	}
 

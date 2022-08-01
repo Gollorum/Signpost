@@ -20,7 +20,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PostRenderer extends BlockPartRenderer<PostBlockPart> {
@@ -93,7 +92,7 @@ public class PostRenderer extends BlockPartRenderer<PostBlockPart> {
 
 	@Override
 	public void renderGui(PostBlockPart post, PoseStack matrixStack, Vector3 offset, MultiBufferSource buffer, int combinedLight, int combinedOverlay) {
-		RenderingUtil.renderGui(makeBakedModel(post), matrixStack, 0xffffff, offset, Angle.ZERO, buffer.getBuffer(RenderType.solid()), combinedLight, combinedOverlay, m -> {});
+		RenderingUtil.renderGui(makeBakedModel(post), matrixStack, 0xffffff, offset, Angle.ZERO, buffer.getBuffer(RenderType.solid()), RenderType.solid(), combinedLight, combinedOverlay, m -> {});
 	}
 
 }

@@ -9,7 +9,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.client.RenderProperties;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 
 public class GuiItemRenderer extends AbstractWidget {
 
@@ -28,7 +28,7 @@ public class GuiItemRenderer extends AbstractWidget {
 
 	@Override
 	public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-		Font font = RenderProperties.get(itemStack).getFont(itemStack);
+		Font font = IClientItemExtensions.of(itemStack).getFont(itemStack, IClientItemExtensions.FontContext.ITEM_COUNT);
 		if (font == null) font = Minecraft.getInstance().font;
 		this.setBlitOffset(200);
 		this.itemRenderer.blitOffset = 200.0F;

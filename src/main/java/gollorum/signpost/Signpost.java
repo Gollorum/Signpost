@@ -26,7 +26,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
-import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -111,9 +111,9 @@ public class Signpost {
 
         @SubscribeEvent
         public void joinServer(PlayerEvent.PlayerLoggedInEvent e) {
-            if(!e.getPlayer().level.isClientSide && serverInstance.isDedicatedServer())
+            if(!e.getEntity().level.isClientSide && serverInstance.isDedicatedServer())
                 PacketHandler.send(
-                    PacketDistributor.PLAYER.with((() -> (ServerPlayer) e.getPlayer())),
+                    PacketDistributor.PLAYER.with((() -> (ServerPlayer) e.getEntity())),
                     new JoinServerEvent.Package()
                 );
         }
@@ -124,9 +124,9 @@ public class Signpost {
         }
 
         @SubscribeEvent
-        public void onWorldLoad(WorldEvent.Load event) {
-            if (event.getWorld() instanceof ServerLevel world &&
-                ((ServerLevel) event.getWorld()).dimension().equals(Level.OVERWORLD)) {
+        public void onWorldLoad(LevelEvent.Load event) {
+            if (event.getLevel() instanceof ServerLevel world &&
+                ((ServerLevel) event.getLevel()).dimension().equals(Level.OVERWORLD)) {
                 if(!WaystoneLibrary.getInstance().hasStorageBeenSetup())
                     WaystoneLibrary.getInstance().setupStorage(world);
                 if(!BlockRestrictions.getInstance().hasStorageBeenSetup())
