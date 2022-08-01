@@ -203,10 +203,8 @@ public class DropDownSelection<EntryType> extends ImageButton {
             bufferbuilder.vertex(this.x1, this.y0, 0.0D).uv((float)this.x1 / 32.0F, (float)(this.y0 + (int)this.getScrollAmount()) / 32.0F).color(backgroundBrightness, backgroundBrightness, backgroundBrightness, 255).endVertex();
             bufferbuilder.vertex(this.x0, this.y0, 0.0D).uv((float)this.x0 / 32.0F, (float)(this.y0 + (int)this.getScrollAmount()) / 32.0F).color(backgroundBrightness, backgroundBrightness, backgroundBrightness, 255).endVertex();
             tesselator.end();
-            int k = this.getRowLeft();
-            int l = this.y0 + 4 - (int)this.getScrollAmount();
 
-            this.renderList(matrixStack, k, l, mouseX, mouseY, partialTicks);
+            this.renderList(matrixStack, mouseX, mouseY, partialTicks);
             RenderSystem.disableDepthTest();
             this.renderStripe(new Point(x0 - 2, y0 - rimHeight), new Point(x0, y1 + rimHeight));
             this.renderStripe(new Point(x0, y0 - rimHeight), new Point(x1, y0));
@@ -281,7 +279,7 @@ public class DropDownSelection<EntryType> extends ImageButton {
         }
 
         @Override
-        protected void renderList(PoseStack matrixStack, int p_renderList_1_, int p_renderList_2_, int mouseX, int mouseY, float p_renderList_5_) {
+        protected void renderList(PoseStack matrixStack, int mouseX, int mouseY, float partialTick) {
             int itemCount = this.getItemCount();
             for(int i = 0; i < itemCount; ++i) {
                 int rowTop = this.getRowTop(i);
@@ -291,7 +289,7 @@ public class DropDownSelection<EntryType> extends ImageButton {
                     Entry e = this.getEntry(i);
                     int width = this.getRowWidth();
                     int left = this.getRowLeft();
-                    e.render(matrixStack, i, rowTop, left, width, height, mouseX, mouseY, this.isMouseOver(mouseX, mouseY) && Objects.equals(this.getEntryAtPosition(mouseX, mouseY), e), p_renderList_5_);
+                    e.render(matrixStack, i, rowTop, left, width, height, mouseX, mouseY, this.isMouseOver(mouseX, mouseY) && Objects.equals(this.getEntryAtPosition(mouseX, mouseY), e), partialTick);
                 }
             }
 

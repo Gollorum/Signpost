@@ -38,6 +38,7 @@
       ]
     }
   },
+  "emissive_ambient": false,
   "flip_v": true,
   "loader": "forge:obj",
   "model": "signpost:models/block/waystone_model_aer.obj",

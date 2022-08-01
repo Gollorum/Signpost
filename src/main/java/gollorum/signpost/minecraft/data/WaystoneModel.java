@@ -56,6 +56,7 @@ public class WaystoneModel extends BlockModelProvider {
 				.modelLocation(new ResourceLocation(loc.getNamespace(), "models/block/" + variant.registryName + ".obj"))
 				.flipV(true)
 				.shadeQuads(true)
+				.emissiveAmbient(false)
 				.end()
 				.transforms()
 					.transform(ItemTransforms.TransformType.GUI)

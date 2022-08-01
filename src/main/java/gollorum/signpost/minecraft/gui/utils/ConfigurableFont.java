@@ -10,7 +10,7 @@ public class ConfigurableFont extends Font {
     private boolean shouldProhibitShadows;
 
     public ConfigurableFont(Font font, boolean shouldProhibitShadows) {
-        super(font.fonts);
+        super(font.fonts, font.filterFishyGlyphs);
         this.shouldProhibitShadows = shouldProhibitShadows;
     }
 
