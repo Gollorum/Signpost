@@ -51,16 +51,16 @@ public class LargeSignRenderer extends SignRenderer<LargeSignBlockPart> {
 			matrix.mulPose(Vector3f.ZP.rotationDegrees(180));
 			matrix.translate(0, 3.5f * VoxelSize, -3.005 * VoxelSize);
 
-			RenderingUtil.wrapInMatrixEntry(matrix, () -> render(sign, fontRenderer, sign.getText()[3], matrix, buffer, combinedLights, false));
+			RenderingUtil.wrapInMatrixEntry(matrix, () -> render(sign, fontRenderer, sign.getText()[3].get(), matrix, buffer, combinedLights, false));
 			matrix.translate(0, -7 / 3f * VoxelSize, 0);
 
-			RenderingUtil.wrapInMatrixEntry(matrix, () -> render(sign, fontRenderer, sign.getText()[2], matrix, buffer, combinedLights, false));
+			RenderingUtil.wrapInMatrixEntry(matrix, () -> render(sign, fontRenderer, sign.getText()[2].get(), matrix, buffer, combinedLights, false));
 			matrix.translate(0, -7 / 3f * VoxelSize, 0);
 
-			RenderingUtil.wrapInMatrixEntry(matrix, () -> render(sign, fontRenderer, sign.getText()[1], matrix, buffer, combinedLights, false));
+			RenderingUtil.wrapInMatrixEntry(matrix, () -> render(sign, fontRenderer, sign.getText()[1].get(), matrix, buffer, combinedLights, false));
 			matrix.translate(0, -7 / 3f * VoxelSize, 0);
 
-			RenderingUtil.wrapInMatrixEntry(matrix, () -> render(sign, fontRenderer, sign.getText()[0], matrix, buffer, combinedLights, false));
+			RenderingUtil.wrapInMatrixEntry(matrix, () -> render(sign, fontRenderer, sign.getText()[0].get(), matrix, buffer, combinedLights, false));
 		});
 	}
 

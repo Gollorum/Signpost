@@ -4,12 +4,14 @@ import gollorum.signpost.BlockRestrictions;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.blockpartdata.types.PostBlockPart;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
 import gollorum.signpost.security.WithCountRestriction;
 import gollorum.signpost.utils.Delay;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.event.level.BlockEvent;
@@ -68,6 +70,10 @@ public class BlockEventListener {
             BlockRestrictions.Type restrictionType = ((WithCountRestriction)block).getBlockRestrictionType();
             restrictionType.tryGetOwner.apply(tile).ifPresent(owner ->
                 BlockRestrictions.getInstance().incrementRemaining(restrictionType, owner));
+
+            if(event.getLevel() instanceof ServerLevel) {
+                WaystoneTile.onRemoved((ServerLevel) event.getLevel(), event.getPos());
+            }
         }
     }
 

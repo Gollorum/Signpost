@@ -20,8 +20,10 @@ import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.relations.ExternalWaystoneLibrary;
 import gollorum.signpost.utils.Delay;
+import gollorum.signpost.utils.NameProvider;
 import gollorum.signpost.utils.Tuple;
 import gollorum.signpost.utils.math.Angle;
+import gollorum.signpost.utils.AngleProvider;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -128,7 +130,7 @@ public class SignGui extends ExtendedScreen {
     private InputBox currentSignInputBox;
     private ColorInputBox colorInputBox;
 
-    private String lastWaystone = "";
+    private Optional<WaystoneEntry> lastWaystone = Optional.empty();
 
     @Nullable
     private AngleSelectionEntry waystoneRotationEntry;
@@ -175,7 +177,7 @@ public class SignGui extends ExtendedScreen {
     protected void init() {
         SignType currentType;
         String currentWaystone;
-        String[] currentText;
+        NameProvider[] currentText;
         boolean isFlipped;
         int currentColor;
         Angle currentAngle;
@@ -183,9 +185,9 @@ public class SignGui extends ExtendedScreen {
             currentType = selectedType;
             currentWaystone = waystoneInputBox.getValue();
             currentText = switch (currentType) {
-                case Short -> new String[]{shortSignInputBox.getValue()};
-                case Large -> largeSignInputBoxes.stream().map(InputBox::getValue).toArray(String[]::new);
-                default -> new String[]{wideSignInputBox.getValue()};
+                case Short -> new NameProvider[]{asNameProvider(shortSignInputBox.getValue())};
+                case Large -> largeSignInputBoxes.stream().map(InputBox::getValue).map(this::asNameProvider).toArray(NameProvider[]::new);
+                default -> new NameProvider[]{asNameProvider(wideSignInputBox.getValue())};
             };
             isFlipped = widgetsToFlip.get(0).isFlipped();
             widgetsToFlip.clear();
@@ -201,19 +203,19 @@ public class SignGui extends ExtendedScreen {
                 }
                 else if(oldSign.get() instanceof SmallShortSignBlockPart) {
                     currentType = SignType.Short;
-                    currentText = new String[]{((SmallShortSignBlockPart) oldSign.get()).getText()};
+                    currentText = new NameProvider[]{((SmallShortSignBlockPart) oldSign.get()).getText()};
                 }
                 else {
                     currentType = SignType.Wide;
-                    currentText = new String[]{((SmallWideSignBlockPart) oldSign.get()).getText()};
+                    currentText = new NameProvider[]{((SmallWideSignBlockPart) oldSign.get()).getText()};
                 }
                 isFlipped = oldSign.get().isFlipped();
                 currentColor = oldSign.get().getColor();
-                currentAngle = oldSign.get().getAngle();
+                currentAngle = oldSign.get().getAngle().get();
                 selectedOverlay = oldSign.get().getOverlay();
             } else {
                 currentType = SignType.Wide;
-                currentText = new String[]{""};
+                currentText = new NameProvider[]{new NameProvider.Literal("")};
                 isFlipped = true;
                 currentColor = 0;
                 currentAngle = Angle.ZERO;
@@ -544,14 +546,14 @@ public class SignGui extends ExtendedScreen {
         waystoneInputBox.setValue(currentWaystone);
         switch (currentType) {
             case Wide:
-                wideSignInputBox.setValue(currentText[0]);
+                wideSignInputBox.setValue(currentText[0].get());
                 break;
             case Short:
-                shortSignInputBox.setValue(currentText[0]);
+                shortSignInputBox.setValue(currentText[0].get());
                 break;
             case Large:
                 for(i = 0; i < largeSignInputBoxes.size(); i++) {
-                    largeSignInputBoxes.get(i).setValue(currentText[i]);
+                    largeSignInputBoxes.get(i).setValue(currentText[i].get());
                 }
                 break;
         }
@@ -573,7 +575,7 @@ public class SignGui extends ExtendedScreen {
                     unknownWaystone,
                     (WaystoneHandle) handle,
                     tile.getBlockPos().offset(
-                        new Vector3(100, 0, 0).rotateY(oldSign.get().getAngle()).toBlockPos()
+                        new Vector3(100, 0, 0).rotateY(oldSign.get().getAngle().get()).toBlockPos()
                     )
                 ));
             oldWaystone.ifPresent(text -> {
@@ -678,8 +680,7 @@ public class SignGui extends ExtendedScreen {
     }
 
     private void onWaystoneSelected(String waystoneName) {
-        boolean shouldOverrideRotation = !oldSign.isPresent() && (rotationInputField.getCurrentAngle().equals(Angle.ZERO)
-            || rotationInputField.getCurrentAngle().isNearly(angleEntryForPlayer().angleGetter.get(), Angle.fromDegrees(1)));
+        boolean shouldOverrideRotation = isCurrentAnglePointingAtWaystone() || isCurrentAnglePointingAtPlayer();
         if(waystoneRotationEntry != null) {
             shouldOverrideRotation |= waystoneRotationEntry.angleGetter.get().isNearly(rotationInputField.getCurrentAngle(), Angle.fromDegrees(1));
             angleDropDown.removeEntry(waystoneRotationEntry);
@@ -689,7 +690,10 @@ public class SignGui extends ExtendedScreen {
             waystoneInputBox.setTextColor(Colors.valid);
             waystoneInputBox.setTextColorUneditable(Colors.validInactive);
             waystoneDropdown.setFilter(name -> true);
-            if(currentSignInputBox != null && lastWaystone.equals(currentSignInputBox.getValue()))
+            if(currentSignInputBox != null
+                && lastWaystone.map(lw ->
+                    lw.displayName.equals(currentSignInputBox.getValue()))
+                        .orElse(currentSignInputBox.getValue().equals("")))
                 currentSignInputBox.setValue(waystoneName);
             if(!waystoneName.equals("")) {
                 waystoneRotationEntry = angleEntryForWaystone(validWaystone.get());
@@ -697,14 +701,27 @@ public class SignGui extends ExtendedScreen {
                 if(shouldOverrideRotation)
                     rotationInputField.setSelectedAngle(waystoneRotationEntry.angleGetter.get());
             }
-            lastWaystone = waystoneName;
+            lastWaystone = validWaystone;
         } else {
             waystoneInputBox.setTextColor(Colors.invalid);
             waystoneInputBox.setTextColorUneditable(Colors.invalidInactive);
             waystoneDropdown.setFilter(e -> e.entryName.toLowerCase().contains(waystoneName.toLowerCase()));
-            if(currentSignInputBox != null && lastWaystone.equals(currentSignInputBox.getValue()))
+            if(currentSignInputBox != null
+                && lastWaystone.map(lw ->
+                    lw.displayName.equals(currentSignInputBox.getValue()))
+                        .orElse(currentSignInputBox.getValue().equals("")))
                 currentSignInputBox.setValue("");
         }
+    }
+
+    private boolean isCurrentAnglePointingAtWaystone() {
+        return (!oldSign.isPresent() && (rotationInputField.getCurrentAngle().equals(Angle.ZERO))
+            || lastWaystone.map(lw -> rotationInputField.getCurrentAngle().isNearly(angleEntryForWaystone(lw).angleGetter.get(), Angle.fromDegrees(1)))
+                .orElse(false));
+    }
+
+    private boolean isCurrentAnglePointingAtPlayer() {
+        return rotationInputField.getCurrentAngle().isNearly(angleEntryForPlayer().angleGetter.get(), Angle.fromDegrees(1));
     }
 
     private Optional<WaystoneEntry> asValidWaystone(String name){
@@ -900,12 +917,16 @@ public class SignGui extends ExtendedScreen {
         boolean isLocked = lockButton.isLocked();
         ResourceLocation mainTex = oldSign.map(SignBlockPart::getMainTexture).orElse(modelType.mainTexture);
         ResourceLocation secondaryTex = oldSign.map(SignBlockPart::getSecondaryTexture).orElse(modelType.secondaryTexture);
+        AngleProvider angle = destinationId.flatMap(destination -> isCurrentAnglePointingAtWaystone()
+            ? Optional.<AngleProvider>of(new AngleProvider.WaystoneTarget(rotationInputField.getCurrentAngle()))
+            : Optional.empty()
+        ).orElseGet(() -> new AngleProvider.Literal(rotationInputField.getCurrentAngle()));
         switch (selectedType) {
             case Wide -> {
                 data = SmallWideSignBlockPart.METADATA.write(
                     new SmallWideSignBlockPart(
-                        rotationInputField.getCurrentAngle(),
-                        wideSignInputBox.getValue(),
+                        angle,
+                        asNameProvider(wideSignInputBox.getValue()),
                         wideSignRenderer.isFlipped(),
                         mainTex,
                         secondaryTex,
@@ -934,8 +955,8 @@ public class SignGui extends ExtendedScreen {
             case Short -> {
                 data = SmallShortSignBlockPart.METADATA.write(
                     new SmallShortSignBlockPart(
-                        rotationInputField.getCurrentAngle(),
-                        shortSignInputBox.getValue(),
+                        angle,
+                        asNameProvider(shortSignInputBox.getValue()),
                         shortSignRenderer.isFlipped(),
                         mainTex,
                         secondaryTex,
@@ -964,12 +985,12 @@ public class SignGui extends ExtendedScreen {
             case Large -> {
                 data = LargeSignBlockPart.METADATA.write(
                     new LargeSignBlockPart(
-                        rotationInputField.getCurrentAngle(),
-                        new String[]{
-                            largeSignInputBoxes.get(0).getValue(),
-                            largeSignInputBoxes.get(1).getValue(),
-                            largeSignInputBoxes.get(2).getValue(),
-                            largeSignInputBoxes.get(3).getValue(),
+                        angle,
+                        new NameProvider[]{
+                            asNameProvider(largeSignInputBoxes.get(0).getValue()),
+                            asNameProvider(largeSignInputBoxes.get(1).getValue()),
+                            asNameProvider(largeSignInputBoxes.get(2).getValue()),
+                            asNameProvider(largeSignInputBoxes.get(3).getValue()),
                         },
                         currentSignRenderer.isFlipped(),
                         mainTex,
@@ -1023,6 +1044,12 @@ public class SignGui extends ExtendedScreen {
         });
         return new AngleSelectionEntry(LangKeys.rotationPlayer,
             () -> (widgetsToFlip.get(0).isFlipped() ? angleWhenFlipped : angleWhenNotFlipped).get());
+    }
+
+    private NameProvider asNameProvider(String name) {
+        return lastWaystone.map(lw -> lw.displayName.equals(name)).orElse(false)
+            ? new NameProvider.WaystoneTarget(name)
+            : new NameProvider.Literal(name);
     }
 
     private static class AngleSelectionEntry {

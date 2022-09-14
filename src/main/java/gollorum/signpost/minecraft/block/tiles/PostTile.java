@@ -10,10 +10,7 @@ import gollorum.signpost.minecraft.utils.SideUtils;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.security.WithOwner;
-import gollorum.signpost.utils.BlockPartInstance;
-import gollorum.signpost.utils.BlockPartMetadata;
-import gollorum.signpost.utils.WaystoneContainer;
-import gollorum.signpost.utils.WorldLocation;
+import gollorum.signpost.utils.*;
 import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.BlockPosSerializer;
@@ -112,6 +109,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
 
     public UUID addPart(UUID identifier, BlockPartInstance part, ItemStack cost, PlayerHandle player){
         parts.put(identifier, part);
+        part.blockPart.attachTo(this);
         if(hasLevel() && !getLevel().isClientSide()) sendToTracing(() -> new PartAddedEvent.Packet(
             new TilePartInfo(this, identifier),
             part.blockPart.write(),
@@ -605,13 +603,16 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
                                 if(message.offset.isPresent()) {
                                     tile.parts.remove(message.info.identifier);
                                     tile.parts.put(message.info.identifier, new BlockPartInstance(blockPartInstance.blockPart, message.offset.get()));
+                                    blockPartInstance.blockPart.attachTo(tile);
                                 }
                             } else {
                                 Optional<BlockPartMetadata<?>> meta = partsMetadata.stream().filter(m -> m.identifier.equals(message.partMetaIdentifier)).findFirst();
                                 if (meta.isPresent()) {
                                     tile.parts.remove(message.info.identifier);
+                                    BlockPart<?> newPart = meta.get().read(message.data);
                                     tile.parts.put(message.info.identifier,
-                                        new BlockPartInstance(meta.get().read(message.data), message.offset.orElse(blockPartInstance.offset)));
+                                        new BlockPartInstance(newPart, message.offset.orElse(blockPartInstance.offset)));
+                                    newPart.attachTo(tile);
                                 } else {
                                     Signpost.LOGGER.warn("Could not find meta for part " + message.partMetaIdentifier);
                                 }

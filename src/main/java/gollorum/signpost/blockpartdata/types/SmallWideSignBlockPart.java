@@ -8,12 +8,12 @@ import gollorum.signpost.minecraft.utils.CoordinatesUtil;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.BlockPartMetadata;
-import gollorum.signpost.utils.math.Angle;
+import gollorum.signpost.utils.AngleProvider;
+import gollorum.signpost.utils.NameProvider;
 import gollorum.signpost.utils.math.geometry.AABB;
 import gollorum.signpost.utils.math.geometry.Matrix4x4;
 import gollorum.signpost.utils.math.geometry.TransformedBox;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -34,28 +34,28 @@ public class SmallWideSignBlockPart extends SignBlockPart<SmallWideSignBlockPart
         "small_wide_sign",
         (sign, compound) -> {
             compound.put("CoreData", CoreData.SERIALIZER.write(sign.coreData));
-            compound.putString("Text", sign.text);
+            compound.put("Text", NameProvider.Serializer.write(sign.text));
         },
         (compound) -> new SmallWideSignBlockPart(
             CoreData.SERIALIZER.read(compound.getCompound("CoreData")),
-            compound.getString("Text")
+            NameProvider.fetchFrom(compound.get("Text"))
         ),
         SmallWideSignBlockPart.class
     );
 
-    private String text;
+    private NameProvider text;
 
     public SmallWideSignBlockPart(
         CoreData coreData,
-        String text
+        NameProvider text
     ){
         super(coreData);
         this.text = text;
     }
 
     public SmallWideSignBlockPart(
-        Angle angle,
-        String text,
+        AngleProvider angle,
+        NameProvider text,
         boolean flip,
         ResourceLocation mainTexture,
         ResourceLocation secondaryTexture,
@@ -71,19 +71,24 @@ public class SmallWideSignBlockPart extends SignBlockPart<SmallWideSignBlockPart
         text
     ); }
 
-    public void setText(String text) { this.text = text; }
+    public void setText(NameProvider text) { this.text = text; }
 
-    public String getText() { return text; }
+    public NameProvider getText() { return text; }
+
+    @Override
+    protected NameProvider[] getNameProviders() {
+        return new NameProvider[]{text};
+    }
 
     @Override
     protected void regenerateTransformedBox() {
-        transformedBounds = new TransformedBox(LOCAL_BOUNDS).rotateAlong(Matrix4x4.Axis.Y, coreData.angle);
+        transformedBounds = new TransformedBox(LOCAL_BOUNDS).rotateAlong(Matrix4x4.Axis.Y, coreData.angleProvider.get());
         if(coreData.flip) transformedBounds = transformedBounds.scale(new Vector3(1, 1, -1));
     }
 
     private void notifyTextChanged(InteractionInfo info) {
         CompoundTag compound = new CompoundTag();
-        compound.putString("Text", text);
+        compound.put("Text", NameProvider.Serializer.write(text));
         info.mutationDistributor.accept(compound);
     }
 
@@ -99,7 +104,7 @@ public class SmallWideSignBlockPart extends SignBlockPart<SmallWideSignBlockPart
             return;
         }
         if (compound.contains("Text")) {
-            setText(compound.getString("Text"));
+            setText(NameProvider.fetchFrom(compound.get("Text")));
         }
         super.readMutationUpdate(compound, tile, editingPlayer);
     }

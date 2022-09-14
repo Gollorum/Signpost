@@ -3,6 +3,7 @@ package gollorum.signpost.blockpartdata.types.renderers;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Quaternion;
+import gollorum.signpost.blockpartdata.types.BlockPartRenderer;
 import gollorum.signpost.blockpartdata.types.WaystoneBlockPart;
 import gollorum.signpost.minecraft.data.WaystoneModel;
 import gollorum.signpost.minecraft.gui.utils.Point;
