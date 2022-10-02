@@ -43,20 +43,11 @@ public class WaystoneTile extends BlockEntity implements WithOwner.OfWaystone, W
     }
 
     private final EventDispatcher.Listener<WaystoneUpdatedEvent> updateListener = event -> {
-        if(!WorldLocation.from(this).map(loc -> loc.equals(event.location.block)).orElse(false)) return false;
-        switch (event.getType()) {
-            case Added:
-            case Renamed:
-            case Moved:
-                name = Optional.of(event.name);
-                handle = Optional.of(event.handle);
-                return false;
-            case Removed:
-                 name = Optional.empty();
-                 handle = Optional.empty();
-                 return true;
-            default: return false;
+        if(WorldLocation.from(this).map(loc -> loc.equals(event.location.block)).orElse(false)) {
+            name = Optional.of(event.name);
+            handle = Optional.of(event.handle);
         }
+        return false;
     };
 
     @Override
