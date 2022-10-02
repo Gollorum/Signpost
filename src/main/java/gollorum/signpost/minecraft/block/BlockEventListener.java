@@ -5,9 +5,12 @@ import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.blockpartdata.types.PostBlockPart;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
+import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.security.WithCountRestriction;
 import gollorum.signpost.utils.Delay;
+import gollorum.signpost.utils.WorldLocation;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
@@ -45,6 +48,14 @@ public class BlockEventListener {
             if(traceResult.isPresent() && !(traceResult.get().part.blockPart instanceof PostBlockPart)) {
                 event.setCanceled(true);
                 Delay.onServerForFrames(1, () -> {
+
+                    // The client destroys the tile entity instantly. When the event gets cancelled, the server
+                    // sends a block update to the client to restore the block. For some reason, it can happen
+                    // that the entity update packet arrives **before** the entity has been reconstructed, which
+                    // leaves an empty, and thus invisible, post. To fix that, we manually send another update
+                    // one frame later.
+                    PacketHandler.sendToTracing(tile, () -> new PostTile.UpdateAllPartsEvent.Packet(tile.getUpdateTag(), WorldLocation.from(tile).get()));
+
                     postTile.removePart(traceResult.get().id);
                     if (event.getLevel() instanceof ServerLevel) {
                         ServerLevel world = (ServerLevel) event.getLevel();

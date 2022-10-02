@@ -134,7 +134,7 @@ public class WaystoneBlock extends BaseEntityBlock implements WithCountRestricti
 
     public static void registerOwnerAndRequestGui(Level world, BlockPos pos, LivingEntity placer, ItemStack stack) {
         Delay.forFrames(6, world.isClientSide(), () ->
-            TileEntityUtils.delayUntilTileEntityExists(world, pos, WaystoneTile.class, t -> {
+            TileEntityUtils.delayUntilTileEntityExists(world, pos, WaystoneTile.getBlockEntityType(), t -> {
                 t.setWaystoneOwner(Optional.of(PlayerHandle.from(placer)));
                 if(placer instanceof ServerPlayer) {
                     WorldLocation worldLocation = new WorldLocation(pos, world);

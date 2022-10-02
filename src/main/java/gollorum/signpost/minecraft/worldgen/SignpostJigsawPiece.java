@@ -180,7 +180,7 @@ public class SignpostJigsawPiece extends SinglePoolElement {
 		Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> lowerSignResult = makeSign(random, facing, world, upperPos,
 			possibleTargets, 0.25f
 		);
-		TileEntityUtils.delayUntilTileEntityExists(world.getLevel(), upperPos, PostTile.class, tile -> {
+		TileEntityUtils.delayUntilTileEntityExists(world.getLevel(), upperPos, PostTile.getBlockEntityType(), tile -> {
 			upperSignResult._2.accept(tile);
 			lowerSignResult._2.accept(tile);
 			tile.setChanged();

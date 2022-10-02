@@ -448,7 +448,7 @@ public class WaystoneLibrary {
         Optional<ServerLevel> level = TileEntityUtils.toWorld(entry.locationData.block.world, false)
             .flatMap(lv -> lv instanceof ServerLevel ? Optional.of((ServerLevel)lv) : Optional.empty());
         if(!level.isPresent()) return true; // Something is wrong, I cannot find the level to check.
-        Optional<WaystoneTile> entity = TileEntityUtils.findTileEntity(level.get(), entry.locationData.block.blockPos, WaystoneTile.class);
+        Optional<WaystoneTile> entity = level.get().getBlockEntity(entry.locationData.block.blockPos, WaystoneTile.getBlockEntityType());
         if(entity.isPresent()) return true;
         else {
             WaystoneTile.onRemoved(level.get(), entry.locationData.block.blockPos);

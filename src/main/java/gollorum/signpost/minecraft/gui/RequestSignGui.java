@@ -45,7 +45,7 @@ public class RequestSignGui implements PacketHandler.Event<RequestSignGui.Packag
 		Package message, NetworkEvent.Context context
 	) {
 		Optional<Tuple<PostTile, BlockPartInstance>> TupleO = TileEntityUtils.findTileEntityClient(
-			message.tilePartInfo.dimensionKey, message.tilePartInfo.pos, PostTile.class
+			message.tilePartInfo.dimensionKey, message.tilePartInfo.pos, PostTile.getBlockEntityType()
 		).flatMap(tile -> tile.getPart(message.tilePartInfo.identifier)
 			.flatMap(part -> (part.blockPart instanceof SignBlockPart ? Optional.of(new Tuple<>(tile, part)) : Optional.empty())));
 		if (TupleO.isPresent()) {

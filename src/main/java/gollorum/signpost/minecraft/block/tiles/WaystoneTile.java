@@ -25,6 +25,10 @@ public class WaystoneTile extends BlockEntity implements WithOwner.OfWaystone, W
     public static BlockEntityType<WaystoneTile> createType() {
         return type = BlockEntityType.Builder.of(WaystoneTile::new, WaystoneBlock.getInstance()).build(null);
     }
+    public static BlockEntityType<WaystoneTile> getBlockEntityType() {
+        assert type != null;
+        return type;
+    }
 
     private Optional<PlayerHandle> owner = Optional.empty();
 

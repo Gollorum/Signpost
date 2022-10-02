@@ -61,7 +61,7 @@ public class WorldGenConfig {
 		private static final List<String> englishNamePostfixes = Lists.newArrayList("ville", "bridge", "ham", " island", "cester", "water", "town", " creek", " valley", "view", "bury", "burgh", "ington", "field", "dale", " port", "worth", "sey", "don", "pool", "wood", "ley", "ford", " hill", "gate");
 
 		Naming(ForgeConfigSpec.Builder builder) {
-			villageNamePrefixes = builder.comment("", "The names of waystones generated in villages will consist of a prefix, an infix and a postfix, each randomly selected from these lists.",
+			villageNamePrefixes = builder.comment("The names of waystones generated in villages will consist of a prefix, an infix and a postfix, each randomly selected from these lists.",
 				"e.g.: If \"tol \", \"ker\" and \"dra\" are selected, the name will be \"Tol Kerdra\"",
 				"Here are some language-specific examples:",
 				"english:",

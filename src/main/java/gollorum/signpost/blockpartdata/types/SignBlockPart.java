@@ -7,6 +7,7 @@ import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.config.Config;
+import gollorum.signpost.minecraft.events.WaystoneUpdatedEvent;
 import gollorum.signpost.minecraft.gui.PaintSignGui;
 import gollorum.signpost.minecraft.gui.RequestSignGui;
 import gollorum.signpost.minecraft.items.Brush;
@@ -183,17 +184,22 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
     protected abstract NameProvider[] getNameProviders();
 
     @Override public void attachTo(PostTile tile) {
-        BlockPartWaystoneUpdateListener.getInstance().addListener(this, event ->
-            getDestination().ifPresent(handle -> {
-                if (handle.equals(event.handle)) {
-                    if (getAngle() instanceof AngleProvider.WaystoneTarget)
-                        ((AngleProvider.WaystoneTarget) getAngle()).setCachedAngle(
-                            pointingAt(tile.getBlockPos(), event.location.block.blockPos));
-                    for(NameProvider np : getNameProviders())
-                        if(np instanceof NameProvider.WaystoneTarget)
-                            ((NameProvider.WaystoneTarget)np).setCachedName(event.name);
-                }
-            }));
+        BlockPos myBlockPos = tile.getBlockPos();
+        BlockPartWaystoneUpdateListener.getInstance().addListener((Self)this,
+            (self, event) -> onWaystoneUpdated(myBlockPos, self, event));
+    }
+
+    private static void onWaystoneUpdated(BlockPos myBlockPos, SignBlockPart<?> self, WaystoneUpdatedEvent event) {
+        self.getDestination().ifPresent(handle -> {
+            if (handle.equals(event.handle)) {
+                if (self.getAngle() instanceof AngleProvider.WaystoneTarget)
+                    ((AngleProvider.WaystoneTarget) self.getAngle()).setCachedAngle(
+                        pointingAt(myBlockPos, event.location.block.blockPos));
+                for(NameProvider np : self.getNameProviders())
+                    if(np instanceof NameProvider.WaystoneTarget)
+                        ((NameProvider.WaystoneTarget)np).setCachedName(event.name);
+            }
+        });
     }
 
     public void setFlip(boolean flip) {

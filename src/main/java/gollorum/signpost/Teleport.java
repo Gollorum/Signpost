@@ -249,7 +249,7 @@ public class Teleport {
                     info.dimensionKey,
                     true,
                     info.pos,
-                    PostTile.class
+                    PostTile.getBlockEntityType()
                 ).flatMap(tile -> tile.getPart(info.identifier)
                     .flatMap(part -> part.blockPart instanceof SignBlockPart
                         ? Optional.of(new ConfirmTeleportGui.SignInfo(tile, (SignBlockPart) part.blockPart, info, part.offset)) : Optional.empty()

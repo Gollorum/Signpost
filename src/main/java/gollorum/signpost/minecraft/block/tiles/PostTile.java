@@ -33,7 +33,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -267,9 +266,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     @Nullable
     @Override
     public ClientboundBlockEntityDataPacket getUpdatePacket() {
-        CompoundTag ret = new CompoundTag();
-        writeSelf(ret);
-        return ClientboundBlockEntityDataPacket.create(this, unused -> ret);
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override
@@ -454,7 +451,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
                 message.info.dimensionKey,
                 isClientSide,
                 message.info.pos,
-                PostTile.class
+                PostTile.getBlockEntityType()
             ).ifPresent(tile -> {
                 Optional<BlockPartMetadata<?>> meta = partsMetadata.stream().filter(m -> m.identifier.equals(message.partMetaIdentifier)).findFirst();
                 if (meta.isPresent()) {
@@ -629,4 +626,48 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
                 ));
         }
     }
+
+    public static class UpdateAllPartsEvent implements PacketHandler.Event<UpdateAllPartsEvent.Packet> {
+
+        public static class Packet {
+            public final CompoundTag tag;
+            public final WorldLocation location;
+            public Packet(CompoundTag tag, WorldLocation location) {
+                this.tag = tag;
+                this.location = location;
+            }
+        }
+
+        @Override
+        public Class<Packet> getMessageClass() {
+            return Packet.class;
+        }
+
+        @Override
+        public void encode(Packet message, FriendlyByteBuf buffer) {
+            buffer.writeNbt(message.tag);
+            WorldLocation.SERIALIZER.write(message.location, buffer);
+        }
+
+        @Override
+        public Packet decode(FriendlyByteBuf buffer) {
+            return new Packet(buffer.readNbt(), WorldLocation.SERIALIZER.read(buffer));
+        }
+
+        @Override
+        public void handle(Packet message, NetworkEvent.Context context) {
+            if(context.getDirection().getReceptionSide().isClient())
+                context.enqueueWork(() ->
+                    TileEntityUtils.delayUntilTileEntityExistsAt(
+                        message.location,
+                        PostTile.getBlockEntityType(),
+                        tile -> tile.handleUpdateTag(message.tag),
+                        20,
+                        true,
+                        Optional.empty()
+                    )
+                );
+        }
+    }
+
 }
