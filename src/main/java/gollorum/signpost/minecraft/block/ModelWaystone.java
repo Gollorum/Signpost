@@ -205,7 +205,6 @@ public class ModelWaystone extends BaseEntityBlock implements SimpleWaterloggedB
 		}
 	}
 
-	// Does this work with silk touch?
 	@Override
 	public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter level, BlockPos pos, Player player) {
 		return WaystoneBlock.fillClonedItemStack(super.getCloneItemStack(state, target, level, pos, player), level, pos, player);

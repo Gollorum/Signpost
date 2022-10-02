@@ -186,7 +186,6 @@ public class WaystoneBlock extends BaseEntityBlock implements WithCountRestricti
         }
     }
 
-    // Does this work with silk touch?
     @Override
     public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter level, BlockPos pos, Player player) {
         return fillClonedItemStack(super.getCloneItemStack(state, target, level, pos, player), level, pos, player);
