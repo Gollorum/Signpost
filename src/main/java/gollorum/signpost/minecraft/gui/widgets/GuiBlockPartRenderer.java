@@ -1,7 +1,7 @@
 package gollorum.signpost.minecraft.gui.widgets;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import gollorum.signpost.blockpartdata.types.renderers.BlockPartRenderer;
+import gollorum.signpost.blockpartdata.types.BlockPartRenderer;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.utils.BlockPartInstance;

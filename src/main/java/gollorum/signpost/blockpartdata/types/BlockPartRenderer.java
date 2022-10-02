@@ -1,8 +1,8 @@
-package gollorum.signpost.blockpartdata.types.renderers;
+package gollorum.signpost.blockpartdata.types;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.Signpost;
-import gollorum.signpost.blockpartdata.types.*;
+import gollorum.signpost.blockpartdata.types.renderers.*;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.utils.BlockPart;
 import gollorum.signpost.utils.math.Angle;

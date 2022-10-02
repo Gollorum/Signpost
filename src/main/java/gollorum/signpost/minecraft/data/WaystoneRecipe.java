@@ -44,7 +44,7 @@ public class WaystoneRecipe extends RecipeProvider {
             .save(consumer, new ResourceLocation(Signpost.MOD_ID, "cut_into_" + v.name));
         }
         new SingleItemRecipeBuilder(
-            RecipeSerializer.STONECUTTER,
+            RecipeRegistry.CutWaystoneSerializer.get(),
             Ingredient.of(WaystoneTag.Tag),
             WaystoneBlock.getInstance(),
             1

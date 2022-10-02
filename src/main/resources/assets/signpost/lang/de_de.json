@@ -23,6 +23,8 @@
 
   "item.signpost.tool": "Wegweiserdrehwerkzeug",
   "item.signpost.brush": "Wegweiserpinsel",
+  "item.signpost.waystone_has_id": "Besitzt eine ID. Es könnte Wegweiser geben, die hierin zeigen werden.",
+  "item.signpost.waystone_id": "ID: %s",
 
   "gui.signpost.sign_gui_title": "Schild hinzufügen oder editieren",
   "gui.signpost.confirm_teleport_gui_title": "Teleport bestätigen",
@@ -35,7 +37,7 @@
   "gui.signpost.rotation_player": "%d (Blickwinkel des Spielers)",
   "gui.signpost.main_material": "Vorderseite",
   "gui.signpost.secondary_material": "Rückseite / Rand",
-  "gui.signpost.unknownWaystone": "Unbekannter Wegweiser",
+  "gui.signpost.unknownWaystone": "Fehlender Wegstein",
 
   "signpost.discovered": "Du kannst mit Wegweisern nun nach %s reisen.",
   "signpost.not_discovered": "Du hast %s noch nicht entdeckt",
@@ -46,6 +48,8 @@
 
   "signpost.no_permission_to_edit_waystone": "Du bist nicht berechtigt, diesen Wegstein zu ändern.",
   "signpost.no_permission_to_edit_signpost": "Du bist nicht berechtigt, diesen Wegweiser zu ändern.",
+  "signpost.duplicate_waystone_id": "Es existiert bereits ein Wegstein mit dieser ID.",
+  "signpost.duplicate_waystone_name": "Es existiert bereits ein Wegstein \"%s\".",
 
   "signpost.no_more_waystones": "Du darfst keine weiteren Wegsteine platzieren.",
   "signpost.no_more_signposts": "Du darfst keine weiteren Wegweiser platzieren.",

@@ -5,6 +5,7 @@ import com.mojang.math.Matrix4f;
 import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3f;
 import gollorum.signpost.blockpartdata.Overlay;
+import gollorum.signpost.blockpartdata.types.BlockPartRenderer;
 import gollorum.signpost.blockpartdata.types.SignBlockPart;
 import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.gui.utils.Point;
@@ -36,7 +37,7 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
 		RenderingUtil.render(matrix, renderModel -> {
 			if(!tileEntity.hasLevel()) throw new RuntimeException("TileEntity without world cannot be rendered.");
 			RenderingUtil.wrapInMatrixEntry(matrix, () -> {
-				Quaternion rotation = new Quaternion(Vector3f.YP, sign.getAngle().radians(), false);
+				Quaternion rotation = new Quaternion(Vector3f.YP, sign.getAngle().get().radians(), false);
 				matrix.mulPose(rotation);
 				RenderingUtil.wrapInMatrixEntry(matrix, () -> {
 					if(!sign.isFlipped()) matrix.mulPose(new Quaternion(Vector3f.YP, 180, true));
@@ -88,7 +89,7 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
 
 	@Override
 	public void renderGui(T sign, PoseStack matrixStack, Point center, Angle yaw, Angle pitch, boolean isFlipped, float scale, Vector3 offset) {
-		RenderingUtil.renderGui(makeBakedModel(sign), matrixStack, 0xffffff, center, yaw.add(sign.getAngle()), pitch, isFlipped, scale, offset, RenderType.solid(),
+		RenderingUtil.renderGui(makeBakedModel(sign), matrixStack, 0xffffff, center, yaw.add(sign.getAngle().get()), pitch, isFlipped, scale, offset, RenderType.solid(),
 			ms -> RenderingUtil.wrapInMatrixEntry(ms, () -> {
 				if(!sign.isFlipped())
 					ms.mulPose(new Quaternion(Vector3f.YP, 180, true));
@@ -96,12 +97,12 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
 			})
 		);
 		sign.getOverlay().ifPresent(o ->
-			RenderingUtil.renderGui(makeBakedOverlayModel(sign, o), matrixStack, o.getDefaultTint(), center, yaw.add(sign.getAngle()), pitch, isFlipped, scale, offset, RenderType.cutout(), m -> {}));
+			RenderingUtil.renderGui(makeBakedOverlayModel(sign, o), matrixStack, o.getDefaultTint(), center, yaw.add(sign.getAngle().get()), pitch, isFlipped, scale, offset, RenderType.cutout(), m -> {}));
 	}
 
 	@Override
 	public void renderGui(T sign, PoseStack matrixStack, Vector3 offset, MultiBufferSource buffer, int combinedLight, int combinedOverlay) {
-		RenderingUtil.renderGui(makeBakedModel(sign), matrixStack, 0xffffff, offset, sign.getAngle(), buffer.getBuffer(RenderType.solid()), combinedLight, combinedOverlay,
+		RenderingUtil.renderGui(makeBakedModel(sign), matrixStack, 0xffffff, offset, sign.getAngle().get(), buffer.getBuffer(RenderType.solid()), combinedLight, combinedOverlay,
 			ms -> RenderingUtil.wrapInMatrixEntry(matrixStack, () -> {
 				if(!sign.isFlipped())
 					matrixStack.mulPose(new Quaternion(Vector3f.YP, 180, true));
@@ -109,7 +110,7 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
 			})
 		);
 		sign.getOverlay().ifPresent(o -> {
-			RenderingUtil.renderGui(makeBakedOverlayModel(sign, o), matrixStack, o.getDefaultTint(), offset, sign.getAngle(), buffer.getBuffer(RenderType.cutout()), combinedLight, combinedOverlay, m -> {});
+			RenderingUtil.renderGui(makeBakedOverlayModel(sign, o), matrixStack, o.getDefaultTint(), offset, sign.getAngle().get(), buffer.getBuffer(RenderType.cutout()), combinedLight, combinedOverlay, m -> {});
 		});
 	}
 

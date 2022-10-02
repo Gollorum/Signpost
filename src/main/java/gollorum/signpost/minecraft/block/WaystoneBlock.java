@@ -1,10 +1,8 @@
 package gollorum.signpost.minecraft.block;
 
-import gollorum.signpost.BlockRestrictions;
-import gollorum.signpost.PlayerHandle;
-import gollorum.signpost.Signpost;
-import gollorum.signpost.WaystoneLibrary;
+import gollorum.signpost.*;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
+import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.gui.RequestWaystoneGui;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.minecraft.utils.TextComponents;
@@ -13,9 +11,14 @@ import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.security.WithCountRestriction;
 import gollorum.signpost.utils.Delay;
 import gollorum.signpost.utils.WaystoneData;
+import gollorum.signpost.utils.WaystoneLocationData;
 import gollorum.signpost.utils.WorldLocation;
+import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -25,6 +28,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.BaseEntityBlock;
@@ -38,6 +42,7 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.material.MaterialColor;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
@@ -127,18 +132,43 @@ public class WaystoneBlock extends BaseEntityBlock implements WithCountRestricti
     @Override
     public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(world, pos, state, placer, stack);
-        registerOwnerAndRequestGui(world, pos, placer);
+        registerOwnerAndRequestGui(world, pos, placer, stack);
     }
 
-    public static void registerOwnerAndRequestGui(Level world, BlockPos pos, LivingEntity placer) {
+    public static void registerOwnerAndRequestGui(Level world, BlockPos pos, LivingEntity placer, ItemStack stack) {
         Delay.forFrames(6, world.isClientSide(), () ->
-            TileEntityUtils.delayUntilTileEntityExists(world, pos, WaystoneTile.class, t -> {
+            TileEntityUtils.delayUntilTileEntityExists(world, pos, WaystoneTile.getBlockEntityType(), t -> {
                 t.setWaystoneOwner(Optional.of(PlayerHandle.from(placer)));
-                if(placer instanceof ServerPlayer) PacketHandler.send(
-                    PacketDistributor.PLAYER.with(() -> (ServerPlayer) placer),
-                    new RequestWaystoneGui.Package(new WorldLocation(pos, world), Optional.empty())
-                );
+                if(placer instanceof ServerPlayer) {
+                    WorldLocation worldLocation = new WorldLocation(pos, world);
+                    boolean wasRegistered = getCustomName(stack).map(name -> {
+                        WaystoneLocationData locationData = new WaystoneLocationData(worldLocation, Vector3.fromVec3d(placer.position()));
+                        CompoundTag handleTag = stack.getTagElement("Handle");
+                        Optional<WaystoneHandle.Vanilla> handle = handleTag != null ? Optional.of(WaystoneHandle.Vanilla.Serializer.read(handleTag)) : Optional.empty();
+                        return WaystoneLibrary.getInstance().tryAddNew(name, locationData, (ServerPlayer) placer, handle);
+                    }).orElse(false);
+                    if(!wasRegistered)
+                        PacketHandler.send(
+                            PacketDistributor.PLAYER.with(() -> (ServerPlayer) placer),
+                            new RequestWaystoneGui.Package(worldLocation, Optional.empty())
+                        );
+                }
             }, 100, Optional.empty()));
+    }
+
+    // Modified copy of ItemStack.getHoverName()
+    private static Optional<String> getCustomName(ItemStack stack) {
+        CompoundTag displayTag = stack.getTagElement("display");
+        if (displayTag != null && displayTag.contains("Name", 8)) {
+            try {
+                Component component = Component.Serializer.fromJson(displayTag.getString("Name"));
+                if (component != null) {
+                    return Optional.of(component.getString());
+                }
+
+            } catch (Exception ignored) {}
+        }
+        return Optional.empty();
     }
 
     @Override
@@ -159,4 +189,22 @@ public class WaystoneBlock extends BaseEntityBlock implements WithCountRestricti
         }
     }
 
+    @Override
+    public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter level, BlockPos pos, Player player) {
+        return fillClonedItemStack(super.getCloneItemStack(state, target, level, pos, player), level, pos, player);
+    }
+
+    public static ItemStack fillClonedItemStack(ItemStack stack, BlockGetter level, BlockPos pos, Player player) {
+        BlockEntity untypedEntity = level.getBlockEntity(pos);
+        if(untypedEntity instanceof WaystoneTile) {
+            WaystoneTile tile = (WaystoneTile) untypedEntity;
+            if(player.hasPermissions(Config.Server.permissions.pickUnownedWaystonePermissionLevel.get())
+                || tile.getWaystoneOwner().map(o -> o.equals(PlayerHandle.from(player))).orElse(true)) {
+
+                tile.getHandle().ifPresent(h -> stack.addTagElement("Handle", WaystoneHandle.Vanilla.Serializer.write(h)));
+                tile.getName().ifPresent(n -> stack.setHoverName(new TextComponent(n)));
+            }
+        }
+        return stack;
+    }
 }

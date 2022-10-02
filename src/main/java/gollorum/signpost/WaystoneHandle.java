@@ -14,7 +14,7 @@ import java.util.UUID;
 public interface WaystoneHandle {
 
     void write(FriendlyByteBuf buffer);
-    void write(CompoundTag compound);
+    CompoundTag write(CompoundTag compound);
 
     static Optional<WaystoneHandle> read(FriendlyByteBuf buffer) {
         String type = StringSerializer.instance.read(buffer);
@@ -60,8 +60,8 @@ public interface WaystoneHandle {
         }
 
         @Override
-        public void write(CompoundTag compound) {
-            Serializer.write(this, compound);
+        public CompoundTag write(CompoundTag compound) {
+            return Serializer.write(this, compound);
         }
 
         public static final class SerializerImpl implements CompoundSerializable<Vanilla> {

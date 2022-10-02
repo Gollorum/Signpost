@@ -5,6 +5,7 @@ import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.WaystoneBlock;
 import gollorum.signpost.minecraft.items.Brush;
 import gollorum.signpost.minecraft.items.PostItem;
+import gollorum.signpost.minecraft.items.WaystoneItem;
 import gollorum.signpost.minecraft.items.Wrench;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
@@ -33,7 +34,7 @@ public class ItemRegistry {
 
     private static final RegistryObject<Item> WAYSTONE_ITEM =
         REGISTER.register(WaystoneBlock.REGISTRY_NAME,
-            () -> new BlockItem(WaystoneBlock.getInstance(), new Item.Properties().tab(ITEM_GROUP)));
+            () -> new WaystoneItem(WaystoneBlock.getInstance(), new Item.Properties().tab(ITEM_GROUP)));
 
     private static final List<RegistryObject<Item>> ModelWaystoneItems =
         ModelWaystone.variants.stream()
@@ -58,7 +59,7 @@ public class ItemRegistry {
     private static RegistryObject<Item> registerModelWaystoneItem(ModelWaystone.Variant variant){
         return REGISTER.register(
             variant.registryName,
-            () -> new BlockItem(variant.getBlock(), new Item.Properties().tab(ITEM_GROUP)));
+            () -> new WaystoneItem(variant.getBlock(), new Item.Properties().tab(ITEM_GROUP)));
     }
 
     public static void register(IEventBus bus){

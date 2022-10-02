@@ -30,6 +30,7 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.material.MaterialColor;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -158,7 +159,7 @@ public class ModelWaystone extends BaseEntityBlock implements SimpleWaterloggedB
 	@Override
 	public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
 		super.setPlacedBy(world, pos, state, placer, stack);
-		WaystoneBlock.registerOwnerAndRequestGui(world, pos, placer);
+		WaystoneBlock.registerOwnerAndRequestGui(world, pos, placer, stack);
 	}
 
 	@Override
@@ -203,5 +204,11 @@ public class ModelWaystone extends BaseEntityBlock implements SimpleWaterloggedB
 			WaystoneTile.onRemoved((ServerLevel) world, pos);
 		}
 	}
+
+	@Override
+	public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter level, BlockPos pos, Player player) {
+		return WaystoneBlock.fillClonedItemStack(super.getCloneItemStack(state, target, level, pos, player), level, pos, player);
+	}
+
 
 }

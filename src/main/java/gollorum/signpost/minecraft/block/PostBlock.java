@@ -312,7 +312,7 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
         super.setPlacedBy(world, pos, state, placer, currentStack);
         ItemStack stack = currentStack.copy();
         Delay.forFrames(6, world.isClientSide(), () ->
-            TileEntityUtils.delayUntilTileEntityExists(world, pos, PostTile.class, tile -> {
+            TileEntityUtils.delayUntilTileEntityExists(world, pos, PostTile.getBlockEntityType(), tile -> {
                 tile.setSignpostOwner(Optional.of(PlayerHandle.from(placer)));
                 boolean shouldAddNewSign = placer instanceof ServerPlayer;
                 if (!world.isClientSide()) {
@@ -364,7 +364,7 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
     @Override
     public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter world, BlockPos pos, Player player) {
         ItemStack ret = super.getCloneItemStack(state, target, world, pos, player);
-        TileEntityUtils.findTileEntity(world, pos, PostTile.class).ifPresent(tile -> {
+        world.getBlockEntity(pos, PostTile.getBlockEntityType()).ifPresent(tile -> {
             if(!ret.hasTag()) ret.setTag(new CompoundTag());
             ret.getTag().put("Parts", tile.writeParts(false));
         });

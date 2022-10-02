@@ -32,6 +32,7 @@ public class PacketHandler {
         new PostTile.PartAddedEvent(),
         new PostTile.PartMutatedEvent(),
         new PostTile.PartRemovedEvent(),
+        new PostTile.UpdateAllPartsEvent(),
         new Teleport.Request(),
         new Teleport.RequestGui(),
         new RequestSignGui(),

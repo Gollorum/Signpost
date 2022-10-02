@@ -67,7 +67,7 @@ public class BlockRestrictions {
 
 	private static ArgumentBuilder<CommandSourceStack, ?> setter(gollorum.signpost.BlockRestrictions.Type type) {
 		return LiteralArgumentBuilder.<CommandSourceStack>literal("set")
-			.requires(source -> source.hasPermission(Config.Server.permissions.setBlockResPermissionLevel.get()))
+			.requires(source -> source.hasPermission(Config.Server.permissions.setBlockRestrictionPermissionLevel.get()))
 			.then(Commands.argument("count", IntegerArgumentType.integer(-1))
 				.executes(context -> {
 					ServerPlayer player = context.getSource().getPlayerOrException();

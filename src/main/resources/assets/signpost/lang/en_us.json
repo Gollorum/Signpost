@@ -23,6 +23,8 @@
 
   "item.signpost.tool": "Sign angle wrench",
   "item.signpost.brush": "Signpost paint brush",
+  "item.signpost.waystone_has_id": "Has an ID. There might be signposts that will point to this.",
+  "item.signpost.waystone_id": "ID: %s",
 
   "gui.signpost.sign_gui_title": "Add or edit sign",
   "gui.signpost.confirm_teleport_gui_title": "Confirm teleport",
@@ -35,7 +37,7 @@
   "gui.signpost.rotation_player": "%d (face the player)",
   "gui.signpost.main_material": "Front",
   "gui.signpost.secondary_material": "Back / Rim",
-  "gui.signpost.unknownWaystone": "Unknown Waystone",
+  "gui.signpost.unknownWaystone": "Missing Waystone",
 
   "signpost.discovered": "You can now travel to %s using sign posts.",
   "signpost.not_discovered": "You have not yet discovered %s",
@@ -46,6 +48,8 @@
 
   "signpost.no_permission_to_edit_waystone": "You do not have permission to edit this waystone.",
   "signpost.no_permission_to_edit_signpost": "You do not have permission to edit this signpost.",
+  "signpost.duplicate_waystone_id": "A waystone with this ID already exists.",
+  "signpost.duplicate_waystone_name": "A waystone \"%s\" already exists.",
 
   "signpost.no_more_waystones": "You don't have permission to place more waystones.",
   "signpost.no_more_signposts": "You don't have permission to place more signposts.",

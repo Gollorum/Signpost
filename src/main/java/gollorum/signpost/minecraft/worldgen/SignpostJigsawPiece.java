@@ -18,9 +18,7 @@ import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
-import gollorum.signpost.utils.BlockPartInstance;
-import gollorum.signpost.utils.Tuple;
-import gollorum.signpost.utils.WaystoneData;
+import gollorum.signpost.utils.*;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.core.BlockPos;
@@ -178,7 +176,7 @@ public class SignpostJigsawPiece extends SinglePoolElement {
 		Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> lowerSignResult = makeSign(random, facing, world, upperPos,
 			possibleTargets, 0.25f
 		);
-		TileEntityUtils.delayUntilTileEntityExists(world.getLevel(), upperPos, PostTile.class, tile -> {
+		TileEntityUtils.delayUntilTileEntityExists(world.getLevel(), upperPos, PostTile.getBlockEntityType(), tile -> {
 			upperSignResult._2.accept(tile);
 			lowerSignResult._2.accept(tile);
 			tile.setChanged();
@@ -222,7 +220,7 @@ public class SignpostJigsawPiece extends SinglePoolElement {
 			tile.addPart(
 				new BlockPartInstance(
 					new SmallWideSignBlockPart(
-						rotation, targetData.name, shouldFlip(facing, rotation),
+						new AngleProvider.WaystoneTarget(rotation), new NameProvider.WaystoneTarget(targetData.name), shouldFlip(facing, rotation),
 						tile.modelType.mainTexture, tile.modelType.secondaryTexture,
 						overlayFor(world, tilePos), Colors.black, Optional.of(target._2),
 						ItemStack.EMPTY, tile.modelType, false
@@ -257,7 +255,7 @@ public class SignpostJigsawPiece extends SinglePoolElement {
 		onTileFetched.add(tile -> tile.addPart(
 			new BlockPartInstance(
 				new SmallShortSignBlockPart(
-					rotation, targetData.name, shouldFlip,
+					new AngleProvider.WaystoneTarget(rotation), new NameProvider.WaystoneTarget(targetData.name), shouldFlip,
 					tile.modelType.mainTexture, tile.modelType.secondaryTexture,
 					overlay, Colors.black, Optional.of(target._2),
 					ItemStack.EMPTY, tile.modelType, false
@@ -287,7 +285,7 @@ public class SignpostJigsawPiece extends SinglePoolElement {
 			onTileFetched.add(tile -> tile.addPart(
 				new BlockPartInstance(
 					new SmallShortSignBlockPart(
-						secondRotation, secondTargetData.name, shouldSecondFlip,
+						new AngleProvider.WaystoneTarget(secondRotation), new NameProvider.WaystoneTarget(secondTargetData.name), shouldSecondFlip,
 						tile.modelType.mainTexture, tile.modelType.secondaryTexture,
 						overlay, Colors.black, Optional.of(secondTargetHandle),
 						ItemStack.EMPTY, tile.modelType, false

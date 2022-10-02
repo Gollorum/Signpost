@@ -1,14 +1,16 @@
 package gollorum.signpost.minecraft.block.tiles;
 
 import gollorum.signpost.PlayerHandle;
+import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.block.WaystoneBlock;
+import gollorum.signpost.minecraft.events.WaystoneUpdatedEvent;
 import gollorum.signpost.security.WithOwner;
-import gollorum.signpost.utils.WaystoneContainer;
-import gollorum.signpost.utils.WorldLocation;
+import gollorum.signpost.utils.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -23,16 +25,47 @@ public class WaystoneTile extends BlockEntity implements WithOwner.OfWaystone, W
     public static BlockEntityType<WaystoneTile> createType() {
         return type = BlockEntityType.Builder.of(WaystoneTile::new, WaystoneBlock.getInstance()).build(null);
     }
+    public static BlockEntityType<WaystoneTile> getBlockEntityType() {
+        assert type != null;
+        return type;
+    }
 
     private Optional<PlayerHandle> owner = Optional.empty();
+
+    private Optional<WaystoneHandle.Vanilla> handle = Optional.empty();
+    public Optional<WaystoneHandle.Vanilla> getHandle() { return handle; }
+
+    private Optional<String> name = Optional.empty();
+    public Optional<String> getName() { return name; }
 
     public WaystoneTile(BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
 
+    private final EventDispatcher.Listener<WaystoneUpdatedEvent> updateListener = event -> {
+        if(WorldLocation.from(this).map(loc -> loc.equals(event.location.block)).orElse(false)) {
+            name = Optional.of(event.name);
+            handle = Optional.of(event.handle);
+        }
+        return false;
+    };
+
+    @Override
+    public void setLevel(Level level) {
+        super.setLevel(level);
+        Delay.forFrames(10, level.isClientSide(), () -> {
+            WaystoneLibrary.getInstance().requestWaystoneAt(new WorldLocation(getBlockPos(), level),
+                data -> {
+                    handle = data.map(d -> d.handle);
+                    name = data.map(d -> d.name);
+                },
+                level.isClientSide());
+            WaystoneLibrary.getInstance().updateEventDispatcher.addListener(updateListener);
+        });
+    }
+
     public static void onRemoved(ServerLevel world, BlockPos pos) {
-        if(!world.isClientSide())
-            WaystoneLibrary.getInstance().removeAt(new WorldLocation(pos, world), PlayerHandle.Invalid);
+        WaystoneLibrary.getInstance().removeAt(new WorldLocation(pos, world), PlayerHandle.Invalid);
     }
 
     @Override
@@ -54,4 +87,5 @@ public class WaystoneTile extends BlockEntity implements WithOwner.OfWaystone, W
         super.load(compound);
         owner = PlayerHandle.Serializer.optional().read(compound.getCompound("Owner"));
     }
+
 }

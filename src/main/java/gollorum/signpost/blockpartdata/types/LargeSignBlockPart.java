@@ -8,7 +8,8 @@ import gollorum.signpost.minecraft.utils.CoordinatesUtil;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.BlockPartMetadata;
-import gollorum.signpost.utils.math.Angle;
+import gollorum.signpost.utils.AngleProvider;
+import gollorum.signpost.utils.NameProvider;
 import gollorum.signpost.utils.math.geometry.AABB;
 import gollorum.signpost.utils.math.geometry.Matrix4x4;
 import gollorum.signpost.utils.math.geometry.TransformedBox;
@@ -34,25 +35,25 @@ public class LargeSignBlockPart extends SignBlockPart<LargeSignBlockPart> {
         "large_sign",
         (sign, compound) -> {
             compound.put("CoreData", CoreData.SERIALIZER.write(sign.coreData));
-            compound.putString("Text0", sign.text[0]);
-            compound.putString("Text1", sign.text[1]);
-            compound.putString("Text2", sign.text[2]);
-            compound.putString("Text3", sign.text[3]);
+            compound.put("Text0", NameProvider.Serializer.write(sign.text[0]));
+            compound.put("Text1", NameProvider.Serializer.write(sign.text[1]));
+            compound.put("Text2", NameProvider.Serializer.write(sign.text[2]));
+            compound.put("Text3", NameProvider.Serializer.write(sign.text[3]));
         },
         (compound) -> new LargeSignBlockPart(
             CoreData.SERIALIZER.read(compound.getCompound("CoreData")),
-            new String[]{
-                compound.getString("Text0"),
-                compound.getString("Text1"),
-                compound.getString("Text2"),
-                compound.getString("Text3")}
+            new NameProvider[]{
+                NameProvider.fetchFrom(compound.get("Text0")),
+                NameProvider.fetchFrom(compound.get("Text1")),
+                NameProvider.fetchFrom(compound.get("Text2")),
+                NameProvider.fetchFrom(compound.get("Text3"))}
         ), LargeSignBlockPart.class);
 
-    private String[] text;
+    private NameProvider[] text;
 
     public LargeSignBlockPart(
         CoreData coreData,
-        String[] text
+        NameProvider[] text
     ) {
         super(coreData);
         assert text.length == 4;
@@ -60,8 +61,8 @@ public class LargeSignBlockPart extends SignBlockPart<LargeSignBlockPart> {
     }
 
     public LargeSignBlockPart(
-        Angle angle,
-        String[] text,
+        AngleProvider angle,
+        NameProvider[] text,
         boolean flip,
         ResourceLocation mainTexture,
         ResourceLocation secondaryTexture,
@@ -77,24 +78,29 @@ public class LargeSignBlockPart extends SignBlockPart<LargeSignBlockPart> {
         text
     ); }
 
-    public void setText(String[] text) {
+    public void setText(NameProvider[] text) {
         this.text = text;
     }
 
-    public String[] getText() { return text; }
+    public NameProvider[] getText() { return text; }
+
+    @Override
+    protected NameProvider[] getNameProviders() {
+        return text;
+    }
 
     @Override
     protected void regenerateTransformedBox() {
-        transformedBounds = new TransformedBox(LOCAL_BOUNDS).rotateAlong(Matrix4x4.Axis.Y, coreData.angle);
+        transformedBounds = new TransformedBox(LOCAL_BOUNDS).rotateAlong(Matrix4x4.Axis.Y, coreData.angleProvider.get());
         if(coreData.flip) transformedBounds = transformedBounds.scale(new Vector3(1, 1, -1));
     }
 
     private void notifyTextChanged(InteractionInfo info) {
         CompoundTag compound = new CompoundTag();
-        compound.putString("Text0", text[0]);
-        compound.putString("Text1", text[1]);
-        compound.putString("Text2", text[2]);
-        compound.putString("Text3", text[3]);
+        compound.put("Text0", NameProvider.Serializer.write(text[0]));
+        compound.put("Text1", NameProvider.Serializer.write(text[1]));
+        compound.put("Text2", NameProvider.Serializer.write(text[2]));
+        compound.put("Text3", NameProvider.Serializer.write(text[3]));
         info.mutationDistributor.accept(compound);
     }
 
@@ -110,16 +116,16 @@ public class LargeSignBlockPart extends SignBlockPart<LargeSignBlockPart> {
             return;
         }
         if (compound.contains("Text0")) {
-            text[0] = compound.getString("Text0");
+            text[0] = NameProvider.fetchFrom(compound.get("Text0"));
         }
         if (compound.contains("Text1")) {
-            text[1] = compound.getString("Text1");
+            text[1] = NameProvider.fetchFrom(compound.get("Text1"));
         }
         if (compound.contains("Text2")) {
-            text[2] = compound.getString("Text2");
+            text[2] = NameProvider.fetchFrom(compound.get("Text2"));
         }
         if (compound.contains("Text3")) {
-            text[3] = compound.getString("Text3");
+            text[3] = NameProvider.fetchFrom(compound.get("Text3"));
         }
         super.readMutationUpdate(compound, tile, editingPlayer);
     }
