@@ -11,6 +11,7 @@ import net.minecraft.world.item.crafting.SingleItemRecipe;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import org.jetbrains.annotations.NotNull;
 
 public class CutWaystoneRecipe extends StonecutterRecipe {
 
@@ -30,6 +31,17 @@ public class CutWaystoneRecipe extends StonecutterRecipe {
         Block block = ((BlockItem)result.getItem()).getBlock();
         if(!(block instanceof ModelWaystone)) return true;
         return Config.Server.allowedWaystones.get().contains(((ModelWaystone)block).variant.name);
+    }
+
+    @Override
+    public @NotNull ItemStack assemble(@NotNull Container container) {
+        ItemStack ret = super.assemble(container);
+        ItemStack ingred = container.getItem(0);
+        if(ingred.hasTag()) ret.setTag(ret.hasTag()
+            ? ret.getTag().merge(ingred.getTag())
+            : ingred.getTag().copy()
+        );
+        return ret;
     }
 
     public static class Serializer extends SingleItemRecipe.Serializer<CutWaystoneRecipe> {

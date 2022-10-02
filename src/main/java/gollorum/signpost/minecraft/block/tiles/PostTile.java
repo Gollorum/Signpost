@@ -10,10 +10,7 @@ import gollorum.signpost.minecraft.utils.SideUtils;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.security.WithOwner;
-import gollorum.signpost.utils.BlockPartInstance;
-import gollorum.signpost.utils.BlockPartMetadata;
-import gollorum.signpost.utils.WaystoneContainer;
-import gollorum.signpost.utils.WorldLocation;
+import gollorum.signpost.utils.*;
 import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.BlockPosSerializer;
@@ -36,7 +33,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -112,6 +108,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
 
     public UUID addPart(UUID identifier, BlockPartInstance part, ItemStack cost, PlayerHandle player){
         parts.put(identifier, part);
+        part.blockPart.attachTo(this);
         if(hasLevel() && !getLevel().isClientSide()) sendToTracing(() -> new PartAddedEvent.Packet(
             new TilePartInfo(this, identifier),
             part.blockPart.write(),
@@ -269,9 +266,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     @Nullable
     @Override
     public ClientboundBlockEntityDataPacket getUpdatePacket() {
-        CompoundTag ret = new CompoundTag();
-        writeSelf(ret);
-        return ClientboundBlockEntityDataPacket.create(this, unused -> ret);
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override
@@ -456,7 +451,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
                 message.info.dimensionKey,
                 isClientSide,
                 message.info.pos,
-                PostTile.class
+                PostTile.getBlockEntityType()
             ).ifPresent(tile -> {
                 Optional<BlockPartMetadata<?>> meta = partsMetadata.stream().filter(m -> m.identifier.equals(message.partMetaIdentifier)).findFirst();
                 if (meta.isPresent()) {
@@ -605,13 +600,16 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
                                 if(message.offset.isPresent()) {
                                     tile.parts.remove(message.info.identifier);
                                     tile.parts.put(message.info.identifier, new BlockPartInstance(blockPartInstance.blockPart, message.offset.get()));
+                                    blockPartInstance.blockPart.attachTo(tile);
                                 }
                             } else {
                                 Optional<BlockPartMetadata<?>> meta = partsMetadata.stream().filter(m -> m.identifier.equals(message.partMetaIdentifier)).findFirst();
                                 if (meta.isPresent()) {
                                     tile.parts.remove(message.info.identifier);
+                                    BlockPart<?> newPart = meta.get().read(message.data);
                                     tile.parts.put(message.info.identifier,
-                                        new BlockPartInstance(meta.get().read(message.data), message.offset.orElse(blockPartInstance.offset)));
+                                        new BlockPartInstance(newPart, message.offset.orElse(blockPartInstance.offset)));
+                                    newPart.attachTo(tile);
                                 } else {
                                     Signpost.LOGGER.warn("Could not find meta for part " + message.partMetaIdentifier);
                                 }
@@ -628,4 +626,48 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
                 ));
         }
     }
+
+    public static class UpdateAllPartsEvent implements PacketHandler.Event<UpdateAllPartsEvent.Packet> {
+
+        public static class Packet {
+            public final CompoundTag tag;
+            public final WorldLocation location;
+            public Packet(CompoundTag tag, WorldLocation location) {
+                this.tag = tag;
+                this.location = location;
+            }
+        }
+
+        @Override
+        public Class<Packet> getMessageClass() {
+            return Packet.class;
+        }
+
+        @Override
+        public void encode(Packet message, FriendlyByteBuf buffer) {
+            buffer.writeNbt(message.tag);
+            WorldLocation.SERIALIZER.write(message.location, buffer);
+        }
+
+        @Override
+        public Packet decode(FriendlyByteBuf buffer) {
+            return new Packet(buffer.readNbt(), WorldLocation.SERIALIZER.read(buffer));
+        }
+
+        @Override
+        public void handle(Packet message, NetworkEvent.Context context) {
+            if(context.getDirection().getReceptionSide().isClient())
+                context.enqueueWork(() ->
+                    TileEntityUtils.delayUntilTileEntityExistsAt(
+                        message.location,
+                        PostTile.getBlockEntityType(),
+                        tile -> tile.handleUpdateTag(message.tag),
+                        20,
+                        true,
+                        Optional.empty()
+                    )
+                );
+        }
+    }
+
 }

@@ -48,15 +48,15 @@ public class WideSignRenderer extends SignRenderer<SmallWideSignBlockPart> {
 		RenderingUtil.wrapInMatrixEntry(matrix, () -> {
 			matrix.mulPose(Vector3f.ZP.rotationDegrees(180));
 			float scale = FONT_SIZE_VOXELS * FontToVoxelSize;
-			float MAX_WIDTH_FRAC = fontRenderer.width(sign.getText()) * scale / MAXIMUM_TEXT_WIDTH;
+			float MAX_WIDTH_FRAC = fontRenderer.width(sign.getText().get()) * scale / MAXIMUM_TEXT_WIDTH;
 			scale /= Math.max(1, MAX_WIDTH_FRAC);
 			float offset = TEXT_OFFSET_RIGHT * Math.min(1, MAX_WIDTH_FRAC);
 			matrix.translate(
-				sign.isFlipped() ? offset - fontRenderer.width(sign.getText()) * scale : -offset,
+				sign.isFlipped() ? offset - fontRenderer.width(sign.getText().get()) * scale : -offset,
 				-scale * 4 * TEXT_RATIO,
 				-3.005 * VoxelSize);
 			matrix.scale(scale, scale * TEXT_RATIO, scale);
-			fontRenderer.drawInBatch(sign.getText(), 0, 0, sign.getColor(), false, matrix.last().pose(), buffer, false, 0, combinedLights);
+			fontRenderer.drawInBatch(sign.getText().get(), 0, 0, sign.getColor(), false, matrix.last().pose(), buffer, false, 0, combinedLights);
 		});
 	}
 

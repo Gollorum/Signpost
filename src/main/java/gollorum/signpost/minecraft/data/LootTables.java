@@ -6,11 +6,14 @@ import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.WaystoneBlock;
+import gollorum.signpost.minecraft.storage.loot.PermissionCheck;
+import gollorum.signpost.minecraft.storage.loot.RegisteredWaystoneLootNbtProvider;
 import net.minecraft.core.Registry;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.loot.BlockLoot;
 import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
@@ -57,11 +60,24 @@ public class LootTables extends LootTableProvider {
             );
         builder.accept(
             new ResourceLocation(Signpost.MOD_ID, "blocks/" + Registry.BLOCK.getKey(WaystoneBlock.getInstance()).getPath()),
-            BlockLoot.createSingleItemTable(WaystoneBlock.getInstance(), ConstantValue.exactly(1)));
+            mkWaystoneLootTable(WaystoneBlock.getInstance()));
         for(ModelWaystone.Variant variant : ModelWaystone.variants)
             builder.accept(
                 new ResourceLocation(Signpost.MOD_ID, "blocks/" + Registry.BLOCK.getKey(variant.getBlock()).getPath()),
-                BlockLoot.createSingleItemTable(variant.getBlock(), ConstantValue.exactly(1)));
+                mkWaystoneLootTable(variant.getBlock()));
+    }
+
+    private LootTable.Builder mkWaystoneLootTable(Block block) {
+        return LootTable.lootTable()
+            .withPool(LootPool.lootPool()
+                .setRolls(ConstantValue.exactly(1))
+                .add(LootItem.lootTableItem(block)
+                    .apply(CopyNbtFunction.copyData(new RegisteredWaystoneLootNbtProvider())
+                        .copy("Handle", "Handle")
+                        .copy("display", "display", CopyNbtFunction.MergeStrategy.MERGE)
+                    ).when(BlockLoot.HAS_SILK_TOUCH)
+                    .when(new PermissionCheck.Builder(PermissionCheck.Type.CanPickWaystone))
+                    .otherwise(LootItem.lootTableItem(block))));
     }
 
 }

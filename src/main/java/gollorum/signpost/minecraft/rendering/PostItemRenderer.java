@@ -4,12 +4,14 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blockpartdata.types.PostBlockPart;
 import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
-import gollorum.signpost.blockpartdata.types.renderers.BlockPartRenderer;
+import gollorum.signpost.blockpartdata.types.BlockPartRenderer;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.utils.BlockPartInstance;
+import gollorum.signpost.utils.NameProvider;
 import gollorum.signpost.utils.math.Angle;
+import gollorum.signpost.utils.AngleProvider;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
@@ -48,8 +50,8 @@ public class PostItemRenderer extends BlockEntityWithoutLevelRenderer {
             PostBlock.ModelType type = ((PostBlock)((BlockItem) stack.getItem()).getBlock()).type;
             parts.add(new BlockPartInstance(new PostBlockPart(type.postTexture), Vector3.ZERO));
             parts.add(new BlockPartInstance(new SmallWideSignBlockPart(
-                Angle.fromDegrees(180), "", true, type.mainTexture, type.secondaryTexture, Optional.empty(),
-                Colors.white, Optional.empty(), ItemStack.EMPTY, type, false
+                new AngleProvider.Literal(Angle.fromDegrees(180)), new NameProvider.Literal(""), true, type.mainTexture, type.secondaryTexture,
+                Optional.empty(), Colors.white, Optional.empty(), ItemStack.EMPTY, type, false
             ), new Vector3(0, 0.75f, 0)));
         }
 

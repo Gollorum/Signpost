@@ -2,10 +2,12 @@ package gollorum.signpost.blockpartdata.types;
 
 import gollorum.signpost.*;
 import gollorum.signpost.blockpartdata.Overlay;
+import gollorum.signpost.blockpartdata.types.renderers.BlockPartWaystoneUpdateListener;
 import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.config.Config;
+import gollorum.signpost.minecraft.events.WaystoneUpdatedEvent;
 import gollorum.signpost.minecraft.gui.PaintSignGui;
 import gollorum.signpost.minecraft.gui.RequestSignGui;
 import gollorum.signpost.minecraft.items.Brush;
@@ -15,8 +17,9 @@ import gollorum.signpost.relations.ExternalWaystone;
 import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.BlockPart;
 import gollorum.signpost.utils.Either;
-import gollorum.signpost.utils.WaystoneData;
+import gollorum.signpost.utils.NameProvider;
 import gollorum.signpost.utils.math.Angle;
+import gollorum.signpost.utils.AngleProvider;
 import gollorum.signpost.utils.math.geometry.Intersectable;
 import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.TransformedBox;
@@ -41,11 +44,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements BlockPart<Self> {
 
     protected static final class CoreData {
-        public Angle angle;
+        public AngleProvider angleProvider;
         public boolean flip;
         public ResourceLocation mainTexture;
         public ResourceLocation secondaryTexture;
@@ -57,7 +61,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
         public boolean isLocked;
 
         public CoreData(
-            Angle angle,
+            AngleProvider angleProvider,
             boolean flip,
             ResourceLocation mainTexture,
             ResourceLocation secondaryTexture,
@@ -68,7 +72,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
             ItemStack itemToDropOnBreak,
             boolean isLocked
         ) {
-            this.angle = angle;
+            this.angleProvider = angleProvider;
             this.flip = flip;
             this.mainTexture = mainTexture;
             this.secondaryTexture = secondaryTexture;
@@ -82,7 +86,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
 
         public CoreData copy() {
             return new CoreData(
-                angle, flip, mainTexture, secondaryTexture, overlay, color, destination, modelType, itemToDropOnBreak, isLocked
+                angleProvider, flip, mainTexture, secondaryTexture, overlay, color, destination, modelType, itemToDropOnBreak, isLocked
             );
         }
 
@@ -91,7 +95,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
             private Serializer(){}
             @Override
             public CompoundTag write(CoreData coreData, CompoundTag compound) {
-                compound.put("Angle", Angle.Serializer.write(coreData.angle));
+                compound.put("Angle", AngleProvider.Serializer.write(coreData.angleProvider));
                 compound.putBoolean("Flip", coreData.flip);
                 compound.putString("Texture", coreData.mainTexture.toString());
                 compound.putString("TextureDark", coreData.secondaryTexture.toString());
@@ -132,7 +136,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
                     destination = d2;
                 } else destination = Optional.empty();
                 return new CoreData(
-                    Angle.Serializer.read(compound.getCompound("Angle")),
+                    AngleProvider.fetchFrom(compound.getCompound("Angle")),
                     compound.getBoolean("Flip"),
                     new ResourceLocation(compound.getString("Texture")),
                     new ResourceLocation(compound.getString("TextureDark")),
@@ -166,15 +170,36 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
 
     protected SignBlockPart(CoreData coreData) {
         this.coreData = coreData;
-        setAngle(coreData.angle);
+        setAngle(coreData.angleProvider);
         setTextures(coreData.mainTexture, coreData.secondaryTexture);
         setOverlay(coreData.overlay);
         setFlip(coreData.flip);
     }
 
-    public void setAngle(Angle angle) {
-        coreData.angle = angle;
+    public void setAngle(AngleProvider angleProvider) {
+        coreData.angleProvider = angleProvider;
         regenerateTransformedBox();
+    }
+
+    protected abstract NameProvider[] getNameProviders();
+
+    @Override public void attachTo(PostTile tile) {
+        BlockPos myBlockPos = tile.getBlockPos();
+        BlockPartWaystoneUpdateListener.getInstance().addListener((Self)this,
+            (self, event) -> onWaystoneUpdated(myBlockPos, self, event));
+    }
+
+    private static void onWaystoneUpdated(BlockPos myBlockPos, SignBlockPart<?> self, WaystoneUpdatedEvent event) {
+        self.getDestination().ifPresent(handle -> {
+            if (handle.equals(event.handle)) {
+                if (self.getAngle() instanceof AngleProvider.WaystoneTarget)
+                    ((AngleProvider.WaystoneTarget) self.getAngle()).setCachedAngle(
+                        pointingAt(myBlockPos, event.location.block.blockPos));
+                for(NameProvider np : self.getNameProviders())
+                    if(np instanceof NameProvider.WaystoneTarget)
+                        ((NameProvider.WaystoneTarget)np).setCachedName(event.name);
+            }
+        });
     }
 
     public void setFlip(boolean flip) {
@@ -256,7 +281,8 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
                     Vector3 diff = info.traceResult.ray.start.negated().add(0.5f, 0.5f, 0.5f).withY(0).normalized();
                     Vector3 rayDir = info.traceResult.ray.dir.withY(0).normalized();
                     Angle angleToPost = Angle.between(rayDir.x, rayDir.z, diff.x, diff.z).normalized();
-                    setAngle(coreData.angle.add(Angle.fromDegrees(angleToPost.radians() < 0 ? 15 : -15)));
+                    setAngle(new AngleProvider.Literal(coreData.angleProvider
+                        .get().add(Angle.fromDegrees(angleToPost.radians() < 0 ? 15 : -15))));
                     notifyAngleChanged(info);
                 }
             } else if(!isBrush(heldItem))
@@ -318,7 +344,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
 
     protected void notifyAngleChanged(InteractionInfo info) {
         CompoundTag compound = new CompoundTag();
-        compound.put("Angle", Angle.Serializer.write(coreData.angle));
+        compound.put("Angle", AngleProvider.Serializer.write(coreData.angleProvider));
         info.mutationDistributor.accept(compound);
     }
 
@@ -339,7 +365,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
     public void readMutationUpdate(CompoundTag compound, BlockEntity tile, Player editingPlayer) {
         if(compound.contains("CoreData")) compound = compound.getCompound("CoreData");
         if(compound.contains("Angle"))
-            setAngle(Angle.Serializer.read(compound.getCompound("Angle")));
+            setAngle(AngleProvider.fetchFrom(compound.getCompound("Angle")));
 
         boolean updateTextures = false;
         if(compound.contains("Texture")) {
@@ -380,7 +406,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
             if(editingPlayer == null || editingPlayer.level.isClientSide()
                 || ((WithOwner.OfSignpost)tile).getSignpostOwner().map(owner -> editingPlayer.getUUID().equals(owner.id)).orElse(true)
                 || editingPlayer.hasPermissions(Config.Server.permissions.editLockedSignCommandPermissionLevel.get()))
-            coreData.isLocked = compound.getBoolean("IsLocked");
+                coreData.isLocked = compound.getBoolean("IsLocked");
         }
         tile.setChanged();
     }
@@ -404,8 +430,8 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
         }
     }
 
-    public Angle getAngle() {
-        return coreData.angle;
+    public AngleProvider getAngle() {
+        return coreData.angleProvider;
     }
 
     public abstract Self copy();

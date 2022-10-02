@@ -19,7 +19,7 @@ public class Wrench extends TieredItem {
 
     @Override
     public InteractionResult useOn(UseOnContext context) {
-        return TileEntityUtils.findTileEntity(context.getLevel(), context.getClickedPos(), PostTile.class)
+        return context.getLevel().getBlockEntity(context.getClickedPos(), PostTile.getBlockEntityType())
             .map(tile -> PostBlock.onActivate(tile, context.getLevel(), context.getPlayer(), context.getHand()))
             .orElse(InteractionResult.PASS);
     }

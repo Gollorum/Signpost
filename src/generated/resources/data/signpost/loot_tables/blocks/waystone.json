@@ -5,18 +5,56 @@
       "bonus_rolls": 0.0,
       "entries": [
         {
-          "type": "minecraft:item",
-          "functions": [
+          "type": "minecraft:alternatives",
+          "children": [
             {
-              "add": false,
-              "count": 1.0,
-              "function": "minecraft:set_count"
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "condition": "minecraft:match_tool",
+                  "predicate": {
+                    "enchantments": [
+                      {
+                        "enchantment": "minecraft:silk_touch",
+                        "levels": {
+                          "min": 1
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "pick_waystone",
+                  "condition": "signpost:permission_check"
+                }
+              ],
+              "functions": [
+                {
+                  "function": "minecraft:copy_nbt",
+                  "ops": [
+                    {
+                      "op": "replace",
+                      "source": "Handle",
+                      "target": "Handle"
+                    },
+                    {
+                      "op": "merge",
+                      "source": "display",
+                      "target": "display"
+                    }
+                  ],
+                  "source": {
+                    "type": "signpost:waystone"
+                  }
+                }
+              ],
+              "name": "signpost:waystone"
             },
             {
-              "function": "minecraft:explosion_decay"
+              "type": "minecraft:item",
+              "name": "signpost:waystone"
             }
-          ],
-          "name": "signpost:waystone"
+          ]
         }
       ],
       "rolls": 1.0

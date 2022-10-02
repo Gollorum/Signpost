@@ -28,6 +28,7 @@ public interface BlockPart<T extends BlockPart<T>> extends Interactable {
 
     Collection<ItemStack> getDrops(PostTile tile);
 
+    default void attachTo(PostTile tile) {}
     default void removeFrom(PostTile tile) {}
 
     Collection<ResourceLocation> getAllTextures();

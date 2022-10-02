@@ -2,7 +2,7 @@ package gollorum.signpost.minecraft.rendering;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.blockpartdata.types.PostBlockPart;
-import gollorum.signpost.blockpartdata.types.renderers.BlockPartRenderer;
+import gollorum.signpost.blockpartdata.types.BlockPartRenderer;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.utils.BlockPartInstance;
 import net.minecraft.client.Minecraft;
