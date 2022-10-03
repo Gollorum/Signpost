@@ -29,10 +29,13 @@ import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.PacketDistributor;
 import org.openjdk.nashorn.internal.runtime.options.Option;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class WaystoneLibrary {
@@ -47,16 +50,27 @@ public class WaystoneLibrary {
     }
     public static boolean hasInstance() { return instance != null; }
 
+    private static final EventDispatcher.Impl.WithPublicDispatch<WaystoneLibrary> _initializeEventDispatcher =
+        new EventDispatcher.Impl.WithPublicDispatch<>() {
+            @Override
+            public boolean addListener(@Nonnull Consumer<WaystoneLibrary> listener) {
+                if(hasInstance()) listener.accept(instance);
+                return super.addListener(listener);
+            }
+        };
+    public static EventDispatcher<WaystoneLibrary> onInitializeDo = _initializeEventDispatcher;
+
     // Server only
     private SavedData savedData;
     public boolean hasStorageBeenSetup() { return savedData != null; }
 
     public static void initialize() {
         instance = new WaystoneLibrary();
-        BlockPartWaystoneUpdateListener.getInstance().initialize();
+        _initializeEventDispatcher.dispatch(instance, false);
     }
 
-    private final EventDispatcher.Impl.WithPublicDispatch<WaystoneUpdatedEvent> _updateEventDispatcher = new EventDispatcher.Impl.WithPublicDispatch<>();
+    private final EventDispatcher.Impl.WithPublicDispatch<WaystoneUpdatedEvent> _updateEventDispatcher =
+        new EventDispatcher.Impl.WithPublicDispatch<>();
 
     public final EventDispatcher<WaystoneUpdatedEvent> updateEventDispatcher = _updateEventDispatcher;
 
@@ -77,7 +91,7 @@ public class WaystoneLibrary {
 
     public void setupStorage(ServerLevel world){
         DimensionDataStorage storage = world.getDataStorage();
-        savedData = storage.computeIfAbsent(tag -> new WaystoneLibraryStorage().load(tag), WaystoneLibraryStorage::new, WaystoneLibraryStorage.NAME);
+        savedData = storage.computeIfAbsent(WaystoneLibraryStorage::load, WaystoneLibraryStorage::new, WaystoneLibraryStorage.NAME);
     }
 
     private WaystoneLibrary() {
@@ -457,12 +471,18 @@ public class WaystoneLibrary {
         Optional<ServerLevel> level = TileEntityUtils.toWorld(entry.locationData.block.world, false)
             .flatMap(lv -> lv instanceof ServerLevel ? Optional.of((ServerLevel)lv) : Optional.empty());
         if(!level.isPresent()) return true; // Something is wrong, I cannot find the level to check.
-        Optional<WaystoneTile> entity = level.get().getBlockEntity(entry.locationData.block.blockPos, WaystoneTile.getBlockEntityType());
-        if(entity.isPresent()) return true;
-        else {
-            WaystoneTile.onRemoved(level.get(), entry.locationData.block.blockPos);
-            return false;
-        }
+        Supplier<Boolean> checkEntity = () -> {
+            Optional<WaystoneTile> entity = TileEntityUtils.findTileEntity(level.get(), entry.locationData.block.blockPos, WaystoneTile.getBlockEntityType());
+            if(entity.isPresent()) return true;
+            else {
+                WaystoneTile.onRemoved(level.get(), entry.locationData.block.blockPos);
+                return false;
+            }
+        };
+        if(level.get().thread != Thread.currentThread()) { // Cannot check on wrong thread.
+            Delay.onServerForFrames(1, checkEntity::get);
+            return true;
+        } else return checkEntity.get();
     }
 
     public void markDirty(){

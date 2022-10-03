@@ -40,7 +40,7 @@ public class WaystoneData implements gollorum.signpost.WaystoneDataBase {
     public static boolean hasSecurityPermissions(Player player, WaystoneLocationData locationData) {
         return player.hasPermissions(Config.Server.permissions.editLockedWaystoneCommandPermissionLevel.get())
             || TileEntityUtils.toWorld(locationData.block.world, !(player instanceof ServerPlayer))
-                .map(w -> w.getBlockEntity(locationData.block.blockPos))
+                .map(w -> TileEntityUtils.findTileEntity(w, locationData.block.blockPos))
                 .flatMap(tile -> tile instanceof WithOwner.OfWaystone ? ((WithOwner.OfWaystone)tile).getWaystoneOwner() : Optional.empty())
                 .map(owner -> owner.id.equals(player.getUUID()))
                 .orElse(true);

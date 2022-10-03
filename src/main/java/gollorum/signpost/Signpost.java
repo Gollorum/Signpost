@@ -1,5 +1,7 @@
 package gollorum.signpost;
 
+import gollorum.signpost.blockpartdata.types.renderers.BlockPartWaystoneUpdateListener;
+import gollorum.signpost.compat.AntiqueAtlasAdapter;
 import gollorum.signpost.compat.WaystonesAdapter;
 import gollorum.signpost.minecraft.block.BlockEventListener;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
@@ -12,6 +14,7 @@ import gollorum.signpost.minecraft.worldgen.JigsawDeserializers;
 import gollorum.signpost.minecraft.worldgen.WaystoneDiscoveryEventListener;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.compat.ExternalWaystoneLibrary;
+import gollorum.signpost.utils.EventDispatcher;
 import gollorum.signpost.utils.ServerType;
 import gollorum.signpost.worldgen.Villages;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
@@ -54,6 +57,10 @@ public class Signpost {
                 : ServerType.HostingClient;
     }
 
+
+    private static final EventDispatcher.Impl.WithPublicDispatch<ServerLevel> _onServerOverworldLoad = new EventDispatcher.Impl.WithPublicDispatch<>();
+    public static final EventDispatcher<ServerLevel> onServerOverworldLoad = _onServerOverworldLoad;
+
     public Signpost() {
 
         IEventBus forgeBus = MinecraftForge.EVENT_BUS;
@@ -74,11 +81,15 @@ public class Signpost {
         LootItemConditionRegistry.register(modBus);
 
         Villages.instance.initialize();
+        BlockPartWaystoneUpdateListener.initialize();
 
         WaystoneArgument.bootstrap();
 
         if(ModList.get().isLoaded("waystones"))
             WaystonesAdapter.register();
+
+        if(ModList.get().isLoaded("antiqueatlas"))
+            AntiqueAtlasAdapter.register();
 
     }
 
@@ -91,6 +102,8 @@ public class Signpost {
             ExternalWaystoneLibrary.initialize();
             WaystoneLibrary.registerNetworkPackets();
             JigsawDeserializers.register();
+            if(ModList.get().isLoaded("antiqueatlas"))
+                AntiqueAtlasAdapter.registerNetworkPacket();
         }
 
         @SubscribeEvent
@@ -132,6 +145,7 @@ public class Signpost {
                     WaystoneLibrary.getInstance().setupStorage(world);
                 if(!BlockRestrictions.getInstance().hasStorageBeenSetup())
                     BlockRestrictions.getInstance().setupStorage(world);
+                _onServerOverworldLoad.dispatch(world, false);
             }
         }
 

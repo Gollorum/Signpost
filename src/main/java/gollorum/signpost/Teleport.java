@@ -200,6 +200,21 @@ public class Teleport {
                     this.handle = handle;
                 }
 
+                public static Either<String, Info> from(ServerPlayer player, WaystoneHandle handle) {
+                    return Either.rightIfPresent(WaystoneLibrary.getInstance().getData(handle), () -> LangKeys.waystoneNotFound).mapRight(data -> {
+                        Optional<Component> cannotTeleportBecause = WaystoneHandleUtils.cannotTeleportToBecause(player, handle, data.name());
+                        int distance = (int) data.loc().spawn.distanceTo(Vector3.fromVec3d(player.position()));
+                        return new Info(
+                            Config.Server.teleport.maximumDistance.get(),
+                            distance,
+                            cannotTeleportBecause,
+                            data.name(),
+                            Teleport.getCost(player, Vector3.fromVec3d(player.position()), data.loc().spawn),
+                            Optional.of(data.handle())
+                        );
+                    });
+                }
+
                 public static final Serializer serializer = new Serializer();
                 public static final class Serializer implements BufferSerializable<Info> {
 

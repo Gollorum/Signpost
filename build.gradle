@@ -6,6 +6,7 @@ buildscript {
     }
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
+        classpath 'org.spongepowered:mixingradle:0.7.+'
     }
 }
 // Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
@@ -14,6 +15,7 @@ plugins {
     id 'maven-publish'
 }
 apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'org.spongepowered.mixin'
 
 version = "${mc_version}-${mod_version}"
 group= "${package_group}"
@@ -48,14 +50,6 @@ minecraft {
             // Recommended logging data for a userdev environment
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
 
-            property "mixin.env.disableRefMap", "true"
-            property "mixin.debug.export", "true"
-            property "mixin.debug.export.decompile", "false"
-            property "mixin.debug.verbose", "true"
-            property "mixin.debug.dumpTargetOnFailure", "true"
-            property "mixin.checks", "true"
-            property "mixin.hotSwap", "true"
-
             // Recommended logging level for the console
             property 'forge.logging.console.level', 'debug'
 
@@ -71,14 +65,6 @@ minecraft {
 
             // Recommended logging data for a userdev environment
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-
-            property "mixin.env.disableRefMap", "true"
-            property "mixin.debug.export", "true"
-            property "mixin.debug.export.decompile", "false"
-            property "mixin.debug.verbose", "true"
-            property "mixin.debug.dumpTargetOnFailure", "true"
-            property "mixin.checks", "true"
-            property "mixin.hotSwap", "true"
 
             // Recommended logging level for the console
             property 'forge.logging.console.level', 'debug'
@@ -103,14 +89,6 @@ minecraft {
             // "REGISTRYDUMP": For getting the contents of all registries.
             property 'forge.logging.markers', 'REGISTRIES'
 
-            property "mixin.env.disableRefMap", "true"
-            property "mixin.debug.export", "true"
-            property "mixin.debug.export.decompile", "false"
-            property "mixin.debug.verbose", "true"
-            property "mixin.debug.dumpTargetOnFailure", "true"
-            property "mixin.checks", "true"
-            property "mixin.hotSwap", "true"
-
             // Recommended logging level for the console
             // You can set various levels here.
             // Please read: https://stackoverflow.com/questions/2031163/when-to-use-the-different-log-levels
@@ -131,14 +109,6 @@ minecraft {
 
             // Recommended logging data for a userdev environment
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-
-            property "mixin.env.disableRefMap", "true"
-            property "mixin.debug.export", "true"
-            property "mixin.debug.export.decompile", "false"
-            property "mixin.debug.verbose", "true"
-            property "mixin.debug.dumpTargetOnFailure", "true"
-            property "mixin.checks", "true"
-            property "mixin.hotSwap", "true"
 
             // Recommended logging level for the console
             property 'forge.logging.console.level', 'debug'
@@ -181,6 +151,7 @@ dependencies {
     // that the dep is a ForgeGradle 'patcher' dependency, and its patches will be applied.
     // The userdev artifact is a special name and will get all sorts of transformations applied to it.
     minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
+    annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
 
     // Real mod deobf dependency examples - these get remapped to your current mappings
     // compileOnly fg.deobf("mezz.jei:jei-${mc_version}:${jei_version}:api") // Adds JEI API as a compile dependency
@@ -194,8 +165,13 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
-    implementation fg.deobf("curse.maven:balm-531761:3914491")
-    implementation fg.deobf("curse.maven:waystone-245755:3830849")
+    implementation fg.deobf("curse.maven:balm-${balm_project_id}:${balm_file_id}")
+    implementation fg.deobf("curse.maven:waystones-${waystones_project_id}:${waystones_file_id}")
+
+    implementation fg.deobf("curse.maven:architectury-api-${architectury_project_id}:${architectury_file_id}")
+    implementation fg.deobf("curse.maven:cloth-config-${cloth_project_id}:${cloth_file_id}")
+    // Validation crashes debug server
+    compileOnly fg.deobf("curse.maven:antique-atlas-${atlas_project_id}:${atlas_file_id}")
 
 }
 

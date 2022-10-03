@@ -41,7 +41,9 @@ public class LangKeys {
 	public static final String unlimitedWaystonesOther = "signpost.unlimited_waystones_other";
 	public static final String unlimitedSignpostsOther = "signpost.unlimited_signposts_other";
 
-	public static final String noTeleportWaystoneMod = "signpost.no_teleport_waystones_mod";
+	public static final String noTeleportWaystoneMod = "signpost.waystones_mod.no_teleport";
+	public static final String notActivatedWaystoneMod = "signpost.waystones_mod.not_activated";
+    public static final String noTeleportAntiqueAtlasMod = "signpost.antique_atlas_mod.no_teleport";
 
     public static final String waystoneHasId = "item.signpost.waystone_has_id";
     public static final String waystoneId = "item.signpost.waystone_id";

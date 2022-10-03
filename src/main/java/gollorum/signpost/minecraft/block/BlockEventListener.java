@@ -5,6 +5,7 @@ import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.blockpartdata.types.PostBlockPart;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
+import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.security.WithCountRestriction;
 import gollorum.signpost.utils.Delay;
@@ -41,7 +42,7 @@ public class BlockEventListener {
     @SubscribeEvent
     public static void onBlockRemoved(BlockEvent.BreakEvent event) {
         Block block = event.getState().getBlock();
-        BlockEntity tile = event.getWorld().getBlockEntity(event.getPos());
+        BlockEntity tile = TileEntityUtils.findTileEntity(event.getWorld(), event.getPos());
         if(!event.isCanceled() && tile instanceof PostTile) {
             PostTile postTile = (PostTile) tile;
             Optional<PostTile.TraceResult> traceResult = postTile.trace(event.getPlayer());

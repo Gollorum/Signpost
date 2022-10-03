@@ -10,6 +10,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.CommonLevelAccessor;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -20,12 +21,30 @@ import java.util.function.Consumer;
 
 public class TileEntityUtils {
 
+    public static <T extends BlockEntity> Optional<T> findTileEntity(BlockGetter level, BlockPos pos, BlockEntityType<T> c) {
+        if(level instanceof Level l && l.thread != Thread.currentThread())
+            throw new RuntimeException("Tried to access block entity from wrong thread");
+        return level.getBlockEntity(pos, c);
+    }
+
+    public static BlockEntity findTileEntity(BlockGetter level, BlockPos pos) {
+        if(level instanceof Level l && l.thread != Thread.currentThread())
+            throw new RuntimeException("Tried to access block entity from wrong thread");
+        return level.getBlockEntity(pos);
+    }
+
     public static <T extends BlockEntity> void delayUntilTileEntityExists(LevelAccessor world, BlockPos pos, BlockEntityType<T> c, Consumer<T> action, int timeout, Optional<Runnable> onTimeOut) {
-        Delay.untilIsPresent(() -> world.getBlockEntity(pos, c), action, timeout, world.isClientSide(), onTimeOut);
+        Delay.untilIsPresent(
+            () -> world instanceof Level l && l.thread != Thread.currentThread() ? Optional.empty() : findTileEntity(world, pos, c),
+            action,
+            timeout,
+            world.isClientSide(),
+            onTimeOut
+        );
     }
 
     public static <T extends BlockEntity> Optional<T> findTileEntity(ResourceLocation dimensionKeyLocation, boolean isRemote, BlockPos blockPos, BlockEntityType<T> c){
-        return findWorld(dimensionKeyLocation, isRemote).flatMap(world -> world.getBlockEntity(blockPos, c));
+        return findWorld(dimensionKeyLocation, isRemote).flatMap(world -> findTileEntity(world, blockPos, c));
     }
 
     public static Optional<Level> findWorld(ResourceLocation dimensionKeyLocation, boolean isClient) {
@@ -48,13 +67,13 @@ public class TileEntityUtils {
 
     public static <T> Optional<T> findTileEntityAt(WorldLocation location, Class<T> c, boolean onClient) {
         return toWorld(location.world, onClient)
-            .map(w -> w.getBlockEntity(location.blockPos))
+            .map(w -> TileEntityUtils.findTileEntity(w, location.blockPos))
             .flatMap(tile -> c.isAssignableFrom(tile.getClass()) ? Optional.of((T)tile) : Optional.empty());
     }
 
     public static <T extends BlockEntity> Optional<T> findTileEntityAt(WorldLocation location, BlockEntityType<T> c, boolean onClient) {
         return toWorld(location.world, onClient)
-            .flatMap(w -> w.getBlockEntity(location.blockPos, c));
+            .flatMap(w -> findTileEntity(w, location.blockPos, c));
     }
 
     public static <T> void delayUntilTileEntityExistsAt(WorldLocation location, Class<T> c, Consumer<T> action, int timeout, boolean onClient, Optional<Runnable> onTimeOut) {
@@ -67,7 +86,7 @@ public class TileEntityUtils {
 
     public static <T extends BlockEntity> Optional<T> findTileEntityClient(ResourceLocation dimensionKeyLocation, BlockPos pos, BlockEntityType<T> c){
         return Minecraft.getInstance().level.dimension().location().equals(dimensionKeyLocation)
-            ? Minecraft.getInstance().level.getBlockEntity(pos, c)
+            ? findTileEntity(Minecraft.getInstance().level, pos, c)
             : Optional.empty();
     }
 

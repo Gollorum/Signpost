@@ -195,7 +195,7 @@ public class WaystoneBlock extends BaseEntityBlock implements WithCountRestricti
     }
 
     public static ItemStack fillClonedItemStack(ItemStack stack, BlockGetter level, BlockPos pos, Player player) {
-        BlockEntity untypedEntity = level.getBlockEntity(pos);
+        BlockEntity untypedEntity = TileEntityUtils.findTileEntity(level, pos);
         if(untypedEntity instanceof WaystoneTile) {
             WaystoneTile tile = (WaystoneTile) untypedEntity;
             if(player.hasPermissions(Config.Server.permissions.pickUnownedWaystonePermissionLevel.get())

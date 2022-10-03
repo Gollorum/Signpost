@@ -294,18 +294,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
             PacketHandler.send(
                 PacketDistributor.PLAYER.with(() -> player),
                 new Teleport.RequestGui.Package(
-                    Either.rightIfPresent(WaystoneLibrary.getInstance().getData(dest), () -> LangKeys.waystoneNotFound).mapRight(data -> {
-                        Optional<Component> cannotTeleportBecause = WaystoneHandleUtils.cannotTeleportToBecause(player, dest, data.name());
-                        int distance = (int) data.loc().spawn.distanceTo(Vector3.fromVec3d(player.position()));
-                        return new Teleport.RequestGui.Package.Info(
-                            Config.Server.teleport.maximumDistance.get(),
-                            distance,
-                            cannotTeleportBecause,
-                            data.name(),
-                            Teleport.getCost(player, Vector3.fromVec3d(player.position()), data.loc().spawn),
-                            Optional.of(data.handle())
-                        );
-                    }),
+                    Teleport.RequestGui.Package.Info.from(player, dest),
                     Optional.of(tilePartInfo)
                 )
             );

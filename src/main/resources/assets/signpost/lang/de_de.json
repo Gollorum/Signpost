@@ -64,5 +64,7 @@
 
   "itemGroup.signpost": "Wegweiser",
 
-  "signpost.no_teleport_waystones_mod": "Um zu diesem Wegstein zu reisen, musst du eine Warp Scroll (oder ähnlich) benutzen."
+  "signpost.waystones_mod.no_teleport": "Um zu diesem Wegstein zu reisen, musst du z.B. eine Warp-Schriftrolle benutzen.",
+  "signpost.waystones_mod.not_activated": "Du hast diesen Wegstein noch nicht aktiviert.",
+  "signpost.antique_atlas_mod.no_teleport": "Suche einen Wegweiser, um dorthin zu reisen."
 }

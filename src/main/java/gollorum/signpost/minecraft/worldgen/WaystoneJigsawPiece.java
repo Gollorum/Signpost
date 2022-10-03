@@ -185,7 +185,7 @@ public class WaystoneJigsawPiece extends SinglePoolElement {
 		BlockPos pos = pieceLocation.relative(facing.getOpposite()).relative(left).above();
 
 		ModelWaystone waystone = getWaystoneType(random, allowedWaystones);
-		Optional<String> optionalName = VillageNamesProvider.requestFor(pos, villageLocation, seedReader.getLevel(), random);
+		Optional<String> optionalName = VillageNamesProvider.requestFor(pos, villageLocation, seedReader.getLevel());
 		if(!optionalName.isPresent()) {
 			Signpost.LOGGER.warn("No name could be generated for waystone at " + pos + ".");
 			return false;

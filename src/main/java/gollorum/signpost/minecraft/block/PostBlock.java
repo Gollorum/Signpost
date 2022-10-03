@@ -56,6 +56,7 @@ import net.minecraftforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock, WithCountRestriction {
@@ -301,6 +302,8 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
 
     public final ModelType type;
 
+    public static final List<Supplier<Item>> ItemsThatOverrideBlockPartActivation = new ArrayList<>();
+
     private PostBlock(Properties properties, ModelType type) {
         super(properties.noOcclusion());
         this.type = type;
@@ -364,7 +367,7 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
     @Override
     public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter world, BlockPos pos, Player player) {
         ItemStack ret = super.getCloneItemStack(state, target, world, pos, player);
-        world.getBlockEntity(pos, PostTile.getBlockEntityType()).ifPresent(tile -> {
+        TileEntityUtils.findTileEntity(world, pos, PostTile.getBlockEntityType()).ifPresent(tile -> {
             if(!ret.hasTag()) ret.setTag(new CompoundTag());
             ret.getTag().put("Parts", tile.writeParts(false));
         });
@@ -374,7 +377,7 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
     @SuppressWarnings("deprecation")
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
-        BlockEntity t = world.getBlockEntity(pos);
+        BlockEntity t = TileEntityUtils.findTileEntity(world, pos);
         return t instanceof PostTile
             ? ((PostTile) t).getBounds()
             : Shapes.empty();
@@ -409,7 +412,8 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
 
     @Override
     public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        BlockEntity tileEntity = world.getBlockEntity(pos);
+        if(ItemsThatOverrideBlockPartActivation.stream().map(s -> s.get()).anyMatch(player.getItemInHand(hand)::is)) return InteractionResult.PASS;
+        BlockEntity tileEntity = TileEntityUtils.findTileEntity(world, pos);
         if(!(tileEntity instanceof PostTile)) return InteractionResult.SUCCESS;
         PostTile tile = (PostTile) tileEntity;
         return onActivate(tile, world, player, hand);

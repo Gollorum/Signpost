@@ -3,6 +3,7 @@ package gollorum.signpost.compat;
 import com.google.common.collect.Lists;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneHandle;
+import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.networking.PacketHandler;
@@ -22,6 +23,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -68,16 +70,16 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
         return WaystoneManager.get(Signpost.getServerInstance()).getWaystoneById(handle.id).map(Waystone::new);
     }
 
-    private static final String notActivatedKey = "gui.waystones.inventory.no_waystones_activated";
-
     @Override
-    public Optional<Component> cannotTeleportToBecause(Player player, WaystoneHandle handle) {
+    public Optional<Component> cannotTeleportToBecause(ServerPlayer player, WaystoneHandle handle) {
         if((!(handle instanceof Handle))) return Optional.empty();
+        if(!Config.Server.compat.waystones.enableTeleport.get())
+            return Optional.of(new TranslatableComponent(LangKeys.noTeleportWaystoneMod));
         return getData((Handle)handle)
             .map(waystone -> waystone.wrapped.isGlobal()
                 || PlayerWaystoneManager.isWaystoneActivated(player, waystone.wrapped)
                 ? Optional.<Component>empty()
-                : Optional.of((Component) new TranslatableComponent(notActivatedKey)))
+                : Optional.of((Component) new TranslatableComponent(LangKeys.notActivatedWaystoneMod)))
             .orElse(Optional.empty());
     }
 
@@ -184,13 +186,16 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
 
         @Override
         public void handle(RequestEvent message, NetworkEvent.Context context) {
-            PacketHandler.send(
-                PacketDistributor.PLAYER.with(context::getSender),
-                new ReplyEvent.Packet(PlayerWaystoneManager.getWaystones(context.getSender())
-                    .stream()
-                    .map(Waystone::new)
-                    .collect(Collectors.toList()))
-            );
+            if(Config.Server.compat.waystones.allowAsSignTarget.get()) {
+                PacketHandler.send(
+                    PacketDistributor.PLAYER.with(context::getSender),
+                    new ReplyEvent.Packet(PlayerWaystoneManager.getWaystones(context.getSender())
+                        .stream()
+                        .distinct()
+                        .map(Waystone::new)
+                        .collect(Collectors.toList()))
+                );
+            }
         }
     }
 
