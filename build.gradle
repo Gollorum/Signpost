@@ -48,6 +48,14 @@ minecraft {
             // Recommended logging data for a userdev environment
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
 
+            property "mixin.env.disableRefMap", "true"
+            property "mixin.debug.export", "true"
+            property "mixin.debug.export.decompile", "false"
+            property "mixin.debug.verbose", "true"
+            property "mixin.debug.dumpTargetOnFailure", "true"
+            property "mixin.checks", "true"
+            property "mixin.hotSwap", "true"
+
             // Recommended logging level for the console
             property 'forge.logging.console.level', 'debug'
 
@@ -63,6 +71,14 @@ minecraft {
 
             // Recommended logging data for a userdev environment
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+
+            property "mixin.env.disableRefMap", "true"
+            property "mixin.debug.export", "true"
+            property "mixin.debug.export.decompile", "false"
+            property "mixin.debug.verbose", "true"
+            property "mixin.debug.dumpTargetOnFailure", "true"
+            property "mixin.checks", "true"
+            property "mixin.hotSwap", "true"
 
             // Recommended logging level for the console
             property 'forge.logging.console.level', 'debug'
@@ -87,6 +103,14 @@ minecraft {
             // "REGISTRYDUMP": For getting the contents of all registries.
             property 'forge.logging.markers', 'REGISTRIES'
 
+            property "mixin.env.disableRefMap", "true"
+            property "mixin.debug.export", "true"
+            property "mixin.debug.export.decompile", "false"
+            property "mixin.debug.verbose", "true"
+            property "mixin.debug.dumpTargetOnFailure", "true"
+            property "mixin.checks", "true"
+            property "mixin.hotSwap", "true"
+
             // Recommended logging level for the console
             // You can set various levels here.
             // Please read: https://stackoverflow.com/questions/2031163/when-to-use-the-different-log-levels
@@ -107,6 +131,14 @@ minecraft {
 
             // Recommended logging data for a userdev environment
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+
+            property "mixin.env.disableRefMap", "true"
+            property "mixin.debug.export", "true"
+            property "mixin.debug.export.decompile", "false"
+            property "mixin.debug.verbose", "true"
+            property "mixin.debug.dumpTargetOnFailure", "true"
+            property "mixin.checks", "true"
+            property "mixin.hotSwap", "true"
 
             // Recommended logging level for the console
             property 'forge.logging.console.level', 'debug'
@@ -162,7 +194,8 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
-//    implementation fg.deobf("curse.maven:waystone-245755:3332276")
+    implementation fg.deobf("curse.maven:balm-531761:3914491")
+    implementation fg.deobf("curse.maven:waystone-245755:3830849")
 
 }
 

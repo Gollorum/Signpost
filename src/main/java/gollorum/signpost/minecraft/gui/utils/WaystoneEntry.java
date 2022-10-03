@@ -7,7 +7,10 @@ import java.util.Objects;
 
 public final class WaystoneEntry {
 
+    // The drop-down entry. Has a postfix if it is an external waystone.
     public String entryName;
+
+    // The actual waystone name
     public String displayName;
     public final WaystoneHandle handle;
     public BlockPos pos;

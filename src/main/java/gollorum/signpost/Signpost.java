@@ -1,5 +1,6 @@
 package gollorum.signpost;
 
+import gollorum.signpost.compat.WaystonesAdapter;
 import gollorum.signpost.minecraft.block.BlockEventListener;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.commands.WaystoneArgument;
@@ -7,12 +8,10 @@ import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.data.DataGeneration;
 import gollorum.signpost.minecraft.registry.*;
 import gollorum.signpost.minecraft.rendering.PostRenderer;
-import gollorum.signpost.minecraft.storage.loot.PermissionCheck;
-import gollorum.signpost.minecraft.storage.loot.RegisteredWaystoneLootNbtProvider;
 import gollorum.signpost.minecraft.worldgen.JigsawDeserializers;
 import gollorum.signpost.minecraft.worldgen.WaystoneDiscoveryEventListener;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.relations.ExternalWaystoneLibrary;
+import gollorum.signpost.compat.ExternalWaystoneLibrary;
 import gollorum.signpost.utils.ServerType;
 import gollorum.signpost.worldgen.Villages;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
@@ -28,6 +27,7 @@ import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -77,9 +77,8 @@ public class Signpost {
 
         WaystoneArgument.bootstrap();
 
-        // Disabled until I manage to integrate the new version of waystones
-//        if(ModList.get().isLoaded("waystones"))
-//            WaystonesAdapter.register();
+        if(ModList.get().isLoaded("waystones"))
+            WaystonesAdapter.register();
 
     }
 

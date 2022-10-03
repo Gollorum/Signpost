@@ -13,13 +13,9 @@ import gollorum.signpost.minecraft.gui.RequestSignGui;
 import gollorum.signpost.minecraft.items.Brush;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.relations.ExternalWaystone;
 import gollorum.signpost.security.WithOwner;
-import gollorum.signpost.utils.BlockPart;
-import gollorum.signpost.utils.Either;
-import gollorum.signpost.utils.NameProvider;
+import gollorum.signpost.utils.*;
 import gollorum.signpost.utils.math.Angle;
-import gollorum.signpost.utils.AngleProvider;
 import gollorum.signpost.utils.math.geometry.Intersectable;
 import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.TransformedBox;
@@ -29,6 +25,7 @@ import gollorum.signpost.utils.serialization.ItemStackSerializer;
 import gollorum.signpost.utils.serialization.OptionalSerializer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -44,7 +41,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements BlockPart<Self> {
 
@@ -295,27 +291,21 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
     private void tryTeleport(ServerPlayer player, PostTile.TilePartInfo tilePartInfo) {
         if(Config.Server.teleport.enableTeleport.get() && coreData.destination.isPresent() && (!(coreData.destination.get() instanceof WaystoneHandle.Vanilla) || WaystoneLibrary.getInstance().contains((WaystoneHandle.Vanilla) coreData.destination.get()))) {
             WaystoneHandle dest = coreData.destination.get();
-            Optional<WaystoneHandle.Vanilla> vanillaHandle = dest instanceof WaystoneHandle.Vanilla
-                ? Optional.of((WaystoneHandle.Vanilla) dest)
-                : Optional.empty();
             PacketHandler.send(
                 PacketDistributor.PLAYER.with(() -> player),
                 new Teleport.RequestGui.Package(
-                    Either.rightIfPresent(vanillaHandle, () -> ((ExternalWaystone.Handle) dest).noTeleportLangKey())
-                        .flatMapRight(h ->
-                            Either.rightIfPresent(WaystoneLibrary.getInstance().getData(h), () -> LangKeys.waystoneNotFound).mapRight(data -> {
-                                boolean isDiscovered = WaystoneLibrary.getInstance()
-                                    .isDiscovered(new PlayerHandle(player), h) || !Config.Server.teleport.enforceDiscovery.get();
-                                int distance = (int) data.location.spawn.distanceTo(Vector3.fromVec3d(player.position()));
-                                return new Teleport.RequestGui.Package.Info(
-                                    Config.Server.teleport.maximumDistance.get(),
-                                    distance,
-                                    isDiscovered,
-                                    data.name,
-                                    Teleport.getCost(player, Vector3.fromBlockPos(data.location.block.blockPos), data.location.spawn)
-                                );
-                            })
-                        ),
+                    Either.rightIfPresent(WaystoneLibrary.getInstance().getData(dest), () -> LangKeys.waystoneNotFound).mapRight(data -> {
+                        Optional<Component> cannotTeleportBecause = WaystoneHandleUtils.cannotTeleportToBecause(player, dest, data.name());
+                        int distance = (int) data.loc().spawn.distanceTo(Vector3.fromVec3d(player.position()));
+                        return new Teleport.RequestGui.Package.Info(
+                            Config.Server.teleport.maximumDistance.get(),
+                            distance,
+                            cannotTeleportBecause,
+                            data.name(),
+                            Teleport.getCost(player, Vector3.fromVec3d(player.position()), data.loc().spawn),
+                            Optional.of(data.handle())
+                        );
+                    }),
                     Optional.of(tilePartInfo)
                 )
             );

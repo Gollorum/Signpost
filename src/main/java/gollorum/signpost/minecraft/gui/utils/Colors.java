@@ -112,4 +112,8 @@ public class Colors {
             .withStyle(style -> style.withColor(TextColor.fromRgb(color)));
     }
 
+    public static MutableComponent wrap(MutableComponent text, int color) {
+        return text.withStyle(style -> style.withColor(TextColor.fromRgb(color)));
+    }
+
 }

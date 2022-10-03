@@ -1,6 +1,6 @@
 package gollorum.signpost;
 
-import gollorum.signpost.relations.ExternalWaystoneLibrary;
+import gollorum.signpost.compat.ExternalWaystoneLibrary;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.StringSerializer;
 import net.minecraft.Util;
