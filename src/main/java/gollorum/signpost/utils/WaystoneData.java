@@ -13,7 +13,7 @@ import net.minecraft.world.entity.player.Player;
 
 import java.util.Optional;
 
-public class WaystoneData {
+public class WaystoneData implements gollorum.signpost.WaystoneDataBase {
 
     public final WaystoneHandle.Vanilla handle;
     public final String name;
@@ -47,6 +47,21 @@ public class WaystoneData {
     }
 
     public static final Serializer SERIALIZER = new Serializer();
+
+    @Override
+    public String name() {
+        return name;
+    }
+
+    @Override
+    public WaystoneLocationData loc() {
+        return location;
+    }
+
+    @Override
+    public WaystoneHandle handle() {
+        return handle;
+    }
 
     public static final class Serializer implements CompoundSerializable<WaystoneData> {
 

@@ -9,15 +9,16 @@ import gollorum.signpost.minecraft.utils.Inventory;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.relations.ExternalWaystone;
+import gollorum.signpost.compat.ExternalWaystone;
 import gollorum.signpost.utils.Delay;
 import gollorum.signpost.utils.Either;
+import gollorum.signpost.utils.WaystoneHandleUtils;
 import gollorum.signpost.utils.WaystoneLocationData;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.BufferSerializable;
+import gollorum.signpost.utils.serialization.ComponentSerializer;
 import gollorum.signpost.utils.serialization.StringSerializer;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
@@ -81,7 +82,6 @@ public class Teleport {
             AtomicReference<Consumer<Integer>> playStepSounds = new AtomicReference<>();
             playStepSounds.set(countdown -> {
                 float volume = countdown / (float) steps;
-//                playStepSound.accept(world, location.toBlockPos(), volume);
                 playStepSound.accept(oldWorld, oldPos, volume);
                 if(countdown > 1) Delay.onServerForFrames(15, () -> playStepSounds.get().accept(countdown - 1));
             });
@@ -110,10 +110,12 @@ public class Teleport {
 
         public static final class Package {
             public final String waystoneName;
+            public final Optional<WaystoneHandle> handle;
             public Package(
-                String waystoneName
+                String waystoneName, Optional<WaystoneHandle> handle
             ) {
                 this.waystoneName = waystoneName;
+                this.handle = handle;
             }
         }
 
@@ -125,11 +127,13 @@ public class Teleport {
         @Override
         public void encode(Package message, FriendlyByteBuf buffer) {
             StringSerializer.instance.write(message.waystoneName, buffer);
+            buffer.writeBoolean(message.handle.isPresent());
+            message.handle.ifPresent(h -> h.write(buffer));
         }
 
         @Override
         public Package decode(FriendlyByteBuf buffer) {
-            return new Package(StringSerializer.instance.read(buffer));
+            return new Package(StringSerializer.instance.read(buffer), buffer.readBoolean() ? WaystoneHandle.read(buffer) : Optional.empty());
         }
 
         @Override
@@ -137,23 +141,23 @@ public class Teleport {
             Package message, NetworkEvent.Context context
         ) {
             ServerPlayer player = context.getSender();
-            Optional<WaystoneHandle.Vanilla> waystone = WaystoneLibrary.getInstance().getHandleByName(message.waystoneName);
-            if(waystone.isPresent()) {
-                WaystoneHandle.Vanilla handle = waystone.get();
-                WaystoneLocationData waystoneData = WaystoneLibrary.getInstance().getLocationData(handle);
+            Optional<WaystoneHandle> waystone = message.handle.or(() -> WaystoneLibrary.getInstance().getHandleByName(message.waystoneName));
+            Optional<WaystoneDataBase> data = waystone.flatMap(WaystoneLibrary.getInstance()::getData);
+            if(data.isPresent()) {
+                WaystoneHandle handle = waystone.get();
+                WaystoneLocationData waystoneData = data.get().loc();
 
-                boolean isDiscovered = WaystoneLibrary.getInstance().isDiscovered(PlayerHandle.from(player), handle)
-                    || !Config.Server.teleport.enforceDiscovery.get();
+                Optional<Component> cannotTeleportBecause = WaystoneHandleUtils.cannotTeleportToBecause(player, handle, message.waystoneName);
                 int distance = (int) waystoneData.spawn.distanceTo(Vector3.fromVec3d(player.position()));
                 int maxDistance = Config.Server.teleport.maximumDistance.get();
                 boolean isTooFarAway = maxDistance > 0 && distance > maxDistance;
-                if(!isDiscovered) player.sendSystemMessage(Component.translatable(LangKeys.notDiscovered, message.waystoneName));
+                cannotTeleportBecause.ifPresent(player::sendSystemMessage);
                 if(isTooFarAway) player.sendSystemMessage(Component.translatable(LangKeys.tooFarAway, Integer.toString(distance), Integer.toString(maxDistance)));
-                if(!isDiscovered || isTooFarAway) return;
+                if(cannotTeleportBecause.isPresent() || isTooFarAway) return;
 
                 Inventory.tryPay(
                     player,
-                    Teleport.getCost(player, Vector3.fromBlockPos(waystoneData.block.blockPos), waystoneData.spawn),
+                    Teleport.getCost(player, Vector3.fromVec3d(player.position()), waystoneData.spawn),
                     p -> Teleport.toWaystone(waystoneData, p)
                 );
             } else player.sendSystemMessage(
@@ -177,18 +181,20 @@ public class Teleport {
 
             public static final class Info {
 
-                public int maxDistance;
-                public int distance;
-                public boolean isDiscovered;
-                public String waystoneName;
-                public ItemStack cost;
+                public final int maxDistance;
+                public final int distance;
+                public final Optional<Component> cannotTeleportBecause;
+                public final String waystoneName;
+                public final ItemStack cost;
+                public final Optional<WaystoneHandle> handle;
 
-                public Info(int maxDistance, int distance, boolean isDiscovered, String waystoneName, ItemStack cost) {
+                public Info(int maxDistance, int distance, Optional<Component> cannotTeleportBecause, String waystoneName, ItemStack cost, Optional<WaystoneHandle> handle) {
                     this.maxDistance = maxDistance;
                     this.distance = distance;
-                    this.isDiscovered = isDiscovered;
+                    this.cannotTeleportBecause = cannotTeleportBecause;
                     this.waystoneName = waystoneName;
                     this.cost = cost;
+                    this.handle = handle;
                 }
 
                 public static final Serializer serializer = new Serializer();
@@ -201,9 +207,10 @@ public class Teleport {
                     public void write(Info info, FriendlyByteBuf buffer) {
                         buffer.writeInt(info.maxDistance);
                         buffer.writeInt(info.distance);
-                        buffer.writeBoolean(info.isDiscovered);
+                        ComponentSerializer.instance.optional().write(info.cannotTeleportBecause, buffer);
                         StringSerializer.instance.write(info.waystoneName, buffer);
                         buffer.writeItem(info.cost);
+                        buffer.writeOptional(info.handle, (b, h) -> h.write(b));
                     }
 
                     @Override
@@ -211,9 +218,10 @@ public class Teleport {
                         return new Info(
                             buffer.readInt(),
                             buffer.readInt(),
-                            buffer.readBoolean(),
+                            ComponentSerializer.instance.optional().read(buffer),
                             StringSerializer.instance.read(buffer),
-                            buffer.readItem()
+                            buffer.readItem(),
+                            buffer.readOptional(WaystoneHandle::read).flatMap(o -> o)
                         );
                     }
                 }
@@ -256,7 +264,7 @@ public class Teleport {
                     ))));
             else message.data.consume(
                 l -> Minecraft.getInstance().player.displayClientMessage(Component.translatable(l), true),
-                r -> PacketHandler.sendToServer(new Request.Package(r.waystoneName))
+                r -> PacketHandler.sendToServer(new Request.Package(r.waystoneName, r.handle))
             );
         }
     }

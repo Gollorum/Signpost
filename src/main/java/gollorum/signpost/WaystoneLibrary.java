@@ -1,6 +1,7 @@
 package gollorum.signpost;
 
 import gollorum.signpost.blockpartdata.types.renderers.BlockPartWaystoneUpdateListener;
+import gollorum.signpost.compat.ExternalWaystoneLibrary;
 import gollorum.signpost.minecraft.block.WaystoneBlock;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
 import gollorum.signpost.minecraft.config.Config;
@@ -25,6 +26,7 @@ import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.PacketDistributor;
+import org.openjdk.nashorn.internal.runtime.options.Option;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -98,6 +100,12 @@ public class WaystoneLibrary {
     public WaystoneLocationData getLocationData(WaystoneHandle.Vanilla waystoneId) {
         assert Signpost.getServerType().isServer;
         return allWaystones.get(waystoneId).locationData;
+    }
+
+    public Optional<WaystoneDataBase> getData(WaystoneHandle handle) {
+        return handle instanceof WaystoneHandle.Vanilla
+            ? getData((WaystoneHandle.Vanilla) handle).map(d -> d)
+            : ExternalWaystoneLibrary.getInstance().getData(handle).map(d -> d);
     }
 
     public Optional<WaystoneData> getData(WaystoneHandle.Vanilla waystoneId) {
@@ -185,7 +193,7 @@ public class WaystoneLibrary {
                 editingPlayer.sendSystemMessage(Component.translatable(LangKeys.noPermissionWaystone));
                 return Optional.empty();
             }
-            if(editingPlayer != null && !WaystoneData.hasSecurityPermissions(editingPlayer, location))
+            if(editingPlayer != null && !gollorum.signpost.utils.WaystoneData.hasSecurityPermissions(editingPlayer, location))
                 isLocked = oldEntry.isLocked;
             for(WaystoneHandle.Vanilla oldId: oldWaystones) {
                 allWaystones.remove(oldId);

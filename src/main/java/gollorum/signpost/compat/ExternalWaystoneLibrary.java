@@ -1,9 +1,11 @@
-package gollorum.signpost.relations;
+package gollorum.signpost.compat;
 
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.utils.EventDispatcher;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,6 +47,14 @@ public class ExternalWaystoneLibrary {
         for(Adapter adapter : adapters) adapter.requestKnownWaystones(consumer);
     }
 
+    public Optional<ExternalWaystone> getData(WaystoneHandle handle) {
+        return adapters.stream().flatMap(a -> a.getData(handle).stream()).findFirst();
+    }
+
+    public Optional<Component> cannotTeleportToBecause(Player player, WaystoneHandle handle) {
+        return adapters.stream().flatMap(a -> a.cannotTeleportToBecause(player, handle).stream()).findFirst();
+    }
+
     public interface Adapter {
         String typeTag();
 
@@ -53,6 +63,9 @@ public class ExternalWaystoneLibrary {
 
         WaystoneHandle read(FriendlyByteBuf buffer);
         WaystoneHandle read(CompoundTag compound);
+
+        Optional<ExternalWaystone> getData(WaystoneHandle handle);
+        Optional<Component> cannotTeleportToBecause(Player player, WaystoneHandle handle);
     }
 
 }

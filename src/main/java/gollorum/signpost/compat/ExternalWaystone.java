@@ -1,12 +1,9 @@
-package gollorum.signpost.relations;
+package gollorum.signpost.compat;
 
+import gollorum.signpost.WaystoneDataBase;
 import gollorum.signpost.WaystoneHandle;
-import gollorum.signpost.utils.WorldLocation;
 
-public interface ExternalWaystone {
-
-    String name();
-    WorldLocation loc();
+public interface ExternalWaystone extends WaystoneDataBase {
 
     Handle handle();
 

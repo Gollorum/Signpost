@@ -18,7 +18,7 @@ import gollorum.signpost.minecraft.gui.widgets.*;
 import gollorum.signpost.minecraft.rendering.FlippableModel;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.relations.ExternalWaystoneLibrary;
+import gollorum.signpost.compat.ExternalWaystoneLibrary;
 import gollorum.signpost.utils.Delay;
 import gollorum.signpost.utils.NameProvider;
 import gollorum.signpost.utils.Tuple;
@@ -337,7 +337,7 @@ public class SignGui extends ExtendedScreen {
                 showStuffOccludedByWaystoneDropdown();
             },
             entry -> {
-                waystoneInputBox.setValue(entry.displayName);
+                waystoneInputBox.setValue(entry.entryName);
                 waystoneDropdown.hideList();
             },
             false);
@@ -359,7 +359,7 @@ public class SignGui extends ExtendedScreen {
         waystoneInputBox.setMaxLength(200);
         waystoneInputBox.setResponder(this::onWaystoneSelected);
         noWaystonesInfo = new TextDisplay(
-            I18n.get(LangKeys.noWaystones),
+            Component.translatable(LangKeys.noWaystones),
             waystoneDropdown.rect.max(),
             Rect.XAlignment.Right, Rect.YAlignment.Bottom,
             font
@@ -400,7 +400,7 @@ public class SignGui extends ExtendedScreen {
         angleDropDown.addEntry(angleEntryForPlayer());
         addRenderableWidget(angleDropDown);
         rotationLabel = new TextDisplay(
-            I18n.get(LangKeys.rotationLabel),
+            Component.translatable(LangKeys.rotationLabel),
             rotationInputBoxRect.at(Rect.XAlignment.Left, Rect.YAlignment.Center).add(-10, 0),
             Rect.XAlignment.Right, Rect.YAlignment.Center,
             font
@@ -615,7 +615,7 @@ public class SignGui extends ExtendedScreen {
                     w.name() + " " + w.handle().modMark(),
                     w.name(),
                     w.handle(),
-                    w.loc().blockPos
+                    w.loc().block.blockPos
                 )).collect(Collectors.toList());
                 waystoneDropdown.addEntries(entries.stream().filter(e -> oldWaystone.map(oldE -> !e.handle.equals(oldE.handle)).orElse(true))
                     .collect(Collectors.toList()));
@@ -626,7 +626,7 @@ public class SignGui extends ExtendedScreen {
 
         final int newSignItemSize = 16;
         TextDisplay newSignHint = new TextDisplay(
-            I18n.get(LangKeys.newSignHint),
+            Component.translatable(LangKeys.newSignHint),
             new Point(getCenterX() - newSignItemSize, (int) ((doneButton.y + doneButton.getHeight() + height) / 2f)),
             Rect.XAlignment.Center, Rect.YAlignment.Center,
             font
@@ -694,7 +694,7 @@ public class SignGui extends ExtendedScreen {
                 && lastWaystone.map(lw ->
                     lw.displayName.equals(currentSignInputBox.getValue()))
                         .orElse(currentSignInputBox.getValue().equals("")))
-                currentSignInputBox.setValue(waystoneName);
+                currentSignInputBox.setValue(validWaystone.map(e -> e.displayName).orElse(waystoneName));
             if(!waystoneName.equals("")) {
                 waystoneRotationEntry = angleEntryForWaystone(validWaystone.get());
                 angleDropDown.addEntry(waystoneRotationEntry);
@@ -1047,7 +1047,7 @@ public class SignGui extends ExtendedScreen {
     }
 
     private NameProvider asNameProvider(String name) {
-        return lastWaystone.map(lw -> lw.displayName.equals(name)).orElse(false)
+        return lastWaystone.map(lw -> lw.entryName.equals(name)).orElse(false)
             ? new NameProvider.WaystoneTarget(name)
             : new NameProvider.Literal(name);
     }

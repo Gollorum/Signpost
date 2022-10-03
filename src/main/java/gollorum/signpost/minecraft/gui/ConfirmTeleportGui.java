@@ -10,7 +10,6 @@ import gollorum.signpost.minecraft.gui.widgets.TextDisplay;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.Either;
-import gollorum.signpost.utils.Tuple;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
@@ -70,29 +69,29 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 		data.consume(
 			langKey -> {
 				addRenderableOnly(new TextDisplay(
+					Component.translatable(langKey),
 					new Point(width / 2, height / 2 - 20),
 					Rect.XAlignment.Center, Rect.YAlignment.Bottom,
-					font,
-					langKey
+					font
 				));
 				editButtonTop.set(height / 2 + 20);
 			},
 			d -> {
 				boolean isTooFarAway = d.maxDistance > 0 && d.distance > d.maxDistance;
-				if(d.isDiscovered && !isTooFarAway) {
+				if(d.cannotTeleportBecause.isEmpty() && !isTooFarAway) {
 					addRenderableOnly(new TextDisplay(
+						Component.translatable(LangKeys.confirmTeleport, Colors.wrap(d.waystoneName, Colors.highlight)),
 						new Point(width / 2, height / 2 - 20),
 						Rect.XAlignment.Center, Rect.YAlignment.Bottom,
-						font,
-						LangKeys.confirmTeleport, Tuple.of(d.waystoneName, Colors.highlight)
+						font
 					));
 
 					if (!d.cost.isEmpty()) {
 						addRenderableOnly(new TextDisplay(
+							Component.translatable(LangKeys.cost),
 							new Point(width / 2 - costCenterSpace / 2, height / 2),
 							Rect.XAlignment.Right, Rect.YAlignment.Center,
-							font,
-							LangKeys.cost
+							font
 						));
 						Rect itemRect = new Rect(
 							new Point(width / 2 + costCenterSpace / 2, height / 2),
@@ -133,22 +132,23 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 					));
 					editButtonTop.set(cancelRect.max().y + 20);
 				} else {
-					if(!d.isDiscovered)
+					d.cannotTeleportBecause.ifPresent(reason ->
 						addRenderableOnly(new TextDisplay(
+							reason,
 							new Point(width / 2, height / 2 - 20),
 							Rect.XAlignment.Center, Rect.YAlignment.Bottom,
-							font,
-							LangKeys.notDiscovered,
-							new Tuple<>(d.waystoneName, Colors.highlight)
-						));
+							font
+						)));
 					if(isTooFarAway)
 						addRenderableOnly(new TextDisplay(
-							new Point(width / 2, height / 2 - (d.isDiscovered ? 20 : 40)),
+							Component.translatable(
+								LangKeys.tooFarAway,
+								Colors.wrap(Integer.toString(d.distance), Colors.highlight),
+								Colors.wrap(Integer.toString(d.maxDistance), Colors.highlight)
+							),
+							new Point(width / 2, height / 2 - (d.cannotTeleportBecause.isEmpty() ? 20 : 40)),
 							Rect.XAlignment.Center, Rect.YAlignment.Bottom,
-							font,
-							LangKeys.tooFarAway,
-							new Tuple<>(Integer.toString(d.distance), Colors.highlight),
-							new Tuple<>(Integer.toString(d.maxDistance), Colors.highlight)
+							font
 						));
 					editButtonTop.set(height / 2 + 20);
 				}
@@ -173,7 +173,7 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 		getMinecraft().setScreen(null);
 		data.consume(
 			langKey -> getMinecraft().player.displayClientMessage(Component.translatable(langKey), true),
-			data -> PacketHandler.sendToServer(new Teleport.Request.Package(data.waystoneName))
+			data -> PacketHandler.sendToServer(new Teleport.Request.Package(data.waystoneName, data.handle))
 		);
 	}
 
