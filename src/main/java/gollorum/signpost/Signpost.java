@@ -10,7 +10,7 @@ import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.data.DataGeneration;
 import gollorum.signpost.minecraft.registry.*;
 import gollorum.signpost.minecraft.rendering.PostRenderer;
-import gollorum.signpost.minecraft.worldgen.JigsawDeserializers;
+import gollorum.signpost.minecraft.worldgen.VillageSignpost;
 import gollorum.signpost.minecraft.worldgen.WaystoneDiscoveryEventListener;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.compat.ExternalWaystoneLibrary;
@@ -101,7 +101,6 @@ public class Signpost {
             PacketHandler.register(new JoinServerEvent(), -50);
             ExternalWaystoneLibrary.initialize();
             WaystoneLibrary.registerNetworkPackets();
-            JigsawDeserializers.register();
             if(ModList.get().isLoaded("antiqueatlas"))
                 AntiqueAtlasAdapter.registerNetworkPacket();
         }
@@ -120,7 +119,8 @@ public class Signpost {
             serverInstance = e.getServer();
             WaystoneLibrary.initialize();
             BlockRestrictions.initialize();
-            Villages.instance.reset();
+            VillageSignpost.reset();
+            WaystoneDiscoveryEventListener.initialize();
         }
 
         @SubscribeEvent

@@ -2,9 +2,7 @@ package gollorum.signpost.minecraft.worldgen;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Streams;
-import com.mojang.datafixers.util.Either;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.datafixers.util.Pair;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneHandle;
@@ -14,120 +12,55 @@ import gollorum.signpost.blockpartdata.types.PostBlockPart;
 import gollorum.signpost.blockpartdata.types.SignBlockPart;
 import gollorum.signpost.blockpartdata.types.SmallShortSignBlockPart;
 import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
+import gollorum.signpost.minecraft.block.PostBlock;
+import gollorum.signpost.minecraft.block.SignGeneratorBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.block.tiles.SignGeneratorEntity;
 import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.utils.*;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.*;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.StructureFeatureManager;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.structure.BoundingBox;
-import net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement;
-import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElementType;
-import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import net.minecraft.world.level.levelgen.feature.ConfiguredStructureFeature;
+import org.apache.commons.lang3.NotImplementedException;
 
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class SignpostJigsawPiece extends SinglePoolElement {
+public class VillageSignpost {
 
 	private static final float smallSignRatio = 0.5f;
 	private static Map<BlockPos, List<WaystoneHandle.Vanilla>> waystonesTargetedByVillage;
-	private static Map<BlockPos, Integer> signpostCountForVillage;
 	public static void reset() {
 		waystonesTargetedByVillage = new HashMap<>();
-		signpostCountForVillage = new HashMap<>();
 	}
 
-	public static final Codec<SignpostJigsawPiece> codec = RecordCodecBuilder.create((codecBuilder) ->
-		codecBuilder.group(templateCodec(), processorsCodec(), projectionCodec(), isZombieCodec()).apply(codecBuilder, SignpostJigsawPiece::new));
-
-	private static RecordCodecBuilder<SignpostJigsawPiece, Boolean> isZombieCodec() {
-		return Codec.BOOL.fieldOf("isZombie").forGetter(o -> o.isZombie);
-	}
-
-	public final boolean isZombie;
-
-	public SignpostJigsawPiece(
-		ResourceLocation location,
-		Holder<StructureProcessorList> structureProcessorListSupplier,
-		StructureTemplatePool.Projection placementBehaviour,
-		boolean isZombie
-	) {
-		this(Either.left(location), structureProcessorListSupplier, placementBehaviour, isZombie);
-	}
-
-	public SignpostJigsawPiece(
-		Either<ResourceLocation, StructureTemplate> template,
-		Holder<StructureProcessorList> structureProcessorListSupplier,
-		StructureTemplatePool.Projection placementBehaviour,
-		boolean isZombie
-	) {
-		super(template, structureProcessorListSupplier, placementBehaviour);
-		this.isZombie = isZombie;
-	}
-
-	@Override
-	public boolean place(
-		StructureManager templateManager,
-		WorldGenLevel seedReader,
-		StructureFeatureManager structureManager,
-		ChunkGenerator chunkGenerator,
-		BlockPos pieceLocation,
-		BlockPos villageLocation,
-		Rotation rotation,
-		BoundingBox boundingBox,
-		Random random,
-		boolean shouldUseJigsawReplacementStructureProcessor
-	) {
-		if(!Config.Server.worldGen.isVillageGenerationEnabled.get()) return false;
-		if(signpostCountForVillage.getOrDefault(villageLocation, 0) >= Config.Server.worldGen.maxSignpostsPerVillage.get())
+	public static boolean populate(SignGeneratorEntity tile, ServerLevel level) {
+		if(!Config.Server.worldGen.isVillageGenerationEnabled.get()) {
 			return false;
+		}
+		BlockPos pieceLocation = tile.getBlockPos();
+		level.setBlock(pieceLocation, PostBlock.OAK.getBlock().defaultBlockState(), 18);
+		BlockPos villageLocation = VillageGenUtils.getVillageLocationFor(level, pieceLocation, 64);
+		Random random = new Random(level.getSeed() ^ pieceLocation.asLong());
 		Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> possibleTargets = fetchPossibleTargets(pieceLocation, villageLocation, random);
-		if(possibleTargets.isEmpty()) {
-			Signpost.LOGGER.debug("Did not generate signpost because no targets were found.");
+		if(possibleTargets.isEmpty())
 			return false;
-		}
 
-		StructureTemplate template = this.template.map(templateManager::getOrCreate, Function.identity());
-		StructurePlaceSettings placementSettings = this.getSettings(rotation, boundingBox, shouldUseJigsawReplacementStructureProcessor);
-		if (template.placeInWorld(seedReader, pieceLocation, villageLocation, placementSettings, random, 18)) {
-			Collection<WaystoneHandle.Vanilla> freshlyUsedWaystones = populateSignPostGeneration(
-				placementSettings, pieceLocation, seedReader, random, possibleTargets
-			);
-			waystonesTargetedByVillage.computeIfAbsent(villageLocation, k -> new ArrayList<>())
-				.addAll(freshlyUsedWaystones);
-
-			for(StructureTemplate.StructureBlockInfo blockInfo : StructureTemplate.processBlockInfos(
-				seedReader, pieceLocation, villageLocation, placementSettings,
-				this.getDataMarkers(templateManager, pieceLocation, rotation, false), template
-			)) {
-				this.handleDataMarker(seedReader, blockInfo, pieceLocation, rotation, random, boundingBox);
-			}
-
-			signpostCountForVillage.put(villageLocation, signpostCountForVillage.getOrDefault(villageLocation, 0) + 1);
-			return true;
-		} else {
-			return false;
-		}
+		Collection<WaystoneHandle.Vanilla> freshlyUsedWaystones = populateSignPostGeneration(
+			tile.getBlockState().getValue(SignGeneratorBlock.FACING).getOpposite(), pieceLocation, level, random, possibleTargets
+		);
+		waystonesTargetedByVillage.computeIfAbsent(villageLocation, k -> new ArrayList<>())
+			.addAll(freshlyUsedWaystones);
+		return true;
 	}
 
 	private static Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> fetchPossibleTargets(BlockPos pieceLocation, BlockPos villageLocation, Random random) {
@@ -148,49 +81,49 @@ public class SignpostJigsawPiece extends SinglePoolElement {
 			&& waystonesTargetedByVillage.get(villageLocation).contains(e._2)));
 	}
 	private static Stream<Tuple<BlockPos, WaystoneHandle.Vanilla>> villageWaystonesExceptSelf(BlockPos villageLocation) {
-		return WaystoneJigsawPiece.getAllEntries().stream()
+		return VillageWaystone.getAllEntries().stream()
 	        .filter(e -> !(e.getKey().equals(villageLocation)))
 	        .map(Tuple::from);
 	}
 	private static Stream<Tuple<BlockPos, WaystoneHandle.Vanilla>> nonVillageWaystones() {
 		return WaystoneLibrary.getInstance().getAllWaystoneInfo().stream()
 			.map(info -> new Tuple<>(info.locationData.block.blockPos, info.handle))
-			.filter(t -> WaystoneJigsawPiece.getAllEntries().stream().noneMatch(e -> e.getValue().equals(t._2)));
+			.filter(t -> VillageWaystone.getAllEntries().stream().noneMatch(e -> e.getValue().equals(t._2)));
 	}
 
-	private Collection<WaystoneHandle.Vanilla> populateSignPostGeneration(
-		StructurePlaceSettings placementSettings,
+	private static Collection<WaystoneHandle.Vanilla> populateSignPostGeneration(
+		Direction facing,
 		BlockPos pieceLocation,
-		WorldGenLevel world,
+		ServerLevel level,
 		Random random,
 		Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> possibleTargets
 	) {
-		Direction facing = placementSettings.getRotation().rotate(Direction.WEST);
-		Direction left = placementSettings.getRotation().rotate(Direction.SOUTH);
-		BlockPos lowerPos = pieceLocation.relative(facing.getOpposite()).relative(left).above();
-		BlockPos upperPos = lowerPos.above();
-
-		Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> upperSignResult = makeSign(random, facing, world, upperPos,
+		Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> upperSignResult = makeSign(random, facing, level, pieceLocation,
 			possibleTargets, 0.75f
 		);
-		Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> lowerSignResult = makeSign(random, facing, world, upperPos,
+		Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> lowerSignResult = makeSign(random, facing, level, pieceLocation,
 			possibleTargets, 0.25f
 		);
-		TileEntityUtils.delayUntilTileEntityExists(world.getLevel(), upperPos, PostTile.getBlockEntityType(), tile -> {
+		TileEntityUtils.delayUntilTileEntityExists(level, pieceLocation, PostTile.getBlockEntityType(), tile -> {
+			tile.addPart(
+				new BlockPartInstance(new PostBlockPart(tile.modelType.postTexture), Vector3.ZERO),
+				ItemStack.EMPTY,
+				PlayerHandle.Invalid
+			);
 			upperSignResult._2.accept(tile);
 			lowerSignResult._2.accept(tile);
 			tile.setChanged();
-		}, 20, Optional.of(() -> Signpost.LOGGER.error("Could not populate generated signpost at " + upperPos + ": TileEntity was not constructed.")));
+		}, 20, Optional.of(() -> Signpost.LOGGER.error("Could not populate generated signpost at " + pieceLocation + ": TileEntity was not constructed.")));
 		List<WaystoneHandle.Vanilla> ret = new ArrayList<>();
 		ret.addAll(upperSignResult._1);
 		ret.addAll(lowerSignResult._1);
 		return ret;
 	}
 
-	public Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> makeSign(
+	public static Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> makeSign(
 		Random random,
 		Direction facing,
-		WorldGenLevel world,
+		ServerLevel world,
 		BlockPos tilePos,
 		Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> possibleTargets,
 		float y
@@ -201,9 +134,9 @@ public class SignpostJigsawPiece extends SinglePoolElement {
 			: makeWideSign(facing, world, tilePos, possibleTargets, y);
 	}
 
-	private Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> makeWideSign(
+	private static Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> makeWideSign(
 		Direction facing,
-		WorldGenLevel world,
+		ServerLevel world,
 		BlockPos tilePos,
 		Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> possibleTargets,
 		float y
@@ -236,9 +169,9 @@ public class SignpostJigsawPiece extends SinglePoolElement {
 
 	private static boolean isNearly(float a, float b) { return Math.abs(a - b) < 1e-5f; }
 
-	private Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> makeShortSigns(
+	private static Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> makeShortSigns(
 		Direction facing,
-		WorldGenLevel world,
+		ServerLevel world,
 		BlockPos tilePos,
 		Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> possibleTargets,
 		float y
@@ -311,7 +244,7 @@ public class SignpostJigsawPiece extends SinglePoolElement {
 		);
 	}
 
-	private Optional<Tuple<Tuple<BlockPos, WaystoneHandle.Vanilla>, WaystoneData>> fetchNextTarget(Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> possibleTargets) {
+	private static Optional<Tuple<Tuple<BlockPos, WaystoneHandle.Vanilla>, WaystoneData>> fetchNextTarget(Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> possibleTargets) {
 		Tuple<BlockPos, WaystoneHandle.Vanilla> target = null;
 		WaystoneData targetData = null;
 		while(target == null && possibleTargets.size() > 0) {
@@ -329,7 +262,7 @@ public class SignpostJigsawPiece extends SinglePoolElement {
 		return degrees < -90 || degrees > 90;
 	}
 
-	private Optional<Overlay> overlayFor(WorldGenLevel world, BlockPos pos) {
+	private static Optional<Overlay> overlayFor(WorldGenLevel world, BlockPos pos) {
 		Holder<Biome> biomeHolder = world.getBiome(pos);
 		Biome biome = biomeHolder.value();
 		Biome.BiomeCategory biomeCategory = Biome.getBiomeCategory(biomeHolder);
@@ -337,16 +270,8 @@ public class SignpostJigsawPiece extends SinglePoolElement {
 			|| biome.getPrecipitation() == Biome.Precipitation.SNOW
 			|| biomeCategory == Biome.BiomeCategory.ICY) return Optional.of(Overlay.Snow);
 		else if (biomeCategory == Biome.BiomeCategory.JUNGLE) return Optional.of(Overlay.Vine);
-		else if(biome.isHumid() || isZombie) return Optional.of(Overlay.Gras);
+		else if(biome.isHumid()) return Optional.of(Overlay.Gras);
 		else return Optional.empty();
-	}
-
-	public StructurePoolElementType<?> getType() {
-		return JigsawDeserializers.signpost;
-	}
-
-	public String toString() {
-		return "SingleSignpost[" + this.template + "]";
 	}
 
 }

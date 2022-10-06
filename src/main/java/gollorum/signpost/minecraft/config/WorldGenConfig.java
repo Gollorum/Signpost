@@ -52,9 +52,9 @@ public class WorldGenConfig {
 		private static final List<String> genericNameInfixes = Lists.newArrayList("do ", "en", "go", "na", "nah ", "ker", "ol", "ora", "ra", "rem", "ro");
 		private static final List<String> genericNamePostfixes = Lists.newArrayList("ar", "blo", "bo", "bro", "do", "dra", "er", "ker", "lia", "tek");
 
-		private static final List<String> germanNamePrefixes = Lists.newArrayList("", "", "", "", "Klein", "Gro\u00df", "Nieder", "Ober", "Bad ", "Gau-");
-		private static final List<String> germanNameInfixes = Lists.newArrayList("", "sege", "m\u00fchl", "s\u00e4ngers", "bach", "stein", "holz", "w\u00fcrz", "h\u00f6ch", "wolfs", "katz", "lauter", "hildes", "heides", "ochsen", "k\u00f6nigs", "neu", "schaf", "rotten");
-		private static final List<String> germanNamePostfixes = Lists.newArrayList("heim", "stadt", "stedt", "berg", "tal", "hausen", "dorf", "ingen", "burg", "furt", "haven", "felde", "br\u00fcck", "br\u00fccken", "kirch", "horn");
+		private static final List<String> germanNamePrefixes = Lists.newArrayList("", "", "", "", "klein", "gro\u00df", "nieder", "ober", "bad ", "hinter", "neu ");
+		private static final List<String> germanNameInfixes = Lists.newArrayList("", "sege", "m\u00fchl", "s\u00e4ngers", "bach", "stein", "holz", "w\u00fcrz", "h\u00f6ch", "wolfs", "katz", "hunds", "lauter", "hildes", "heides", "ochsen", "ochs", "k\u00f6nigs", "neu", "schafs", "rotten", "ger", "schweins", "frank", "hexen", "münch", "ber", "see", "freuden");
+		private static final List<String> germanNamePostfixes = Lists.newArrayList("heim", "stadt", "stedt", "berg", "tal", "hausen", "dorf", "ingen", "burg", "furt", "haven", "feld", "felde", "br\u00fcck", "br\u00fccken", "kirch", "horn", "brunn", "loch", "fluch", "en", "beck", "end", "walde", "wind", "garten", "ach", "au", "hofen");
 
 		private static final List<String> englishNamePrefixes = Lists.newArrayList("", "", "", "", "", "", "", "", "", "", "", "little ", "grand ", "St ", "new ");
 		private static final List<String> englishNameInfixes = Lists.newArrayList("black", "bow", "long", "cal", "glen", "elk", "taylors", "man", "spring", "cats", "brad", "leakes", "singers", "thorn", "lake", "burn", "chip", "brace", "raven", "middle");

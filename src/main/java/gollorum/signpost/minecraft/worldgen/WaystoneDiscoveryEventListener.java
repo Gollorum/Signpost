@@ -36,11 +36,11 @@ public class WaystoneDiscoveryEventListener {
     @SubscribeEvent
     public static void onWatchChunk(ChunkWatchEvent.Watch event) {
         if(!WaystoneLibrary.hasInstance()) return;
-        WaystoneJigsawPiece.ChunkEntryKey key = new WaystoneJigsawPiece.ChunkEntryKey(
+        VillageWaystone.ChunkEntryKey key = new VillageWaystone.ChunkEntryKey(
             event.getPos(),
             event.getPlayer().level.dimension().location()
         );
-        Map<WaystoneJigsawPiece.ChunkEntryKey, WaystoneHandle.Vanilla> allEntries = WaystoneJigsawPiece.getAllEntriesByChunk();
+        Map<VillageWaystone.ChunkEntryKey, WaystoneHandle.Vanilla> allEntries = VillageWaystone.getAllEntriesByChunk();
         WaystoneHandle.Vanilla handle = allEntries.get(key);
         if(handle != null && !WaystoneLibrary.getInstance().isDiscovered(PlayerHandle.from(event.getPlayer()), handle)) {
             Optional<WaystoneData> dataOption = WaystoneLibrary.getInstance().getData(handle);
@@ -56,8 +56,8 @@ public class WaystoneDiscoveryEventListener {
     public static void onUnWatchChunk(ChunkWatchEvent.UnWatch event) {
         ConcurrentMap<WaystoneHandle.Vanilla, BlockPos> set = trackedPlayers.get(event.getPlayer());
         if(set == null) return;
-        WaystoneHandle.Vanilla handle = WaystoneJigsawPiece.getAllEntriesByChunk().get(
-            new WaystoneJigsawPiece.ChunkEntryKey(
+        WaystoneHandle.Vanilla handle = VillageWaystone.getAllEntriesByChunk().get(
+            new VillageWaystone.ChunkEntryKey(
                 event.getPos(),
                 event.getPlayer().level.dimension().location()
             )

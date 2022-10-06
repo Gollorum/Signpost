@@ -1,6 +1,7 @@
 package gollorum.signpost.minecraft.block.tiles;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.datafixers.types.Type;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blockpartdata.types.*;
@@ -18,6 +19,7 @@ import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.ItemStackSerializer;
 import gollorum.signpost.utils.serialization.StringSerializer;
 import io.netty.util.internal.ConcurrentSet;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -29,6 +31,7 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Tuple;
+import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
@@ -57,14 +60,15 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     private static BlockEntityType<PostTile> type = null;
     public static BlockEntityType<PostTile> createType() {
         assert type == null;
-        return type = BlockEntityType.Builder.of(
+        Type<?> type = Util.fetchChoiceType(References.BLOCK_ENTITY, REGISTRY_NAME);
+        return PostTile.type = BlockEntityType.Builder.of(
             (pos, state) -> new PostTile(
                 PostBlock.ModelType.Oak,
                 ItemStack.EMPTY,
                 pos, state
             ),
             PostBlock.getAllBlocks()
-        ).build(null);
+        ).build(type);
     }
     public static BlockEntityType<PostTile> getBlockEntityType() {
         assert type != null;

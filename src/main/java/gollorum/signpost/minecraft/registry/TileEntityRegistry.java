@@ -1,6 +1,8 @@
 package gollorum.signpost.minecraft.registry;
 
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.block.tiles.SignGeneratorEntity;
+import gollorum.signpost.minecraft.block.tiles.WaystoneGeneratorEntity;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -19,6 +21,12 @@ public class TileEntityRegistry {
 
     private static final RegistryObject<BlockEntityType<WaystoneTile>> WAYSTONE =
         REGISTER.register(WaystoneTile.REGISTRY_NAME, WaystoneTile::createType);
+
+    private static final RegistryObject<BlockEntityType<WaystoneGeneratorEntity>> WaystoneGenerator =
+        REGISTER.register(WaystoneGeneratorEntity.REGISTRY_NAME, WaystoneGeneratorEntity::createType);
+
+    private static final RegistryObject<BlockEntityType<SignGeneratorEntity>> SignGenerator =
+        REGISTER.register(SignGeneratorEntity.REGISTRY_NAME, SignGeneratorEntity::createType);
 
     public static void register(IEventBus bus){
         REGISTER.register(bus);

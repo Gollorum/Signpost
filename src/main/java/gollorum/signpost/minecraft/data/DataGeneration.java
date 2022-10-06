@@ -40,6 +40,7 @@ public final class DataGeneration {
             PostModel postModel = new PostModel(datagenerator, fileHelper);
             datagenerator.addProvider(postModel);
             WaystoneModel waystoneModel = WaystoneModel.addTo(datagenerator, fileHelper);
+            GeneratorModel.addTo(datagenerator, fileHelper);
             datagenerator.addProvider(new WrenchModel(datagenerator, fileHelper));
             datagenerator.addProvider(new BrushModel(datagenerator, fileHelper));
             datagenerator.addProvider(new PostBlockState(datagenerator, fileHelper, postModel, waystoneModel));

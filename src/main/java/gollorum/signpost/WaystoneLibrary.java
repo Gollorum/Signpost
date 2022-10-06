@@ -264,9 +264,11 @@ public class WaystoneLibrary {
         } else return true;
     }
 
-    private boolean validateNameDoesNotExist(String newName, Player editingPlayer) {
+    private boolean validateNameDoesNotExist(String newName, @Nullable Player editingPlayer) {
         if(allWaystones.values().stream().anyMatch(entry -> entry.name.equals(newName))) {
-            editingPlayer.displayClientMessage(new TranslatableComponent(LangKeys.duplicateWaystoneName, newName), true);
+            if(editingPlayer != null)
+                editingPlayer.displayClientMessage(new TranslatableComponent(LangKeys.duplicateWaystoneName, newName), true);
+            else Signpost.LOGGER.error("Tried to automatically name a waystone \"" + newName + "\", which already existed.");
             return false;
         } else return true;
     }

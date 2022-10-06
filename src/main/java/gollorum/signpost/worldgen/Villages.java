@@ -2,8 +2,6 @@ package gollorum.signpost.worldgen;
 
 import com.google.common.collect.ImmutableList;
 import gollorum.signpost.Signpost;
-import gollorum.signpost.minecraft.worldgen.SignpostJigsawPiece;
-import gollorum.signpost.minecraft.worldgen.WaystoneJigsawPiece;
 import gollorum.signpost.utils.CollectionUtils;
 import gollorum.signpost.utils.Tuple;
 import net.minecraft.core.Holder;
@@ -57,11 +55,6 @@ public class Villages {
 		waystoneProcessorListSnowyOrTaiga = ProcessorLists.STREET_SNOWY_OR_TAIGA;
 	}
 
-	public void reset() {
-		WaystoneJigsawPiece.reset();
-		SignpostJigsawPiece.reset();
-	}
-
 	public void initialize() {
 		registerProcessorLists();
 		for(VillageType villageType : VillageType.values()) {
@@ -74,13 +67,17 @@ public class Villages {
 		addToPool(
 			ImmutableList.of(
 				Tuple.of(
-					new WaystoneJigsawPiece(villageType.getStructureResourceLocation("waystone"),
-					    villageType.processorList, StructureTemplatePool.Projection.RIGID),
+					StructurePoolElement.single(
+						villageType.getStructureResourceLocation("waystone").toString(),
+					    villageType.processorList
+					).apply(StructureTemplatePool.Projection.RIGID),
 					1
 				),
 				Tuple.of(
-					new SignpostJigsawPiece(villageType.getStructureResourceLocation("signpost"),
-						villageType.processorList, StructureTemplatePool.Projection.TERRAIN_MATCHING, isZombie),
+					StructurePoolElement.single(
+						villageType.getStructureResourceLocation("signpost").toString(),
+						villageType.processorList
+					).apply(StructureTemplatePool.Projection.TERRAIN_MATCHING),
 					3
 				)
 			),

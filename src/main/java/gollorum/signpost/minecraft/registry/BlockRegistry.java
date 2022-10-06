@@ -2,6 +2,8 @@ package gollorum.signpost.minecraft.registry;
 
 import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.block.PostBlock;
+import gollorum.signpost.minecraft.block.SignGeneratorBlock;
+import gollorum.signpost.minecraft.block.WaystoneGeneratorBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -21,23 +23,25 @@ public class BlockRegistry {
         Register.register(gollorum.signpost.minecraft.block.WaystoneBlock.REGISTRY_NAME,
             gollorum.signpost.minecraft.block.WaystoneBlock::createInstance);
 
-    private static final List<RegistryObject<Block>> ModelWaystoneBlocks =
-        ModelWaystone.variants.stream()
-            .map(BlockRegistry::registerModelWaystone)
-            .collect(Collectors.toList());
+    private static final List<RegistryObject<ModelWaystone>> ModelWaystoneBlocks =
+        ModelWaystone.variants.stream().map(BlockRegistry::registerModelWaystone).toList();
 
-    private static final List<RegistryObject<Block>> PostBlocks =
-        PostBlock.AllVariants.stream()
-            .map(BlockRegistry::registerPostBlock)
-            .collect(Collectors.toList());
+    private static final List<RegistryObject<PostBlock>> PostBlocks =
+        PostBlock.AllVariants.stream().map(BlockRegistry::registerPostBlock).toList();
 
-    private static RegistryObject<Block> registerPostBlock(PostBlock.Variant variant) {
+    private static RegistryObject<PostBlock> registerPostBlock(PostBlock.Variant variant) {
         return Register.register(variant.registryName, variant::createBlock);
     }
 
-    private static RegistryObject<Block> registerModelWaystone(ModelWaystone.Variant variant) {
+    private static RegistryObject<ModelWaystone> registerModelWaystone(ModelWaystone.Variant variant) {
         return Register.register(variant.registryName, variant::createBlock);
     }
+
+    public static final RegistryObject<SignGeneratorBlock> SignGenerator =
+        Register.register(SignGeneratorBlock.REGISTRY_NAME, SignGeneratorBlock::new);
+
+    public static final RegistryObject<WaystoneGeneratorBlock> WaystoneGenerator =
+        Register.register(WaystoneGeneratorBlock.REGISTRY_NAME, WaystoneGeneratorBlock::new);
 
     public static void register(IEventBus bus){
         Register.register(bus);

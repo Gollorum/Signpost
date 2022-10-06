@@ -1,8 +1,6 @@
 package gollorum.signpost.minecraft.registry;
 
-import gollorum.signpost.minecraft.block.ModelWaystone;
-import gollorum.signpost.minecraft.block.PostBlock;
-import gollorum.signpost.minecraft.block.WaystoneBlock;
+import gollorum.signpost.minecraft.block.*;
 import gollorum.signpost.minecraft.items.Brush;
 import gollorum.signpost.minecraft.items.PostItem;
 import gollorum.signpost.minecraft.items.WaystoneItem;
@@ -15,6 +13,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,7 +24,7 @@ public class ItemRegistry {
 
     public static final CreativeModeTab ITEM_GROUP = new CreativeModeTab("signpost") {
         @Override
-        public ItemStack makeIcon() {
+        public @NotNull ItemStack makeIcon() {
             return new ItemStack(POSTS_ITEMS.get(0).get());
         }
     };
@@ -37,14 +36,18 @@ public class ItemRegistry {
             () -> new WaystoneItem(WaystoneBlock.getInstance(), new Item.Properties().tab(ITEM_GROUP)));
 
     private static final List<RegistryObject<Item>> ModelWaystoneItems =
-        ModelWaystone.variants.stream()
-            .map(ItemRegistry::registerModelWaystoneItem)
-            .collect(Collectors.toList());
+        ModelWaystone.variants.stream().map(ItemRegistry::registerModelWaystoneItem).toList();
 
     private static final List<RegistryObject<Item>> POSTS_ITEMS =
-        PostBlock.AllVariants.stream()
-            .map(ItemRegistry::registerPostItem)
-            .collect(Collectors.toList());
+        PostBlock.AllVariants.stream().map(ItemRegistry::registerPostItem).toList();
+
+    private static final RegistryObject<Item> SignGeneratorItem =
+        REGISTER.register(SignGeneratorBlock.REGISTRY_NAME,
+            () -> new BlockItem(BlockRegistry.SignGenerator.get(), new Item.Properties().tab(ITEM_GROUP)));
+
+    private static final RegistryObject<Item> WaystoneGeneratorItem =
+        REGISTER.register(WaystoneGeneratorBlock.REGISTRY_NAME,
+            () -> new BlockItem(BlockRegistry.WaystoneGenerator.get(), new Item.Properties().tab(ITEM_GROUP)));
 
     public static final RegistryObject<Item> WRENCH = REGISTER.register(Wrench.registryName, () -> new Wrench(ITEM_GROUP));
 
