@@ -1,7 +1,6 @@
 package gollorum.signpost.minecraft.data;
 
 import gollorum.signpost.Signpost;
-import gollorum.signpost.minecraft.block.SignGeneratorBlock;
 import gollorum.signpost.minecraft.block.WaystoneGeneratorBlock;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
@@ -13,7 +12,6 @@ import net.minecraftforge.common.data.ExistingFileHelper;
 
 public class GeneratorModel extends BlockModelProvider {
 
-    public final BlockModelBuilder postModel;
     public final BlockModelBuilder waystoneModel;
 
     public static GeneratorModel addTo(DataGenerator generator, ExistingFileHelper fileHelper) {
@@ -26,15 +24,12 @@ public class GeneratorModel extends BlockModelProvider {
     private GeneratorModel(DataGenerator generator, ExistingFileHelper fileHelper) {
         super(generator, Signpost.MOD_ID, fileHelper);
         waystoneModel = new BlockModelBuilder(new ResourceLocation(Signpost.MOD_ID, "block/" + WaystoneGeneratorBlock.REGISTRY_NAME), fileHelper);
-        postModel = new BlockModelBuilder(new ResourceLocation(Signpost.MOD_ID, "block/" + SignGeneratorBlock.REGISTRY_NAME), fileHelper);
     }
 
     @Override
     protected void registerModels() {
         ResourceLocation waystoneTexture = new ResourceLocation(Signpost.MOD_ID, "block/waystone");
         cubeAll(WaystoneGeneratorBlock.REGISTRY_NAME, waystoneTexture);
-        ResourceLocation postTexture = new ResourceLocation(Signpost.MOD_ID, "block/sign_paint");
-        cubeAll(SignGeneratorBlock.REGISTRY_NAME, postTexture);
     }
 
     private DataProvider makeItem(DataGenerator generator, ExistingFileHelper fileHelper) {
@@ -50,7 +45,6 @@ public class GeneratorModel extends BlockModelProvider {
         @Override
         protected void registerModels() {
             getBuilder(WaystoneGeneratorBlock.REGISTRY_NAME).parent(waystoneModel);
-            getBuilder(SignGeneratorBlock.REGISTRY_NAME).parent(postModel);
         }
     }
 

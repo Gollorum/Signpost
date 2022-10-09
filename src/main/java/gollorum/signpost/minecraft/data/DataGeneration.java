@@ -43,6 +43,7 @@ public final class DataGeneration {
             GeneratorModel.addTo(datagenerator, fileHelper);
             datagenerator.addProvider(new WrenchModel(datagenerator, fileHelper));
             datagenerator.addProvider(new BrushModel(datagenerator, fileHelper));
+            datagenerator.addProvider(new GeneratorWandModel(datagenerator, fileHelper));
             datagenerator.addProvider(new PostBlockState(datagenerator, fileHelper, postModel, waystoneModel));
         }
     }

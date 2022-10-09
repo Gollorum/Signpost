@@ -12,6 +12,7 @@ import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class PaintSignGui<T extends SignBlockPart<T>> extends PaintBlockPartGui<T> {
 
@@ -34,18 +35,38 @@ public class PaintSignGui<T extends SignBlockPart<T>> extends PaintBlockPartGui<
     @Override
     protected void init() {
         super.init();
-        Rect buttonRect = new Rect(new Point(width / 4, height / 4), 125, 20, Rect.XAlignment.Center, Rect.YAlignment.Center);
-        addRenderableWidget(new Button(
-            buttonRect.point.x, buttonRect.point.y,
-            buttonRect.width, buttonRect.height,
-            new TranslatableComponent(isTargetingMainTexture ? LangKeys.mainTex : LangKeys.secondaryTex),
+        Rect button1Rect = new Rect(new Point(width / 4, height / 4), 125, 20, Rect.XAlignment.Center, Rect.YAlignment.Center);
+        AtomicReference<Button> b1 = new AtomicReference<>();
+        AtomicReference<Button> b2 = new AtomicReference<>();
+        b1.set(new Button(
+            button1Rect.point.x, button1Rect.point.y,
+            button1Rect.width, button1Rect.height,
+            new TranslatableComponent(LangKeys.mainTex),
             b -> {
-                isTargetingMainTexture = !isTargetingMainTexture;
-                oldSprite = isTargetingMainTexture ? oldMainSprite : oldSecSprite;
+                isTargetingMainTexture = true;
+                oldSprite = oldMainSprite;
                 clearSelection();
-                b.setMessage(new TranslatableComponent(isTargetingMainTexture ? LangKeys.mainTex : LangKeys.secondaryTex));
+                b1.get().active = false;
+                b2.get().active = true;
             }
         ));
+        Rect button2Rect = new Rect(button1Rect.max().withY(y -> y + 5), 125, 20, Rect.XAlignment.Right, Rect.YAlignment.Top);
+        b2.set(new Button(
+            button2Rect.point.x, button2Rect.point.y,
+            button2Rect.width, button2Rect.height,
+            new TranslatableComponent(LangKeys.secondaryTex),
+            b -> {
+                isTargetingMainTexture = false;
+                oldSprite = oldSecSprite;
+                clearSelection();
+                b1.get().active = true;
+                b2.get().active = false;
+            }
+        ));
+        b1.get().active = !isTargetingMainTexture;
+        b2.get().active = isTargetingMainTexture;
+        addRenderableWidget(b1.get());
+        addRenderableWidget(b2.get());
     }
 
     @Override

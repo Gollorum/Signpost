@@ -2,7 +2,6 @@ package gollorum.signpost.minecraft.registry;
 
 import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.block.PostBlock;
-import gollorum.signpost.minecraft.block.SignGeneratorBlock;
 import gollorum.signpost.minecraft.block.WaystoneGeneratorBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -11,7 +10,6 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static gollorum.signpost.Signpost.MOD_ID;
 
@@ -36,9 +34,6 @@ public class BlockRegistry {
     private static RegistryObject<ModelWaystone> registerModelWaystone(ModelWaystone.Variant variant) {
         return Register.register(variant.registryName, variant::createBlock);
     }
-
-    public static final RegistryObject<SignGeneratorBlock> SignGenerator =
-        Register.register(SignGeneratorBlock.REGISTRY_NAME, SignGeneratorBlock::new);
 
     public static final RegistryObject<WaystoneGeneratorBlock> WaystoneGenerator =
         Register.register(WaystoneGeneratorBlock.REGISTRY_NAME, WaystoneGeneratorBlock::new);

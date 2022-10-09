@@ -1,10 +1,7 @@
 package gollorum.signpost.minecraft.registry;
 
 import gollorum.signpost.minecraft.block.*;
-import gollorum.signpost.minecraft.items.Brush;
-import gollorum.signpost.minecraft.items.PostItem;
-import gollorum.signpost.minecraft.items.WaystoneItem;
-import gollorum.signpost.minecraft.items.Wrench;
+import gollorum.signpost.minecraft.items.*;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
@@ -41,10 +38,6 @@ public class ItemRegistry {
     private static final List<RegistryObject<Item>> POSTS_ITEMS =
         PostBlock.AllVariants.stream().map(ItemRegistry::registerPostItem).toList();
 
-    private static final RegistryObject<Item> SignGeneratorItem =
-        REGISTER.register(SignGeneratorBlock.REGISTRY_NAME,
-            () -> new BlockItem(BlockRegistry.SignGenerator.get(), new Item.Properties().tab(ITEM_GROUP)));
-
     private static final RegistryObject<Item> WaystoneGeneratorItem =
         REGISTER.register(WaystoneGeneratorBlock.REGISTRY_NAME,
             () -> new BlockItem(BlockRegistry.WaystoneGenerator.get(), new Item.Properties().tab(ITEM_GROUP)));
@@ -52,6 +45,8 @@ public class ItemRegistry {
     public static final RegistryObject<Item> WRENCH = REGISTER.register(Wrench.registryName, () -> new Wrench(ITEM_GROUP));
 
     public static final RegistryObject<Item> BRUSH = REGISTER.register(Brush.registryName, () -> new Brush(ITEM_GROUP));
+
+    public static final RegistryObject<Item> GENERATION_WAND = REGISTER.register(GenerationWand.registryName, GenerationWand::new);
 
     private static RegistryObject<Item> registerPostItem(PostBlock.Variant postVariant){
         return REGISTER.register(

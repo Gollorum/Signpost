@@ -2,6 +2,7 @@ package gollorum.signpost.minecraft.block.tiles;
 
 import com.mojang.datafixers.types.Type;
 import gollorum.signpost.minecraft.block.WaystoneGeneratorBlock;
+import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.registry.BlockRegistry;
 import gollorum.signpost.utils.Delay;
 import net.minecraft.Util;
@@ -32,7 +33,6 @@ public class WaystoneGeneratorEntity extends BlockEntity {
         return type;
     }
 
-    private final boolean shouldInstantlyGenerate = true;
 
     public WaystoneGeneratorEntity(BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -41,7 +41,7 @@ public class WaystoneGeneratorEntity extends BlockEntity {
     @Override
     public void setLevel(@NotNull Level level) {
         super.setLevel(level);
-        if(shouldInstantlyGenerate && level instanceof ServerLevel l)
+        if(!Config.Server.worldGen.debugMode.get() && level instanceof ServerLevel l)
             Delay.onServerForFrames(1, () -> WaystoneGeneratorBlock.generate(getBlockState(), getBlockPos(), l));
     }
 }

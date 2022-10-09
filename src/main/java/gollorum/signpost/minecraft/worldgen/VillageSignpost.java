@@ -2,9 +2,7 @@ package gollorum.signpost.minecraft.worldgen;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Streams;
-import com.mojang.datafixers.util.Pair;
 import gollorum.signpost.PlayerHandle;
-import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.blockpartdata.Overlay;
@@ -13,12 +11,8 @@ import gollorum.signpost.blockpartdata.types.SignBlockPart;
 import gollorum.signpost.blockpartdata.types.SmallShortSignBlockPart;
 import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
 import gollorum.signpost.minecraft.block.PostBlock;
-import gollorum.signpost.minecraft.block.SignGeneratorBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
-import gollorum.signpost.minecraft.block.tiles.SignGeneratorEntity;
 import gollorum.signpost.minecraft.config.Config;
-import gollorum.signpost.minecraft.gui.utils.Colors;
-import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.utils.*;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
@@ -27,8 +21,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.levelgen.feature.ConfiguredStructureFeature;
-import org.apache.commons.lang3.NotImplementedException;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -43,12 +35,11 @@ public class VillageSignpost {
 		waystonesTargetedByVillage = new HashMap<>();
 	}
 
-	public static boolean populate(SignGeneratorEntity tile, ServerLevel level) {
+	public static boolean populate(PostTile tile, SignBlockPart<?> generatorPart, UUID generatorPartId, float height, ServerLevel level) {
 		if(!Config.Server.worldGen.isVillageGenerationEnabled.get()) {
 			return false;
 		}
 		BlockPos pieceLocation = tile.getBlockPos();
-		level.setBlock(pieceLocation, PostBlock.OAK.getBlock().defaultBlockState(), 18);
 		BlockPos villageLocation = VillageGenUtils.getVillageLocationFor(level, pieceLocation, 64);
 		Random random = new Random(level.getSeed() ^ pieceLocation.asLong());
 		Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> possibleTargets = fetchPossibleTargets(pieceLocation, villageLocation, random);
@@ -56,10 +47,12 @@ public class VillageSignpost {
 			return false;
 
 		Collection<WaystoneHandle.Vanilla> freshlyUsedWaystones = populateSignPostGeneration(
-			tile.getBlockState().getValue(SignGeneratorBlock.FACING).getOpposite(), pieceLocation, level, random, possibleTargets
+			tile, generatorPart, height,
+			tile.getBlockState().getValue(PostBlock.FACING).getOpposite(), pieceLocation, level, random, possibleTargets
 		);
 		waystonesTargetedByVillage.computeIfAbsent(villageLocation, k -> new ArrayList<>())
 			.addAll(freshlyUsedWaystones);
+		tile.removePart(generatorPartId);
 		return true;
 	}
 
@@ -92,35 +85,21 @@ public class VillageSignpost {
 	}
 
 	private static Collection<WaystoneHandle.Vanilla> populateSignPostGeneration(
+		PostTile tile,
+		SignBlockPart<?> generatorPart,
+		float height,
 		Direction facing,
 		BlockPos pieceLocation,
 		ServerLevel level,
 		Random random,
 		Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> possibleTargets
 	) {
-		Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> upperSignResult = makeSign(random, facing, level, pieceLocation,
-			possibleTargets, 0.75f
-		);
-		Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> lowerSignResult = makeSign(random, facing, level, pieceLocation,
-			possibleTargets, 0.25f
-		);
-		TileEntityUtils.delayUntilTileEntityExists(level, pieceLocation, PostTile.getBlockEntityType(), tile -> {
-			tile.addPart(
-				new BlockPartInstance(new PostBlockPart(tile.modelType.postTexture), Vector3.ZERO),
-				ItemStack.EMPTY,
-				PlayerHandle.Invalid
-			);
-			upperSignResult._2.accept(tile);
-			lowerSignResult._2.accept(tile);
-			tile.setChanged();
-		}, 20, Optional.of(() -> Signpost.LOGGER.error("Could not populate generated signpost at " + pieceLocation + ": TileEntity was not constructed.")));
-		List<WaystoneHandle.Vanilla> ret = new ArrayList<>();
-		ret.addAll(upperSignResult._1);
-		ret.addAll(lowerSignResult._1);
-		return ret;
+		return makeSign(tile, generatorPart, random, facing, level, pieceLocation, possibleTargets, height);
 	}
 
-	public static Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> makeSign(
+	public static Collection<WaystoneHandle.Vanilla> makeSign(
+		PostTile tile,
+		SignBlockPart<?> generatorPart,
 		Random random,
 		Direction facing,
 		ServerLevel world,
@@ -128,80 +107,86 @@ public class VillageSignpost {
 		Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> possibleTargets,
 		float y
 	) {
-		if(possibleTargets.isEmpty()) return new Tuple<>(Collections.emptySet(), x -> {});
+		if(possibleTargets.isEmpty()) return Collections.emptySet();
 		return random.nextFloat() < smallSignRatio
-			? makeShortSigns(facing, world, tilePos, possibleTargets, y)
-			: makeWideSign(facing, world, tilePos, possibleTargets, y);
+			? makeShortSigns(tile, generatorPart, facing, world, tilePos, possibleTargets, y)
+			: makeWideSign(tile, generatorPart, facing, world, tilePos, possibleTargets, y);
 	}
 
-	private static Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> makeWideSign(
+	private static Collection<WaystoneHandle.Vanilla> makeWideSign(
+		PostTile tile,
+		SignBlockPart<?> generatorPart,
 		Direction facing,
 		ServerLevel world,
 		BlockPos tilePos,
 		Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> possibleTargets,
 		float y
 	) {
-		Optional<Tuple<Tuple<BlockPos, WaystoneHandle.Vanilla>, WaystoneData>> nextTargetOption = fetchNextTarget(possibleTargets);
-		if(nextTargetOption.isEmpty()) return new Tuple<>(Collections.emptySet(), x -> {});
-		Tuple<BlockPos, WaystoneHandle.Vanilla> target = nextTargetOption.get()._1;
+		var nextTargetOption = fetchNextTarget(possibleTargets);
+		if(nextTargetOption.isEmpty()) return Collections.emptySet();
+		var target = nextTargetOption.get()._1;
 		WaystoneData targetData = nextTargetOption.get()._2;
 
 		Angle rotation = SignBlockPart.pointingAt(tilePos, target._1);
-		Consumer<PostTile> onTileFetched = tile -> {
-			if(tile.getParts().stream().anyMatch(instance -> !(instance.blockPart instanceof PostBlockPart) && isNearly(instance.offset.y, y)))
-				return;
-			tile.addPart(
-				new BlockPartInstance(
-					new SmallWideSignBlockPart(
-						new AngleProvider.WaystoneTarget(rotation), new NameProvider.WaystoneTarget(targetData.name), shouldFlip(facing, rotation),
-						tile.modelType.mainTexture, tile.modelType.secondaryTexture,
-						overlayFor(world, tilePos), Colors.black, Optional.of(target._2),
-						ItemStack.EMPTY, tile.modelType, false
-					),
-					new Vector3(0, y, 0)
+		if(tile.getParts().stream().anyMatch(instance -> !(instance.blockPart instanceof PostBlockPart) && !(instance.blockPart instanceof SignBlockPart<?> s && s.isMarkedForGeneration()) && isNearly(instance.offset.y, y))) {
+			possibleTargets.add(target);
+			return Collections.emptySet();
+		}
+		tile.addPart(
+			new BlockPartInstance(
+				new SmallWideSignBlockPart(
+					new AngleProvider.WaystoneTarget(rotation), new NameProvider.WaystoneTarget(targetData.name), shouldFlip(facing, rotation),
+					generatorPart.getMainTexture(), generatorPart.getSecondaryTexture(),
+					overlayFor(world, tilePos), generatorPart.getColor(), Optional.of(target._2),
+					ItemStack.EMPTY, tile.modelType, false, false
 				),
-				ItemStack.EMPTY,
-				PlayerHandle.Invalid
-			);
-		};
-		return new Tuple<>(Collections.singleton(target._2), onTileFetched);
+				new Vector3(0, y, 0)
+			),
+			ItemStack.EMPTY,
+			PlayerHandle.Invalid,
+		false
+		);
+		return Collections.singleton(target._2);
 	}
 
 	private static boolean isNearly(float a, float b) { return Math.abs(a - b) < 1e-5f; }
 
-	private static Tuple<Collection<WaystoneHandle.Vanilla>, Consumer<PostTile>> makeShortSigns(
+	private static Collection<WaystoneHandle.Vanilla> makeShortSigns(
+		PostTile tile,
+		SignBlockPart<?> generatorPart,
 		Direction facing,
 		ServerLevel world,
 		BlockPos tilePos,
 		Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> possibleTargets,
 		float y
 	) {
-		Optional<Tuple<Tuple<BlockPos, WaystoneHandle.Vanilla>, WaystoneData>> nextTargetOption = fetchNextTarget(possibleTargets);
-		if(nextTargetOption.isEmpty()) return new Tuple<>(Collections.emptySet(), x -> {});
-		Tuple<BlockPos, WaystoneHandle.Vanilla> target = nextTargetOption.get()._1;
+		var nextTargetOption = fetchNextTarget(possibleTargets);
+		if(nextTargetOption.isEmpty()) return Collections.emptySet();
+		var target = nextTargetOption.get()._1;
 		WaystoneData targetData = nextTargetOption.get()._2;
 
 		Angle rotation = SignBlockPart.pointingAt(tilePos, target._1);
 		boolean shouldFlip = shouldFlip(facing, rotation);
 		Optional<Overlay> overlay = overlayFor(world, tilePos);
 		List<Consumer<PostTile>> onTileFetched = new ArrayList<>();
-		onTileFetched.add(tile -> tile.addPart(
+		tile.addPart(
 			new BlockPartInstance(
 				new SmallShortSignBlockPart(
 					new AngleProvider.WaystoneTarget(rotation), new NameProvider.WaystoneTarget(targetData.name), shouldFlip,
-					tile.modelType.mainTexture, tile.modelType.secondaryTexture,
-					overlay, Colors.black, Optional.of(target._2),
-					ItemStack.EMPTY, tile.modelType, false
+					generatorPart.getMainTexture(), generatorPart.getSecondaryTexture(),
+					overlay, generatorPart.getColor(), Optional.of(target._2),
+					ItemStack.EMPTY, tile.modelType, false, false
 				),
 				new Vector3(0, y, 0)
 			),
 			ItemStack.EMPTY,
-			PlayerHandle.Invalid
-		));
+			PlayerHandle.Invalid,
+			false
+		);
 
-		Optional<Tuple<Tuple<BlockPos, WaystoneHandle.Vanilla>, WaystoneData>> secondNextTargetOption = fetchNextTarget(possibleTargets);
-		if(secondNextTargetOption.isEmpty()) return new Tuple<>(Collections.emptySet(), x -> {});
-		Tuple<BlockPos, WaystoneHandle.Vanilla> secondTarget = secondNextTargetOption.get()._1;
+		var secondNextTargetOption = fetchNextTarget(possibleTargets);
+		if(secondNextTargetOption.isEmpty()) return Collections.singleton(target._2);
+		var secondTarget = secondNextTargetOption.get()._1;
 
 		List<Tuple<BlockPos, WaystoneHandle.Vanilla>> skippedTargets = new ArrayList<>();
 		while(secondTarget != null) {
@@ -215,33 +200,28 @@ public class VillageSignpost {
 				continue;
 			}
 			WaystoneHandle.Vanilla secondTargetHandle = secondTarget._2;
-			onTileFetched.add(tile -> tile.addPart(
+			tile.addPart(
 				new BlockPartInstance(
 					new SmallShortSignBlockPart(
 						new AngleProvider.WaystoneTarget(secondRotation), new NameProvider.WaystoneTarget(secondTargetData.name), shouldSecondFlip,
-						tile.modelType.mainTexture, tile.modelType.secondaryTexture,
-						overlay, Colors.black, Optional.of(secondTargetHandle),
-						ItemStack.EMPTY, tile.modelType, false
+						generatorPart.getMainTexture(), generatorPart.getSecondaryTexture(),
+						overlay, generatorPart.getColor(), Optional.of(secondTargetHandle),
+						ItemStack.EMPTY, tile.modelType, false, false
 					),
 					new Vector3(0, y, 0)
 				),
 				ItemStack.EMPTY,
-				PlayerHandle.Invalid
-			));
+				PlayerHandle.Invalid,
+				false
+			);
 			break;
 		}
 		skippedTargets.addAll(possibleTargets);
 		possibleTargets.clear();
 		possibleTargets.addAll(skippedTargets);
-		return new Tuple<>(
-			secondTarget == null
-				? Collections.singleton(target._2)
-				: ImmutableList.of(target._2, secondTarget._2),
-			tile -> {
-				if(tile.getParts().stream().noneMatch(instance -> !(instance.blockPart instanceof PostBlockPart) && isNearly(instance.offset.y, y)))
-					for(Consumer<PostTile> now : onTileFetched) now.accept(tile);
-			}
-		);
+		return secondTarget == null
+			? Collections.singleton(target._2)
+			: ImmutableList.of(target._2, secondTarget._2);
 	}
 
 	private static Optional<Tuple<Tuple<BlockPos, WaystoneHandle.Vanilla>, WaystoneData>> fetchNextTarget(Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> possibleTargets) {

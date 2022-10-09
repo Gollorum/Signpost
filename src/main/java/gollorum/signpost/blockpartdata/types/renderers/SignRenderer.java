@@ -7,6 +7,7 @@ import com.mojang.math.Vector3f;
 import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.blockpartdata.types.BlockPartRenderer;
 import gollorum.signpost.blockpartdata.types.SignBlockPart;
+import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
@@ -34,6 +35,7 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
 
 	@Override
 	public void render(T sign, BlockEntity tileEntity, BlockEntityRenderDispatcher renderDispatcher, PoseStack matrix, MultiBufferSource buffer, int combinedLights, int combinedOverlay, Random random, long randomSeed) {
+		if(sign.isMarkedForGeneration() && !Config.Server.worldGen.debugMode.get()) return;
 		RenderingUtil.render(matrix, renderModel -> {
 			if(!tileEntity.hasLevel()) throw new RuntimeException("TileEntity without world cannot be rendered.");
 			RenderingUtil.wrapInMatrixEntry(matrix, () -> {

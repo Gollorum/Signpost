@@ -44,6 +44,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
@@ -61,6 +62,7 @@ import java.util.stream.Collectors;
 
 public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock, WithCountRestriction {
 
+    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static class ModelType {
 
         private static final Map<String, ModelType> allTypes = new HashMap<>();
@@ -397,7 +399,7 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(WATERLOGGED);
+        builder.add(FACING).add(WATERLOGGED);
     }
 
     @Override
@@ -437,7 +439,10 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return super.getStateForPlacement(context)
+        var res = super.getStateForPlacement(context);
+        if(res == null) res = defaultBlockState();
+        return res
+            .setValue(FACING, context.getHorizontalDirection())
             .setValue(WATERLOGGED, context.getLevel().getFluidState(context.getClickedPos()).getType() == Fluids.WATER);
     }
 

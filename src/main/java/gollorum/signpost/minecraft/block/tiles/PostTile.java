@@ -6,9 +6,11 @@ import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blockpartdata.types.*;
 import gollorum.signpost.minecraft.block.PostBlock;
+import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.items.Wrench;
 import gollorum.signpost.minecraft.utils.SideUtils;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
+import gollorum.signpost.minecraft.worldgen.VillageSignpost;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.*;
@@ -36,6 +38,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -109,11 +112,17 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     }
 
     public UUID addPart(BlockPartInstance part, ItemStack cost, PlayerHandle player){ return addPart(UUID.randomUUID(), part, cost, player); }
+    public UUID addPart(BlockPartInstance part, ItemStack cost, PlayerHandle player, boolean shouldNotify){
+        return addPart(UUID.randomUUID(), part, cost, player, shouldNotify);
+    }
 
     public UUID addPart(UUID identifier, BlockPartInstance part, ItemStack cost, PlayerHandle player){
+        return addPart(identifier, part, cost, player, true);
+    }
+    public UUID addPart(UUID identifier, BlockPartInstance part, ItemStack cost, PlayerHandle player, boolean shouldNotify){
         parts.put(identifier, part);
         part.blockPart.attachTo(this);
-        if(hasLevel() && !getLevel().isClientSide()) sendToTracing(() -> new PartAddedEvent.Packet(
+        if(shouldNotify && hasLevel() && !getLevel().isClientSide()) sendToTracing(() -> new PartAddedEvent.Packet(
             new TilePartInfo(this, identifier),
             part.blockPart.write(),
             part.blockPart.getMeta().identifier,
@@ -258,6 +267,24 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         readParts(compound.getCompound("Parts"));
         drop = ItemStackSerializer.Instance.read(compound.getCompound("Drop"));
         owner = PlayerHandle.Serializer.optional().read(compound.getCompound("Owner"));
+    }
+
+    @Override
+    public void setLevel(Level level) {
+        super.setLevel(level);
+
+        if(!Config.Server.worldGen.debugMode.get() && level instanceof ServerLevel serverLevel) {
+            Delay.forFrames(1, false, () -> {
+                boolean hasChanged = false;
+                for(var e : parts.entrySet()) {
+                    if (e.getValue().blockPart instanceof SignBlockPart<?> sign
+                        && sign.isMarkedForGeneration()
+                        && VillageSignpost.populate(this, sign, e.getKey(), e.getValue().offset.y, serverLevel)
+                    ) hasChanged = true;
+                }
+                if(hasChanged) level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 2);
+            });
+        }
     }
 
     @Override

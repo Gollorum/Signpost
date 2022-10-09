@@ -5,6 +5,9 @@ import gollorum.signpost.minecraft.block.ModelWaystone;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -14,35 +17,50 @@ public class WorldGenConfig {
 	public final ForgeConfigSpec.BooleanValue villagesOnlyTargetVillages;
 	public final ForgeConfigSpec.IntValue maxSignpostsPerVillage;
 	public final ForgeConfigSpec.ConfigValue<List<? extends String>> allowedVillageWaystones;
+	public final ForgeConfigSpec.BooleanValue debugMode;
 	public final Naming naming;
 
-	WorldGenConfig(ForgeConfigSpec.Builder builder) {
+	private final boolean isServer;
+
+	private <T> Supplier<T> defaults(T defaultVal, Function<WorldGenConfig, ForgeConfigSpec.ConfigValue<T>> factory) {
+		return isServer ? () -> factory.apply(Config.Common.worldGenDefaults).get() : () -> defaultVal;
+	}
+
+	WorldGenConfig(ForgeConfigSpec.Builder builder, boolean isServer) {
+		this.isServer = isServer;
 		isVillageGenerationEnabled = builder.comment("Enables the generation of signposts and waystones in villages")
-			.define("enable_generation", true);
+			.define("enable_generation", defaults(true, d -> d.isVillageGenerationEnabled));
 
 		villagesOnlyTargetVillages = builder.comment("Defines whether village signposts can have any waystones as destination or just the ones generated in other villages")
-			.define("only_target_other_villages", true);
+			.define("only_target_other_villages", defaults(true, d -> d.villagesOnlyTargetVillages));
 
 		maxSignpostsPerVillage = builder.comment("The maximum number of signposts that can spawn in one village")
-			.defineInRange("max_signposts_per_village", 2, 0, Integer.MAX_VALUE);
+			.defineInRange("max_signposts_per_village", defaults(2, d -> d.maxSignpostsPerVillage), 0, Integer.MAX_VALUE);
 
 		allowedVillageWaystones = builder.comment(
 			"Decide what waystone models are generated in villages",
 			"You can look up the model names at https://www.curseforge.com/minecraft/mc-mods/signpost/pages/waystone-models"
 		).defineList(
 			"allowed_waystone_models",
-			Stream.of(ModelWaystone.simple_0, ModelWaystone.simple_1, ModelWaystone.simple_2, ModelWaystone.detailed_0, ModelWaystone.detailed_1)
-				.map(v -> v.name).collect(Collectors.toList()),
+			defaults(
+				Stream.of(ModelWaystone.simple_0, ModelWaystone.simple_1, ModelWaystone.simple_2, ModelWaystone.detailed_0, ModelWaystone.detailed_1)
+					.map(v -> v.name).collect(Collectors.toList()),
+				d -> d.allowedVillageWaystones),
 			n -> n instanceof String &&
 				ModelWaystone.variants.contains(new ModelWaystone.Variant((String) n, null, null, 0
 			)));
+
+		debugMode = builder.comment(
+			"Disables generator blocks/signs being replaced with actual ones and makes them visible. " +
+			"Only enable this if you want to design structures with auto generated waystones / sign posts"
+		).define("debug_mode", defaults(false, d -> d.debugMode));
 
 		builder.push("naming");
 		naming = new Naming(builder);
 		builder.pop();
 	}
 
-	public static class Naming {
+	public class Naming {
 
 		public final ForgeConfigSpec.ConfigValue<List<? extends String>> villageNamePrefixes;
 		public final ForgeConfigSpec.ConfigValue<List<? extends String>> villageNameInfixes;
@@ -74,17 +92,17 @@ public class WorldGenConfig {
 				"village_name_postfixes = [\"" + String.join("\", \"", germanNamePostfixes) + "\"]"
 			).defineList(
 				"village_name_prefixes",
-				genericNamePrefixes,
+				defaults(genericNamePrefixes, d -> d.naming.villageNamePrefixes),
 				x -> x instanceof String
 			);
 			villageNameInfixes = builder.defineList(
 				"village_name_infixes",
-				genericNameInfixes,
+				defaults(genericNameInfixes, d -> d.naming.villageNameInfixes),
 				x -> x instanceof String
 			);
 			villageNamePostfixes = builder.defineList(
 				"village_name_postfixes",
-				genericNamePostfixes,
+				defaults(genericNamePostfixes, d -> d.naming.villageNamePostfixes),
 				x -> x instanceof String
 			);
 		}
