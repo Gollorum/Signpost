@@ -7,7 +7,8 @@ import gollorum.signpost.minecraft.config.Config;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.StructureFeatureManager;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
@@ -15,10 +16,10 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.pools.LegacySinglePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElementType;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -62,15 +63,15 @@ public class SignpostJigsawPiece extends LegacySinglePoolElement {
 
     @Override
     public boolean place(
-        StructureManager templateManager,
+        StructureTemplateManager templateManager,
         WorldGenLevel seedReader,
-        StructureFeatureManager structureManager,
+        StructureManager structureManager,
         ChunkGenerator chunkGenerator,
         BlockPos pieceLocation,
         BlockPos villageLocation,
         Rotation rotation,
         BoundingBox boundingBox,
-        Random random,
+        RandomSource random,
         boolean shouldUseJigsawReplacementStructureProcessor
     ) {
         if(!Config.Server.worldGen.isVillageGenerationEnabled()) return false;

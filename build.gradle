@@ -183,10 +183,14 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
-    implementation fg.deobf("curse.maven:balm-531761:3914527")
-    implementation fg.deobf("curse.maven:waystone-245755:3901921")
+    implementation fg.deobf("curse.maven:balm-${balm_project_id}:${balm_file_id}")
+    implementation fg.deobf("curse.maven:waystones-${waystones_project_id}:${waystones_file_id}")
 
-    implementation fg.deobf("curse.maven:feature-nbt-deadlock-be-gone-${feature_nbt_project_id}:${feature_nbt_file_id}")
+//    implementation fg.deobf("curse.maven:architectury-api-${architectury_project_id}:${architectury_file_id}")
+//    implementation fg.deobf("curse.maven:cloth-config-${cloth_project_id}:${cloth_file_id}")
+//    // Validation crashes debug server
+//    compileOnly fg.deobf("curse.maven:antique-atlas-${atlas_project_id}:${atlas_file_id}")
+
     implementation fg.deobf("curse.maven:repurposed-structures-${repurposed_structures_project_id}:${repurposed_structures_file_id}")
 
 }

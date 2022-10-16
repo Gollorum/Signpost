@@ -1,0 +1,26 @@
+{
+  "name": "repurposed_structures:villages/ocean/houses",
+  "fallback": "repurposed_structures:villages/ocean/terminators",
+  "elements": [
+    {
+      "weight": 3,
+      "element": {
+        "location": "signpost:village/ocean/signpost",
+        "processors": "repurposed_structures:villages/ocean/path_randomizer",
+        "projection": "rigid",
+        "element_type": "minecraft:legacy_single_pool_element"
+      },
+      "condition": "signpost:config"
+    },
+    {
+      "weight": 1,
+      "element": {
+        "location": "signpost:village/ocean/waystone",
+        "processors": "repurposed_structures:villages/ocean/path_randomizer",
+        "projection": "rigid",
+        "element_type": "minecraft:legacy_single_pool_element"
+      },
+      "condition": "signpost:config"
+    }
+  ]
+}

@@ -16,8 +16,8 @@ public class GeneratorModel extends BlockModelProvider {
 
     public static GeneratorModel addTo(DataGenerator generator, ExistingFileHelper fileHelper) {
         GeneratorModel self = new GeneratorModel(generator, fileHelper);
-        generator.addProvider(self);
-        generator.addProvider(self.makeItem(generator, fileHelper));
+        generator.addProvider(true, self);
+        generator.addProvider(true, self.makeItem(generator, fileHelper));
         return self;
     }
 

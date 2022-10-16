@@ -12,8 +12,8 @@ public class Compat {
         if(ModList.get().isLoaded(Compat.WaystonesId))
             WaystonesAdapter.register();
 
-        if(ModList.get().isLoaded(Compat.AntiqueAtlasId))
-            AntiqueAtlasAdapter.register();
+//        if(ModList.get().isLoaded(Compat.AntiqueAtlasId))
+//            AntiqueAtlasAdapter.register();
 
         if(ModList.get().isLoaded(Compat.RepurposedStructuresId))
             RepurposedStructuresAdapter.register();

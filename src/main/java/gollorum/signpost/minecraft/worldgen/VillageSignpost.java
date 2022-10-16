@@ -17,6 +17,7 @@ import gollorum.signpost.utils.*;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.core.*;
+import net.minecraft.data.worldgen.placement.VegetationPlacements;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
@@ -46,7 +47,7 @@ public class VillageSignpost {
 
 		Collection<WaystoneHandle.Vanilla> freshlyUsedWaystones = populateSignPostGeneration(
 			tile, generatorPart, height,
-			tile.getBlockState().getValue(PostBlock.Facing).getOpposite(), pieceLocation, level, random, possibleTargets
+			tile.getBlockState().getValue(PostBlock.Facing), pieceLocation, level, random, possibleTargets
 		);
 		waystonesTargetedByVillage.computeIfAbsent(villageLocation, k -> new ArrayList<>())
 			.addAll(freshlyUsedWaystones);
@@ -244,11 +245,11 @@ public class VillageSignpost {
 	private static Optional<Overlay> overlayFor(WorldGenLevel world, BlockPos pos) {
 		Holder<Biome> biomeHolder = world.getBiome(pos);
 		Biome biome = biomeHolder.value();
-		Biome.BiomeCategory biomeCategory = Biome.getBiomeCategory(biomeHolder);
+		boolean isJungle = biome.getGenerationSettings().features().stream().flatMap(HolderSet::stream)
+			.anyMatch(f -> f.get().equals(VegetationPlacements.TREES_JUNGLE.get()));
 		if(biome.shouldSnow(world, pos)
-			|| biome.getPrecipitation() == Biome.Precipitation.SNOW
-			|| biomeCategory == Biome.BiomeCategory.ICY) return Optional.of(Overlay.Snow);
-		else if (biomeCategory == Biome.BiomeCategory.JUNGLE) return Optional.of(Overlay.Vine);
+			|| biome.getPrecipitation() == Biome.Precipitation.SNOW) return Optional.of(Overlay.Snow);
+		else if (isJungle) return Optional.of(Overlay.Vine);
 		else if(biome.isHumid()) return Optional.of(Overlay.Gras);
 		else return Optional.empty();
 	}

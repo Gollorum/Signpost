@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 public class Config {
 
 	public static final Server Server;
-	private static final ForgeConfigSpec ServerConfig;
+	public static final ForgeConfigSpec ServerConfig;
 
 	public static final Common Common;
 	private static final ForgeConfigSpec CommonConfig;
