@@ -1,13 +1,16 @@
 package gollorum.signpost.minecraft.block.tiles;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.datafixers.types.Type;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blockpartdata.types.*;
 import gollorum.signpost.minecraft.block.PostBlock;
+import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.items.Wrench;
 import gollorum.signpost.minecraft.utils.SideUtils;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
+import gollorum.signpost.minecraft.worldgen.VillageSignpost;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.*;
@@ -18,6 +21,7 @@ import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.ItemStackSerializer;
 import gollorum.signpost.utils.serialization.StringSerializer;
 import io.netty.util.internal.ConcurrentSet;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -29,10 +33,12 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Tuple;
+import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -57,14 +63,15 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     private static BlockEntityType<PostTile> type = null;
     public static BlockEntityType<PostTile> createType() {
         assert type == null;
-        return type = BlockEntityType.Builder.of(
+        Type<?> type = Util.fetchChoiceType(References.BLOCK_ENTITY, REGISTRY_NAME);
+        return PostTile.type = BlockEntityType.Builder.of(
             (pos, state) -> new PostTile(
                 PostBlock.ModelType.Oak,
                 ItemStack.EMPTY,
                 pos, state
             ),
             PostBlock.getAllBlocks()
-        ).build(null);
+        ).build(type);
     }
     public static BlockEntityType<PostTile> getBlockEntityType() {
         assert type != null;
@@ -105,11 +112,17 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     }
 
     public UUID addPart(BlockPartInstance part, ItemStack cost, PlayerHandle player){ return addPart(UUID.randomUUID(), part, cost, player); }
+    public UUID addPart(BlockPartInstance part, ItemStack cost, PlayerHandle player, boolean shouldNotify){
+        return addPart(UUID.randomUUID(), part, cost, player, shouldNotify);
+    }
 
     public UUID addPart(UUID identifier, BlockPartInstance part, ItemStack cost, PlayerHandle player){
+        return addPart(identifier, part, cost, player, true);
+    }
+    public UUID addPart(UUID identifier, BlockPartInstance part, ItemStack cost, PlayerHandle player, boolean shouldNotify){
         parts.put(identifier, part);
         part.blockPart.attachTo(this);
-        if(hasLevel() && !getLevel().isClientSide()) sendToTracing(() -> new PartAddedEvent.Packet(
+        if(shouldNotify && hasLevel() && !getLevel().isClientSide()) sendToTracing(() -> new PartAddedEvent.Packet(
             new TilePartInfo(this, identifier),
             part.blockPart.write(),
             part.blockPart.getMeta().identifier,
@@ -257,6 +270,24 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     }
 
     @Override
+    public void setLevel(Level level) {
+        super.setLevel(level);
+
+        if(!Config.Server.worldGen.debugMode() && level instanceof ServerLevel serverLevel) {
+            Delay.forFrames(1, false, () -> {
+                boolean hasChanged = false;
+                for(var e : parts.entrySet().stream().sorted((e1, e2) -> Float.compare(e2.getValue().offset.y, e1.getValue().offset.y)).toList()) {
+                    if (e.getValue().blockPart instanceof SignBlockPart<?> sign
+                        && sign.isMarkedForGeneration()
+                        && VillageSignpost.populate(this, sign, e.getKey(), e.getValue().offset.y, serverLevel)
+                    ) hasChanged = true;
+                }
+                if(hasChanged) level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 2);
+            });
+        }
+    }
+
+    @Override
     public CompoundTag getUpdateTag() {
         CompoundTag ret = super.getUpdateTag();
         writeSelf(ret);
@@ -288,6 +319,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
                 data,
                 partMetaIdentifier)
         );
+        setChanged();
     }
 
     public <T> void sendToTracing(Supplier<T> t) {

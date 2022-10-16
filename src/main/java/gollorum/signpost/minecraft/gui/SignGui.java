@@ -935,7 +935,8 @@ public class SignGui extends ExtendedScreen {
                         destinationId,
                         itemToDropOnBreak,
                         modelType,
-                        isLocked
+                        isLocked,
+                        oldSign.map(SignBlockPart::isMarkedForGeneration).orElse(false)
                     )
                 );
                 if (oldSign.isPresent()) {
@@ -965,7 +966,8 @@ public class SignGui extends ExtendedScreen {
                         destinationId,
                         itemToDropOnBreak,
                         modelType,
-                        isLocked
+                        isLocked,
+                        oldSign.map(SignBlockPart::isMarkedForGeneration).orElse(false)
                     )
                 );
                 if (oldSign.isPresent()) {
@@ -1000,7 +1002,8 @@ public class SignGui extends ExtendedScreen {
                         destinationId,
                         itemToDropOnBreak,
                         modelType,
-                        isLocked
+                        isLocked,
+                        oldSign.map(SignBlockPart::isMarkedForGeneration).orElse(false)
                     )
                 );
                 if (oldSign.isPresent()) {

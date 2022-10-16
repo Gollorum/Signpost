@@ -1,5 +1,6 @@
 package gollorum.signpost.minecraft.block.tiles;
 
+import com.mojang.datafixers.types.Type;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
@@ -7,9 +8,11 @@ import gollorum.signpost.minecraft.block.WaystoneBlock;
 import gollorum.signpost.minecraft.events.WaystoneUpdatedEvent;
 import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.*;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -23,7 +26,9 @@ public class WaystoneTile extends BlockEntity implements WithOwner.OfWaystone, W
 
     private static BlockEntityType<WaystoneTile> type = null;
     public static BlockEntityType<WaystoneTile> createType() {
-        return type = BlockEntityType.Builder.of(WaystoneTile::new, WaystoneBlock.getInstance()).build(null);
+        assert type == null;
+        Type<?> type = Util.fetchChoiceType(References.BLOCK_ENTITY, REGISTRY_NAME);
+        return WaystoneTile.type = BlockEntityType.Builder.of(WaystoneTile::new, WaystoneBlock.getInstance()).build(type);
     }
     public static BlockEntityType<WaystoneTile> getBlockEntityType() {
         assert type != null;

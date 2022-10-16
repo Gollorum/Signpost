@@ -20,6 +20,8 @@
   "block.signpost.post_warped": "Wirrweiser",
   "block.signpost.post_crimson": "Karmesinwegweiser",
   "block.signpost.post_sandstone": "Sandsteinwegweiser",
+  "block.signpost.post_red_mushroom": "Roter Pilzwegweiser",
+  "block.signpost.post_brown_mushroom": "Brauner Pilzwegweiser",
 
   "item.signpost.tool": "Wegweiserdrehwerkzeug",
   "item.signpost.brush": "Wegweiserpinsel",

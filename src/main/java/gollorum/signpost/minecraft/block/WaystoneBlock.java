@@ -50,7 +50,7 @@ import java.util.Optional;
 
 public class WaystoneBlock extends BaseEntityBlock implements WithCountRestriction {
 
-    private static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final String REGISTRY_NAME = "waystone";
 
     private static WaystoneBlock instance = null;

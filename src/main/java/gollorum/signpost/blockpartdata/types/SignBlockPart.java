@@ -11,6 +11,7 @@ import gollorum.signpost.minecraft.events.WaystoneUpdatedEvent;
 import gollorum.signpost.minecraft.gui.PaintSignGui;
 import gollorum.signpost.minecraft.gui.RequestSignGui;
 import gollorum.signpost.minecraft.items.Brush;
+import gollorum.signpost.minecraft.items.GenerationWand;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.security.WithOwner;
@@ -56,6 +57,10 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
         public ItemStack itemToDropOnBreak;
         public boolean isLocked;
 
+        // If true, the sign will not be rendered unless the config option is active
+        // until a village waystone is found that it can point to.
+        public boolean isMarkedForGeneration;
+
         public CoreData(
             AngleProvider angleProvider,
             boolean flip,
@@ -66,7 +71,8 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
             Optional<WaystoneHandle> destination,
             PostBlock.ModelType modelType,
             ItemStack itemToDropOnBreak,
-            boolean isLocked
+            boolean isLocked,
+            boolean isMarkedForGeneration
         ) {
             this.angleProvider = angleProvider;
             this.flip = flip;
@@ -78,11 +84,12 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
             this.modelType = modelType;
             this.itemToDropOnBreak = itemToDropOnBreak;
             this.isLocked = isLocked;
+            this.isMarkedForGeneration = isMarkedForGeneration;
         }
 
         public CoreData copy() {
             return new CoreData(
-                angleProvider, flip, mainTexture, secondaryTexture, overlay, color, destination, modelType, itemToDropOnBreak, isLocked
+                angleProvider, flip, mainTexture, secondaryTexture, overlay, color, destination, modelType, itemToDropOnBreak, isLocked, isMarkedForGeneration
             );
         }
 
@@ -106,6 +113,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
                 compound.put("ItemToDropOnBreak", ItemStackSerializer.Instance.write(coreData.itemToDropOnBreak));
                 compound.putString("ModelType", coreData.modelType.name);
                 compound.putBoolean("IsLocked", coreData.isLocked);
+                compound.putBoolean("IsMarkedForGeneration", coreData.isMarkedForGeneration);
                 return compound;
             }
 
@@ -119,7 +127,8 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
                     && compound.contains("Color")
                     && compound.contains("Destination")
                     && compound.contains("ItemToDropOnBreak")
-                    && compound.contains("IsLocked");
+                    && compound.contains("IsLocked")
+                    && compound.contains("IsMarkedForGeneration");
             }
 
             @Override
@@ -143,7 +152,8 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
                         .orElseThrow(() -> new RuntimeException("Tried to load sign post model type " + compound.getString("ModelType") +
                             ", but it hasn't been registered. @Dev: You have to call Post.ModelType.register")),
                     ItemStackSerializer.Instance.read(compound.getCompound("ItemToDropOnBreak")),
-                   compound.getBoolean("IsLocked")
+                   compound.getBoolean("IsLocked"),
+                   compound.getBoolean("IsMarkedForGeneration")
                 );
             }
 
@@ -231,6 +241,8 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
 
     public boolean isLocked() { return coreData.isLocked; }
 
+    public boolean isMarkedForGeneration() { return coreData.isMarkedForGeneration; }
+
     public boolean hasThePermissionToEdit(WithOwner tile, @Nullable Player player) {
         return !(tile instanceof WithOwner.OfSignpost) || !coreData.isLocked || player == null
             || ((WithOwner.OfSignpost)tile).getSignpostOwner().map(o -> o.id.equals(player.getUUID())).orElse(true)
@@ -262,7 +274,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
 
     @Override
     public Intersectable<Ray, Float> getIntersection() {
-        return transformedBounds;
+        return isMarkedForGeneration() && !Config.Server.worldGen.debugMode() ? new Intersectable.Not<>() : transformedBounds;
     }
 
     @Override
@@ -281,6 +293,9 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
                         .get().add(Angle.fromDegrees(angleToPost.radians() < 0 ? 15 : -15))));
                     notifyAngleChanged(info);
                 }
+            } else if(isGenerationWand(heldItem)) {
+                coreData.isMarkedForGeneration = !coreData.isMarkedForGeneration;
+                notifyMarkedForGenerationChanged(info);
             } else if(!isBrush(heldItem))
                 tryTeleport((ServerPlayer) info.player, info.getTilePartInfo());
         } else if(isBrush(heldItem))
@@ -314,6 +329,12 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
         return item instanceof Brush;
     }
 
+    private static boolean isGenerationWand(ItemStack itemStack) {
+        if(itemStack == null || itemStack.getCount() < 1) return false;
+        Item item = itemStack.getItem();
+        return item instanceof GenerationWand;
+    }
+
     private InteractionResult paint(InteractionInfo info) {
         if(info.isRemote) {
             PaintSignGui.display(info.tile, (Self)this, info.traceResult.id);
@@ -337,6 +358,12 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
     protected void notifyFlipChanged(InteractionInfo info) {
         CompoundTag compound = new CompoundTag();
         compound.putBoolean("Flip", coreData.flip);
+        info.mutationDistributor.accept(compound);
+    }
+
+    protected void notifyMarkedForGenerationChanged(InteractionInfo info) {
+        CompoundTag compound = new CompoundTag();
+        compound.putBoolean("IsMarkedForGeneration", coreData.isMarkedForGeneration);
         info.mutationDistributor.accept(compound);
     }
 
@@ -387,6 +414,9 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
                 || editingPlayer.hasPermissions(Config.Server.permissions.editLockedSignCommandPermissionLevel.get()))
                 coreData.isLocked = compound.getBoolean("IsLocked");
         }
+        if(compound.contains("IsMarkedForGeneration"))
+            coreData.isMarkedForGeneration = compound.getBoolean("IsMarkedForGeneration");
+
         tile.setChanged();
     }
 

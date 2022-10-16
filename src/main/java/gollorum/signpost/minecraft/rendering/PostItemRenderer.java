@@ -51,7 +51,7 @@ public class PostItemRenderer extends BlockEntityWithoutLevelRenderer {
             parts.add(new BlockPartInstance(new PostBlockPart(type.postTexture), Vector3.ZERO));
             parts.add(new BlockPartInstance(new SmallWideSignBlockPart(
                 new AngleProvider.Literal(Angle.fromDegrees(180)), new NameProvider.Literal(""), true, type.mainTexture, type.secondaryTexture,
-                Optional.empty(), Colors.white, Optional.empty(), ItemStack.EMPTY, type, false
+                Optional.empty(), Colors.white, Optional.empty(), ItemStack.EMPTY, type, false, false
             ), new Vector3(0, 0.75f, 0)));
         }
 

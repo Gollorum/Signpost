@@ -135,13 +135,7 @@ public class ModelWaystone extends BaseEntityBlock implements SimpleWaterloggedB
 	@Override
 	public BlockState rotate(BlockState state, Rotation rot) {
 		if(!state.hasProperty(Facing)) return state;
-		Direction dir = state.getValue(Facing);
-		return switch (rot) {
-			case CLOCKWISE_90 -> state.setValue(Facing, dir.getClockWise());
-			case CLOCKWISE_180 -> state.setValue(Facing, dir.getClockWise().getClockWise());
-			case COUNTERCLOCKWISE_90 -> state.setValue(Facing, dir.getCounterClockWise());
-			default -> state;
-		};
+		return state.setValue(Facing, rot.rotate(state.getValue(Facing)));
 	}
 
 	@Override

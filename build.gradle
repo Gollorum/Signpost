@@ -173,6 +173,9 @@ dependencies {
     // Validation crashes debug server
     compileOnly fg.deobf("curse.maven:antique-atlas-${atlas_project_id}:${atlas_file_id}")
 
+    implementation fg.deobf("curse.maven:feature-nbt-deadlock-be-gone-${feature_nbt_project_id}:${feature_nbt_file_id}")
+    implementation fg.deobf("curse.maven:repurposed-structures-${repurposed_structures_project_id}:${repurposed_structures_file_id}")
+
 }
 
 task sourcesJar(type: Jar) {

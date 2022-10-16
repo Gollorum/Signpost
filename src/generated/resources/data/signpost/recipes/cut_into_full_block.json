@@ -1,5 +1,5 @@
 {
-  "type": "minecraft:stonecutting",
+  "type": "signpost:cut_waystone",
   "ingredient": {
     "tag": "signpost:waystone"
   },

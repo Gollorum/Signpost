@@ -73,8 +73,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
             })
             .distinct()
             .map(is -> Tuple.of(allSpritesFor(is), is))
-            .filter(p -> p._1.size() > 0)
-            .collect(Collectors.toList());
+            .filter(p -> p._1.size() > 0).toList();
 
         int rows = (blocksToRender.size() + 8) / 9;
 

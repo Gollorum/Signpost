@@ -65,10 +65,11 @@ public class SmallWideSignBlockPart extends SignBlockPart<SmallWideSignBlockPart
         Optional<WaystoneHandle> destination,
         ItemStack itemToDropOnBreak,
         PostBlock.ModelType modelType,
-        boolean isLocked
+        boolean isLocked,
+        boolean isMarkedForGeneration
     ) { this(
             new CoreData(angle, flip, mainTexture, secondaryTexture, overlay,
-                color, destination, modelType, itemToDropOnBreak, isLocked),
+                color, destination, modelType, itemToDropOnBreak, isLocked, isMarkedForGeneration),
         text
     ); }
 
