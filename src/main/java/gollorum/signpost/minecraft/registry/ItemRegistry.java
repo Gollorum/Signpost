@@ -40,7 +40,7 @@ public class ItemRegistry {
 
     private static final RegistryObject<Item> WaystoneGeneratorItem =
         REGISTER.register(WaystoneGeneratorBlock.REGISTRY_NAME,
-            () -> new BlockItem(BlockRegistry.WaystoneGenerator.get(), new Item.Properties().tab(ITEM_GROUP)));
+            () -> new BlockItem(BlockRegistry.WaystoneGenerator.get(), new Item.Properties()));
 
     public static final RegistryObject<Item> WRENCH = REGISTER.register(Wrench.registryName, () -> new Wrench(ITEM_GROUP));
 
