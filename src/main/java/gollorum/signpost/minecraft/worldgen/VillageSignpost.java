@@ -47,7 +47,7 @@ public class VillageSignpost {
 
 		Collection<WaystoneHandle.Vanilla> freshlyUsedWaystones = populateSignPostGeneration(
 			tile, generatorPart, height,
-			tile.getBlockState().getValue(PostBlock.Facing), pieceLocation, level, random, possibleTargets
+			tile.getBlockState().getValue(PostBlock.Facing).getOpposite(), pieceLocation, level, random, possibleTargets
 		);
 		waystonesTargetedByVillage.computeIfAbsent(villageLocation, k -> new ArrayList<>())
 			.addAll(freshlyUsedWaystones);

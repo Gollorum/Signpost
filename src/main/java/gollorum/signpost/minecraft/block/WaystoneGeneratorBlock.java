@@ -94,7 +94,14 @@ public class WaystoneGeneratorBlock extends BaseEntityBlock {
             return false;
         }
         String name = optionalName.get();
-        serverLevel.setBlock(pos, waystone.defaultBlockState().setValue(WaystoneBlock.FACING, facing), 18);
+        boolean isWater = serverLevel.isWaterAt(pos.above());
+        serverLevel.setBlock(
+            pos,
+            waystone.defaultBlockState()
+                .setValue(WaystoneBlock.FACING, facing)
+                .setValue(ModelWaystone.Waterlogged, isWater),
+            18
+        );
         WaystoneLibrary.getInstance().update(
             name,
             locationDataFor(pos, serverLevel, facing),
@@ -132,17 +139,21 @@ public class WaystoneGeneratorBlock extends BaseEntityBlock {
 		BlockPos spawnBlockPos = waystonePos.relative(facing, -2);
 		int maxOffset = 10;
 		int offset = 0;
-		while(world.getBlockState(spawnBlockPos).isAir() && offset <= maxOffset) {
+		while(isFree(world.getBlockState(spawnBlockPos), world, spawnBlockPos) && offset <= maxOffset) {
 			spawnBlockPos = spawnBlockPos.below();
 			offset++;
 		}
 		offset = 0;
-		while(!world.getBlockState(spawnBlockPos).isAir() && offset <= maxOffset) {
+		while(!isFree(world.getBlockState(spawnBlockPos), world, spawnBlockPos) && offset <= maxOffset) {
 			spawnBlockPos = spawnBlockPos.above();
 			offset++;
 		}
 		return Vector3.fromBlockPos(spawnBlockPos).add(0.5f, 0, 0.5f);
 	}
+
+    private static boolean isFree(BlockState state, ServerLevel world, BlockPos waystonePos) {
+        return state.getCollisionShape(world, waystonePos).isEmpty();
+    }
 
     private static ModelWaystone getWaystoneType(Random random, List<ModelWaystone> allowedWaystones) {
 		return allowedWaystones.get(random.nextInt(allowedWaystones.size()));
