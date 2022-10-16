@@ -1,6 +1,7 @@
 package gollorum.signpost;
 
-import gollorum.signpost.compat.WaystonesAdapter;
+import gollorum.signpost.compat.Compat;
+import gollorum.signpost.compat.ExternalWaystoneLibrary;
 import gollorum.signpost.minecraft.block.BlockEventListener;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.commands.WaystoneArgument;
@@ -11,7 +12,6 @@ import gollorum.signpost.minecraft.rendering.PostRenderer;
 import gollorum.signpost.minecraft.worldgen.JigsawDeserializers;
 import gollorum.signpost.minecraft.worldgen.WaystoneDiscoveryEventListener;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.compat.ExternalWaystoneLibrary;
 import gollorum.signpost.utils.ServerType;
 import gollorum.signpost.worldgen.Villages;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
@@ -22,12 +22,11 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
-import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -77,9 +76,7 @@ public class Signpost {
 
         WaystoneArgument.register(modBus);
 
-        if(ModList.get().isLoaded("waystones"))
-            WaystonesAdapter.register();
-
+        Compat.register();
     }
 
     private static class ModBusEvents {
@@ -91,6 +88,8 @@ public class Signpost {
             ExternalWaystoneLibrary.initialize();
             WaystoneLibrary.registerNetworkPackets();
             JigsawDeserializers.register();
+//            if(ModList.get().isLoaded(Compat.AntiqueAtlasId))
+//                AntiqueAtlasAdapter.registerNetworkPacket();
         }
 
         @SubscribeEvent
@@ -107,7 +106,8 @@ public class Signpost {
             serverInstance = e.getServer();
             WaystoneLibrary.initialize();
             BlockRestrictions.initialize();
-            Villages.instance.reset();
+            Villages.reset();
+            WaystoneDiscoveryEventListener.initialize();
         }
 
         @SubscribeEvent

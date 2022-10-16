@@ -44,8 +44,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.material.MaterialColor;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -56,10 +58,12 @@ import net.minecraftforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock, WithCountRestriction {
 
+    public static final DirectionProperty Facing = BlockStateProperties.HORIZONTAL_FACING;
     public static class ModelType {
 
         private static final Map<String, ModelType> allTypes = new HashMap<>();
@@ -146,6 +150,22 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
             Lazy.of(() -> Ingredient.of(Items.STONE)),
             Lazy.of(() -> Ingredient.of(Items.STONE))
         );
+        public static final ModelType RedMushroom = new ModelType("red_mushroom",
+            new ResourceLocation("red_mushroom_block"),
+            new ResourceLocation("mushroom_stem"),
+            new ResourceLocation("red_mushroom_block"),
+            Lazy.of(() -> Ingredient.of(ItemTags.SIGNS)),
+            Lazy.of(() -> Ingredient.of(Items.RED_MUSHROOM_BLOCK)),
+            Lazy.of(() -> Ingredient.of(Items.RED_MUSHROOM))
+        );
+        public static final ModelType BrownMushroom = new ModelType("brown_mushroom",
+            new ResourceLocation("brown_mushroom_block"),
+            new ResourceLocation("mushroom_stem"),
+            new ResourceLocation("brown_mushroom_block"),
+            Lazy.of(() -> Ingredient.of(ItemTags.SIGNS)),
+            Lazy.of(() -> Ingredient.of(Items.BROWN_MUSHROOM_BLOCK)),
+            Lazy.of(() -> Ingredient.of(Items.BROWN_MUSHROOM))
+        );
         public static final ModelType Warped = new ModelType("warped",
             new ResourceLocation("warped_stem"),
             new ResourceLocation("stripped_warped_stem"),
@@ -192,6 +212,8 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
             register(Warped);
             register(Crimson);
             register(Sandstone);
+            register(BrownMushroom);
+            register(RedMushroom);
         }
 
         public final String name;
@@ -303,8 +325,10 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
     public static final Variant WARPED = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Warped), ModelType.Warped, "warped", Variant.RequiredTool.Axe);
     public static final Variant CRIMSON = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Crimson), ModelType.Crimson, "crimson", Variant.RequiredTool.Axe);
     public static final Variant SANDSTONE = new Variant(PropertiesUtil.STONE, ModelType.Sandstone, "sandstone", Variant.RequiredTool.Pickaxe);
+    public static final Variant BROWN_MUSHROOM = new Variant(PropertiesUtil.mushroom(MaterialColor.DIRT), ModelType.BrownMushroom, "brown_mushroom", Variant.RequiredTool.Axe);
+    public static final Variant RED_MUSHROOM = new Variant(PropertiesUtil.mushroom(MaterialColor.COLOR_RED), ModelType.RedMushroom, "red_mushroom", Variant.RequiredTool.Axe);
 
-    public static final List<Variant> AllVariants = Arrays.asList(OAK, BIRCH, SPRUCE, JUNGLE, DARK_OAK, ACACIA, MANGROVE, STONE, IRON, WARPED, CRIMSON, SANDSTONE);
+    public static final List<Variant> AllVariants = Arrays.asList(OAK, BIRCH, SPRUCE, JUNGLE, DARK_OAK, ACACIA, MANGROVE, STONE, IRON, WARPED, CRIMSON, SANDSTONE, BROWN_MUSHROOM, RED_MUSHROOM);
     public static Block[] getAllBlocks() {
         return AllVariants.stream().map(Variant::getBlock).toArray(Block[]::new);
     }
@@ -404,7 +428,7 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(WATERLOGGED);
+        builder.add(Facing).add(WATERLOGGED);
     }
 
     @Override
@@ -443,13 +467,28 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return super.getStateForPlacement(context)
+        var res = super.getStateForPlacement(context);
+        if(res == null) res = defaultBlockState();
+        return res
+            .setValue(Facing, context.getHorizontalDirection())
             .setValue(WATERLOGGED, context.getLevel().getFluidState(context.getClickedPos()).getType() == Fluids.WATER);
     }
 
     @Override
     public boolean propagatesSkylightDown(BlockState state, BlockGetter reader, BlockPos pos) {
         return !state.getValue(WATERLOGGED);
+    }
+
+    @Override
+    public BlockState rotate(BlockState state, Rotation rot) {
+        if(!state.hasProperty(Facing)) return state;
+        return state.setValue(Facing, rot.rotate(state.getValue(Facing)));
+    }
+
+    @Override
+    public BlockState mirror(BlockState state, Mirror mirrorIn) {
+        if(!state.hasProperty(Facing)) return state;
+        return state.setValue(Facing, state.getValue(Facing).getOpposite());
     }
 
     @Override

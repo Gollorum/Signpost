@@ -22,6 +22,11 @@ public class PropertiesUtil {
             .strength(2.0F, 3.0F).sound(SoundType.WOOD);
     }
 
+    public static Block.Properties mushroom(MaterialColor color){
+        return Block.Properties.of(Material.WOOD, color)
+            .strength(0.2F).sound(SoundType.WOOD);
+    }
+
     private static MaterialColor colorFor(WoodType type){
         return switch (type) {
             case Oak -> MaterialColor.WOOD;

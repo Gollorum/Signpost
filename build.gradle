@@ -186,6 +186,9 @@ dependencies {
     implementation fg.deobf("curse.maven:balm-531761:3914527")
     implementation fg.deobf("curse.maven:waystone-245755:3901921")
 
+    implementation fg.deobf("curse.maven:feature-nbt-deadlock-be-gone-${feature_nbt_project_id}:${feature_nbt_file_id}")
+    implementation fg.deobf("curse.maven:repurposed-structures-${repurposed_structures_project_id}:${repurposed_structures_file_id}")
+
 }
 
 task sourcesJar(type: Jar) {

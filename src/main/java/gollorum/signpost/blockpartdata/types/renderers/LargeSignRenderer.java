@@ -2,14 +2,18 @@ package gollorum.signpost.blockpartdata.types.renderers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Vector3f;
+import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.blockpartdata.types.LargeSignBlockPart;
+import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.rendering.ModelRegistry;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.utils.modelGeneration.SignModel;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.resources.model.BakedModel;
+
+import java.util.Random;
 
 import static gollorum.signpost.minecraft.utils.CoordinatesUtil.FontToVoxelSize;
 import static gollorum.signpost.minecraft.utils.CoordinatesUtil.VoxelSize;
@@ -64,8 +68,14 @@ public class LargeSignRenderer extends SignRenderer<LargeSignBlockPart> {
 		});
 	}
 
-	private void render(LargeSignBlockPart sign, Font fontRenderer, String text, PoseStack matrix, MultiBufferSource buffer, int combinedLights, boolean isLong) {
+	private void render(LargeSignBlockPart sign, Font fontRenderer, String txt, PoseStack matrix, MultiBufferSource buffer, int combinedLights, boolean isLong) {
 		RenderingUtil.wrapInMatrixEntry(matrix, () -> {
+			var text = txt;
+			if(sign.isMarkedForGeneration()) {
+				var overrideName = WaystoneLibrary.getInstance().getAllWaystoneNames(true)
+					.flatMap(s -> s.stream().skip(new Random().nextInt(s.size() - 1)).findFirst());
+				if(overrideName.isPresent()) text = overrideName.get();
+			}
 			float scale = FONT_SIZE_VOXELS * FontToVoxelSize;
 			float MAX_WIDTH_FRAC = fontRenderer.width(text) * scale / (isLong ? MAXIMUM_TEXT_WIDTH_LONG : MAXIMUM_TEXT_WIDTH_SHORT);
 			scale /= Math.max(1, MAX_WIDTH_FRAC);

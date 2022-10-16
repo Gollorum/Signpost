@@ -11,6 +11,8 @@
     "signpost:post_iron",
     "signpost:post_warped",
     "signpost:post_crimson",
-    "signpost:post_sandstone"
+    "signpost:post_sandstone",
+    "signpost:post_brown_mushroom",
+    "signpost:post_red_mushroom"
   ]
 }

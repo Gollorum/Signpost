@@ -14,6 +14,9 @@ public class Config {
 	public static final Server Server;
 	private static final ForgeConfigSpec ServerConfig;
 
+	public static final Common Common;
+	private static final ForgeConfigSpec CommonConfig;
+
 	public static final Client Client;
 	private static final ForgeConfigSpec ClientConfig;
 
@@ -21,6 +24,9 @@ public class Config {
 		Tuple<Server, ForgeConfigSpec> serverTuple = Tuple.from(new ForgeConfigSpec.Builder().configure(Server::new));
 		Server = serverTuple._1;
 		ServerConfig = serverTuple._2;
+		Tuple<Common, ForgeConfigSpec> commonTuple = Tuple.from(new ForgeConfigSpec.Builder().configure(Common::new));
+		Common = commonTuple._1;
+		CommonConfig = commonTuple._2;
 		Tuple<Client, ForgeConfigSpec> clientTuple = Tuple.from(new ForgeConfigSpec.Builder().configure(Client::new));
 		Client = clientTuple._1;
 		ClientConfig = clientTuple._2;
@@ -28,6 +34,7 @@ public class Config {
 
 	public static void register() {
 		ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, ServerConfig);
+		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, CommonConfig);
 		ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ClientConfig);
 	}
 
@@ -63,8 +70,22 @@ public class Config {
 			builder.pop();
 
 			builder.push("world_gen");
-			worldGen = new WorldGenConfig(builder);
+			worldGen = new WorldGenConfig(builder, true);
 			builder.pop();
+		}
+
+	}
+
+	public static class Common {
+
+		public final WorldGenConfig worldGenDefaults;
+
+		public Common(ForgeConfigSpec.Builder builder) {
+
+			builder.push("world_gen_defaults");
+			worldGenDefaults = new WorldGenConfig(builder, false);
+			builder.pop();
+
 		}
 
 	}

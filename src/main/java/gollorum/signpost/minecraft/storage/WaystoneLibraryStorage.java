@@ -2,7 +2,7 @@ package gollorum.signpost.minecraft.storage;
 
 import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneLibrary;
-import gollorum.signpost.minecraft.worldgen.WaystoneJigsawPiece;
+import gollorum.signpost.minecraft.worldgen.VillageWaystone;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -15,7 +15,7 @@ public class WaystoneLibraryStorage extends SavedData {
     @Override
     public CompoundTag save(CompoundTag compound) {
         WaystoneLibrary.getInstance().saveTo(compound);
-        compound.put("villageWaystones", WaystoneJigsawPiece.serialize());
+        compound.put("villageWaystones", VillageWaystone.serialize());
         return compound;
     }
 
@@ -23,7 +23,7 @@ public class WaystoneLibraryStorage extends SavedData {
         WaystoneLibrary.getInstance().readFrom(compound);
         Tag villageWaystones = compound.get("villageWaystones");
         if(villageWaystones instanceof ListTag)
-            WaystoneJigsawPiece.deserialize((ListTag) villageWaystones);
+            VillageWaystone.deserialize((ListTag) villageWaystones);
         return this;
     }
 
