@@ -36,9 +36,6 @@ public class VillageSignpost {
 	}
 
 	public static boolean populate(PostTile tile, SignBlockPart<?> generatorPart, UUID generatorPartId, float height, ServerLevel level) {
-//		if(!Config.Server.worldGen.isVillageGenerationEnabled()) {
-//			return false;
-//		}
 		BlockPos pieceLocation = tile.getBlockPos();
 		BlockPos villageLocation = VillageGenUtils.getVillageLocationFor(level, pieceLocation, 512);
 		Random random = new Random(level.getSeed() ^ pieceLocation.asLong());

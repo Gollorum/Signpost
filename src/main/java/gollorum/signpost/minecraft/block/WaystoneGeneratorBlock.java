@@ -80,9 +80,7 @@ public class WaystoneGeneratorBlock extends BaseEntityBlock {
     }
 
     private static boolean tryPlace(BlockState state, BlockPos pos, ServerLevel serverLevel, boolean manuallyPlaced) {
-//        if(!Config.Server.worldGen.isVillageGenerationEnabled()) return false;
         BlockPos villageLocation = VillageGenUtils.getVillageLocationFor(serverLevel, pos, manuallyPlaced ? 0 : 512);
-//        if(VillageWaystone.doesWaystoneExistIn(villageLocation)) return false;
         List<ModelWaystone> allowedWaystones = getAllowedWaystones();
         if(allowedWaystones.size() == 0) {
             Signpost.LOGGER.warn("Tried to generate a waystone, but the list of allowed waystones was empty.");
