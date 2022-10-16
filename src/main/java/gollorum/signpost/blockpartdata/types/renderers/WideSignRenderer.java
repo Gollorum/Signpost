@@ -12,6 +12,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.resources.model.BakedModel;
 
+import java.util.Optional;
 import java.util.Random;
 
 import static gollorum.signpost.minecraft.utils.CoordinatesUtil.FontToVoxelSize;
@@ -52,7 +53,7 @@ public class WideSignRenderer extends SignRenderer<SmallWideSignBlockPart> {
 			var text = sign.getText().get();
 			if(sign.isMarkedForGeneration()) {
 				var overrideName = WaystoneLibrary.getInstance().getAllWaystoneNames(true)
-						.flatMap(s -> s.stream().skip(new Random().nextInt(s.size() - 1)).findFirst());
+						.flatMap(s -> s.size() > 0 ? s.stream().skip(new Random().nextInt(s.size() - 1)).findFirst() : Optional.empty());
 				if(overrideName.isPresent()) text = overrideName.get();
 			}
 			matrix.mulPose(Vector3f.ZP.rotationDegrees(180));

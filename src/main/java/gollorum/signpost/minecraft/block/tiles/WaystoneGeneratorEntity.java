@@ -41,7 +41,7 @@ public class WaystoneGeneratorEntity extends BlockEntity {
     @Override
     public void setLevel(@NotNull Level level) {
         super.setLevel(level);
-        if(!Config.Server.worldGen.debugMode.get() && level instanceof ServerLevel l)
-            Delay.onServerForFrames(1, () -> WaystoneGeneratorBlock.generate(getBlockState(), getBlockPos(), l));
+        if(!Config.Server.worldGen.debugMode() && level instanceof ServerLevel l)
+            Delay.onServerForFrames(1, () -> WaystoneGeneratorBlock.generate(getBlockState(), getBlockPos(), l, false));
     }
 }

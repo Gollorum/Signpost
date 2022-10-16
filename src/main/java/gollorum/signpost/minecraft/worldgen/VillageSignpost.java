@@ -17,13 +17,13 @@ import gollorum.signpost.utils.*;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.core.*;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
 
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,52 +36,55 @@ public class VillageSignpost {
 	}
 
 	public static boolean populate(PostTile tile, SignBlockPart<?> generatorPart, UUID generatorPartId, float height, ServerLevel level) {
-		if(!Config.Server.worldGen.isVillageGenerationEnabled.get()) {
-			return false;
-		}
+//		if(!Config.Server.worldGen.isVillageGenerationEnabled()) {
+//			return false;
+//		}
 		BlockPos pieceLocation = tile.getBlockPos();
-		BlockPos villageLocation = VillageGenUtils.getVillageLocationFor(level, pieceLocation, 64);
+		BlockPos villageLocation = VillageGenUtils.getVillageLocationFor(level, pieceLocation, 512);
 		Random random = new Random(level.getSeed() ^ pieceLocation.asLong());
-		Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> possibleTargets = fetchPossibleTargets(pieceLocation, villageLocation, random);
+		var blockedTargets = tile.getParts().stream().flatMap(p -> p.blockPart instanceof SignBlockPart<?> sbb ? sbb.getDestination().stream() : Stream.empty()).collect(Collectors.toSet());
+		Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> possibleTargets = fetchPossibleTargets(pieceLocation, villageLocation, level.dimension().location(), random, blockedTargets);
 		if(possibleTargets.isEmpty())
 			return false;
 
 		Collection<WaystoneHandle.Vanilla> freshlyUsedWaystones = populateSignPostGeneration(
 			tile, generatorPart, height,
-			tile.getBlockState().getValue(PostBlock.FACING).getOpposite(), pieceLocation, level, random, possibleTargets
+			tile.getBlockState().getValue(PostBlock.Facing).getOpposite(), pieceLocation, level, random, possibleTargets
 		);
 		waystonesTargetedByVillage.computeIfAbsent(villageLocation, k -> new ArrayList<>())
 			.addAll(freshlyUsedWaystones);
 		tile.removePart(generatorPartId);
+		tile.setChanged();
 		return true;
 	}
 
-	private static Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> fetchPossibleTargets(BlockPos pieceLocation, BlockPos villageLocation, Random random) {
-		return allWaystoneTargets(villageLocation)
+	private static Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> fetchPossibleTargets(BlockPos pieceLocation, BlockPos villageLocation, ResourceLocation dimension, Random random, Set<WaystoneHandle> blockedTargets) {
+		return allWaystoneTargets(villageLocation, dimension)
 			.map(e -> new Tuple<>(e, (float) Math.sqrt(e._1.distSqr(pieceLocation)) * (0.5f + random.nextFloat())))
 			.sorted((e1, e2) -> Float.compare(e1._2, e2._2))
 			.map(Tuple::getLeft)
 			.filter(e -> WaystoneLibrary.getInstance().contains(e._2))
+			.filter(e -> !blockedTargets.contains(e._2))
 			.collect(Collectors.toCollection(LinkedList::new));
 	}
 
-	private static Stream<Tuple<BlockPos, WaystoneHandle.Vanilla>> allWaystoneTargets(BlockPos villageLocation) {
-		Stream<Tuple<BlockPos, WaystoneHandle.Vanilla>> villageWaystones = villageWaystonesExceptSelf(villageLocation);
-		return (Config.Server.worldGen.villagesOnlyTargetVillages.get()
+	private static Stream<Tuple<BlockPos, WaystoneHandle.Vanilla>> allWaystoneTargets(BlockPos villageLocation, ResourceLocation dimension) {
+		Stream<Tuple<BlockPos, WaystoneHandle.Vanilla>> villageWaystones = villageWaystonesExceptSelf(villageLocation, dimension);
+		return (Config.Server.worldGen.villagesOnlyTargetVillages()
 			? villageWaystones
-			: Streams.concat(villageWaystones, nonVillageWaystones())
+			: Streams.concat(villageWaystones, nonVillageWaystones(dimension))
 		).filter(e -> !(waystonesTargetedByVillage.containsKey(villageLocation)
 			&& waystonesTargetedByVillage.get(villageLocation).contains(e._2)));
 	}
-	private static Stream<Tuple<BlockPos, WaystoneHandle.Vanilla>> villageWaystonesExceptSelf(BlockPos villageLocation) {
-		return VillageWaystone.getAllEntries().stream()
+	private static Stream<Tuple<BlockPos, WaystoneHandle.Vanilla>> villageWaystonesExceptSelf(BlockPos villageLocation, ResourceLocation dimension) {
+		return VillageWaystone.getAllEntries(dimension).stream()
 	        .filter(e -> !(e.getKey().equals(villageLocation)))
 	        .map(Tuple::from);
 	}
-	private static Stream<Tuple<BlockPos, WaystoneHandle.Vanilla>> nonVillageWaystones() {
+	private static Stream<Tuple<BlockPos, WaystoneHandle.Vanilla>> nonVillageWaystones(ResourceLocation dimension) {
 		return WaystoneLibrary.getInstance().getAllWaystoneInfo().stream()
 			.map(info -> new Tuple<>(info.locationData.block.blockPos, info.handle))
-			.filter(t -> VillageWaystone.getAllEntries().stream().noneMatch(e -> e.getValue().equals(t._2)));
+			.filter(t -> VillageWaystone.getAllEntries(dimension).stream().noneMatch(e -> e.getValue().equals(t._2)));
 	}
 
 	private static Collection<WaystoneHandle.Vanilla> populateSignPostGeneration(
@@ -137,7 +140,7 @@ public class VillageSignpost {
 				new SmallWideSignBlockPart(
 					new AngleProvider.WaystoneTarget(rotation), new NameProvider.WaystoneTarget(targetData.name), shouldFlip(facing, rotation),
 					generatorPart.getMainTexture(), generatorPart.getSecondaryTexture(),
-					overlayFor(world, tilePos), generatorPart.getColor(), Optional.of(target._2),
+					overlayFor(world, tilePos).or(generatorPart::getOverlay), generatorPart.getColor(), Optional.of(target._2),
 					ItemStack.EMPTY, tile.modelType, false, false
 				),
 				new Vector3(0, y, 0)
@@ -167,8 +170,7 @@ public class VillageSignpost {
 
 		Angle rotation = SignBlockPart.pointingAt(tilePos, target._1);
 		boolean shouldFlip = shouldFlip(facing, rotation);
-		Optional<Overlay> overlay = overlayFor(world, tilePos);
-		List<Consumer<PostTile>> onTileFetched = new ArrayList<>();
+		Optional<Overlay> overlay = overlayFor(world, tilePos).or(generatorPart::getOverlay);
 		tile.addPart(
 			new BlockPartInstance(
 				new SmallShortSignBlockPart(

@@ -17,9 +17,9 @@ public class DefaultVillageNamesProvider implements VillageNamesProvider {
 	public Optional<String> getFor(
 		BlockPos blockPos, BlockPos villagePos, ServerLevel world, Predicate<String> validator, Random random
 	) {
-		List<? extends String> prefixes = Config.Server.worldGen.naming.villageNamePrefixes.get();
-		List<? extends String> infixes = Config.Server.worldGen.naming.villageNameInfixes.get();
-		List<? extends String> postfixes = Config.Server.worldGen.naming.villageNamePostfixes.get();
+		List<? extends String> prefixes = Config.Server.worldGen.naming().villageNamePrefixes.get();
+		List<? extends String> infixes = Config.Server.worldGen.naming().villageNameInfixes.get();
+		List<? extends String> postfixes = Config.Server.worldGen.naming().villageNamePostfixes.get();
 		List<Integer> prefixIndices = IntStream.range(0, prefixes.size()).boxed().collect(Collectors.toList());
 		List<Integer> infixIndices = IntStream.range(0, infixes.size()).boxed().collect(Collectors.toList());
 		List<Integer> postfixIndices = IntStream.range(0, postfixes.size()).boxed().collect(Collectors.toList());

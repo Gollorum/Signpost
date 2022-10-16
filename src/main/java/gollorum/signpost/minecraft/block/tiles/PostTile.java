@@ -273,10 +273,10 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     public void setLevel(Level level) {
         super.setLevel(level);
 
-        if(!Config.Server.worldGen.debugMode.get() && level instanceof ServerLevel serverLevel) {
+        if(!Config.Server.worldGen.debugMode() && level instanceof ServerLevel serverLevel) {
             Delay.forFrames(1, false, () -> {
                 boolean hasChanged = false;
-                for(var e : parts.entrySet()) {
+                for(var e : parts.entrySet().stream().sorted((e1, e2) -> Float.compare(e2.getValue().offset.y, e1.getValue().offset.y)).toList()) {
                     if (e.getValue().blockPart instanceof SignBlockPart<?> sign
                         && sign.isMarkedForGeneration()
                         && VillageSignpost.populate(this, sign, e.getKey(), e.getValue().offset.y, serverLevel)
@@ -319,6 +319,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
                 data,
                 partMetaIdentifier)
         );
+        setChanged();
     }
 
     public <T> void sendToTracing(Supplier<T> t) {

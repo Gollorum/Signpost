@@ -4,6 +4,7 @@ import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.block.tiles.WaystoneGeneratorEntity;
 import gollorum.signpost.minecraft.config.Config;
+import gollorum.signpost.minecraft.registry.BlockRegistry;
 import gollorum.signpost.minecraft.worldgen.VillageGenUtils;
 import gollorum.signpost.minecraft.worldgen.VillageWaystone;
 import gollorum.signpost.utils.WaystoneLocationData;
@@ -18,10 +19,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.BaseEntityBlock;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -40,7 +38,7 @@ import java.util.stream.Collectors;
 
 public class WaystoneGeneratorBlock extends BaseEntityBlock {
 
-    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public static final DirectionProperty Facing = BlockStateProperties.HORIZONTAL_FACING;
     public static final String REGISTRY_NAME = "waystone_generator";
 
     public WaystoneGeneratorBlock() {
@@ -55,13 +53,13 @@ public class WaystoneGeneratorBlock extends BaseEntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
+        builder.add(Facing);
     }
 
     @javax.annotation.Nullable
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return defaultBlockState().setValue(FACING, context.getHorizontalDirection());
+        return defaultBlockState().setValue(Facing, context.getHorizontalDirection());
     }
 
     @Override
@@ -71,25 +69,26 @@ public class WaystoneGeneratorBlock extends BaseEntityBlock {
 
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        if(level instanceof ServerLevel l) generate(state, pos, l);
+        if(level instanceof ServerLevel l) generate(state, pos, l, true);
         return InteractionResult.CONSUME;
     }
 
-    public static void generate(BlockState state, BlockPos pos, ServerLevel level) {
-        if(!tryPlace(state, pos, level))
+    public static void generate(BlockState state, BlockPos pos, ServerLevel level, boolean manuallyPlaced) {
+        if(!level.getBlockState(pos).is(BlockRegistry.WaystoneGenerator.get())) return;
+        if(!tryPlace(state, pos, level, manuallyPlaced))
             level.setBlock(pos, Blocks.AIR.defaultBlockState(), 18);
     }
 
-    private static boolean tryPlace(BlockState state, BlockPos pos, ServerLevel serverLevel) {
-        if(!Config.Server.worldGen.isVillageGenerationEnabled.get()) return false;
-        BlockPos villageLocation = VillageGenUtils.getVillageLocationFor(serverLevel, pos, 64);
-        if(VillageWaystone.doesWaystoneExistIn(villageLocation)) return false;
+    private static boolean tryPlace(BlockState state, BlockPos pos, ServerLevel serverLevel, boolean manuallyPlaced) {
+//        if(!Config.Server.worldGen.isVillageGenerationEnabled()) return false;
+        BlockPos villageLocation = VillageGenUtils.getVillageLocationFor(serverLevel, pos, manuallyPlaced ? 0 : 512);
+//        if(VillageWaystone.doesWaystoneExistIn(villageLocation)) return false;
         List<ModelWaystone> allowedWaystones = getAllowedWaystones();
         if(allowedWaystones.size() == 0) {
             Signpost.LOGGER.warn("Tried to generate a waystone, but the list of allowed waystones was empty.");
             return false;
         }
-        Direction facing = state.getValue(FACING);
+        Direction facing = state.getValue(Facing);
         ModelWaystone waystone = getWaystoneType(new Random(serverLevel.getSeed() ^ pos.asLong()), allowedWaystones);
         Optional<String> optionalName = VillageNamesProvider.requestFor(pos, villageLocation, serverLevel, new Random(serverLevel.getSeed() ^ villageLocation.asLong()));
         if(optionalName.isEmpty()) {
@@ -110,17 +109,29 @@ public class WaystoneGeneratorBlock extends BaseEntityBlock {
 
     private static List<ModelWaystone> getAllowedWaystones() {
 		return ModelWaystone.variants.stream()
-			.filter(v -> Config.Server.worldGen.allowedVillageWaystones.get().contains(v.name))
+			.filter(v -> Config.Server.worldGen.allowedVillageWaystones().contains(v.name))
 			.map(ModelWaystone.Variant::getBlock)
 			.collect(Collectors.toList());
 	}
+
+    @Override
+    public BlockState rotate(BlockState state, Rotation rot) {
+        if(!state.hasProperty(Facing)) return state;
+        return state.setValue(Facing, rot.rotate(state.getValue(Facing)));
+    }
+
+    @Override
+    public BlockState mirror(BlockState state, Mirror mirrorIn) {
+        if(!state.hasProperty(Facing)) return state;
+        return state.setValue(Facing, state.getValue(Facing).getOpposite());
+    }
 
     private static WaystoneLocationData locationDataFor(BlockPos pos, ServerLevel world, Direction facing) {
 		return new WaystoneLocationData(new WorldLocation(pos, world.getLevel()), spawnPosFor(world, pos, facing));
 	}
 
     private static Vector3 spawnPosFor(ServerLevel world, BlockPos waystonePos, Direction facing) {
-		BlockPos spawnBlockPos = waystonePos.relative(facing, 2);
+		BlockPos spawnBlockPos = waystonePos.relative(facing, -2);
 		int maxOffset = 10;
 		int offset = 0;
 		while(world.getBlockState(spawnBlockPos).isAir() && offset <= maxOffset) {

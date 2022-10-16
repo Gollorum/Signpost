@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import gollorum.signpost.minecraft.block.ModelWaystone;
 import net.minecraftforge.common.ForgeConfigSpec;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -13,12 +14,26 @@ import java.util.stream.Stream;
 
 public class WorldGenConfig {
 
-	public final ForgeConfigSpec.BooleanValue isVillageGenerationEnabled;
-	public final ForgeConfigSpec.BooleanValue villagesOnlyTargetVillages;
-	public final ForgeConfigSpec.IntValue maxSignpostsPerVillage;
-	public final ForgeConfigSpec.ConfigValue<List<? extends String>> allowedVillageWaystones;
-	public final ForgeConfigSpec.BooleanValue debugMode;
-	public final Naming naming;
+	private final ForgeConfigSpec.BooleanValue isVillageGenerationEnabled;
+	public boolean isVillageGenerationEnabled() { return getFinalValue(d -> d.isVillageGenerationEnabled).get(); }
+
+	private final ForgeConfigSpec.BooleanValue villagesOnlyTargetVillages;
+	public boolean villagesOnlyTargetVillages() { return getFinalValue(d -> d.villagesOnlyTargetVillages).get(); }
+
+	private final ForgeConfigSpec.IntValue maxSignpostsPerVillage;
+	public int maxSignpostsPerVillage() { return getFinalValue(d -> d.maxSignpostsPerVillage).get(); }
+
+	private final ForgeConfigSpec.ConfigValue<List<? extends String>> allowedVillageWaystones;
+	public List<? extends String> allowedVillageWaystones() { return getFinalValue(d -> d.allowedVillageWaystones).get(); }
+
+	private final ForgeConfigSpec.BooleanValue debugMode;
+	public boolean debugMode() { return getFinalValue(d -> d.debugMode).get(); }
+
+	private final Naming naming;
+	public Naming naming() { return getFinalValue(d -> d.naming); }
+
+	@Nullable
+	private final ForgeConfigSpec.BooleanValue overrideDefaults;
 
 	private final boolean isServer;
 
@@ -26,15 +41,29 @@ public class WorldGenConfig {
 		return isServer ? () -> factory.apply(Config.Common.worldGenDefaults).get() : () -> defaultVal;
 	}
 
+	private <T> T getFinalValue(Function<WorldGenConfig, T> factory) {
+		return factory.apply(isServer && overrideDefaults != null && overrideDefaults.get()
+			? this
+			: Config.Common.worldGenDefaults
+		);
+	}
+
 	WorldGenConfig(ForgeConfigSpec.Builder builder, boolean isServer) {
 		this.isServer = isServer;
+		overrideDefaults = isServer
+			? builder.comment("Enables this [world_gen] section. If false, the COMMON config values will be used")
+				.define("override_defaults", true)
+			: null;
+
 		isVillageGenerationEnabled = builder.comment("Enables the generation of signposts and waystones in villages")
 			.define("enable_generation", defaults(true, d -> d.isVillageGenerationEnabled));
 
-		villagesOnlyTargetVillages = builder.comment("Defines whether village signposts can have any waystones as destination or just the ones generated in other villages")
+		villagesOnlyTargetVillages = builder.comment("Defines whether village signposts can have any waystones as" +
+				" destination or just the ones generated in other villages")
 			.define("only_target_other_villages", defaults(true, d -> d.villagesOnlyTargetVillages));
 
-		maxSignpostsPerVillage = builder.comment("The maximum number of signposts that can spawn in one village")
+		maxSignpostsPerVillage = builder.comment("The maximum number of signposts that can spawn in one village. " +
+				"Will be ignored for 'Repurposed Structures' villages, use data packs for that.")
 			.defineInRange("max_signposts_per_village", defaults(2, d -> d.maxSignpostsPerVillage), 0, Integer.MAX_VALUE);
 
 		allowedVillageWaystones = builder.comment(

@@ -21,7 +21,7 @@ public class VillageGenUtils {
             .filter(h -> h.is(ConfiguredStructureTags.VILLAGE))
             .toList();
         return Optional.ofNullable(level.getChunkSource().getGenerator()
-                .findNearestMapFeature(level, HolderSet.direct(allHolders), pieceLocation, 1, false))
+                .findNearestMapFeature(level, HolderSet.direct(allHolders), pieceLocation, 100, false))
             .map(Pair::getFirst)
             .filter(villagePos -> villagePos.distManhattan(pieceLocation) <= maxDistance)
             .orElse(pieceLocation);

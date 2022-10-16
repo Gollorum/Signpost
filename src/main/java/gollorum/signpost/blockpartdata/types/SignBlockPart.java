@@ -274,7 +274,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
 
     @Override
     public Intersectable<Ray, Float> getIntersection() {
-        return isMarkedForGeneration() && !Config.Server.worldGen.debugMode.get() ? new Intersectable.Not<>() : transformedBounds;
+        return isMarkedForGeneration() && !Config.Server.worldGen.debugMode() ? new Intersectable.Not<>() : transformedBounds;
     }
 
     @Override

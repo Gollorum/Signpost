@@ -1,6 +1,5 @@
 package gollorum.signpost.minecraft.worldgen;
 
-import com.google.common.collect.Streams;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.block.ModelWaystone;
@@ -100,13 +99,12 @@ public class VillageWaystone {
 
     public static Tag serialize() {
         ListTag ret = new ListTag();
-        ret.addAll(Streams.zip(
-            generatedWaystones.entrySet().stream(),
-            generatedWaystonesByChunk.keySet().stream(),
-            (e, c) -> {
+        ret.addAll(generatedWaystones.entrySet().stream().map(
+            e -> {
                 CompoundTag compound = new CompoundTag();
                 compound.put("refPos", BlockPosSerializer.INSTANCE.write(e.getKey()));
-                compound.put("chunkEntryKey", ChunkEntryKey.serializer.write(c));
+                generatedWaystonesByChunk.entrySet().stream().filter(ce -> ce.getValue().equals(e.getValue())).findFirst()
+                    .ifPresent(ce -> compound.put("chunkEntryKey", ChunkEntryKey.serializer.write(ce.getKey())));
                 compound.put("waystone", WaystoneHandle.Vanilla.Serializer.write(e.getValue()));
                 return compound;
             }).toList());
@@ -129,13 +127,22 @@ public class VillageWaystone {
     }
 
 
-	public static Set<Map.Entry<BlockPos, WaystoneHandle.Vanilla>> getAllEntries() {
+	public static Set<Map.Entry<BlockPos, WaystoneHandle.Vanilla>> getAllEntries(ResourceLocation dimension) {
 		List<BlockPos> toRemove = generatedWaystones.entrySet().stream()
             .filter(e -> WaystoneLibrary.getInstance().getData(e.getValue()).isEmpty())
             .map(Map.Entry::getKey).toList();
 		for(BlockPos key : toRemove) generatedWaystones.remove(key);
-		return generatedWaystones.entrySet();
+		return generatedWaystones.entrySet().stream()
+            .filter(e -> dimensionOf(e.getValue()).map(d -> d.equals(dimension)).orElse(true))
+            .collect(Collectors.toSet());
 	}
+
+    private static Optional<ResourceLocation> dimensionOf(WaystoneHandle.Vanilla handle) {
+        return generatedWaystonesByChunk.entrySet().stream()
+            .filter(e -> e.getValue().equals(handle))
+            .findFirst()
+            .map(e -> e.getKey().dimensionKey);
+    }
 
 	public static Map<ChunkEntryKey, WaystoneHandle.Vanilla> getAllEntriesByChunk() {
 		List<ChunkEntryKey> toRemove = generatedWaystonesByChunk.entrySet().stream()
@@ -147,7 +154,7 @@ public class VillageWaystone {
 
 	private static List<ModelWaystone> getAllowedWaystones() {
 		return ModelWaystone.variants.stream()
-			.filter(v -> Config.Server.worldGen.allowedVillageWaystones.get().contains(v.name))
+			.filter(v -> Config.Server.worldGen.allowedVillageWaystones().contains(v.name))
 			.map(v -> v.getBlock())
 			.collect(Collectors.toList());
 	}

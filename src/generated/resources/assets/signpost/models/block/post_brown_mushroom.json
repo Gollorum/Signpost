@@ -1,0 +1,9 @@
+{
+  "parent": "signpost:block/post_preview",
+  "textures": {
+    "particle": "minecraft:block/brown_mushroom_block",
+    "post": "minecraft:block/brown_mushroom_block",
+    "texture": "minecraft:block/mushroom_stem",
+    "secondary_texture": "minecraft:block/brown_mushroom_block"
+  }
+}
