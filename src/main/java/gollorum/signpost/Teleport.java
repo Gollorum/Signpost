@@ -71,8 +71,14 @@ public class Teleport {
             Angle pitch = Angle.fromRadians((float) (Math.PI / 2 + Math.atan(Math.sqrt(diff.x * diff.x + diff.z * diff.z) / diff.y)));
             Level oldWorld = player.level;
             BlockPos oldPos = player.blockPosition();
-            if(!player.level.dimensionType().equals(world.dimensionType()))
+            // Handle different dimensions outside GUI in case of external waystones
+            if (!player.level.dimensionType().equals(world.dimensionType())) {
+                if (!(Config.Server.teleport.enableAcrossDimensions.get())) {
+                    player.displayClientMessage(new TranslatableComponent(LangKeys.differentDimension), true);
+                    return;
+                }
                 player.changeDimension(world, new ITeleporter() {});
+            }
             player.setYRot(yaw.degrees());
             player.setXRot(pitch.degrees());
             player.teleportTo(location.x, location.y, location.z);

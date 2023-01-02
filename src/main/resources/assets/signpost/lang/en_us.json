@@ -47,6 +47,7 @@
   "signpost.waystone_not_found": "The waystone %s does not exist.",
   "signpost.no_waystones": "You didn't discover any waystones yet.",
   "signpost.too_expensive": "You don't have the requirement items (%d %s).",
+  "signpost.different_dimension": "You cannot travel to a waystone in a different dimension.",
 
   "signpost.no_permission_to_edit_waystone": "You do not have permission to edit this waystone.",
   "signpost.no_permission_to_edit_signpost": "You do not have permission to edit this signpost.",
