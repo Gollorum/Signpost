@@ -48,6 +48,7 @@
   "signpost.waystone_not_found": "Der Wegstein %s existiert nicht.",
   "signpost.no_waystones": "Du kennst noch keine Wegsteine.",
   "signpost.too_expensive": "Du besitzt die nötigen Gegenstände nicht (%d %s).",
+  "signpost.different_dimension": "Du kannst nicht zu einem Wegstein in einer anderen Dimension reisen.",
 
   "signpost.no_permission_to_edit_waystone": "Du bist nicht berechtigt, diesen Wegstein zu ändern.",
   "signpost.no_permission_to_edit_signpost": "Du bist nicht berechtigt, diesen Wegweiser zu ändern.",
