@@ -43,6 +43,7 @@
     "signpost.waystone_not_found": "传送石碑%s不存在。",
     "signpost.no_waystones": "你还没有发现任何传送石碑。",
     "signpost.too_expensive": "你没有所需物品（%d %s）。",
+    "signpost.different_dimension": "您无法前往不同维度的路标。",
   
     "signpost.no_permission_to_edit_waystone": "你没有权限编辑这个传送石碑。",
     "signpost.no_permission_to_edit_signpost": "你没有权限编辑这个路标。",
