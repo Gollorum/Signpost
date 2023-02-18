@@ -48,6 +48,7 @@
   "signpost.waystone_not_found": "Дорожный камень %s не существует.",
   "signpost.no_waystones": "Вы еще не нашли дорожные камни.",
   "signpost.too_expensive": "У вас нет необходимых предметов (%d %s).",
+  "signpost.different_dimension": "Вы не можете путешествовать к дорожному камню в другом измерении.",
 
   "signpost.no_permission_to_edit_waystone": "У вас нет прав на редактирование дорожного камня.",
   "signpost.no_permission_to_edit_signpost": "У вас нет прав на редактирование указателя.",
