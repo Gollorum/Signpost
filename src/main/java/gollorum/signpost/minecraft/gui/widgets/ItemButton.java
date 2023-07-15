@@ -31,7 +31,8 @@ public class ItemButton extends Button {
             Rect.yCoordinateFor(y, height, yAlignment),
             width, height,
             Component.literal(""),
-            b -> pressedAction.accept((ItemButton)b)
+            b -> pressedAction.accept((ItemButton)b),
+            Button.DEFAULT_NARRATION
         );
         this.stack = stack;
         this.itemRenderer = itemRenderer;
@@ -42,8 +43,8 @@ public class ItemButton extends Button {
     public void renderButton(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         super.renderButton(matrixStack, mouseX, mouseY, partialTicks);
 
-        int xTL = x + (width - itemModelWidth) / 2;
-        int yTL = y + (height - itemModelHeight) / 2;
+        int xTL = getX() + (width - itemModelWidth) / 2;
+        int yTL = getY() + (height - itemModelHeight) / 2;
         this.itemRenderer.renderAndDecorateItem(stack, xTL, yTL);
         this.itemRenderer.renderGuiItemDecorations(font, stack, xTL, yTL, null);
     }

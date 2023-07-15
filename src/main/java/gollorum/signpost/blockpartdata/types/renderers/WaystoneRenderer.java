@@ -1,8 +1,6 @@
 package gollorum.signpost.blockpartdata.types.renderers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Quaternion;
 import gollorum.signpost.blockpartdata.types.BlockPartRenderer;
 import gollorum.signpost.blockpartdata.types.WaystoneBlockPart;
 import gollorum.signpost.minecraft.data.WaystoneModel;
@@ -17,6 +15,7 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.util.Lazy;
+import org.joml.Matrix4f;
 
 public class WaystoneRenderer extends BlockPartRenderer<WaystoneBlockPart> {
 
@@ -44,7 +43,7 @@ public class WaystoneRenderer extends BlockPartRenderer<WaystoneBlockPart> {
 			random,
 			randomSeed,
 			combinedOverlay,
-			new Matrix4f(Quaternion.ONE)
+			new Matrix4f()
 		));
 	}
 

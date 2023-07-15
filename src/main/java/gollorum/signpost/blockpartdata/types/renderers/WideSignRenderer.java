@@ -1,7 +1,6 @@
 package gollorum.signpost.blockpartdata.types.renderers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
@@ -11,6 +10,9 @@ import gollorum.signpost.utils.modelGeneration.SignModel;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.resources.model.BakedModel;
+import org.joml.AxisAngle4d;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.Optional;
 import java.util.Random;
@@ -56,7 +58,7 @@ public class WideSignRenderer extends SignRenderer<SmallWideSignBlockPart> {
 						.flatMap(s -> s.size() > 0 ? s.stream().skip(new Random().nextInt(s.size() - 1)).findFirst() : Optional.empty());
 				if(overrideName.isPresent()) text = overrideName.get();
 			}
-			matrix.mulPose(Vector3f.ZP.rotationDegrees(180));
+			matrix.mulPose(new Quaternionf(new AxisAngle4d(Math.PI, new Vector3f(0, 0, 1))));
 			float scale = FONT_SIZE_VOXELS * FontToVoxelSize;
 			float MAX_WIDTH_FRAC = fontRenderer.width(text) * scale / MAXIMUM_TEXT_WIDTH;
 			scale /= Math.max(1, MAX_WIDTH_FRAC);

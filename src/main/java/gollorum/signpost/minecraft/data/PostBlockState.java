@@ -6,6 +6,7 @@ import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.WaystoneBlock;
 import net.minecraft.core.Direction;
 import net.minecraft.data.DataGenerator;
+import net.minecraft.data.PackOutput;
 import net.minecraftforge.client.model.generators.*;
 import net.minecraftforge.common.data.ExistingFileHelper;
 
@@ -17,12 +18,12 @@ public class PostBlockState extends BlockStateProvider {
     private final WaystoneModel waystoneModel;
 
     public PostBlockState(
-        DataGenerator gen,
+        PackOutput output,
         ExistingFileHelper fileHelper,
         PostModel postModel,
         WaystoneModel waystoneModel
     ) {
-        super(gen, Signpost.MOD_ID, fileHelper);
+        super(output, Signpost.MOD_ID, fileHelper);
         this.postModel = postModel;
         this.waystoneModel = waystoneModel;
     }

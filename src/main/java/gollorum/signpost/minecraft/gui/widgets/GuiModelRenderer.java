@@ -2,7 +2,6 @@ package gollorum.signpost.minecraft.gui.widgets;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
 import gollorum.signpost.minecraft.gui.utils.Flippable;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.utils.Rect;
@@ -10,12 +9,15 @@ import gollorum.signpost.minecraft.rendering.FlippableModel;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.renderer.RenderType;
+import org.joml.AxisAngle4d;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import javax.annotation.Nonnull;
 
-public class GuiModelRenderer implements Widget, Flippable {
+public class GuiModelRenderer implements Renderable, Flippable {
 
     private final FlippableModel model;
     private final float modelSpaceXOffset;
@@ -62,7 +64,7 @@ public class GuiModelRenderer implements Widget, Flippable {
         RenderSystem.enableBlend();
         RenderingUtil.wrapInMatrixEntry(matrixStack, () -> {
             matrixStack.translate(0, 0, -10);
-            if(isFlipped) matrixStack.mulPose(Vector3f.YP.rotation((float) Math.PI));
+            if(isFlipped) matrixStack.mulPose(new Quaternionf(new AxisAngle4d(Math.PI, new Vector3f(0, 1, 0))));
             RenderingUtil.renderGui(
                 model.get(isFlipped),
                 new PoseStack(),

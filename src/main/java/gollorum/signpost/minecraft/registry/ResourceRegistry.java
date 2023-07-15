@@ -29,13 +29,13 @@ public class ResourceRegistry {
         signTypesToHandle.add(LargeSignBlockPart.class);
     }
 
-    @SubscribeEvent
-    static void onTextureStitch(TextureStitchEvent.Pre event) {
-        if(event.getAtlas().location().equals(InventoryMenu.BLOCK_ATLAS))
-            for(ResourceLocation texture: Overlay.getAllOverlays().stream().flatMap(o ->
-                signTypesToHandle.stream().map(o::textureFor)
-            ).toList())
-                event.addSprite(texture);
-    }
+//    @SubscribeEvent
+//    static void onTextureStitch(TextureStitchEvent.Pre event) {
+//        if(event.getAtlas().location().equals(InventoryMenu.BLOCK_ATLAS))
+//            for(ResourceLocation texture: Overlay.getAllOverlays().stream().flatMap(o ->
+//                signTypesToHandle.stream().map(o::textureFor)
+//            ).toList())
+//                event.addSprite(texture);
+//    }
 
 }

@@ -9,14 +9,15 @@ import gollorum.signpost.minecraft.worldgen.VillageWaystone;
 import gollorum.signpost.minecraft.worldgen.WaystoneJigsawPiece;
 import gollorum.signpost.utils.Tuple;
 import net.minecraft.core.Holder;
-import net.minecraft.data.BuiltinRegistries;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.ProcessorLists;
 import net.minecraft.data.worldgen.VillagePools;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
-import net.minecraftforge.fml.ModList;
 
 import java.util.Collection;
 
@@ -56,10 +57,12 @@ public class Villages {
 	private Holder<StructureProcessorList> waystoneProcessorListSnowyOrTaiga;
 
 	private void registerProcessorLists() {
-		waystoneProcessorListDesert = ProcessorLists.EMPTY;
-		waystoneProcessorListPlains = ProcessorLists.STREET_PLAINS;
-		waystoneProcessorListSavanna = ProcessorLists.STREET_SAVANNA;
-		waystoneProcessorListSnowyOrTaiga = ProcessorLists.STREET_SNOWY_OR_TAIGA;
+		RegistryAccess.
+		HolderGetter<StructureProcessorList> holdergetter = context.lookup(Registries.PROCESSOR_LIST);
+		waystoneProcessorListDesert = holdergetter.getOrThrow(ProcessorLists.EMPTY);
+		waystoneProcessorListPlains = holdergetter.getOrThrow(ProcessorLists.STREET_PLAINS);
+		waystoneProcessorListSavanna = holdergetter.getOrThrow(ProcessorLists.STREET_SAVANNA);
+		waystoneProcessorListSnowyOrTaiga = holdergetter.getOrThrow(ProcessorLists.STREET_SNOWY_OR_TAIGA);
 	}
 
 	public static void reset() {
@@ -113,7 +116,7 @@ public class Villages {
 	private void addToPool(
 		Collection<Tuple<SinglePoolElement, Integer>> houses, ResourceLocation poolKey
 	) {
-		StructureTemplatePool pool = BuiltinRegistries.TEMPLATE_POOL.get(poolKey);
+		StructureTemplatePool pool = Registries.TEMPLATE_POOL.get(poolKey);
 		if(pool == null) {
 			Signpost.LOGGER.error("Tried to add elements to village pool " + poolKey + ", but it was not found in the registry.");
 			return;

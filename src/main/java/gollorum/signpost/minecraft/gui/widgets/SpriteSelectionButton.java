@@ -2,7 +2,6 @@ package gollorum.signpost.minecraft.gui.widgets;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import com.mojang.math.Matrix4f;
 import gollorum.signpost.minecraft.gui.utils.Rect;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.AbstractButton;
@@ -10,6 +9,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
+import org.joml.Matrix4f;
 
 import java.util.function.Consumer;
 
@@ -28,10 +28,10 @@ public class SpriteSelectionButton extends AbstractButton {
             Component.literal("")
         );
         onPressed = pressedAction;
-        if(sprite.getWidth() > sprite.getHeight())
-            height = width * sprite.getHeight() / sprite.getWidth();
-        else if (sprite.getWidth() < sprite.getHeight())
-            width = height * sprite.getWidth() / sprite.getHeight();
+        if(sprite.contents().width() > sprite.contents().height())
+            height = width * sprite.contents().height() / sprite.contents().width();
+        else if (sprite.contents().width() < sprite.contents().height())
+            width = height * sprite.contents().width() / sprite.contents().height();
         this.sprite = sprite;
     }
 
@@ -42,16 +42,16 @@ public class SpriteSelectionButton extends AbstractButton {
         RenderSystem.enableTexture();
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderTexture(0, sprite.atlas().location());
+        RenderSystem.setShaderTexture(0, sprite.atlasLocation());
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.enableDepthTest();
 
         Matrix4f matrix = matrixStack.last().pose();
         float blitOffset = 0f;
-        int xMin = x;
+        int xMin = this.getX();
         int xMax = xMin + width;
-        int yMin = y;
+        int yMin = this.getY();
         int yMax = yMin + height;
         bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
         bufferbuilder.vertex(matrix, xMin, yMax, blitOffset).uv(sprite.getU0(), sprite.getV1()).endVertex();
@@ -71,7 +71,7 @@ public class SpriteSelectionButton extends AbstractButton {
     }
 
     @Override
-    public void updateNarration(NarrationElementOutput p_169152_) {
+    public void updateWidgetNarration(NarrationElementOutput p_169152_) {
 
     }
 }

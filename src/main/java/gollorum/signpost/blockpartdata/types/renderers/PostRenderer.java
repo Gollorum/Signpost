@@ -1,8 +1,6 @@
 package gollorum.signpost.blockpartdata.types.renderers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Quaternion;
 import gollorum.signpost.blockpartdata.types.BlockPartRenderer;
 import gollorum.signpost.blockpartdata.types.PostBlockPart;
 import gollorum.signpost.minecraft.data.PostModel;
@@ -19,6 +17,8 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -73,7 +73,7 @@ public class PostRenderer extends BlockPartRenderer<PostBlockPart> {
 					random,
 					randomSeed,
 					combinedOverlay,
-					new Matrix4f(Quaternion.ONE)
+					new Matrix4f()
 				);
 			else makeModel(post).render(
 				matrix.last(),

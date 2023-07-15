@@ -79,6 +79,8 @@ public class ColorInputBox extends InputBox {
         int green = Colors.getGreen(currentResult);
         int blue = Colors.getBlue(currentResult);
         RenderSystem.setShaderColor(1, 1, 1, 1);
+        var x = getX();
+        var y = getY();
         bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
         bufferbuilder.vertex(x - height, y + height, 0.0D).uv(0, 1).color(red, green, blue, 255).endVertex();
         bufferbuilder.vertex(x, y + height, 0.0D).uv(1, 1).color(red, green, blue, 255).endVertex();

@@ -5,9 +5,9 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.minecraft.gui.utils.TextureResource;
 import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.gui.components.Renderable;
 
-public class ImageView implements Widget {
+public class ImageView implements Renderable {
 
 	private final TextureResource texture;
 	private final Rect rect;

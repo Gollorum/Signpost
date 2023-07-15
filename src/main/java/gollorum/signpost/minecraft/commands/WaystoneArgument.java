@@ -17,6 +17,7 @@ import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -32,7 +33,7 @@ import static gollorum.signpost.Signpost.MOD_ID;
 
 public class WaystoneArgument implements ArgumentType<String> {
 
-	private static final DeferredRegister<ArgumentTypeInfo<?, ?>> Register = DeferredRegister.create(Registry.COMMAND_ARGUMENT_TYPE_REGISTRY, MOD_ID);
+	private static final DeferredRegister<ArgumentTypeInfo<?, ?>> Register = DeferredRegister.create(Registries.COMMAND_ARGUMENT_TYPE, MOD_ID);
 
 	static {
 		Register.register("waystone", () -> ArgumentTypeInfos.registerByClass(WaystoneArgument.class, new Info()));

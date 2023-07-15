@@ -124,8 +124,8 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
     }
 
     private List<TextureAtlasSprite> allSpritesFor(BucketItem item) {
-        return IClientFluidTypeExtensions.of(item.getFluid())
-            .getTextures()
+        var textureProvider = IClientFluidTypeExtensions.of(item.getFluid());
+        return Stream.of(textureProvider.getFlowingTexture(), textureProvider.getOverlayTexture(), textureProvider.getStillTexture())
             .map(this::spriteFrom)
             .collect(Collectors.toList());
     }
@@ -159,7 +159,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
                     Rect.XAlignment.Left, Rect.YAlignment.Center
                 ),
                 sprite,
-                imgButton -> setTexture(displayPart, sprite.getName())
+                imgButton -> setTexture(displayPart, sprite.contents().name())
             );
             addRenderableWidget(newButton);
             textureButtons.add(newButton);

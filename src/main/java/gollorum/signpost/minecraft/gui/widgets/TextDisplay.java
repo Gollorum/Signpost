@@ -5,10 +5,10 @@ import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.utils.Rect;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.network.chat.Component;
 
-public class TextDisplay implements Widget {
+public class TextDisplay implements Renderable {
 
     private final Component text;
     public final Rect rect;

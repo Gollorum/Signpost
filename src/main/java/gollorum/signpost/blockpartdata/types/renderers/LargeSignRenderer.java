@@ -1,17 +1,18 @@
 package gollorum.signpost.blockpartdata.types.renderers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.blockpartdata.types.LargeSignBlockPart;
-import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.rendering.ModelRegistry;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.utils.modelGeneration.SignModel;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.resources.model.BakedModel;
+import org.joml.AxisAngle4d;
+import org.joml.Quaternionf;
+import org.joml.Vector3d;
 
 import java.util.Random;
 
@@ -52,7 +53,7 @@ public class LargeSignRenderer extends SignRenderer<LargeSignBlockPart> {
 	@Override
 	public void renderText(LargeSignBlockPart sign, PoseStack matrix, Font fontRenderer, MultiBufferSource buffer, int combinedLights) {
 		RenderingUtil.wrapInMatrixEntry(matrix, () -> {
-			matrix.mulPose(Vector3f.ZP.rotationDegrees(180));
+			matrix.mulPose(new Quaternionf(new AxisAngle4d(Math.PI, new Vector3d(0, 0, 1))));
 			matrix.translate(0, 3.5f * VoxelSize, -3.005 * VoxelSize);
 
 			RenderingUtil.wrapInMatrixEntry(matrix, () -> render(sign, fontRenderer, sign.getText()[3].get(), matrix, buffer, combinedLights, false));

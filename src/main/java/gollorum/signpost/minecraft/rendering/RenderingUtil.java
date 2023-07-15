@@ -4,10 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Quaternion;
 import com.mojang.math.Transformation;
-import com.mojang.math.Vector3f;
 import gollorum.signpost.minecraft.data.PostModel;
 import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.gui.utils.Point;
@@ -36,11 +33,14 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.model.SimpleModelState;
 import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.common.util.Lazy;
+import org.joml.*;
 
 import javax.annotation.Nullable;
+import java.lang.Math;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -49,36 +49,32 @@ public class RenderingUtil {
     private static ModelBakery modelBakery = Minecraft.getInstance().getModelManager().getModelBakery();
 
     public static BakedModel loadModel(ResourceLocation location) {
-        return modelBakery.bake(
-            location,
-            new SimpleModelState(Transformation.identity()),
-            Material::sprite
-        );
+        return modelBakery.getBakedTopLevelModels().get(location);
     }
 
-    public static BakedModel loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation) {
-        final ResourceLocation textLoc = trim(textureLocation);
-        return modelBakery.getModel(modelLocation).bake(
-            modelBakery,
-            m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(textLoc),
-            new SimpleModelState(Transformation.identity()),
-            modelLocation
-        );
-    }
-
-    public static BakedModel loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation1, ResourceLocation textureLocation2) {
-        final ResourceLocation textLoc1 = trim(textureLocation1);
-        final ResourceLocation textLoc2 = trim(textureLocation2);
-        return modelBakery.getModel(modelLocation).bake(
-            modelBakery,
-            m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(
-                m.texture().equals(PostModel.mainTextureMarker)
-                    ? textLoc1 : textLoc2
-            ),
-            new SimpleModelState(Transformation.identity()),
-            modelLocation
-        );
-    }
+//    public static BakedModel loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation) {
+//        final ResourceLocation textLoc = trim(textureLocation);
+//        return modelBakery.getModel(modelLocation).bake(
+//            modelBakery,
+//            m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(textLoc),
+//            new SimpleModelState(Transformation.identity()),
+//            modelLocation
+//        );
+//    }
+//
+//    public static BakedModel loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation1, ResourceLocation textureLocation2) {
+//        final ResourceLocation textLoc1 = trim(textureLocation1);
+//        final ResourceLocation textLoc2 = trim(textureLocation2);
+//        return modelBakery.getModel(modelLocation).bake(
+//            modelBakery,
+//            m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(
+//                m.texture().equals(PostModel.mainTextureMarker)
+//                    ? textLoc1 : textLoc2
+//            ),
+//            new SimpleModelState(Transformation.identity()),
+//            modelLocation
+//        );
+//    }
 
     private static final Lazy<ModelBlockRenderer> Renderer = Lazy.of(() -> Minecraft.getInstance().getBlockRenderer().getModelRenderer());
 
@@ -128,12 +124,12 @@ public class RenderingUtil {
         MultiBufferSource.BufferSource buffer = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
         int textWidth = fontRenderer.width(text);
         float scale = Math.min(1f, maxWidth / (float) textWidth);
-        Matrix4f matrix = Matrix4f.createTranslateMatrix(
+        Matrix4f matrix = new Matrix4f().translation(
             Rect.xCoordinateFor(point.x, maxWidth, xAlignment) + maxWidth * 0.5f,
             Rect.yCoordinateFor(point.y, fontRenderer.lineHeight, yAlignment) + fontRenderer.lineHeight * 0.5f,
             100
         );
-        if(scale < 1) matrix.multiply(Matrix4f.createScaleMatrix(scale, scale, scale));
+        if(scale < 1) matrix.scale(scale, scale, scale);
         int i = fontRenderer.drawInBatch(
             text,
             (maxWidth - Math.min(maxWidth, textWidth)) * 0.5f,
@@ -154,8 +150,8 @@ public class RenderingUtil {
         wrapInMatrixEntry(matrixStack, () -> {
             matrixStack.translate(center.x, center.y, 0);
             matrixStack.scale(scale, -scale, scale);
-            matrixStack.mulPose(new Quaternion(Vector3f.XP, pitch.radians(), false));
-            if(isFlipped) matrixStack.mulPose(new Quaternion(Vector3f.YP, (float) Math.PI, false));
+            matrixStack.mulPose(new Quaternionf(new AxisAngle4f(pitch.radians(), new Vector3f(1, 0, 0))));
+            if(isFlipped) matrixStack.mulPose(new Quaternionf(new AxisAngle4d(Math.PI, new Vector3f(0, 1, 0))));
             MultiBufferSource.BufferSource renderTypeBuffer = Minecraft.getInstance().renderBuffers().bufferSource();
             renderGui(model, matrixStack, color, offset, yaw, renderTypeBuffer.getBuffer(renderType), renderType, 0xf000f0, OverlayTexture.NO_OVERLAY, alsoDo);
             renderTypeBuffer.endBatch();
@@ -164,7 +160,7 @@ public class RenderingUtil {
 
     public static void renderGui(BakedModel model, PoseStack matrixStack, int color, Vector3 offset, Angle yaw, VertexConsumer builder, RenderType renderType, int combinedLight, int combinedOverlay, Consumer<PoseStack> alsoDo) {
         wrapInMatrixEntry(matrixStack, () -> {
-            matrixStack.mulPose(new Quaternion(Vector3f.YP, yaw.radians(), false));
+            matrixStack.mulPose(new Quaternionf(new AxisAngle4f(yaw.radians(), new Vector3f(0, 1, 0))));
             matrixStack.translate(offset.x, offset.y, offset.z);
             wrapInMatrixEntry(matrixStack, () -> {
 
@@ -204,6 +200,50 @@ public class RenderingUtil {
                 return original.getQuads(state, side, rand)
                        .stream().map(q -> new BakedQuad(q.getVertices(), tintIndex, q.getDirection(), q.getSprite(), q.isShade()))
                        .collect(Collectors.toList());
+            }
+
+            @Override
+            public boolean useAmbientOcclusion() {
+                return original.useAmbientOcclusion();
+            }
+
+            @Override
+            public boolean isGui3d() {
+                return original.isGui3d();
+            }
+
+            @Override
+            public boolean usesBlockLight() {
+                return original.usesBlockLight();
+            }
+
+            @Override
+            public boolean isCustomRenderer() {
+                return original.isCustomRenderer();
+            }
+
+            @Override
+            public TextureAtlasSprite getParticleIcon() {
+                return original.getParticleIcon();
+            }
+
+            @Override
+            public ItemOverrides getOverrides() {
+                return original.getOverrides();
+            }
+        };
+    }
+
+    public static BakedModel withReplacedTexture(BakedModel original, Map<TextureAtlasSprite, TextureAtlasSprite> mapping) {
+        return new BakedModel() {
+            @Override
+            public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand) {
+                return original.getQuads(state, side, rand).stream().map(q -> {
+                    var tas = mapping.get(q.getSprite());
+                    return tas == null
+                        ? q
+                        : new BakedQuad(q.getVertices(), q.getTintIndex(), q.getDirection(), tas, q.isShade());
+                }).collect(Collectors.toList());
             }
 
             @Override

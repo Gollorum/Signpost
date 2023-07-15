@@ -86,8 +86,8 @@ public class InputBox extends EditBox implements WithMutableX, Ticking {
         matrixStack.pushPose();
         matrixStack.translate(0, 0, zOffset);
         if(isHovered && !isBordered()) {
-            int fromY = y + (configFont.lineHeight - height) / 2;
-            GuiComponent.fill(matrixStack, x, fromY, x + width, fromY + height, 0x40ffffff);
+            int fromY = getY() + (configFont.lineHeight - height) / 2;
+            GuiComponent.fill(matrixStack, getX(), fromY, getX() + width, fromY + height, 0x40ffffff);
         }
         super.renderButton(matrixStack, p_94161_, p_94162_, p_94163_);
         matrixStack.popPose();
@@ -96,17 +96,12 @@ public class InputBox extends EditBox implements WithMutableX, Ticking {
     @Override
     public void setBordered(boolean shouldBeBordered) {
         super.setBordered(shouldBeBordered);
-        if(!shouldBeBordered) {
-            y += (this.height - 8) / 2;
-        }
-        else {
-            y -= (this.height - 8) / 2;
-        }
+        setY(getY() + (shouldBeBordered ? -(this.height - 8) / 2 : (this.height - 8) / 2));
     }
 
     @Override
     public int getXPos() {
-        return x;
+        return getX();
     }
 
     @Override
@@ -116,6 +111,6 @@ public class InputBox extends EditBox implements WithMutableX, Ticking {
 
     @Override
     public void setXPos(int x) {
-        this.x = x;
+        setX(x);
     }
 }

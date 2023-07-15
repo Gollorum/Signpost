@@ -11,6 +11,7 @@ import gollorum.signpost.utils.modelGeneration.SignModelFactory;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.core.Direction;
 import net.minecraft.data.DataGenerator;
+import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.model.generators.*;
 import net.minecraftforge.common.data.ExistingFileHelper;
@@ -50,20 +51,20 @@ public class PostModel extends BlockModelProvider {
 
     private final BlockModelBuilder previewModel;
 
-    public PostModel(DataGenerator generator, ExistingFileHelper fileHelper) {
-        super(generator, Signpost.MOD_ID, fileHelper);
+    public PostModel(DataGenerator generator, PackOutput output, ExistingFileHelper fileHelper) {
+        super(output, Signpost.MOD_ID, fileHelper);
         previewModel = new BlockModelBuilder(previewLocation, fileHelper);
         allModels = PostBlock.AllVariants.stream().collect(Collectors.<PostBlock.Variant, PostBlock.Variant, BlockModelBuilder>toMap(
             i -> i,
             i -> new BlockModelBuilder(new ResourceLocation(Signpost.MOD_ID, "block/" + i.registryName), fileHelper)
         ));
-        generator.addProvider(true, new Item(generator, fileHelper));
+        generator.addProvider(true, new Item(output, fileHelper));
     }
 
     private class Item extends ItemModelProvider {
 
-        public Item(DataGenerator generator, ExistingFileHelper existingFileHelper) {
-            super(generator, Signpost.MOD_ID, existingFileHelper);
+        public Item(PackOutput output, ExistingFileHelper existingFileHelper) {
+            super(output, Signpost.MOD_ID, existingFileHelper);
         }
 
         @Override
