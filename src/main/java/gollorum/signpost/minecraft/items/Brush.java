@@ -13,8 +13,8 @@ public class Brush extends TieredItem {
 
     public static final String registryName = "brush";
 
-    public Brush(CreativeModeTab itemGroup) {
-        super(Tiers.WOOD, new Properties().tab(itemGroup));
+    public Brush() {
+        super(Tiers.WOOD, new Properties().stacksTo(1));
     }
 
     @Override

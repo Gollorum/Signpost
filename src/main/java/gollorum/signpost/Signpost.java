@@ -67,14 +67,14 @@ public class Signpost {
         TileEntityRegistry.register(modBus);
         DataGeneration.register(modBus);
         BlockEventListener.register(forgeBus);
-        CreativeModeTabEventListeners.register(forgeBus);
+        CreativeModeTabEventListeners.register(modBus);
         WaystoneDiscoveryEventListener.register(forgeBus);
         Config.register();
 
-        NbtProviderRegistry.register(modBus);
+        LootProviderRegistry.register(modBus);
         LootItemConditionRegistry.register(modBus);
 
-        Villages.instance.initialize();
+//        Villages.instance.initialize();
 
         WaystoneArgument.register(modBus);
 
@@ -108,7 +108,7 @@ public class Signpost {
             serverInstance = e.getServer();
             WaystoneLibrary.initialize();
             BlockRestrictions.initialize();
-            Villages.reset();
+            Villages.instance.initialize(e.getServer().registryAccess());
             WaystoneDiscoveryEventListener.initialize();
         }
 

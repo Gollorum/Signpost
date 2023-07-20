@@ -21,7 +21,7 @@ import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -33,6 +33,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.model.SimpleModelState;
 import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.common.util.Lazy;
+import org.apache.commons.lang3.NotImplementedException;
 import org.joml.*;
 
 import javax.annotation.Nullable;
@@ -46,35 +47,41 @@ import java.util.stream.Collectors;
 
 public class RenderingUtil {
     
-    private static ModelBakery modelBakery = Minecraft.getInstance().getModelManager().getModelBakery();
+    private static final ModelBakery modelBakery = Minecraft.getInstance().getModelManager().getModelBakery();
+    private static final ModelBaker modelBaker = modelBakery.new ModelBakerImpl(
+        (l, r) -> {
+            throw new NotImplementedException();
+        },
+        null
+    );
 
     public static BakedModel loadModel(ResourceLocation location) {
         return modelBakery.getBakedTopLevelModels().get(location);
     }
 
-//    public static BakedModel loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation) {
-//        final ResourceLocation textLoc = trim(textureLocation);
-//        return modelBakery.getModel(modelLocation).bake(
-//            modelBakery,
-//            m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(textLoc),
-//            new SimpleModelState(Transformation.identity()),
-//            modelLocation
-//        );
-//    }
-//
-//    public static BakedModel loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation1, ResourceLocation textureLocation2) {
-//        final ResourceLocation textLoc1 = trim(textureLocation1);
-//        final ResourceLocation textLoc2 = trim(textureLocation2);
-//        return modelBakery.getModel(modelLocation).bake(
-//            modelBakery,
-//            m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(
-//                m.texture().equals(PostModel.mainTextureMarker)
-//                    ? textLoc1 : textLoc2
-//            ),
-//            new SimpleModelState(Transformation.identity()),
-//            modelLocation
-//        );
-//    }
+    public static BakedModel loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation) {
+        final ResourceLocation textLoc = trim(textureLocation);
+        return modelBakery.getModel(modelLocation).bake(
+            modelBaker,
+            m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(textLoc),
+            new SimpleModelState(Transformation.identity()),
+            modelLocation
+        );
+    }
+
+    public static BakedModel loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation1, ResourceLocation textureLocation2) {
+        final ResourceLocation textLoc1 = trim(textureLocation1);
+        final ResourceLocation textLoc2 = trim(textureLocation2);
+        return modelBakery.getModel(modelLocation).bake(
+            modelBaker,
+            m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(
+                m.texture().equals(PostModel.mainTextureMarker)
+                    ? textLoc1 : textLoc2
+            ),
+            new SimpleModelState(Transformation.identity()),
+            modelLocation
+        );
+    }
 
     private static final Lazy<ModelBlockRenderer> Renderer = Lazy.of(() -> Minecraft.getInstance().getBlockRenderer().getModelRenderer());
 

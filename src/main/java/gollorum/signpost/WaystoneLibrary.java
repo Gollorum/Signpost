@@ -2,10 +2,11 @@ package gollorum.signpost;
 
 import gollorum.signpost.blockpartdata.types.renderers.BlockPartWaystoneUpdateListener;
 import gollorum.signpost.compat.ExternalWaystoneLibrary;
+import gollorum.signpost.events.*;
 import gollorum.signpost.minecraft.block.WaystoneBlock;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
 import gollorum.signpost.minecraft.config.Config;
-import gollorum.signpost.minecraft.events.*;
+import gollorum.signpost.events.*;
 import gollorum.signpost.minecraft.storage.WaystoneLibraryStorage;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
@@ -26,7 +27,6 @@ import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.PacketDistributor;
-import org.openjdk.nashorn.internal.runtime.options.Option;
 
 import javax.annotation.Nullable;
 import java.util.*;

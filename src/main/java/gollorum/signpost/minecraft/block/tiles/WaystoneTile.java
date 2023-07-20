@@ -5,7 +5,7 @@ import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.block.WaystoneBlock;
-import gollorum.signpost.minecraft.events.WaystoneUpdatedEvent;
+import gollorum.signpost.events.WaystoneUpdatedEvent;
 import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.*;
 import net.minecraft.Util;

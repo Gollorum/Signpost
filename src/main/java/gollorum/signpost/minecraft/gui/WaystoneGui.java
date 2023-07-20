@@ -2,8 +2,8 @@ package gollorum.signpost.minecraft.gui;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.WaystoneLibrary;
-import gollorum.signpost.minecraft.events.WaystoneRenamedEvent;
-import gollorum.signpost.minecraft.events.WaystoneUpdatedEvent;
+import gollorum.signpost.events.WaystoneRenamedEvent;
+import gollorum.signpost.events.WaystoneUpdatedEvent;
 import gollorum.signpost.minecraft.gui.utils.*;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.widgets.ImageInputBox;

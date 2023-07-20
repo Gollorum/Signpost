@@ -21,9 +21,9 @@ public final class Vector3 {
         return new Vector3((float)vec.x, (float)vec.y, (float)vec.z);
     }
 
-    public static Vector3 fromVec3d(Vector3d vec){
-        return new Vector3((float)vec.x, (float)vec.y, (float)vec.z);
-    }
+//    public static Vector3 fromVec3d(Vector3d vec){
+//        return new Vector3((float)vec.x, (float)vec.y, (float)vec.z);
+//    }
 
     public Vec3 asVec3() {
         return new Vec3(x, y, z);

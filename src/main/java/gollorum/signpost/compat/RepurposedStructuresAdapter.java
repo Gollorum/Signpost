@@ -1,17 +1,23 @@
 package gollorum.signpost.compat;
 
-import com.telepathicgrunt.repurposedstructures.misc.structurepiececounter.JSONConditionsRegistry;
+import com.telepathicgrunt.repurposedstructures.modinit.RSConditionsRegistry;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.config.Config;
 import net.minecraft.resources.ResourceLocation;
 
+import java.util.function.Supplier;
+
 public class RepurposedStructuresAdapter {
 
     public static void register() {
-        JSONConditionsRegistry.RS_JSON_CONDITIONS_REGISTRY.get().register(
-            new ResourceLocation(Signpost.MOD_ID, "config"),
-            () -> !Config.ServerConfig.isLoaded() || Config.Server.worldGen.isVillageGenerationEnabled()
+        RSConditionsRegistry.RS_JSON_CONDITIONS_REGISTRY.register(
+            "signpost_config",
+            RepurposedStructuresAdapter::villageGenerationCheck
         );
+    }
+
+    private static Supplier<Boolean> villageGenerationCheck() {
+        return () -> !Config.ServerConfig.isLoaded() || Config.Server.worldGen.isVillageGenerationEnabled();
     }
 
 }

@@ -9,8 +9,8 @@ public class Compat {
     public static final String RepurposedStructuresId = "repurposed_structures";
 
     public static void register() {
-        if(ModList.get().isLoaded(Compat.WaystonesId))
-            WaystonesAdapter.register();
+//        if(ModList.get().isLoaded(Compat.WaystonesId))
+//            WaystonesAdapter.register();
 
 //        if(ModList.get().isLoaded(Compat.AntiqueAtlasId))
 //            AntiqueAtlasAdapter.register();

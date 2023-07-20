@@ -124,10 +124,12 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
     }
 
     private List<TextureAtlasSprite> allSpritesFor(BucketItem item) {
-        var textureProvider = IClientFluidTypeExtensions.of(item.getFluid());
-        return Stream.of(textureProvider.getFlowingTexture(), textureProvider.getOverlayTexture(), textureProvider.getStillTexture())
-            .map(this::spriteFrom)
-            .collect(Collectors.toList());
+        var typeExtensions = IClientFluidTypeExtensions.of(item.getFluid());
+        var ret = new ArrayList<TextureAtlasSprite>(3);
+        ret.add(spriteFrom(typeExtensions.getFlowingTexture()));
+        ret.add(spriteFrom(typeExtensions.getOverlayTexture()));
+        ret.add(spriteFrom(typeExtensions.getStillTexture()));
+        return ret;
     }
 
     private List<TextureAtlasSprite> allSpritesFor(BlockState state) {

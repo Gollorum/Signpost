@@ -1,7 +1,6 @@
 package gollorum.signpost;
 
 import gollorum.signpost.blockpartdata.types.SignBlockPart;
-import gollorum.signpost.compat.ExternalWaystone;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.gui.ConfirmTeleportGui;
@@ -10,6 +9,7 @@ import gollorum.signpost.minecraft.utils.Inventory;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.networking.PacketHandler;
+import gollorum.signpost.compat.ExternalWaystone;
 import gollorum.signpost.utils.Delay;
 import gollorum.signpost.utils.Either;
 import gollorum.signpost.utils.WaystoneHandleUtils;
@@ -21,6 +21,8 @@ import gollorum.signpost.utils.serialization.ComponentSerializer;
 import gollorum.signpost.utils.serialization.StringSerializer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -104,7 +106,7 @@ public class Teleport {
 
     public static ItemStack getCost(Player player, Vector3 from, Vector3 to) {
         Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(Config.Server.teleport.costItem.get()));
-        if(item.equals(Items.AIR) || player.isCreative() || player.isSpectator()) return ItemStack.EMPTY;
+        if(item == null || item.equals(Items.AIR) || player.isCreative() || player.isSpectator()) return ItemStack.EMPTY;
         int distancePerPayment = Config.Server.teleport.distancePerPayment.get();
         int distanceDependentCost = distancePerPayment < 0
             ? 0

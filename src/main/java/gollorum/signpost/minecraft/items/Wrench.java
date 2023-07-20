@@ -13,8 +13,8 @@ public class Wrench extends TieredItem {
 
     public static final String registryName = "tool";
 
-    public Wrench(CreativeModeTab itemGroup) {
-        super(Tiers.IRON, new Properties().tab(itemGroup));
+    public Wrench() {
+        super(Tiers.IRON, new Properties());
     }
 
     @Override

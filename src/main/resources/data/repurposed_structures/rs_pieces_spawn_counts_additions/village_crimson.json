@@ -4,13 +4,13 @@
       "nbt_piece_name": "signpost:village/crimson/signpost",
       "always_spawn_this_many": 1,
       "never_spawn_more_than_this_many": 2,
-      "condition": "signpost:config"
+      "condition": "repurposed_structures:signpost_config"
     },
     {
       "nbt_piece_name": "signpost:village/crimson/waystone",
       "always_spawn_this_many": 1,
       "never_spawn_more_than_this_many": 1,
-      "condition": "signpost:config"
+      "condition": "repurposed_structures:signpost_config"
     }
   ]
 }

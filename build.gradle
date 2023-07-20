@@ -1,7 +1,7 @@
 plugins {
     id 'idea'
     id 'maven-publish'
-    id 'net.minecraftforge.gradle' version '5.+'
+    id 'net.minecraftforge.gradle' version '5.1.+'
 }
 
 version = "${mc_version}-${mod_version}"
@@ -183,8 +183,8 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
-    implementation fg.deobf("curse.maven:balm-${balm_project_id}:${balm_file_id}")
-    implementation fg.deobf("curse.maven:waystones-${waystones_project_id}:${waystones_file_id}")
+//    implementation fg.deobf("curse.maven:balm-${balm_project_id}:${balm_file_id}")
+//    implementation fg.deobf("curse.maven:waystones-${waystones_project_id}:${waystones_file_id}")
 
 //    implementation fg.deobf("curse.maven:architectury-api-${architectury_project_id}:${architectury_file_id}")
 //    implementation fg.deobf("curse.maven:cloth-config-${cloth_project_id}:${cloth_file_id}")

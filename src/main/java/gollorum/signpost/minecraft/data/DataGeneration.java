@@ -36,8 +36,8 @@ public final class DataGeneration {
             datagenerator.addProvider(true, new WaystoneTag(output, lookupProvider, waystoneBlocksTagProvider, fileHelper));
 
             datagenerator.addProvider(true, new PostRecipe(output));
-            datagenerator.addProvider(true, new WaystoneRecipe(datagenerator));
-            datagenerator.addProvider(true, new WrenchRecipe(datagenerator));
+            datagenerator.addProvider(true, new WaystoneRecipe(output));
+            datagenerator.addProvider(true, new WrenchRecipe(output));
             datagenerator.addProvider(true, new BrushRecipe(output));
 
             datagenerator.addProvider(true, new LootTables(output));
@@ -45,9 +45,9 @@ public final class DataGeneration {
         if(event.includeClient()) {
             PostModel postModel = new PostModel(datagenerator, output, fileHelper);
             datagenerator.addProvider(true, postModel);
-            WaystoneModel waystoneModel = WaystoneModel.addTo(datagenerator, fileHelper);
+            WaystoneModel waystoneModel = WaystoneModel.addTo(datagenerator, output, fileHelper);
             GeneratorModel generatorModel = GeneratorModel.addTo(datagenerator, output, fileHelper);
-            datagenerator.addProvider(true, new WrenchModel(datagenerator, fileHelper));
+            datagenerator.addProvider(true, new WrenchModel(output, fileHelper));
             datagenerator.addProvider(true, new BrushModel(output, fileHelper));
             datagenerator.addProvider(true, new GeneratorWandModel(output, fileHelper));
             datagenerator.addProvider(true, new PostBlockState(output, fileHelper, postModel, waystoneModel));

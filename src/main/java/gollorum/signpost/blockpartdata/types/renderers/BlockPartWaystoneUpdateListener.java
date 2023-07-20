@@ -1,14 +1,12 @@
 package gollorum.signpost.blockpartdata.types.renderers;
 
 import gollorum.signpost.WaystoneLibrary;
-import gollorum.signpost.minecraft.events.WaystoneUpdatedEvent;
+import gollorum.signpost.events.WaystoneUpdatedEvent;
 import gollorum.signpost.utils.BlockPart;
 
-import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public final class BlockPartWaystoneUpdateListener {
 

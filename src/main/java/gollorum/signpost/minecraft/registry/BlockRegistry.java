@@ -17,14 +17,14 @@ public class BlockRegistry {
 
     private static final DeferredRegister<Block> Register = DeferredRegister.create(ForgeRegistries.BLOCKS, MOD_ID);
 
-    private static final RegistryObject<Block> WaystoneBlock =
+    public static final RegistryObject<Block> WaystoneBlock =
         Register.register(gollorum.signpost.minecraft.block.WaystoneBlock.REGISTRY_NAME,
             gollorum.signpost.minecraft.block.WaystoneBlock::createInstance);
 
-    private static final List<RegistryObject<ModelWaystone>> ModelWaystoneBlocks =
+    public static final List<RegistryObject<ModelWaystone>> ModelWaystoneBlocks =
         ModelWaystone.variants.stream().map(BlockRegistry::registerModelWaystone).toList();
 
-    private static final List<RegistryObject<PostBlock>> PostBlocks =
+    public static final List<RegistryObject<PostBlock>> PostBlocks =
         PostBlock.AllVariants.stream().map(BlockRegistry::registerPostBlock).toList();
 
     private static RegistryObject<PostBlock> registerPostBlock(PostBlock.Variant variant) {
