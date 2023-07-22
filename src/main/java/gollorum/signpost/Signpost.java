@@ -74,8 +74,6 @@ public class Signpost {
         LootProviderRegistry.register(modBus);
         LootItemConditionRegistry.register(modBus);
 
-//        Villages.instance.initialize();
-
         WaystoneArgument.register(modBus);
 
         Compat.register();
