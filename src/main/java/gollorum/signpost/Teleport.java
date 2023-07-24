@@ -30,6 +30,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -38,6 +39,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.portal.PortalInfo;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.ITeleporter;
 import net.minecraftforge.network.NetworkEvent;
@@ -82,29 +84,41 @@ public class Teleport {
                     return;
                 }
             }
-            if (player.isPassenger()) {
-                var vehicle = player.getVehicle();
+            var teleporter = new ITeleporter() {
+                @Override
+                public @Nullable PortalInfo getPortalInfo(Entity entity, ServerLevel destWorld, Function<ServerLevel, PortalInfo> defaultPortalInfo) {
+                    return new PortalInfo(
+                        location.asVec3(),
+                        Vec3.ZERO,
+                        yaw.degrees(),
+                        pitch.degrees()
+                    );
+                }
+            };
+            if (Config.Server.teleport.allowVehicle.get() && player.isPassenger()) {
+                Entity vehicle = player.getVehicle();
                 while(vehicle.isPassenger()) vehicle = vehicle.getVehicle();
                 if (!player.level.dimensionType().equals(world.dimensionType())) {
-                    vehicle = changeDimensionWithChildren(vehicle, world, new ITeleporter() {
-                        @Override
-                        public @Nullable PortalInfo getPortalInfo(Entity entity, ServerLevel destWorld, Function<ServerLevel, PortalInfo> defaultPortalInfo) {
-                            return new PortalInfo(
-                                location.asVec3(),
-                                Vec3.ZERO,
-                                yaw.degrees(),
-                                pitch.degrees()
-                            );
-                        }
-                    });
+                    changeDimensionWithChildren(vehicle, world, teleporter);
                 } else {
+                    var leashedMobs = findLeashedMobs(player);
                     vehicle.setYRot(yaw.degrees());
                     vehicle.setXRot(pitch.degrees());
                     vehicle.teleportTo(location.x, location.y, location.z);
+                    if(Config.Server.teleport.allowLead.get())
+                        teleportLeadedAnimals(player, leashedMobs, world, teleporter);
+                    else unleash(leashedMobs);
                 }
             } else {
+                var leashedMobs = findLeashedMobs(player);
                 player.teleportTo(world, location.x, location.y, location.z, yaw.degrees(), pitch.degrees());
+
+                if(Config.Server.teleport.allowLead.get())
+                    teleportLeadedAnimals(player, leashedMobs, world, teleporter);
+                else unleash(leashedMobs);
+
             }
+
             final int steps = 6;
             TriConsumer<Level, BlockPos, Float> playStepSound = (soundWorld, pos, volume) -> {
                 SoundType soundType = Blocks.STONE.defaultBlockState().getSoundType();
@@ -120,15 +134,47 @@ public class Teleport {
         });
     }
 
-    private static Entity changeDimensionWithChildren(Entity entity, ServerLevel level, ITeleporter tp) {
+    private static <T extends Entity> T changeDimensionWithChildren(T entity, ServerLevel level, ITeleporter tp) {
         var passengers = List.copyOf(entity.getPassengers());
+
+        var leashed = findLeashedMobs(entity);
+
         var newCopy = entity.changeDimension(level, tp);
         if(newCopy == null) return entity;
+
+        if(Config.Server.teleport.allowLead.get())
+            teleportLeadedAnimals(newCopy, leashed, level, tp);
+        else unleash(leashed);
+
         for(var p : passengers) {
             var p2 = changeDimensionWithChildren(p, level, tp);
             Delay.onServerForFrames(5, () -> p2.startRiding(newCopy, true));
         }
-        return newCopy;
+        return (T) newCopy;
+    }
+
+    private static List<Mob> findLeashedMobs(Entity player) {
+        var searchBox = new AABB(player.blockPosition()).inflate(7.0d);
+        return player.level.getEntitiesOfClass(Mob.class, searchBox, mob -> mob.getLeashHolder() == player);
+    }
+
+    private static void teleportLeadedAnimals(Entity player, List<Mob> leashed, ServerLevel level, ITeleporter tp) {
+        for(Mob mob : leashed) {
+            if(level != mob.level)
+                mob = changeDimensionWithChildren(mob, level, tp);
+            else {
+                var portalIngo = tp.getPortalInfo(mob, level, null);
+                mob.setYRot(portalIngo.yRot);
+                mob.setXRot(portalIngo.xRot);
+                mob.teleportTo(portalIngo.pos.x, portalIngo.pos.y, portalIngo.pos.z);
+            }
+            var mob2 = mob;
+            Delay.onServerForFrames(5, () -> mob2.setLeashedTo(player, true));
+        }
+    }
+
+    private static void unleash(List<Mob> leashed) {
+        for(Mob mob : leashed) mob.dropLeash(true, true);
     }
 
     public static void requestOnClient(
