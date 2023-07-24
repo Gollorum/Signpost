@@ -29,6 +29,7 @@ import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -36,26 +37,29 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.portal.PortalInfo;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.ITeleporter;
 import net.minecraftforge.network.NetworkEvent;
 import org.apache.logging.log4j.util.TriConsumer;
 
+import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class Teleport {
 
-    public static void toWaystone(WaystoneHandle waystone, Player player) {
-        assert Signpost.getServerType().isServer;
+    public static void toWaystone(WaystoneHandle waystone, ServerPlayer player) {
         if(waystone instanceof WaystoneHandle.Vanilla) {
             WaystoneLocationData waystoneData = WaystoneLibrary.getInstance().getLocationData((WaystoneHandle.Vanilla) waystone);
             toWaystone(waystoneData, player);
         } else Signpost.LOGGER.error("Tried to teleport to non-vanilla waystone " + ((ExternalWaystone.Handle)waystone).modMark());
     }
 
-    public static void toWaystone(WaystoneLocationData waystoneData, Player player){
-        assert Signpost.getServerType().isServer;
+    public static void toWaystone(WaystoneLocationData waystoneData, ServerPlayer player){
         waystoneData.block.world.mapLeft(Optional::of)
             .leftOr(i -> TileEntityUtils.findWorld(i, false))
         .ifPresent(unspecificWorld -> {
@@ -77,11 +81,30 @@ public class Teleport {
                     player.displayClientMessage(new TranslatableComponent(LangKeys.differentDimension), true);
                     return;
                 }
-                player.changeDimension(world, new ITeleporter() {});
             }
-            player.setYRot(yaw.degrees());
-            player.setXRot(pitch.degrees());
-            player.teleportTo(location.x, location.y, location.z);
+            if (player.isPassenger()) {
+                var vehicle = player.getVehicle();
+                while(vehicle.isPassenger()) vehicle = vehicle.getVehicle();
+                if (!player.level.dimensionType().equals(world.dimensionType())) {
+                    vehicle = changeDimensionWithChildren(vehicle, world, new ITeleporter() {
+                        @Override
+                        public @Nullable PortalInfo getPortalInfo(Entity entity, ServerLevel destWorld, Function<ServerLevel, PortalInfo> defaultPortalInfo) {
+                            return new PortalInfo(
+                                location.asVec3(),
+                                Vec3.ZERO,
+                                yaw.degrees(),
+                                pitch.degrees()
+                            );
+                        }
+                    });
+                } else {
+                    vehicle.setYRot(yaw.degrees());
+                    vehicle.setXRot(pitch.degrees());
+                    vehicle.teleportTo(location.x, location.y, location.z);
+                }
+            } else {
+                player.teleportTo(world, location.x, location.y, location.z, yaw.degrees(), pitch.degrees());
+            }
             final int steps = 6;
             TriConsumer<Level, BlockPos, Float> playStepSound = (soundWorld, pos, volume) -> {
                 SoundType soundType = Blocks.STONE.defaultBlockState().getSoundType();
@@ -95,6 +118,17 @@ public class Teleport {
             });
             playStepSounds.get().accept(steps);
         });
+    }
+
+    private static Entity changeDimensionWithChildren(Entity entity, ServerLevel level, ITeleporter tp) {
+        var passengers = List.copyOf(entity.getPassengers());
+        var newCopy = entity.changeDimension(level, tp);
+        if(newCopy == null) return entity;
+        for(var p : passengers) {
+            var p2 = changeDimensionWithChildren(p, level, tp);
+            Delay.onServerForFrames(5, () -> p2.startRiding(newCopy, true));
+        }
+        return newCopy;
     }
 
     public static void requestOnClient(

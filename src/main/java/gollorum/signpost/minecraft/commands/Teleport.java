@@ -13,6 +13,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
 public class Teleport {
@@ -32,7 +33,7 @@ public class Teleport {
 					))));
 	}
 
-	private static int execute(String name, Player player) throws CommandSyntaxException {
+	private static int execute(String name, ServerPlayer player) throws CommandSyntaxException {
 		WaystoneHandle handle = WaystoneLibrary.getInstance().getHandleByName(name)
 			.orElseThrow(() -> new SimpleCommandExceptionType(new TranslatableComponent(LangKeys.waystoneNotFound, Colors.wrap(name, Colors.highlight))).create());
 		gollorum.signpost.Teleport.toWaystone(handle, player);

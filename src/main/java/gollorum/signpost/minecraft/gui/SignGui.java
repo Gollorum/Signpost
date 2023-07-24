@@ -663,10 +663,16 @@ public class SignGui extends ExtendedScreen {
 
     private void onWaystoneCountChanged() {
         if(waystoneDropdown.getAllEntries().isEmpty()){
-            addRenderableOnly(noWaystonesInfo);
+            if(!renderables.contains(noWaystonesInfo))
+                addRenderableOnly(noWaystonesInfo);
+            removeWidget(waystoneDropdown);
+            removeWidget(waystoneInputBox);
         } else {
-            addRenderableWidget(waystoneDropdown);
-            addRenderableWidget(waystoneInputBox);
+            if(!renderables.contains(waystoneDropdown))
+                addRenderableWidget(waystoneDropdown);
+            if(!renderables.contains(waystoneInputBox))
+                addRenderableWidget(waystoneInputBox);
+            renderables.remove(noWaystonesInfo);
         }
     }
 
