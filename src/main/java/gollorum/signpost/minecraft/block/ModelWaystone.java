@@ -156,14 +156,6 @@ public class ModelWaystone extends BaseEntityBlock implements SimpleWaterloggedB
 		WaystoneBlock.registerOwnerAndRequestGui(world, pos, placer, stack);
 	}
 
-	@Override
-	public void fillItemCategory(
-		CreativeModeTab group, NonNullList<ItemStack> items
-	) {
-		if(Config.Server.allowedWaystones.get().contains(variant.name))
-			super.fillItemCategory(group, items);
-	}
-
 	@SuppressWarnings("deprecation")
 	@Override
 	public FluidState getFluidState(BlockState state) {

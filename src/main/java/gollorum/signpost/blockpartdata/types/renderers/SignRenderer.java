@@ -1,9 +1,6 @@
 package gollorum.signpost.blockpartdata.types.renderers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Quaternion;
-import com.mojang.math.Vector3f;
 import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.blockpartdata.types.BlockPartRenderer;
 import gollorum.signpost.blockpartdata.types.SignBlockPart;
@@ -22,6 +19,9 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import org.joml.*;
+
+import java.lang.Math;
 
 public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPartRenderer<T> {
 
@@ -38,13 +38,13 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
 		RenderingUtil.render(matrix, renderModel -> {
 			if(!tileEntity.hasLevel()) throw new RuntimeException("TileEntity without world cannot be rendered.");
 			RenderingUtil.wrapInMatrixEntry(matrix, () -> {
-				Quaternion rotation = new Quaternion(Vector3f.YP, sign.getAngle().get().radians(), false);
+				Quaternionf rotation = new Quaternionf(new AxisAngle4f(sign.getAngle().get().radians(), new Vector3f(0,1,0)));
 				matrix.mulPose(rotation);
 				RenderingUtil.wrapInMatrixEntry(matrix, () -> {
-					if(!sign.isFlipped()) matrix.mulPose(new Quaternion(Vector3f.YP, 180, true));
+					if(!sign.isFlipped()) matrix.mulPose(new Quaternionf(new AxisAngle4d(Math.PI, new Vector3f(0,1,0))));
 					renderText(sign, matrix, renderDispatcher.font, buffer, combinedLights);
 				});
-				Matrix4f rotationMatrix = new Matrix4f(rotation);
+				Matrix4f rotationMatrix = new Matrix4f().rotation(rotation);
 				if(shouldRenderBaked)
 					renderModel.render(
 						makeBakedModel(sign),
@@ -94,7 +94,7 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
 		RenderingUtil.renderGui(makeBakedModel(sign), matrixStack, 0xffffff, center, yaw.add(sign.getAngle().get()), pitch, isFlipped, scale, offset, RenderType.solid(),
 			ms -> RenderingUtil.wrapInMatrixEntry(ms, () -> {
 				if(!sign.isFlipped())
-					ms.mulPose(new Quaternion(Vector3f.YP, 180, true));
+					ms.mulPose(new Quaternionf(new AxisAngle4d(Math.PI, new Vector3f(0, 1, 0))));
 				renderText(sign, ms, Minecraft.getInstance().font, Minecraft.getInstance().renderBuffers().bufferSource(), 0xf000f0);
 			})
 		);
@@ -108,7 +108,7 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
 		RenderingUtil.renderGui(makeBakedModel(sign), matrixStack, 0xffffff, offset, sign.getAngle().get(), buffer.getBuffer(RenderType.solid()), RenderType.solid(), combinedLight, combinedOverlay,
 			ms -> RenderingUtil.wrapInMatrixEntry(matrixStack, () -> {
 				if(!sign.isFlipped())
-					matrixStack.mulPose(new Quaternion(Vector3f.YP, 180, true));
+					matrixStack.mulPose(new Quaternionf(new AxisAngle4d(Math.PI, new Vector3f(0, 1, 0))));
 				renderText(sign, ms, Minecraft.getInstance().font, buffer, combinedLight);
 			})
 		);

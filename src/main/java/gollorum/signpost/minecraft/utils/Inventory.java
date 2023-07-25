@@ -30,7 +30,7 @@ public class Inventory {
 		return count;
 	}
 
-	public static void tryPay(Player player, ItemStack itemStack, Consumer<Player> onSuccess) {
+	public static <TPlayer extends Player> void tryPay(TPlayer player, ItemStack itemStack, Consumer<TPlayer> onSuccess) {
 		if(!player.isCreative()) {
 			if(Inventory.tryConsume(player, itemStack))
 				onSuccess.accept(player);

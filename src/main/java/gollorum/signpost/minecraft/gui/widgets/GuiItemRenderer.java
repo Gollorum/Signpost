@@ -32,14 +32,14 @@ public class GuiItemRenderer extends AbstractWidget {
 		if (font == null) font = Minecraft.getInstance().font;
 		this.setBlitOffset(200);
 		this.itemRenderer.blitOffset = 200.0F;
-		itemRenderer.renderAndDecorateItem(itemStack, x, y);
-		itemRenderer.renderGuiItemDecorations(font, itemStack, x, y, null);
+		itemRenderer.renderAndDecorateItem(itemStack, getX(), getY());
+		itemRenderer.renderGuiItemDecorations(font, itemStack, getX(), getY(), null);
 		this.itemRenderer.blitOffset = 0.0F;
 		this.setBlitOffset(0);
 	}
 
 	@Override
-	public void updateNarration(NarrationElementOutput p_169152_) {
+	public void updateWidgetNarration(NarrationElementOutput p_169152_) {
 
 	}
 }

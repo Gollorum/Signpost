@@ -7,7 +7,7 @@ import com.google.gson.JsonSerializationContext;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
-import gollorum.signpost.minecraft.registry.NbtProviderRegistry;
+import gollorum.signpost.minecraft.registry.LootProviderRegistry;
 import gollorum.signpost.utils.WorldLocation;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -55,7 +55,7 @@ public final class RegisteredWaystoneLootNbtProvider implements NbtProvider {
 
     @Override
     public LootNbtProviderType getType() {
-        return NbtProviderRegistry.RegisteredWaystone.get();
+        return LootProviderRegistry.RegisteredWaystone.get();
     }
 
     public static final class Serializer implements net.minecraft.world.level.storage.loot.Serializer<RegisteredWaystoneLootNbtProvider> {

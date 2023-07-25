@@ -1,4 +1,4 @@
-package gollorum.signpost.minecraft.events;
+package gollorum.signpost.events;
 
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.utils.WaystoneLocationData;

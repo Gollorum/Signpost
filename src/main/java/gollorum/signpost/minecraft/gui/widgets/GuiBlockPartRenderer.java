@@ -36,7 +36,7 @@ public class GuiBlockPartRenderer extends AbstractWidget {
     @Override
     public void renderButton(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         if(isHovered)
-            GuiComponent.fill(matrixStack, x, y, x + width, y + height, 0x20ffffff);
+            GuiComponent.fill(matrixStack, getX(), getY(), getX() + width, getY() + height, 0x20ffffff);
 
         PoseStack ms = new PoseStack();
         RenderingUtil.wrapInMatrixEntry(ms, () -> {
@@ -58,7 +58,7 @@ public class GuiBlockPartRenderer extends AbstractWidget {
     }
 
     @Override
-    public void updateNarration(NarrationElementOutput p_169152_) {
+    public void updateWidgetNarration(NarrationElementOutput p_169152_) {
 
     }
 }

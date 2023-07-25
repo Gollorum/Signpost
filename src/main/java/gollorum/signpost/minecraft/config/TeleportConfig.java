@@ -8,6 +8,8 @@ public class TeleportConfig {
 	public final ForgeConfigSpec.IntValue maximumDistance;
 	public final ForgeConfigSpec.BooleanValue enforceDiscovery;
 	public final ForgeConfigSpec.BooleanValue enableAcrossDimensions;
+	public final ForgeConfigSpec.BooleanValue allowVehicle;
+	public final ForgeConfigSpec.BooleanValue allowLead;
 
 	public final ForgeConfigSpec.ConfigValue<String> costItem;
 	public final ForgeConfigSpec.ConfigValue<Integer> constantPayment;
@@ -19,6 +21,8 @@ public class TeleportConfig {
 			.defineInRange("max_distance", -1, -1, Integer.MAX_VALUE);
 		enforceDiscovery = builder.define("enforce_discovery", true);
 		enableAcrossDimensions = builder.define("enable_across_dimensions", true);
+		allowVehicle = builder.define("teleport_vehicle", true);
+		allowLead = builder.define("teleport_leaded_mobs", true);
 
 		builder.push("cost");
 		costItem = builder.comment("If \"item\" is a valid item (e.g. minecraft:ender_pearl), players will have to pay an amount of",

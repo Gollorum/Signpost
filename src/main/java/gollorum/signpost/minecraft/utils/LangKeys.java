@@ -48,4 +48,5 @@ public class LangKeys {
     public static final String waystoneId = "item.signpost.waystone_id";
     public static final String duplicateWaystoneId = "signpost.duplicate_waystone_id";
     public static final String duplicateWaystoneName = "signpost.duplicate_waystone_name";
+    public static final String tabGroup = "itemGroup.signpost";
 }

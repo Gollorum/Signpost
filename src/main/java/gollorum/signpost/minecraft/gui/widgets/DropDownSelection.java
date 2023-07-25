@@ -155,7 +155,7 @@ public class DropDownSelection<EntryType> extends ImageButton {
         int yTexStart = this.isHovered ? texture.size.height : 0;
         int xTexStart = this.isListVisible ? texture.size.width : 0;
 
-        blit(matrixStack, this.x, this.y, 100, xTexStart, yTexStart, this.width, this.height, texture.fileSize.height, texture.fileSize.width);
+        blit(matrixStack, getX(), getY(), 100, xTexStart, yTexStart, this.width, this.height, texture.fileSize.height, texture.fileSize.width);
         RenderSystem.enableDepthTest();
     }
 

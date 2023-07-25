@@ -66,7 +66,7 @@ public final class ImageInputBox extends InputBox implements Flippable {
 
     public void setFlipped(boolean isFlipped) {
         if(isFlipped != this.isFlipped)
-            backgroundRect = backgroundRect.withPoint(p -> p.withX(oldX -> x + (x + width) - (backgroundRect.point.x + backgroundRect.width)));
+            backgroundRect = backgroundRect.withPoint(p -> p.withX(oldX -> getX() + (getX() + width) - (backgroundRect.point.x + backgroundRect.width)));
         this.isFlipped = isFlipped;
     }
 

@@ -120,16 +120,18 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 						Rect.XAlignment.Right,
 						Rect.YAlignment.Top
 					);
-					addRenderableWidget(new Button(
-						confirmRect.point.x, confirmRect.point.y, confirmRect.width, confirmRect.height,
-						Component.translatable(LangKeys.proceed),
-						b -> confirm()
-					));
-					addRenderableWidget(new Button(
-						cancelRect.point.x, cancelRect.point.y, cancelRect.width, cancelRect.height,
-						Component.translatable(LangKeys.cancel),
-						b -> cancel()
-					));
+					addRenderableWidget(
+						new Button.Builder(
+							Component.translatable(LangKeys.proceed),
+							b -> confirm()
+						).bounds(confirmRect.point.x, confirmRect.point.y, confirmRect.width, confirmRect.height
+					).build());
+					addRenderableWidget(
+						new Button.Builder(
+							Component.translatable(LangKeys.cancel),
+							b -> cancel()
+						).bounds(cancelRect.point.x, cancelRect.point.y, cancelRect.width, cancelRect.height
+					).build());
 					editButtonTop.set(cancelRect.max().y + 20);
 				} else {
 					d.cannotTeleportBecause.ifPresent(reason ->

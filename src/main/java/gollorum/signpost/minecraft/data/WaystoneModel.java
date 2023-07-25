@@ -6,6 +6,7 @@ import gollorum.signpost.minecraft.block.WaystoneBlock;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
+import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.model.generators.*;
 import net.minecraftforge.client.model.generators.loaders.ObjModelBuilder;
@@ -20,15 +21,15 @@ public class WaystoneModel extends BlockModelProvider {
 	public static final ResourceLocation inPostLocation = new ResourceLocation(Signpost.MOD_ID, "block/in_post_waystone");
 	public final Map<ModelWaystone.Variant, ModelFile> variantModels = new HashMap<>();
 
-	public static WaystoneModel addTo(DataGenerator generator, ExistingFileHelper fileHelper) {
-		WaystoneModel self = new WaystoneModel(generator, fileHelper);
+	public static WaystoneModel addTo(DataGenerator generator, PackOutput packOutput, ExistingFileHelper fileHelper) {
+		WaystoneModel self = new WaystoneModel(packOutput, fileHelper);
 		generator.addProvider(true, self);
-		generator.addProvider(true, self.makeItem(generator, fileHelper));
+		generator.addProvider(true, self.makeItem(packOutput, fileHelper));
 		return self;
 	}
 
-	private WaystoneModel(DataGenerator generator, ExistingFileHelper fileHelper) {
-		super(generator, Signpost.MOD_ID, fileHelper);
+	private WaystoneModel(PackOutput packOutput, ExistingFileHelper fileHelper) {
+		super(packOutput, Signpost.MOD_ID, fileHelper);
 		waystoneModel = new BlockModelBuilder(new ResourceLocation(Signpost.MOD_ID, "block/" + WaystoneBlock.REGISTRY_NAME), fileHelper);
 	}
 
@@ -79,14 +80,14 @@ public class WaystoneModel extends BlockModelProvider {
 		}
 	}
 
-	private DataProvider makeItem(DataGenerator generator, ExistingFileHelper fileHelper) {
-		return new Item(generator, fileHelper);
+	private DataProvider makeItem(PackOutput packOutput, ExistingFileHelper fileHelper) {
+		return new Item(packOutput, fileHelper);
 	}
 
 	private class Item extends ItemModelProvider {
 
-		public Item(DataGenerator generator, ExistingFileHelper existingFileHelper) {
-			super(generator, Signpost.MOD_ID, existingFileHelper);
+		public Item(PackOutput packOutput, ExistingFileHelper existingFileHelper) {
+			super(packOutput, Signpost.MOD_ID, existingFileHelper);
 		}
 
 		@Override

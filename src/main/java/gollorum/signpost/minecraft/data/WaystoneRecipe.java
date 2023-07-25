@@ -5,10 +5,8 @@ import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.block.WaystoneBlock;
 import gollorum.signpost.minecraft.registry.RecipeRegistry;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.data.recipes.FinishedRecipe;
-import net.minecraft.data.recipes.RecipeProvider;
-import net.minecraft.data.recipes.ShapedRecipeBuilder;
-import net.minecraft.data.recipes.SingleItemRecipeBuilder;
+import net.minecraft.data.PackOutput;
+import net.minecraft.data.recipes.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -18,13 +16,13 @@ import java.util.function.Consumer;
 
 public class WaystoneRecipe extends RecipeProvider {
 
-    public WaystoneRecipe(DataGenerator generatorIn) {
-        super(generatorIn);
+    public WaystoneRecipe(PackOutput packOutput) {
+        super(packOutput);
     }
 
     @Override
-    protected void buildCraftingRecipes(Consumer<FinishedRecipe> consumer) {
-        ShapedRecipeBuilder.shaped(WaystoneBlock.getInstance())
+    protected void buildRecipes(Consumer<FinishedRecipe> consumer) {
+        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, WaystoneBlock.getInstance())
             .define('s', Items.STONE)
             .define('e', Items.ENDER_PEARL)
             .pattern("sss")
@@ -36,6 +34,7 @@ public class WaystoneRecipe extends RecipeProvider {
 
         for(ModelWaystone.Variant v : ModelWaystone.variants) {
             new SingleItemRecipeBuilder(
+                RecipeCategory.DECORATIONS,
                 RecipeRegistry.CutWaystoneSerializer.get(),
                 Ingredient.of(WaystoneTag.Tag),
                 v.getBlock(),
@@ -44,6 +43,7 @@ public class WaystoneRecipe extends RecipeProvider {
             .save(consumer, new ResourceLocation(Signpost.MOD_ID, "cut_into_" + v.name));
         }
         new SingleItemRecipeBuilder(
+            RecipeCategory.DECORATIONS,
             RecipeRegistry.CutWaystoneSerializer.get(),
             Ingredient.of(WaystoneTag.Tag),
             WaystoneBlock.getInstance(),

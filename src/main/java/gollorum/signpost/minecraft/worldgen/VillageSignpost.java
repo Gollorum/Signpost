@@ -17,6 +17,7 @@ import gollorum.signpost.utils.*;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.core.*;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.placement.VegetationPlacements;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -242,11 +243,12 @@ public class VillageSignpost {
 		return degrees < -90 || degrees > 90;
 	}
 
-	private static Optional<Overlay> overlayFor(WorldGenLevel world, BlockPos pos) {
+	private static Optional<Overlay> overlayFor(ServerLevel world, BlockPos pos) {
 		Holder<Biome> biomeHolder = world.getBiome(pos);
 		Biome biome = biomeHolder.value();
-		boolean isJungle = biome.getGenerationSettings().features().stream().flatMap(HolderSet::stream)
-			.anyMatch(f -> f.get().equals(VegetationPlacements.TREES_JUNGLE.get()));
+		var featureRegistry = world.getServer().registryAccess().registry(Registries.PLACED_FEATURE);
+		boolean isJungle = featureRegistry.isPresent() && biome.getGenerationSettings().features().stream().flatMap(HolderSet::stream)
+			.anyMatch(f -> f.get().equals(featureRegistry.get().get(VegetationPlacements.TREES_JUNGLE)));
 		if(biome.shouldSnow(world, pos)
 			|| biome.getPrecipitation() == Biome.Precipitation.SNOW) return Optional.of(Overlay.Snow);
 		else if (isJungle) return Optional.of(Overlay.Vine);

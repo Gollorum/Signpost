@@ -7,6 +7,7 @@ import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.commands.WaystoneArgument;
 import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.data.DataGeneration;
+import gollorum.signpost.minecraft.items.CreativeModeTabEventListeners;
 import gollorum.signpost.minecraft.registry.*;
 import gollorum.signpost.minecraft.rendering.PostRenderer;
 import gollorum.signpost.minecraft.worldgen.JigsawDeserializers;
@@ -66,13 +67,12 @@ public class Signpost {
         TileEntityRegistry.register(modBus);
         DataGeneration.register(modBus);
         BlockEventListener.register(forgeBus);
+        CreativeModeTabEventListeners.register(modBus);
         WaystoneDiscoveryEventListener.register(forgeBus);
         Config.register();
 
-        NbtProviderRegistry.register(modBus);
+        LootProviderRegistry.register(modBus);
         LootItemConditionRegistry.register(modBus);
-
-        Villages.instance.initialize();
 
         WaystoneArgument.register(modBus);
 
@@ -106,7 +106,7 @@ public class Signpost {
             serverInstance = e.getServer();
             WaystoneLibrary.initialize();
             BlockRestrictions.initialize();
-            Villages.reset();
+            Villages.instance.initialize(e.getServer().registryAccess());
             WaystoneDiscoveryEventListener.initialize();
         }
 

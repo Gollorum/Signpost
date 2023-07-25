@@ -2,8 +2,8 @@ package gollorum.signpost.minecraft.gui;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.WaystoneLibrary;
-import gollorum.signpost.minecraft.events.WaystoneRenamedEvent;
-import gollorum.signpost.minecraft.events.WaystoneUpdatedEvent;
+import gollorum.signpost.events.WaystoneRenamedEvent;
+import gollorum.signpost.events.WaystoneUpdatedEvent;
 import gollorum.signpost.minecraft.gui.utils.*;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.widgets.ImageInputBox;
@@ -87,8 +87,8 @@ public class WaystoneGui extends ExtendedScreen {
             true, 0
         );
         lockButton = new LockIconButton(
-            inputBox.x + inputBox.width() + 10,
-            inputBox.y + inputBox.getHeight() / 2 - 10,
+            inputBox.getX() + inputBox.width() + 10,
+            inputBox.getY() + inputBox.getHeight() / 2 - 10,
             b -> lockButton.setLocked(!lockButton.isLocked())
         );
         addRenderableWidget(lockButton);
@@ -96,14 +96,15 @@ public class WaystoneGui extends ExtendedScreen {
             inputBox.setValue(data.name);
             lockButton.setLocked(data.isLocked);
         });
-        doneButton = new Button(
+        doneButton = Button.builder(
+            Component.translatable(LangKeys.done),
+            b -> done()
+        ).bounds(
             getCenterX() - buttonsSize.width / 2,
             getCenterY() - buttonsSize.height / 2 + buttonsYOffset,
             buttonsSize.width,
-            buttonsSize.height,
-            Component.translatable(LangKeys.done),
-            b -> done()
-        );
+            buttonsSize.height
+        ).build();
         addRenderableWidget(inputBox);
         addRenderableWidget(doneButton);
         inputBox.setTextColor(Colors.valid);

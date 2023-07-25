@@ -7,6 +7,8 @@ import gollorum.signpost.utils.WorldLocation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.BlockGetter;
@@ -14,6 +16,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -35,7 +38,7 @@ public class TileEntityUtils {
                 : Optional.empty())
             : (Signpost.getServerType().isServer
                 ? Optional.ofNullable(Signpost.getServerInstance()
-                    .getLevel(ResourceKey.create(Registry.DIMENSION_REGISTRY, dimensionKeyLocation)))
+                    .getLevel(ResourceKey.create(Registries.DIMENSION, dimensionKeyLocation)))
                 : Optional.empty());
     }
 

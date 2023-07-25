@@ -11,8 +11,8 @@ import gollorum.signpost.blockpartdata.types.*;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.data.PostModel;
-import gollorum.signpost.minecraft.events.WaystoneRenamedEvent;
-import gollorum.signpost.minecraft.events.WaystoneUpdatedEvent;
+import gollorum.signpost.events.WaystoneRenamedEvent;
+import gollorum.signpost.events.WaystoneUpdatedEvent;
 import gollorum.signpost.minecraft.gui.utils.*;
 import gollorum.signpost.minecraft.gui.widgets.*;
 import gollorum.signpost.minecraft.rendering.FlippableModel;
@@ -289,24 +289,21 @@ public class SignGui extends ExtendedScreen {
         Button doneButton;
         if(oldSign.isPresent()){
             int buttonsWidth = doneRect.width;
-            doneButton = new Button(
-                getCenterX() + centerGap / 2, doneRect.point.y, buttonsWidth, doneRect.height,
+            doneButton = Button.builder(
                 Component.translatable(LangKeys.done),
                 b -> done()
-            );
-            Button removeSignButton = new Button(
-                getCenterX() - centerGap / 2 - buttonsWidth, doneRect.point.y, buttonsWidth, doneRect.height,
+            ).bounds(getCenterX() + centerGap / 2, doneRect.point.y, buttonsWidth, doneRect.height).build();
+            Button removeSignButton = Button.builder(
                 Component.translatable(LangKeys.removeSign),
                 b -> removeSign()
-            );
+            ).bounds(getCenterX() - centerGap / 2 - buttonsWidth, doneRect.point.y, buttonsWidth, doneRect.height).build();
             removeSignButton.setFGColor(Colors.invalid);
             addRenderableWidget(removeSignButton);
         } else {
-            doneButton = new Button(
-                doneRect.point.x, doneRect.point.y, doneRect.width, doneRect.height,
+            doneButton = Button.builder(
                 Component.translatable(LangKeys.done),
                 b -> done()
-            );
+            ).bounds(doneRect.point.x, doneRect.point.y, doneRect.width, doneRect.height).build();
         }
         addRenderableWidget(doneButton);
 
@@ -343,7 +340,7 @@ public class SignGui extends ExtendedScreen {
             false);
         waystoneDropdown.setEntries(waystoneDropdownEntry);
         Rect waystoneInputRect = new Rect(
-            new Point(waystoneDropdown.x - 10, waystoneDropdown.y + waystoneDropdown.getHeight() / 2),
+            new Point(waystoneDropdown.getX() - 10, waystoneDropdown.getY() + waystoneDropdown.getHeight() / 2),
             new TextureSize((int)((waystoneNameTexture.size.width - 4) * waystoneBoxScale), (int)((waystoneNameTexture.size.height - 4) * waystoneBoxScale)),
             Rect.XAlignment.Right, Rect.YAlignment.Center);
         waystoneInputBox = new ImageInputBox(font,
@@ -505,7 +502,7 @@ public class SignGui extends ExtendedScreen {
 
         colorInputBox = new ColorInputBox(font,
             new Rect(
-                new Point(switchDirectionButton.x + switchDirectionButton.getWidth() + 20, switchDirectionButton.y + switchDirectionButton.getHeight() / 2),
+                new Point(switchDirectionButton.getX() + switchDirectionButton.getWidth() + 20, switchDirectionButton.getY() + switchDirectionButton.getHeight() / 2),
                 80, 20,
                 Rect.XAlignment.Left, Rect.YAlignment.Center
             ), 0);
@@ -627,7 +624,7 @@ public class SignGui extends ExtendedScreen {
         final int newSignItemSize = 16;
         TextDisplay newSignHint = new TextDisplay(
             Component.translatable(LangKeys.newSignHint),
-            new Point(getCenterX() - newSignItemSize, (int) ((doneButton.y + doneButton.getHeight() + height) / 2f)),
+            new Point(getCenterX() - newSignItemSize, (int) ((doneButton.getY() + doneButton.getHeight() + height) / 2f)),
             Rect.XAlignment.Center, Rect.YAlignment.Center,
             font
         );
@@ -663,10 +660,17 @@ public class SignGui extends ExtendedScreen {
 
     private void onWaystoneCountChanged() {
         if(waystoneDropdown.getAllEntries().isEmpty()){
-            addRenderableOnly(noWaystonesInfo);
+            if(!renderables.contains(noWaystonesInfo))
+                addRenderableOnly(noWaystonesInfo);
+            removeWidget(waystoneDropdown);
+            removeWidget(waystoneInputBox);
+
         } else {
-            addRenderableWidget(waystoneDropdown);
-            addRenderableWidget(waystoneInputBox);
+            if(!renderables.contains(waystoneDropdown))
+                addRenderableWidget(waystoneDropdown);
+            if(!renderables.contains(waystoneInputBox))
+                addRenderableWidget(waystoneInputBox);
+            renderables.remove(noWaystonesInfo);
         }
     }
 

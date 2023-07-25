@@ -2,16 +2,16 @@ package gollorum.signpost.utils.modelGeneration;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix3f;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
-import com.mojang.math.Vector4f;
 import gollorum.signpost.minecraft.gui.utils.TextureResource;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import java.util.*;
 
@@ -41,8 +41,7 @@ public class SignModel {
 
 		for(Map.Entry<Material, List<Quad>> entry : quads.entrySet()) {
 			for(Quad quad : entry.getValue()) {
-				Vector3f normal = quad.normal.copy();
-				normal.transform(matrixNormal);
+				Vector3f normal = quad.normal.mul(matrixNormal);
 				float normalX = normal.x();
 				float normalY = normal.y();
 				float normalZ = normal.z();
@@ -50,8 +49,7 @@ public class SignModel {
 				VertexConsumer vertexBuilder = entry.getKey().buffer(buffer, x -> renderType);
 
 				for(Quad.Vertex vertex: quad.vertices) {
-					Vector4f pos = new Vector4f(vertex.pos.x(), vertex.pos.y(), vertex.pos.z(), 1.0F);
-					pos.transform(matrix4f);
+					Vector4f pos = new Vector4f(vertex.pos.x(), vertex.pos.y(), vertex.pos.z(), 1.0F).mul(matrix4f);
 					vertexBuilder.vertex(
 						pos.x(), pos.y(), pos.z(),
 						r, g, b, 1,
