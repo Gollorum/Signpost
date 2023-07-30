@@ -15,11 +15,13 @@ import gollorum.signpost.utils.*;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.StringSerializer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -454,14 +456,38 @@ public class WaystoneLibrary {
         return assertTileEntityExists(entry);
     }
 
+    private final long tileEntityExistenceCheckCooldownMillis = 1000 * 60 * 10;
+    private final Map<ResourceLocation, Map<BlockPos, Long>> checkedTileEntities = new HashMap<>();
+
     private boolean assertTileEntityExists(WaystoneEntry entry) {
+        var cache = checkedTileEntities.computeIfAbsent(
+            entry.locationData.block.world.rightOr(l -> l.dimension().location()),
+            key -> new HashMap<>()
+        );
+        var time = System.currentTimeMillis();
+        var blockPos = entry.locationData.block.blockPos;
+        var lastChecked = cache.get(blockPos);
+        if(lastChecked != null && lastChecked + tileEntityExistenceCheckCooldownMillis >= time) {
+            return true;
+        }
+
         Optional<ServerLevel> level = TileEntityUtils.toWorld(entry.locationData.block.world, false)
             .flatMap(lv -> lv instanceof ServerLevel ? Optional.of((ServerLevel)lv) : Optional.empty());
-        if(!level.isPresent()) return true; // Something is wrong, I cannot find the level to check.
-        Optional<WaystoneTile> entity = level.get().getBlockEntity(entry.locationData.block.blockPos, WaystoneTile.getBlockEntityType());
-        if(entity.isPresent()) return true;
+        if(level.isEmpty()) return true; // Something is wrong, I cannot find the level to check.
+        if(level.get().thread != Thread.currentThread()) { // Cannot check on wrong thread.
+            Delay.onServerForFrames(1, () -> checkEntity(level.get(), blockPos, cache));
+            return true;
+        } else return checkEntity(level.get(), blockPos, cache);
+    }
+
+    private static boolean checkEntity(ServerLevel level, BlockPos blockPos, Map<BlockPos, Long> cache) {
+        Optional<WaystoneTile> entity = level.getBlockEntity(blockPos, WaystoneTile.getBlockEntityType());
+        if(entity.isPresent()) {
+            cache.put(blockPos, System.currentTimeMillis());
+            return true;
+        }
         else {
-            WaystoneTile.onRemoved(level.get(), entry.locationData.block.blockPos);
+            WaystoneTile.onRemoved(level, blockPos);
             return false;
         }
     }

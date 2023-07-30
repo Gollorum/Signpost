@@ -41,7 +41,7 @@ public class VillageSignpost {
 		BlockPos pieceLocation = tile.getBlockPos();
 		BlockPos villageLocation = VillageGenUtils.getVillageLocationFor(level, pieceLocation, 512);
 		Random random = new Random(level.getSeed() ^ pieceLocation.asLong());
-		var blockedTargets = tile.getParts().stream().flatMap(p -> p.blockPart instanceof SignBlockPart<?> sbb ? sbb.getDestination().stream() : Stream.empty()).collect(Collectors.toSet());
+		var blockedTargets = tile.getParts().stream().flatMap(p -> p.blockPart instanceof SignBlockPart<?> sbb && !sbb.isMarkedForGeneration() ? sbb.getDestination().stream() : Stream.empty()).collect(Collectors.toSet());
 		Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> possibleTargets = fetchPossibleTargets(pieceLocation, villageLocation, level.dimension().location(), random, blockedTargets);
 		if(possibleTargets.isEmpty())
 			return false;
@@ -50,6 +50,7 @@ public class VillageSignpost {
 			tile, generatorPart, height,
 			tile.getBlockState().getValue(PostBlock.Facing).getOpposite(), pieceLocation, level, random, possibleTargets
 		);
+		if(freshlyUsedWaystones.isEmpty()) return false;
 		waystonesTargetedByVillage.computeIfAbsent(villageLocation, k -> new ArrayList<>())
 			.addAll(freshlyUsedWaystones);
 		tile.removePart(generatorPartId);
@@ -62,7 +63,6 @@ public class VillageSignpost {
 			.map(e -> new Tuple<>(e, (float) Math.sqrt(e._1.distSqr(pieceLocation)) * (0.5f + random.nextFloat())))
 			.sorted((e1, e2) -> Float.compare(e1._2, e2._2))
 			.map(Tuple::getLeft)
-			.filter(e -> WaystoneLibrary.getInstance().contains(e._2))
 			.filter(e -> !blockedTargets.contains(e._2))
 			.collect(Collectors.toCollection(LinkedList::new));
 	}
@@ -228,9 +228,13 @@ public class VillageSignpost {
 	private static Optional<Tuple<Tuple<BlockPos, WaystoneHandle.Vanilla>, WaystoneData>> fetchNextTarget(Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> possibleTargets) {
 		Tuple<BlockPos, WaystoneHandle.Vanilla> target = null;
 		WaystoneData targetData = null;
-		while(target == null && possibleTargets.size() > 0) {
+		while(target == null && !possibleTargets.isEmpty()) {
 			target = possibleTargets.poll();
 			if(target == null) continue;
+			if(!WaystoneLibrary.getInstance().contains(target._2)) {
+				target = null;
+				continue;
+			}
 			Optional<WaystoneData> dataOptional = WaystoneLibrary.getInstance().getData(target._2);
 			if(dataOptional.isPresent()) targetData = dataOptional.get();
 			else target = null;

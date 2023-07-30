@@ -56,7 +56,12 @@ public class RenderingUtil {
     );
 
     public static BakedModel loadModel(ResourceLocation location) {
-        return modelBakery.getBakedTopLevelModels().get(location);
+        return modelBakery.getModel(location).bake(
+            modelBaker,
+            m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(m.texture()),
+            new SimpleModelState(Transformation.identity()),
+            location
+        );
     }
 
     public static BakedModel loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation) {
