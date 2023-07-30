@@ -53,7 +53,12 @@ public class WideSignRenderer extends SignRenderer<SmallWideSignBlockPart> {
 			var text = sign.getText().get();
 			if(sign.isMarkedForGeneration()) {
 				var overrideName = WaystoneLibrary.getInstance().getAllWaystoneNames(true)
-						.flatMap(s -> s.size() > 0 ? s.stream().skip(new Random().nextInt(s.size() - 1)).findFirst() : Optional.empty());
+						.flatMap(s -> !s.isEmpty()
+							? (s.size() == 1
+								? s.stream()
+								: s.stream().skip(new Random().nextInt(s.size() - 1))
+							).findFirst()
+							: Optional.empty());
 				if(overrideName.isPresent()) text = overrideName.get();
 			}
 			matrix.mulPose(Vector3f.ZP.rotationDegrees(180));
