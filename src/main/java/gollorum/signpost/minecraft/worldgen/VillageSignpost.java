@@ -254,9 +254,9 @@ public class VillageSignpost {
 		boolean isJungle = featureRegistry.isPresent() && biome.getGenerationSettings().features().stream().flatMap(HolderSet::stream)
 			.anyMatch(f -> f.get().equals(featureRegistry.get().get(VegetationPlacements.TREES_JUNGLE)));
 		if(biome.shouldSnow(world, pos)
-			|| biome.getPrecipitation() == Biome.Precipitation.SNOW) return Optional.of(Overlay.Snow);
+			|| biome.getPrecipitationAt(pos) == Biome.Precipitation.SNOW) return Optional.of(Overlay.Snow);
 		else if (isJungle) return Optional.of(Overlay.Vine);
-		else if(biome.isHumid()) return Optional.of(Overlay.Gras);
+		else if (biome.getModifiedClimateSettings().downfall() > 0.85f) return Optional.of(Overlay.Gras);
 		else return Optional.empty();
 	}
 

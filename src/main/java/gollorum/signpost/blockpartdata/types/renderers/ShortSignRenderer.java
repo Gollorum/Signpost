@@ -75,7 +75,7 @@ public class ShortSignRenderer extends SignRenderer<SmallShortSignBlockPart> {
 				-scale * 4 * TEXT_RATIO,
 				-0.505 * VoxelSize);
 			matrix.scale(scale, scale * TEXT_RATIO, scale);
-			fontRenderer.drawInBatch(text, 0, 0, sign.getColor(), false, matrix.last().pose(), buffer, false, 0, combinedLights);
+			fontRenderer.drawInBatch(text, 0, 0, sign.getColor(), false, matrix.last().pose(), buffer, Font.DisplayMode.NORMAL, 0, combinedLights);
 		});
 	}
 

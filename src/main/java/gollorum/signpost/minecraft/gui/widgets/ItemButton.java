@@ -40,12 +40,12 @@ public class ItemButton extends Button {
     }
 
     @Override
-    public void renderButton(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        super.renderButton(matrixStack, mouseX, mouseY, partialTicks);
+    public void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+        super.renderWidget(matrixStack, mouseX, mouseY, partialTicks);
 
         int xTL = getX() + (width - itemModelWidth) / 2;
         int yTL = getY() + (height - itemModelHeight) / 2;
-        this.itemRenderer.renderAndDecorateItem(stack, xTL, yTL);
-        this.itemRenderer.renderGuiItemDecorations(font, stack, xTL, yTL, null);
+        this.itemRenderer.renderAndDecorateItem(matrixStack, stack, xTL, yTL);
+        this.itemRenderer.renderGuiItemDecorations(matrixStack, font, stack, xTL, yTL, null);
     }
 }

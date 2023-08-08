@@ -2,7 +2,6 @@
   "type": "minecraft:block",
   "pools": [
     {
-      "rolls": 1.0,
       "bonus_rolls": 0.0,
       "entries": [
         {
@@ -25,28 +24,28 @@
                   }
                 },
                 {
-                  "condition": "signpost:permission_check",
-                  "type": "pick_waystone"
+                  "type": "pick_waystone",
+                  "condition": "signpost:permission_check"
                 }
               ],
               "functions": [
                 {
                   "function": "minecraft:copy_nbt",
-                  "source": {
-                    "type": "signpost:waystone"
-                  },
                   "ops": [
                     {
+                      "op": "replace",
                       "source": "Handle",
-                      "target": "Handle",
-                      "op": "replace"
+                      "target": "Handle"
                     },
                     {
+                      "op": "merge",
                       "source": "display",
-                      "target": "display",
-                      "op": "merge"
+                      "target": "display"
                     }
-                  ]
+                  ],
+                  "source": {
+                    "type": "signpost:waystone"
+                  }
                 }
               ],
               "name": "signpost:waystone_model_dwarf"
@@ -57,7 +56,8 @@
             }
           ]
         }
-      ]
+      ],
+      "rolls": 1.0
     }
   ]
 }

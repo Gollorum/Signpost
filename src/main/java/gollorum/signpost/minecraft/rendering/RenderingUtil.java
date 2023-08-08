@@ -150,7 +150,7 @@ public class RenderingUtil {
             dropShadow,
             matrix,
             buffer,
-            false,
+            Font.DisplayMode.NORMAL,
             0,
             0xf000f0
         );

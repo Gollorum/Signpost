@@ -352,7 +352,7 @@ public class SignGui extends ExtendedScreen {
             Rect.XAlignment.Center, Rect.YAlignment.Center,
             waystoneNameTexture,
             true, 100);
-        waystoneInputBox.setBlitOffset(100);
+//        waystoneInputBox.setBlitOffset(100);
         waystoneInputBox.setMaxLength(200);
         waystoneInputBox.setResponder(this::onWaystoneSelected);
         noWaystonesInfo = new TextDisplay(
@@ -655,7 +655,7 @@ public class SignGui extends ExtendedScreen {
 
         hasBeenInitialized = true;
         setFocused(currentSignInputBox);
-        currentSignInputBox.setFocus(true);
+        currentSignInputBox.setFocused(true);
     }
 
     private void onWaystoneCountChanged() {

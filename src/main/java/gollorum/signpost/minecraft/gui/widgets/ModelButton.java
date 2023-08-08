@@ -65,8 +65,8 @@ public class ModelButton extends ImageButton {
     }
 
     @Override
-    public void renderButton(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        super.renderButton(matrixStack, mouseX, mouseY, partialTicks);
+    public void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+        super.renderWidget(matrixStack, mouseX, mouseY, partialTicks);
         for(GuiModelRenderer model : modelRenderers) {
             model.render(matrixStack, mouseX, mouseY, partialTicks);
         }

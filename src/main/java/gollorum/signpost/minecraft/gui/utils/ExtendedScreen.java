@@ -34,7 +34,7 @@ public abstract class ExtendedScreen extends Screen {
 	@Override
 	public void setFocused(@Nullable GuiEventListener listener) {
 		if(getFocused() != listener && getFocused() instanceof AbstractWidget oldListener) {
-			if(oldListener.isFocused()) oldListener.changeFocus(false);
+			if(oldListener.isFocused()) oldListener.setFocused(false);
 		}
 		super.setFocused(listener);
 	}

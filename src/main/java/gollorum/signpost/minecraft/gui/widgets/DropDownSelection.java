@@ -148,7 +148,7 @@ public class DropDownSelection<EntryType> extends ImageButton {
     }
 
     @Override
-    public void renderButton(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         Minecraft minecraft = Minecraft.getInstance();
         RenderSystem.setShaderTexture(0, texture.location);
         RenderSystem.disableDepthTest();
@@ -214,7 +214,7 @@ public class DropDownSelection<EntryType> extends ImageButton {
             RenderSystem.disableDepthTest();
             RenderSystem.enableBlend();
             RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ZERO, GlStateManager.DestFactor.ONE);
-            RenderSystem.disableTexture();
+//            RenderSystem.disableTexture();
             RenderSystem.setShader(GameRenderer::getPositionColorShader);
             bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
             bufferbuilder.vertex(this.x0, this.y0 + 4, 0.0D).uv(0.0F, 1.0F).color(0, 0, 0, 0).endVertex();
@@ -230,7 +230,7 @@ public class DropDownSelection<EntryType> extends ImageButton {
             tesselator.end();
             int j1 = this.getMaxScroll();
             if (j1 > 0) {
-                RenderSystem.disableTexture();
+//                RenderSystem.disableTexture();
                 RenderSystem.setShader(GameRenderer::getPositionColorShader);
                 int k1 = (int)((float)((this.y1 - this.y0) * (this.y1 - this.y0)) / (float)this.getMaxPosition());
                 k1 = Mth.clamp(k1, 32, this.y1 - this.y0 - 8);
@@ -260,7 +260,7 @@ public class DropDownSelection<EntryType> extends ImageButton {
             }
 
             this.renderDecorations(matrixStack, mouseX, mouseY);
-            RenderSystem.enableTexture();
+//            RenderSystem.enableTexture();
             RenderSystem.disableBlend();
         }
 

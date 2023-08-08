@@ -18,6 +18,7 @@ import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -36,7 +37,7 @@ public class PostItemRenderer extends BlockEntityWithoutLevelRenderer {
     }
 
     @Override
-    public void renderByItem(ItemStack stack, ItemTransforms.TransformType transformType, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, int combinedLight, int combinedOverlay) {
+    public void renderByItem(ItemStack stack, ItemDisplayContext transformType, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, int combinedLight, int combinedOverlay) {
         if(stack.isEmpty() || !(stack.getItem() instanceof BlockItem && ((BlockItem)stack.getItem()).getBlock() instanceof PostBlock)) {
             Signpost.LOGGER.error("Tried to render a non-post item with the post renderer");
             super.renderByItem(stack, transformType, matrixStack, renderTypeBuffer, combinedLight, combinedOverlay);

@@ -1,44 +1,42 @@
 package gollorum.signpost.minecraft.data;
 
-import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.WaystoneBlock;
 import net.minecraft.core.Direction;
-import net.minecraft.data.DataGenerator;
-import net.minecraft.data.PackOutput;
-import net.minecraftforge.client.model.generators.*;
-import net.minecraftforge.common.data.ExistingFileHelper;
+import net.minecraftforge.client.model.generators.BlockModelBuilder;
+import net.minecraftforge.client.model.generators.ConfiguredModel;
+import net.minecraftforge.client.model.generators.ModelFile;
+import net.minecraftforge.client.model.generators.VariantBlockStateBuilder;
 
 import java.util.Map;
 
-public class PostBlockState extends BlockStateProvider {
+public class PostBlockState {
 
     private final PostModel postModel;
     private final WaystoneModel waystoneModel;
+    private final BlockStates blockStatesProvider;
 
     public PostBlockState(
-        PackOutput output,
-        ExistingFileHelper fileHelper,
         PostModel postModel,
-        WaystoneModel waystoneModel
+        WaystoneModel waystoneModel,
+        BlockStates blockStatesProvider
     ) {
-        super(output, Signpost.MOD_ID, fileHelper);
         this.postModel = postModel;
         this.waystoneModel = waystoneModel;
+        this.blockStatesProvider = blockStatesProvider;
     }
 
-    @Override
-    protected void registerStatesAndModels() {
+    public void registerStatesAndModels() {
         for (Map.Entry<PostBlock.Variant, BlockModelBuilder> entry : postModel.allModels.entrySet()) {
-            getVariantBuilder(entry.getKey().getBlock())
+            blockStatesProvider.getVariantBuilder(entry.getKey().getBlock())
                 .partialState().setModels(new ConfiguredModel(entry.getValue()));
         }
-        getVariantBuilder(WaystoneBlock.getInstance())
+        blockStatesProvider.getVariantBuilder(WaystoneBlock.getInstance())
             .partialState().setModels(new ConfiguredModel(waystoneModel.waystoneModel));
 
         for(Map.Entry<ModelWaystone.Variant, ModelFile> entry : waystoneModel.variantModels.entrySet()) {
-            VariantBlockStateBuilder builder = getVariantBuilder(entry.getKey().getBlock());
+            VariantBlockStateBuilder builder = blockStatesProvider.getVariantBuilder(entry.getKey().getBlock());
             builder.forAllStatesExcept(
                 state -> builder
                     .partialState()

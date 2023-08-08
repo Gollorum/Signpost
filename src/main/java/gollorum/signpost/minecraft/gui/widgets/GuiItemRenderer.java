@@ -27,15 +27,11 @@ public class GuiItemRenderer extends AbstractWidget {
 	}
 
 	@Override
-	public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	public void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		Font font = IClientItemExtensions.of(itemStack).getFont(itemStack, IClientItemExtensions.FontContext.ITEM_COUNT);
 		if (font == null) font = Minecraft.getInstance().font;
-		this.setBlitOffset(200);
-		this.itemRenderer.blitOffset = 200.0F;
-		itemRenderer.renderAndDecorateItem(itemStack, getX(), getY());
-		itemRenderer.renderGuiItemDecorations(font, itemStack, getX(), getY(), null);
-		this.itemRenderer.blitOffset = 0.0F;
-		this.setBlitOffset(0);
+		itemRenderer.renderAndDecorateItem(matrixStack, itemStack, getX(), getY());
+		itemRenderer.renderGuiItemDecorations(matrixStack, font, itemStack, getX(), getY(), null);
 	}
 
 	@Override

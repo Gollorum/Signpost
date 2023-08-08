@@ -70,7 +70,7 @@ public class ColorInputBox extends InputBox {
     }
 
     @Override
-    public void renderButton(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         Tesselator tessellator = Tesselator.getInstance();
         BufferBuilder bufferbuilder = tessellator.getBuilder();
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
@@ -87,7 +87,7 @@ public class ColorInputBox extends InputBox {
         bufferbuilder.vertex(x, y, 0.0D).uv(1, 0).color(red, green, blue, 255).endVertex();
         bufferbuilder.vertex(x - height, y, 0.0D).uv(0, 0).color(red, green, blue, 255).endVertex();
         tessellator.end();
-        super.renderButton(matrixStack, mouseX, mouseY, partialTicks);
+        super.renderWidget(matrixStack, mouseX, mouseY, partialTicks);
     }
 
     public void setColorResponder(@Nullable Consumer<Integer> responder) {

@@ -13,13 +13,15 @@ import net.minecraft.core.Direction;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraftforge.client.model.generators.*;
 import net.minecraftforge.common.data.ExistingFileHelper;
 
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class PostModel extends BlockModelProvider {
+public class PostModel {
 
     private static final String texturePost = "post";
     public static final String textureSign = "texture";
@@ -50,55 +52,51 @@ public class PostModel extends BlockModelProvider {
     private static final ModelBuilder.FaceRotation secondaryTextureRotation = ModelBuilder.FaceRotation.CLOCKWISE_90;
 
     private final BlockModelBuilder previewModel;
+    private final BlockModels blockModelProvider;
 
-    public PostModel(DataGenerator generator, PackOutput output, ExistingFileHelper fileHelper) {
-        super(output, Signpost.MOD_ID, fileHelper);
-        previewModel = new BlockModelBuilder(previewLocation, fileHelper);
+    public PostModel(BlockModels blockModelProvider) {
+        previewModel = new BlockModelBuilder(previewLocation, blockModelProvider.existingFileHelper);
         allModels = PostBlock.AllVariants.stream().collect(Collectors.<PostBlock.Variant, PostBlock.Variant, BlockModelBuilder>toMap(
             i -> i,
-            i -> new BlockModelBuilder(new ResourceLocation(Signpost.MOD_ID, "block/" + i.registryName), fileHelper)
+            i -> new BlockModelBuilder(new ResourceLocation(Signpost.MOD_ID, "block/" + i.registryName), blockModelProvider.existingFileHelper)
         ));
-        generator.addProvider(true, new Item(output, fileHelper));
+        this.blockModelProvider = blockModelProvider;
+//        generator.addProvider(true, new Item(output, fileHelper));
     }
 
-    private class Item extends ItemModelProvider {
+    public static class Item {
 
-        public Item(PackOutput output, ExistingFileHelper existingFileHelper) {
-            super(output, Signpost.MOD_ID, existingFileHelper);
-        }
-
-        @Override
-        protected void registerModels() {
-            for (Map.Entry<PostBlock.Variant, BlockModelBuilder> entry : allModels.entrySet()) {
-                getBuilder(entry.getKey().registryName)
+        public static void registerModels(Function<String, ItemModelBuilder> getBuilder, PostModel postModelProvider) {
+            for (Map.Entry<PostBlock.Variant, BlockModelBuilder> entry : postModelProvider.allModels.entrySet()) {
+                getBuilder.apply(entry.getKey().registryName)
                     .parent(new ModelFile.UncheckedModelFile("builtin/entity"))
                     .transforms()
-                        .transform(ItemTransforms.TransformType.GUI)
+                        .transform(ItemDisplayContext.GUI)
                             .rotation(30, 35, 0)
                             .translation(0, 0, 0)
                             .scale(0.625f)
                         .end()
-                        .transform(ItemTransforms.TransformType.GROUND)
+                        .transform(ItemDisplayContext.GROUND)
                             .rotation(0, 0, 0)
                             .translation(0, 3, 0)
                             .scale(0.25f)
                         .end()
-                        .transform(ItemTransforms.TransformType.FIXED)
+                        .transform(ItemDisplayContext.FIXED)
                             .rotation(0, 180, 0)
                             .translation(0, 0, 0)
                             .scale(0.5f)
                         .end()
-                        .transform(ItemTransforms.TransformType.THIRD_PERSON_RIGHT_HAND)
+                        .transform(ItemDisplayContext.THIRD_PERSON_RIGHT_HAND)
                             .rotation(75, 135, 0)
                             .translation(0, 2.5f, 0)
                             .scale(0.375f)
                         .end()
-                        .transform(ItemTransforms.TransformType.FIRST_PERSON_RIGHT_HAND)
+                        .transform(ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
                             .rotation(0, 315, 0)
                             .translation(0, 0, 0)
                             .scale(0.4f)
                         .end()
-                        .transform(ItemTransforms.TransformType.FIRST_PERSON_LEFT_HAND)
+                        .transform(ItemDisplayContext.FIRST_PERSON_LEFT_HAND)
                             .rotation(0, 315, 0)
                             .translation(0, 0, 0)
                             .scale(0.4f)
@@ -109,20 +107,21 @@ public class PostModel extends BlockModelProvider {
         }
     }
 
-    @Override
-    protected void registerModels() {
+    private BlockModelBuilder getBuilder(String path) { return blockModelProvider.getBuilder(path); }
+
+    public void registerModels() {
         BlockModelBuilder previewBuilder = getBuilder(previewLocation.toString())
-            .parent(new ModelFile.ExistingModelFile(new ResourceLocation("block/block"), existingFileHelper))
+            .parent(new ModelFile.ExistingModelFile(new ResourceLocation("block/block"), blockModelProvider.existingFileHelper))
             .transforms()
-                .transform(ItemTransforms.TransformType.GUI)
+                .transform(ItemDisplayContext.GUI)
                     .rotation(30, 315, 0)
                     .scale(0.625f)
                 .end()
-                .transform(ItemTransforms.TransformType.FIRST_PERSON_RIGHT_HAND)
+                .transform(ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
                     .rotation(0, 315, 0)
                     .scale(0.4f)
                 .end()
-                .transform(ItemTransforms.TransformType.FIRST_PERSON_LEFT_HAND)
+                .transform(ItemDisplayContext.FIRST_PERSON_LEFT_HAND)
                     .rotation(0, 315, 0)
                     .scale(0.4f)
                 .end()

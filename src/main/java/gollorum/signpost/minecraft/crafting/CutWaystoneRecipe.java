@@ -2,6 +2,7 @@ package gollorum.signpost.minecraft.crafting;
 
 import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.config.Config;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.BlockItem;
@@ -34,8 +35,8 @@ public class CutWaystoneRecipe extends StonecutterRecipe {
     }
 
     @Override
-    public @NotNull ItemStack assemble(@NotNull Container container) {
-        ItemStack ret = super.assemble(container);
+    public @NotNull ItemStack assemble(@NotNull Container container, RegistryAccess registryAccess) {
+        ItemStack ret = super.assemble(container, registryAccess);
         ItemStack ingred = container.getItem(0);
         if(ingred.hasTag()) ret.setTag(ret.hasTag()
             ? ret.getTag().merge(ingred.getTag())

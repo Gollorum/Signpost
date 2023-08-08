@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "group": "Signpost",
   "key": {
     "b": [
@@ -28,5 +29,6 @@
   "result": {
     "count": 2,
     "item": "signpost:post_sandstone"
-  }
+  },
+  "show_notification": true
 }

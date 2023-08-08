@@ -38,7 +38,7 @@ public final class Vector3 {
     }
 
     public BlockPos toBlockPos() {
-        return new BlockPos(x, y, z);
+        return new BlockPos((int)x, (int)y, (int)z);
     }
 
     public static Vector3 min(Vector3 a, Vector3 b) {
