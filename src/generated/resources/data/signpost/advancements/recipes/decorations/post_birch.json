@@ -52,5 +52,6 @@
     "recipes": [
       "signpost:post_birch"
     ]
-  }
+  },
+  "sends_telemetry_event": false
 }

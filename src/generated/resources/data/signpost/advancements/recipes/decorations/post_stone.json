@@ -52,5 +52,6 @@
     "recipes": [
       "signpost:post_stone"
     ]
-  }
+  },
+  "sends_telemetry_event": false
 }

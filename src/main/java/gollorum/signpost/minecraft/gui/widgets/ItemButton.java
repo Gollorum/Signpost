@@ -3,6 +3,7 @@ package gollorum.signpost.minecraft.gui.widgets;
 import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.minecraft.gui.utils.Rect;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.network.chat.Component;
@@ -40,12 +41,12 @@ public class ItemButton extends Button {
     }
 
     @Override
-    public void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        super.renderWidget(matrixStack, mouseX, mouseY, partialTicks);
+    public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+        super.renderWidget(graphics, mouseX, mouseY, partialTicks);
 
         int xTL = getX() + (width - itemModelWidth) / 2;
         int yTL = getY() + (height - itemModelHeight) / 2;
-        this.itemRenderer.renderAndDecorateItem(matrixStack, stack, xTL, yTL);
-        this.itemRenderer.renderGuiItemDecorations(matrixStack, font, stack, xTL, yTL, null);
+        graphics.renderItem(stack, xTL, yTL);
+        graphics.renderItemDecorations(font, stack, xTL, yTL, null);
     }
 }

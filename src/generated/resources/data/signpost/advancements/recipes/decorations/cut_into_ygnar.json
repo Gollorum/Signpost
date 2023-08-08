@@ -28,5 +28,6 @@
     "recipes": [
       "signpost:cut_into_ygnar"
     ]
-  }
+  },
+  "sends_telemetry_event": false
 }

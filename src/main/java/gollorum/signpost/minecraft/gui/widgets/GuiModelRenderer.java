@@ -9,6 +9,7 @@ import gollorum.signpost.minecraft.rendering.FlippableModel;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.renderer.RenderType;
 import org.joml.AxisAngle4d;
@@ -58,7 +59,7 @@ public class GuiModelRenderer implements Renderable, Flippable {
         this.isFlipped = isFlipped;
     }
 
-    public void render(@Nonnull PoseStack unused, int mouseX, int mouseY, float partialTicks) {
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         float scale = Math.min(width, height);
         PoseStack matrixStack = new PoseStack();
         RenderSystem.enableBlend();

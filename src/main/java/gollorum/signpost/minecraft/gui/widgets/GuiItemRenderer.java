@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.minecraft.gui.utils.Rect;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.entity.ItemRenderer;
@@ -27,11 +28,11 @@ public class GuiItemRenderer extends AbstractWidget {
 	}
 
 	@Override
-	public void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
 		Font font = IClientItemExtensions.of(itemStack).getFont(itemStack, IClientItemExtensions.FontContext.ITEM_COUNT);
 		if (font == null) font = Minecraft.getInstance().font;
-		itemRenderer.renderAndDecorateItem(matrixStack, itemStack, getX(), getY());
-		itemRenderer.renderGuiItemDecorations(matrixStack, font, itemStack, getX(), getY(), null);
+		graphics.renderItem(itemStack, getX(), getY());
+		graphics.renderItemDecorations(font, itemStack, getX(), getY(), null);
 	}
 
 	@Override

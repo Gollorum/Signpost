@@ -22,16 +22,16 @@ public class WaystoneHandleUtils {
             boolean isNotDiscoveredAndEnforceDiscovery = !(WaystoneLibrary.getInstance().isDiscovered(new PlayerHandle(player), (WaystoneHandle.Vanilla) dest)) && Config.Server.teleport.enforceDiscovery.get();
             
             if (isNotDiscoveredAndEnforceDiscovery) {
-                reason.set(Optional.of((Component) Component.translatable(LangKeys.notDiscovered, Colors.wrap(waystoneName, Colors.highlight))));
+                reason.set(Optional.of(Component.translatable(LangKeys.notDiscovered, Colors.wrap(waystoneName, Colors.highlight))));
             }
             
             WaystoneLibrary.getInstance().getLocationData((WaystoneHandle.Vanilla) dest).block.world.mapLeft(Optional::of)
                     .leftOr(i -> TileEntityUtils.findWorld(i, false))
                     .ifPresent(world -> {
-                        boolean isAcrossDimensionsAndEnforceDimension = !(player.level.dimension().equals(world.dimension())) && !(Config.Server.teleport.enableAcrossDimensions.get());
+                        boolean isAcrossDimensionsAndEnforceDimension = !(player.level().dimension().equals(world.dimension())) && !(Config.Server.teleport.enableAcrossDimensions.get());
                         
                         if (isAcrossDimensionsAndEnforceDimension) {
-                            reason.set(Optional.of((Component) Component.translatable(LangKeys.differentDimension)));
+                            reason.set(Optional.of(Component.translatable(LangKeys.differentDimension)));
                         }
                     });
             return reason.get();

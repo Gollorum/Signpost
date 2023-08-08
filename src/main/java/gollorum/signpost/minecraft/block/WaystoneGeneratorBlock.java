@@ -25,8 +25,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
-import net.minecraft.world.level.material.Material;
-import net.minecraft.world.level.material.MaterialColor;
+import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -42,7 +41,7 @@ public class WaystoneGeneratorBlock extends BaseEntityBlock {
     public static final String REGISTRY_NAME = "waystone_generator";
 
     public WaystoneGeneratorBlock() {
-        super(Properties.of(Material.WOOD, MaterialColor.WOOD));
+        super(Properties.of().mapColor(MapColor.WOOD));
     }
 
     @Nullable

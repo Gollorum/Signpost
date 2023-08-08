@@ -28,5 +28,6 @@
     "recipes": [
       "signpost:cut_into_simple_2"
     ]
-  }
+  },
+  "sends_telemetry_event": false
 }

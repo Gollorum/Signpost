@@ -1,9 +1,7 @@
 package gollorum.signpost.compat;
 
 import com.telepathicgrunt.repurposedstructures.modinit.RSConditionsRegistry;
-import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.config.Config;
-import net.minecraft.resources.ResourceLocation;
 
 import java.util.function.Supplier;
 

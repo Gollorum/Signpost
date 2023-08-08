@@ -92,7 +92,7 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
                 if(info.player instanceof ServerPlayer)
                     PacketHandler.send(
                         PacketDistributor.PLAYER.with(() -> (ServerPlayer) info.player),
-                        new RequestWaystoneGui.Package(new WorldLocation(info.tile.getBlockPos(), info.player.level), Optional.empty())
+                        new RequestWaystoneGui.Package(new WorldLocation(info.tile.getBlockPos(), info.player.level()), Optional.empty())
                     );
                 else Signpost.LOGGER.error("Tried to ask player to open the waystone GUI, but it was a " + info.player.getClass().getName());
             }

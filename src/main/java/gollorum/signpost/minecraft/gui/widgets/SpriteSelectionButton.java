@@ -3,10 +3,11 @@ package gollorum.signpost.minecraft.gui.widgets;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import gollorum.signpost.minecraft.gui.utils.Rect;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
 import org.joml.Matrix4f;
@@ -36,7 +37,7 @@ public class SpriteSelectionButton extends AbstractButton {
     }
 
     @Override
-    public void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
 
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
@@ -46,7 +47,7 @@ public class SpriteSelectionButton extends AbstractButton {
         RenderSystem.defaultBlendFunc();
         RenderSystem.enableDepthTest();
 
-        Matrix4f matrix = matrixStack.last().pose();
+        Matrix4f matrix = graphics.pose().last().pose();
         float blitOffset = 0f;
         int xMin = this.getX();
         int xMax = xMin + width;
@@ -60,7 +61,7 @@ public class SpriteSelectionButton extends AbstractButton {
         BufferUploader.drawWithShader(bufferbuilder.end());
         RenderSystem.disableBlend();
 //        BufferUploader.end(bufferbuilder);
-        if(isHovered) GuiComponent.fill(matrixStack, xMin, yMin, xMax, yMax, 0x50ffffff);
+        if(isHovered) graphics.fill(RenderType.guiOverlay(), xMin, yMin, xMax, yMax, 0x50ffffff);
 
     }
 

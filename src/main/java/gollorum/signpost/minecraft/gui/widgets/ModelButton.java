@@ -5,6 +5,7 @@ import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.minecraft.gui.utils.TextureResource;
 import gollorum.signpost.minecraft.rendering.FlippableModel;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.renderer.RenderType;
@@ -65,10 +66,10 @@ public class ModelButton extends ImageButton {
     }
 
     @Override
-    public void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        super.renderWidget(matrixStack, mouseX, mouseY, partialTicks);
+    public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+        super.renderWidget(graphics, mouseX, mouseY, partialTicks);
         for(GuiModelRenderer model : modelRenderers) {
-            model.render(matrixStack, mouseX, mouseY, partialTicks);
+            model.render(graphics, mouseX, mouseY, partialTicks);
         }
     }
 

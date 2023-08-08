@@ -25,10 +25,10 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.level.material.Material;
-import net.minecraft.world.level.material.MaterialColor;
+import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -100,7 +100,9 @@ public class ModelWaystone extends BaseEntityBlock implements SimpleWaterloggedB
 	public final Variant variant;
 
 	private ModelWaystone(Variant variant) {
-		super(Properties.of(Material.PISTON, MaterialColor.STONE)
+		super(Properties.of()
+			.mapColor(MapColor.STONE)
+			.instrument(NoteBlockInstrument.BASEDRUM)
 			.strength(1.5F, 6.0F)
 			.noOcclusion()
 			.isViewBlocking((x, y, z) -> false)

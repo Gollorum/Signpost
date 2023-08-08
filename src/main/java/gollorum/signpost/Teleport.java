@@ -1,6 +1,7 @@
 package gollorum.signpost;
 
 import gollorum.signpost.blockpartdata.types.SignBlockPart;
+import gollorum.signpost.compat.ExternalWaystone;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.gui.ConfirmTeleportGui;
@@ -9,7 +10,6 @@ import gollorum.signpost.minecraft.utils.Inventory;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.compat.ExternalWaystone;
 import gollorum.signpost.utils.Delay;
 import gollorum.signpost.utils.Either;
 import gollorum.signpost.utils.WaystoneHandleUtils;
@@ -21,8 +21,6 @@ import gollorum.signpost.utils.serialization.ComponentSerializer;
 import gollorum.signpost.utils.serialization.StringSerializer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -46,7 +44,6 @@ import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -76,10 +73,10 @@ public class Teleport {
                 diff.x, diff.z
             );
             Angle pitch = Angle.fromRadians((float) (Math.PI / 2 + Math.atan(Math.sqrt(diff.x * diff.x + diff.z * diff.z) / diff.y)));
-            Level oldWorld = player.level;
+            Level oldWorld = player.level();
             BlockPos oldPos = player.blockPosition();
             // Handle different dimensions outside GUI in case of external waystones
-            if (!player.level.dimensionType().equals(world.dimensionType())) {
+            if (!player.level().dimensionType().equals(world.dimensionType())) {
                 if (!(Config.Server.teleport.enableAcrossDimensions.get())) {
                     player.sendSystemMessage(Component.translatable(LangKeys.differentDimension));
                     return;
@@ -100,7 +97,7 @@ public class Teleport {
             if (Config.Server.teleport.allowVehicle.get() && player.isPassenger()) {
                 Entity vehicle = player.getVehicle();
                 while(vehicle.isPassenger()) vehicle = vehicle.getVehicle();
-                if (!player.level.dimensionType().equals(world.dimensionType())) {
+                if (!player.level().dimensionType().equals(world.dimensionType())) {
                     changeDimensionWithChildren(vehicle, world, teleporter);
                 } else {
                     var leashedMobs = findLeashedMobs(player);
@@ -157,12 +154,12 @@ public class Teleport {
 
     private static List<Mob> findLeashedMobs(Entity player) {
         var searchBox = new AABB(player.blockPosition()).inflate(7.0d);
-        return player.level.getEntitiesOfClass(Mob.class, searchBox, mob -> mob.getLeashHolder() == player);
+        return player.level().getEntitiesOfClass(Mob.class, searchBox, mob -> mob.getLeashHolder() == player);
     }
 
     private static void teleportLeadedAnimals(Entity player, List<Mob> leashed, ServerLevel level, ITeleporter tp) {
         for(Mob mob : leashed) {
-            if(level != mob.level)
+            if(level != mob.level())
                 mob = changeDimensionWithChildren(mob, level, tp);
             else {
                 var portalIngo = tp.getPortalInfo(mob, level, null);

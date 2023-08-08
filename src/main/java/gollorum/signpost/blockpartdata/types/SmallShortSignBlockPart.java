@@ -95,7 +95,7 @@ public class SmallShortSignBlockPart extends SignBlockPart<SmallShortSignBlockPa
     @Override
     public void readMutationUpdate(CompoundTag compound, BlockEntity tile, Player editingPlayer) {
         if(editingPlayer != null
-            && !editingPlayer.level.isClientSide()
+            && !editingPlayer.level().isClientSide()
             && tile instanceof WithOwner.OfSignpost
             && !hasThePermissionToEdit(((WithOwner.OfSignpost)tile), editingPlayer)
         ) {

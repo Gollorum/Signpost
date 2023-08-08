@@ -28,5 +28,6 @@
     "recipes": [
       "signpost:cut_into_aer"
     ]
-  }
+  },
+  "sends_telemetry_event": false
 }

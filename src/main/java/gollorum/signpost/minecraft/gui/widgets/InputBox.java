@@ -6,8 +6,9 @@ import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.minecraft.gui.utils.Ticking;
 import gollorum.signpost.minecraft.gui.utils.WithMutableX;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
@@ -82,15 +83,15 @@ public class InputBox extends EditBox implements WithMutableX, Ticking {
     }
 
     @Override
-    public void renderWidget(PoseStack matrixStack, int p_94161_, int p_94162_, float p_94163_) {
-        matrixStack.pushPose();
-        matrixStack.translate(0, 0, zOffset);
+    public void renderWidget(GuiGraphics graphics, int p_94161_, int p_94162_, float p_94163_) {
+        graphics.pose().pushPose();
+        graphics.pose().translate(0, 0, zOffset);
         if(isHovered && !isBordered()) {
             int fromY = getY() + (configFont.lineHeight - height) / 2;
-            GuiComponent.fill(matrixStack, getX(), fromY, getX() + width, fromY + height, 0x40ffffff);
+            graphics.fill(RenderType.guiOverlay(), getX(), fromY, getX() + width, fromY + height, 0x40ffffff);
         }
-        super.renderWidget(matrixStack, p_94161_, p_94162_, p_94163_);
-        matrixStack.popPose();
+        super.renderWidget(graphics, p_94161_, p_94162_, p_94163_);
+        graphics.pose().popPose();
     }
 
     @Override

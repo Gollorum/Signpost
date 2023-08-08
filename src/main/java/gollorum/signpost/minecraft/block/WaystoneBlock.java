@@ -36,8 +36,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
-import net.minecraft.world.level.material.Material;
-import net.minecraft.world.level.material.MaterialColor;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
+import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.network.PacketDistributor;
@@ -63,9 +63,11 @@ public class WaystoneBlock extends BaseEntityBlock implements WithCountRestricti
 
 
     private WaystoneBlock() {
-        super(Properties.of(Material.PISTON, MaterialColor.STONE)
-            .strength(1.5F, 6.0F)
+        super(Properties.of()
+            .mapColor(MapColor.STONE)
+            .instrument(NoteBlockInstrument.BASEDRUM)
             .requiresCorrectToolForDrops()
+            .strength(1.5F, 6.0F)
         );
     }
 

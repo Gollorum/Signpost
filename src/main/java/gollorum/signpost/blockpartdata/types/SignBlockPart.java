@@ -420,7 +420,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
             setOverlay(overlaySerializer.read(compound.getCompound("Overlay")));
 
         if(compound.contains("IsLocked")) {
-            if(editingPlayer == null || editingPlayer.level.isClientSide()
+            if(editingPlayer == null || editingPlayer.level().isClientSide()
                 || ((WithOwner.OfSignpost)tile).getSignpostOwner().map(owner -> editingPlayer.getUUID().equals(owner.id)).orElse(true)
                 || editingPlayer.hasPermissions(Config.Server.permissions.editLockedSignCommandPermissionLevel.get()))
                 coreData.isLocked = compound.getBoolean("IsLocked");

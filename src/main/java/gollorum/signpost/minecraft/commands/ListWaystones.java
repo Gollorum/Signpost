@@ -21,7 +21,7 @@ public class ListWaystones {
 			.requires(source -> source.hasPermission(Config.Server.permissions.listPermissionLevel.get()))
 			.executes(context -> {
 				WaystoneLibrary.getInstance().requestAllWaystoneNames(names ->
-					context.getSource().sendSuccess(
+					context.getSource().sendSuccess(() ->
 						names.values().stream().map(n -> TextComponents.waystone(
 							context.getSource().getEntity() instanceof ServerPlayer
 								? (ServerPlayer) context.getSource().getEntity()

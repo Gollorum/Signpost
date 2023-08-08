@@ -28,5 +28,6 @@
     "recipes": [
       "signpost:tool"
     ]
-  }
+  },
+  "sends_telemetry_event": false
 }

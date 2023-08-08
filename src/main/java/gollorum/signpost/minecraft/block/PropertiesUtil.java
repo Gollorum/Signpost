@@ -2,8 +2,8 @@ package gollorum.signpost.minecraft.block;
 
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.material.Material;
-import net.minecraft.world.level.material.MaterialColor;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
+import net.minecraft.world.level.material.MapColor;
 
 public class PropertiesUtil {
 
@@ -11,35 +11,48 @@ public class PropertiesUtil {
         Oak, DarkOak, Spruce, Birch, Jungle, Acacia, Mangrove, Bamboo, Cherry, Warped, Crimson
     }
 
-    public static Block.Properties STONE = Block.Properties.of(Material.STONE, MaterialColor.STONE)
-        .strength(1.5F, 6.0F).requiresCorrectToolForDrops();
+    public static Block.Properties STONE = Block.Properties.of()
+        .mapColor(MapColor.STONE)
+        .instrument(NoteBlockInstrument.BASEDRUM)
+        .strength(1.5F, 6.0F)
+        .requiresCorrectToolForDrops();
 
-    public static Block.Properties IRON = Block.Properties.of(Material.METAL, MaterialColor.METAL)
-        .strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops();
+    public static Block.Properties IRON = Block.Properties.of()
+        .mapColor(MapColor.METAL)
+        .instrument(NoteBlockInstrument.IRON_XYLOPHONE)
+        .requiresCorrectToolForDrops()
+        .strength(5.0F, 6.0F)
+        .sound(SoundType.METAL);
 
-    private static Block.Properties wood(MaterialColor color){
-        return Block.Properties.of(Material.WOOD, color)
-            .strength(2.0F, 3.0F).sound(SoundType.WOOD);
+    private static Block.Properties wood(MapColor color){
+        return Block.Properties.of()
+            .mapColor(color)
+            .instrument(NoteBlockInstrument.BASS)
+            .strength(2.0F, 3.0F)
+            .sound(SoundType.WOOD);
     }
 
-    public static Block.Properties mushroom(MaterialColor color){
-        return Block.Properties.of(Material.WOOD, color)
-            .strength(0.2F).sound(SoundType.WOOD);
+    public static Block.Properties mushroom(MapColor color){
+        return Block.Properties.of()
+            .mapColor(color)
+            .instrument(NoteBlockInstrument.BASS)
+            .strength(0.2F)
+            .sound(SoundType.WOOD);
     }
 
-    private static MaterialColor colorFor(WoodType type){
+    private static MapColor colorFor(WoodType type){
         return switch (type) {
-            case Oak -> MaterialColor.WOOD;
-            case DarkOak -> MaterialColor.COLOR_BROWN;
-            case Spruce -> MaterialColor.PODZOL;
-            case Birch -> MaterialColor.SAND;
-            case Jungle -> MaterialColor.DIRT;
-            case Acacia -> MaterialColor.COLOR_ORANGE;
-            case Mangrove -> MaterialColor.COLOR_RED;
-            case Bamboo -> MaterialColor.COLOR_YELLOW;
-            case Cherry -> MaterialColor.TERRACOTTA_WHITE;
-            case Warped -> MaterialColor.WARPED_STEM;
-            case Crimson -> MaterialColor.CRIMSON_STEM;
+            case Oak -> MapColor.WOOD;
+            case DarkOak -> MapColor.COLOR_BROWN;
+            case Spruce -> MapColor.PODZOL;
+            case Birch -> MapColor.SAND;
+            case Jungle -> MapColor.DIRT;
+            case Acacia -> MapColor.COLOR_ORANGE;
+            case Mangrove -> MapColor.COLOR_RED;
+            case Bamboo -> MapColor.COLOR_YELLOW;
+            case Cherry -> MapColor.TERRACOTTA_WHITE;
+            case Warped -> MapColor.WARPED_STEM;
+            case Crimson -> MapColor.CRIMSON_STEM;
         };
     }
 

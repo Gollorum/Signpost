@@ -81,15 +81,15 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
-//    implementation fg.deobf("curse.maven:balm-${balm_project_id}:${balm_file_id}")
-//    implementation fg.deobf("curse.maven:waystones-${waystones_project_id}:${waystones_file_id}")
+    implementation fg.deobf("curse.maven:balm-${balm_project_id}:${balm_file_id}")
+    implementation fg.deobf("curse.maven:waystones-${waystones_project_id}:${waystones_file_id}")
 
 //    implementation fg.deobf("curse.maven:architectury-api-${architectury_project_id}:${architectury_file_id}")
 //    implementation fg.deobf("curse.maven:cloth-config-${cloth_project_id}:${cloth_file_id}")
 //    // Validation crashes debug server
 //    compileOnly fg.deobf("curse.maven:antique-atlas-${atlas_project_id}:${atlas_file_id}")
 
-//    implementation fg.deobf("curse.maven:repurposed-structures-${repurposed_structures_project_id}:${repurposed_structures_file_id}")
+    implementation fg.deobf("curse.maven:repurposed-structures-${repurposed_structures_project_id}:${repurposed_structures_file_id}")
 
 }
 

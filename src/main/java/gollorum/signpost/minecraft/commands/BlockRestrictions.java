@@ -59,7 +59,7 @@ public class BlockRestrictions {
 		Optional<Component> subject = PlayerHandle.from(commandSource.getEntity()).equals(PlayerHandle.from(targetedPlayer)) || targetedPlayer == null
 			? Optional.empty()
 			: Optional.of(targetedPlayer.getDisplayName());
-		commandSource.sendSuccess(left < 0 ?
+		commandSource.sendSuccess(() -> left < 0 ?
 			type.getUnlimitedRemainingTextComponent(subject) :
 			type.getRemainingTextComponent(left, subject), false);
 		return Command.SINGLE_SUCCESS;
@@ -88,7 +88,7 @@ public class BlockRestrictions {
 		Optional<Component> subject = PlayerHandle.from(commandSource.getEntity()).equals(tHandle) || targetedPlayer == null
 			? Optional.empty()
 			: Optional.of(targetedPlayer.getDisplayName());
-		commandSource.sendSuccess(count < 0 ?
+		commandSource.sendSuccess(() -> count < 0 ?
 			type.getUnlimitedRemainingTextComponent(subject) :
 			type.getRemainingTextComponent(count, subject), true);
 		return Command.SINGLE_SUCCESS;

@@ -6,9 +6,10 @@ import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.utils.math.Angle;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 
 import java.util.Collection;
@@ -34,9 +35,9 @@ public class GuiBlockPartRenderer extends AbstractWidget {
     private static int heightFor(float scale) { return (int)(scale * 1.5f); }
 
     @Override
-    public void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         if(isHovered)
-            GuiComponent.fill(matrixStack, getX(), getY(), getX() + width, getY() + height, 0x20ffffff);
+            graphics.fill(RenderType.guiOverlay(), getX(), getY(), getX() + width, getY() + height, 0x20ffffff);
 
         PoseStack ms = new PoseStack();
         RenderingUtil.wrapInMatrixEntry(ms, () -> {

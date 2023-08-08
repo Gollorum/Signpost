@@ -28,5 +28,6 @@
     "recipes": [
       "signpost:brush"
     ]
-  }
+  },
+  "sends_telemetry_event": false
 }

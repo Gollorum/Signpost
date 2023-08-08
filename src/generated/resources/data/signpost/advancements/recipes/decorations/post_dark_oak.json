@@ -52,5 +52,6 @@
     "recipes": [
       "signpost:post_dark_oak"
     ]
-  }
+  },
+  "sends_telemetry_event": false
 }

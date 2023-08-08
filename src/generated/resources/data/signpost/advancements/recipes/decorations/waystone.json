@@ -41,5 +41,6 @@
     "recipes": [
       "signpost:waystone"
     ]
-  }
+  },
+  "sends_telemetry_event": false
 }

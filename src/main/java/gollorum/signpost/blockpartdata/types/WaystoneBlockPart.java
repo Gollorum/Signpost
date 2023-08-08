@@ -52,7 +52,7 @@ public class WaystoneBlockPart implements BlockPart<WaystoneBlockPart>, WithOwne
 
 	@Override
 	public InteractionResult interact(InteractionInfo info) {
-		WaystoneBlock.onRightClick(info.player.level, info.tile.getBlockPos(), info.player);
+		WaystoneBlock.onRightClick(info.player.level(), info.tile.getBlockPos(), info.player);
 		return InteractionResult.Accepted;
 	}
 

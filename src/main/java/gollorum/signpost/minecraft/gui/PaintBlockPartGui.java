@@ -88,7 +88,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
                     left + x * ItemButton.width, top, Rect.XAlignment.Left, Rect.YAlignment.Bottom,
                     tuple._2,
                     b -> setupTextureButtonsFor(tuple._1),
-                    itemRenderer, font
+                    Minecraft.getInstance().getItemRenderer(), font
                 ));
             }
         }
