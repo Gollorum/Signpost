@@ -112,7 +112,7 @@ public class Signpost {
 
         @SubscribeEvent
         public void joinServer(PlayerEvent.PlayerLoggedInEvent e) {
-            if(!e.getEntity().level.isClientSide && serverInstance.isDedicatedServer())
+            if(!e.getEntity().level().isClientSide && serverInstance.isDedicatedServer())
                 PacketHandler.send(
                     PacketDistributor.PLAYER.with((() -> (ServerPlayer) e.getEntity())),
                     new JoinServerEvent.Package()
