@@ -142,6 +142,22 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
             Lazy.of(() -> Ingredient.of(ItemTags.MANGROVE_LOGS)),
             Lazy.of(() -> Ingredient.of(Items.MANGROVE_SIGN))
         );
+        public static final ModelType Bamboo = new ModelType("bamboo",
+            new ResourceLocation("bamboo_block"),
+            new ResourceLocation("stripped_bamboo_block"),
+            new ResourceLocation("bamboo_block"),
+            Lazy.of(() -> Ingredient.of(Items.BAMBOO_SIGN)),
+            Lazy.of(() -> Ingredient.of(ItemTags.BAMBOO_BLOCKS)),
+            Lazy.of(() -> Ingredient.of(Items.BAMBOO_SIGN))
+        );
+        public static final ModelType Cherry = new ModelType("cherry",
+            new ResourceLocation("cherry_log"),
+            new ResourceLocation("stripped_cherry_log"),
+            new ResourceLocation("cherry_log"),
+            Lazy.of(() -> Ingredient.of(Items.CHERRY_SIGN)),
+            Lazy.of(() -> Ingredient.of(ItemTags.CHERRY_LOGS)),
+            Lazy.of(() -> Ingredient.of(Items.CHERRY_SIGN))
+        );
         public static final ModelType Stone = new ModelType("stone",
             new ResourceLocation("stone"),
             new ResourceLocation("stone"),
@@ -209,6 +225,8 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
             register(DarkOak);
             register(Spruce);
             register(Mangrove);
+            register(Bamboo);
+            register(Cherry);
             register(Warped);
             register(Crimson);
             register(Sandstone);
@@ -322,13 +340,15 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
     public static final Variant JUNGLE = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Jungle), ModelType.Jungle, "jungle", Variant.RequiredTool.Axe);
     public static final Variant ACACIA = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Acacia), ModelType.Acacia, "acacia", Variant.RequiredTool.Axe);
     public static final Variant MANGROVE = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Mangrove), ModelType.Mangrove, "mangrove", Variant.RequiredTool.Axe);
+    public static final Variant BAMBOO = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Bamboo), ModelType.Bamboo, "bamboo", Variant.RequiredTool.Axe);
+    public static final Variant CHERRY = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Cherry), ModelType.Cherry, "cherry", Variant.RequiredTool.Axe);
     public static final Variant WARPED = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Warped), ModelType.Warped, "warped", Variant.RequiredTool.Axe);
     public static final Variant CRIMSON = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Crimson), ModelType.Crimson, "crimson", Variant.RequiredTool.Axe);
     public static final Variant SANDSTONE = new Variant(PropertiesUtil.STONE, ModelType.Sandstone, "sandstone", Variant.RequiredTool.Pickaxe);
     public static final Variant BROWN_MUSHROOM = new Variant(PropertiesUtil.mushroom(MaterialColor.DIRT), ModelType.BrownMushroom, "brown_mushroom", Variant.RequiredTool.Axe);
     public static final Variant RED_MUSHROOM = new Variant(PropertiesUtil.mushroom(MaterialColor.COLOR_RED), ModelType.RedMushroom, "red_mushroom", Variant.RequiredTool.Axe);
 
-    public static final List<Variant> AllVariants = Arrays.asList(OAK, BIRCH, SPRUCE, JUNGLE, DARK_OAK, ACACIA, MANGROVE, STONE, IRON, WARPED, CRIMSON, SANDSTONE, BROWN_MUSHROOM, RED_MUSHROOM);
+    public static final List<Variant> AllVariants = Arrays.asList(OAK, BIRCH, SPRUCE, JUNGLE, DARK_OAK, ACACIA, MANGROVE, BAMBOO, CHERRY, STONE, IRON, WARPED, CRIMSON, SANDSTONE, BROWN_MUSHROOM, RED_MUSHROOM);
     public static Block[] getAllBlocks() {
         return AllVariants.stream().map(Variant::getBlock).toArray(Block[]::new);
     }
