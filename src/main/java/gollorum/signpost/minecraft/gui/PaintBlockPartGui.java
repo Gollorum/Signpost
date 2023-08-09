@@ -126,9 +126,13 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
     private List<TextureAtlasSprite> allSpritesFor(BucketItem item) {
         var typeExtensions = IClientFluidTypeExtensions.of(item.getFluid());
         var ret = new ArrayList<TextureAtlasSprite>(3);
-        ret.add(spriteFrom(typeExtensions.getFlowingTexture()));
-        ret.add(spriteFrom(typeExtensions.getOverlayTexture()));
-        ret.add(spriteFrom(typeExtensions.getStillTexture()));
+        ResourceLocation loc = null;
+        if((loc = typeExtensions.getFlowingTexture()) != null)
+            ret.add(spriteFrom(loc));
+        if((loc = typeExtensions.getOverlayTexture()) != null)
+            ret.add(spriteFrom(loc));
+        if((loc = typeExtensions.getFlowingTexture()) != null)
+            ret.add(spriteFrom(loc));
         return ret;
     }
 
