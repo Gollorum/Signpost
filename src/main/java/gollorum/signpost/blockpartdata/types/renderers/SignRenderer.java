@@ -22,6 +22,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
+import java.awt.*;
 import java.util.Random;
 
 public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPartRenderer<T> {
@@ -46,21 +47,30 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
 					renderText(sign, matrix, renderDispatcher.font, buffer, combinedLights);
 				});
 				Matrix4f rotationMatrix = new Matrix4f(rotation);
+				var tints = new int[2];
+				tints[0] = sign.getMainTexture().tint().map(t -> t.getColorAt(tileEntity.getLevel(), tileEntity.getBlockPos())).orElse(Colors.white);
+				tints[1] = sign.getSecondaryTexture().tint().map(t -> t.getColorAt(tileEntity.getLevel(), tileEntity.getBlockPos())).orElse(Colors.white);
 				if(shouldRenderBaked)
 					renderModel.render(
 						makeBakedModel(sign),
 						tileEntity.getLevel(),
 						tileEntity.getBlockState(),
 						tileEntity.getBlockPos(),
-						buffer.getBuffer(RenderType.solid()), false, random, randomSeed, combinedOverlay, rotationMatrix
+						buffer.getBuffer(RenderType.solid()), false, random, randomSeed, combinedOverlay, rotationMatrix,
+						tints
 					);
 				else makeModel(sign).render(
 					matrix.last(),
+					rotationMatrix,
 					buffer,
 					RenderType.solid(),
 					combinedLights,
 					combinedOverlay,
-					1, 1, 1
+					true,
+					tileEntity.getLevel(),
+					tileEntity.getBlockState(),
+					tileEntity.getBlockPos(),
+					tints
 				);
 				sign.getOverlay().ifPresent(o -> {
 					if(shouldRenderBaked)
@@ -69,17 +79,22 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
 							tileEntity.getLevel(),
 							tileEntity.getBlockState(),
 							tileEntity.getBlockPos(),
-							buffer.getBuffer(RenderType.cutoutMipped()), false, random, randomSeed, combinedOverlay, rotationMatrix
+							buffer.getBuffer(RenderType.cutoutMipped()), false, random, randomSeed, combinedOverlay, rotationMatrix,
+							new int[]{o.tint.map(t -> t.getColorAt(tileEntity.getLevel(), tileEntity.getBlockPos())).orElse(Colors.white)}
 						);
 					else {
-						int tint = o.getTintAt(tileEntity.getLevel(), tileEntity.getBlockPos());
 						makeOverlayModel(sign, o).render(
 							matrix.last(),
+							rotationMatrix,
 							buffer,
 							RenderType.cutoutMipped(),
 							combinedLights,
 							combinedOverlay,
-							Colors.getRed(tint) / 255f, Colors.getGreen(tint) / 255f, Colors.getBlue(tint) / 255f
+							true,
+							tileEntity.getLevel(),
+							tileEntity.getBlockState(),
+							tileEntity.getBlockPos(),
+							new int[]{o.tint.map(t -> t.getColorAt(tileEntity.getLevel(), tileEntity.getBlockPos())).orElse(Colors.white)}
 						);
 					}
 				});
@@ -92,7 +107,11 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
 	@Override
 	public void renderGui(T sign, PoseStack matrixStack, Point center, Angle yaw, Angle pitch, boolean isFlipped, float scale, Vector3 offset) {
 		if(sign.isMarkedForGeneration() && !Config.Server.worldGen.debugMode()) return;
-		RenderingUtil.renderGui(makeBakedModel(sign), matrixStack, 0xffffff, center, yaw.add(sign.getAngle().get()), pitch, isFlipped, scale, offset, RenderType.solid(),
+		var tints = new int[]{
+			sign.getMainTexture().tint().map(t -> t.getColorAt(Minecraft.getInstance().level, Minecraft.getInstance().player.blockPosition())).orElse(Colors.white),
+			sign.getSecondaryTexture().tint().map(t -> t.getColorAt(Minecraft.getInstance().level, Minecraft.getInstance().player.blockPosition())).orElse(Colors.white)
+		};
+		RenderingUtil.renderGui(makeBakedModel(sign), matrixStack, tints, center, yaw.add(sign.getAngle().get()), pitch, isFlipped, scale, offset, RenderType.solid(),
 			ms -> RenderingUtil.wrapInMatrixEntry(ms, () -> {
 				if(!sign.isFlipped())
 					ms.mulPose(new Quaternion(Vector3f.YP, 180, true));
@@ -100,13 +119,17 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
 			})
 		);
 		sign.getOverlay().ifPresent(o ->
-			RenderingUtil.renderGui(makeBakedOverlayModel(sign, o), matrixStack, o.getDefaultTint(), center, yaw.add(sign.getAngle().get()), pitch, isFlipped, scale, offset, RenderType.cutout(), m -> {}));
+			RenderingUtil.renderGui(makeBakedOverlayModel(sign, o), matrixStack, new int[]{o.tint.map(t -> t.getColorAt(Minecraft.getInstance().level, Minecraft.getInstance().player.blockPosition())).orElse(Colors.white)}, center, yaw.add(sign.getAngle().get()), pitch, isFlipped, scale, offset, RenderType.cutout(), m -> {}));
 	}
 
 	@Override
 	public void renderGui(T sign, PoseStack matrixStack, Vector3 offset, MultiBufferSource buffer, int combinedLight, int combinedOverlay) {
 		if(sign.isMarkedForGeneration() && !Config.Server.worldGen.debugMode()) return;
-		RenderingUtil.renderGui(makeBakedModel(sign), matrixStack, 0xffffff, offset, sign.getAngle().get(), buffer.getBuffer(RenderType.solid()), combinedLight, combinedOverlay,
+		var tints = new int[]{
+			sign.getMainTexture().tint().map(t -> t.getColorAt(Minecraft.getInstance().level, Minecraft.getInstance().player.blockPosition())).orElse(Colors.white),
+			sign.getSecondaryTexture().tint().map(t -> t.getColorAt(Minecraft.getInstance().level, Minecraft.getInstance().player.blockPosition())).orElse(Colors.white)
+		};
+		RenderingUtil.renderGui(makeBakedModel(sign), matrixStack, tints, offset, sign.getAngle().get(), buffer.getBuffer(RenderType.solid()), combinedLight, combinedOverlay,
 			ms -> RenderingUtil.wrapInMatrixEntry(matrixStack, () -> {
 				if(!sign.isFlipped())
 					matrixStack.mulPose(new Quaternion(Vector3f.YP, 180, true));
@@ -114,7 +137,7 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
 			})
 		);
 		sign.getOverlay().ifPresent(o -> {
-			RenderingUtil.renderGui(makeBakedOverlayModel(sign, o), matrixStack, o.getDefaultTint(), offset, sign.getAngle().get(), buffer.getBuffer(RenderType.cutout()), combinedLight, combinedOverlay, m -> {});
+			RenderingUtil.renderGui(makeBakedOverlayModel(sign, o), matrixStack, new int[]{o.tint.map(t -> t.getColorAt(Minecraft.getInstance().level, Minecraft.getInstance().player.blockPosition())).orElse(Colors.white)}, offset, sign.getAngle().get(), buffer.getBuffer(RenderType.cutout()), combinedLight, combinedOverlay, m -> {});
 		});
 	}
 

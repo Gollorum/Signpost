@@ -19,11 +19,8 @@ import gollorum.signpost.minecraft.rendering.FlippableModel;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.compat.ExternalWaystoneLibrary;
-import gollorum.signpost.utils.Delay;
-import gollorum.signpost.utils.NameProvider;
-import gollorum.signpost.utils.Tuple;
+import gollorum.signpost.utils.*;
 import gollorum.signpost.utils.math.Angle;
-import gollorum.signpost.utils.AngleProvider;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -36,8 +33,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import org.openjdk.nashorn.internal.runtime.options.Option;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -228,22 +225,22 @@ public class SignGui extends ExtendedScreen {
         int signTypeSelectionTopY = typeSelectionButtonsY;
         int centerOffset = (typeSelectionButtonsSize.width + typeSelectionButtonsSpace) / 2;
 
-        ResourceLocation postTexture = tile.getParts().stream()
+        var postTexture = tile.getParts().stream()
             .filter(p -> p.blockPart instanceof PostBlockPart)
             .map(p -> ((PostBlockPart)p.blockPart).getTexture())
             .findFirst().orElse(tile.modelType.postTexture);
-        ResourceLocation mainTexture = oldSign.map(SignBlockPart::getMainTexture).orElse(modelType.mainTexture);
-        ResourceLocation secondaryTexture = oldSign.map(SignBlockPart::getSecondaryTexture).orElse(modelType.secondaryTexture);
+        var mainTexture = oldSign.map(SignBlockPart::getMainTexture).orElse(modelType.mainTexture);
+        var secondaryTexture = oldSign.map(SignBlockPart::getSecondaryTexture).orElse(modelType.secondaryTexture);
 
-        FlippableModel postModel = FlippableModel.loadSymmetrical(PostModel.postLocation, postTexture);
+        FlippableModel postModel = FlippableModel.loadSymmetrical(PostModel.postLocation, postTexture.location());
         FlippableModel wideModel = FlippableModel.loadFrom(
-            PostModel.wideLocation, PostModel.wideFlippedLocation, mainTexture, secondaryTexture
+            PostModel.wideLocation, PostModel.wideFlippedLocation, mainTexture.location(), secondaryTexture.location()
         );
         FlippableModel shortModel = FlippableModel.loadFrom(
-            PostModel.shortLocation, PostModel.shortFlippedLocation, mainTexture, secondaryTexture
+            PostModel.shortLocation, PostModel.shortFlippedLocation, mainTexture.location(), secondaryTexture.location()
         );
         FlippableModel largeModel = FlippableModel.loadFrom(
-            PostModel.largeLocation, PostModel.largeFlippedLocation, mainTexture, secondaryTexture
+            PostModel.largeLocation, PostModel.largeFlippedLocation, mainTexture.location(), secondaryTexture.location()
         );
 
         addRenderableWidget(
@@ -254,8 +251,8 @@ public class SignGui extends ExtendedScreen {
                 Rect.XAlignment.Center, Rect.YAlignment.Top,
                 rect -> rect.withPoint(p -> p.add(-4, 0)).scaleCenter(0.75f),
                 this::switchToWide,
-                new ModelButton.ModelData(postModel, 0, -0.5f, itemStack, RenderType.solid()),
-                new ModelButton.ModelData(wideModel, 0, 0.25f, itemStack, RenderType.solid())
+                new ModelButton.ModelData(postModel, 0, -0.5f, itemStack, RenderType.solid(), new int[]{colorFrom(postTexture.tint())}),
+                new ModelButton.ModelData(wideModel, 0, 0.25f, itemStack, RenderType.solid(), new int[]{colorFrom(mainTexture.tint()), colorFrom(secondaryTexture.tint())})
             )
         );
 
@@ -267,8 +264,8 @@ public class SignGui extends ExtendedScreen {
                 Rect.XAlignment.Center, Rect.YAlignment.Top,
                 rect -> rect.withPoint(p -> p.add(-11, 0)).scaleCenter(0.75f),
                 this::switchToShort,
-                new ModelButton.ModelData(postModel, 0, -0.5f, itemStack, RenderType.solid()),
-                new ModelButton.ModelData(shortModel, 0, 0.25f, itemStack, RenderType.solid())
+                new ModelButton.ModelData(postModel, 0, -0.5f, itemStack, RenderType.solid(), new int[]{colorFrom(postTexture.tint())}),
+                new ModelButton.ModelData(shortModel, 0, 0.25f, itemStack, RenderType.solid(), new int[]{colorFrom(mainTexture.tint()), colorFrom(secondaryTexture.tint())})
             )
         );
 
@@ -280,8 +277,8 @@ public class SignGui extends ExtendedScreen {
                 Rect.XAlignment.Center, Rect.YAlignment.Top,
                 rect -> rect.withPoint(p -> p.add(-3, 0)).scaleCenter(0.75f),
                 this::switchToLarge,
-                new ModelButton.ModelData(postModel, 0, -0.5f, itemStack, RenderType.solid()),
-                new ModelButton.ModelData(largeModel, 0, 0, itemStack, RenderType.solid())
+                new ModelButton.ModelData(postModel, 0, -0.5f, itemStack, RenderType.solid(), new int[]{colorFrom(postTexture.tint())}),
+                new ModelButton.ModelData(largeModel, 0, 0, itemStack, RenderType.solid(), new int[]{colorFrom(mainTexture.tint()), colorFrom(secondaryTexture.tint())})
             )
         );
 
@@ -415,8 +412,8 @@ public class SignGui extends ExtendedScreen {
         GuiModelRenderer postRenderer = new GuiModelRenderer(
             modelRect, postModel,
             0, -0.5f,
-            RenderType.solid()
-        );
+            RenderType.solid(),
+            new int[]{colorFrom(postTexture.tint())});
         addRenderableOnly(postRenderer);
         Point modelRectTop = modelRect.at(Rect.XAlignment.Center, Rect.YAlignment.Top);
 
@@ -433,8 +430,8 @@ public class SignGui extends ExtendedScreen {
         wideSignRenderer = new GuiModelRenderer(
             modelRect, wideModel,
             0, 0.24f,
-            RenderType.solid()
-        );
+            RenderType.solid(),
+            new int[]{colorFrom(mainTexture.tint()), colorFrom(secondaryTexture.tint())});
         widgetsToFlip.add(wideSignRenderer);
 
         Rect shortInputRect = new Rect(
@@ -449,8 +446,8 @@ public class SignGui extends ExtendedScreen {
         shortSignRenderer = new GuiModelRenderer(
             modelRect, shortModel,
             0, 0.24f,
-            RenderType.solid()
-        );
+            RenderType.solid(),
+            new int[]{colorFrom(mainTexture.tint()), colorFrom(secondaryTexture.tint())});
         widgetsToFlip.add(shortSignRenderer);
 
         Rect largeInputRect = new Rect(
@@ -486,8 +483,8 @@ public class SignGui extends ExtendedScreen {
         largeSignRenderer = new GuiModelRenderer(
             modelRect, largeModel,
             0, -0.01f,
-            RenderType.solid()
-        );
+            RenderType.solid(),
+            new int[]{colorFrom(mainTexture.tint()), colorFrom(secondaryTexture.tint())});
         widgetsToFlip.add(largeSignRenderer);
 
         largeSignInputBoxes = ImmutableList.of(firstLarge, secondLarge, thirdLarge, fourthLarge);
@@ -517,15 +514,15 @@ public class SignGui extends ExtendedScreen {
         for(Overlay overlay: Overlay.getAllOverlays()) {
             FlippableModel overlayModel = FlippableModel.loadFrom(
                 PostModel.wideOverlayLocation, PostModel.wideOverlayFlippedLocation, overlay.textureFor(SmallWideSignBlockPart.class)
-            ).withTintIndex(overlay.tintIndex);
+            );
             overlaySelectionButtons.add(new ModelButton(
                 TextureResource.signTypeSelection, new Point(getCenterX() - centerGap - i * 37, rotationInputBoxRect.max().y + 15),
                 overlayButtonsScale, Rect.XAlignment.Right, Rect.YAlignment.Top,
                 rect -> rect.withPoint(p -> p.add(Math.round(-4 / typeSelectionButtonsScale * overlayButtonsScale), 0)).scaleCenter(0.75f),
                 () -> switchOverlay(Optional.of(overlay)),
-                new ModelButton.ModelData(postModel, 0, -0.5f, itemStack, RenderType.solid()),
-                new ModelButton.ModelData(wideModel, 0, 0.25f, itemStack, RenderType.solid()),
-                new ModelButton.ModelData(overlayModel, 0, 0.25f, itemStack, RenderType.cutout(), overlay.getTintAt(tile.getLevel(), tile.getBlockPos()))
+                new ModelButton.ModelData(postModel, 0, -0.5f, itemStack, RenderType.solid(), new int[]{colorFrom(postTexture.tint())}),
+                new ModelButton.ModelData(wideModel, 0, 0.25f, itemStack, RenderType.solid(), new int[]{colorFrom(mainTexture.tint()), colorFrom(secondaryTexture.tint())}),
+                new ModelButton.ModelData(overlayModel, 0, 0.25f, itemStack, RenderType.cutout(), new int[]{colorFrom(overlay.tint)})
             ));
             i++;
         }
@@ -535,8 +532,8 @@ public class SignGui extends ExtendedScreen {
                 overlayButtonsScale, Rect.XAlignment.Right, Rect.YAlignment.Top,
                 rect -> rect.withPoint(p -> p.add(Math.round(-4 / typeSelectionButtonsScale * overlayButtonsScale), 0)).scaleCenter(0.75f),
                 () -> switchOverlay(Optional.empty()),
-                new ModelButton.ModelData(postModel, 0, -0.5f, itemStack, RenderType.solid()),
-                new ModelButton.ModelData(wideModel, 0, 0.25f, itemStack, RenderType.solid())
+                new ModelButton.ModelData(postModel, 0, -0.5f, itemStack, RenderType.solid(), new int[]{colorFrom(postTexture.tint())}),
+                new ModelButton.ModelData(wideModel, 0, 0.25f, itemStack, RenderType.solid(), new int[]{colorFrom(mainTexture.tint()), colorFrom(secondaryTexture.tint())})
             ));
         for(Button button : overlaySelectionButtons) addRenderableWidget(button);
 
@@ -720,6 +717,10 @@ public class SignGui extends ExtendedScreen {
         }
     }
 
+    private int colorFrom(Optional<Tint> tint) {
+        return tint.map(t -> t.getColorAt(minecraft.level, minecraft.player.blockPosition())).orElse(Colors.white);
+    }
+
     private boolean isCurrentAnglePointingAtWaystone() {
         return (!oldSign.isPresent() && (rotationInputField.getCurrentAngle().equals(Angle.ZERO))
             || lastWaystone.map(lw -> rotationInputField.getCurrentAngle().isNearly(angleEntryForWaystone(lw).angleGetter.get(), Angle.fromDegrees(1)))
@@ -826,32 +827,26 @@ public class SignGui extends ExtendedScreen {
             case Wide:
                 currentOverlay = new GuiModelRenderer(
                     wideSignRenderer.rect,
-                    FlippableModel.loadFrom(PostModel.wideOverlayLocation, PostModel.wideOverlayFlippedLocation, o.textureFor(SmallWideSignBlockPart.class))
-                        .withTintIndex(o.tintIndex),
+                    FlippableModel.loadFrom(PostModel.wideOverlayLocation, PostModel.wideOverlayFlippedLocation, o.textureFor(SmallWideSignBlockPart.class)),
                     0, 0.25f,
                     RenderType.cutout(),
-                    o.getTintAt(tile.getLevel(), tile.getBlockPos())
-                );
+                    new int[]{colorFrom(o.tint)});
                 break;
             case Short:
                 currentOverlay = new GuiModelRenderer(
                     shortSignRenderer.rect,
-                    FlippableModel.loadFrom(PostModel.shortOverlayLocation, PostModel.shortOverlayFlippedLocation, o.textureFor(SmallShortSignBlockPart.class))
-                        .withTintIndex(o.tintIndex),
+                    FlippableModel.loadFrom(PostModel.shortOverlayLocation, PostModel.shortOverlayFlippedLocation, o.textureFor(SmallShortSignBlockPart.class)),
                     0, 0.25f,
                     RenderType.cutout(),
-                    o.getTintAt(tile.getLevel(), tile.getBlockPos())
-                );
+                    new int[]{colorFrom(o.tint)});
                 break;
             case Large:
                 currentOverlay = new GuiModelRenderer(
                     largeSignRenderer.rect,
-                    FlippableModel.loadFrom(PostModel.largeOverlayLocation, PostModel.largeOverlayFlippedLocation, o.textureFor(LargeSignBlockPart.class))
-                        .withTintIndex(o.tintIndex),
+                    FlippableModel.loadFrom(PostModel.largeOverlayLocation, PostModel.largeOverlayFlippedLocation, o.textureFor(LargeSignBlockPart.class)),
                     0, 0,
                     RenderType.cutout(),
-                    o.getTintAt(tile.getLevel(), tile.getBlockPos())
-                );
+                    new int[]{colorFrom(o.tint)});
                 break;
         }
         addRenderableOnly(currentOverlay);
@@ -921,8 +916,8 @@ public class SignGui extends ExtendedScreen {
             new PostTile.TilePartInfo(tile.getLevel().dimension().location(), tile.getBlockPos(), UUID.randomUUID()));
         CompoundTag data;
         boolean isLocked = lockButton.isLocked();
-        ResourceLocation mainTex = oldSign.map(SignBlockPart::getMainTexture).orElse(modelType.mainTexture);
-        ResourceLocation secondaryTex = oldSign.map(SignBlockPart::getSecondaryTexture).orElse(modelType.secondaryTexture);
+        var mainTex = oldSign.map(SignBlockPart::getMainTexture).orElse(modelType.mainTexture);
+        var secondaryTex = oldSign.map(SignBlockPart::getSecondaryTexture).orElse(modelType.secondaryTexture);
         AngleProvider angle = destinationId.flatMap(destination -> isCurrentAnglePointingAtWaystone()
             ? Optional.<AngleProvider>of(new AngleProvider.WaystoneTarget(rotationInputField.getCurrentAngle()))
             : Optional.empty()

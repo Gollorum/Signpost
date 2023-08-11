@@ -1,5 +1,6 @@
 package gollorum.signpost.utils.math.geometry;
 
+import com.mojang.math.Vector4f;
 import gollorum.signpost.utils.math.Angle;
 import com.mojang.math.Vector3d;
 import com.mojang.math.Vector3f;
@@ -22,6 +23,14 @@ public final class Vector3 {
 
     public static Vector3 fromVec3d(Vector3d vec){
         return new Vector3((float)vec.x, (float)vec.y, (float)vec.z);
+    }
+
+    public static Vector3 fromVector3f(Vector3f vec) {
+        return new Vector3(vec.x(), vec.y(), vec.z());
+    }
+
+    public static Vector3 fromVector4f(Vector4f vec) {
+        return new Vector3(vec.x(), vec.y(), vec.z());
     }
 
     public Vec3 asVec3() {

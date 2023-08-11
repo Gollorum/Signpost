@@ -45,18 +45,19 @@ public class WaystoneRenderer extends BlockPartRenderer<WaystoneBlockPart> {
 			random,
 			randomSeed,
 			combinedOverlay,
-			new Matrix4f(Quaternion.ONE)
+			new Matrix4f(Quaternion.ONE),
+			new int[0]
 		));
 	}
 
 	@Override
 	public void renderGui(WaystoneBlockPart part, PoseStack matrixStack, Point center, Angle yaw, Angle pitch, boolean isFlipped, float scale, Vector3 offset) {
-		RenderingUtil.renderGui(model.get(), matrixStack, 0xffffff, center, yaw, pitch, isFlipped, scale, offset, RenderType.solid(), m -> {});
+		RenderingUtil.renderGui(model.get(), matrixStack, new int[0], center, yaw, pitch, isFlipped, scale, offset, RenderType.solid(), m -> {});
 	}
 
 	@Override
 	public void renderGui(WaystoneBlockPart waystone, PoseStack matrixStack, Vector3 offset, MultiBufferSource buffer, int combinedLight, int combinedOverlay) {
-		RenderingUtil.renderGui(model.get(), matrixStack, 0xffffff, offset, Angle.ZERO, buffer.getBuffer(RenderType.solid()), combinedLight, combinedOverlay, m -> {});
+		RenderingUtil.renderGui(model.get(), matrixStack, new int[0], offset, Angle.ZERO, buffer.getBuffer(RenderType.solid()), combinedLight, combinedOverlay, m -> {});
 	}
 
 }

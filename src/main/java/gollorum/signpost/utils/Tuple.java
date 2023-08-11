@@ -5,6 +5,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -36,6 +37,19 @@ public class Tuple<T1, T2> {
 
     public static <Key, Value> Collector<Tuple<Key, Value>, ?, Map<Key, Value>> mapCollector() {
         return Collectors.toMap(t -> t._1, t -> t._2);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Tuple<?, ?> tuple = (Tuple<?, ?>) o;
+        return Objects.equals(_1, tuple._1) && Objects.equals(_2, tuple._2);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(_1, _2);
     }
 
     public static class Serializer<T1, T2> implements CompoundSerializable<Tuple<T1, T2>> {
