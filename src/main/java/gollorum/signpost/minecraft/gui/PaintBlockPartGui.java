@@ -3,19 +3,23 @@ package gollorum.signpost.minecraft.gui;
 import com.google.common.collect.Streams;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.gui.utils.ExtendedScreen;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.minecraft.gui.widgets.GuiBlockPartRenderer;
 import gollorum.signpost.minecraft.gui.widgets.ItemButton;
 import gollorum.signpost.minecraft.gui.widgets.SpriteSelectionButton;
+import gollorum.signpost.minecraft.utils.tints.BlockColorTint;
+import gollorum.signpost.minecraft.utils.Texture;
+import gollorum.signpost.minecraft.utils.tints.WaterTint;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.BlockPart;
 import gollorum.signpost.utils.BlockPartInstance;
+import gollorum.signpost.utils.Tint;
 import gollorum.signpost.utils.Tuple;
 import gollorum.signpost.utils.math.Angle;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
@@ -29,6 +33,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.minecraftforge.fluids.FluidAttributes;
 
 import java.util.*;
 import java.util.function.Function;
@@ -43,21 +48,21 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
     private List<SpriteSelectionButton> textureButtons = new ArrayList<>();
     protected final T part;
     protected final T displayPart;
-    protected TextureAtlasSprite oldSprite;
+    protected Tuple<TextureAtlasSprite, Optional<Tint>> oldSprite;
     private final UUID identifier;
     private Function<ResourceLocation, TextureAtlasSprite> atlasSpriteGetter;
 
-    public PaintBlockPartGui(PostTile tile, T part, T displayPart, UUID identifier, ResourceLocation oldTexture) {
+    public PaintBlockPartGui(PostTile tile, T part, T displayPart, UUID identifier, Texture oldTexture) {
         super(Component.literal("Paint Post"));
         this.tile = tile;
         this.part = part;
         this.displayPart = displayPart;
         atlasSpriteGetter = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS);
-        oldSprite = spriteFrom(oldTexture);
+        oldSprite = Tuple.of(spriteFrom(oldTexture.location()), oldTexture.tint());
         this.identifier = identifier;
     }
     
-    protected TextureAtlasSprite spriteFrom(ResourceLocation loc) {
+    protected TextureAtlasSprite spriteFrom(ResourceLocation loc)  {
         return atlasSpriteGetter.apply(loc);
     }
 
@@ -65,7 +70,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
     protected void init() {
         super.init();
 
-        List<Tuple<List<TextureAtlasSprite>, ItemStack>> blocksToRender = getMinecraft().player.getInventory().items.stream()
+        var blocksToRender = getMinecraft().player.getInventory().items.stream()
             .filter(i -> !i.isEmpty() && (i.getItem() instanceof BlockItem || i.getItem() instanceof BucketItem))
             .map(i -> {
                 ItemStack ret = i.copy();
@@ -74,7 +79,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
             })
             .distinct()
             .map(is -> Tuple.of(allSpritesFor(is), is))
-            .filter(p -> p._1.size() > 0).toList();
+            .filter(p -> !p._1.isEmpty()).toList();
 
         int rows = (blocksToRender.size() + 8) / 9;
 
@@ -83,7 +88,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
             int top = (height * 3) / 4 + y * ItemButton.height;
             int left = width / 2 - (rowWidth * ItemButton.width / 2);
             for (int x = 0; x < rowWidth; x++) {
-                Tuple<List<TextureAtlasSprite>, ItemStack> tuple = blocksToRender.get(x + y * 9);
+                var tuple = blocksToRender.get(x + y * 9);
                 addRenderableWidget(new ItemButton(
                     left + x * ItemButton.width, top, Rect.XAlignment.Left, Rect.YAlignment.Bottom,
                     tuple._2,
@@ -106,42 +111,44 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
 
     private static final Direction[] faces = new Direction[]{null, Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP, Direction.DOWN};
 
-    private List<TextureAtlasSprite> allSpritesFor(ItemStack stack) {
+    private List<Tuple<TextureAtlasSprite, Optional<Tint>>> allSpritesFor(ItemStack stack) {
         Item item = stack.getItem();
         if(item instanceof BlockItem) return allSpritesFor((BlockItem) item, stack);
         else if(item instanceof BucketItem) return allSpritesFor((BucketItem) item);
         else throw new RuntimeException("Item type of " + item.getClass() + " not supported");
     }
 
-    private List<TextureAtlasSprite> allSpritesFor(BlockItem item, ItemStack stack) {
+    private List<Tuple<TextureAtlasSprite, Optional<Tint>>> allSpritesFor(BlockItem item, ItemStack stack) {
         Block block = item.getBlock();
         return block instanceof PostBlock && stack.hasTag() && stack.getTag().contains("Parts")
             ? PostTile.readPartInstances(stack.getTag().getCompound("Parts"))
-                .stream().flatMap(i -> ((Collection<ResourceLocation>) i.blockPart.getAllTextures())
-                    .stream().map(this::spriteFrom)
+                .stream().flatMap(i -> ((Collection<Texture>) i.blockPart.getAllTextures())
+                    .stream().map(tex -> Tuple.of(spriteFrom(tex.location()), tex.tint()))
                 ).collect(Collectors.toList())
             : allSpritesFor(block.defaultBlockState());
     }
 
-    private List<TextureAtlasSprite> allSpritesFor(BucketItem item) {
+    private List<Tuple<TextureAtlasSprite, Optional<Tint>>> allSpritesFor(BucketItem item) {
         var typeExtensions = IClientFluidTypeExtensions.of(item.getFluid());
         var ret = new ArrayList<TextureAtlasSprite>(3);
         ret.add(spriteFrom(typeExtensions.getFlowingTexture()));
         ret.add(spriteFrom(typeExtensions.getOverlayTexture()));
         ret.add(spriteFrom(typeExtensions.getStillTexture()));
+            .map(loc -> Tuple.of(spriteFrom(loc), item.getFluid().getAttributes() instanceof FluidAttributes.Water ? Optional.<Tint>of(new WaterTint()) : Optional.<Tint>empty()))
         return ret;
     }
 
-    private List<TextureAtlasSprite> allSpritesFor(BlockState state) {
+    private List<Tuple<TextureAtlasSprite, Optional<Tint>>> allSpritesFor(BlockState state) {
         BakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
         return Arrays.stream(faces)
             .flatMap(side -> model.getQuads(null, side, font.random).stream())
-            .map(BakedQuad::getSprite)
+            .map(bakedQuad -> Tuple.of(bakedQuad.getSprite(), bakedQuad.getTintIndex()))
             .distinct()
+            .map(loc -> Tuple.of(loc._1, loc._2 >= 0 ? Optional.<Tint>of(new BlockColorTint(state.getBlock(), loc._2)) : Optional.<Tint>empty()))
             .collect(Collectors.toList());
     }
 
-    private void setupTextureButtonsFor(List<TextureAtlasSprite> sprites) {
+    private void setupTextureButtonsFor(List<Tuple<TextureAtlasSprite, Optional<Tint>>> sprites) {
         clearSelection();
 
         sprites = Streams.concat(
@@ -153,15 +160,15 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
         int centerY = height / 2 + 10;
         int left = width / 2 - (sprites.size() * spriteButtonSize / 2);
         for (int x = 0; x < sprites.size(); x++) {
-            TextureAtlasSprite sprite = sprites.get(x);
+            var sprite = sprites.get(x);
             SpriteSelectionButton newButton = new SpriteSelectionButton(
                 new Rect(
                     new Point(left + x * spriteButtonSize, centerY),
                     spriteButtonSize, spriteButtonSize,
                     Rect.XAlignment.Left, Rect.YAlignment.Center
                 ),
-                sprite,
-                imgButton -> setTexture(displayPart, sprite.contents().name())
+                sprite._1, sprite._2.map(t -> t.getColorAt(minecraft.level, minecraft.player.blockPosition())).orElse(Colors.white),
+                imgButton -> setTexture(displayPart, new Texture(sprite.contents().name(), sprite._2))
             );
             addRenderableWidget(newButton);
             textureButtons.add(newButton);
@@ -174,7 +181,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
         }
     }
 
-    protected abstract void setTexture(T part, ResourceLocation texture);
+    protected abstract void setTexture(T part, Texture texture);
 
     @Override
     public void onClose() {

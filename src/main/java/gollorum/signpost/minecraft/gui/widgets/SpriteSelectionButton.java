@@ -9,17 +9,19 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
-import org.joml.Matrix4f;
 
 import java.util.function.Consumer;
 
 public class SpriteSelectionButton extends AbstractButton {
 
     private final TextureAtlasSprite sprite;
+    private final float r;
+    private final float g;
+    private final float b;
     private final Consumer<SpriteSelectionButton> onPressed;
 
     public SpriteSelectionButton(
-        Rect rect, TextureAtlasSprite sprite,
+        Rect rect, TextureAtlasSprite sprite, int tint,
         Consumer<SpriteSelectionButton> pressedAction
     ) {
         super(
@@ -33,14 +35,18 @@ public class SpriteSelectionButton extends AbstractButton {
         else if (sprite.contents().width() < sprite.contents().height())
             width = height * sprite.contents().width() / sprite.contents().height();
         this.sprite = sprite;
+        r = Colors.getRed(tint) / 255f;
+        g = Colors.getGreen(tint) / 255f;
+        b = Colors.getBlue(tint) / 255f;
     }
 
     @Override
     public void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
-
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShaderColor(r, g, b, this.alpha);
+
         RenderSystem.setShaderTexture(0, sprite.atlasLocation());
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();

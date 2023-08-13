@@ -26,14 +26,17 @@ public class WaystoneRenderer extends BlockPartRenderer<WaystoneBlockPart> {
 		WaystoneBlockPart part,
 		BlockEntity tileEntity,
 		BlockEntityRenderDispatcher renderDispatcher,
-		PoseStack matrix,
+		PoseStack blockToView,
+		PoseStack localToBlock,
 		MultiBufferSource buffer,
 		int combinedLights,
 		int combinedOverlay,
 		RandomSource random,
 		long randomSeed
 	) {
-		RenderingUtil.render(matrix, renderModel -> renderModel.render(
+		RenderingUtil.render(
+			blockToView,
+			localToBlock.last().pose(),
 			model.get(),
 			tileEntity.getLevel(),
 			tileEntity.getBlockState(),
@@ -43,18 +46,18 @@ public class WaystoneRenderer extends BlockPartRenderer<WaystoneBlockPart> {
 			random,
 			randomSeed,
 			combinedOverlay,
-			new Matrix4f()
-		));
+			new int[0]
+		);
 	}
 
 	@Override
 	public void renderGui(WaystoneBlockPart part, PoseStack matrixStack, Point center, Angle yaw, Angle pitch, boolean isFlipped, float scale, Vector3 offset) {
-		RenderingUtil.renderGui(model.get(), matrixStack, 0xffffff, center, yaw, pitch, isFlipped, scale, offset, RenderType.solid(), m -> {});
+		RenderingUtil.renderGui(model.get(), matrixStack, new int[0], center, yaw, pitch, isFlipped, scale, offset, RenderType.solid(), m -> {});
 	}
 
 	@Override
 	public void renderGui(WaystoneBlockPart waystone, PoseStack matrixStack, Vector3 offset, MultiBufferSource buffer, int combinedLight, int combinedOverlay) {
-		RenderingUtil.renderGui(model.get(), matrixStack, 0xffffff, offset, Angle.ZERO, buffer.getBuffer(RenderType.solid()), RenderType.solid(), combinedLight, combinedOverlay, m -> {});
+		RenderingUtil.renderGui(model.get(), matrixStack, new int[0], offset, Angle.ZERO, buffer.getBuffer(RenderType.solid()), RenderType.solid(), combinedLight, combinedOverlay, m -> {});
 	}
 
 }

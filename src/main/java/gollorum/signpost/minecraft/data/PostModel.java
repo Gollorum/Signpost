@@ -25,7 +25,7 @@ public class PostModel {
 
     private static final String texturePost = "post";
     public static final String textureSign = "texture";
-    public static final ResourceLocation mainTextureMarker = PostBlock.ModelType.Oak.mainTexture;
+    public static final ResourceLocation mainTextureMarker = PostBlock.ModelType.Oak.mainTexture.location();
     public static final String secondaryTexture = "secondary_texture";
 
     private static final ResourceLocation previewLocation = new ResourceLocation(Signpost.MOD_ID, "block/post_preview");
@@ -131,7 +131,7 @@ public class PostModel {
             .build(previewBuilder, SignModelFactory.Builder.BlockModel);
 
         makePostAt(new Vector3(0, 8, 0), getBuilder(postLocation.toString()))
-            .texture(texturePost, PostBlock.ModelType.Oak.postTexture);
+            .texture(texturePost, PostBlock.ModelType.Oak.postTexture.location());
 
         buildDefaultAndFlipped(
             new SignModelFactory<String>().makeWideSign("#" + textureSign, "#" + secondaryTexture),
@@ -170,20 +170,20 @@ public class PostModel {
         for(PostBlock.Variant variant : PostBlock.AllVariants) {
             getBuilder(variant.registryName)
                 .parent(previewModel)
-                .texture("particle", variant.type.postTexture)
-                .texture(texturePost, variant.type.postTexture)
-                .texture(textureSign, variant.type.mainTexture)
-                .texture(secondaryTexture, variant.type.secondaryTexture);
+                .texture("particle", variant.type.postTexture.location())
+                .texture(texturePost, variant.type.postTexture.location())
+                .texture(textureSign, variant.type.mainTexture.location())
+                .texture(secondaryTexture, variant.type.secondaryTexture.location());
         }
     }
 
     private void buildDefaultAndFlipped(SignModelFactory<String> factory, ResourceLocation main, ResourceLocation flipped) {
         factory.build(getBuilder(main.toString()), SignModelFactory.Builder.BlockModel)
             .texture(textureSign, mainTextureMarker)
-            .texture(secondaryTexture, PostBlock.ModelType.Oak.secondaryTexture);
+            .texture(secondaryTexture, PostBlock.ModelType.Oak.secondaryTexture.location());
         factory.build(getBuilder(flipped.toString()), SignModelFactory.Builder.BlockModelFlipped)
             .texture(textureSign, mainTextureMarker)
-            .texture(secondaryTexture, PostBlock.ModelType.Oak.secondaryTexture);
+            .texture(secondaryTexture, PostBlock.ModelType.Oak.secondaryTexture.location());
     }
 
     private void buildDefaultAndFlippedOverlay(SignModelFactory<String> factory, ResourceLocation main, ResourceLocation flipped, ResourceLocation texture) {
@@ -201,26 +201,32 @@ public class PostModel {
             .face(Direction.SOUTH)
                 .texture("#" + texturePost)
                 .uvs(0, 0, 4, 16)
+                .tintindex(0)
             .end()
             .face(Direction.EAST)
                 .texture("#" + texturePost)
                 .uvs(4, 0, 8, 16)
+                .tintindex(0)
             .end()
             .face(Direction.NORTH)
                 .texture("#" + texturePost)
                 .uvs(8, 0, 12, 16)
+                .tintindex(0)
             .end()
             .face(Direction.WEST)
                 .texture("#" + texturePost)
                 .uvs(12, 0, 16, 16)
+                .tintindex(0)
             .end()
             .face(Direction.DOWN)
                 .texture("#" + texturePost)
                 .uvs(0, 4, 4, 0)
+                .tintindex(0)
             .end()
             .face(Direction.UP)
                 .texture("#" + texturePost)
                 .uvs(0, 16, 4, 12)
+                .tintindex(0)
             .end();
         return builder;
     }

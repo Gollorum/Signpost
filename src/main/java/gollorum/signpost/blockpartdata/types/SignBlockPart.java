@@ -13,6 +13,7 @@ import gollorum.signpost.minecraft.gui.RequestSignGui;
 import gollorum.signpost.minecraft.items.Brush;
 import gollorum.signpost.minecraft.items.GenerationWand;
 import gollorum.signpost.minecraft.utils.LangKeys;
+import gollorum.signpost.minecraft.utils.Texture;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.*;
@@ -48,8 +49,8 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
     protected static final class CoreData {
         public AngleProvider angleProvider;
         public boolean flip;
-        public ResourceLocation mainTexture;
-        public ResourceLocation secondaryTexture;
+        public Texture mainTexture;
+        public Texture secondaryTexture;
         public Optional<Overlay> overlay;
         public int color;
         public Optional<WaystoneHandle> destination;
@@ -64,8 +65,8 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
         public CoreData(
             AngleProvider angleProvider,
             boolean flip,
-            ResourceLocation mainTexture,
-            ResourceLocation secondaryTexture,
+            Texture mainTexture,
+            Texture secondaryTexture,
             Optional<Overlay> overlay,
             int color,
             Optional<WaystoneHandle> destination,
@@ -100,8 +101,8 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
             public CompoundTag write(CoreData coreData, CompoundTag compound) {
                 compound.put("Angle", AngleProvider.Serializer.write(coreData.angleProvider));
                 compound.putBoolean("Flip", coreData.flip);
-                compound.putString("Texture", coreData.mainTexture.toString());
-                compound.putString("TextureDark", coreData.secondaryTexture.toString());
+                compound.put("Texture", Texture.Serializer.write(coreData.mainTexture));
+                compound.put("TextureDark", Texture.Serializer.write(coreData.secondaryTexture));
                 compound.put("Overlay", Overlay.Serializer.optional().write(coreData.overlay));
                 compound.putInt("Color", coreData.color);
 
@@ -143,8 +144,8 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
                 return new CoreData(
                     AngleProvider.fetchFrom(compound.getCompound("Angle")),
                     compound.getBoolean("Flip"),
-                    new ResourceLocation(compound.getString("Texture")),
-                    new ResourceLocation(compound.getString("TextureDark")),
+                    Texture.readFrom(compound.get("Texture")),
+                    Texture.readFrom(compound.get("TextureDark")),
                     Overlay.Serializer.optional().read(compound.getCompound("Overlay")),
                     compound.getInt("Color"),
                     destination,
@@ -249,18 +250,18 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
             || player.hasPermissions(Config.Server.permissions.editLockedSignCommandPermissionLevel.get());
     }
 
-    private void setTextures(ResourceLocation texture, ResourceLocation textureDark) {
+    private void setTextures(Texture texture, Texture textureDark) {
         coreData.mainTexture = texture;
         coreData.secondaryTexture = textureDark;
     }
 
-    public ResourceLocation getMainTexture() { return coreData.mainTexture; }
-    public ResourceLocation getSecondaryTexture() { return coreData.secondaryTexture; }
+    public Texture getMainTexture() { return coreData.mainTexture; }
+    public Texture getSecondaryTexture() { return coreData.secondaryTexture; }
 
-    public void setMainTexture(ResourceLocation tex) {
+    public void setMainTexture(Texture tex) {
         coreData.mainTexture = tex;
     }
-    public void setSecondaryTexture(ResourceLocation tex) {
+    public void setSecondaryTexture(Texture tex) {
         coreData.secondaryTexture = tex;
     }
 
@@ -361,8 +362,8 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
 
     protected void notifyTextureChanged(InteractionInfo info) {
         CompoundTag compound = new CompoundTag();
-        compound.putString("Texture", coreData.mainTexture.toString());
-        compound.putString("TextureDark", coreData.secondaryTexture.toString());
+        compound.put("Texture", Texture.Serializer.write(coreData.mainTexture));
+        compound.put("TextureDark", Texture.Serializer.write(coreData.secondaryTexture));
         info.mutationDistributor.accept(compound);
     }
 
@@ -386,11 +387,11 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
 
         boolean updateTextures = false;
         if(compound.contains("Texture")) {
-            coreData.mainTexture = new ResourceLocation(compound.getString("Texture"));
+            coreData.mainTexture = Texture.readFrom(compound.get("Texture"));
             updateTextures = true;
         }
         if(compound.contains("TextureDark")){
-            coreData.secondaryTexture = new ResourceLocation(compound.getString("TextureDark"));
+            coreData.secondaryTexture = Texture.readFrom(compound.get("TextureDark"));
             updateTextures = true;
         }
         if(updateTextures) setTextures(coreData.mainTexture, coreData.secondaryTexture);
@@ -457,7 +458,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
     public abstract Self copy();
 
     @Override
-    public Collection<ResourceLocation> getAllTextures() {
+    public Collection<Texture> getAllTextures() {
         return Arrays.asList(getMainTexture(), getSecondaryTexture());
     }
 }

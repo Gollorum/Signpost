@@ -138,10 +138,10 @@ public class ModelRegistry<M> {
 
 	public M makeModel(SignBlockPart sign) {
 		return (sign.isFlipped() ? cachedFlippedModels : cachedModels)
-			.computeIfAbsent(sign.getMainTexture(), x -> new ConcurrentHashMap<>())
-			.computeIfAbsent(sign.getSecondaryTexture(),
+			.computeIfAbsent(sign.getMainTexture().location(), x -> new ConcurrentHashMap<>())
+			.computeIfAbsent(sign.getSecondaryTexture().location(),
 				x -> (sign.isFlipped() ? flippedModelConstructor : modelConstructor)
-					.makeModel(sign.getMainTexture(), sign.getSecondaryTexture())
+					.makeModel(sign.getMainTexture().location(), sign.getSecondaryTexture().location())
 			);
 	}
 

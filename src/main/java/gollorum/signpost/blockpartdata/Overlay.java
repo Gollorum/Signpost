@@ -5,18 +5,17 @@ import gollorum.signpost.blockpartdata.types.LargeSignBlockPart;
 import gollorum.signpost.blockpartdata.types.SignBlockPart;
 import gollorum.signpost.blockpartdata.types.SmallShortSignBlockPart;
 import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
-import gollorum.signpost.minecraft.registry.ColorRegistry;
+import gollorum.signpost.minecraft.utils.tints.FoliageTint;
+import gollorum.signpost.minecraft.utils.tints.GrassTint;
+import gollorum.signpost.utils.Tint;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
-import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.FoliageColor;
-import net.minecraft.world.level.GrassColor;
-import net.minecraft.world.level.Level;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public abstract class Overlay {
 
@@ -25,41 +24,22 @@ public abstract class Overlay {
     public static void register(Overlay overlay) { overlayRegistry.put(overlay.id, overlay); }
     public static Collection<Overlay> getAllOverlays() { return overlayRegistry.values(); }
 
-    public static final int NoTint = 0;
-    public static final int GrasTint = 1;
-    public static final int FoliageTint = 2;
-    public static final int WaterTint = 3;
-
-    public final int tintIndex;
+    public final Optional<Tint> tint;
     public final String id;
 
-    protected Overlay(int tintIndex, String id) {
-        this.tintIndex = tintIndex;
+    protected Overlay(Optional<Tint> tint, String id) {
+        this.tint = tint;
         this.id = id;
     }
 
     public abstract ResourceLocation textureFor(Class<? extends SignBlockPart> signClass);
-
-    public int getTintAt(Level world, BlockPos pos) {
-        return ColorRegistry.getOverlayColor(tintIndex, world, pos);
-    }
-
-    public int getDefaultTint() {
-        switch (tintIndex) {
-            case GrasTint: return GrassColor.get(0.8, 0.4);
-            case FoliageTint: return FoliageColor.getDefaultColor();
-            case WaterTint: return 0x3F76E4;
-            case NoTint:
-            default: return 0xffffff;
-        }
-    }
 
     private static <T> T logErrorAndReturn(String error, T t) {
         Signpost.LOGGER.error(error);
         return t;
     }
 
-    public static final Overlay Gras = new Overlay(GrasTint, "gras") {
+    public static final Overlay Gras = new Overlay(Optional.of(new GrassTint()), "gras") {
         @Override
         public ResourceLocation textureFor(Class<? extends SignBlockPart> signClass) {
             return signClass.equals(SmallWideSignBlockPart.class)
@@ -72,7 +52,7 @@ public abstract class Overlay {
         }
     };
 
-    public static final Overlay Vine = new Overlay(FoliageTint, "vine") {
+    public static final Overlay Vine = new Overlay(Optional.of(new FoliageTint()), "vine") {
         @Override
         public ResourceLocation textureFor(Class<? extends SignBlockPart> signClass) {
             return signClass.equals(SmallWideSignBlockPart.class)
@@ -85,7 +65,7 @@ public abstract class Overlay {
         }
     };
 
-    public static final Overlay Snow = new Overlay(NoTint, "snow") {
+    public static final Overlay Snow = new Overlay(Optional.empty(), "snow") {
         @Override
         public ResourceLocation textureFor(Class<? extends SignBlockPart> signClass) {
             return signClass.equals(SmallWideSignBlockPart.class)
