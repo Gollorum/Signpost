@@ -2,6 +2,7 @@ package gollorum.signpost.minecraft.gui;
 
 import gollorum.signpost.blockpartdata.types.PostBlockPart;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.utils.Texture;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 
@@ -18,7 +19,7 @@ public class PaintPostGui extends PaintBlockPartGui<PostBlockPart> {
 	}
 
     @Override
-    protected void setTexture(PostBlockPart part, ResourceLocation texture) {
+    protected void setTexture(PostBlockPart part, Texture texture) {
         part.setTexture(texture);
     }
 

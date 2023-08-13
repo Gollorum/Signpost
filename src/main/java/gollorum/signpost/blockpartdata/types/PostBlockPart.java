@@ -13,6 +13,7 @@ import gollorum.signpost.minecraft.gui.SignGui;
 import gollorum.signpost.minecraft.items.Brush;
 import gollorum.signpost.minecraft.utils.CoordinatesUtil;
 import gollorum.signpost.minecraft.utils.SideUtils;
+import gollorum.signpost.minecraft.utils.Texture;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.BlockPart;
@@ -47,22 +48,22 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
 
     public static final BlockPartMetadata<PostBlockPart> METADATA = new BlockPartMetadata<>(
         "Post",
-        (post, compound) -> compound.putString("texture", post.texture.toString()),
-        (compound) -> new PostBlockPart(new ResourceLocation(compound.getString("texture"))),
+        (post, compound) -> compound.put("texture", Texture.Serializer.write(post.texture)),
+        (compound) -> new PostBlockPart(Texture.readFrom(compound.get("texture"))),
         PostBlockPart.class
     );
 
-    private ResourceLocation texture;
+    private Texture texture;
 
-    public PostBlockPart(ResourceLocation texture) {
+    public PostBlockPart(Texture texture) {
         setTexture(texture);
     }
 
-    public void setTexture(ResourceLocation texture){
+    public void setTexture(Texture texture){
         this.texture = texture;
     }
 
-    public ResourceLocation getTexture() {
+    public Texture getTexture() {
         return texture;
     }
 
@@ -150,13 +151,13 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
     private void notifyTextureChanged(InteractionInfo info) {
         CompoundTag compound = new CompoundTag();
         compound.putString("type", "texture");
-        compound.putString("texture", texture.toString());
+        compound.put("texture", Texture.Serializer.write(texture));
         info.mutationDistributor.accept(compound);
     }
 
     @Override
     public void readMutationUpdate(CompoundTag compound, BlockEntity tile, Player editingPlayer) {
-        setTexture(new ResourceLocation(compound.getString("texture")));
+        setTexture(Texture.readFrom(compound.get("texture")));
     }
 
     @Override
@@ -168,7 +169,7 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
     }
 
     @Override
-    public Collection<ResourceLocation> getAllTextures() {
+    public Collection<Texture> getAllTextures() {
         return Collections.singleton(getTexture());
     }
 

@@ -1,14 +1,13 @@
 package gollorum.signpost.utils.math.geometry;
 
 import gollorum.signpost.utils.math.Angle;
-
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3d;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import java.util.Objects;
 import java.util.function.Function;
@@ -24,6 +23,14 @@ public final class Vector3 {
 //    public static Vector3 fromVec3d(Vector3d vec){
 //        return new Vector3((float)vec.x, (float)vec.y, (float)vec.z);
 //    }
+
+    public static Vector3 fromVector3f(Vector3f vec) {
+        return new Vector3(vec.x(), vec.y(), vec.z());
+    }
+
+    public static Vector3 fromVector4f(Vector4f vec) {
+        return new Vector3(vec.x(), vec.y(), vec.z());
+    }
 
     public Vec3 asVec3() {
         return new Vec3(x, y, z);

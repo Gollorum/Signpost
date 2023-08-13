@@ -15,13 +15,6 @@ public class FlippableModel {
 
 	public BakedModel get(boolean isFlipped) { return isFlipped ? flippedModel : model; }
 
-	public FlippableModel withTintIndex(int tintIndex) {
-		return new FlippableModel(
-			RenderingUtil.withTintIndex(model, tintIndex),
-			RenderingUtil.withTintIndex(flippedModel, tintIndex)
-		);
-	}
-
 	public static FlippableModel loadFrom(ResourceLocation modelLocation, ResourceLocation modelLocationFlipped, ResourceLocation texture) {
 		return new FlippableModel(
 			RenderingUtil.loadModel(modelLocation, texture),

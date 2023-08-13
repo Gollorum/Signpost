@@ -60,8 +60,7 @@ public class ModelButton extends ImageButton {
                 model.modelSpaceXOffset,
                 model.modelSpaceYOffset,
                 model.renderType,
-                model.color
-            ));
+                model.tints));
         }
     }
 
@@ -80,19 +79,15 @@ public class ModelButton extends ImageButton {
         public final float modelSpaceYOffset;
         public final ItemStack itemStack;
         public final RenderType renderType;
-        public final int color;
+        public final int[] tints;
 
-        public ModelData(FlippableModel model, float modelSpaceXOffset, float modelSpaceYOffset, ItemStack itemStack, RenderType renderType) {
-            this(model, modelSpaceXOffset, modelSpaceYOffset, itemStack, renderType, 0xffffff);
-        }
-
-        public ModelData(FlippableModel model, float modelSpaceXOffset, float modelSpaceYOffset, ItemStack itemStack, RenderType renderType, int color) {
+        public ModelData(FlippableModel model, float modelSpaceXOffset, float modelSpaceYOffset, ItemStack itemStack, RenderType renderType, int[] tints) {
             this.model = model;
             this.modelSpaceXOffset = modelSpaceXOffset;
             this.modelSpaceYOffset = modelSpaceYOffset;
             this.itemStack = itemStack;
             this.renderType = renderType;
-            this.color = color;
+            this.tints = tints;
         }
 
     }

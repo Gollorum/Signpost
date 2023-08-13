@@ -2,6 +2,7 @@ package gollorum.signpost.utils;
 
 import gollorum.signpost.interactions.Interactable;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.utils.Texture;
 import gollorum.signpost.security.WithOwner;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -31,6 +32,6 @@ public interface BlockPart<T extends BlockPart<T>> extends Interactable {
     default void attachTo(PostTile tile) {}
     default void removeFrom(PostTile tile) {}
 
-    Collection<ResourceLocation> getAllTextures();
+    Collection<Texture> getAllTextures();
 
 }

@@ -32,13 +32,9 @@ public class GuiModelRenderer implements Renderable, Flippable {
     public final Rect rect;
     private final RenderType renderType;
 
-    private final int color;
+    private final int[] tints;
 
-    public GuiModelRenderer(Rect rect, FlippableModel model, float modelSpaceXOffset, float modelSpaceYOffset, RenderType renderType) {
-        this(rect, model, modelSpaceXOffset, modelSpaceYOffset, renderType, 0xffffff);
-    }
-
-    public GuiModelRenderer(Rect rect, FlippableModel model, float modelSpaceXOffset, float modelSpaceYOffset, RenderType renderType, int color) {
+    public GuiModelRenderer(Rect rect, FlippableModel model, float modelSpaceXOffset, float modelSpaceYOffset, RenderType renderType, int[] tints) {
         this.rect = rect;
         center = rect.center();
         width = rect.width;
@@ -47,7 +43,7 @@ public class GuiModelRenderer implements Renderable, Flippable {
         this.modelSpaceXOffset = modelSpaceXOffset;
         this.modelSpaceYOffset = modelSpaceYOffset;
         this.renderType = renderType;
-        this.color = color;
+        this.tints = tints;
     }
 
 
@@ -69,7 +65,7 @@ public class GuiModelRenderer implements Renderable, Flippable {
             RenderingUtil.renderGui(
                 model.get(isFlipped),
                 new PoseStack(),
-                color,
+                tints,
                 center,
                 Angle.ZERO,
                 Angle.ZERO,
