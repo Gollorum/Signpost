@@ -285,8 +285,9 @@ public class RenderingUtil {
         var poseMatrix = blockToView.last();
         for(BakedQuad bakedquad : quads) {
             bakedquad = transform(bakedquad, quadLocalToBlock, localToBlock);
-            Renderer.get().calculateShape(level, state, pos, bakedquad.getVertices(), bakedquad.getDirection(), aoFloats, bitset);
-            aoFace.calculate(level, state, pos, bakedquad.getDirection(), aoFloats, bitset, bakedquad.isShade());
+            var shadingQuad = clampWithinUnitCube(bakedquad);
+            Renderer.get().calculateShape(level, state, pos, shadingQuad.getVertices(), shadingQuad.getDirection(), aoFloats, bitset);
+            aoFace.calculate(level, state, pos, shadingQuad.getDirection(), aoFloats, bitset, shadingQuad.isShade());
             putQuadData(tints, vertexConsumer, poseMatrix, bakedquad, aoFace.brightness[0], aoFace.brightness[1], aoFace.brightness[2], aoFace.brightness[3], aoFace.lightmap[0], aoFace.lightmap[1], aoFace.lightmap[2], aoFace.lightmap[3], combinedOverlay);
         }
 
@@ -297,8 +298,9 @@ public class RenderingUtil {
         for(BakedQuad bakedquad : quads) {
             bakedquad = transform(bakedquad, quadLocalToBlock, localToBlock);
             if (p_111007_) {
-                Renderer.get().calculateShape(level, state, pos, bakedquad.getVertices(), bakedquad.getDirection(), (float[])null, bitSet);
-                BlockPos blockpos = bitSet.get(0) ? pos.relative(bakedquad.getDirection()) : pos;
+                var shadingQuad = clampWithinUnitCube(bakedquad);
+                Renderer.get().calculateShape(level, state, pos, shadingQuad.getVertices(), shadingQuad.getDirection(), (float[])null, bitSet);
+                BlockPos blockpos = bitSet.get(0) ? pos.relative(shadingQuad.getDirection()) : pos;
                 lightColor = LevelRenderer.getLightColor(level, state, blockpos);
             }
 
@@ -340,24 +342,18 @@ public class RenderingUtil {
 
     private static BakedQuad clampWithinUnitCube(BakedQuad quad){
         var oldData = quad.getVertices();
-        var newData = new float[oldData.length];
-        int stride = DefaultVertexFormat.BLOCK.getVertexSize();
-        int count = (oldData.length * 4) / stride;
-        for (int i=0;i<count;i++)
+        var newData = new int[oldData.length];
+        for (int i = 0; i < 4; i++)
         {
-            int offset = POSITION + i * stride;
-            float x = Float.intBitsToFloat(getAtByteOffset(inData, offset ));
-            float y = Float.intBitsToFloat(getAtByteOffset(inData, offset + 4));
-            float z = Float.intBitsToFloat(getAtByteOffset(inData, offset + 8));
+            float x = Math.min(1, Math.max(0, Float.intBitsToFloat(oldData[i * 8])));
+            float y = Math.min(1, Math.max(0, Float.intBitsToFloat(oldData[i * 8 + 1])));
+            float z = Math.min(1, Math.max(0, Float.intBitsToFloat(oldData[i * 8 + 2])));
 
-            Vector4f pos = new Vector4f(x, y, z, 1);
-            transform.transformPosition(pos);
-            pos.perspectiveDivide();
-
-            putAtByteOffset(outData, offset, Float.floatToRawIntBits(pos.x()));
-            putAtByteOffset(outData,offset + 4, Float.floatToRawIntBits(pos.y()));
-            putAtByteOffset(outData,offset + 8, Float.floatToRawIntBits(pos.z()));
+            newData[i * 8] = Float.floatToRawIntBits(x);
+            newData[i * 8 + 1] = Float.floatToRawIntBits(y);
+            newData[i * 8 + 2] = Float.floatToRawIntBits(z);
         }
+        return new BakedQuad(newData, quad.getTintIndex(), quad.getDirection(), quad.getSprite(), quad.isShade());
     }
 
 }
