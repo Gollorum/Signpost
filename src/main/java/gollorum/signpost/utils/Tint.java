@@ -23,7 +23,6 @@ public interface Tint {
         }
 
         static {
-            LegacyWaterTint.register();
             FoliageTint.register();
             BlockColorTint.register();
             GrassTint.register();
