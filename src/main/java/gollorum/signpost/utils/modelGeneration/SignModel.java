@@ -49,8 +49,8 @@ public class SignModel {
 	}
 
 	public void render(
-		PoseStack.Pose matrixEntry,
-		Matrix4f rotationMatrix,
+		Matrix4f blockToView,
+		Matrix4f localToBlock,
 		MultiBufferSource buffer,
 		RenderType renderType,
 		int packedLight,
@@ -61,14 +61,12 @@ public class SignModel {
 		@Nullable BlockPos pos,
 		int[] tints
 	) {
-		Matrix4f matrix4f = matrixEntry.pose();
-		Matrix3f matrixNormal = matrixEntry.normal();
-
 		var renderer = RenderingUtil.Renderer.get();
 		BitSet bitset = new BitSet(3);
 		float[] aoValues = useAmbientOcclusion ? new float[DIRECTIONS.length * 2] : null;
 		ModelBlockRenderer.AmbientOcclusionFace aoFace = useAmbientOcclusion ? renderer.new AmbientOcclusionFace() : null;
 
+		var blockVertices = new Vector4f[4];
 		var colors = new float[3 * tints.length];
 		for(var i = 0; i < tints.length; i++) {
 			int tint = tints[i];
@@ -77,15 +75,11 @@ public class SignModel {
 			colors[i * 3 + 2] = Colors.getBlue(tint) / 255f;
 		}
 
-		var transformedVertices = new Vector4f[4];
 		for(Map.Entry<Material, List<Quad>> entry : quads.entrySet()) {
 			for(Quad quad : entry.getValue()) {
 
-				Vector3f normal = quad.normal.copy();
-				normal.transform(matrixNormal);
-				float normalX = normal.x();
-				float normalY = normal.y();
-				float normalZ = normal.z();
+				var localNormal = new Vector4f(quad.normal.x(), quad.normal.y(), quad.normal.z(), 0);
+				localNormal.transform(localToBlock);
 
 				float rFinal = 1;
 				float gFinal = 1;
@@ -95,27 +89,30 @@ public class SignModel {
 					gFinal = colors[quad.tintIndex * 3 + 1];
 					bFinal = colors[quad.tintIndex * 3 + 2];
 				}
-// TODO DS: THIS THIS THIS HTIS THIS HTIS HTIS HTRIS HRISTHIS THIS THIS THIS THIS
-				for(var i = 0; i < quad.vertices.length; i++) {
-					var vertex = quad.vertices[i];// tgese are im camera space, in newed them in global spacve
-					var vert = new Vector4f(vertex.pos.x(), vertex.pos.y(), vertex.pos.z(), 1.0F);
-					vert.transform(matrix4f);
-					transformedVertices[i] = vert;
-				}
 
 				VertexConsumer vertexBuilder = entry.getKey().buffer(buffer, x -> renderType);
 
+				for(var i = 0; i < quad.vertices.length; i++) {
+					var vertex = quad.vertices[i];
+					var vert = new Vector4f(vertex.pos.x(), vertex.pos.y(), vertex.pos.z(), 1.0F);
+					vert.transform(localToBlock);
+					blockVertices[i] = vert;
+				}
+
 				if(useAmbientOcclusion) {
-					var localNormal = new Vector4f(quad.normal.x(), quad.normal.y(), quad.normal.z(), 0);
-					localNormal.transform(rotationMatrix);
 					var dir = Direction.getNearest(localNormal.x(), localNormal.y(), localNormal.z());
-					calculateShape(level, state, pos, transformedVertices, dir, aoValues, bitset);
+					calculateShape(level, state, pos, blockVertices, dir, aoValues, bitset);
 					aoFace.calculate(level, state, pos, dir, aoValues, bitset, true);
 				}
 
-ß				for(var i = 0; i < quad.vertices.length; i++) {
-					Vector4f vert = transformedVertices[i];
+				var globalNormal = localNormal;
+				localNormal = null;
+				globalNormal.transform(blockToView);
+
+				for(var i = 0; i < quad.vertices.length; i++) {
 					var vertex = quad.vertices[i];
+					var vert = blockVertices[i];
+					vert.transform(blockToView);
 					if(useAmbientOcclusion) {
 						vertexBuilder.vertex(
 							vert.x(), vert.y(), vert.z(),
@@ -124,7 +121,7 @@ public class SignModel {
 							vertex.v,
 							packedOverlay,
 							packedLight,
-							normalX, normalY, normalZ
+							globalNormal.x(), globalNormal.y(), globalNormal.z()
 						);
 					} else
 						vertexBuilder.vertex(
@@ -134,7 +131,7 @@ public class SignModel {
 							vertex.v,
 							packedOverlay,
 							packedLight,
-							normalX, normalY, normalZ
+							globalNormal.x(), globalNormal.y(), globalNormal.z()
 						);
 				}
 			}

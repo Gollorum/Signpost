@@ -56,43 +56,43 @@ public class PostRenderer extends BlockPartRenderer<PostBlockPart> {
 		PostBlockPart post,
 		BlockEntity tileEntity,
 		BlockEntityRenderDispatcher renderDispatcher,
-		PoseStack matrix,
+		PoseStack blockToView,
+		PoseStack localToBlock,
 		MultiBufferSource buffer,
 		int combinedLights,
 		int combinedOverlay,
 		Random random,
 		long randomSeed
 	) {
-		RenderingUtil.render(matrix, renderModel -> {
-			var tints = new int[] {post.getTexture().tint().map(tint -> tint.getColorAt(tileEntity.getLevel(), tileEntity.getBlockPos())).orElse(Colors.white)};
-			if(shouldRenderBaked)
-				renderModel.render(
-					makeBakedModel(post),
-					tileEntity.getLevel(),
-					tileEntity.getBlockState(),
-					tileEntity.getBlockPos(),
-					buffer.getBuffer(RenderType.solid()),
-					false,
-					random,
-					randomSeed,
-					combinedOverlay,
-					new Matrix4f(Quaternion.ONE),
-					tints
-				);
-			else makeModel(post).render(
-				matrix.last(),
-				new Matrix4f(Quaternion.ONE),
-				buffer,
-				RenderType.solid(),
-				combinedLights,
-				combinedOverlay,
-				true,
+		var tints = new int[] {post.getTexture().tint().map(tint -> tint.getColorAt(tileEntity.getLevel(), tileEntity.getBlockPos())).orElse(Colors.white)};
+		if(shouldRenderBaked)
+			RenderingUtil.render(
+				blockToView,
+				localToBlock.last().pose(),
+				makeBakedModel(post),
 				tileEntity.getLevel(),
 				tileEntity.getBlockState(),
 				tileEntity.getBlockPos(),
+				buffer.getBuffer(RenderType.solid()),
+				false,
+				random,
+				randomSeed,
+				combinedOverlay,
 				tints
 			);
-		});
+		else makeModel(post).render(
+			blockToView.last().pose(),
+			localToBlock.last().pose(),
+			buffer,
+			RenderType.solid(),
+			combinedLights,
+			combinedOverlay,
+			true,
+			tileEntity.getLevel(),
+			tileEntity.getBlockState(),
+			tileEntity.getBlockPos(),
+			tints
+		);
 	}
 
 	@Override

@@ -28,14 +28,17 @@ public class WaystoneRenderer extends BlockPartRenderer<WaystoneBlockPart> {
 		WaystoneBlockPart part,
 		BlockEntity tileEntity,
 		BlockEntityRenderDispatcher renderDispatcher,
-		PoseStack matrix,
+		PoseStack blockToView,
+		PoseStack localToBlock,
 		MultiBufferSource buffer,
 		int combinedLights,
 		int combinedOverlay,
 		Random random,
 		long randomSeed
 	) {
-		RenderingUtil.render(matrix, renderModel -> renderModel.render(
+		RenderingUtil.render(
+			blockToView,
+			localToBlock.last().pose(),
 			model.get(),
 			tileEntity.getLevel(),
 			tileEntity.getBlockState(),
@@ -45,9 +48,8 @@ public class WaystoneRenderer extends BlockPartRenderer<WaystoneBlockPart> {
 			random,
 			randomSeed,
 			combinedOverlay,
-			new Matrix4f(Quaternion.ONE),
 			new int[0]
-		));
+		);
 	}
 
 	@Override

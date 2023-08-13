@@ -27,7 +27,7 @@ import java.util.Random;
 
 public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPartRenderer<T> {
 
-	private final boolean shouldRenderBaked = false;
+	private final boolean shouldRenderBaked = true;
 
 	protected abstract BakedModel makeBakedModel(T sign);
 	protected abstract BakedModel makeBakedOverlayModel(T sign, Overlay overlay);
@@ -35,69 +35,84 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
 	protected abstract SignModel makeOverlayModel(T sign, Overlay overlay);
 
 	@Override
-	public void render(T sign, BlockEntity tileEntity, BlockEntityRenderDispatcher renderDispatcher, PoseStack matrix, MultiBufferSource buffer, int combinedLights, int combinedOverlay, Random random, long randomSeed) {
+	public void render(
+		T sign,
+		BlockEntity tileEntity,
+		BlockEntityRenderDispatcher renderDispatcher,
+		PoseStack blockToView,
+		PoseStack localToBlock,
+		MultiBufferSource buffer,
+		int combinedLights,
+		int combinedOverlay,
+		Random random,
+		long randomSeed
+	) {
 		if(sign.isMarkedForGeneration() && !Config.Server.worldGen.debugMode()) return;
-		RenderingUtil.render(matrix, renderModel -> {
-			if(!tileEntity.hasLevel()) throw new RuntimeException("TileEntity without world cannot be rendered.");
-			RenderingUtil.wrapInMatrixEntry(matrix, () -> {
-				Quaternion rotation = new Quaternion(Vector3f.YP, sign.getAngle().get().radians(), false);
-				matrix.mulPose(rotation);
-				RenderingUtil.wrapInMatrixEntry(matrix, () -> {
-					if(!sign.isFlipped()) matrix.mulPose(new Quaternion(Vector3f.YP, 180, true));
-					renderText(sign, matrix, renderDispatcher.font, buffer, combinedLights);
-				});
-				Matrix4f rotationMatrix = new Matrix4f(rotation);
-				var tints = new int[2];
-				tints[0] = sign.getMainTexture().tint().map(t -> t.getColorAt(tileEntity.getLevel(), tileEntity.getBlockPos())).orElse(Colors.white);
-				tints[1] = sign.getSecondaryTexture().tint().map(t -> t.getColorAt(tileEntity.getLevel(), tileEntity.getBlockPos())).orElse(Colors.white);
-				if(shouldRenderBaked)
-					renderModel.render(
-						makeBakedModel(sign),
-						tileEntity.getLevel(),
-						tileEntity.getBlockState(),
-						tileEntity.getBlockPos(),
-						buffer.getBuffer(RenderType.solid()), false, random, randomSeed, combinedOverlay, rotationMatrix,
-						tints
-					);
-				else makeModel(sign).render(
-					matrix.last(),
-					rotationMatrix,
-					buffer,
-					RenderType.solid(),
-					combinedLights,
-					combinedOverlay,
-					true,
+		if(!tileEntity.hasLevel()) throw new RuntimeException("TileEntity without world cannot be rendered.");
+		RenderingUtil.wrapInMatrixEntry(localToBlock, () -> {
+			Quaternion rotation = new Quaternion(Vector3f.YP, sign.getAngle().get().radians(), false);
+			localToBlock.mulPose(rotation);
+			RenderingUtil.wrapInMatrixEntry(blockToView, () -> {
+				blockToView.mulPoseMatrix(localToBlock.last().pose());
+				if(!sign.isFlipped()) blockToView.mulPose(new Quaternion(Vector3f.YP, 180, true));
+				renderText(sign, blockToView, renderDispatcher.font, buffer, combinedLights);
+			});
+//			if(sign.isFlipped()) rotation.mul(new Quaternion(Vector3f.ZP, 180, true));
+//			Matrix4f rotationMatrix = new Matrix4f(rotation);
+			var tints = new int[2];
+			tints[0] = sign.getMainTexture().tint().map(t -> t.getColorAt(tileEntity.getLevel(), tileEntity.getBlockPos())).orElse(Colors.white);
+			tints[1] = sign.getSecondaryTexture().tint().map(t -> t.getColorAt(tileEntity.getLevel(), tileEntity.getBlockPos())).orElse(Colors.white);
+			if(shouldRenderBaked)
+				RenderingUtil.render(
+					blockToView,
+					localToBlock.last().pose(),
+					makeBakedModel(sign),
 					tileEntity.getLevel(),
 					tileEntity.getBlockState(),
 					tileEntity.getBlockPos(),
+					buffer.getBuffer(RenderType.solid()), false, random, randomSeed, combinedOverlay,
 					tints
 				);
-				sign.getOverlay().ifPresent(o -> {
-					if(shouldRenderBaked)
-						renderModel.render(
-							makeBakedOverlayModel(sign, o),
-							tileEntity.getLevel(),
-							tileEntity.getBlockState(),
-							tileEntity.getBlockPos(),
-							buffer.getBuffer(RenderType.cutoutMipped()), false, random, randomSeed, combinedOverlay, rotationMatrix,
-							new int[]{o.tint.map(t -> t.getColorAt(tileEntity.getLevel(), tileEntity.getBlockPos())).orElse(Colors.white)}
-						);
-					else {
-						makeOverlayModel(sign, o).render(
-							matrix.last(),
-							rotationMatrix,
-							buffer,
-							RenderType.cutoutMipped(),
-							combinedLights,
-							combinedOverlay,
-							true,
-							tileEntity.getLevel(),
-							tileEntity.getBlockState(),
-							tileEntity.getBlockPos(),
-							new int[]{o.tint.map(t -> t.getColorAt(tileEntity.getLevel(), tileEntity.getBlockPos())).orElse(Colors.white)}
-						);
-					}
-				});
+			else makeModel(sign).render(
+				blockToView.last().pose(),
+				localToBlock.last().pose(),
+				buffer,
+				RenderType.solid(),
+				combinedLights,
+				combinedOverlay,
+				true,
+				tileEntity.getLevel(),
+				tileEntity.getBlockState(),
+				tileEntity.getBlockPos(),
+				tints
+			);
+			sign.getOverlay().ifPresent(o -> {
+				if(shouldRenderBaked)
+					RenderingUtil.render(
+						blockToView,
+						localToBlock.last().pose(),
+						makeBakedOverlayModel(sign, o),
+						tileEntity.getLevel(),
+						tileEntity.getBlockState(),
+						tileEntity.getBlockPos(),
+						buffer.getBuffer(RenderType.cutoutMipped()), false, random, randomSeed, combinedOverlay,
+						new int[]{o.tint.map(t -> t.getColorAt(tileEntity.getLevel(), tileEntity.getBlockPos())).orElse(Colors.white)}
+					);
+				else {
+					makeOverlayModel(sign, o).render(
+						blockToView.last().pose(),
+						localToBlock.last().pose(),
+						buffer,
+						RenderType.cutoutMipped(),
+						combinedLights,
+						combinedOverlay,
+						true,
+						tileEntity.getLevel(),
+						tileEntity.getBlockState(),
+						tileEntity.getBlockPos(),
+						new int[]{o.tint.map(t -> t.getColorAt(tileEntity.getLevel(), tileEntity.getBlockPos())).orElse(Colors.white)}
+					);
+				}
 			});
 		});
 	}
