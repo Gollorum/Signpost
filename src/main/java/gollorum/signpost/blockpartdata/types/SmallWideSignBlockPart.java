@@ -6,6 +6,7 @@ import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.utils.CoordinatesUtil;
 import gollorum.signpost.minecraft.utils.LangKeys;
+import gollorum.signpost.minecraft.utils.Texture;
 import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.BlockPartMetadata;
 import gollorum.signpost.utils.AngleProvider;
@@ -58,8 +59,8 @@ public class SmallWideSignBlockPart extends SignBlockPart<SmallWideSignBlockPart
         AngleProvider angle,
         NameProvider text,
         boolean flip,
-        ResourceLocation mainTexture,
-        ResourceLocation secondaryTexture,
+        Texture mainTexture,
+        Texture secondaryTexture,
         Optional<Overlay> overlay,
         int color,
         Optional<WaystoneHandle> destination,

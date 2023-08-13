@@ -9,6 +9,7 @@ import gollorum.signpost.minecraft.block.WaystoneBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.utils.TextureResource;
 import gollorum.signpost.minecraft.utils.CoordinatesUtil;
+import gollorum.signpost.minecraft.utils.Texture;
 import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.BlockPart;
 import gollorum.signpost.utils.BlockPartMetadata;
@@ -96,8 +97,8 @@ public class WaystoneBlockPart implements BlockPart<WaystoneBlockPart>, WithOwne
 	}
 
 	@Override
-	public Collection<ResourceLocation> getAllTextures() {
-		return Collections.singleton(TextureResource.waystoneTextureLocation);
+	public Collection<Texture> getAllTextures() {
+		return Collections.singleton(new Texture(TextureResource.waystoneTextureLocation));
 	}
 
 }

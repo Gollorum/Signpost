@@ -8,6 +8,7 @@ import gollorum.signpost.interactions.Interactable;
 import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.RequestSignGui;
+import gollorum.signpost.minecraft.utils.Texture;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.security.WithCountRestriction;
@@ -207,9 +208,9 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
         }
 
         public final String name;
-        public final ResourceLocation postTexture;
-        public final ResourceLocation mainTexture;
-        public final ResourceLocation secondaryTexture;
+        public final Texture postTexture;
+        public final Texture mainTexture;
+        public final Texture secondaryTexture;
         public final Lazy<Ingredient> signIngredient;
         public final Lazy<Ingredient> baseIngredient;
         public final Lazy<Ingredient> addSignIngredient;
@@ -226,11 +227,23 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
             this.addSignIngredient = addSignIngredient;
         }
 
-        private static ResourceLocation expand(ResourceLocation loc){
-            return new ResourceLocation(
+        ModelType(
+            String name, Texture postTexture, Texture mainTexture, Texture secondaryTexture,
+            Lazy<Ingredient> signIngredient, Lazy<Ingredient> baseIngredient, Lazy<Ingredient> addSignIngredient) {
+            this.name = name;
+            this.postTexture = postTexture;
+            this.mainTexture = mainTexture;
+            this.secondaryTexture = secondaryTexture;
+            this.signIngredient = signIngredient;
+            this.baseIngredient = baseIngredient;
+            this.addSignIngredient = addSignIngredient;
+        }
+
+        private static Texture expand(ResourceLocation loc){
+            return new Texture(new ResourceLocation(
                 loc.getNamespace(),
                 loc.getPath().startsWith("block/") ? loc.getPath() : "block/"+loc.getPath()
-            );
+            ), Optional.empty());
         }
 
         public static BufferSerializable<ModelType> Serializer = new SerializerImpl();
@@ -243,9 +256,9 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
             @Override
             public void write(ModelType modelType, FriendlyByteBuf buffer) {
                 StringSerializer.instance.write(modelType.name, buffer);
-                buffer.writeResourceLocation(modelType.postTexture);
-                buffer.writeResourceLocation(modelType.mainTexture);
-                buffer.writeResourceLocation(modelType.secondaryTexture);
+                Texture.Serializer.write(modelType.postTexture, buffer);
+                Texture.Serializer.write(modelType.mainTexture, buffer);
+                Texture.Serializer.write(modelType.secondaryTexture, buffer);
                 modelType.signIngredient.get().toNetwork(buffer);
                 modelType.baseIngredient.get().toNetwork(buffer);
                 modelType.addSignIngredient.get().toNetwork(buffer);
@@ -256,9 +269,9 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
             public ModelType read(FriendlyByteBuf buffer) {
                 return new ModelType(
                     StringSerializer.instance.read(buffer),
-                    buffer.readResourceLocation(),
-                    buffer.readResourceLocation(),
-                    buffer.readResourceLocation(),
+                    Texture.Serializer.read(buffer),
+                    Texture.Serializer.read(buffer),
+                    Texture.Serializer.read(buffer),
                     constLazy(Ingredient.fromNetwork(buffer)),
                     constLazy(Ingredient.fromNetwork(buffer)),
                     constLazy(Ingredient.fromNetwork(buffer))

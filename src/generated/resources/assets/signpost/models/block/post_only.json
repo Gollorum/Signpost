@@ -22,7 +22,8 @@
             4.0,
             4.0,
             0.0
-          ]
+          ],
+          "tintindex": 0
         },
         "up": {
           "texture": "#post",
@@ -31,7 +32,8 @@
             16.0,
             4.0,
             12.0
-          ]
+          ],
+          "tintindex": 0
         },
         "north": {
           "texture": "#post",
@@ -40,7 +42,8 @@
             0.0,
             12.0,
             16.0
-          ]
+          ],
+          "tintindex": 0
         },
         "south": {
           "texture": "#post",
@@ -49,7 +52,8 @@
             0.0,
             4.0,
             16.0
-          ]
+          ],
+          "tintindex": 0
         },
         "west": {
           "texture": "#post",
@@ -58,7 +62,8 @@
             0.0,
             16.0,
             16.0
-          ]
+          ],
+          "tintindex": 0
         },
         "east": {
           "texture": "#post",
@@ -67,7 +72,8 @@
             0.0,
             8.0,
             16.0
-          ]
+          ],
+          "tintindex": 0
         }
       }
     }

@@ -5,26 +5,30 @@ import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.minecraft.utils.LangKeys;
+import gollorum.signpost.minecraft.utils.Texture;
+import gollorum.signpost.utils.Tint;
+import gollorum.signpost.utils.Tuple;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class PaintSignGui<T extends SignBlockPart<T>> extends PaintBlockPartGui<T> {
 
-    private final TextureAtlasSprite oldMainSprite;
-    private final TextureAtlasSprite oldSecSprite;
+    private final Tuple<TextureAtlasSprite, Optional<Tint>> oldMainSprite;
+    private final Tuple<TextureAtlasSprite, Optional<Tint>> oldSecSprite;
 
     private boolean isTargetingMainTexture;
 
     public PaintSignGui(PostTile tile, T sign, UUID identifier) {
         super(tile, sign, sign.copy(), identifier, sign.getMainTexture());
         oldMainSprite = oldSprite;
-        oldSecSprite = spriteFrom(sign.getSecondaryTexture());
+        oldSecSprite = Tuple.of(spriteFrom(sign.getSecondaryTexture().location()), sign.getSecondaryTexture().tint());
         isTargetingMainTexture = true;
     }
 
@@ -70,7 +74,7 @@ public class PaintSignGui<T extends SignBlockPart<T>> extends PaintBlockPartGui<
     }
 
     @Override
-    protected void setTexture(T sign, ResourceLocation texture) {
+    protected void setTexture(T sign, Texture texture) {
         if(isTargetingMainTexture) sign.setMainTexture(texture);
         else sign.setSecondaryTexture(texture);
     }

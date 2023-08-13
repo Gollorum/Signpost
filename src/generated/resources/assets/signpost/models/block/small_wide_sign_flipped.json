@@ -24,7 +24,8 @@
             10.0,
             15.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         },
         "up": {
           "texture": "#secondary_texture",
@@ -34,7 +35,8 @@
             5.0,
             15.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         },
         "north": {
           "texture": "#secondary_texture",
@@ -44,7 +46,8 @@
             10.0,
             16.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         },
         "south": {
           "texture": "#secondary_texture",
@@ -54,7 +57,8 @@
             10.0,
             15.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         },
         "west": {
           "texture": "#secondary_texture",
@@ -64,7 +68,8 @@
             10.0,
             15.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         }
       }
     },
@@ -88,7 +93,8 @@
             11.0,
             0.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         },
         "north": {
           "texture": "#secondary_texture",
@@ -98,7 +104,8 @@
             11.0,
             16.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         },
         "south": {
           "texture": "#secondary_texture",
@@ -108,7 +115,8 @@
             11.0,
             0.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         },
         "west": {
           "texture": "#secondary_texture",
@@ -118,7 +126,8 @@
             11.0,
             16.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         }
       }
     },
@@ -142,7 +151,8 @@
             4.0,
             0.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         },
         "north": {
           "texture": "#secondary_texture",
@@ -152,7 +162,8 @@
             6.0,
             16.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         },
         "south": {
           "texture": "#secondary_texture",
@@ -162,7 +173,8 @@
             6.0,
             0.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         },
         "west": {
           "texture": "#secondary_texture",
@@ -172,7 +184,8 @@
             6.0,
             16.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         }
       }
     },
@@ -196,7 +209,8 @@
             10.0,
             16.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 0
         },
         "south": {
           "texture": "#secondary_texture",
@@ -206,7 +220,8 @@
             10.0,
             0.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         }
       }
     },
@@ -230,7 +245,8 @@
             11.0,
             0.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         },
         "north": {
           "texture": "#secondary_texture",
@@ -240,7 +256,8 @@
             11.0,
             4.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         },
         "south": {
           "texture": "#secondary_texture",
@@ -250,7 +267,8 @@
             11.0,
             0.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         },
         "east": {
           "texture": "#secondary_texture",
@@ -260,7 +278,8 @@
             11.0,
             5.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         }
       }
     },
@@ -284,7 +303,8 @@
             4.0,
             0.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         },
         "north": {
           "texture": "#secondary_texture",
@@ -294,7 +314,8 @@
             6.0,
             4.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         },
         "south": {
           "texture": "#secondary_texture",
@@ -304,7 +325,8 @@
             6.0,
             0.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         },
         "east": {
           "texture": "#secondary_texture",
@@ -314,7 +336,8 @@
             6.0,
             5.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         }
       }
     },
@@ -338,7 +361,8 @@
             10.0,
             4.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 0
         },
         "south": {
           "texture": "#secondary_texture",
@@ -348,7 +372,8 @@
             10.0,
             0.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         }
       }
     },
@@ -372,7 +397,8 @@
             10.0,
             4.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         },
         "north": {
           "texture": "#secondary_texture",
@@ -382,7 +408,8 @@
             10.0,
             6.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         },
         "south": {
           "texture": "#secondary_texture",
@@ -392,7 +419,8 @@
             10.0,
             4.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         },
         "east": {
           "texture": "#secondary_texture",
@@ -402,7 +430,8 @@
             10.0,
             7.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         }
       }
     },
@@ -426,7 +455,8 @@
             5.0,
             4.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         },
         "north": {
           "texture": "#secondary_texture",
@@ -436,7 +466,8 @@
             7.0,
             6.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         },
         "south": {
           "texture": "#secondary_texture",
@@ -446,7 +477,8 @@
             7.0,
             4.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         },
         "east": {
           "texture": "#secondary_texture",
@@ -456,7 +488,8 @@
             7.0,
             7.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         }
       }
     },
@@ -480,7 +513,8 @@
             9.0,
             6.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 0
         },
         "south": {
           "texture": "#secondary_texture",
@@ -490,7 +524,8 @@
             9.0,
             4.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         }
       }
     },
@@ -514,7 +549,8 @@
             9.0,
             6.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         },
         "up": {
           "texture": "#secondary_texture",
@@ -524,7 +560,8 @@
             6.0,
             6.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         },
         "north": {
           "texture": "#secondary_texture",
@@ -534,7 +571,8 @@
             9.0,
             8.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         },
         "south": {
           "texture": "#secondary_texture",
@@ -544,7 +582,8 @@
             9.0,
             6.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         },
         "east": {
           "texture": "#secondary_texture",
@@ -554,7 +593,8 @@
             9.0,
             9.0
           ],
-          "rotation": 90
+          "rotation": 90,
+          "tintindex": 1
         }
       }
     }
