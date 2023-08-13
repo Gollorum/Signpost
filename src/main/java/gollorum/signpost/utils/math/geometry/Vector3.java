@@ -1,15 +1,13 @@
 package gollorum.signpost.utils.math.geometry;
 
-import com.mojang.math.Vector4f;
 import gollorum.signpost.utils.math.Angle;
-
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3d;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import java.util.Objects;
 import java.util.function.Function;

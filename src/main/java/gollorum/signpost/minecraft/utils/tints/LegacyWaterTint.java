@@ -8,7 +8,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.BlockAndTintGetter;
 
-public class WaterTint implements Tint {
+public class LegacyWaterTint implements Tint {
 
     @Override
     public int getColorAt(BlockAndTintGetter level, BlockPos pos) {
@@ -19,9 +19,9 @@ public class WaterTint implements Tint {
         Tint.Serialization.register("water", serializer);
     }
 
-    public static final CompoundSerializable<WaterTint> serializer = new CompoundSerializable<>() {
+    public static final CompoundSerializable<LegacyWaterTint> serializer = new CompoundSerializable<>() {
         @Override
-        public CompoundTag write(WaterTint waterTint, CompoundTag compound) {
+        public CompoundTag write(LegacyWaterTint waterTint, CompoundTag compound) {
             return compound;
         }
 
@@ -31,22 +31,22 @@ public class WaterTint implements Tint {
         }
 
         @Override
-        public WaterTint read(CompoundTag compound) {
-            return new WaterTint();
+        public LegacyWaterTint read(CompoundTag compound) {
+            return new LegacyWaterTint();
         }
 
         @Override
-        public void write(WaterTint waterTint, FriendlyByteBuf buffer) {
+        public void write(LegacyWaterTint waterTint, FriendlyByteBuf buffer) {
         }
 
         @Override
-        public WaterTint read(FriendlyByteBuf buffer) {
-            return new WaterTint();
+        public LegacyWaterTint read(FriendlyByteBuf buffer) {
+            return new LegacyWaterTint();
         }
 
         @Override
-        public Class<WaterTint> getTargetClass() {
-            return WaterTint.class;
+        public Class<LegacyWaterTint> getTargetClass() {
+            return LegacyWaterTint.class;
         }
     };
 

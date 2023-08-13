@@ -1,6 +1,7 @@
 package gollorum.signpost.utils.modelGeneration;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.gui.utils.TextureResource;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.utils.math.geometry.AABB;
@@ -13,6 +14,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.block.state.BlockState;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -53,10 +59,9 @@ public class SignModel {
 		@Nullable BlockPos pos,
 		int[] tints
 	) {
-		var renderer = RenderingUtil.Renderer.get();
 		BitSet bitset = new BitSet(3);
 		float[] aoValues = useAmbientOcclusion ? new float[DIRECTIONS.length * 2] : null;
-		ModelBlockRenderer.AmbientOcclusionFace aoFace = useAmbientOcclusion ? renderer.new AmbientOcclusionFace() : null;
+		ModelBlockRenderer.AmbientOcclusionFace aoFace = useAmbientOcclusion ? new ModelBlockRenderer.AmbientOcclusionFace() : null;
 
 		var blockVertices = new Vector4f[4];
 		var colors = new float[3 * tints.length];
@@ -71,7 +76,7 @@ public class SignModel {
 			for(Quad quad : entry.getValue()) {
 
 				var localNormal = new Vector4f(quad.normal.x(), quad.normal.y(), quad.normal.z(), 0);
-				localNormal.transform(localToBlock);
+				localNormal.mul(localToBlock);
 
 				float rFinal = 1;
 				float gFinal = 1;
@@ -87,7 +92,7 @@ public class SignModel {
 				for(var i = 0; i < quad.vertices.length; i++) {
 					var vertex = quad.vertices[i];
 					var vert = new Vector4f(vertex.pos.x(), vertex.pos.y(), vertex.pos.z(), 1.0F);
-					vert.transform(localToBlock);
+					vert.mul(localToBlock);
 					blockVertices[i] = vert;
 				}
 
@@ -99,12 +104,12 @@ public class SignModel {
 
 				var globalNormal = localNormal;
 				localNormal = null;
-				globalNormal.transform(blockToView);
+				globalNormal.mul(blockToView);
 
 				for(var i = 0; i < quad.vertices.length; i++) {
 					var vertex = quad.vertices[i];
 					var vert = blockVertices[i];
-					vert.transform(blockToView);
+					vert.mul(blockToView);
 					if(useAmbientOcclusion) {
 						vertexBuilder.vertex(
 							vert.x(), vert.y(), vert.z(),

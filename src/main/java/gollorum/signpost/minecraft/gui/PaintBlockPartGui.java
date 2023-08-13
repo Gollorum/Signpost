@@ -12,7 +12,7 @@ import gollorum.signpost.minecraft.gui.widgets.ItemButton;
 import gollorum.signpost.minecraft.gui.widgets.SpriteSelectionButton;
 import gollorum.signpost.minecraft.utils.tints.BlockColorTint;
 import gollorum.signpost.minecraft.utils.Texture;
-import gollorum.signpost.minecraft.utils.tints.WaterTint;
+import gollorum.signpost.minecraft.utils.tints.FluidTint;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.BlockPart;
 import gollorum.signpost.utils.BlockPartInstance;
@@ -33,7 +33,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.minecraftforge.fluids.FluidAttributes;
 
 import java.util.*;
 import java.util.function.Function;
@@ -129,12 +128,15 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
     }
 
     private List<Tuple<TextureAtlasSprite, Optional<Tint>>> allSpritesFor(BucketItem item) {
-        var typeExtensions = IClientFluidTypeExtensions.of(item.getFluid());
-        var ret = new ArrayList<TextureAtlasSprite>(3);
-        ret.add(spriteFrom(typeExtensions.getFlowingTexture()));
-        ret.add(spriteFrom(typeExtensions.getOverlayTexture()));
-        ret.add(spriteFrom(typeExtensions.getStillTexture()));
-            .map(loc -> Tuple.of(spriteFrom(loc), item.getFluid().getAttributes() instanceof FluidAttributes.Water ? Optional.<Tint>of(new WaterTint()) : Optional.<Tint>empty()))
+        var fluidTint = new FluidTint(item.getFluid());
+        var typeExtensions = IClientFluidTypeExtensions.of(fluidTint.fluid());
+        var ret = new ArrayList<Tuple<TextureAtlasSprite, Optional<Tint>>>(3);
+        if(typeExtensions.getFlowingTexture() != null)
+            ret.add(Tuple.of(spriteFrom(typeExtensions.getFlowingTexture()), Optional.of(fluidTint)));
+        if(typeExtensions.getOverlayTexture() != null)
+            ret.add(Tuple.of(spriteFrom(typeExtensions.getOverlayTexture()), Optional.of(fluidTint)));
+        if(typeExtensions.getStillTexture() != null)
+            ret.add(Tuple.of(spriteFrom(typeExtensions.getStillTexture()), Optional.of(fluidTint)));
         return ret;
     }
 
@@ -168,7 +170,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
                     Rect.XAlignment.Left, Rect.YAlignment.Center
                 ),
                 sprite._1, sprite._2.map(t -> t.getColorAt(minecraft.level, minecraft.player.blockPosition())).orElse(Colors.white),
-                imgButton -> setTexture(displayPart, new Texture(sprite.contents().name(), sprite._2))
+                imgButton -> setTexture(displayPart, new Texture(sprite._1.contents().name(), sprite._2))
             );
             addRenderableWidget(newButton);
             textureButtons.add(newButton);

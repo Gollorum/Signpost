@@ -1,9 +1,6 @@
 package gollorum.signpost.utils;
 
-import gollorum.signpost.minecraft.utils.tints.BlockColorTint;
-import gollorum.signpost.minecraft.utils.tints.FoliageTint;
-import gollorum.signpost.minecraft.utils.tints.GrassTint;
-import gollorum.signpost.minecraft.utils.tints.WaterTint;
+import gollorum.signpost.minecraft.utils.tints.*;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.StringSerializer;
 import net.minecraft.core.BlockPos;
@@ -26,10 +23,11 @@ public interface Tint {
         }
 
         static {
-            WaterTint.register();
+            LegacyWaterTint.register();
             FoliageTint.register();
             BlockColorTint.register();
             GrassTint.register();
+            FluidTint.register();
         }
 
         public static final Serialization instance = new Serialization();
