@@ -12,7 +12,7 @@ import gollorum.signpost.minecraft.gui.widgets.ItemButton;
 import gollorum.signpost.minecraft.gui.widgets.SpriteSelectionButton;
 import gollorum.signpost.minecraft.utils.tints.BlockColorTint;
 import gollorum.signpost.minecraft.utils.Texture;
-import gollorum.signpost.minecraft.utils.tints.WaterTint;
+import gollorum.signpost.minecraft.utils.tints.FluidTint;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.BlockPart;
 import gollorum.signpost.utils.BlockPartInstance;
@@ -130,7 +130,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
     private List<Tuple<TextureAtlasSprite, Optional<Tint>>> allSpritesFor(BucketItem item) {
         return item.getFluid().getAttributes()
             .getTextures()
-            .map(loc -> Tuple.of(spriteFrom(loc), item.getFluid().getAttributes() instanceof FluidAttributes.Water ? Optional.<Tint>of(new WaterTint()) : Optional.<Tint>empty()))
+            .map(loc -> Tuple.of(spriteFrom(loc), Optional.<Tint>of(new FluidTint(item.getFluid()))))
             .collect(Collectors.toList());
     }
 
