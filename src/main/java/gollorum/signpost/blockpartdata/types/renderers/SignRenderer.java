@@ -57,8 +57,6 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
 				if(!sign.isFlipped()) blockToView.mulPose(new Quaternion(Vector3f.YP, 180, true));
 				renderText(sign, blockToView, renderDispatcher.font, buffer, combinedLights);
 			});
-//			if(sign.isFlipped()) rotation.mul(new Quaternion(Vector3f.ZP, 180, true));
-//			Matrix4f rotationMatrix = new Matrix4f(rotation);
 			var tints = new int[2];
 			tints[0] = sign.getMainTexture().tint().map(t -> t.getColorAt(tileEntity.getLevel(), tileEntity.getBlockPos())).orElse(Colors.white);
 			tints[1] = sign.getSecondaryTexture().tint().map(t -> t.getColorAt(tileEntity.getLevel(), tileEntity.getBlockPos())).orElse(Colors.white);

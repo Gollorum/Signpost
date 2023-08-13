@@ -13,11 +13,6 @@ import java.util.Optional;
 public record Texture(ResourceLocation location, Optional<Tint> tint){
     public Texture(ResourceLocation location) { this(location, Optional.empty()); }
 
-    @Override
-    public String toString() {
-        return null;
-    }
-
     public static Texture readFrom(Tag tag) {
         if(tag instanceof CompoundTag compound) return Serializer.read(compound);
         else return new Texture(ResourceLocation.tryParse(tag.getAsString()));

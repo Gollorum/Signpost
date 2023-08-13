@@ -1,7 +1,9 @@
 package gollorum.signpost;
 
 import gollorum.signpost.blockpartdata.types.renderers.BlockPartWaystoneUpdateListener;
-import gollorum.signpost.compat.*;
+import gollorum.signpost.compat.AntiqueAtlasAdapter;
+import gollorum.signpost.compat.Compat;
+import gollorum.signpost.compat.ExternalWaystoneLibrary;
 import gollorum.signpost.minecraft.block.BlockEventListener;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.commands.WaystoneArgument;
@@ -9,11 +11,8 @@ import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.data.DataGeneration;
 import gollorum.signpost.minecraft.registry.*;
 import gollorum.signpost.minecraft.rendering.PostRenderer;
-import gollorum.signpost.minecraft.utils.tints.BlockColorTint;
-import gollorum.signpost.minecraft.utils.tints.FoliageTint;
-import gollorum.signpost.minecraft.utils.tints.GrassTint;
-import gollorum.signpost.minecraft.utils.tints.WaterTint;
-import gollorum.signpost.minecraft.worldgen.*;
+import gollorum.signpost.minecraft.worldgen.JigsawDeserializers;
+import gollorum.signpost.minecraft.worldgen.WaystoneDiscoveryEventListener;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.EventDispatcher;
 import gollorum.signpost.utils.ServerType;
