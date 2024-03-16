@@ -13,7 +13,12 @@ import java.util.function.Consumer;
 public final class BlockPartWaystoneUpdateListener {
 
     private static BlockPartWaystoneUpdateListener instance;
-    public static BlockPartWaystoneUpdateListener getInstance() { return instance; }
+    public static BlockPartWaystoneUpdateListener getInstance() { 
+        if (instance == null) {
+            instance = new BlockPartWaystoneUpdateListener();
+        }
+        return instance; 
+    }
 
     private final WeakHashMap<BlockPart<?>, BiConsumer<BlockPart<?>, WaystoneUpdatedEvent>> listeners = new WeakHashMap<>();
 
@@ -25,7 +30,7 @@ public final class BlockPartWaystoneUpdateListener {
 
     public static void initialize() {
         WaystoneLibrary.onInitializeDo.addListener(lib -> {
-            instance = new BlockPartWaystoneUpdateListener();
+            instance = getInstance();
             lib.updateEventDispatcher.addListener(event -> {
                 for (Map.Entry<BlockPart<?>, BiConsumer<BlockPart<?>, WaystoneUpdatedEvent>> entry : instance.listeners.entrySet().stream().toList())
                     entry.getValue().accept(entry.getKey(), event);
