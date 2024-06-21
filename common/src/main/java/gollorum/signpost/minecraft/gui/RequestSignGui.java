@@ -64,7 +64,7 @@ public class RequestSignGui implements PacketHandler.Event.ForClient<RequestSign
 			private final ItemStack itemToDropOnBreak;
 
 			public Package(WorldLocation loc, PostBlock.ModelType modelType, Vector3 localHitPos, ItemStack itemToDropOnBreak) {
-				this.loc = loc;
+				this.loc = loc.withoutExplicitLevel();
 				this.modelType = modelType;
 				this.localHitPos = localHitPos;
 				this.itemToDropOnBreak = itemToDropOnBreak;

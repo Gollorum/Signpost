@@ -33,7 +33,7 @@ public abstract class WaystoneUpdatedEvent {
     public final WaystoneHandle.Vanilla handle;
 
     public WaystoneUpdatedEvent(WaystoneLocationData location, String name, WaystoneHandle.Vanilla handle) {
-        this.location = location;
+        this.location = location.withoutExplicitLevel();
         this.name = name;
         this.handle = handle;
     }

@@ -8,19 +8,24 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElementType;
 
+import java.util.function.Supplier;
+
 public class JigsawDeserializers {
 
     public static void register() {
-        signpost = register("signpost_pool_element", SignpostJigsawPiece.codec);
-        waystone = register("waystone_pool_element", WaystoneJigsawPiece.codec);
+        var signpostType = register("signpost_pool_element", SignpostJigsawPiece.codec);
+        var waystoneType = register("waystone_pool_element", WaystoneJigsawPiece.codec);
+
+        signpost = () -> signpostType;
+        waystone = () -> waystoneType;
 
         // incorrect domain
         registerLegacy("signpost_pool_element", SignpostJigsawPiece.codec);
         registerLegacy("signpost_waystone_pool_element", WaystoneJigsawPiece.codec);
     }
 
-    public static StructurePoolElementType<SignpostJigsawPiece> signpost = null;
-    public static StructurePoolElementType<WaystoneJigsawPiece> waystone = null;
+    public static Supplier<StructurePoolElementType<SignpostJigsawPiece>> signpost = null;
+    public static Supplier<StructurePoolElementType<WaystoneJigsawPiece>> waystone = null;
 
     private static <P extends StructurePoolElement> StructurePoolElementType<P> register(String name, Codec<P> codec) {
         return Registry.register(BuiltInRegistries.STRUCTURE_POOL_ELEMENT, new ResourceLocation(Signpost.MOD_ID, name), () -> codec);

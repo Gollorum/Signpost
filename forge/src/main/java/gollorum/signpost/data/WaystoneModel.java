@@ -3,6 +3,7 @@ package gollorum.signpost.data;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.block.WaystoneBlock;
+import gollorum.signpost.minecraft.gui.WaystoneModelResources;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraftforge.client.model.generators.*;
@@ -15,7 +16,6 @@ public class WaystoneModel {
 
 	private final BlockModels blockModelProvider;
 	public final BlockModelBuilder waystoneModel;
-	public static final ResourceLocation inPostLocation = new ResourceLocation(Signpost.MOD_ID, "block/in_post_waystone");
 	public final Map<ModelWaystone.Variant, ModelFile> variantModels = new HashMap<>();
 
 //	public static WaystoneModel addTo(BlockModels blockModelProvider) {
@@ -34,7 +34,7 @@ public class WaystoneModel {
 		ResourceLocation waystoneTexture = new ResourceLocation(Signpost.MOD_ID, "block/waystone");
 		blockModelProvider.cubeAll(WaystoneBlock.REGISTRY_NAME, waystoneTexture);
 
-		blockModelProvider.getBuilder(inPostLocation.toString())
+		blockModelProvider.getBuilder(WaystoneModelResources.inPostLocation.getNamespace() + ResourceLocation.NAMESPACE_SEPARATOR + WaystoneModelResources.inPostLocation.getPath())
             .element()
                 .from(-3, 0, -3)
                 .to(3, 6, 3)

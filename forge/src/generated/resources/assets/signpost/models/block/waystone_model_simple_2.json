@@ -1,0 +1,49 @@
+{
+  "parent": "minecraft:block/block",
+  "display": {
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        315,
+        0
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        315,
+        0
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ]
+    },
+    "gui": {
+      "rotation": [
+        30,
+        315,
+        0
+      ],
+      "scale": [
+        0.625,
+        0.625,
+        0.625
+      ]
+    }
+  },
+  "emissive_ambient": false,
+  "flip_v": true,
+  "loader": "forge:obj",
+  "model": "signpost:models/block/waystone_model_simple_2.obj",
+  "shade_quads": true,
+  "textures": {
+    "particle": "signpost:block/waystone"
+  }
+}

@@ -1,7 +1,13 @@
 package gollorum.signpost.platform;
 
 import gollorum.signpost.Signpost;
+import gollorum.signpost.minecraft.block.tiles.IBlockEntityTypeFactory;
 import gollorum.signpost.minecraft.config.IConfig;
+import gollorum.signpost.minecraft.gui.utils.IFluidTextureProvider;
+import gollorum.signpost.minecraft.rendering.ModelFactory;
+import gollorum.signpost.minecraft.storage.loot.ILootItemConditionRegistry;
+import gollorum.signpost.minecraft.worldgen.BiomeAccessor;
+import gollorum.signpost.minecraft.worldgen.IWaystoneDiscoveryEventListener;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.platform.services.IPlatformHelper;
 import gollorum.signpost.utils.IDelay;
@@ -12,11 +18,15 @@ public class Services {
 
     public static final IPlatformHelper PLATFORM = load(IPlatformHelper.class);
 
-    public static final PacketHandler PACKET_HANDLER = load(PacketHandler.class);
+    public static final IFluidTextureProvider FLUID_TEXTURE_PROVIDER = load(IFluidTextureProvider.class);
 
-    public static final IConfig CONFIG = load(IConfig.class);
+    public static final IBlockEntityTypeFactory BLOCK_ENTITY_TYPE_FACTORY = load(IBlockEntityTypeFactory.class);
 
-    public static final IDelay DELAY = load(IDelay.class);
+    public static final ILootItemConditionRegistry LOOT_ITEM_CONDITION_REGISTRY = load(ILootItemConditionRegistry.class);
+
+    public static final IWaystoneDiscoveryEventListener WAYSTONE_DISCOVERY_EVENT_LISTENER = load(IWaystoneDiscoveryEventListener.class);
+
+    public static final BiomeAccessor BIOME_ACCESSOR = load(BiomeAccessor.class);
 
     public static <T> T load(Class<T> clazz) {
         final T loadedService = ServiceLoader.load(clazz)

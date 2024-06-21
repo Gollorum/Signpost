@@ -6,7 +6,6 @@ import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.blockpartdata.types.LargeSignBlockPart;
 import gollorum.signpost.minecraft.rendering.ModelRegistry;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
-import gollorum.signpost.utils.modelGeneration.SignModel;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.resources.model.BakedModel;
@@ -38,16 +37,6 @@ public class LargeSignRenderer extends SignRenderer<LargeSignBlockPart> {
 	@Override
 	protected BakedModel makeBakedOverlayModel(LargeSignBlockPart sign, Overlay overlay) {
 		return ModelRegistry.LargeBakedSign.makeOverlayModel(sign, overlay);
-	}
-
-	@Override
-	protected SignModel makeModel(LargeSignBlockPart sign) {
-		return ModelRegistry.LargeSign.makeModel(sign);
-	}
-
-	@Override
-	protected SignModel makeOverlayModel(LargeSignBlockPart sign, Overlay overlay) {
-		return ModelRegistry.LargeSign.makeOverlayModel(sign, overlay);
 	}
 
 	@Override

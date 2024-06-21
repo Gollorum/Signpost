@@ -38,6 +38,14 @@ public class WorldLocation {
         this(blockPos, Either.right(dimensionKeyLocation));
     }
 
+    public WorldLocation withoutExplicitLevel() {
+        if(world.isLeft()) {
+            return new WorldLocation(blockPos, Either.right(world.leftOrThrow().dimension().location()));
+        } else {
+            return this;
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

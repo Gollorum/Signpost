@@ -4,10 +4,11 @@ import com.google.common.collect.ImmutableSet;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
-import gollorum.signpost.minecraft.registry.LootProviderRegistry;
 import gollorum.signpost.utils.WorldLocation;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -25,7 +26,7 @@ import java.util.Set;
 
 public final class RegisteredWaystoneLootNbtProvider implements NbtProvider {
 
-    public static LootNbtProviderType createProviderType() { return new LootNbtProviderType(new Serializer()); };
+    public static LootNbtProviderType providerType = new LootNbtProviderType(Codec.unit(RegisteredWaystoneLootNbtProvider::new));
 
     @Nullable
     @Override
@@ -55,18 +56,7 @@ public final class RegisteredWaystoneLootNbtProvider implements NbtProvider {
 
     @Override
     public LootNbtProviderType getType() {
-        return LootProviderRegistry.RegisteredWaystone.get();
-    }
-
-    public static final class Serializer implements net.minecraft.world.level.storage.loot.Serializer<RegisteredWaystoneLootNbtProvider> {
-
-        @Override
-        public void serialize(JsonObject jsonObject, RegisteredWaystoneLootNbtProvider instance, JsonSerializationContext context) { }
-
-        @Override
-        public RegisteredWaystoneLootNbtProvider deserialize(JsonObject jsonObject, JsonDeserializationContext context) {
-            return new RegisteredWaystoneLootNbtProvider();
-        }
+        return providerType;
     }
 
 }

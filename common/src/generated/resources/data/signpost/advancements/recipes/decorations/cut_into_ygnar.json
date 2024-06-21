@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "signpost:cut_into_ygnar"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_waystone": {
+      "conditions": {
+        "items": [
+          {
+            "tag": "signpost:waystone"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_waystone"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "signpost:cut_into_ygnar"
+    ]
+  }
+}

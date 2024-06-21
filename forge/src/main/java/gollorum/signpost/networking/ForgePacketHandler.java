@@ -18,20 +18,22 @@ import java.util.function.Supplier;
 
 public class ForgePacketHandler extends PacketHandler {
 
-    private static final int PROTOCOL_VERSION = 1;
+    private static final int PROTOCOL_VERSION = 0;
     private static SimpleChannel channel;
 
-    @Override
-    public void initialize(){
+    public static void initialize() {
         channel = ChannelBuilder
             .named(new ResourceLocation(Signpost.MOD_ID, "main"))
             .acceptedVersions(Channel.VersionTest.exact(PROTOCOL_VERSION))
             .simpleChannel();
-        super.initialize();
+        instance = new ForgePacketHandler();
+        instance.init();
     }
 
+    public ForgePacketHandler() { super(); }
+
     @Override
-    public <T> void register(Event<T> event){
+    public <T> void register(Event<T> event, ResourceLocation id){
         register(event.getMessageClass(), event::encode, event::decode, event::handle);
     }
 
@@ -52,8 +54,11 @@ public class ForgePacketHandler extends PacketHandler {
         return (message, context) -> {
             context.enqueueWork(() -> {
                 if(context.getDirection().getReceptionSide().isClient())
-                    DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> handle.accept(message, new Context(context.getSender())));
-                else handle.accept(message, new Context(context.getSender()));
+                    DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> handle.accept(message,
+                        context.getSender() == null
+                            ? new Context.ClientFromServer()
+                            : new Context.ClientFromClient(context.getSender())));
+                else handle.accept(message, new Context.Server(context.getSender()));
             });
             context.setPacketHandled(true);
         };

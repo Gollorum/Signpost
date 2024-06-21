@@ -1,4 +1,4 @@
-{
+ {
     "required": true,
     "minVersion": "0.8",
     "package": "gollorum.signpost.mixin",
@@ -7,7 +7,6 @@
     "mixins": [
     ],
     "client": [
-        "MixinTitleScreen"
     ],
     "server": [
     ],

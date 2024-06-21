@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "signpost:models/block/waystone_model_detailed_0.obj",
+      "y": 180
+    },
+    "facing=north": {
+      "model": "signpost:models/block/waystone_model_detailed_0.obj",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "signpost:models/block/waystone_model_detailed_0.obj",
+      "y": -90
+    },
+    "facing=west": {
+      "model": "signpost:models/block/waystone_model_detailed_0.obj"
+    }
+  }
+}

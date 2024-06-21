@@ -1,5 +1,6 @@
 package gollorum.signpost.registry;
 
+import gollorum.signpost.block.PostItemImpl;
 import gollorum.signpost.minecraft.block.*;
 import gollorum.signpost.minecraft.items.*;
 import gollorum.signpost.utils.Tuple;
@@ -41,7 +42,7 @@ public class ItemRegistry {
     private static RegistryObject<Item> registerPostItem(PostBlock.Variant postVariant){
         return REGISTER.register(
             postVariant.registryName,
-            () -> new PostItem(postVariant.getBlock(), new Item.Properties()));
+            () -> new PostItemImpl(postVariant.getBlock(), new Item.Properties()));
     }
 
     private static Tuple<ModelWaystone.Variant, RegistryObject<Item>> registerModelWaystoneItem(ModelWaystone.Variant variant){

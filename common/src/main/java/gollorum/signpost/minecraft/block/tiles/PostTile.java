@@ -6,13 +6,13 @@ import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blockpartdata.types.*;
 import gollorum.signpost.minecraft.block.PostBlock;
-import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.config.IConfig;
 import gollorum.signpost.minecraft.items.Wrench;
 import gollorum.signpost.minecraft.utils.SideUtils;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.minecraft.worldgen.VillageSignpost;
 import gollorum.signpost.networking.PacketHandler;
+import gollorum.signpost.platform.Services;
 import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.*;
 import gollorum.signpost.utils.math.geometry.Ray;
@@ -28,7 +28,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
-import net.minecraft.network.Connection;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
@@ -43,12 +42,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.network.PacketHandler;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -65,14 +63,15 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     public static BlockEntityType<PostTile> createType() {
         assert type == null;
         Type<?> type = Util.fetchChoiceType(References.BLOCK_ENTITY, REGISTRY_NAME);
-        return PostTile.type = BlockEntityType.Builder.of(
+        return PostTile.type = Services.BLOCK_ENTITY_TYPE_FACTORY.create(
             (pos, state) -> new PostTile(
                 PostBlock.ModelType.Oak,
                 ItemStack.EMPTY,
                 pos, state
             ),
-            PostBlock.getAllBlocks()
-        ).build(type);
+            PostBlock.getAllBlocks(),
+            type
+        );
     }
     public static BlockEntityType<PostTile> getBlockEntityType() {
         assert type != null;
@@ -162,13 +161,13 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         .reduce((b1, b2) -> Shapes.join(b1, b2, BooleanOp.OR)).orElse(Shapes.empty());
     }
 
-    @Override
-    public AABB getRenderBoundingBox() {
-        VoxelShape shape = getBounds();
-        return shape.isEmpty()
-            ? new AABB(getBlockPos())
-            : shape.bounds().move(getBlockPos());
-    }
+//    @Override
+//    public AABB getRenderBoundingBox() {
+//        VoxelShape shape = getBounds();
+//        return shape.isEmpty()
+//            ? new AABB(getBlockPos())
+//            : shape.bounds().move(getBlockPos());
+//    }
 
     public Optional<TraceResult> trace(Entity player){
         Vec3 head = player.position();
@@ -301,17 +300,17 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         return ClientboundBlockEntityDataPacket.create(this);
     }
 
-    @Override
-    public void handleUpdateTag(CompoundTag compound) {
-        super.handleUpdateTag(compound);
-        readSelf(compound);
-    }
+//    @Override
+//    public void handleUpdateTag(CompoundTag compound) {
+//        super.handleUpdateTag(compound);
+//        readSelf(compound);
+//    }
 
-    @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
-        super.onDataPacket(net, pkt);
-        readSelf(pkt.getTag());
-    }
+//    @Override
+//    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
+//        super.onDataPacket(net, pkt);
+//        readSelf(pkt.getTag());
+//    }
 
     public void notifyMutation(UUID part, CompoundTag data, String partMetaIdentifier) {
         sendToTracing(
@@ -324,7 +323,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     }
 
     public <T> void sendToTracing(Supplier<T> t) {
-        PacketHandler.sendToTracing(this, t);
+        PacketHandler.getInstance().sendToTracing(this, t);
     }
 
     public Collection<ItemStack> getDrops() {
@@ -496,7 +495,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
                     if(message.cost.getCount() > 0 &&
                            (!isClientSide ||
                                 (SideUtils.getClientPlayer().map(player -> player.getUUID().equals(message.player.id)).orElse(false)))) {
-                        SideUtils.makePlayerPayIfEditor(isClientSide, context.getSender(), message.player, message.cost);
+                        SideUtils.makePlayerPayIfEditor(isClientSide, context instanceof PacketHandler.Context.FromClient fc ? fc.getSender() : null, message.player, message.cost);
                     }
                     tile.setChanged();
                 } else {
@@ -618,7 +617,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         }
 
         @Override
-        public void handle(Packet message, PacketHandler.Context context) {
+        public void handle(@NotNull Packet message, PacketHandler.Context context) {
             boolean isServer = context instanceof PacketHandler.Context.Server;
             TileEntityUtils.findWorld(message.info.dimensionKey, !isServer).ifPresent(level ->
                 TileEntityUtils.delayUntilTileEntityExistsAt(
@@ -667,7 +666,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
             public final WorldLocation location;
             public Packet(CompoundTag tag, WorldLocation location) {
                 this.tag = tag;
-                this.location = location;
+                this.location = location.withoutExplicitLevel();
             }
         }
 
@@ -690,15 +689,13 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         @Override
         public void handle(Packet message, PacketHandler.Context context) {
             if(context instanceof PacketHandler.Context.Client)
-                context.enqueueWork(() ->
-                    TileEntityUtils.delayUntilTileEntityExistsAt(
-                        message.location,
-                        PostTile.getBlockEntityType(),
-                        tile -> tile.handleUpdateTag(message.tag),
-                        20,
-                        true,
-                        Optional.empty()
-                    )
+                TileEntityUtils.delayUntilTileEntityExistsAt(
+                    message.location,
+                    PostTile.getBlockEntityType(),
+                    tile -> tile.load(message.tag),
+                    20,
+                    true,
+                    Optional.empty()
                 );
         }
     }

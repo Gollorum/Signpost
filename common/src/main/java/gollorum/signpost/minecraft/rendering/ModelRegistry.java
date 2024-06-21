@@ -5,9 +5,7 @@ import gollorum.signpost.blockpartdata.types.LargeSignBlockPart;
 import gollorum.signpost.blockpartdata.types.SignBlockPart;
 import gollorum.signpost.blockpartdata.types.SmallShortSignBlockPart;
 import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
-import gollorum.signpost.minecraft.data.PostModel;
-import gollorum.signpost.utils.modelGeneration.SignModel;
-import gollorum.signpost.utils.modelGeneration.SignModelFactory;
+import gollorum.signpost.minecraft.gui.PostModelResources;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.resources.ResourceLocation;
 
@@ -16,87 +14,39 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ModelRegistry<M> {
 
-	public static ModelRegistry<SignModel> LargeSign = new ModelRegistry<>(
-		(mainTexture, secondaryTexture) -> new SignModelFactory<ResourceLocation>()
-			.makeLargeSign(mainTexture, secondaryTexture).build(new SignModel(), SignModel::addCube),
-		overlayTexture -> new SignModelFactory<ResourceLocation>()
-			.makeLargeSignOverlay(overlayTexture).build(new SignModel(), SignModel::addCube),
-		(mainTexture, secondaryTexture) -> new SignModelFactory<ResourceLocation>()
-			.makeLargeSign(mainTexture, secondaryTexture)
-			.flipZ()
-			.build(new SignModel(), SignModel::addCube),
-		overlayTexture -> new SignModelFactory<ResourceLocation>()
-			.makeLargeSignOverlay(overlayTexture)
-			.flipZ()
-			.build(new SignModel(), SignModel::addCube),
-		LargeSignBlockPart.class
-	);
-
-	public static ModelRegistry<SignModel> WideSign = new ModelRegistry<>(
-		(mainTexture, secondaryTexture) -> new SignModelFactory<ResourceLocation>()
-			.makeWideSign(mainTexture, secondaryTexture).build(new SignModel(), SignModel::addCube),
-		overlayTexture -> new SignModelFactory<ResourceLocation>()
-			.makeWideSignOverlay(overlayTexture).build(new SignModel(), SignModel::addCube),
-		(mainTexture, secondaryTexture) -> new SignModelFactory<ResourceLocation>()
-			.makeWideSign(mainTexture, secondaryTexture)
-			.flipZ()
-			.build(new SignModel(), SignModel::addCube),
-		overlayTexture -> new SignModelFactory<ResourceLocation>()
-			.makeWideSignOverlay(overlayTexture)
-			.flipZ()
-			.build(new SignModel(), SignModel::addCube),
-		SmallWideSignBlockPart.class
-	);
-
-	public static ModelRegistry<SignModel> ShortSign = new ModelRegistry<>(
-		(mainTexture, secondaryTexture) -> new SignModelFactory<ResourceLocation>()
-			.makeShortSign(mainTexture, secondaryTexture).build(new SignModel(), SignModel::addCube),
-		overlayTexture -> new SignModelFactory<ResourceLocation>()
-			.makeShortSignOverlay(overlayTexture).build(new SignModel(), SignModel::addCube),
-		(mainTexture, secondaryTexture) -> new SignModelFactory<ResourceLocation>()
-			.makeShortSign(mainTexture, secondaryTexture)
-			.flipZ()
-			.build(new SignModel(), SignModel::addCube),
-		overlayTexture -> new SignModelFactory<ResourceLocation>()
-			.makeShortSignOverlay(overlayTexture)
-			.flipZ()
-			.build(new SignModel(), SignModel::addCube),
-		SmallShortSignBlockPart.class
-	);
-
 	public static ModelRegistry<BakedModel> LargeBakedSign = new ModelRegistry<>(
 		(mainTexture, secondaryTexture) -> RenderingUtil.loadModel(
-			PostModel.largeLocation, mainTexture, secondaryTexture
+			PostModelResources.largeLocation, mainTexture, secondaryTexture
 		),
-		overlayTexture -> RenderingUtil.loadModel(PostModel.largeOverlayLocation, overlayTexture),
+		overlayTexture -> RenderingUtil.loadModel(PostModelResources.largeOverlayLocation, overlayTexture),
 		(mainTexture, secondaryTexture) -> RenderingUtil.loadModel(
-			PostModel.largeFlippedLocation, mainTexture, secondaryTexture
+			PostModelResources.largeFlippedLocation, mainTexture, secondaryTexture
 		),
-		overlayTexture -> RenderingUtil.loadModel(PostModel.largeOverlayFlippedLocation, overlayTexture),
+		overlayTexture -> RenderingUtil.loadModel(PostModelResources.largeOverlayFlippedLocation, overlayTexture),
 		LargeSignBlockPart.class
 	);
 
 	public static ModelRegistry<BakedModel> WideBakedSign = new ModelRegistry<>(
 		(mainTexture, secondaryTexture) -> RenderingUtil.loadModel(
-			PostModel.wideLocation, mainTexture, secondaryTexture
+			PostModelResources.wideLocation, mainTexture, secondaryTexture
 		),
-		overlayTexture -> RenderingUtil.loadModel(PostModel.wideOverlayLocation, overlayTexture),
+		overlayTexture -> RenderingUtil.loadModel(PostModelResources.wideOverlayLocation, overlayTexture),
 		(mainTexture, secondaryTexture) -> RenderingUtil.loadModel(
-			PostModel.wideFlippedLocation, mainTexture, secondaryTexture
+			PostModelResources.wideFlippedLocation, mainTexture, secondaryTexture
 		),
-		overlayTexture -> RenderingUtil.loadModel(PostModel.wideOverlayFlippedLocation, overlayTexture),
+		overlayTexture -> RenderingUtil.loadModel(PostModelResources.wideOverlayFlippedLocation, overlayTexture),
 		SmallWideSignBlockPart.class
 	);
 
 	public static ModelRegistry<BakedModel> ShortBakedSign = new ModelRegistry<>(
 		(mainTexture, secondaryTexture) -> RenderingUtil.loadModel(
-			PostModel.shortLocation, mainTexture, secondaryTexture
+			PostModelResources.shortLocation, mainTexture, secondaryTexture
 		),
-		overlayTexture -> RenderingUtil.loadModel(PostModel.shortOverlayLocation, overlayTexture),
+		overlayTexture -> RenderingUtil.loadModel(PostModelResources.shortOverlayLocation, overlayTexture),
 		(mainTexture, secondaryTexture) -> RenderingUtil.loadModel(
-			PostModel.shortFlippedLocation, mainTexture, secondaryTexture
+			PostModelResources.shortFlippedLocation, mainTexture, secondaryTexture
 		),
-		overlayTexture -> RenderingUtil.loadModel(PostModel.shortOverlayFlippedLocation, overlayTexture),
+		overlayTexture -> RenderingUtil.loadModel(PostModelResources.shortOverlayFlippedLocation, overlayTexture),
 		SmallShortSignBlockPart.class
 	);
 

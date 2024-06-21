@@ -4,7 +4,6 @@ import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.WaystoneData;
 import gollorum.signpost.utils.WorldLocation;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
 
 import java.util.Optional;
 
@@ -15,8 +14,8 @@ public class RequestWaystoneGui implements PacketHandler.Event.ForClient<Request
 		public final Optional<WaystoneData> oldData;
 
 		public Package(WorldLocation location, Optional<WaystoneData> oldData) {
-			this.location = location;
-			this.oldData = oldData;
+			this.location = location.withoutExplicitLevel();
+            this.oldData = oldData.map(WaystoneData::withoutExplicitLevel);
 		}
 	}
 

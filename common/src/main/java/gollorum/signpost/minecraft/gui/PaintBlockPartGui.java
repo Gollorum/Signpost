@@ -3,16 +3,14 @@ package gollorum.signpost.minecraft.gui;
 import com.google.common.collect.Streams;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
-import gollorum.signpost.minecraft.gui.utils.Colors;
-import gollorum.signpost.minecraft.gui.utils.ExtendedScreen;
-import gollorum.signpost.minecraft.gui.utils.Point;
-import gollorum.signpost.minecraft.gui.utils.Rect;
+import gollorum.signpost.minecraft.gui.utils.*;
 import gollorum.signpost.minecraft.gui.widgets.GuiBlockPartRenderer;
 import gollorum.signpost.minecraft.gui.widgets.ItemButton;
 import gollorum.signpost.minecraft.gui.widgets.SpriteSelectionButton;
 import gollorum.signpost.minecraft.utils.tints.BlockColorTint;
 import gollorum.signpost.minecraft.utils.Texture;
 import gollorum.signpost.minecraft.utils.tints.FluidTint;
+import gollorum.signpost.mixin.BucketAccessor;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.BlockPart;
 import gollorum.signpost.utils.BlockPartInstance;
@@ -32,7 +30,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 
 import java.util.*;
 import java.util.function.Function;
@@ -69,7 +66,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
     protected void init() {
         super.init();
 
-        var blocksToRender = getMinecraft().player.getInventory().items.stream()
+        var blocksToRender = minecraft().player.getInventory().items.stream()
             .filter(i -> !i.isEmpty() && (i.getItem() instanceof BlockItem || i.getItem() instanceof BucketItem))
             .map(i -> {
                 ItemStack ret = i.copy();
@@ -102,8 +99,8 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
                 .map(p -> p.blockPart == part ? new BlockPartInstance(displayPart, p.offset) : p)
                 .collect(Collectors.toList()),
             new Point(width / 2, height / 4),
-            Angle.fromDegrees(getMinecraft().player.getYRot() + 180),
-            Angle.fromDegrees(getMinecraft().player.getXRot()),
+            Angle.fromDegrees(minecraft().player.getYRot() + 180),
+            Angle.fromDegrees(minecraft().player.getXRot()),
             64
         ));
     }
@@ -128,15 +125,15 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
     }
 
     private List<Tuple<TextureAtlasSprite, Optional<Tint>>> allSpritesFor(BucketItem item) {
-        var fluidTint = new FluidTint(item.getFluid());
-        var typeExtensions = IClientFluidTypeExtensions.of(fluidTint.fluid());
+        var fluidTint = new FluidTint(((BucketAccessor)item).getContent());
         var ret = new ArrayList<Tuple<TextureAtlasSprite, Optional<Tint>>>(3);
         ResourceLocation loc = null;
-        if((loc = typeExtensions.getFlowingTexture()) != null)
+        var fluidTextureProvider = IFluidTextureProvider.getInstance();
+        if((loc = fluidTextureProvider.getFlowingTexture(fluidTint.fluid())) != null)
             ret.add(Tuple.of(spriteFrom(loc), Optional.of(fluidTint)));
-        if((loc = typeExtensions.getOverlayTexture()) != null)
+        if((loc = fluidTextureProvider.getOverlayTexture(fluidTint.fluid())) != null)
             ret.add(Tuple.of(spriteFrom(loc), Optional.of(fluidTint)));
-        if((loc = typeExtensions.getStillTexture()) != null)
+        if((loc = fluidTextureProvider.getStillTexture(fluidTint.fluid())) != null)
             ret.add(Tuple.of(spriteFrom(loc), Optional.of(fluidTint)));
         return ret;
     }

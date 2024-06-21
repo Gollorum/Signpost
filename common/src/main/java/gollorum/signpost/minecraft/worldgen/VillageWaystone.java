@@ -3,8 +3,8 @@ package gollorum.signpost.minecraft.worldgen;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.block.ModelWaystone;
-import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.config.IConfig;
+import gollorum.signpost.platform.Services;
 import gollorum.signpost.utils.serialization.BlockPosSerializer;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.ResourceLocationSerializer;
@@ -89,13 +89,13 @@ public class VillageWaystone {
 			generatedWaystones.put(referencePos, handle);
 			generatedWaystonesByChunk.put(key, handle);
 			WaystoneLibrary.getInstance().markDirty();
-			WaystoneDiscoveryEventListener.registerNew(handle, world, blockPos);
+            Services.WAYSTONE_DISCOVERY_EVENT_LISTENER.registerNew(handle, world, blockPos);
 		});
 	}
 
     public static void reset() {
         generatedWaystones.clear();
-        WaystoneDiscoveryEventListener.initialize();
+        Services.WAYSTONE_DISCOVERY_EVENT_LISTENER.initialize();
     }
 
     public static Tag serialize() {
@@ -145,11 +145,13 @@ public class VillageWaystone {
             .map(e -> e.getKey().dimensionKey);
     }
 
-	public static Map<ChunkEntryKey, WaystoneHandle.Vanilla> getAllEntriesByChunk() {
-		List<ChunkEntryKey> toRemove = generatedWaystonesByChunk.entrySet().stream()
-            .filter(e -> WaystoneLibrary.getInstance().getData(e.getValue()).isEmpty())
-            .map(Map.Entry::getKey).toList();
-		for(ChunkEntryKey key : toRemove) generatedWaystonesByChunk.remove(key);
+	public static Map<ChunkEntryKey, WaystoneHandle.Vanilla> getAllEntriesByChunk(boolean validateExistence) {
+        if(validateExistence) {
+            List<ChunkEntryKey> toRemove = generatedWaystonesByChunk.entrySet().stream()
+                .filter(e -> WaystoneLibrary.getInstance().getData(e.getValue()).isEmpty())
+                .map(Map.Entry::getKey).toList();
+            for (ChunkEntryKey key : toRemove) generatedWaystonesByChunk.remove(key);
+        }
 		return generatedWaystonesByChunk;
 	}
 

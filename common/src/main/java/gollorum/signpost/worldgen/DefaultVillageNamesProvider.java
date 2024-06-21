@@ -1,5 +1,6 @@
 package gollorum.signpost.worldgen;
 
+import gollorum.signpost.minecraft.config.IConfig;
 import gollorum.signpost.platform.Services;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -17,7 +18,7 @@ public class DefaultVillageNamesProvider implements VillageNamesProvider {
 	public Optional<String> getFor(
 		BlockPos blockPos, BlockPos villagePos, ServerLevel world, Predicate<String> validator, Random random
 	) {
-        var namingConfig = Services.CONFIG.getServer().worldGen().naming();
+        var namingConfig = IConfig.IServer.getInstance().worldGen().naming();
 		List<? extends String> prefixes = namingConfig.villageNamePrefixes();
 		List<? extends String> infixes = namingConfig.villageNameInfixes();
 		List<? extends String> postfixes = namingConfig.villageNamePostfixes();

@@ -7,7 +7,7 @@ import gollorum.signpost.blockpartdata.types.SmallShortSignBlockPart;
 import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import gollorum.signpost.utils.modelGeneration.SignModelFactory;
+import gollorum.signpost.data.modelGeneration.SignModelFactory;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -17,30 +17,9 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static gollorum.signpost.minecraft.gui.PostModelResources.*;
+
 public class PostModel {
-
-    private static final String texturePost = "post";
-    public static final String textureSign = "texture";
-    public static final ResourceLocation mainTextureMarker = PostBlock.ModelType.Oak.mainTexture.location();
-    public static final String secondaryTexture = "secondary_texture";
-
-    private static final ResourceLocation previewLocation = new ResourceLocation(Signpost.MOD_ID, "block/post_preview");
-
-    public static final ResourceLocation postLocation = new ResourceLocation(Signpost.MOD_ID, "block/post_only");
-
-    public static final ResourceLocation wideLocation = new ResourceLocation(Signpost.MOD_ID, "block/small_wide_sign");
-    public static final ResourceLocation wideFlippedLocation = new ResourceLocation(Signpost.MOD_ID, wideLocation.getPath() + "_flipped");
-    public static final ResourceLocation shortLocation = new ResourceLocation(Signpost.MOD_ID, "block/small_short_sign");
-    public static final ResourceLocation shortFlippedLocation = new ResourceLocation(Signpost.MOD_ID, shortLocation.getPath() + "_flipped");
-    public static final ResourceLocation largeLocation = new ResourceLocation(Signpost.MOD_ID, "block/large_sign");
-    public static final ResourceLocation largeFlippedLocation = new ResourceLocation(Signpost.MOD_ID, largeLocation.getPath() + "_flipped");
-
-    public static final ResourceLocation wideOverlayLocation = new ResourceLocation(Signpost.MOD_ID, "block/small_wide_sign_overlay");
-    public static final ResourceLocation wideOverlayFlippedLocation = new ResourceLocation(Signpost.MOD_ID, wideOverlayLocation.getPath() + "_flipped");
-    public static final ResourceLocation shortOverlayLocation = new ResourceLocation(Signpost.MOD_ID, "block/small_short_sign_overlay");
-    public static final ResourceLocation shortOverlayFlippedLocation = new ResourceLocation(Signpost.MOD_ID, shortOverlayLocation.getPath() + "_flipped");
-    public static final ResourceLocation largeOverlayLocation = new ResourceLocation(Signpost.MOD_ID, "block/large_sign_overlay");
-    public static final ResourceLocation largeOverlayFlippedLocation = new ResourceLocation(Signpost.MOD_ID, largeOverlayLocation.getPath() + "_flipped");
 
     public final Map<PostBlock.Variant, BlockModelBuilder> allModels;
 
@@ -51,7 +30,7 @@ public class PostModel {
     private final BlockModels blockModelProvider;
 
     public PostModel(BlockModels blockModelProvider) {
-        previewModel = new BlockModelBuilder(previewLocation, blockModelProvider.existingFileHelper);
+        previewModel = new BlockModelBuilder(new ResourceLocation(previewLocation.getNamespace(), previewLocation.getPath()), blockModelProvider.existingFileHelper);
         allModels = PostBlock.AllVariants.stream().collect(Collectors.<PostBlock.Variant, PostBlock.Variant, BlockModelBuilder>toMap(
             i -> i,
             i -> new BlockModelBuilder(new ResourceLocation(Signpost.MOD_ID, "block/" + i.registryName), blockModelProvider.existingFileHelper)
@@ -104,9 +83,10 @@ public class PostModel {
     }
 
     private BlockModelBuilder getBuilder(String path) { return blockModelProvider.getBuilder(path); }
+    private BlockModelBuilder getBuilder(ResourceLocation path) { return blockModelProvider.getBuilder(path.getNamespace() + ResourceLocation.NAMESPACE_SEPARATOR + path.getPath()); }
 
     public void registerModels() {
-        BlockModelBuilder previewBuilder = getBuilder(previewLocation.toString())
+        BlockModelBuilder previewBuilder = getBuilder(previewLocation)
             .parent(new ModelFile.ExistingModelFile(new ResourceLocation("block/block"), blockModelProvider.existingFileHelper))
             .transforms()
                 .transform(ItemDisplayContext.GUI)
@@ -126,7 +106,7 @@ public class PostModel {
         new SignModelFactory<String>().makeWideSign(new Vector3(8, 12, 8), "#" + textureSign, "#" + secondaryTexture)
             .build(previewBuilder, SignModelFactory.Builder.BlockModel);
 
-        makePostAt(new Vector3(0, 8, 0), getBuilder(postLocation.toString()))
+        makePostAt(new Vector3(0, 8, 0), getBuilder(postLocation))
             .texture(texturePost, PostBlock.ModelType.Oak.postTexture.location());
 
         buildDefaultAndFlipped(
@@ -174,18 +154,18 @@ public class PostModel {
     }
 
     private void buildDefaultAndFlipped(SignModelFactory<String> factory, ResourceLocation main, ResourceLocation flipped) {
-        factory.build(getBuilder(main.toString()), SignModelFactory.Builder.BlockModel)
+        factory.build(getBuilder(main), SignModelFactory.Builder.BlockModel)
             .texture(textureSign, mainTextureMarker)
             .texture(secondaryTexture, PostBlock.ModelType.Oak.secondaryTexture.location());
-        factory.build(getBuilder(flipped.toString()), SignModelFactory.Builder.BlockModelFlipped)
+        factory.build(getBuilder(flipped), SignModelFactory.Builder.BlockModelFlipped)
             .texture(textureSign, mainTextureMarker)
             .texture(secondaryTexture, PostBlock.ModelType.Oak.secondaryTexture.location());
     }
 
     private void buildDefaultAndFlippedOverlay(SignModelFactory<String> factory, ResourceLocation main, ResourceLocation flipped, ResourceLocation texture) {
-        factory.build(getBuilder(main.toString()), SignModelFactory.Builder.BlockModel)
+        factory.build(getBuilder(main), SignModelFactory.Builder.BlockModel)
             .texture(textureSign, texture);
-        factory.build(getBuilder(flipped.toString()), SignModelFactory.Builder.BlockModelFlipped)
+        factory.build(getBuilder(flipped), SignModelFactory.Builder.BlockModelFlipped)
             .texture(textureSign, texture);
     }
 

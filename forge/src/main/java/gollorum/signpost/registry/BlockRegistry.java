@@ -1,6 +1,7 @@
 package gollorum.signpost.registry;
 
 import gollorum.signpost.block.ModelWaystoneImpl;
+import gollorum.signpost.block.PostBlockImpl;
 import gollorum.signpost.block.WaystoneBlockImpl;
 import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.block.PostBlock;
@@ -30,7 +31,7 @@ public class BlockRegistry {
         PostBlock.AllVariants.stream().map(BlockRegistry::registerPostBlock).toList();
 
     private static RegistryObject<PostBlock> registerPostBlock(PostBlock.Variant variant) {
-        return Register.register(variant.registryName, variant::createBlock);
+        return Register.register(variant.registryName, () -> variant.createBlock(PostBlockImpl::new));
     }
 
     private static RegistryObject<ModelWaystone> registerModelWaystone(ModelWaystone.Variant variant) {
@@ -38,7 +39,7 @@ public class BlockRegistry {
     }
 
     public static final RegistryObject<WaystoneGeneratorBlock> WaystoneGenerator =
-        Register.register(WaystoneGeneratorBlock.REGISTRY_NAME, WaystoneGeneratorBlock::new);
+        Register.register(WaystoneGeneratorBlock.REGISTRY_NAME, () -> WaystoneGeneratorBlock.instance);
 
     public static void register(IEventBus bus){
         Register.register(bus);

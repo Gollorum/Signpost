@@ -16,16 +16,14 @@ import gollorum.signpost.minecraft.gui.utils.*;
 import gollorum.signpost.minecraft.gui.widgets.*;
 import gollorum.signpost.minecraft.rendering.FlippableModel;
 import gollorum.signpost.minecraft.utils.LangKeys;
+import gollorum.signpost.mixin.ScreenAccessor;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.compat.ExternalWaystoneLibrary;
 import gollorum.signpost.utils.*;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.ImageButton;
-import net.minecraft.client.gui.components.LockIconButton;
+import net.minecraft.client.gui.components.*;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
@@ -230,15 +228,15 @@ public class SignGui extends ExtendedScreen {
         var mainTexture = oldSign.map(SignBlockPart::getMainTexture).orElse(modelType.mainTexture);
         var secondaryTexture = oldSign.map(SignBlockPart::getSecondaryTexture).orElse(modelType.secondaryTexture);
 
-        FlippableModel postModel = FlippableModel.loadSymmetrical(PostModel.postLocation, postTexture.location());
+        FlippableModel postModel = FlippableModel.loadSymmetrical(PostModelResources.postLocation, postTexture.location());
         FlippableModel wideModel = FlippableModel.loadFrom(
-            PostModel.wideLocation, PostModel.wideFlippedLocation, mainTexture.location(), secondaryTexture.location()
+            PostModelResources.wideLocation, PostModelResources.wideFlippedLocation, mainTexture.location(), secondaryTexture.location()
         );
         FlippableModel shortModel = FlippableModel.loadFrom(
-            PostModel.shortLocation, PostModel.shortFlippedLocation, mainTexture.location(), secondaryTexture.location()
+            PostModelResources.shortLocation, PostModelResources.shortFlippedLocation, mainTexture.location(), secondaryTexture.location()
         );
         FlippableModel largeModel = FlippableModel.loadFrom(
-            PostModel.largeLocation, PostModel.largeFlippedLocation, mainTexture.location(), secondaryTexture.location()
+            PostModelResources.largeLocation, PostModelResources.largeFlippedLocation, mainTexture.location(), secondaryTexture.location()
         );
 
         addRenderableWidget(
@@ -292,7 +290,7 @@ public class SignGui extends ExtendedScreen {
                 Component.translatable(LangKeys.removeSign),
                 b -> removeSign()
             ).bounds(getCenterX() - centerGap / 2 - buttonsWidth, doneRect.point.y, buttonsWidth, doneRect.height).build();
-            removeSignButton.setFGColor(Colors.invalid);
+            ((IColorableButton)removeSignButton).signpost$overrideColor(Colors.invalid);
             addRenderableWidget(removeSignButton);
         } else {
             doneButton = Button.builder(
@@ -508,7 +506,7 @@ public class SignGui extends ExtendedScreen {
         int i = 0;
         for(Overlay overlay: Overlay.getAllOverlays()) {
             FlippableModel overlayModel = FlippableModel.loadFrom(
-                PostModel.wideOverlayLocation, PostModel.wideOverlayFlippedLocation, overlay.textureFor(SmallWideSignBlockPart.class)
+                PostModelResources.wideOverlayLocation, PostModelResources.wideOverlayFlippedLocation, overlay.textureFor(SmallWideSignBlockPart.class)
             );
             overlaySelectionButtons.add(new ModelButton(
                 TextureResource.signTypeSelection, new Point(getCenterX() - centerGap - i * 37, rotationInputBoxRect.max().y + 15),
@@ -601,7 +599,7 @@ public class SignGui extends ExtendedScreen {
                         ? Optional.ofNullable(n.get(id))
                             .map(e -> Tuple.of(e._1, e._1, e._2.block.blockPos))
                         : Optional.empty());
-            }, Optional.of(PlayerHandle.from(getMinecraft().player)), true);
+            }, Optional.of(PlayerHandle.from(minecraft().player)), true);
             ExternalWaystoneLibrary.getInstance().requestKnownWaystones(n -> {
                 List<WaystoneEntry> entries = n.stream().map(w -> new WaystoneEntry(
                     w.name() + " " + w.handle().modMark(),
@@ -655,17 +653,17 @@ public class SignGui extends ExtendedScreen {
 
     private void onWaystoneCountChanged() {
         if(waystoneDropdown.getAllEntries().isEmpty()){
-            if(!renderables.contains(noWaystonesInfo))
+            if(!((ScreenAccessor)this).getRenderables().contains(noWaystonesInfo))
                 addRenderableOnly(noWaystonesInfo);
             removeWidget(waystoneDropdown);
             removeWidget(waystoneInputBox);
 
         } else {
-            if(!renderables.contains(waystoneDropdown))
+            if(!((ScreenAccessor)this).getRenderables().contains(waystoneDropdown))
                 addRenderableWidget(waystoneDropdown);
-            if(!renderables.contains(waystoneInputBox))
+            if(!((ScreenAccessor)this).getRenderables().contains(waystoneInputBox))
                 addRenderableWidget(waystoneInputBox);
-            renderables.remove(noWaystonesInfo);
+            ((ScreenAccessor)this).getRenderables().remove(noWaystonesInfo);
         }
     }
 
@@ -736,7 +734,7 @@ public class SignGui extends ExtendedScreen {
     }
 
     // Texture must include highlight below main
-    private static ImageButton newImageButton(
+    private static SignpostImageButton newImageButton(
         TextureResource texture,
         int index,
         Point referencePoint,
@@ -746,12 +744,12 @@ public class SignGui extends ExtendedScreen {
         Runnable onClick
     ){
         Rect rect = new Rect(referencePoint, texture.size.scale(scale), xAlignment, yAlignment);
-        return new ImageButton(
-            rect.point.x, rect.point.y,
-            rect.width, rect.height,
-            (int) (index * texture.size.width * scale), 0, (int) (texture.size.height * scale),
-            texture.location,
-            (int) (texture.fileSize.width * scale), (int) (texture.fileSize.height * scale),
+        return new SignpostImageButton(
+            texture,
+            rect,
+//            (int) (index * texture.size.width * scale), 0, (int) (texture.size.height * scale),
+//            texture.location,
+//            (int) (texture.fileSize.width * scale), (int) (texture.fileSize.height * scale),
             b -> onClick.run()
         );
     }
@@ -813,7 +811,7 @@ public class SignGui extends ExtendedScreen {
 
     private void switchOverlay(Optional<Overlay> overlay) {
         if(currentOverlay != null) {
-            renderables.remove(currentOverlay);
+            ((ScreenAccessor)this).getRenderables().remove(currentOverlay);
             widgetsToFlip.remove(currentOverlay);
         }
         this.selectedOverlay = overlay;
@@ -823,7 +821,7 @@ public class SignGui extends ExtendedScreen {
             case Wide:
                 currentOverlay = new GuiModelRenderer(
                     wideSignRenderer.rect,
-                    FlippableModel.loadFrom(PostModel.wideOverlayLocation, PostModel.wideOverlayFlippedLocation, o.textureFor(SmallWideSignBlockPart.class)),
+                    FlippableModel.loadFrom(PostModelResources.wideOverlayLocation, PostModelResources.wideOverlayFlippedLocation, o.textureFor(SmallWideSignBlockPart.class)),
                     0, 0.25f,
                     RenderType.cutout(),
                     new int[]{colorFrom(o.tint)});
@@ -831,7 +829,7 @@ public class SignGui extends ExtendedScreen {
             case Short:
                 currentOverlay = new GuiModelRenderer(
                     shortSignRenderer.rect,
-                    FlippableModel.loadFrom(PostModel.shortOverlayLocation, PostModel.shortOverlayFlippedLocation, o.textureFor(SmallShortSignBlockPart.class)),
+                    FlippableModel.loadFrom(PostModelResources.shortOverlayLocation, PostModelResources.shortOverlayFlippedLocation, o.textureFor(SmallShortSignBlockPart.class)),
                     0, 0.25f,
                     RenderType.cutout(),
                     new int[]{colorFrom(o.tint)});
@@ -839,7 +837,7 @@ public class SignGui extends ExtendedScreen {
             case Large:
                 currentOverlay = new GuiModelRenderer(
                     largeSignRenderer.rect,
-                    FlippableModel.loadFrom(PostModel.largeOverlayLocation, PostModel.largeOverlayFlippedLocation, o.textureFor(LargeSignBlockPart.class)),
+                    FlippableModel.loadFrom(PostModelResources.largeOverlayLocation, PostModelResources.largeOverlayFlippedLocation, o.textureFor(LargeSignBlockPart.class)),
                     0, 0,
                     RenderType.cutout(),
                     new int[]{colorFrom(o.tint)});
@@ -851,7 +849,7 @@ public class SignGui extends ExtendedScreen {
     }
 
     private void hideStuffOccludedByWaystoneDropdown() {
-        renderables.remove(rotationLabel);
+        ((ScreenAccessor)this).getRenderables().remove(rotationLabel);
         removeWidget(rotationInputField);
         angleDropDown.hideList();
         removeWidget(angleDropDown);
@@ -873,7 +871,7 @@ public class SignGui extends ExtendedScreen {
 
     private void clearTypeDependentChildren(){
         for(AbstractWidget b : selectionDependentWidgets) removeWidget(b);
-        renderables.remove(currentSignRenderer);
+        ((ScreenAccessor)this).getRenderables().remove(currentSignRenderer);
         selectionDependentWidgets.clear();
     }
 
@@ -895,16 +893,16 @@ public class SignGui extends ExtendedScreen {
 
     private void removeSign() {
         if(oldSign.isPresent())
-            PacketHandler.sendToServer(new PostTile.PartRemovedEvent.Packet(
+            PacketHandler.getInstance().sendToServer(new PostTile.PartRemovedEvent.Packet(
                 oldTilePartInfo.get(), true
             ));
         else Signpost.LOGGER.error("Tried to remove a sign, but the necessary information was missing.");
-        getMinecraft().setScreen(null);
+        minecraft().setScreen(null);
     }
 
     private void done() {
         apply(asValidWaystone(waystoneInputBox.getValue()).map(w -> w.handle));
-        getMinecraft().setScreen(null);
+        minecraft().setScreen(null);
     }
 
     private void apply(Optional<WaystoneHandle> destinationId) {
@@ -937,16 +935,16 @@ public class SignGui extends ExtendedScreen {
                     )
                 );
                 if (oldSign.isPresent()) {
-                    PacketHandler.sendToServer(new PostTile.PartMutatedEvent.Packet(
+                    PacketHandler.getInstance().sendToServer(new PostTile.PartMutatedEvent.Packet(
                         tilePartInfo, data,
                         SmallWideSignBlockPart.METADATA.identifier,
                         new Vector3(0, localHitPos.y > 0.5f ? 0.75f : 0.25f, 0)
                     ));
                 } else {
-                    PacketHandler.sendToServer(new PostTile.PartAddedEvent.Packet(
+                    PacketHandler.getInstance().sendToServer(new PostTile.PartAddedEvent.Packet(
                         tilePartInfo, data,
                         SmallWideSignBlockPart.METADATA.identifier,
-                        new Vector3(0, localHitPos.y > 0.5f ? 0.75f : 0.25f, 0), itemToDropOnBreak, PlayerHandle.from(getMinecraft().player)
+                        new Vector3(0, localHitPos.y > 0.5f ? 0.75f : 0.25f, 0), itemToDropOnBreak, PlayerHandle.from(minecraft().player)
                     ));
                 }
             }
@@ -968,16 +966,16 @@ public class SignGui extends ExtendedScreen {
                     )
                 );
                 if (oldSign.isPresent()) {
-                    PacketHandler.sendToServer(new PostTile.PartMutatedEvent.Packet(
+                    PacketHandler.getInstance().sendToServer(new PostTile.PartMutatedEvent.Packet(
                         tilePartInfo, data,
                         SmallShortSignBlockPart.METADATA.identifier,
                         new Vector3(0, localHitPos.y > 0.5f ? 0.75f : 0.25f, 0)
                     ));
                 } else {
-                    PacketHandler.sendToServer(new PostTile.PartAddedEvent.Packet(
+                    PacketHandler.getInstance().sendToServer(new PostTile.PartAddedEvent.Packet(
                         tilePartInfo, data,
                         SmallShortSignBlockPart.METADATA.identifier,
-                        new Vector3(0, localHitPos.y > 0.5f ? 0.75f : 0.25f, 0), itemToDropOnBreak, PlayerHandle.from(getMinecraft().player)
+                        new Vector3(0, localHitPos.y > 0.5f ? 0.75f : 0.25f, 0), itemToDropOnBreak, PlayerHandle.from(minecraft().player)
                     ));
                 }
             }
@@ -1004,16 +1002,16 @@ public class SignGui extends ExtendedScreen {
                     )
                 );
                 if (oldSign.isPresent()) {
-                    PacketHandler.sendToServer(new PostTile.PartMutatedEvent.Packet(
+                    PacketHandler.getInstance().sendToServer(new PostTile.PartMutatedEvent.Packet(
                         tilePartInfo, data,
                         LargeSignBlockPart.METADATA.identifier,
                         new Vector3(0, localHitPos.y >= 0.5f ? 0.501f : 0.499f, 0)
                     ));
                 } else {
-                    PacketHandler.sendToServer(new PostTile.PartAddedEvent.Packet(
+                    PacketHandler.getInstance().sendToServer(new PostTile.PartAddedEvent.Packet(
                         tilePartInfo, data,
                         LargeSignBlockPart.METADATA.identifier,
-                        new Vector3(0, 0.5f, 0), itemToDropOnBreak, PlayerHandle.from(getMinecraft().player)
+                        new Vector3(0, 0.5f, 0), itemToDropOnBreak, PlayerHandle.from(minecraft().player)
                     ));
                 }
             }
@@ -1029,8 +1027,8 @@ public class SignGui extends ExtendedScreen {
     private AngleSelectionEntry angleEntryForPlayer() {
         AtomicReference<Angle> angleWhenFlipped = new AtomicReference<>(Angle.fromDegrees(404));
         AtomicReference<Angle> angleWhenNotFlipped = new AtomicReference<>(Angle.fromDegrees(404));
-        IDelay.onClientUntil(() -> getMinecraft() != null && getMinecraft().player != null, () -> {
-            angleWhenFlipped.set(Angle.fromDegrees(-getMinecraft().player.getYRot()).normalized());
+        IDelay.onClientUntil(() -> minecraft() != null && minecraft().player != null, () -> {
+            angleWhenFlipped.set(Angle.fromDegrees(-minecraft().player.getYRot()).normalized());
             angleWhenNotFlipped.set(angleWhenFlipped.get().add(Angle.fromRadians((float) Math.PI)).normalized());
 
             if(!oldSign.isPresent() && rotationInputField.getCurrentAngle().equals(Angle.ZERO)) {

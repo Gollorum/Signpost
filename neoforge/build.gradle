@@ -4,8 +4,10 @@ plugins {
     id 'net.neoforged.gradle.userdev' version '7.0.81'
     id 'java-library'
 }
+version = "${minecraft_version}-${version}"
+group= "${group_id}"
 base {
-    archivesName = "${mod_name}-neoforge-${minecraft_version}"
+    archivesName = "${mod_name}-neoforge"
 }
 
 // Automatically enable neoforge AccessTransformers if the file exists
@@ -37,8 +39,19 @@ runs {
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
+repositories {
+    maven {
+        url 'https://www.cursemaven.com'
+    }
+}
+
 dependencies {
     implementation "net.neoforged:neoforge:${neoforge_version}"
+
+    compileOnly "curse.maven:balm-531761:5263481"
+    compileOnly "curse.maven:waystones-245755:5263499"
+    compileOnly "curse.maven:repurposed-structures-368293:5273657"
+
     compileOnly project(":common")
 }
 

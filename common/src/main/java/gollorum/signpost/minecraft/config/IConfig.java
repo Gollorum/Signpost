@@ -1,12 +1,13 @@
 package gollorum.signpost.minecraft.config;
 
+import gollorum.signpost.Signpost;
 import gollorum.signpost.platform.Services;
 
 import java.util.List;
 
 public interface IConfig {
 
-    static IConfig getInstance() { return Services.CONFIG; }
+    static IConfig getInstance() { return Signpost.getConfig(); }
 
 	IServer getServer();
 	ICommon getCommon();
@@ -15,7 +16,9 @@ public interface IConfig {
 
 	interface IServer {
 
-        static IServer getInstance() { return Services.CONFIG.getServer(); }
+        static IServer getInstance() { return Signpost.getConfig().getServer(); }
+
+        boolean isLoaded();
 
         ITeleportConfig teleport();
 		IWorldGenConfig worldGen();
@@ -26,14 +29,14 @@ public interface IConfig {
 
     interface ICommon {
 
-        static ICommon getInstance() { return Services.CONFIG.getCommon(); }
+        static ICommon getInstance() { return Signpost.getConfig().getCommon(); }
 
         IWorldGenConfig worldGenDefaults();
 	}
 
     interface IClient {
 
-        static IClient getInstance() { return Services.CONFIG.getClient(); }
+        static IClient getInstance() { return Signpost.getConfig().getClient(); }
 
         boolean enableConfirmationScreen();
 		boolean enableWaystoneLimitNotifications();

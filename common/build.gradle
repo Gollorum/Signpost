@@ -4,8 +4,10 @@ plugins {
     id 'maven-publish'
     id 'org.spongepowered.gradle.vanilla' version '0.2.1-SNAPSHOT'
 }
+version = "${minecraft_version}-${version}"
+group= "${group_id}"
 base {
-    archivesName = "${mod_name}-common-${minecraft_version}"
+    archivesName = "${mod_name}-common"
 }
 minecraft {
     version(minecraft_version)
@@ -13,6 +15,8 @@ minecraft {
         accessWideners(file("src/main/resources/${mod_id}.accesswidener"))
     }
 }
+
+sourceSets.main.resources.srcDir 'src/generated/resources'
 
 dependencies {
      compileOnly group:'org.spongepowered', name:'mixin', version:'0.8.5'

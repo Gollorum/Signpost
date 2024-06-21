@@ -1,0 +1,20 @@
+{
+  "values": [
+    "signpost:post_oak",
+    "signpost:post_birch",
+    "signpost:post_spruce",
+    "signpost:post_jungle",
+    "signpost:post_dark_oak",
+    "signpost:post_acacia",
+    "signpost:post_mangrove",
+    "signpost:post_bamboo",
+    "signpost:post_cherry",
+    "signpost:post_stone",
+    "signpost:post_iron",
+    "signpost:post_warped",
+    "signpost:post_crimson",
+    "signpost:post_sandstone",
+    "signpost:post_brown_mushroom",
+    "signpost:post_red_mushroom"
+  ]
+}

@@ -7,7 +7,6 @@ import gollorum.signpost.blockpartdata.types.SmallShortSignBlockPart;
 import gollorum.signpost.minecraft.rendering.ModelRegistry;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.utils.math.MathUtils;
-import gollorum.signpost.utils.modelGeneration.SignModel;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.resources.model.BakedModel;
@@ -37,16 +36,6 @@ public class ShortSignRenderer extends SignRenderer<SmallShortSignBlockPart> {
 	@Override
 	protected BakedModel makeBakedOverlayModel(SmallShortSignBlockPart sign, Overlay overlay) {
 		return ModelRegistry.ShortBakedSign.makeOverlayModel(sign, overlay);
-	}
-
-	@Override
-	protected SignModel makeModel(SmallShortSignBlockPart sign) {
-		return ModelRegistry.ShortSign.makeModel(sign);
-	}
-
-	@Override
-	protected SignModel makeOverlayModel(SmallShortSignBlockPart sign, Overlay overlay) {
-		return ModelRegistry.ShortSign.makeOverlayModel(sign, overlay);
 	}
 
 	@Override

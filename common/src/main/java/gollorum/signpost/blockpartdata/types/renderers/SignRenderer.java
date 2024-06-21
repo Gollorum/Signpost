@@ -4,13 +4,12 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.blockpartdata.types.BlockPartRenderer;
 import gollorum.signpost.blockpartdata.types.SignBlockPart;
-import gollorum.signpost.minecraft.config.Config;
+import gollorum.signpost.minecraft.config.IConfig;
 import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import gollorum.signpost.utils.modelGeneration.SignModel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -21,17 +20,12 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.joml.*;
 
-import java.awt.*;
 import java.lang.Math;
 
 public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPartRenderer<T> {
 
-	private final boolean shouldRenderBaked = true;
-
 	protected abstract BakedModel makeBakedModel(T sign);
 	protected abstract BakedModel makeBakedOverlayModel(T sign, Overlay overlay);
-	protected abstract SignModel makeModel(T sign);
-	protected abstract SignModel makeOverlayModel(T sign, Overlay overlay);
 
 	@Override
 	public void render(
@@ -46,7 +40,7 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
 		RandomSource random,
 		long randomSeed
 	) {
-		if(sign.isMarkedForGeneration() && !Config.Server.worldGen.debugMode()) return;
+		if(sign.isMarkedForGeneration() && !IConfig.IServer.getInstance().worldGen().debugMode()) return;
 		if(!tileEntity.hasLevel()) throw new RuntimeException("TileEntity without world cannot be rendered.");
 		RenderingUtil.wrapInMatrixEntry(localToBlock, () -> {
 			Quaternionf rotation = new Quaternionf(new AxisAngle4f(sign.getAngle().get().radians(), new Vector3f(0,1,0)));
@@ -54,64 +48,34 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
 			RenderingUtil.wrapInMatrixEntry(blockToView, () -> {
 				blockToView.mulPoseMatrix(localToBlock.last().pose());
 				if(!sign.isFlipped()) blockToView.mulPose(new Quaternionf(new AxisAngle4d(Math.PI, new Vector3f(0,1,0))));
-				renderText(sign, blockToView, renderDispatcher.font, buffer, combinedLights);
+				renderText(sign, blockToView, Minecraft.getInstance().font, buffer, combinedLights);
 			});
 //			if(sign.isFlipped()) rotation.mul(new Quaternion(Vector3f.ZP, 180, true));
 //			Matrix4f rotationMatrix = new Matrix4f().rotation(rotation);
 			var tints = new int[2];
 			tints[0] = sign.getMainTexture().tint().map(t -> t.getColorAt(tileEntity.getLevel(), tileEntity.getBlockPos())).orElse(Colors.white);
 			tints[1] = sign.getSecondaryTexture().tint().map(t -> t.getColorAt(tileEntity.getLevel(), tileEntity.getBlockPos())).orElse(Colors.white);
-			if(shouldRenderBaked)
-				RenderingUtil.render(
-					blockToView,
-					localToBlock.last().pose(),
-					makeBakedModel(sign),
-					tileEntity.getLevel(),
-					tileEntity.getBlockState(),
-					tileEntity.getBlockPos(),
-					buffer.getBuffer(RenderType.solid()), false, random, randomSeed, combinedOverlay,
-					tints
-				);
-			else makeModel(sign).render(
-				blockToView.last().pose(),
-				localToBlock.last().pose(),
-				buffer,
-				RenderType.solid(),
-				combinedLights,
-				combinedOverlay,
-				true,
-				tileEntity.getLevel(),
-				tileEntity.getBlockState(),
-				tileEntity.getBlockPos(),
-				tints
-			);
+            RenderingUtil.render(
+                blockToView,
+                localToBlock.last().pose(),
+                makeBakedModel(sign),
+                tileEntity.getLevel(),
+                tileEntity.getBlockState(),
+                tileEntity.getBlockPos(),
+                buffer.getBuffer(RenderType.solid()), false, random, randomSeed, combinedOverlay,
+                tints
+            );
 			sign.getOverlay().ifPresent(o -> {
-				if(shouldRenderBaked)
-					RenderingUtil.render(
-						blockToView,
-						localToBlock.last().pose(),
-						makeBakedOverlayModel(sign, o),
-						tileEntity.getLevel(),
-						tileEntity.getBlockState(),
-						tileEntity.getBlockPos(),
-						buffer.getBuffer(RenderType.cutoutMipped()), false, random, randomSeed, combinedOverlay,
-						new int[]{o.tint.map(t -> t.getColorAt(tileEntity.getLevel(), tileEntity.getBlockPos())).orElse(Colors.white)}
-					);
-				else {
-					makeOverlayModel(sign, o).render(
-						blockToView.last().pose(),
-						localToBlock.last().pose(),
-						buffer,
-						RenderType.cutoutMipped(),
-						combinedLights,
-						combinedOverlay,
-						true,
-						tileEntity.getLevel(),
-						tileEntity.getBlockState(),
-						tileEntity.getBlockPos(),
-						new int[]{o.tint.map(t -> t.getColorAt(tileEntity.getLevel(), tileEntity.getBlockPos())).orElse(Colors.white)}
-					);
-				}
+                RenderingUtil.render(
+                    blockToView,
+                    localToBlock.last().pose(),
+                    makeBakedOverlayModel(sign, o),
+                    tileEntity.getLevel(),
+                    tileEntity.getBlockState(),
+                    tileEntity.getBlockPos(),
+                    buffer.getBuffer(RenderType.cutoutMipped()), false, random, randomSeed, combinedOverlay,
+                    new int[]{o.tint.map(t -> t.getColorAt(tileEntity.getLevel(), tileEntity.getBlockPos())).orElse(Colors.white)}
+                );
 			});
 		});
 	}
@@ -120,7 +84,7 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
 
 	@Override
 	public void renderGui(T sign, PoseStack matrixStack, Point center, Angle yaw, Angle pitch, boolean isFlipped, float scale, Vector3 offset) {
-		if(sign.isMarkedForGeneration() && !Config.Server.worldGen.debugMode()) return;
+		if(sign.isMarkedForGeneration() && !IConfig.IServer.getInstance().worldGen().debugMode()) return;
 		var tints = new int[]{
 			sign.getMainTexture().tint().map(t -> t.getColorAt(Minecraft.getInstance().level, Minecraft.getInstance().player.blockPosition())).orElse(Colors.white),
 			sign.getSecondaryTexture().tint().map(t -> t.getColorAt(Minecraft.getInstance().level, Minecraft.getInstance().player.blockPosition())).orElse(Colors.white)
@@ -138,7 +102,7 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
 
 	@Override
 	public void renderGui(T sign, PoseStack matrixStack, Vector3 offset, MultiBufferSource buffer, int combinedLight, int combinedOverlay) {
-		if(sign.isMarkedForGeneration() && !Config.Server.worldGen.debugMode()) return;
+		if(sign.isMarkedForGeneration() && !IConfig.IServer.getInstance().worldGen().debugMode()) return;
 		var tints = new int[]{
 			sign.getMainTexture().tint().map(t -> t.getColorAt(Minecraft.getInstance().level, Minecraft.getInstance().player.blockPosition())).orElse(Colors.white),
 			sign.getSecondaryTexture().tint().map(t -> t.getColorAt(Minecraft.getInstance().level, Minecraft.getInstance().player.blockPosition())).orElse(Colors.white)

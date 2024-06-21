@@ -15,6 +15,14 @@ public final class WaystoneLocationData {
         this.spawn = spawn;
     }
 
+    public WaystoneLocationData withoutExplicitLevel() {
+        if(block.world.isLeft()) {
+            return new WaystoneLocationData(new WorldLocation(block.blockPos, Either.right(block.world.leftOrThrow().dimension().location())), spawn);
+        } else {
+            return this;
+        }
+    }
+
     public static final Serializer SERIALIZER = new Serializer();
 
     public static class Serializer implements CompoundSerializable<WaystoneLocationData> {

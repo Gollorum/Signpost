@@ -6,6 +6,7 @@ import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.minecraft.utils.TextComponents;
+import gollorum.signpost.minecraft.worldgen.IWaystoneDiscoveryEventListener;
 import gollorum.signpost.minecraft.worldgen.VillageWaystone;
 import gollorum.signpost.utils.WaystoneData;
 import io.netty.util.internal.PlatformDependent;
@@ -22,14 +23,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentMap;
 
-public class WaystoneDiscoveryEventListener {
+public class WaystoneDiscoveryEventListener implements IWaystoneDiscoveryEventListener {
 
     private static final int discoveryDistance = 8;
 
     public static void register(IEventBus bus) { bus.register(WaystoneDiscoveryEventListener.class); }
 
     private static ConcurrentMap<ServerPlayer, ConcurrentMap<WaystoneHandle.Vanilla, BlockPos>> trackedPlayers;
-    public static void initialize() {
+    public void initialize() {
         trackedPlayers = PlatformDependent.newConcurrentHashMap();
     }
 
@@ -88,7 +89,7 @@ public class WaystoneDiscoveryEventListener {
         }
     }
 
-    public static void registerNew(WaystoneHandle.Vanilla handle, ServerLevel world, BlockPos pos) {
+    public void registerNew(WaystoneHandle.Vanilla handle, ServerLevel world, BlockPos pos) {
         Signpost.getServerInstance().getPlayerList().getPlayers().forEach(
             player -> {
                 if(player.serverLevel().equals(world) && player.blockPosition().closerThan(pos, 100))

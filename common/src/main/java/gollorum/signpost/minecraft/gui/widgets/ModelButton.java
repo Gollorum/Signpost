@@ -7,16 +7,21 @@ import gollorum.signpost.minecraft.rendering.FlippableModel;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-public class ModelButton extends ImageButton {
+public class ModelButton extends SignpostImageButton {
 
     private final List<GuiModelRenderer> modelRenderers;
+
+    private final TextureResource background;
 
     public ModelButton(
         TextureResource background,
@@ -44,13 +49,11 @@ public class ModelButton extends ImageButton {
         ModelData... modelData
     ){
         super(
-            rect.point.x, rect.point.y,
-            rect.width, rect.height,
-            0, 0, (int) (background.size.height * scale),
-            background.location,
-            (int) (background.fileSize.width * scale), (int) (background.fileSize.height * scale),
+            background,
+            rect,
             onPress
         );
+        this.background = background;
         modelRenderers = new ArrayList<>();
         for(ModelData model: modelData) {
             modelRenderers.add(new GuiModelRenderer(

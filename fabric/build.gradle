@@ -7,12 +7,21 @@ plugins {
 base {
     archivesName = "${mod_name}-fabric-${minecraft_version}"
 }
+repositories {
+    maven {
+        name = "OnyxStudios"
+        url = "https://maven.abusedmaster.xyz"
+    }
+}
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
     mappings loom.officialMojangMappings()
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
     implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.1'
+
+    compileOnly "dev.onyxstudios:FOML:v1.4.0"
+
     compileOnly project(":common")
 }
 

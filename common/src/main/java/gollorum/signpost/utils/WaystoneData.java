@@ -27,6 +27,14 @@ public class WaystoneData implements gollorum.signpost.WaystoneDataBase {
         this.isLocked = isLocked;
     }
 
+    public WaystoneData withoutExplicitLevel() {
+        if(location.block.world.isLeft()) {
+            return new WaystoneData(handle, name, new WaystoneLocationData(new WorldLocation(location.block.blockPos, Either.right(location.block.world.leftOrThrow().dimension().location())), location.spawn), isLocked);
+        } else {
+            return this;
+        }
+    }
+
     public WaystoneData withName(String newName) { return new WaystoneData(handle, newName, location, isLocked); }
 
     public boolean hasThePermissionToEdit(Player player) {

@@ -13,6 +13,7 @@ import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.config.IConfig;
+import gollorum.signpost.platform.Services;
 import gollorum.signpost.utils.*;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
@@ -255,7 +256,7 @@ public class VillageSignpost {
 		if(biome.shouldSnow(world, pos)
 			|| biome.getPrecipitationAt(pos) == Biome.Precipitation.SNOW) return Optional.of(Overlay.Snow);
 		else if (isJungle) return Optional.of(Overlay.Vine);
-		else if (biome.getModifiedClimateSettings().downfall() > 0.85f) return Optional.of(Overlay.Gras);
+		else if (Services.BIOME_ACCESSOR.downfallIn(biome) > 0.85f) return Optional.of(Overlay.Gras);
 		else return Optional.empty();
 	}
 

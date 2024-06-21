@@ -68,6 +68,11 @@ public class Config implements IConfig {
         public IWorldGenConfig worldGen() { return worldGen; }
 
         @Override
+        public boolean isLoaded() {
+            return INSTANCE.ServerConfig.isLoaded();
+        }
+
+        @Override
         public ITeleportConfig teleport() { return teleport; }
 
         public Server(ForgeConfigSpec.Builder builder) {

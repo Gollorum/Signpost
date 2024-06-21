@@ -1,9 +1,7 @@
 package gollorum.signpost.utils;
 
-import gollorum.signpost.Signpost;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,10 +11,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus.FORGE;
-
-@Mod.EventBusSubscriber(modid = Signpost.MOD_ID, bus = FORGE)
 public class Delay implements IDelay {
+
+    public static final Delay INSTANCE = new Delay();
 
     private static class Task {
         private final Supplier<Boolean> canRun;

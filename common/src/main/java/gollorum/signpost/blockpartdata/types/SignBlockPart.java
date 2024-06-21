@@ -42,6 +42,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements BlockPart<Self> {
 
@@ -313,7 +314,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
                         Optional<Component> cannotTeleportBecause = WaystoneHandleUtils.cannotTeleportToBecause(player, dest, data.name());
                         int distance = (int) data.loc().spawn.distanceTo(Vector3.fromVec3d(player.position()));
                         return new Teleport.RequestGui.Package.Info(
-                            Services.CONFIG.getServer().teleport().maximumDistance(),
+                            IConfig.IServer.getInstance().teleport().maximumDistance(),
                             distance,
                             cannotTeleportBecause,
                             data.name(),

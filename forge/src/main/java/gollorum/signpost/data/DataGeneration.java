@@ -26,7 +26,6 @@ public final class DataGeneration {
         CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
 
         if (event.includeServer()) {
-
             BlockTags blocksTagProvider = new BlockTags(output, lookupProvider, fileHelper);
             datagenerator.addProvider(true, blocksTagProvider);
             datagenerator.addProvider(true, new ItemTags(output, lookupProvider, blocksTagProvider, fileHelper));

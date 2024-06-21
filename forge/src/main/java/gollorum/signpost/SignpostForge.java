@@ -3,6 +3,7 @@ package gollorum.signpost;
 import gollorum.signpost.compat.Compat;
 import gollorum.signpost.compat.ExternalWaystoneLibrary;
 import gollorum.signpost.config.Config;
+import gollorum.signpost.networking.ForgePacketHandler;
 import gollorum.signpost.registry.BlockEventListener;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.data.DataGeneration;
@@ -11,9 +12,11 @@ import gollorum.signpost.minecraft.worldgen.JigsawDeserializers;
 import gollorum.signpost.registry.WaystoneDiscoveryEventListener;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.registry.*;
+import gollorum.signpost.utils.Delay;
 import gollorum.signpost.worldgen.Villages;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -38,7 +41,7 @@ public class SignpostForge {
     private final Consumer<MinecraftServer> serverSetter;
     
     public SignpostForge() {
-        serverSetter = Signpost.init();
+        serverSetter = Signpost.init(Config.INSTANCE, Delay.INSTANCE);
 
         IEventBus forgeBus = MinecraftForge.EVENT_BUS;
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -53,6 +56,9 @@ public class SignpostForge {
         BlockEventListener.register(forgeBus);
         CreativeModeTabRegistry.register(modBus);
         WaystoneDiscoveryEventListener.register(forgeBus);
+
+        forgeBus.register(Delay.INSTANCE);
+
         Config.INSTANCE.register();
 
         LootProviderRegistry.register(modBus);
@@ -61,16 +67,20 @@ public class SignpostForge {
         MiscRegistry.register(modBus);
 
         Compat.register();
+
+        JigsawDeserializers.register();
     }
     private static class ModBusEvents {
 
         @SubscribeEvent
         public void setup(final FMLCommonSetupEvent event) {
-            PacketHandler.getInstance().initialize();
-            PacketHandler.getInstance().register(new JoinServerEvent());
+            ForgePacketHandler.initialize();
+            PacketHandler.onInitializeDo(packetHandler -> {
+                packetHandler.register(new JoinServerEvent(), new ResourceLocation(Signpost.MOD_ID, "join_server"));
+                return true;
+            });
             ExternalWaystoneLibrary.initialize();
             WaystoneLibrary.registerNetworkPackets();
-            JigsawDeserializers.register();
 //            if(ModList.get().isLoaded(Compat.AntiqueAtlasId))
 //                AntiqueAtlasAdapter.registerNetworkPacket();
         }
@@ -89,8 +99,10 @@ public class SignpostForge {
             serverSetter.accept(e.getServer());
             WaystoneLibrary.initialize();
             BlockRestrictions.initialize();
+            Villages.reset();
+//            VillageRegistry.register(e);
             Villages.instance.initialize(e.getServer().registryAccess());
-            WaystoneDiscoveryEventListener.initialize();
+            new WaystoneDiscoveryEventListener().initialize();
         }
 
         @SubscribeEvent
@@ -139,7 +151,6 @@ public class SignpostForge {
         ) {
             WaystoneLibrary.initialize();
         }
-
     }
 
 }

@@ -1,10 +1,8 @@
 package gollorum.signpost.minecraft.gui.utils;
 
 import com.google.common.collect.Streams;
-import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.mixin.ScreenAccessor;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
@@ -42,7 +40,7 @@ public abstract class ExtendedScreen extends Screen {
 		super.setFocused(listener);
 	}
 
-    protected Minecraft getMinecraft() {
+    protected Minecraft minecraft() {
         return minecraft;
     }
 

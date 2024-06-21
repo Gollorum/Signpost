@@ -14,7 +14,7 @@ public class LootProviderRegistry {
         DeferredRegister.create(BuiltInRegistries.LOOT_NBT_PROVIDER_TYPE.key(), Signpost.MOD_ID);
 
     public static final RegistryObject<LootNbtProviderType> RegisteredWaystone =
-        Register.register("waystone", RegisteredWaystoneLootNbtProvider::createProviderType);
+        Register.register("waystone", () -> RegisteredWaystoneLootNbtProvider.providerType);
 
     public static void register(IEventBus bus){
         Register.register(bus);

@@ -3,22 +3,24 @@ package gollorum.signpost.blockpartdata.types.renderers;
 import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.blockpartdata.types.BlockPartRenderer;
 import gollorum.signpost.blockpartdata.types.WaystoneBlockPart;
-import gollorum.signpost.minecraft.data.WaystoneModel;
+import gollorum.signpost.minecraft.gui.WaystoneModelResources;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
+import gollorum.signpost.utils.Lazy;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.common.util.Lazy;
 
 public class WaystoneRenderer extends BlockPartRenderer<WaystoneBlockPart> {
 
-	private static final Lazy<BakedModel> model = Lazy.of(() -> RenderingUtil.loadModel(WaystoneModel.inPostLocation));
+	private static final Lazy<BakedModel> model = Lazy.of(() -> RenderingUtil.loadModel(WaystoneModelResources.inPostLocation));
 
 	@Override
 	public void render(

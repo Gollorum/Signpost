@@ -146,7 +146,7 @@ public class Villages {
 			templates.add(new Pair<>(tuple._1, tuple._2));
 			for(int i = 0; i < tuple._2; i++) pool.getTemplates().add(tuple._1);
 		}
-		pool.setRawTemplates(templates);
+        pool.setRawTemplates(templates);
 	}
 
 }

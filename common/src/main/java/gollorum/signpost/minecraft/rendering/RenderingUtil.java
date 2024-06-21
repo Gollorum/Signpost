@@ -1,14 +1,17 @@
 package gollorum.signpost.minecraft.rendering;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.*;
-import gollorum.signpost.minecraft.data.PostModel;
+import com.mojang.blaze3d.vertex.*;
+import gollorum.signpost.minecraft.gui.PostModelResources;
 import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.utils.Rect;
+import gollorum.signpost.mixin.BlockModelRendererAccessor;
+import gollorum.signpost.mixin.ModelManagerAccessor;
+import gollorum.signpost.mixin.VertexFormatAccessor;
+import gollorum.signpost.platform.ClientServices;
+import gollorum.signpost.platform.Services;
+import gollorum.signpost.utils.Lazy;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.CrashReport;
@@ -22,9 +25,10 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.ModelBaker;
-import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -34,62 +38,39 @@ import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.ForgeHooksClient;
-import net.minecraftforge.client.model.IQuadTransformer;
-import net.minecraftforge.client.model.QuadTransformers;
-import net.minecraftforge.client.model.SimpleModelState;
-import net.minecraftforge.client.model.data.ModelData;
-import net.minecraftforge.common.util.Lazy;
-import org.apache.commons.lang3.NotImplementedException;
 import org.joml.*;
 
 import java.lang.Math;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static net.minecraft.client.renderer.LevelRenderer.DIRECTIONS;
 
 public class RenderingUtil {
 
-    private static final ModelBakery modelBakery = Minecraft.getInstance().getModelManager().getModelBakery();
-    private static final ModelBaker modelBaker = modelBakery.new ModelBakerImpl(
-        (l, r) -> {
-            throw new NotImplementedException();
-        },
-        null
-    );
-
     public static BakedModel loadModel(ResourceLocation location) {
-        return modelBakery.getModel(location).bake(
-            modelBaker,
-            m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(m.texture()),
-            new SimpleModelState(Transformation.identity()),
-            location
-        );
+        var modelManager = Minecraft.getInstance().getModelManager();
+        return ((ModelManagerAccessor) modelManager).getBakedRegistry().getOrDefault(location, modelManager.getMissingModel());
     }
 
     public static BakedModel loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation) {
         final ResourceLocation textLoc = trim(textureLocation);
-        return modelBakery.getModel(modelLocation).bake(
-            modelBaker,
-            m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(textLoc),
-            new SimpleModelState(Transformation.identity()),
-            modelLocation
-        );
+        Function<Material, TextureAtlasSprite> textureGetter = m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(textLoc);
+        var modelBaker = ClientServices.MODEL_FACTORY.makeModelBaker((loc, m) -> textureGetter.apply(m), modelLocation);
+        var unbaked = modelBaker.getModel(modelLocation);
+        return unbaked.bake(modelBaker, textureGetter, new ModelState() {}, modelLocation);
     }
 
     public static BakedModel loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation1, ResourceLocation textureLocation2) {
         final ResourceLocation textLoc1 = trim(textureLocation1);
         final ResourceLocation textLoc2 = trim(textureLocation2);
-        return modelBakery.getModel(modelLocation).bake(
-            modelBaker,
-            m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(
-                m.texture().equals(PostModel.mainTextureMarker)
-                    ? textLoc1 : textLoc2
-            ),
-            new SimpleModelState(Transformation.identity()),
-            modelLocation
-        );
+        Function<Material, TextureAtlasSprite> textureGetter = m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(
+            m.sprite().contents().name().equals(PostModelResources.mainTextureMarker)
+                ? textLoc1 : textLoc2);
+        var modelBaker = ClientServices.MODEL_FACTORY.makeModelBaker((loc, m) -> textureGetter.apply(m), modelLocation);
+        var unbaked = modelBaker.getModel(modelLocation);
+        return unbaked.bake(modelBaker, textureGetter, new ModelState() {}, modelLocation);
     }
 
     public static final Lazy<ModelBlockRenderer> Renderer = Lazy.of(() -> Minecraft.getInstance().getBlockRenderer().getModelRenderer());
@@ -187,7 +168,7 @@ public class RenderingUtil {
                 RandomSource random = RandomSource.create();
                 for(Direction dir : allDirections) {
                     random.setSeed(42L);
-                    for(BakedQuad quad: model.getQuads(null, dir, random, ModelData.EMPTY, renderType)) {
+                    for(BakedQuad quad: model.getQuads(null, dir, random)) {
                         float r = 1;
                         float g = 1;
                         float b = 1;
@@ -228,12 +209,11 @@ public class RenderingUtil {
         long combinedLight,
         int combinedOverlay
     ) {
-        boolean useAmbientOcclusion = Minecraft.useAmbientOcclusion() && state.getLightEmission(level, pos) == 0 && model.useAmbientOcclusion();
+        boolean useAmbientOcclusion = Minecraft.useAmbientOcclusion() && state.getLightEmission() == 0 && model.useAmbientOcclusion();
         var vec3 = state.getOffset(level, pos);
         blockToView.translate(vec3.x, vec3.y, vec3.z);
-        var modelData = model.getModelData(level, pos, state, ModelData.EMPTY);
         try {
-            return tesselate(level, model, state, tints, pos, blockToView, localToBlock, vertexConsumer, checkSides, random, combinedLight, combinedOverlay, modelData, useAmbientOcclusion);
+            return tesselate(level, model, state, tints, pos, blockToView, localToBlock, vertexConsumer, checkSides, random, combinedLight, combinedOverlay, useAmbientOcclusion);
         } catch (Throwable throwable) {
             CrashReport crashreport = CrashReport.forThrowable(throwable, "Tesselating block model");
             CrashReportCategory crashreportcategory = crashreport.addCategory("Block model being tesselated");
@@ -242,6 +222,8 @@ public class RenderingUtil {
             throw new ReportedException(crashreport);
         }
     }
+
+    private static final AmbientOcclusionsAccessor ambientOcclusionAccessor = Services.load(AmbientOcclusionsAccessor.class);
 
     public static boolean tesselate(
         BlockAndTintGetter level,
@@ -256,53 +238,66 @@ public class RenderingUtil {
         RandomSource random,
         long combinedLight,
         int combinedOverlay,
-        ModelData modelData,
-        boolean useAmbientOcclusion) {
+        boolean useAmbientOcclusion
+    ) {
         boolean flag = false;
         float[] aoValues = useAmbientOcclusion ? new float[DIRECTIONS.length * 2] : null;
         BitSet bitset = new BitSet(3);
-        ModelBlockRenderer.AmbientOcclusionFace aoFace = useAmbientOcclusion ? new ModelBlockRenderer.AmbientOcclusionFace() : null;
         BlockPos.MutableBlockPos mutablePos = pos.mutable();
 
-        var quadLocalToBlock = QuadTransformers.applying(new Transformation(localToBlock));
+        var localToBlockNormal = new Matrix3f(localToBlock);
+        localToBlockNormal.invert();
+        localToBlockNormal.transpose();
 
         for(Direction direction : DIRECTIONS) {
             random.setSeed(combinedLight);
-            List<BakedQuad> list = model.getQuads(state, direction, random, modelData, null);
+            List<BakedQuad> list = model.getQuads(state, direction, random);
             if (!list.isEmpty()) {
                 mutablePos.setWithOffset(pos, direction);
                 if (!checkSides || Block.shouldRenderFace(state, level, pos, direction, mutablePos)) {
                     if(useAmbientOcclusion)
-                        renderModelFaceAO(level, state, tints, pos, blockToView, localToBlock, vertexConsumer, list, aoValues, bitset, aoFace, combinedOverlay, quadLocalToBlock);
+                        renderModelFaceAO(level, state, tints, pos, blockToView, vertexConsumer, list, aoValues, bitset, combinedOverlay, localToBlock, localToBlockNormal);
                     else
-                        renderModelWithoutAo(level, state, tints, pos, LevelRenderer.getLightColor(level, state, mutablePos), combinedOverlay, false, blockToView, localToBlock, vertexConsumer, list, bitset, quadLocalToBlock);
+                        renderModelWithoutAo(level, state, tints, pos, LevelRenderer.getLightColor(level, state, mutablePos), combinedOverlay, false, blockToView, vertexConsumer, list, bitset, localToBlock, localToBlockNormal);
                     flag = true;
                 }
             }
         }
 
         random.setSeed(combinedLight);
-        List<BakedQuad> quads = model.getQuads(state, null, random, modelData, null);
+        List<BakedQuad> quads = model.getQuads(state, null, random);
         if (!quads.isEmpty()) {
             if(useAmbientOcclusion)
-                renderModelFaceAO(level, state, tints, pos, blockToView, localToBlock, vertexConsumer, quads, aoValues, bitset, aoFace, combinedOverlay, quadLocalToBlock);
+                renderModelFaceAO(level, state, tints, pos, blockToView, vertexConsumer, quads, aoValues, bitset, combinedOverlay, localToBlock, localToBlockNormal);
             else
-                renderModelWithoutAo(level, state, tints, pos, -1, combinedOverlay, true, blockToView, localToBlock, vertexConsumer, quads, bitset, quadLocalToBlock);
+                renderModelWithoutAo(level, state, tints, pos, -1, combinedOverlay, true, blockToView, vertexConsumer, quads, bitset, localToBlock, localToBlockNormal);
             flag = true;
         }
 
         return flag;
     }
 
-//    public static BakedModel withReplacedTexture(BakedModel original, Map<TextureAtlasSprite, TextureAtlasSprite> mapping) {
+//    public static BakedModel withReplacedTexture(BakedModel original, Function<TextureAtlasSprite, TextureAtlasSprite> mapping) {
+//
 //        return new BakedModel() {
 //            @Override
 //            public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand) {
 //                return original.getQuads(state, side, rand).stream().map(q -> {
-//                    var tas = mapping.get(q.getSprite());
-//                    return tas == null
-//                        ? q
-//                        : new BakedQuad(q.getVertices(), q.getTintIndex(), q.getDirection(), tas, q.isShade());
+//                    var tas = mapping.apply(q.getSprite());
+//                    if(tas == null) return q;
+//                    var vertices = q.getVertices().clone();
+//                    for(var vertex = 0; vertex < 4; vertex++){
+//                        var i = vertex * 8 + 4;
+//                        var u0 = q.getSprite().getU0();
+//                        var u1 = q.getSprite().getU1();
+//                        var v0 = q.getSprite().getV0();
+//                        var v1 = q.getSprite().getV1();
+//                        var rawU = (Float.intBitsToFloat(vertices[i]) - u0) / (u1 - u0);
+//                        var rawV = (Float.intBitsToFloat(vertices[i + 1]) - v0) / (v1 - v0);
+//                        vertices[i] = Float.floatToRawIntBits(tas.getU(rawU));
+//                        vertices[i + 1] = Float.floatToRawIntBits(tas.getV(rawV));
+//                    }
+//                    return new BakedQuad(vertices, q.getTintIndex(), q.getDirection(), tas, q.isShade());
 //                }).collect(Collectors.toList());
 //            }
 //
@@ -311,30 +306,60 @@ public class RenderingUtil {
 //                return original.useAmbientOcclusion();
 //            }
 //
-//        return flag;
+//            @Override
+//            public boolean isGui3d() {
+//                return original.isGui3d();
+//            }
+//
+//            @Override
+//            public boolean usesBlockLight() {
+//                return original.usesBlockLight();
+//            }
+//
+//            @Override
+//            public boolean isCustomRenderer() {
+//                return original.isCustomRenderer();
+//            }
+//
+//            @Override
+//            public TextureAtlasSprite getParticleIcon() {
+//                return original.getParticleIcon();
+//            }
+//
+//            @Override
+//            public ItemTransforms getTransforms() {
+//                return original.getTransforms();
+//            }
+//
+//            @Override
+//            public ItemOverrides getOverrides() {
+//                return original.getOverrides();
+//            }
 //    };
 //}
 
-    private static void renderModelFaceAO(BlockAndTintGetter level, BlockState state, int[] tints, BlockPos pos, PoseStack blockToView, Matrix4f localToBlock, VertexConsumer vertexConsumer, List<BakedQuad> quads, float[] aoFloats, BitSet bitset, ModelBlockRenderer.AmbientOcclusionFace aoFace, int combinedOverlay, IQuadTransformer quadLocalToBlock) {
+    private static void renderModelFaceAO(BlockAndTintGetter level, BlockState state, int[] tints, BlockPos pos, PoseStack blockToView, VertexConsumer vertexConsumer, List<BakedQuad> quads, float[] aoFloats, BitSet bitset, int combinedOverlay, Matrix4f localToBlock, Matrix3f localToBlockNormal) {
         var poseMatrix = blockToView.last();
         for(BakedQuad bakedquad : quads) {
-            bakedquad = transform(bakedquad, quadLocalToBlock, localToBlock);
+            bakedquad = transform(bakedquad, localToBlock, localToBlockNormal);
             var shadingQuad = clampWithinUnitCube(bakedquad);
-            Renderer.get().calculateShape(level, state, pos, shadingQuad.getVertices(), shadingQuad.getDirection(), aoFloats, bitset);
-            if (!ForgeHooksClient.calculateFaceWithoutAO(level, state, pos, bakedquad, bitset.get(0), aoFace.brightness, aoFace.lightmap))
-                aoFace.calculate(level, state, pos, shadingQuad.getDirection(), aoFloats, bitset, shadingQuad.isShade());
-            putQuadData(tints, vertexConsumer, poseMatrix, bakedquad, aoFace.brightness[0], aoFace.brightness[1], aoFace.brightness[2], aoFace.brightness[3], aoFace.lightmap[0], aoFace.lightmap[1], aoFace.lightmap[2], aoFace.lightmap[3], combinedOverlay);
+            ((BlockModelRendererAccessor)Renderer.get()).shapeCalculation(level, state, pos, shadingQuad.getVertices(), shadingQuad.getDirection(), aoFloats, bitset);
+//            if (!ForgeHooksClient.calculateFaceWithoutAO(level, state, pos, bakedquad, bitset.get(0), brightness, lightmap))
+            ambientOcclusionAccessor.calculate(level, state, pos, shadingQuad.getDirection(), aoFloats, bitset, shadingQuad.isShade());
+            var brightness = ambientOcclusionAccessor.getBrightness();
+            var lightmap = ambientOcclusionAccessor.getLightMap();
+            putQuadData(tints, vertexConsumer, poseMatrix, bakedquad, brightness[0], brightness[1], brightness[2], brightness[3], lightmap[0], lightmap[1], lightmap[2], lightmap[3], combinedOverlay);
         }
 
     }
 
-    private static void renderModelWithoutAo(BlockAndTintGetter level, BlockState state, int[] tints, BlockPos pos, int lightColor, int combinedOverlay, boolean p_111007_, PoseStack blockToView, Matrix4f localToBlock, VertexConsumer vertexConsumer, List<BakedQuad> quads, BitSet bitSet, IQuadTransformer quadLocalToBlock) {
+    private static void renderModelWithoutAo(BlockAndTintGetter level, BlockState state, int[] tints, BlockPos pos, int lightColor, int combinedOverlay, boolean p_111007_, PoseStack blockToView, VertexConsumer vertexConsumer, List<BakedQuad> quads, BitSet bitSet, Matrix4f localToBlock, Matrix3f localToBlockNormal) {
         var poseMatrix = blockToView.last();
         for(BakedQuad bakedquad : quads) {
-            bakedquad = transform(bakedquad, quadLocalToBlock, localToBlock);
+            bakedquad = transform(bakedquad, localToBlock, localToBlockNormal);
             if (p_111007_) {
                 var shadingQuad = clampWithinUnitCube(bakedquad);
-                Renderer.get().calculateShape(level, state, pos, shadingQuad.getVertices(), shadingQuad.getDirection(), (float[])null, bitSet);
+                ((BlockModelRendererAccessor)Renderer.get()).shapeCalculation(level, state, pos, shadingQuad.getVertices(), shadingQuad.getDirection(), (float[])null, bitSet);
                 BlockPos blockpos = bitSet.get(0) ? pos.relative(shadingQuad.getDirection()) : pos;
                 lightColor = LevelRenderer.getLightColor(level, state, blockpos);
             }
@@ -369,10 +394,50 @@ public class RenderingUtil {
         vertexConsumer.putBulkData(pose, quad, new float[]{aor, aog, aob, aoa}, r, g, b, new int[]{lr, lg, lb, la}, combinedOverlay, true);
     }
 
-    private static BakedQuad transform(BakedQuad original, IQuadTransformer transformer, Matrix4f matrix4f) {
-        var copy = transformer.process(original);
-        var dir = transform(original.getDirection(), matrix4f);
-        return new BakedQuad(copy.getVertices(), copy.getTintIndex(), dir, copy.getSprite(), copy.isShade());
+    private static int STRIDE = DefaultVertexFormat.BLOCK.getIntegerSize();
+    private static int POSITION = findOffset(DefaultVertexFormat.ELEMENT_POSITION);
+    private static int NORMAL = findOffset(DefaultVertexFormat.ELEMENT_NORMAL);
+    private static int findOffset(VertexFormatElement element) {
+        int index = DefaultVertexFormat.BLOCK.getElements().indexOf(element);
+        return index < 0 ? -1 : ((VertexFormatAccessor)DefaultVertexFormat.BLOCK).getOffsets().getInt(index) / 4;
+    }
+
+    private static BakedQuad transform(BakedQuad original, Matrix4f localToBlock, Matrix3f localToBlockNormal) {
+        var dir = transform(original.getDirection(), localToBlock);
+        int[] vertices = original.getVertices();
+        vertices = Arrays.copyOf(vertices, vertices.length);
+
+        int i;
+        int offset;
+        float xx;
+        float y;
+        for(i = 0; i < 4; ++i) {
+            offset = i * STRIDE + POSITION;
+            float x = Float.intBitsToFloat(vertices[offset]);
+            xx = Float.intBitsToFloat(vertices[offset + 1]);
+            y = Float.intBitsToFloat(vertices[offset + 2]);
+            Vector4f pos = new Vector4f(x, xx, y, 1.0F);
+            pos.mul(localToBlock);
+            pos.div(pos.w);
+            vertices[offset] = Float.floatToRawIntBits(pos.x());
+            vertices[offset + 1] = Float.floatToRawIntBits(pos.y());
+            vertices[offset + 2] = Float.floatToRawIntBits(pos.z());
+        }
+
+        for(i = 0; i < 4; ++i) {
+            offset = i * STRIDE + NORMAL;
+            int normalIn = vertices[offset];
+            if ((normalIn & 16777215) != 0) {
+                xx = (float)((byte)(normalIn & 255)) / 127.0F;
+                y = (float)((byte)(normalIn >> 8 & 255)) / 127.0F;
+                float z = (float)((byte)(normalIn >> 16 & 255)) / 127.0F;
+                Vector3f posx = new Vector3f(xx, y, z);
+                posx.mul(localToBlockNormal);
+                posx.normalize();
+                vertices[offset] = (byte)((int)(posx.x() * 127.0F)) & 255 | ((byte)((int)(posx.y() * 127.0F)) & 255) << 8 | ((byte)((int)(posx.z() * 127.0F)) & 255) << 16 | normalIn & -16777216;
+            }
+        }
+        return new BakedQuad(vertices, original.getTintIndex(), dir, original.getSprite(), original.isShade());
     }
 
     private static BakedQuad clampWithinUnitCube(BakedQuad quad){

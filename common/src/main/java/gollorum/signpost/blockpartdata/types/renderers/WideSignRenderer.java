@@ -6,7 +6,6 @@ import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
 import gollorum.signpost.minecraft.rendering.ModelRegistry;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
-import gollorum.signpost.utils.modelGeneration.SignModel;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.resources.model.BakedModel;
@@ -37,16 +36,6 @@ public class WideSignRenderer extends SignRenderer<SmallWideSignBlockPart> {
 	@Override
 	protected BakedModel makeBakedOverlayModel(SmallWideSignBlockPart sign, Overlay overlay) {
 		return ModelRegistry.WideBakedSign.makeOverlayModel(sign, overlay);
-	}
-
-	@Override
-	protected SignModel makeModel(SmallWideSignBlockPart sign) {
-		return ModelRegistry.WideSign.makeModel(sign);
-	}
-
-	@Override
-	protected SignModel makeOverlayModel(SmallWideSignBlockPart sign, Overlay overlay) {
-		return ModelRegistry.WideSign.makeOverlayModel(sign, overlay);
 	}
 
 	@Override

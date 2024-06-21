@@ -97,29 +97,36 @@ public class Teleport {
                 yaw.degrees(),
                 pitch.degrees()
             );
-            if (IConfig.getInstance().getServer().teleport().allowVehicle() && player.isPassenger()) {
-                Entity vehicle = player.getVehicle();
-                while(vehicle.isPassenger()) vehicle = vehicle.getVehicle();
-//                if (!sender.level().dimensionType().equals(world.dimensionType())) {
-//                    changeDimensionWithChildren(vehicle, world, teleporter);
-//                } else {
-                    var leashedMobs = findLeashedMobs(player);
-                    vehicle.setYRot(yaw.degrees());
-                    vehicle.setXRot(pitch.degrees());
-                    vehicle.teleportTo(location.x, location.y, location.z);
-                    if(IConfig.getInstance().getServer().teleport().allowLead())
-                        teleportLeadedAnimals(player, leashedMobs, world, portalInfo);
-                    else unleash(leashedMobs);
-//                }
-            } else {
-                var leashedMobs = findLeashedMobs(player);
-                player.teleportTo(world, location.x, location.y, location.z, yaw.degrees(), pitch.degrees());
-
-                if(IConfig.getInstance().getServer().teleport().allowLead())
-                    teleportLeadedAnimals(player, leashedMobs, world, portalInfo);
-                else unleash(leashedMobs);
-
+            Entity toTeleport = player;
+            if(IConfig.getInstance().getServer().teleport().allowVehicle()) {
+                while(toTeleport.isPassenger()) toTeleport = toTeleport.getVehicle();
             }
+            teleportWithChildren(toTeleport, world, portalInfo);
+//            if (IConfig.getInstance().getServer().teleport().allowVehicle() && player.isPassenger()) {
+//                Entity vehicle = player.getVehicle();
+//                while(vehicle.isPassenger()) vehicle = vehicle.getVehicle();
+//                if (!vehicle.level().dimensionType().equals(world.dimensionType())) {
+//                    changeDimensionWithChildren(vehicle, world, portalInfo);
+//                } else {
+//                    var leashedMobs = findLeashedMobs(player);
+//                    vehicle.teleportTo(world, location.x, location.y, location.z, RelativeMovement.ALL, yaw.degrees(), pitch.degrees());
+//    //                    changeDimensionWithChildren(vehicle, world, portalInfo);
+////                    vehicle.setYRot(yaw.degrees());
+////                    vehicle.setXRot(pitch.degrees());
+////                    vehicle.teleportTo(location.x, location.y, location.z);
+//                    if(IConfig.getInstance().getServer().teleport().allowLead())
+//                        teleportLeadedAnimals(player, leashedMobs, world, portalInfo);
+//                    else unleash(leashedMobs);
+//                }
+//            } else {
+//                var leashedMobs = findLeashedMobs(player);
+//                player.teleportTo(world, location.x, location.y, location.z, yaw.degrees(), pitch.degrees());
+//
+//                if(IConfig.getInstance().getServer().teleport().allowLead())
+//                    teleportLeadedAnimals(player, leashedMobs, world, portalInfo);
+//                else unleash(leashedMobs);
+//
+//            }
 
             final int steps = 6;
             TriConsumer<Level, BlockPos, Float> playStepSound = (soundWorld, pos, volume) -> {
@@ -136,23 +143,44 @@ public class Teleport {
         });
     }
 
-    private static <T extends Entity> T changeDimensionWithChildren(T entity, ServerLevel level, PortalInfo tp) {
+    private static <T extends Entity> T teleportWithChildren(T entity, ServerLevel level, PortalInfo tp) {
         var passengers = List.copyOf(entity.getPassengers());
 
         var leashed = findLeashedMobs(entity);
 
-        var newCopy = entity.changeDimension(level /*tp*/);
-        if(newCopy == null) return entity;
+        var changesDimension = entity.level() != level;
+
+        if(entity instanceof ServerPlayer)
+            entity.teleportTo(level, tp.pos.x, tp.pos.y, tp.pos.z, Set.of(), tp.yRot, tp.xRot);
+        else if (changesDimension) {
+            entity.unRide();
+            Entity newCopy = entity.getType().create(level);
+            if (newCopy == null) {
+                return entity;
+            }
+            newCopy.restoreFrom(entity);
+            newCopy.moveTo(tp.pos.x, tp.pos.y, tp.pos.z, tp.yRot, tp.xRot);
+            newCopy.setYHeadRot(tp.yRot);
+            entity.setRemoved(Entity.RemovalReason.CHANGED_DIMENSION);
+            level.addDuringTeleport(newCopy);
+            entity = (T) newCopy;
+        } else {
+            entity.moveTo(tp.pos.x, tp.pos.y, tp.pos.z, tp.yRot, tp.xRot);
+            entity.setYHeadRot(tp.yRot);
+        }
+
+        var entity2 = entity;
 
         if(IConfig.getInstance().getServer().teleport().allowLead())
-            teleportLeadedAnimals(newCopy, leashed, level, tp);
+            teleportLeadedAnimals(entity2, leashed, level, tp);
         else unleash(leashed);
 
         for(var p : passengers) {
-            var p2 = changeDimensionWithChildren(p, level, tp);
-            IDelay.onServerForFrames(5, () -> p2.startRiding(newCopy, true));
+            var p2 = teleportWithChildren(p, level, tp);
+            if(changesDimension || p instanceof ServerPlayer) IDelay.onServerForFrames(5, () -> p2.startRiding(entity2, true));
+            else entity2.positionRider(p2);
         }
-        return (T) newCopy;
+        return entity2;
     }
 
     private static List<Mob> findLeashedMobs(Entity player) {
@@ -163,7 +191,7 @@ public class Teleport {
     private static void teleportLeadedAnimals(Entity player, List<Mob> leashed, ServerLevel level, PortalInfo portalIngo) {
         for(Mob mob : leashed) {
             if(level != mob.level())
-                mob = changeDimensionWithChildren(mob, level, portalIngo);
+                mob = teleportWithChildren(mob, level, portalIngo);
             else {
                 mob.teleportTo(level, portalIngo.pos.x, portalIngo.pos.y, portalIngo.pos.z, Set.of(), portalIngo.yRot, portalIngo.xRot);
             }

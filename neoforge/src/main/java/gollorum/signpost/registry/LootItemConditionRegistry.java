@@ -1,0 +1,28 @@
+package gollorum.signpost.registry;
+
+import gollorum.signpost.Signpost;
+import gollorum.signpost.minecraft.storage.loot.ILootItemConditionRegistry;
+import gollorum.signpost.minecraft.storage.loot.PermissionCheck;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
+
+public class LootItemConditionRegistry implements ILootItemConditionRegistry {
+
+    private static final DeferredRegister<LootItemConditionType> Register =
+        DeferredRegister.create(BuiltInRegistries.LOOT_CONDITION_TYPE.key(), Signpost.MOD_ID);
+
+    public static final DeferredHolder<LootItemConditionType, LootItemConditionType> permissionCheck =
+        Register.register("permission_check", PermissionCheck::createConditionType);
+
+    public LootItemConditionType getPermissionCheck(){
+        return permissionCheck.get();
+    }
+
+    public static void register(IEventBus bus){
+        Register.register(bus);
+    }
+
+}

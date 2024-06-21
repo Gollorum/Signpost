@@ -14,6 +14,7 @@ import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.security.WithCountRestriction;
 import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.utils.IDelay;
+import gollorum.signpost.utils.Lazy;
 import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.BufferSerializable;
@@ -54,13 +55,13 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.common.util.Lazy;
-import net.minecraftforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
-public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock, WithCountRestriction {
+public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock, WithCountRestriction {
 
     public static final DirectionProperty Facing = BlockStateProperties.HORIZONTAL_FACING;
     public static class ModelType {
@@ -328,9 +329,9 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
             this.registryName = REGISTRY_NAME + "_" + registryName;
         }
 
-        public PostBlock createBlock() {
+        public PostBlock createBlock(BiFunction<Properties, ModelType, PostBlock> factory) {
             assert block == null;
-            return block = new PostBlock(properties, type);
+            return block = factory.apply(properties, type);
         }
 
         public PostBlock getBlock() {
@@ -366,7 +367,7 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
 
     public final ModelType type;
 
-    private PostBlock(Properties properties, ModelType type) {
+    protected PostBlock(Properties properties, ModelType type) {
         super(properties.noOcclusion());
         this.type = type;
         this.registerDefaultState(this.defaultBlockState().setValue(WATERLOGGED, false));
@@ -394,8 +395,8 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
                     tile.setChanged();
                     world.sendBlockUpdated(pos, state, state, 3);
                     if(shouldAddNewSign)
-                        PacketHandler.send(
-                            PacketDistributor.PLAYER.with(() -> (ServerPlayer) placer),
+                        PacketHandler.getInstance().sendToPlayer(
+                            (ServerPlayer) placer,
                             new RequestSignGui.ForNewSign.Package(
                                 new WorldLocation(pos, world),
                                 tile.modelType,
@@ -424,16 +425,6 @@ public class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock
             dropPartItems((PostTile) tile, world, pos);
         }
         super.playerDestroy(world, player, pos, state, tile, item);
-    }
-
-    @Override
-    public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter world, BlockPos pos, Player player) {
-        ItemStack ret = super.getCloneItemStack(state, target, world, pos, player);
-        world.getBlockEntity(pos, PostTile.getBlockEntityType()).ifPresent(tile -> {
-            if(!ret.hasTag()) ret.setTag(new CompoundTag());
-            ret.getTag().put("Parts", tile.writeParts(false));
-        });
-        return ret;
     }
 
     @SuppressWarnings("deprecation")

@@ -1,7 +1,7 @@
 package gollorum.signpost;
 
-import gollorum.signpost.compat.Compat;
-import gollorum.signpost.minecraft.config.Config;
+import gollorum.signpost.minecraft.config.IConfig;
+import gollorum.signpost.utils.IDelay;
 import gollorum.signpost.utils.ServerType;
 import net.minecraft.server.MinecraftServer;
 import org.slf4j.Logger;
@@ -18,6 +18,12 @@ public class Signpost {
     private static MinecraftServer serverInstance;
     public static MinecraftServer getServerInstance() { return serverInstance; }
 
+    private static IConfig config;
+    public static IConfig getConfig() { return config; }
+
+    private static IDelay delay;
+    public static IDelay getDelay() { return delay; }
+
     public static ServerType getServerType() {
         return serverInstance == null
             ? ServerType.ConnectedClient
@@ -26,9 +32,9 @@ public class Signpost {
             : ServerType.HostingClient;
     }
 
-    public static Consumer<MinecraftServer> init() {
-        Compat.register();
-
+    public static Consumer<MinecraftServer> init(IConfig config, IDelay delay) {
+        Signpost.config = config;
+        Signpost.delay = delay;
         return server -> serverInstance = server;
     }
 

@@ -4,6 +4,7 @@ import gollorum.signpost.blockpartdata.types.renderers.BlockPartWaystoneUpdateLi
 import gollorum.signpost.compat.ExternalWaystoneLibrary;
 import gollorum.signpost.events.*;
 import gollorum.signpost.minecraft.block.WaystoneBlock;
+import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
 import gollorum.signpost.minecraft.config.IConfig;
 import gollorum.signpost.minecraft.storage.WaystoneLibraryStorage;
@@ -61,18 +62,20 @@ public class WaystoneLibrary {
     public final EventDispatcher<WaystoneUpdatedEvent> updateEventDispatcher = _updateEventDispatcher;
 
     public static void registerNetworkPackets() {
-        var packetHandler = PacketHandler.getInstance();
-        packetHandler.register(new RequestAllWaystoneNamesEvent());
-        packetHandler.register(new DeliverAllWaystoneNamesEvent());
-        packetHandler.register(new RequestAllWaystonesEvent());
-        packetHandler.register(new DeliverAllWaystonesEvent());
-        packetHandler.register(new WaystoneUpdatedEventEvent());
-        packetHandler.register(new RequestWaystoneLocationEvent());
-        packetHandler.register(new DeliverWaystoneLocationEvent());
-        packetHandler.register(new RequestWaystoneAtLocationEvent());
-        packetHandler.register(new DeliverWaystoneAtLocationEvent());
-        packetHandler.register(new DeliverIdEvent());
-        packetHandler.register(new RequestIdEvent());
+        PacketHandler.onInitializeDo(packetHandler -> {
+            packetHandler.register(new RequestAllWaystoneNamesEvent(), new ResourceLocation(Signpost.MOD_ID, "request_all_waystone_names"));
+            packetHandler.register(new DeliverAllWaystoneNamesEvent(), new ResourceLocation(Signpost.MOD_ID, "deliver_all_waystone_names"));
+            packetHandler.register(new RequestAllWaystonesEvent(), new ResourceLocation(Signpost.MOD_ID, "request_all_waystones"));
+            packetHandler.register(new DeliverAllWaystonesEvent(), new ResourceLocation(Signpost.MOD_ID, "deliver_all_waystones"));
+            packetHandler.register(new WaystoneUpdatedEventEvent(), new ResourceLocation(Signpost.MOD_ID, "waystone_updated_event"));
+            packetHandler.register(new RequestWaystoneLocationEvent(), new ResourceLocation(Signpost.MOD_ID, "request_waystone_location"));
+            packetHandler.register(new DeliverWaystoneLocationEvent(), new ResourceLocation(Signpost.MOD_ID, "deliver_waystone_location"));
+            packetHandler.register(new RequestWaystoneAtLocationEvent(), new ResourceLocation(Signpost.MOD_ID, "request_waystone_at_location"));
+            packetHandler.register(new DeliverWaystoneAtLocationEvent(), new ResourceLocation(Signpost.MOD_ID, "deliver_waystone_at_location"));
+            packetHandler.register(new DeliverIdEvent(), new ResourceLocation(Signpost.MOD_ID, "deliver_id"));
+            packetHandler.register(new RequestIdEvent(), new ResourceLocation(Signpost.MOD_ID, "request_id"));
+            return true;
+        });
     }
 
     public void setupStorage(ServerLevel world){
@@ -396,7 +399,7 @@ public class WaystoneLibrary {
     private Map<WaystoneHandle.Vanilla, Tuple<String, WaystoneLocationData>> getAllWaystones(Optional<PlayerHandle> onlyKnownBy) {
         assert Signpost.getServerType().isServer;
         Map<WaystoneHandle.Vanilla, Tuple<String, WaystoneLocationData>> ret = getInstance().allWaystones.entrySet().stream()
-            .collect(Collectors.toMap(Map.Entry::getKey, e -> Tuple.of(e.getValue().name, e.getValue().locationData)));
+            .collect(Collectors.toMap(Map.Entry::getKey, e -> Tuple.of(e.getValue().name, e.getValue().locationData.withoutExplicitLevel())));
         if(onlyKnownBy.isPresent() && IConfig.IServer.getInstance().teleport().enforceDiscovery()) {
             PlayerHandle player = onlyKnownBy.get();
             Set<WaystoneHandle.Vanilla> known = playerMemory.computeIfAbsent(player, h -> new HashSet<>());
@@ -485,7 +488,8 @@ public class WaystoneLibrary {
     }
 
     private static boolean checkEntity(ServerLevel level, BlockPos blockPos, Map<BlockPos, Long> cache) {
-        Optional<WaystoneTile> entity = level.getBlockEntity(blockPos, WaystoneTile.getBlockEntityType());
+        Optional entity = level.getBlockEntity(blockPos, WaystoneTile.getBlockEntityType());
+        if(entity.isEmpty()) entity = level.getBlockEntity(blockPos, PostTile.getBlockEntityType());
         if(entity.isPresent()) {
             cache.put(blockPos, System.currentTimeMillis());
             return true;
@@ -704,7 +708,7 @@ public class WaystoneLibrary {
         public static final class Packet {
             public final WorldLocation waystoneLocation;
 
-            public Packet(WorldLocation waystoneLocation) { this.waystoneLocation = waystoneLocation; }
+            public Packet(WorldLocation waystoneLocation) { this.waystoneLocation = waystoneLocation.withoutExplicitLevel(); }
         }
 
         @Override
@@ -742,8 +746,8 @@ public class WaystoneLibrary {
             private final Optional<WaystoneData> data;
 
             public Packet(WorldLocation waystoneLocation, Optional<WaystoneData> data) {
-                this.waystoneLocation = waystoneLocation;
-                this.data = data;
+                this.waystoneLocation = waystoneLocation.withoutExplicitLevel();
+                this.data = data.map(WaystoneData::withoutExplicitLevel);
             }
         }
 
@@ -815,7 +819,7 @@ public class WaystoneLibrary {
 
             public Packet(String name, Optional<WaystoneLocationData> data) {
                 this.name = name;
-                this.data = data;
+                this.data = data.map(WaystoneLocationData::withoutExplicitLevel);
             }
         }
 

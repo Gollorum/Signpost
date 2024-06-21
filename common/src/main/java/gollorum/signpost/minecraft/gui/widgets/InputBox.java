@@ -1,8 +1,7 @@
 package gollorum.signpost.minecraft.gui.widgets;
 
-import gollorum.signpost.minecraft.gui.utils.ConfigurableFont;
+import gollorum.signpost.minecraft.gui.utils.IConfigurableFont;
 import gollorum.signpost.minecraft.gui.utils.Rect;
-import gollorum.signpost.minecraft.gui.utils.Ticking;
 import gollorum.signpost.minecraft.gui.utils.WithMutableX;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -14,11 +13,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-public class InputBox extends EditBox implements WithMutableX, Ticking {
+public class InputBox extends EditBox implements WithMutableX {//, Ticking {
 
     private boolean shouldDropShadow;
 
-    private final ConfigurableFont configFont;
+    private final IConfigurableFont configFont;
 
     private final List<Function<Integer, Boolean>> keyCodeConsumers = new ArrayList<>();
 
@@ -30,32 +29,32 @@ public class InputBox extends EditBox implements WithMutableX, Ticking {
         boolean shouldDropShadow,
         double zOffset
     ) {
-        var copyFont = new Font(configFont::);
-        this(new ConfigurableFont(configFont, !shouldDropShadow), inputFieldRect, shouldDropShadow, zOffset);
+        this(new Font(((IConfigurableFont) configFont).getFonts(), ((IConfigurableFont) configFont).getFilterFishyGlyphs()), true, inputFieldRect, shouldDropShadow, zOffset);
     }
 
     private InputBox(
-        ConfigurableFont configFont,
-        Font font,
+        Font copyFont,
+        boolean iCopiedThatFontIPromise,
         Rect inputFieldRect,
         boolean shouldDropShadow,
         double zOffset
     ) {
         super(
-            configFont,
+            copyFont,
             inputFieldRect.point.x, inputFieldRect.point.y,
             inputFieldRect.width, inputFieldRect.height,
             Component.literal("")
         );
-        this.configFont = configFont;
+        this.configFont = (IConfigurableFont) copyFont;
+        if(!shouldDropShadow) configFont.setShouldProhibitShadows(true);
         this.shouldDropShadow = shouldDropShadow;
         this.zOffset = zOffset;
     }
 
-    @Override
-    public void doTick() {
-        super.tick();
-    }
+//    @Override
+//    public void doTick() {
+//        super.tick();
+//    }
 
     public boolean shouldDropShadow() {
         return shouldDropShadow;
@@ -63,7 +62,7 @@ public class InputBox extends EditBox implements WithMutableX, Ticking {
 
     public void setShouldDropShadow(boolean shouldDropShadow) {
         this.shouldDropShadow = shouldDropShadow;
-        configFont._1_20_Multiloader$setShouldProhibitShadows(!shouldDropShadow);
+        configFont.setShouldProhibitShadows(!shouldDropShadow);
     }
 
     @Override
@@ -88,7 +87,7 @@ public class InputBox extends EditBox implements WithMutableX, Ticking {
         graphics.pose().pushPose();
         graphics.pose().translate(0, 0, zOffset);
         if(isHovered && !isBordered()) {
-            int fromY = getY() + (configFont.lineHeight - height) / 2;
+            int fromY = getY() + (((Font)configFont).lineHeight - height) / 2;
             graphics.fill(RenderType.guiOverlay(), getX(), fromY, getX() + width, fromY + height, 0x40ffffff);
         }
         super.renderWidget(graphics, p_94161_, p_94162_, p_94163_);

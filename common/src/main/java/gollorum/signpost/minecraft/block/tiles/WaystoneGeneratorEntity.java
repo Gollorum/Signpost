@@ -2,15 +2,15 @@ package gollorum.signpost.minecraft.block.tiles;
 
 import com.mojang.datafixers.types.Type;
 import gollorum.signpost.minecraft.block.WaystoneGeneratorBlock;
-import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.config.IConfig;
-import gollorum.signpost.minecraft.registry.BlockRegistry;
+import gollorum.signpost.platform.Services;
 import gollorum.signpost.utils.IDelay;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -24,10 +24,11 @@ public class WaystoneGeneratorEntity extends BlockEntity {
     public static BlockEntityType<WaystoneGeneratorEntity> createType() {
         assert type == null;
         Type<?> type = Util.fetchChoiceType(References.BLOCK_ENTITY, REGISTRY_NAME);
-        return WaystoneGeneratorEntity.type = BlockEntityType.Builder.of(
+        return WaystoneGeneratorEntity.type = Services.BLOCK_ENTITY_TYPE_FACTORY.create(
             WaystoneGeneratorEntity::new,
-            BlockRegistry.WaystoneGenerator.get()
-        ).build(type);
+            new Block[]{WaystoneGeneratorBlock.getInstance()},
+            type
+        );
     }
     public static BlockEntityType<WaystoneGeneratorEntity> getBlockEntityType() {
         assert type != null;

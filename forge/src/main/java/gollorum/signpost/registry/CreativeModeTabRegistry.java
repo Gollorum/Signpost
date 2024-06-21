@@ -1,5 +1,6 @@
 package gollorum.signpost.registry;
 
+import gollorum.signpost.minecraft.config.IConfig;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.platform.Services;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -33,7 +34,7 @@ public class CreativeModeTabRegistry {
                 output.accept(post.get());
             output.accept(ItemRegistry.WAYSTONE_ITEM.get());
             for(var modelWaystone : ItemRegistry.ModelWaystoneItems)
-                if (Services.CONFIG.getServer().allowedWaystones().contains(modelWaystone._1.name))
+                if (IConfig.IServer.getInstance().allowedWaystones().contains(modelWaystone._1.name))
                     output.accept(modelWaystone._2.get());
         })
         .build()

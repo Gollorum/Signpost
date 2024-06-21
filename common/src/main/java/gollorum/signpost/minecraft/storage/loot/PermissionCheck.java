@@ -1,14 +1,11 @@
 package gollorum.signpost.minecraft.storage.loot;
 
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
-import gollorum.signpost.minecraft.config.Config;
 import gollorum.signpost.minecraft.config.IConfig;
-import gollorum.signpost.minecraft.registry.LootItemConditionRegistry;
-import net.minecraft.util.GsonHelper;
+import gollorum.signpost.platform.Services;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -28,7 +25,10 @@ public final class PermissionCheck implements LootItemCondition {
         Type(String name) { this.name = name; }
     }
 
-    public static LootItemConditionType createConditionType() { return new LootItemConditionType(new Serializer()); }
+    public static LootItemConditionType createConditionType() { return new LootItemConditionType(Codec.STRING.comapFlatMap(
+        str -> Arrays.stream(Type.values()).filter(t -> t.name.equals(str)).findFirst().map(PermissionCheck::new).map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Unknown permission check type: " + str)),
+        check -> check.type.name
+    )); }
 
     private final Type type;
 
@@ -38,7 +38,7 @@ public final class PermissionCheck implements LootItemCondition {
 
     @Override
     public LootItemConditionType getType() {
-        return LootItemConditionRegistry.permissionCheck.get();
+        return Services.LOOT_ITEM_CONDITION_REGISTRY.getPermissionCheck();
     }
 
     @Override
@@ -67,20 +67,6 @@ public final class PermissionCheck implements LootItemCondition {
         @Override
         public @NotNull PermissionCheck build() {
             return new PermissionCheck(type);
-        }
-    }
-
-    private static final class Serializer implements net.minecraft.world.level.storage.loot.Serializer<PermissionCheck> {
-
-        @Override
-        public void serialize(JsonObject jsonObject, PermissionCheck instance, JsonSerializationContext context) {
-            jsonObject.addProperty("type", instance.type.name);
-        }
-
-        @Override
-        public PermissionCheck deserialize(JsonObject jsonObject, JsonDeserializationContext context) {
-            String type = GsonHelper.getAsString(jsonObject, "type");
-            return new PermissionCheck(Arrays.stream(Type.values()).filter(t -> t.name.equals(type)).findFirst().get());
         }
     }
 

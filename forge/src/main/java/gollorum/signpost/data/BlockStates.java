@@ -1,7 +1,7 @@
 package gollorum.signpost.data;
 
 import gollorum.signpost.Signpost;
-import gollorum.signpost.minecraft.registry.BlockRegistry;
+import gollorum.signpost.minecraft.block.WaystoneGeneratorBlock;
 import net.minecraft.data.PackOutput;
 import net.minecraftforge.client.model.generators.BlockStateProvider;
 import net.minecraftforge.client.model.generators.ConfiguredModel;
@@ -27,7 +27,7 @@ public class BlockStates extends BlockStateProvider {
 
     @Override
     protected void registerStatesAndModels() {
-        getVariantBuilder(BlockRegistry.WaystoneGenerator.get())
+        getVariantBuilder(WaystoneGeneratorBlock.instance)
             .partialState().setModels(new ConfiguredModel(model.generatorModel));
         postBlockStateProvider.registerStatesAndModels();
     }

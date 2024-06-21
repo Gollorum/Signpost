@@ -1,6 +1,6 @@
 package gollorum.signpost.utils;
 
-import gollorum.signpost.platform.Services;
+import gollorum.signpost.Signpost;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 public interface IDelay {
 
     public static IDelay getInstance(){
-        return Services.DELAY;
+        return Signpost.getDelay();
     }
 
     public static void onClientForFrames(int frames, Runnable run) {

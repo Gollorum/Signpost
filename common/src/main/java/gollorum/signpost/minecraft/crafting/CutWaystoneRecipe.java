@@ -1,6 +1,7 @@
 package gollorum.signpost.minecraft.crafting;
 
 import gollorum.signpost.minecraft.block.ModelWaystone;
+import gollorum.signpost.minecraft.config.IConfig;
 import gollorum.signpost.platform.Services;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
@@ -32,7 +33,7 @@ public class CutWaystoneRecipe extends StonecutterRecipe {
         if(!(result.getItem() instanceof BlockItem)) return true;
         Block block = ((BlockItem)result.getItem()).getBlock();
         if(!(block instanceof ModelWaystone)) return true;
-        return Services.CONFIG.getServer().allowedWaystones().contains(((ModelWaystone)block).variant.name);
+        return IConfig.IServer.getInstance().allowedWaystones().contains(((ModelWaystone)block).variant.name);
     }
 
     @Override

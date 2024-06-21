@@ -12,7 +12,6 @@ import gollorum.signpost.utils.WaystoneLocationData;
 import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.LockIconButton;
 import net.minecraft.network.chat.Component;
@@ -130,12 +129,6 @@ public class WaystoneGui extends ExtendedScreen {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        renderBackground(graphics);
-        super.render(graphics, mouseX, mouseY, partialTicks);
-    }
-
-    @Override
     public void onClose() {
         super.onClose();
         WaystoneLibrary.getInstance().updateEventDispatcher.removeListener(waystoneUpdateListener);
@@ -145,7 +138,7 @@ public class WaystoneGui extends ExtendedScreen {
         if(inputBox != null && !inputBox.getValue().equals("") && isValid(inputBox.getValue()))
             WaystoneLibrary.getInstance().requestUpdate(
                 inputBox.getValue(),
-                new WaystoneLocationData(location, Vector3.fromVec3d(getMinecraft().player.position())),
+                new WaystoneLocationData(location, Vector3.fromVec3d(minecraft().player.position())),
                 lockButton.isLocked()
             );
         onClose();

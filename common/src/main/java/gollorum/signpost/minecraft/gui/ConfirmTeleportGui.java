@@ -6,6 +6,7 @@ import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.utils.*;
 import gollorum.signpost.minecraft.gui.widgets.GuiItemRenderer;
 import gollorum.signpost.minecraft.gui.widgets.ImageView;
+import gollorum.signpost.minecraft.gui.widgets.SignpostImageButton;
 import gollorum.signpost.minecraft.gui.widgets.TextDisplay;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.networking.PacketHandler;
@@ -14,6 +15,7 @@ import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.network.chat.Component;
 
 import java.util.Optional;
@@ -158,13 +160,10 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 		);
 		signInfo.ifPresent(info -> {
 			Rect editRect = new Rect(new Point(width / 2, editButtonTop.get()), TextureResource.edit.size, Rect.XAlignment.Center, Rect.YAlignment.Top);
-			if(info.sign.hasThePermissionToEdit(info.tile, getMinecraft().player)) {
-				addRenderableWidget(new ImageButton(
-					editRect.point.x, editRect.point.y,
-					editRect.width, editRect.height,
-					0, 0, TextureResource.edit.size.height,
-					TextureResource.edit.location,
-					TextureResource.edit.fileSize.width, TextureResource.edit.fileSize.height,
+			if(info.sign.hasThePermissionToEdit(info.tile, minecraft().player)) {
+				addRenderableWidget(new SignpostImageButton(
+                    TextureResource.edit,
+					editRect,
 					b -> SignGui.display(info.tile, info.sign, info.offset, info.tilePartInfo)
 				));
 			}
@@ -172,15 +171,15 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 	}
 
 	private void confirm() {
-		getMinecraft().setScreen(null);
+		minecraft().setScreen(null);
 		data.consume(
-			langKey -> getMinecraft().player.displayClientMessage(Component.translatable(langKey), true),
-			data -> PacketHandler.sendToServer(new Teleport.Request.Package(data.waystoneName, data.handle))
+			langKey -> minecraft().player.displayClientMessage(Component.translatable(langKey), true),
+			data -> PacketHandler.getInstance().sendToServer(new Teleport.Request.Package(data.waystoneName, data.handle))
 		);
 	}
 
 	private void cancel() {
-		getMinecraft().setScreen(null);
+		minecraft().setScreen(null);
 	}
 
 }

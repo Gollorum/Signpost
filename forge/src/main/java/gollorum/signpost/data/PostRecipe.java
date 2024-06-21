@@ -2,19 +2,17 @@ package gollorum.signpost.data;
 
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.WaystoneBlock;
-import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeCategory;
+import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.level.ItemLike;
-
-import java.util.function.Consumer;
 
 import static net.minecraft.data.recipes.RecipeProvider.has;
 
 public class PostRecipe {
 
-    public static void build(Consumer<FinishedRecipe> consumer) {
+    public static void build(RecipeOutput consumer) {
         for(PostBlock.Variant variant : PostBlock.AllVariants) {
             postBuilder(variant.getBlock(), variant.type).save(consumer);
         }
