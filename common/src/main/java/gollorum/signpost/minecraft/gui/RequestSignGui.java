@@ -11,7 +11,7 @@ import gollorum.signpost.utils.Tuple;
 import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.ItemStackSerializer;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Optional;
@@ -30,13 +30,13 @@ public class RequestSignGui implements PacketHandler.Event.ForClient<RequestSign
 	public Class<Package> getMessageClass() { return Package.class; }
 
 	@Override
-	public void encode(Package message, FriendlyByteBuf buffer) {
-		PostTile.TilePartInfo.Serializer.write(message.tilePartInfo, buffer);
+	public void encode(RegistryFriendlyByteBuf buffer, Package message) {
+		PostTile.TilePartInfo.BufferSerializer.encode(buffer, message.tilePartInfo);
 	}
 
 	@Override
-	public Package decode(FriendlyByteBuf buffer) {
-		return new Package(PostTile.TilePartInfo.Serializer.read(buffer));
+	public Package decode(RegistryFriendlyByteBuf buffer) {
+		return new Package(PostTile.TilePartInfo.BufferSerializer.decode(buffer));
 	}
 
 	@Override
@@ -75,20 +75,20 @@ public class RequestSignGui implements PacketHandler.Event.ForClient<RequestSign
 		public Class<Package> getMessageClass() { return Package.class; }
 
 		@Override
-		public void encode(Package message, FriendlyByteBuf buffer) {
-			WorldLocation.SERIALIZER.write(message.loc, buffer);
-			PostBlock.ModelType.Serializer.write(message.modelType, buffer);
-			Vector3.Serializer.write(message.localHitPos, buffer);
-			ItemStackSerializer.Instance.write(message.itemToDropOnBreak, buffer);
+		public void encode(RegistryFriendlyByteBuf buffer, Package message) {
+			WorldLocation.SERIALIZER.encode(buffer, message.loc);
+			PostBlock.ModelType.Serializer.encode(buffer, message.modelType);
+			Vector3.BufferSerializer.encode(buffer, message.localHitPos);
+			ItemStackSerializer.Buffer.encode(buffer, message.itemToDropOnBreak);
 		}
 
 		@Override
-		public Package decode(FriendlyByteBuf buffer) {
+		public Package decode(RegistryFriendlyByteBuf buffer) {
 			return new Package(
-				WorldLocation.SERIALIZER.read(buffer),
-				PostBlock.ModelType.Serializer.read(buffer),
-				Vector3.Serializer.read(buffer),
-				ItemStackSerializer.Instance.read(buffer)
+				WorldLocation.SERIALIZER.decode(buffer),
+				PostBlock.ModelType.Serializer.decode(buffer),
+				Vector3.BufferSerializer.decode(buffer),
+				ItemStackSerializer.Buffer.decode(buffer)
 			);
 		}
 

@@ -28,7 +28,7 @@ public class JigsawDeserializers {
     public static Supplier<StructurePoolElementType<WaystoneJigsawPiece>> waystone = null;
 
     private static <P extends StructurePoolElement> StructurePoolElementType<P> register(String name, Codec<P> codec) {
-        return Registry.register(BuiltInRegistries.STRUCTURE_POOL_ELEMENT, new ResourceLocation(Signpost.MOD_ID, name), () -> codec);
+        return Registry.register(BuiltInRegistries.STRUCTURE_POOL_ELEMENT, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, name), () -> codec);
     }
     private static <P extends StructurePoolElement> StructurePoolElementType<P> registerLegacy(String name, Codec<P> codec) {
         return Registry.register(BuiltInRegistries.STRUCTURE_POOL_ELEMENT, name, () -> codec);

@@ -9,6 +9,7 @@ import gollorum.signpost.utils.serialization.BlockPosSerializer;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.ResourceLocationSerializer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -47,16 +48,10 @@ public class VillageWaystone {
         public static class Serializer implements CompoundSerializable<ChunkEntryKey> {
 
             @Override
-            public Class<ChunkEntryKey> getTargetClass() {
-                return ChunkEntryKey.class;
-            }
-
-            @Override
-            public CompoundTag write(ChunkEntryKey key, CompoundTag compound) {
+            public void encode(CompoundTag compound, ChunkEntryKey key, HolderLookup.Provider provider) {
                 compound.putInt("x", key.chunkPos.x);
                 compound.putInt("z", key.chunkPos.z);
-                ResourceLocationSerializer.Instance.write(key.dimensionKey, compound);
-                return compound;
+                ResourceLocationSerializer.Instance.encode(compound, key.dimensionKey, );
             }
 
             @Override
@@ -66,10 +61,10 @@ public class VillageWaystone {
             }
 
             @Override
-            public ChunkEntryKey read(CompoundTag compound) {
+            public ChunkEntryKey decode(CompoundTag compound, HolderLookup.Provider provider) {
                 return new ChunkEntryKey(
                     new ChunkPos(compound.getInt("x"), compound.getInt("z")),
-                    ResourceLocationSerializer.Instance.read(compound)
+                    ResourceLocationSerializer.Instance.decode(compound, )
                 );
             }
         }
@@ -103,10 +98,10 @@ public class VillageWaystone {
         ret.addAll(generatedWaystones.entrySet().stream().map(
             e -> {
                 CompoundTag compound = new CompoundTag();
-                compound.put("refPos", BlockPosSerializer.INSTANCE.write(e.getKey()));
+                compound.put("refPos", BlockPosSerializer.INSTANCE.encode(e.getKey()));
                 generatedWaystonesByChunk.entrySet().stream().filter(ce -> ce.getValue().equals(e.getValue())).findFirst()
-                    .ifPresent(ce -> compound.put("chunkEntryKey", ChunkEntryKey.serializer.write(ce.getKey())));
-                compound.put("waystone", WaystoneHandle.Vanilla.Serializer.write(e.getValue()));
+                    .ifPresent(ce -> compound.put("chunkEntryKey", ChunkEntryKey.serializer.encode(ce.getKey())));
+                compound.put("waystone", WaystoneHandle.Vanilla.Serializer.encode(e.getValue()));
                 return compound;
             }).toList());
         return ret;
@@ -116,14 +111,14 @@ public class VillageWaystone {
         generatedWaystones.clear();
         generatedWaystones.putAll(
             nbt.stream().collect(Collectors.toMap(
-                entry -> BlockPosSerializer.INSTANCE.read(((CompoundTag) entry).getCompound("refPos")),
-                entry -> WaystoneHandle.Vanilla.Serializer.read(((CompoundTag) entry).getCompound("waystone"))
+                entry -> BlockPosSerializer.INSTANCE.decode(((CompoundTag) entry).getCompound("refPos"), ),
+                entry -> WaystoneHandle.Vanilla.Serializer.decode(((CompoundTag) entry).getCompound("waystone"), )
             )));
         generatedWaystonesByChunk.clear();
         generatedWaystonesByChunk.putAll(
             nbt.stream().collect(Collectors.toMap(
-                entry -> ChunkEntryKey.serializer.read(((CompoundTag) entry).getCompound("chunkEntryKey")),
-                entry -> WaystoneHandle.Vanilla.Serializer.read(((CompoundTag) entry).getCompound("waystone"))
+                entry -> ChunkEntryKey.serializer.decode(((CompoundTag) entry).getCompound("chunkEntryKey"), ),
+                entry -> WaystoneHandle.Vanilla.Serializer.decode(((CompoundTag) entry).getCompound("waystone"), )
             )));
     }
 

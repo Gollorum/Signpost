@@ -21,7 +21,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
@@ -39,7 +39,7 @@ import java.util.function.Function;
 public abstract class ModelWaystone extends BaseEntityBlock implements SimpleWaterloggedBlock, WithCountRestriction {
 
 	public static final BooleanProperty Waterlogged = BlockStateProperties.WATERLOGGED;
-	public static final DirectionProperty Facing = BlockStateProperties.HORIZONTAL_FACING;
+	public static final EnumProperty<Direction> Facing = BlockStateProperties.HORIZONTAL_FACING;
 	private static final String REGISTRY_NAME = "waystone_model";
 
 	public static class Variant {

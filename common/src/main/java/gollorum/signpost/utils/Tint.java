@@ -4,6 +4,7 @@ import gollorum.signpost.minecraft.utils.tints.*;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.StringSerializer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -32,11 +33,11 @@ public interface Tint {
         public static final Serialization instance = new Serialization();
 
         @Override
-        public CompoundTag write(Tint tint, CompoundTag compound) {
+        public void encode(CompoundTag compound, Tint tint, HolderLookup.Provider provider) {
             for (var e : allSerializers.entrySet()) {
                 if(tint.getClass() == e.getValue().getTargetClass()) {
                     compound.putString("Type", e.getKey());
-                    ((CompoundSerializable<Tint>)e.getValue()).write(tint, compound);
+                    ((CompoundSerializable<Tint>)e.getValue()).encode(compound, tint, );
                     return compound;
                 }
             }
@@ -49,16 +50,16 @@ public interface Tint {
         }
 
         @Override
-        public Tint read(CompoundTag compound) {
-            return allSerializers.get(compound.getString("Type")).read(compound);
+        public Tint decode(CompoundTag compound, HolderLookup.Provider provider) {
+            return allSerializers.get(compound.getString("Type")).decode(compound, );
         }
 
         @Override
-        public void write(Tint tint, FriendlyByteBuf buffer) {
+        public void encode(FriendlyByteBuf buffer, Tint tint) {
             for (var e : allSerializers.entrySet()) {
                 if(tint.getClass() == e.getValue().getTargetClass()) {
-                    StringSerializer.instance.write(e.getKey(), buffer);
-                    ((CompoundSerializable<Tint>)e.getValue()).write(tint, buffer);
+                    StringSerializer.instance.encode(buffer, e.getKey());
+                    ((CompoundSerializable<Tint>)e.getValue()).encode(buffer, tint, );
                     return;
                 }
             }
@@ -66,8 +67,8 @@ public interface Tint {
         }
 
         @Override
-        public Tint read(FriendlyByteBuf buffer) {
-            return allSerializers.get(StringSerializer.instance.read(buffer)).read(buffer);
+        public Tint decode(FriendlyByteBuf buffer) {
+            return allSerializers.get(StringSerializer.instance.decode(buffer)).decode(buffer, );
         }
 
         @Override

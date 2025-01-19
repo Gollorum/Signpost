@@ -1,13 +1,12 @@
 package gollorum.signpost.utils.serialization;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 
-public interface BufferSerializable<T> {
+public interface BufferSerializable<T> extends StreamCodec<RegistryFriendlyByteBuf, T> {
 
     Class<T> getTargetClass();
 
-    void write(T t, FriendlyByteBuf buffer);
-    T read(FriendlyByteBuf buffer);
-
     default OptionalBufferSerializer<T> optional() { return OptionalBufferSerializer.from(this); }
+
 }

@@ -12,11 +12,11 @@ public class GeneratorModel {
 
     public GeneratorModel(BlockModels blockModelProvider) {
         this.blockModelProvider = blockModelProvider;
-        generatorModel = new BlockModelBuilder(new ResourceLocation(Signpost.MOD_ID, "block/" + WaystoneGeneratorBlock.REGISTRY_NAME), blockModelProvider.existingFileHelper);
+        generatorModel = new BlockModelBuilder(ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/" + WaystoneGeneratorBlock.REGISTRY_NAME), blockModelProvider.existingFileHelper);
     }
 
     public void registerModels() {
-        ResourceLocation waystoneTexture = new ResourceLocation(Signpost.MOD_ID, "block/waystone");
+        ResourceLocation waystoneTexture = ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/waystone");
         blockModelProvider.cubeAll(WaystoneGeneratorBlock.REGISTRY_NAME, waystoneTexture);
     }
 }

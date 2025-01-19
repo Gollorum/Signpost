@@ -3,6 +3,7 @@ package gollorum.signpost.networking;
 import gollorum.signpost.Signpost;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
@@ -23,7 +24,7 @@ public class ForgePacketHandler extends PacketHandler {
 
     public static void initialize() {
         channel = ChannelBuilder
-            .named(new ResourceLocation(Signpost.MOD_ID, "main"))
+            .named(ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "main"))
             .acceptedVersions(Channel.VersionTest.exact(PROTOCOL_VERSION))
             .simpleChannel();
         instance = new ForgePacketHandler();
@@ -34,7 +35,7 @@ public class ForgePacketHandler extends PacketHandler {
 
     @Override
     public <T> void register(Event<T> event, ResourceLocation id){
-        register(event.getMessageClass(), event::encode, event::decode, event::handle);
+        register(event.getMessageClass(), (message, buffer) -> event.encode(buffer, message, ), buffer1 -> event.decode(buffer1, ), event::handle);
     }
 
     public <T> void register(
@@ -53,7 +54,7 @@ public class ForgePacketHandler extends PacketHandler {
     private static <T> BiConsumer<T, CustomPayloadEvent.Context> handle(BiConsumer<T, Context> handle) {
         return (message, context) -> {
             context.enqueueWork(() -> {
-                if(context.getDirection().getReceptionSide().isClient())
+                if(context.getConnection().getReceiving() == PacketFlow.CLIENTBOUND)
                     DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> handle.accept(message,
                         context.getSender() == null
                             ? new Context.ClientFromServer()

@@ -2,7 +2,6 @@ package gollorum.signpost.blockpartdata.types;
 
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.blockpartdata.Overlay;
-import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.utils.CoordinatesUtil;
 import gollorum.signpost.minecraft.utils.LangKeys;
@@ -15,9 +14,9 @@ import gollorum.signpost.utils.math.geometry.AABB;
 import gollorum.signpost.utils.math.geometry.Matrix4x4;
 import gollorum.signpost.utils.math.geometry.TransformedBox;
 import gollorum.signpost.utils.math.geometry.Vector3;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -33,12 +32,12 @@ public class SmallShortSignBlockPart extends SignBlockPart<SmallShortSignBlockPa
 
     public static final BlockPartMetadata<SmallShortSignBlockPart> METADATA = new BlockPartMetadata<>(
         "small_short_sign",
-        (sign, compound) -> {
-            compound.put("CoreData", CoreData.SERIALIZER.write(sign.coreData));
-            compound.put("Text", NameProvider.Serializer.write(sign.text));
+        (sign, compound, provider) -> {
+            compound.put("CoreData", CoreData.SERIALIZER.encode(sign.coreData, provider));
+            compound.put("Text", NameProvider.COMPOUND_SERIALIZER.encode(sign.text, provider));
         },
-        (compound) -> new SmallShortSignBlockPart(
-            CoreData.SERIALIZER.read(compound.getCompound("CoreData")),
+        (compound, provider) -> new SmallShortSignBlockPart(
+            CoreData.SERIALIZER.decode(compound.getCompound("CoreData"), provider),
             NameProvider.fetchFrom(compound.get("Text"))
         ),
         SmallShortSignBlockPart.class
@@ -87,14 +86,14 @@ public class SmallShortSignBlockPart extends SignBlockPart<SmallShortSignBlockPa
         transformedBounds = new TransformedBox(LOCAL_BOUNDS).rotateAlong(Matrix4x4.Axis.Y, coreData.angleProvider.get());
     }
 
-    private void notifyTextChanged(InteractionInfo info) {
-        CompoundTag compound = new CompoundTag();
-        compound.put("Text", NameProvider.Serializer.write(text));
-        info.mutationDistributor.accept(compound);
-    }
+//    private void notifyTextChanged(InteractionInfo info) {
+//        CompoundTag compound = new CompoundTag();
+//        compound.put("Text", NameProvider.Serializer.encode(text, ));
+//        info.mutationDistributor.accept(compound);
+//    }
 
     @Override
-    public void readMutationUpdate(CompoundTag compound, BlockEntity tile, Player editingPlayer) {
+    public void readMutationUpdate(CompoundTag compound, BlockEntity tile, Player editingPlayer, HolderLookup.Provider provider) {
         if(editingPlayer != null
             && !editingPlayer.level().isClientSide()
             && tile instanceof WithOwner.OfSignpost
@@ -107,7 +106,7 @@ public class SmallShortSignBlockPart extends SignBlockPart<SmallShortSignBlockPa
         if (compound.contains("Text")) {
             setText(NameProvider.fetchFrom(compound.get("Text")));
         }
-        super.readMutationUpdate(compound, tile, editingPlayer);
+        super.readMutationUpdate(compound, tile, editingPlayer, provider);
     }
 
     @Override
@@ -121,8 +120,8 @@ public class SmallShortSignBlockPart extends SignBlockPart<SmallShortSignBlockPa
     }
 
     @Override
-    public void writeTo(CompoundTag compound) {
-        METADATA.write(this, compound);
+    public void writeTo(CompoundTag compound, HolderLookup.Provider provider) {
+        METADATA.encode(compound, this, provider);
     }
 
 }

@@ -12,7 +12,7 @@ public class LootProviderRegistry {
     public static final LootNbtProviderType RegisteredWaystone = RegisteredWaystoneLootNbtProvider.providerType;
 
     public static void register(){
-        Registry.register(BuiltInRegistries.LOOT_NBT_PROVIDER_TYPE, new ResourceLocation(Signpost.MOD_ID, "waystone"), RegisteredWaystone);
+        Registry.register(BuiltInRegistries.LOOT_NBT_PROVIDER_TYPE, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "waystone"), RegisteredWaystone);
     }
 
 }

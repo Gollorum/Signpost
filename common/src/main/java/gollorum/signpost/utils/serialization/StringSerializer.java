@@ -1,40 +1,48 @@
 package gollorum.signpost.utils.serialization;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 
-public final class StringSerializer implements CompoundSerializable<String> {
+public final class StringSerializer {
 
-    public static final StringSerializer instance = new StringSerializer();
+    public static final CompoundSerializable<String> Compound = new Compound();
+    public static final BufferSerializable<String> Buffer = new Buffer();
 
-    @Override
-    public Class<String> getTargetClass() {
-        return String.class;
+    private static final class Compound implements CompoundSerializable<String> {
+
+        @Override
+        public void encode(CompoundTag compound, String s, HolderLookup.Provider provider) {
+            compound.putString("String", s);
+        }
+
+        @Override
+        public boolean isContainedIn(CompoundTag compound) {
+            return compound.contains("String");
+        }
+
+        @Override
+        public String decode(CompoundTag compound, HolderLookup.Provider provider) {
+            return compound.getString("String");
+        }
     }
 
-    @Override
-    public CompoundTag write(String s, CompoundTag compound) {
-        compound.putString("String", s);
-        return compound;
+    public static final class Buffer implements BufferSerializable<String> {
+
+        @Override
+        public Class<String> getTargetClass() {
+            return String.class;
+        }
+
+        @Override
+        public void encode(RegistryFriendlyByteBuf buffer, String s) {
+            buffer.writeUtf(s);
+        }
+
+        @Override
+        public String decode(RegistryFriendlyByteBuf buffer) {
+            return buffer.readUtf();
+        }
     }
 
-    @Override
-    public boolean isContainedIn(CompoundTag compound) {
-        return compound.contains("String");
-    }
-
-    @Override
-    public String read(CompoundTag compound) {
-        return compound.getString("String");
-    }
-
-    @Override
-    public void write(String s, FriendlyByteBuf buffer) {
-        buffer.writeUtf(s);
-    }
-
-    @Override
-    public String read(FriendlyByteBuf buffer) {
-        return buffer.readUtf();
-    }
 }

@@ -36,7 +36,7 @@ public class TextureResource {
     );
 
     public static final TextureResource itemBackground = new TextureResource(
-        new ResourceLocation("textures/gui/widgets.png"), new TextureSize(22, 22),
+        ResourceLocation.fromNamespaceAndPath("textures/gui/widgets.png"), new TextureSize(22, 22),
         new TextureSize(256, 256), new TextureSize(60, 23)
     );
 
@@ -44,7 +44,7 @@ public class TextureResource {
         "textures/gui/edit.png", new TextureSize(15, 15), new TextureSize(15, 30)
     );
 
-    public static final ResourceLocation waystoneTextureLocation = new ResourceLocation(Signpost.MOD_ID, "texture/block/waystone");
+    public static final ResourceLocation waystoneTextureLocation = ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "texture/block/waystone");
 
     public final ResourceLocation location;
     public final TextureSize size;
@@ -66,7 +66,7 @@ public class TextureResource {
     }
 
     public TextureResource(String relativeLocation, TextureSize size, TextureSize fileSize) {
-        this(new ResourceLocation(Signpost.MOD_ID, relativeLocation), size, fileSize);
+        this(ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, relativeLocation), size, fileSize);
     }
 
     public TextureResource(ResourceLocation location, TextureSize size) {

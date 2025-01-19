@@ -1,48 +1,64 @@
 package gollorum.signpost.utils.serialization;
 
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
 
-public final class ItemStackSerializer implements CompoundSerializable<ItemStack> {
+public final class ItemStackSerializer {
 
-	public static final ItemStackSerializer Instance = new ItemStackSerializer();
+    public static final CompoundSerializable<ItemStack> Compound = new Compound();
+    public static final BufferSerializable<ItemStack> Buffer = new Buffer();
 
-	private ItemStackSerializer() {}
+    private static final class Compound implements CompoundSerializable<ItemStack> {
 
-	@Override
-	public CompoundTag write(ItemStack itemStack, CompoundTag compound) {
-		compound.put("ItemStack", itemStack.save(new CompoundTag()));
-		return compound;
-	}
+        private Compound() {}
 
-	@Override
-	public boolean isContainedIn(CompoundTag compound) {
-		return compound.contains("ItemStack");
-	}
+        @Override
+        public void encode(CompoundTag compound, ItemStack itemStack, HolderLookup.Provider provider) {
+            compound.put("ItemStack", itemStack.save(provider));
+        }
 
-	@Override
-	public ItemStack read(CompoundTag compound) {
-		Tag readCompound = compound.get("ItemStack");
-		if(readCompound instanceof CompoundTag)
-			return ItemStack.of((CompoundTag) readCompound);
-		else return ItemStack.EMPTY;
-	}
+        @Override
+        public boolean isContainedIn(CompoundTag compound) {
+            return compound.contains("ItemStack");
+        }
 
-	@Override
-	public Class<ItemStack> getTargetClass() {
-		return ItemStack.class;
-	}
+        @Override
+        public ItemStack decode(CompoundTag compound, HolderLookup.Provider provider) {
+            var tag = compound.get("ItemStack");
+            if(tag == null) return ItemStack.EMPTY;
+            return ItemStack.parse(provider, tag).orElse(ItemStack.EMPTY);
+        }
+    }
 
-	@Override
-	public void write(ItemStack itemStack, FriendlyByteBuf buffer) {
-		buffer.writeItem(itemStack);
-	}
+    private static final class Buffer implements BufferSerializable<ItemStack> {
 
-	@Override
-	public ItemStack read(FriendlyByteBuf buffer) {
-		return buffer.readItem();
-	}
+        @Override
+        public Class<ItemStack> getTargetClass() {
+            return ItemStack.class;
+        }
+
+        @Override
+        public void encode(RegistryFriendlyByteBuf buffer, ItemStack itemStack) {
+            buffer.writeBoolean(itemStack.isEmpty());
+            if(!itemStack.isEmpty()) {
+                buffer.writeResourceLocation(BuiltInRegistries.ITEM.getKey(itemStack.getItem()));
+                buffer.writeInt(itemStack.getCount());
+            }
+        }
+
+        @Override
+        public ItemStack decode(RegistryFriendlyByteBuf buffer) {
+            return buffer.readBoolean()
+                ? ItemStack.EMPTY
+                : new ItemStack(
+                    BuiltInRegistries.ITEM.get(buffer.readResourceLocation()),
+                    buffer.readInt()
+                );
+        }
+
+    }
 
 }

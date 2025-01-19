@@ -1,6 +1,6 @@
 package gollorum.signpost.utils.serialization;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 
 public final class IntSerializer implements BufferSerializable<Integer> {
 
@@ -12,12 +12,12 @@ public final class IntSerializer implements BufferSerializable<Integer> {
     }
 
     @Override
-    public void write(Integer integer, FriendlyByteBuf buffer) {
+    public void encode(RegistryFriendlyByteBuf buffer, Integer integer) {
         buffer.writeInt(integer);
     }
 
     @Override
-    public Integer read(FriendlyByteBuf buffer) {
+    public Integer decode(RegistryFriendlyByteBuf buffer) {
         return buffer.readInt();
     }
 }

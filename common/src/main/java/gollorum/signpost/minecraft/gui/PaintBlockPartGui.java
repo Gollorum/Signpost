@@ -188,7 +188,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
         super.onClose();
         PacketHandler.getInstance().sendToServer(new PostTile.PartMutatedEvent.Packet(
             new PostTile.TilePartInfo(tile, identifier),
-            part.getMeta().write(displayPart),
+            part.getMeta().encode(displayPart, minecraft.level.registryAccess()),
             part.getMeta().identifier
         ));
     }

@@ -1,11 +1,14 @@
 package gollorum.signpost;
 
+import com.mojang.serialization.Codec;
 import gollorum.signpost.compat.ExternalWaystoneLibrary;
+import gollorum.signpost.utils.serialization.BufferSerializable;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.StringSerializer;
 import net.minecraft.Util;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -13,18 +16,18 @@ import java.util.UUID;
 
 public interface WaystoneHandle {
 
-    void write(FriendlyByteBuf buffer);
-    CompoundTag write(CompoundTag compound);
+    void write(RegistryFriendlyByteBuf buffer);
+    void write(CompoundTag compound, HolderLookup.Provider provider);
 
-    static Optional<WaystoneHandle> read(FriendlyByteBuf buffer) {
-        String type = StringSerializer.instance.read(buffer);
-        if(type.equals(Vanilla.typeTag)) return Optional.of(Vanilla.Serializer.read(buffer));
+    static Optional<WaystoneHandle> read(RegistryFriendlyByteBuf buffer) {
+        String type = StringSerializer.Buffer.decode(buffer);
+        if(type.equals(Vanilla.typeTag)) return Optional.of(Vanilla.BufferSerializer.decode(buffer));
         else return ExternalWaystoneLibrary.getInstance().read(type, buffer);
     }
 
-    static Optional<WaystoneHandle> read(CompoundTag compound) {
+    static Optional<WaystoneHandle> read(CompoundTag compound, HolderLookup.Provider provider) {
         String type = compound.getString("type");
-        if(type.equals(Vanilla.typeTag)) return Optional.of(Vanilla.Serializer.read(compound));
+        if(type.equals(Vanilla.typeTag)) return Optional.of(Vanilla.CompoundSerializer.decode(compound, provider));
         else return ExternalWaystoneLibrary.getInstance().read(type, compound);
     }
 
@@ -51,26 +54,30 @@ public interface WaystoneHandle {
             return id.hashCode();
         }
 
-        public static final CompoundSerializable<Vanilla> Serializer = new SerializerImpl();
+        public static final CompoundSerializable<Vanilla> CompoundSerializer = new CompoundSerializerImpl();
+        public static final BufferSerializable<Vanilla> BufferSerializer = new BufferSerializerImpl();
+        public static final Codec<Vanilla> vanillaCodec = Codec.STRING.xmap(
+            s -> new Vanilla(UUID.fromString(s)),
+            v -> v.id.toString()
+        );
 
         @Override
-        public void write(FriendlyByteBuf buffer) {
+        public void write(RegistryFriendlyByteBuf buffer) {
             buffer.writeUtf(typeTag);
-            Serializer.write(this, buffer);
+            BufferSerializer.encode(buffer, this);
         }
 
         @Override
-        public CompoundTag write(CompoundTag compound) {
-            return Serializer.write(this, compound);
+        public void write(CompoundTag compound, HolderLookup.Provider provider) {
+            CompoundSerializer.encode(compound, this, provider);
         }
 
-        public static final class SerializerImpl implements CompoundSerializable<Vanilla> {
+        private static final class CompoundSerializerImpl implements CompoundSerializable<Vanilla> {
 
             @Override
-            public CompoundTag write(Vanilla playerHandle, CompoundTag compound) {
+            public void encode(CompoundTag compound, Vanilla playerHandle, HolderLookup.Provider provider) {
                 compound.putString("type", typeTag);
                 compound.putUUID("Id", playerHandle.id);
-                return compound;
             }
 
             @Override
@@ -79,22 +86,25 @@ public interface WaystoneHandle {
             }
 
             @Override
-            public Vanilla read(CompoundTag compound) {
+            public Vanilla decode(CompoundTag compound, HolderLookup.Provider provider) {
                 return new Vanilla(compound.getUUID("Id"));
             }
 
+        }
+
+        private static final class BufferSerializerImpl implements BufferSerializable<Vanilla> {
             @Override
             public Class<Vanilla> getTargetClass() {
                 return Vanilla.class;
             }
 
             @Override
-            public void write(Vanilla playerHandle, FriendlyByteBuf buffer) {
+            public void encode(RegistryFriendlyByteBuf buffer, Vanilla playerHandle) {
                 buffer.writeUUID(playerHandle.id);
             }
 
             @Override
-            public Vanilla read(FriendlyByteBuf buffer) {
+            public Vanilla decode(RegistryFriendlyByteBuf buffer) {
                 return new Vanilla(buffer.readUUID());
             }
         };

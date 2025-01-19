@@ -15,7 +15,6 @@ import gollorum.signpost.minecraft.items.GenerationWand;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.minecraft.utils.Texture;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.platform.Services;
 import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.*;
 import gollorum.signpost.utils.math.Angle;
@@ -25,8 +24,9 @@ import gollorum.signpost.utils.math.geometry.TransformedBox;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.ItemStackSerializer;
-import gollorum.signpost.utils.serialization.OptionalSerializer;
+import gollorum.signpost.utils.serialization.OptionalCompoundSerializer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -42,7 +42,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements BlockPart<Self> {
 
@@ -98,24 +97,23 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
         public static final class Serializer implements CompoundSerializable<CoreData> {
             private Serializer(){}
             @Override
-            public CompoundTag write(CoreData coreData, CompoundTag compound) {
-                compound.put("Angle", AngleProvider.Serializer.write(coreData.angleProvider));
+            public void encode(CompoundTag compound, CoreData coreData, HolderLookup.Provider provider) {
+                compound.put("Angle", AngleProvider.CompoundSerializer.encode(coreData.angleProvider, provider));
                 compound.putBoolean("Flip", coreData.flip);
-                compound.put("Texture", Texture.Serializer.write(coreData.mainTexture));
-                compound.put("TextureDark", Texture.Serializer.write(coreData.secondaryTexture));
-                compound.put("Overlay", Overlay.Serializer.optional().write(coreData.overlay));
+                compound.put("Texture", Texture.CompundSerializer.encode(coreData.mainTexture, provider));
+                compound.put("TextureDark", Texture.CompundSerializer.encode(coreData.secondaryTexture, provider));
+                compound.put("Overlay", Overlay.CompoundSerializer.optional().encode(coreData.overlay, provider));
                 compound.putInt("Color", coreData.color);
 
                 CompoundTag dest = new CompoundTag();
                 dest.putBoolean("IsPresent", coreData.destination.isPresent());
-                coreData.destination.ifPresent(d -> d.write(dest));
+                coreData.destination.ifPresent(d -> d.write(dest, provider));
                 compound.put("Destination", dest);
 
-                compound.put("ItemToDropOnBreak", ItemStackSerializer.Instance.write(coreData.itemToDropOnBreak));
+                compound.put("ItemToDropOnBreak", ItemStackSerializer.Compound.encode(coreData.itemToDropOnBreak, provider));
                 compound.putString("ModelType", coreData.modelType.name);
                 compound.putBoolean("IsLocked", coreData.isLocked);
                 compound.putBoolean("IsMarkedForGeneration", coreData.isMarkedForGeneration);
-                return compound;
             }
 
             @Override
@@ -133,34 +131,29 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
             }
 
             @Override
-            public CoreData read(CompoundTag compound) {
+            public CoreData decode(CompoundTag compound, HolderLookup.Provider provider) {
                 CompoundTag dest = compound.getCompound("Destination");
                 Optional<WaystoneHandle> destination;
                 if(dest.getBoolean("IsPresent")){
-                    Optional<WaystoneHandle> d2 = WaystoneHandle.read(dest);
+                    Optional<WaystoneHandle> d2 = WaystoneHandle.read(dest, provider);
                     if(!d2.isPresent()) Signpost.LOGGER.error("Error deserializing waystone handle of unknown type: " + dest.getString("type"));
                     destination = d2;
                 } else destination = Optional.empty();
                 return new CoreData(
-                    AngleProvider.fetchFrom(compound.getCompound("Angle")),
+                    AngleProvider.fetchFrom(compound.getCompound("Angle"), provider),
                     compound.getBoolean("Flip"),
                     Texture.readFrom(compound.get("Texture")),
                     Texture.readFrom(compound.get("TextureDark")),
-                    Overlay.Serializer.optional().read(compound.getCompound("Overlay")),
+                    Overlay.CompoundSerializer.optional().decode(compound.getCompound("Overlay"), provider),
                     compound.getInt("Color"),
                     destination,
                     PostBlock.ModelType.getByName(compound.getString("ModelType"), true)
                         .orElseThrow(() -> new RuntimeException("Tried to load sign post model type " + compound.getString("ModelType") +
                             ", but it hasn't been registered. @Dev: You have to call Post.ModelType.register")),
-                    ItemStackSerializer.Instance.read(compound.getCompound("ItemToDropOnBreak")),
+                    ItemStackSerializer.Compound.decode(compound.getCompound("ItemToDropOnBreak"), provider),
                    compound.getBoolean("IsLocked"),
                    compound.getBoolean("IsMarkedForGeneration")
                 );
-            }
-
-            @Override
-            public Class<CoreData> getTargetClass() {
-                return CoreData.class;
             }
         }
     }
@@ -356,14 +349,14 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
 
     protected void notifyAngleChanged(InteractionInfo info) {
         CompoundTag compound = new CompoundTag();
-        compound.put("Angle", AngleProvider.Serializer.write(coreData.angleProvider));
+        compound.put("Angle", AngleProvider.CompoundSerializer.encode(coreData.angleProvider, info.player.registryAccess()));
         info.mutationDistributor.accept(compound);
     }
 
     protected void notifyTextureChanged(InteractionInfo info) {
         CompoundTag compound = new CompoundTag();
-        compound.put("Texture", Texture.Serializer.write(coreData.mainTexture));
-        compound.put("TextureDark", Texture.Serializer.write(coreData.secondaryTexture));
+        compound.put("Texture", Texture.CompundSerializer.encode(coreData.mainTexture, info.player.registryAccess()));
+        compound.put("TextureDark", Texture.CompundSerializer.encode(coreData.secondaryTexture, info.player.registryAccess()));
         info.mutationDistributor.accept(compound);
     }
 
@@ -380,10 +373,10 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
     }
 
     @Override
-    public void readMutationUpdate(CompoundTag compound, BlockEntity tile, Player editingPlayer) {
+    public void readMutationUpdate(CompoundTag compound, BlockEntity tile, Player editingPlayer, HolderLookup.Provider provider) {
         if(compound.contains("CoreData")) compound = compound.getCompound("CoreData");
         if(compound.contains("Angle"))
-            setAngle(AngleProvider.fetchFrom(compound.getCompound("Angle")));
+            setAngle(AngleProvider.fetchFrom(compound.getCompound("Angle"), provider));
 
         boolean updateTextures = false;
         if(compound.contains("Texture")) {
@@ -402,7 +395,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
             CompoundTag dest = compound.getCompound("Destination");
             Optional<WaystoneHandle> destination;
             if(dest.getBoolean("IsPresent")){
-                Optional<WaystoneHandle> d2 = WaystoneHandle.read(dest);
+                Optional<WaystoneHandle> d2 = WaystoneHandle.read(dest, editingPlayer.registryAccess());
                 if (d2.isPresent()) {
                     setDestination(d2);
                 } else {
@@ -411,14 +404,14 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
             } else setDestination(Optional.empty());
         }
         if(compound.contains("ItemToDropOnBreak")) {
-            setItemToDropOnBreak(ItemStackSerializer.Instance.read(compound.getCompound("ItemToDropOnBreak")));
+            setItemToDropOnBreak(ItemStackSerializer.Compound.decode(compound.getCompound("ItemToDropOnBreak"), editingPlayer.registryAccess()));
         }
         if(compound.contains("ModelType"))
             PostBlock.ModelType.getByName(compound.getString("ModelType"), true).ifPresent(this::setModelType);
 
-        OptionalSerializer<Overlay> overlaySerializer = Overlay.Serializer.optional();
+        OptionalCompoundSerializer<Overlay> overlaySerializer = Overlay.CompoundSerializer.optional();
         if(compound.contains("Overlay"))
-            setOverlay(overlaySerializer.read(compound.getCompound("Overlay")));
+            setOverlay(overlaySerializer.decode(compound.getCompound("Overlay"), editingPlayer.registryAccess()));
 
         if(compound.contains("IsLocked")) {
             if(editingPlayer == null || editingPlayer.level().isClientSide()

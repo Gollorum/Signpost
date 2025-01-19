@@ -15,6 +15,7 @@ import gollorum.signpost.utils.WaystoneLocationData;
 import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -35,7 +36,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
@@ -45,7 +46,7 @@ import java.util.Optional;
 
 public abstract class WaystoneBlock extends BaseEntityBlock implements WithCountRestriction {
 
-    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final String REGISTRY_NAME = "waystone";
 
     protected static WaystoneBlock instance = null;
@@ -85,8 +86,14 @@ public abstract class WaystoneBlock extends BaseEntityBlock implements WithCount
 	}
 
     @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        onRightClick(world, pos, player);
+    protected InteractionResult useItemOn(ItemStack p_316304_, BlockState p_316362_, Level level, BlockPos pos, Player player, InteractionHand p_316595_, BlockHitResult p_316140_) {
+        onRightClick(level, pos, player);
+        return InteractionResult.CONSUME;
+    }
+
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+        onRightClick(level, pos, player);
         return InteractionResult.CONSUME;
     }
 
@@ -141,7 +148,7 @@ public abstract class WaystoneBlock extends BaseEntityBlock implements WithCount
                     boolean wasRegistered = getCustomName(stack).map(name -> {
                         WaystoneLocationData locationData = new WaystoneLocationData(worldLocation, Vector3.fromVec3d(placer.position()));
                         CompoundTag handleTag = stack.getTagElement("Handle");
-                        Optional<WaystoneHandle.Vanilla> handle = handleTag != null ? Optional.of(WaystoneHandle.Vanilla.Serializer.read(handleTag)) : Optional.empty();
+                        Optional<WaystoneHandle.Vanilla> handle = handleTag != null ? Optional.of(WaystoneHandle.Vanilla.Serializer.decode(handleTag, )) : Optional.empty();
                         return WaystoneLibrary.getInstance().tryAddNew(name, locationData, (ServerPlayer) placer, handle);
                     }).orElse(false);
                     if(!wasRegistered)
@@ -193,7 +200,7 @@ public abstract class WaystoneBlock extends BaseEntityBlock implements WithCount
             if(player.hasPermissions(IConfig.IServer.getInstance().permissions().pickUnownedWaystonePermissionLevel())
                 || tile.getWaystoneOwner().map(o -> o.equals(PlayerHandle.from(player))).orElse(true)) {
 
-                tile.getHandle().ifPresent(h -> stack.addTagElement("Handle", WaystoneHandle.Vanilla.Serializer.write(h)));
+                tile.getHandle().ifPresent(h -> stack.addTagElement("Handle", WaystoneHandle.Vanilla.Serializer.encode(h)));
                 tile.getName().ifPresent(n -> stack.setHoverName(Component.literal(n)));
             }
         }

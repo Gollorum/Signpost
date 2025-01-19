@@ -1,10 +1,12 @@
 package gollorum.signpost.utils.math.geometry;
 
 import gollorum.signpost.utils.math.Angle;
+import gollorum.signpost.utils.serialization.BufferSerializable;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -172,15 +174,14 @@ public final class Vector3 {
         return (float) Math.sqrt(x * x + y * y + z * z);
     }
 
-    public static final CompoundSerializable<Vector3> Serializer = new SerializerImpl();
+    public static final CompoundSerializable<Vector3> CompoundSerializer = new SerializerImpl();
     public static final class SerializerImpl implements CompoundSerializable<Vector3> {
 
         @Override
-        public CompoundTag write(Vector3 vector3, CompoundTag compound) {
+        public void encode(CompoundTag compound, Vector3 vector3, HolderLookup.Provider provider) {
             compound.putFloat("X", vector3.x);
             compound.putFloat("Y", vector3.y);
             compound.putFloat("Z", vector3.z);
-            return compound;
         }
 
         @Override
@@ -191,13 +192,16 @@ public final class Vector3 {
         }
 
         @Override
-        public Vector3 read(CompoundTag compound) {
+        public Vector3 decode(CompoundTag compound, HolderLookup.Provider provider) {
             return new Vector3(
                 compound.getFloat("X"),
                 compound.getFloat("Y"),
                 compound.getFloat("Z")
             );
         }
+    }
+
+    public static final BufferSerializable<Vector3> BufferSerializer = new BufferSerializable<>() {
 
         @Override
         public Class<Vector3> getTargetClass() {
@@ -205,14 +209,14 @@ public final class Vector3 {
         }
 
         @Override
-        public void write(Vector3 vec, FriendlyByteBuf buffer) {
+        public void encode(RegistryFriendlyByteBuf buffer, Vector3 vec) {
             buffer.writeFloat(vec.x);
             buffer.writeFloat(vec.y);
             buffer.writeFloat(vec.z);
         }
 
         @Override
-        public Vector3 read(FriendlyByteBuf buffer) {
+        public Vector3 decode(RegistryFriendlyByteBuf buffer) {
             return new Vector3(
                 buffer.readFloat(),
                 buffer.readFloat(),

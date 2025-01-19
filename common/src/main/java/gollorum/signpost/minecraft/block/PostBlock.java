@@ -19,10 +19,10 @@ import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.BufferSerializable;
 import gollorum.signpost.utils.serialization.StringSerializer;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.*;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.ItemTags;
@@ -46,24 +46,23 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.BiFunction;
 
 public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock, WithCountRestriction {
 
-    public static final DirectionProperty Facing = BlockStateProperties.HORIZONTAL_FACING;
+    public static final EnumProperty<Direction> Facing = BlockStateProperties.HORIZONTAL_FACING;
     public static class ModelType {
 
         private static final Map<String, ModelType> allTypes = new HashMap<>();
@@ -79,134 +78,134 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
         }
 
         public static final ModelType Acacia = new ModelType("acacia",
-            new ResourceLocation("acacia_log"),
-            new ResourceLocation("stripped_acacia_log"),
-            new ResourceLocation("acacia_log"),
-            Lazy.of(() -> Ingredient.of(Items.ACACIA_SIGN)),
-            Lazy.of(() -> Ingredient.of(ItemTags.ACACIA_LOGS)),
-            Lazy.of(() -> Ingredient.of(Items.ACACIA_SIGN))
+            ResourceLocation.parse("acacia_log"),
+            ResourceLocation.parse("stripped_acacia_log"),
+            ResourceLocation.parse("acacia_log"),
+            r -> Ingredient.of(Items.ACACIA_SIGN),
+            r -> Ingredient.of(r.get().getOrThrow(ItemTags.ACACIA_LOGS)),
+            r -> Ingredient.of(Items.ACACIA_SIGN)
         );
         public static final ModelType Birch = new ModelType("birch",
-            new ResourceLocation("birch_log"),
-            new ResourceLocation("stripped_birch_log"),
-            new ResourceLocation("birch_log"),
-            Lazy.of(() -> Ingredient.of(Items.BIRCH_SIGN)),
-            Lazy.of(() -> Ingredient.of(ItemTags.BIRCH_LOGS)),
-            Lazy.of(() -> Ingredient.of(Items.BIRCH_SIGN))
+            ResourceLocation.parse("birch_log"),
+            ResourceLocation.parse("stripped_birch_log"),
+            ResourceLocation.parse("birch_log"),
+            r -> Ingredient.of(Items.BIRCH_SIGN),
+            r -> Ingredient.of(r.get().getOrThrow(ItemTags.BIRCH_LOGS)),
+            r -> Ingredient.of(Items.BIRCH_SIGN)
         );
         public static final ModelType Iron = new ModelType("iron",
-            new ResourceLocation("iron_block"),
-            new ResourceLocation(Signpost.MOD_ID, "iron"),
-            new ResourceLocation(Signpost.MOD_ID, "iron_dark"),
-            Lazy.of(() -> Ingredient.of(ItemTags.SIGNS)),
-            Lazy.of(() -> Ingredient.of(Items.IRON_INGOT)),
-            Lazy.of(() -> Ingredient.of(Items.IRON_INGOT))
+            ResourceLocation.parse("iron_block"),
+            ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "iron"),
+            ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "iron_dark"),
+            r -> Ingredient.of(r.get().getOrThrow(ItemTags.SIGNS)),
+            r -> Ingredient.of(Items.IRON_INGOT),
+            r -> Ingredient.of(Items.IRON_INGOT)
         );
         public static final ModelType Jungle = new ModelType("jungle",
-            new ResourceLocation("jungle_log"),
-            new ResourceLocation("stripped_jungle_log"),
-            new ResourceLocation("jungle_log"),
-            Lazy.of(() -> Ingredient.of(Items.JUNGLE_SIGN)),
-            Lazy.of(() -> Ingredient.of(ItemTags.JUNGLE_LOGS)),
-            Lazy.of(() -> Ingredient.of(Items.JUNGLE_SIGN))
+            ResourceLocation.parse("jungle_log"),
+            ResourceLocation.parse("stripped_jungle_log"),
+            ResourceLocation.parse("jungle_log"),
+            r -> Ingredient.of(Items.JUNGLE_SIGN),
+            r -> Ingredient.of(r.get().getOrThrow(ItemTags.JUNGLE_LOGS)),
+            r -> Ingredient.of(Items.JUNGLE_SIGN)
         );
         public static final ModelType Oak = new ModelType("oak",
-            new ResourceLocation("oak_log"),
-            new ResourceLocation("stripped_oak_log"),
-            new ResourceLocation("oak_log"),
-            Lazy.of(() -> Ingredient.of(Items.OAK_SIGN)),
-            Lazy.of(() -> Ingredient.of(ItemTags.OAK_LOGS)),
-            Lazy.of(() -> Ingredient.of(Items.OAK_SIGN))
+            ResourceLocation.parse("oak_log"),
+            ResourceLocation.parse("stripped_oak_log"),
+            ResourceLocation.parse("oak_log"),
+            r -> Ingredient.of(Items.OAK_SIGN),
+            r -> Ingredient.of(r.get().getOrThrow(ItemTags.OAK_LOGS)),
+            r -> Ingredient.of(Items.OAK_SIGN)
         );
         public static final ModelType DarkOak = new ModelType("darkoak",
-            new ResourceLocation("dark_oak_log"),
-            new ResourceLocation("stripped_dark_oak_log"),
-            new ResourceLocation("dark_oak_log"),
-            Lazy.of(() -> Ingredient.of(Items.DARK_OAK_SIGN)),
-            Lazy.of(() -> Ingredient.of(ItemTags.DARK_OAK_LOGS)),
-            Lazy.of(() -> Ingredient.of(Items.DARK_OAK_SIGN))
+            ResourceLocation.parse("dark_oak_log"),
+            ResourceLocation.parse("stripped_dark_oak_log"),
+            ResourceLocation.parse("dark_oak_log"),
+            r -> Ingredient.of(Items.DARK_OAK_SIGN),
+            r -> Ingredient.of(r.get().getOrThrow(ItemTags.DARK_OAK_LOGS)),
+            r -> Ingredient.of(Items.DARK_OAK_SIGN)
         );
         public static final ModelType Spruce = new ModelType("spruce",
-            new ResourceLocation("spruce_log"),
-            new ResourceLocation("stripped_spruce_log"),
-            new ResourceLocation("spruce_log"),
-            Lazy.of(() -> Ingredient.of(Items.SPRUCE_SIGN)),
-            Lazy.of(() -> Ingredient.of(ItemTags.SPRUCE_LOGS)),
-            Lazy.of(() -> Ingredient.of(Items.SPRUCE_SIGN))
+            ResourceLocation.parse("spruce_log"),
+            ResourceLocation.parse("stripped_spruce_log"),
+            ResourceLocation.parse("spruce_log"),
+            r -> Ingredient.of(Items.SPRUCE_SIGN),
+            r -> Ingredient.of(r.get().getOrThrow(ItemTags.SPRUCE_LOGS)),
+            r -> Ingredient.of(Items.SPRUCE_SIGN)
         );
         public static final ModelType Mangrove = new ModelType("mangrove",
-            new ResourceLocation("mangrove_log"),
-            new ResourceLocation("stripped_mangrove_log"),
-            new ResourceLocation("mangrove_log"),
-            Lazy.of(() -> Ingredient.of(Items.MANGROVE_SIGN)),
-            Lazy.of(() -> Ingredient.of(ItemTags.MANGROVE_LOGS)),
-            Lazy.of(() -> Ingredient.of(Items.MANGROVE_SIGN))
+            ResourceLocation.parse("mangrove_log"),
+            ResourceLocation.parse("stripped_mangrove_log"),
+            ResourceLocation.parse("mangrove_log"),
+            r -> Ingredient.of(Items.MANGROVE_SIGN),
+            r -> Ingredient.of(r.get().getOrThrow(ItemTags.MANGROVE_LOGS)),
+            r -> Ingredient.of(Items.MANGROVE_SIGN)
         );
         public static final ModelType Bamboo = new ModelType("bamboo",
-            new ResourceLocation("bamboo_block"),
-            new ResourceLocation("stripped_bamboo_block"),
-            new ResourceLocation("bamboo_block"),
-            Lazy.of(() -> Ingredient.of(Items.BAMBOO_SIGN)),
-            Lazy.of(() -> Ingredient.of(ItemTags.BAMBOO_BLOCKS)),
-            Lazy.of(() -> Ingredient.of(Items.BAMBOO_SIGN))
+            ResourceLocation.parse("bamboo_block"),
+            ResourceLocation.parse("stripped_bamboo_block"),
+            ResourceLocation.parse("bamboo_block"),
+            r -> Ingredient.of(Items.BAMBOO_SIGN),
+            r -> Ingredient.of(r.get().getOrThrow(ItemTags.BAMBOO_BLOCKS)),
+            r -> Ingredient.of(Items.BAMBOO_SIGN)
         );
         public static final ModelType Cherry = new ModelType("cherry",
-            new ResourceLocation("cherry_log"),
-            new ResourceLocation("stripped_cherry_log"),
-            new ResourceLocation("cherry_log"),
-            Lazy.of(() -> Ingredient.of(Items.CHERRY_SIGN)),
-            Lazy.of(() -> Ingredient.of(ItemTags.CHERRY_LOGS)),
-            Lazy.of(() -> Ingredient.of(Items.CHERRY_SIGN))
+            ResourceLocation.parse("cherry_log"),
+            ResourceLocation.parse("stripped_cherry_log"),
+            ResourceLocation.parse("cherry_log"),
+            r -> Ingredient.of(Items.CHERRY_SIGN),
+            r -> Ingredient.of(r.get().getOrThrow(ItemTags.CHERRY_LOGS)),
+            r -> Ingredient.of(Items.CHERRY_SIGN)
         );
         public static final ModelType Stone = new ModelType("stone",
-            new ResourceLocation("stone"),
-            new ResourceLocation("stone"),
-            new ResourceLocation(Signpost.MOD_ID, "stone_dark"),
-            Lazy.of(() -> Ingredient.of(ItemTags.SIGNS)),
-            Lazy.of(() -> Ingredient.of(Items.STONE)),
-            Lazy.of(() -> Ingredient.of(Items.STONE))
+            ResourceLocation.parse("stone"),
+            ResourceLocation.parse("stone"),
+            ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "stone_dark"),
+            r -> Ingredient.of(r.get().getOrThrow(ItemTags.SIGNS)),
+            r -> Ingredient.of(Items.STONE),
+            r -> Ingredient.of(Items.STONE)
         );
         public static final ModelType RedMushroom = new ModelType("red_mushroom",
-            new ResourceLocation("red_mushroom_block"),
-            new ResourceLocation("mushroom_stem"),
-            new ResourceLocation("red_mushroom_block"),
-            Lazy.of(() -> Ingredient.of(ItemTags.SIGNS)),
-            Lazy.of(() -> Ingredient.of(Items.RED_MUSHROOM_BLOCK)),
-            Lazy.of(() -> Ingredient.of(Items.RED_MUSHROOM))
+            ResourceLocation.parse("red_mushroom_block"),
+            ResourceLocation.parse("mushroom_stem"),
+            ResourceLocation.parse("red_mushroom_block"),
+            r -> Ingredient.of(r.get().getOrThrow(ItemTags.SIGNS)),
+            r -> Ingredient.of(Items.RED_MUSHROOM_BLOCK),
+            r -> Ingredient.of(Items.RED_MUSHROOM)
         );
         public static final ModelType BrownMushroom = new ModelType("brown_mushroom",
-            new ResourceLocation("brown_mushroom_block"),
-            new ResourceLocation("mushroom_stem"),
-            new ResourceLocation("brown_mushroom_block"),
-            Lazy.of(() -> Ingredient.of(ItemTags.SIGNS)),
-            Lazy.of(() -> Ingredient.of(Items.BROWN_MUSHROOM_BLOCK)),
-            Lazy.of(() -> Ingredient.of(Items.BROWN_MUSHROOM))
+            ResourceLocation.parse("brown_mushroom_block"),
+            ResourceLocation.parse("mushroom_stem"),
+            ResourceLocation.parse("brown_mushroom_block"),
+            r -> Ingredient.of(r.get().getOrThrow(ItemTags.SIGNS)),
+            r -> Ingredient.of(Items.BROWN_MUSHROOM_BLOCK),
+            r -> Ingredient.of(Items.BROWN_MUSHROOM)
         );
         public static final ModelType Warped = new ModelType("warped",
-            new ResourceLocation("warped_stem"),
-            new ResourceLocation("stripped_warped_stem"),
-            new ResourceLocation("warped_stem"),
-            Lazy.of(() -> Ingredient.of(Items.WARPED_SIGN)),
-            Lazy.of(() -> Ingredient.of(ItemTags.WARPED_STEMS)),
-            Lazy.of(() -> Ingredient.of(Items.WARPED_SIGN))
+            ResourceLocation.parse("warped_stem"),
+            ResourceLocation.parse("stripped_warped_stem"),
+            ResourceLocation.parse("warped_stem"),
+            r -> Ingredient.of(Items.WARPED_SIGN),
+            r -> Ingredient.of(r.get().getOrThrow(ItemTags.WARPED_STEMS)),
+            r -> Ingredient.of(Items.WARPED_SIGN)
         );
         public static final ModelType Crimson = new ModelType("crimson",
-            new ResourceLocation("crimson_stem"),
-            new ResourceLocation("stripped_crimson_stem"),
-            new ResourceLocation("crimson_stem"),
-            Lazy.of(() -> Ingredient.of(Items.CRIMSON_SIGN)),
-            Lazy.of(() -> Ingredient.of(ItemTags.CRIMSON_STEMS)),
-            Lazy.of(() -> Ingredient.of(Items.CRIMSON_SIGN))
+            ResourceLocation.parse("crimson_stem"),
+            ResourceLocation.parse("stripped_crimson_stem"),
+            ResourceLocation.parse("crimson_stem"),
+            r -> Ingredient.of(Items.CRIMSON_SIGN),
+            r -> Ingredient.of(r.get().getOrThrow(ItemTags.CRIMSON_STEMS)),
+            r -> Ingredient.of(Items.CRIMSON_SIGN)
         );
         private static final Lazy<Ingredient> sandstone = Lazy.of(() ->
             Ingredient.of(Blocks.SANDSTONE, Blocks.CUT_SANDSTONE, Blocks.CHISELED_SANDSTONE, Blocks.SMOOTH_SANDSTONE));
         public static final ModelType Sandstone = new ModelType("sandstone",
-            new ResourceLocation("sandstone"),
-            new ResourceLocation("stripped_jungle_log"),
-            new ResourceLocation("sandstone_bottom"),
-            Lazy.of(() -> Ingredient.of(ItemTags.SIGNS)),
-            sandstone,
-            sandstone
+            ResourceLocation.parse("sandstone"),
+            ResourceLocation.parse("stripped_jungle_log"),
+            ResourceLocation.parse("sandstone_bottom"),
+            r -> Ingredient.of(r.get().getOrThrow(ItemTags.SIGNS)),
+            r -> sandstone.get(),
+            r -> sandstone.get()
         );
 
         public static Optional<ModelType> from(Item signItem) {
@@ -244,19 +243,32 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
 
         ModelType(
             String name, ResourceLocation postTexture, ResourceLocation mainTexture, ResourceLocation secondaryTexture,
-            Lazy<Ingredient> signIngredient, Lazy<Ingredient> baseIngredient, Lazy<Ingredient> addSignIngredient) {
-            this.name = name;
-            this.postTexture = expand(postTexture);
-            this.mainTexture = expand(mainTexture);
-            this.secondaryTexture = expand(secondaryTexture);
-            this.signIngredient = signIngredient;
-            this.baseIngredient = baseIngredient;
-            this.addSignIngredient = addSignIngredient;
+            Function<Lazy<Registry<Item>>, Ingredient> signIngredient, Function<Lazy<Registry<Item>>, Ingredient> baseIngredient, Function<Lazy<Registry<Item>>, Ingredient> addSignIngredient) {
+            this(name, expand(postTexture), expand(mainTexture), expand(secondaryTexture), signIngredient, baseIngredient, addSignIngredient);
         }
 
         ModelType(
-            String name, Texture postTexture, Texture mainTexture, Texture secondaryTexture,
-            Lazy<Ingredient> signIngredient, Lazy<Ingredient> baseIngredient, Lazy<Ingredient> addSignIngredient) {
+            String name,
+            Texture postTexture,
+            Texture mainTexture,
+            Texture secondaryTexture,
+            Function<Lazy<Registry<Item>>, Ingredient> signIngredient,
+            Function<Lazy<Registry<Item>>, Ingredient> baseIngredient,
+            Function<Lazy<Registry<Item>>, Ingredient> addSignIngredient) {
+            var itemRegistry = Lazy.of(() -> {
+                var lookup = Signpost.getServerType().isServer ? Signpost.getServerInstance().registryAccess() : Minecraft.getInstance().getSingleplayerServer().registryAccess();
+                return lookup.lookupOrThrow(Registries.ITEM);
+            });
+            this.name = name;
+            this.postTexture = postTexture;
+            this.mainTexture = mainTexture;
+            this.secondaryTexture = secondaryTexture;
+            this.signIngredient = Lazy.of(() -> signIngredient.apply(itemRegistry));
+            this.baseIngredient = Lazy.of(() -> baseIngredient.apply(itemRegistry));
+            this.addSignIngredient = Lazy.of(() -> addSignIngredient.apply(itemRegistry));
+        }
+
+        public ModelType(String name, Texture postTexture, Texture mainTexture, Texture secondaryTexture, Lazy<Ingredient> signIngredient, Lazy<Ingredient> baseIngredient, Lazy<Ingredient> addSignIngredient) {
             this.name = name;
             this.postTexture = postTexture;
             this.mainTexture = mainTexture;
@@ -267,7 +279,7 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
         }
 
         private static Texture expand(ResourceLocation loc){
-            return new Texture(new ResourceLocation(
+            return new Texture(ResourceLocation.fromNamespaceAndPath(
                 loc.getNamespace(),
                 loc.getPath().startsWith("block/") ? loc.getPath() : "block/"+loc.getPath()
             ), Optional.empty());
@@ -281,27 +293,27 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
             }
 
             @Override
-            public void write(ModelType modelType, FriendlyByteBuf buffer) {
-                StringSerializer.instance.write(modelType.name, buffer);
-                Texture.Serializer.write(modelType.postTexture, buffer);
-                Texture.Serializer.write(modelType.mainTexture, buffer);
-                Texture.Serializer.write(modelType.secondaryTexture, buffer);
-                modelType.signIngredient.get().toNetwork(buffer);
-                modelType.baseIngredient.get().toNetwork(buffer);
-                modelType.addSignIngredient.get().toNetwork(buffer);
+            public void encode(RegistryFriendlyByteBuf buffer, ModelType modelType) {
+                StringSerializer.Buffer.encode(buffer, modelType.name);
+                Texture.BufferSerializer.encode(buffer, modelType.postTexture);
+                Texture.BufferSerializer.encode(buffer, modelType.mainTexture);
+                Texture.BufferSerializer.encode(buffer, modelType.secondaryTexture);
+                Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, modelType.signIngredient.get());
+                Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, modelType.baseIngredient.get());
+                Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, modelType.addSignIngredient.get());
             }
 
             private <T> Lazy<T> constLazy(T t) { return Lazy.of(() -> t); }
             @Override
-            public ModelType read(FriendlyByteBuf buffer) {
+            public ModelType decode(RegistryFriendlyByteBuf buffer) {
                 return new ModelType(
-                    StringSerializer.instance.read(buffer),
-                    Texture.Serializer.read(buffer),
-                    Texture.Serializer.read(buffer),
-                    Texture.Serializer.read(buffer),
-                    constLazy(Ingredient.fromNetwork(buffer)),
-                    constLazy(Ingredient.fromNetwork(buffer)),
-                    constLazy(Ingredient.fromNetwork(buffer))
+                    StringSerializer.Buffer.decode(buffer),
+                    Texture.BufferSerializer.decode(buffer),
+                    Texture.BufferSerializer.decode(buffer),
+                    Texture.BufferSerializer.decode(buffer),
+                    constLazy(Ingredient.CONTENTS_STREAM_CODEC.decode(buffer)),
+                    constLazy(Ingredient.CONTENTS_STREAM_CODEC.decode(buffer)),
+                    constLazy(Ingredient.CONTENTS_STREAM_CODEC.decode(buffer))
                 );
             }
         };
@@ -464,11 +476,20 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+        return use(level, pos, player, InteractionHand.MAIN_HAND);
+    }
+
+    @Override
+    protected InteractionResult useItemOn(ItemStack item, BlockState blockState, Level level, BlockPos blockPos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+        return use(level, blockPos, player, hand);
+    }
+
+    public InteractionResult use(Level world, BlockPos pos, Player player, InteractionHand hand) {
         BlockEntity tileEntity = world.getBlockEntity(pos);
-        if(!(tileEntity instanceof PostTile)) return InteractionResult.SUCCESS;
-        PostTile tile = (PostTile) tileEntity;
-        return onActivate(tile, world, player, hand);
+        return tileEntity instanceof PostTile tile
+            ? onActivate(tile, world, player, hand)
+            : InteractionResult.SUCCESS;
     }
 
     public static InteractionResult onActivate(PostTile tile, Level world, Player player, InteractionHand hand) {
@@ -497,7 +518,7 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
     }
 
     @Override
-    public boolean propagatesSkylightDown(BlockState state, BlockGetter reader, BlockPos pos) {
+    protected boolean propagatesSkylightDown(BlockState state) {
         return !state.getValue(WATERLOGGED);
     }
 

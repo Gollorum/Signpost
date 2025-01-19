@@ -34,16 +34,16 @@ public class ItemModels extends ItemModelProvider {
         }
 
         getBuilder(Wrench.registryName)
-            .parent(new ModelFile.ExistingModelFile(new ResourceLocation("item/handheld"), existingFileHelper))
-            .texture("layer0", new ResourceLocation(Signpost.MOD_ID, "item/tool"));
+            .parent(new ModelFile.ExistingModelFile(ResourceLocation.fromNamespaceAndPath("item/handheld"), existingFileHelper))
+            .texture("layer0", ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "item/tool"));
         getBuilder(Brush.registryName)
-            .parent(new ModelFile.ExistingModelFile(new ResourceLocation("item/handheld"), existingFileHelper))
-            .texture("layer0", new ResourceLocation(Signpost.MOD_ID, "item/brush"));
+            .parent(new ModelFile.ExistingModelFile(ResourceLocation.fromNamespaceAndPath("item/handheld"), existingFileHelper))
+            .texture("layer0", ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "item/brush"));
 
         getBuilder(WaystoneGeneratorBlock.REGISTRY_NAME).parent(blockModelProvider.generatorModelProvider.generatorModel);
         getBuilder(GenerationWand.registryName)
-            .parent(new ModelFile.ExistingModelFile(new ResourceLocation("item/handheld"), existingFileHelper))
-            .texture("layer0", new ResourceLocation(Signpost.MOD_ID, "item/generation_wand"));
+            .parent(new ModelFile.ExistingModelFile(ResourceLocation.fromNamespaceAndPath("item/handheld"), existingFileHelper))
+            .texture("layer0", ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "item/generation_wand"));
     }
 
 }

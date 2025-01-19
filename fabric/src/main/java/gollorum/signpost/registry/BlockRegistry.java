@@ -19,11 +19,11 @@ public class BlockRegistry {
     public static final WaystoneGeneratorBlock WaystoneGenerator = WaystoneGeneratorBlock.getInstance();
 
     public static void register(){
-        Registry.register(BuiltInRegistries.BLOCK, new ResourceLocation(MOD_ID, WaystoneBlock.REGISTRY_NAME), Waystone);
+        Registry.register(BuiltInRegistries.BLOCK, ResourceLocation.fromNamespaceAndPath(MOD_ID, WaystoneBlock.REGISTRY_NAME), Waystone);
         for(var variant : ModelWaystone.variants)
-            Registry.register(BuiltInRegistries.BLOCK, new ResourceLocation(MOD_ID, variant.registryName), variant.createBlock(ModelWaystoneImpl::new));
+            Registry.register(BuiltInRegistries.BLOCK, ResourceLocation.fromNamespaceAndPath(MOD_ID, variant.registryName), variant.createBlock(ModelWaystoneImpl::new));
         for(var variant : PostBlock.AllVariants)
-            Registry.register(BuiltInRegistries.BLOCK, new ResourceLocation(MOD_ID, variant.registryName), variant.createBlock(PostBlockImpl::new));
-        Registry.register(BuiltInRegistries.BLOCK, new ResourceLocation(MOD_ID, WaystoneGeneratorBlock.REGISTRY_NAME), WaystoneGenerator);
+            Registry.register(BuiltInRegistries.BLOCK, ResourceLocation.fromNamespaceAndPath(MOD_ID, variant.registryName), variant.createBlock(PostBlockImpl::new));
+        Registry.register(BuiltInRegistries.BLOCK, ResourceLocation.fromNamespaceAndPath(MOD_ID, WaystoneGeneratorBlock.REGISTRY_NAME), WaystoneGenerator);
     }
 }

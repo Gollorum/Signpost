@@ -19,8 +19,8 @@ public class TileEntityRegistry {
     private static final BlockEntityType<WaystoneGeneratorEntity> WaystoneGenerator = WaystoneGeneratorEntity.createType();
 
     public static void register(){
-        Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, new ResourceLocation(MOD_ID, PostTile.REGISTRY_NAME), POST);
-        Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, new ResourceLocation(MOD_ID, WaystoneTile.REGISTRY_NAME), WAYSTONE);
-        Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, new ResourceLocation(MOD_ID, WaystoneGeneratorEntity.REGISTRY_NAME), WaystoneGenerator);
+        Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath(MOD_ID, PostTile.REGISTRY_NAME), POST);
+        Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath(MOD_ID, WaystoneTile.REGISTRY_NAME), WAYSTONE);
+        Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath(MOD_ID, WaystoneGeneratorEntity.REGISTRY_NAME), WaystoneGenerator);
     }
 }

@@ -11,7 +11,7 @@ public class RecipeRegistry {
 	public static final CutWaystoneRecipe.Serializer CutWaystoneSerializer = new CutWaystoneRecipe.Serializer();
 
 	public static void register(){
-        Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, new ResourceLocation(Signpost.MOD_ID, CutWaystoneRecipe.RegistryName), CutWaystoneSerializer);
+        Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, CutWaystoneRecipe.RegistryName), CutWaystoneSerializer);
 	}
 
 }

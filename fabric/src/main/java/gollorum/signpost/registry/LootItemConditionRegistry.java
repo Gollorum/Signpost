@@ -18,7 +18,7 @@ public class LootItemConditionRegistry implements ILootItemConditionRegistry {
     }
 
     public static void register(){
-        Registry.register(BuiltInRegistries.LOOT_CONDITION_TYPE, new ResourceLocation(Signpost.MOD_ID, "permission_check"), permissionCheck);
+        Registry.register(BuiltInRegistries.LOOT_CONDITION_TYPE, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "permission_check"), permissionCheck);
     }
 
 }

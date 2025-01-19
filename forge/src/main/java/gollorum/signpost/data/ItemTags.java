@@ -16,8 +16,8 @@ import java.util.concurrent.CompletableFuture;
 
 public class ItemTags extends ItemTagsProvider {
 
-    public static final TagKey<Item> WaystoneTag = net.minecraft.tags.ItemTags.create(new ResourceLocation(Signpost.MOD_ID, "waystone"));
-    public static final TagKey<Item> SignpostTag = net.minecraft.tags.ItemTags.create(new ResourceLocation(Signpost.MOD_ID, "signpost"));
+    public static final TagKey<Item> WaystoneTag = net.minecraft.tags.ItemTags.create(ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "waystone"));
+    public static final TagKey<Item> SignpostTag = net.minecraft.tags.ItemTags.create(ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "signpost"));
 
     public ItemTags(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, BlockTags blockTagProvider, ExistingFileHelper fileHelper) {
         super(output, lookupProvider, blockTagProvider.contentsGetter(), Signpost.MOD_ID, fileHelper);

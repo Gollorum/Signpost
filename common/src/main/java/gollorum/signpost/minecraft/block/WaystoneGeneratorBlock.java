@@ -24,7 +24,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 
 public class WaystoneGeneratorBlock extends BaseEntityBlock {
 
-    public static final DirectionProperty Facing = BlockStateProperties.HORIZONTAL_FACING;
+    public static final EnumProperty<Direction> Facing = BlockStateProperties.HORIZONTAL_FACING;
     public static final String REGISTRY_NAME = "waystone_generator";
 
     private static WaystoneGeneratorBlock instance = null;

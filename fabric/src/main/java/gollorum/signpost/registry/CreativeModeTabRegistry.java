@@ -32,7 +32,7 @@ public class CreativeModeTabRegistry {
         .build();
 
     public static void register() {
-        Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, new ResourceLocation(MOD_ID, "signpost"), _signpostTab);
+        Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath(MOD_ID, "signpost"), _signpostTab);
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.OP_BLOCKS).register(CreativeModeTabRegistry::onBuildCreativeModeContents);
     }
 

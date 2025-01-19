@@ -1,22 +1,26 @@
 package gollorum.signpost.utils;
 
 import gollorum.signpost.utils.serialization.CompoundSerializable;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 
-import java.util.function.BiConsumer;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 public final class BlockPartMetadata<T extends BlockPart> implements CompoundSerializable<T> {
 
+    public interface Serializer<T> {
+        void accept(T t, CompoundTag compound, HolderLookup.Provider provider);
+    }
+
     public final String identifier;
-    public final BiConsumer<T,CompoundTag> writeTo;
-    public final Function<CompoundTag, T> read;
+    public final Serializer<T> writeTo;
+    public final BiFunction<CompoundTag, HolderLookup.Provider, T> read;
     private final Class<T> targetClass;
 
     public BlockPartMetadata(
         String identifier,
-        BiConsumer<T, CompoundTag> writeTo,
-        Function<CompoundTag, T> read,
+        Serializer<T> writeTo,
+        BiFunction<CompoundTag, HolderLookup.Provider, T> read,
         Class<T> targetClass) {
         this.identifier = identifier;
         this.writeTo = writeTo;
@@ -25,9 +29,8 @@ public final class BlockPartMetadata<T extends BlockPart> implements CompoundSer
     }
 
     @Override
-    public CompoundTag write(T t, CompoundTag compound) {
-        writeTo.accept(t, compound);
-        return compound;
+    public void encode(CompoundTag compound, T t, HolderLookup.Provider provider) {
+        writeTo.accept(t, compound, provider);
     }
 
     @Override
@@ -36,12 +39,7 @@ public final class BlockPartMetadata<T extends BlockPart> implements CompoundSer
     }
 
     @Override
-    public T read(CompoundTag compound) {
-        return read.apply(compound);
-    }
-
-    @Override
-    public Class<T> getTargetClass() {
-        return targetClass;
+    public T decode(CompoundTag compound, HolderLookup.Provider provider) {
+        return read.apply(compound, provider);
     }
 }

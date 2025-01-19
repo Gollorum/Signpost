@@ -1,6 +1,7 @@
 package gollorum.signpost.utils.math.geometry;
 
 import gollorum.signpost.utils.serialization.CompoundSerializable;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 
@@ -101,7 +102,7 @@ public final class Vector4 {
         private Serializer(){}
 
         @Override
-        public CompoundTag write(Vector4 Vector4, CompoundTag compound) {
+        public void encode(CompoundTag compound, Vector4 Vector4, HolderLookup.Provider provider) {
             compound.putFloat("X", Vector4.x);
             compound.putFloat("Y", Vector4.y);
             compound.putFloat("Z", Vector4.z);
@@ -118,7 +119,7 @@ public final class Vector4 {
         }
 
         @Override
-        public Vector4 read(CompoundTag compound) {
+        public Vector4 decode(CompoundTag compound, HolderLookup.Provider provider) {
             return new Vector4(
                 compound.getFloat("X"),
                 compound.getFloat("Y"),
@@ -133,7 +134,7 @@ public final class Vector4 {
         }
 
         @Override
-        public void write(Vector4 vec, FriendlyByteBuf buffer) {
+        public void encode(FriendlyByteBuf buffer, Vector4 vec) {
             buffer.writeFloat(vec.x);
             buffer.writeFloat(vec.y);
             buffer.writeFloat(vec.z);
@@ -141,7 +142,7 @@ public final class Vector4 {
         }
 
         @Override
-        public Vector4 read(FriendlyByteBuf buffer) {
+        public Vector4 decode(FriendlyByteBuf buffer) {
             return new Vector4(
                 buffer.readFloat(),
                 buffer.readFloat(),

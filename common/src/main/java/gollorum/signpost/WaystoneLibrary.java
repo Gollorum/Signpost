@@ -20,7 +20,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -63,17 +63,17 @@ public class WaystoneLibrary {
 
     public static void registerNetworkPackets() {
         PacketHandler.onInitializeDo(packetHandler -> {
-            packetHandler.register(new RequestAllWaystoneNamesEvent(), new ResourceLocation(Signpost.MOD_ID, "request_all_waystone_names"));
-            packetHandler.register(new DeliverAllWaystoneNamesEvent(), new ResourceLocation(Signpost.MOD_ID, "deliver_all_waystone_names"));
-            packetHandler.register(new RequestAllWaystonesEvent(), new ResourceLocation(Signpost.MOD_ID, "request_all_waystones"));
-            packetHandler.register(new DeliverAllWaystonesEvent(), new ResourceLocation(Signpost.MOD_ID, "deliver_all_waystones"));
-            packetHandler.register(new WaystoneUpdatedEventEvent(), new ResourceLocation(Signpost.MOD_ID, "waystone_updated_event"));
-            packetHandler.register(new RequestWaystoneLocationEvent(), new ResourceLocation(Signpost.MOD_ID, "request_waystone_location"));
-            packetHandler.register(new DeliverWaystoneLocationEvent(), new ResourceLocation(Signpost.MOD_ID, "deliver_waystone_location"));
-            packetHandler.register(new RequestWaystoneAtLocationEvent(), new ResourceLocation(Signpost.MOD_ID, "request_waystone_at_location"));
-            packetHandler.register(new DeliverWaystoneAtLocationEvent(), new ResourceLocation(Signpost.MOD_ID, "deliver_waystone_at_location"));
-            packetHandler.register(new DeliverIdEvent(), new ResourceLocation(Signpost.MOD_ID, "deliver_id"));
-            packetHandler.register(new RequestIdEvent(), new ResourceLocation(Signpost.MOD_ID, "request_id"));
+            packetHandler.register(new RequestAllWaystoneNamesEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "request_all_waystone_names"));
+            packetHandler.register(new DeliverAllWaystoneNamesEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "deliver_all_waystone_names"));
+            packetHandler.register(new RequestAllWaystonesEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "request_all_waystones"));
+            packetHandler.register(new DeliverAllWaystonesEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "deliver_all_waystones"));
+            packetHandler.register(new WaystoneUpdatedEventEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "waystone_updated_event"));
+            packetHandler.register(new RequestWaystoneLocationEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "request_waystone_location"));
+            packetHandler.register(new DeliverWaystoneLocationEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "deliver_waystone_location"));
+            packetHandler.register(new RequestWaystoneAtLocationEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "request_waystone_at_location"));
+            packetHandler.register(new DeliverWaystoneAtLocationEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "deliver_waystone_at_location"));
+            packetHandler.register(new DeliverIdEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "deliver_id"));
+            packetHandler.register(new RequestIdEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "request_id"));
             return true;
         });
     }
@@ -83,7 +83,7 @@ public class WaystoneLibrary {
         savedData = storage.computeIfAbsent(
             new SavedData.Factory<>(
                 WaystoneLibraryStorage::new,
-                tag -> new WaystoneLibraryStorage().load(tag),
+                (tag, provider) -> new WaystoneLibraryStorage().load(tag),
                 DataFixTypes.SAVED_DATA_MAP_DATA),
             WaystoneLibraryStorage.NAME);
     }
@@ -517,13 +517,13 @@ public class WaystoneLibrary {
         public Class<Packet> getMessageClass() { return Packet.class; }
 
         @Override
-        public void encode(Packet message, FriendlyByteBuf buffer) {
-            PlayerHandle.Serializer.optional().write(message.onlyKnownBy, buffer);
+        public void encode(RegistryFriendlyByteBuf buffer, Packet message) {
+            PlayerHandle.CompoundSerializer.optional().encode(buffer, message.onlyKnownBy, );
         }
 
         @Override
-        public Packet decode(FriendlyByteBuf buffer) {
-            return new Packet(PlayerHandle.Serializer.optional().read(buffer));
+        public Packet decode(RegistryFriendlyByteBuf buffer) {
+            return new Packet(PlayerHandle.CompoundSerializer.optional().decode(buffer, ));
         }
 
         @Override
@@ -550,20 +550,20 @@ public class WaystoneLibrary {
         public Class<Packet> getMessageClass() { return Packet.class; }
 
         @Override
-        public void encode(Packet message, FriendlyByteBuf buffer) {
+        public void encode(RegistryFriendlyByteBuf buffer, Packet message) {
             buffer.writeInt(message.names.size());
             for (Map.Entry<WaystoneHandle.Vanilla, String> name: message.names.entrySet()) {
                 buffer.writeUUID(name.getKey().id);
-                StringSerializer.instance.write(name.getValue(), buffer);
+                StringSerializer.instance.encode(buffer, name.getValue());
             }
         }
 
         @Override
-        public Packet decode(FriendlyByteBuf buffer) {
+        public Packet decode(RegistryFriendlyByteBuf buffer) {
             Map<WaystoneHandle.Vanilla, String> names = new HashMap<>();
             int count = buffer.readInt();
             for(int i = 0; i < count; i++)
-                names.put(new WaystoneHandle.Vanilla(buffer.readUUID()), StringSerializer.instance.read(buffer));
+                names.put(new WaystoneHandle.Vanilla(buffer.readUUID()), StringSerializer.instance.decode(buffer));
             return new Packet(names);
         }
 
@@ -578,7 +578,7 @@ public class WaystoneLibrary {
 
     private static final class RequestAllWaystonesEvent implements PacketHandler.Event.ForServer<RequestAllWaystonesEvent.Packet> {
 
-        private static final CompoundSerializable<Optional<PlayerHandle>> serializer = PlayerHandle.Serializer.optional();
+        private static final CompoundSerializable<Optional<PlayerHandle>> serializer = PlayerHandle.CompoundSerializer.optional();
 
         public static final class Packet {
             public final Optional<PlayerHandle> onlyKnownBy;
@@ -592,13 +592,13 @@ public class WaystoneLibrary {
         public Class<Packet> getMessageClass() { return Packet.class; }
 
         @Override
-        public void encode(Packet message, FriendlyByteBuf buffer) {
-            serializer.write(message.onlyKnownBy, buffer);
+        public void encode(RegistryFriendlyByteBuf buffer, Packet message) {
+            serializer.encode(buffer, message.onlyKnownBy, );
         }
 
         @Override
-        public Packet decode(FriendlyByteBuf buffer) {
-            return new Packet(serializer.read(buffer));
+        public Packet decode(RegistryFriendlyByteBuf buffer) {
+            return new Packet(serializer.decode(buffer, ));
         }
 
         @Override
@@ -625,25 +625,25 @@ public class WaystoneLibrary {
         public Class<Packet> getMessageClass() { return Packet.class; }
 
         @Override
-        public void encode(Packet message, FriendlyByteBuf buffer) {
+        public void encode(RegistryFriendlyByteBuf buffer, Packet message) {
             buffer.writeInt(message.data.size());
             for (Map.Entry<WaystoneHandle.Vanilla, Tuple<String, WaystoneLocationData>> name: message.data.entrySet()) {
                 buffer.writeUUID(name.getKey().id);
                 buffer.writeUtf(name.getValue()._1);
-                WaystoneLocationData.SERIALIZER.write(name.getValue()._2, buffer);
+                WaystoneLocationData.COMPOUND_SERIALIZER.encode(buffer, name.getValue()._2, );
             }
         }
 
         @Override
-        public Packet decode(FriendlyByteBuf buffer) {
+        public Packet decode(RegistryFriendlyByteBuf buffer) {
             Map<WaystoneHandle.Vanilla, Tuple<String, WaystoneLocationData>> names = new HashMap<>();
             int count = buffer.readInt();
             for(int i = 0; i < count; i++)
                 names.put(
                     new WaystoneHandle.Vanilla(buffer.readUUID()),
                     Tuple.of(
-                        StringSerializer.instance.read(buffer),
-                        WaystoneLocationData.SERIALIZER.read(buffer)
+                        StringSerializer.instance.decode(buffer),
+                        WaystoneLocationData.COMPOUND_SERIALIZER.decode(buffer, )
                     )
                 );
             return new Packet(names);
@@ -666,13 +666,13 @@ public class WaystoneLibrary {
         public Class<Packet> getMessageClass() { return Packet.class; }
 
         @Override
-        public void encode(Packet message, FriendlyByteBuf buffer) {
-            WaystoneUpdatedEvent.Serializer.INSTANCE.write(message.event, buffer);
+        public void encode(RegistryFriendlyByteBuf buffer, Packet message) {
+            WaystoneUpdatedEvent.Serializer.INSTANCE.encode(buffer, message.event, );
         }
 
         @Override
-        public Packet decode(FriendlyByteBuf buffer) {
-            return new Packet(WaystoneUpdatedEvent.Serializer.INSTANCE.read(buffer));
+        public Packet decode(RegistryFriendlyByteBuf buffer) {
+            return new Packet(WaystoneUpdatedEvent.Serializer.INSTANCE.decode(buffer, ));
         }
 
         @Override
@@ -717,13 +717,13 @@ public class WaystoneLibrary {
         }
 
         @Override
-        public void encode(Packet message, FriendlyByteBuf buffer) {
-            WorldLocation.SERIALIZER.write(message.waystoneLocation, buffer);
+        public void encode(RegistryFriendlyByteBuf buffer, Packet message) {
+            WorldLocation.SERIALIZER.encode(buffer, message.waystoneLocation);
         }
 
         @Override
-        public Packet decode(FriendlyByteBuf buffer) {
-            return new Packet(WorldLocation.SERIALIZER.read(buffer));
+        public Packet decode(RegistryFriendlyByteBuf buffer) {
+            return new Packet(WorldLocation.SERIALIZER.decode(buffer));
         }
 
         @Override
@@ -755,16 +755,16 @@ public class WaystoneLibrary {
         public Class<Packet> getMessageClass() { return Packet.class; }
 
         @Override
-        public void encode(Packet message, FriendlyByteBuf buffer) {
-            WorldLocation.SERIALIZER.write(message.waystoneLocation, buffer);
-            WaystoneData.SERIALIZER.optional().write(message.data, buffer);
+        public void encode(RegistryFriendlyByteBuf buffer, Packet message) {
+            WorldLocation.SERIALIZER.encode(buffer, message.waystoneLocation);
+            WaystoneData.COMPOUND_SERIALIZER.optional().encode(buffer, message.data, );
         }
 
         @Override
-        public Packet decode(FriendlyByteBuf buffer) {
+        public Packet decode(RegistryFriendlyByteBuf buffer) {
             return new Packet(
-                WorldLocation.SERIALIZER.read(buffer),
-                WaystoneData.SERIALIZER.optional().read(buffer)
+                WorldLocation.SERIALIZER.decode(buffer),
+                WaystoneData.COMPOUND_SERIALIZER.optional().decode(buffer, )
             );
         }
 
@@ -789,13 +789,13 @@ public class WaystoneLibrary {
         }
 
         @Override
-        public void encode(Packet message, FriendlyByteBuf buffer) {
-            StringSerializer.instance.write(message.name, buffer);
+        public void encode(RegistryFriendlyByteBuf buffer, Packet message) {
+            StringSerializer.instance.encode(buffer, message.name);
         }
 
         @Override
-        public Packet decode(FriendlyByteBuf buffer) {
-            return new Packet(StringSerializer.instance.read(buffer));
+        public Packet decode(RegistryFriendlyByteBuf buffer) {
+            return new Packet(StringSerializer.instance.decode(buffer));
         }
 
         @Override
@@ -827,16 +827,16 @@ public class WaystoneLibrary {
         public Class<Packet> getMessageClass() { return Packet.class; }
 
         @Override
-        public void encode(Packet message, FriendlyByteBuf buffer) {
-            StringSerializer.instance.write(message.name, buffer);
-            WaystoneLocationData.SERIALIZER.optional().write(message.data, buffer);
+        public void encode(RegistryFriendlyByteBuf buffer, Packet message) {
+            StringSerializer.instance.encode(buffer, message.name);
+            WaystoneLocationData.COMPOUND_SERIALIZER.optional().encode(buffer, message.data, );
         }
 
         @Override
-        public Packet decode(FriendlyByteBuf buffer) {
+        public Packet decode(RegistryFriendlyByteBuf buffer) {
             return new Packet(
-                StringSerializer.instance.read(buffer),
-                WaystoneLocationData.SERIALIZER.optional().read(buffer)
+                StringSerializer.instance.decode(buffer),
+                WaystoneLocationData.COMPOUND_SERIALIZER.optional().decode(buffer, )
             );
         }
 
@@ -862,13 +862,13 @@ public class WaystoneLibrary {
         }
 
         @Override
-        public void encode(Packet message, FriendlyByteBuf buffer) {
-            StringSerializer.instance.write(message.name, buffer);
+        public void encode(RegistryFriendlyByteBuf buffer, Packet message) {
+            StringSerializer.instance.encode(buffer, message.name);
         }
 
         @Override
-        public Packet decode(FriendlyByteBuf buffer) {
-            return new Packet(StringSerializer.instance.read(buffer));
+        public Packet decode(RegistryFriendlyByteBuf buffer) {
+            return new Packet(StringSerializer.instance.decode(buffer));
         }
 
         @Override
@@ -893,13 +893,13 @@ public class WaystoneLibrary {
         public Class<Packet> getMessageClass() { return Packet.class; }
 
         @Override
-        public void encode(Packet message, FriendlyByteBuf buffer) {
-           WaystoneHandle.Vanilla.Serializer.optional().write(message.waystone, buffer);
+        public void encode(RegistryFriendlyByteBuf buffer, Packet message) {
+           WaystoneHandle.Vanilla.Serializer.optional().encode(buffer, message.waystone, );
         }
 
         @Override
-        public Packet decode(FriendlyByteBuf buffer) {
-            return new Packet(WaystoneHandle.Vanilla.Serializer.optional().read(buffer));
+        public Packet decode(RegistryFriendlyByteBuf buffer) {
+            return new Packet(WaystoneHandle.Vanilla.Serializer.optional().decode(buffer, ));
         }
 
         @Override
@@ -914,9 +914,9 @@ public class WaystoneLibrary {
         waystones.addAll(
             allWaystones.entrySet().stream().map(entry -> {
                 CompoundTag entryCompound = new CompoundTag();
-                entryCompound.put("Waystone", WaystoneHandle.Vanilla.Serializer.write(entry.getKey()));
+                entryCompound.put("Waystone", WaystoneHandle.Vanilla.Serializer.encode(entry.getKey()));
                 entryCompound.putString("Name", entry.getValue().name);
-                entryCompound.put("Location", WaystoneLocationData.SERIALIZER.write(entry.getValue().locationData));
+                entryCompound.put("Location", WaystoneLocationData.COMPOUND_SERIALIZER.encode(entry.getValue().locationData));
                 entryCompound.putBoolean("IsLocked", entry.getValue().isLocked);
                 return entryCompound;
             }).collect(Collectors.toSet()));
@@ -928,7 +928,7 @@ public class WaystoneLibrary {
                 CompoundTag entryCompound = new CompoundTag();
                 entryCompound.putUUID("Player", entry.getKey().id);
                 ListTag known = new ListTag();
-                known.addAll(entry.getValue().stream().map(WaystoneHandle.Vanilla.Serializer::write).collect(Collectors.toSet()));
+                known.addAll(entry.getValue().stream().map(t -> WaystoneHandle.Vanilla.Serializer.encode(t)).collect(Collectors.toSet()));
                 entryCompound.put("DiscoveredWaystones", known);
                 return entryCompound;
             }).collect(Collectors.toSet())
@@ -944,9 +944,9 @@ public class WaystoneLibrary {
             for(Tag dynamicEntry : ((ListTag) dynamicWaystones)) {
                 if(dynamicEntry instanceof CompoundTag) {
                     CompoundTag entry = (CompoundTag) dynamicEntry;
-                    WaystoneHandle.Vanilla waystone = WaystoneHandle.Vanilla.Serializer.read(entry.getCompound("Waystone"));
+                    WaystoneHandle.Vanilla waystone = WaystoneHandle.Vanilla.Serializer.decode(entry.getCompound("Waystone"), );
                     String name = entry.getString("Name");
-                    WaystoneLocationData location = WaystoneLocationData.SERIALIZER.read(entry.getCompound("Location"));
+                    WaystoneLocationData location = WaystoneLocationData.COMPOUND_SERIALIZER.decode(entry.getCompound("Location"), );
                     boolean isLocked = entry.getBoolean("IsLocked");
                     allWaystones.put(waystone, new WaystoneEntry(name, location, isLocked));
                 }
@@ -964,7 +964,7 @@ public class WaystoneLibrary {
                     Set<WaystoneHandle.Vanilla> known = dynamicKnown instanceof ListTag
                         ?  ((ListTag) dynamicKnown).stream()
                             .filter(e -> e instanceof CompoundTag)
-                            .map(e -> WaystoneHandle.Vanilla.Serializer.read((CompoundTag) e))
+                            .map(e -> WaystoneHandle.Vanilla.Serializer.decode((CompoundTag) e, ))
                             .collect(Collectors.toSet())
                         : new HashSet<>();
                     playerMemory.put(new PlayerHandle(player), known);

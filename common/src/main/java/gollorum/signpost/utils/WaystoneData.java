@@ -4,10 +4,13 @@ import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.minecraft.config.IConfig;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.security.WithOwner;
+import gollorum.signpost.utils.serialization.BufferSerializable;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.StringSerializer;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
@@ -54,7 +57,8 @@ public class WaystoneData implements gollorum.signpost.WaystoneDataBase {
                 .orElse(true);
     }
 
-    public static final Serializer SERIALIZER = new Serializer();
+    public static final CompoundSerializer COMPOUND_SERIALIZER = new CompoundSerializer();
+    public static final BufferSerializer BUFFER_SERIALIZER = new BufferSerializer();
 
     @Override
     public String name() {
@@ -71,23 +75,22 @@ public class WaystoneData implements gollorum.signpost.WaystoneDataBase {
         return handle;
     }
 
-    public static final class Serializer implements CompoundSerializable<WaystoneData> {
+    public static final class CompoundSerializer implements CompoundSerializable<WaystoneData> {
 
         @Override
-        public CompoundTag write(WaystoneData data, CompoundTag compound) {
-            compound.put("Handle" , WaystoneHandle.Vanilla.Serializer.write(data.handle));
+        public void encode(CompoundTag compound, WaystoneData data, HolderLookup.Provider provider) {
+            compound.put("Handle" , WaystoneHandle.Vanilla.CompoundSerializer.encode(data.handle, provider));
             compound.putString("Name", data.name);
-            compound.put("Location", WaystoneLocationData.SERIALIZER.write(data.location));
+            compound.put("Location", WaystoneLocationData.COMPOUND_SERIALIZER.encode(data.location, provider));
             compound.putBoolean("IsLocked", data.isLocked);
-            return compound;
         }
 
         @Override
-        public WaystoneData read(CompoundTag compound) {
+        public WaystoneData decode(CompoundTag compound, HolderLookup.Provider provider) {
             return new WaystoneData(
-                WaystoneHandle.Vanilla.Serializer.read(compound.getCompound("Handle")),
+                WaystoneHandle.Vanilla.CompoundSerializer.decode(compound.getCompound("Handle"), provider),
                 compound.getString("Name"),
-                WaystoneLocationData.SERIALIZER.read(compound.getCompound("Location")),
+                WaystoneLocationData.COMPOUND_SERIALIZER.decode(compound.getCompound("Location"), provider),
                 compound.getBoolean("IsLocked")
             );
         }
@@ -95,11 +98,14 @@ public class WaystoneData implements gollorum.signpost.WaystoneDataBase {
         @Override
         public boolean isContainedIn(CompoundTag compound) {
             return
-                compound.contains("Handle") && WaystoneHandle.Vanilla.Serializer.isContainedIn(compound.getCompound("Handle")) &&
+                compound.contains("Handle") && WaystoneHandle.Vanilla.CompoundSerializer.isContainedIn(compound.getCompound("Handle")) &&
                 compound.contains("Name") &&
-                compound.contains("Location") && WaystoneLocationData.SERIALIZER.isContainedIn(compound.getCompound("Location")) &&
+                compound.contains("Location") && WaystoneLocationData.COMPOUND_SERIALIZER.isContainedIn(compound.getCompound("Location")) &&
                 compound.contains("IsLocked");
         }
+    }
+
+    public static final class BufferSerializer implements BufferSerializable<WaystoneData> {
 
         @Override
         public Class<WaystoneData> getTargetClass() {
@@ -107,19 +113,19 @@ public class WaystoneData implements gollorum.signpost.WaystoneDataBase {
         }
 
         @Override
-        public void write(WaystoneData data, FriendlyByteBuf buffer) {
-            WaystoneHandle.Vanilla.Serializer.write(data.handle, buffer);
-            StringSerializer.instance.write(data.name, buffer);
-            WaystoneLocationData.SERIALIZER.write(data.location, buffer);
+        public void encode(RegistryFriendlyByteBuf buffer, WaystoneData data) {
+            WaystoneHandle.Vanilla.BufferSerializer.encode(buffer, data.handle);
+            StringSerializer.Buffer.encode(buffer, data.name);
+            WaystoneLocationData.BUFFER_SERIALIZER.encode(buffer, data.location);
             buffer.writeBoolean(data.isLocked);
         }
 
         @Override
-        public WaystoneData read(FriendlyByteBuf buffer) {
+        public WaystoneData decode(RegistryFriendlyByteBuf buffer) {
             return new WaystoneData(
-                WaystoneHandle.Vanilla.Serializer.read(buffer),
-                StringSerializer.instance.read(buffer),
-                WaystoneLocationData.SERIALIZER.read(buffer),
+                WaystoneHandle.Vanilla.BufferSerializer.decode(buffer),
+                StringSerializer.Buffer.decode(buffer),
+                WaystoneLocationData.BUFFER_SERIALIZER.decode(buffer),
                 buffer.readBoolean()
             );
         }

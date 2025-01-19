@@ -9,6 +9,7 @@ import gollorum.signpost.minecraft.utils.tints.FoliageTint;
 import gollorum.signpost.minecraft.utils.tints.GrassTint;
 import gollorum.signpost.utils.Tint;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
@@ -43,11 +44,11 @@ public abstract class Overlay {
         @Override
         public ResourceLocation textureFor(Class<? extends SignBlockPart> signClass) {
             return signClass.equals(SmallWideSignBlockPart.class)
-                ? new ResourceLocation(Signpost.MOD_ID, "block/sign_overlay_grass")
+                ? ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/sign_overlay_grass")
                 : signClass.equals(SmallShortSignBlockPart.class)
-                ? new ResourceLocation(Signpost.MOD_ID, "block/sign_overlay_grass_short")
+                ? ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/sign_overlay_grass_short")
                 : signClass.equals(LargeSignBlockPart.class)
-                ? new ResourceLocation(Signpost.MOD_ID, "block/sign_overlay_grass_large")
+                ? ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/sign_overlay_grass_large")
                 : logErrorAndReturn("Sign class " + signClass + " is not supported by " + this, textureFor(SmallWideSignBlockPart.class));
         }
     };
@@ -56,11 +57,11 @@ public abstract class Overlay {
         @Override
         public ResourceLocation textureFor(Class<? extends SignBlockPart> signClass) {
             return signClass.equals(SmallWideSignBlockPart.class)
-                ? new ResourceLocation(Signpost.MOD_ID, "block/sign_overlay_vine")
+                ? ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/sign_overlay_vine")
                 : signClass.equals(SmallShortSignBlockPart.class)
-                ? new ResourceLocation(Signpost.MOD_ID, "block/sign_overlay_vine_short")
+                ? ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/sign_overlay_vine_short")
                 : signClass.equals(LargeSignBlockPart.class)
-                ? new ResourceLocation(Signpost.MOD_ID, "block/sign_overlay_vine_large")
+                ? ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/sign_overlay_vine_large")
                 : logErrorAndReturn("Sign class " + signClass + " is not supported by " + this, textureFor(SmallWideSignBlockPart.class));
         }
     };
@@ -69,11 +70,11 @@ public abstract class Overlay {
         @Override
         public ResourceLocation textureFor(Class<? extends SignBlockPart> signClass) {
             return signClass.equals(SmallWideSignBlockPart.class)
-                ? new ResourceLocation(Signpost.MOD_ID, "block/sign_overlay_snow")
+                ? ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/sign_overlay_snow")
                 : signClass.equals(SmallShortSignBlockPart.class)
-                ? new ResourceLocation(Signpost.MOD_ID, "block/sign_overlay_snow_short")
+                ? ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/sign_overlay_snow_short")
                 : signClass.equals(LargeSignBlockPart.class)
-                ? new ResourceLocation(Signpost.MOD_ID, "block/sign_overlay_snow_large")
+                ? ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/sign_overlay_snow_large")
                 : logErrorAndReturn("Sign class " + signClass + " is not supported by " + this, textureFor(SmallWideSignBlockPart.class));
         }
     };
@@ -84,17 +85,12 @@ public abstract class Overlay {
         register(Snow);
     }
 
-    public static final CompoundSerializable<Overlay> Serializer = new SerializerImpl();
+    public static final CompoundSerializable<Overlay> CompoundSerializer = new SerializerImpl();
     public static final class SerializerImpl implements CompoundSerializable<Overlay> {
-        @Override
-        public Class<Overlay> getTargetClass() {
-            return Overlay.class;
-        }
 
         @Override
-        public CompoundTag write(Overlay overlay, CompoundTag compound) {
+        public void encode(CompoundTag compound, Overlay overlay, HolderLookup.Provider provider) {
             compound.putString("Id", overlay.id);
-            return compound;
         }
 
         @Override
@@ -103,7 +99,7 @@ public abstract class Overlay {
         }
 
         @Override
-        public Overlay read(CompoundTag compound) {
+        public Overlay decode(CompoundTag compound, HolderLookup.Provider provider) {
             String id = compound.getString("Id");
             if(!overlayRegistry.containsKey(id)) {
                 Signpost.LOGGER.error("Tried to read overlay with id " + id + ", but it was not registered.");

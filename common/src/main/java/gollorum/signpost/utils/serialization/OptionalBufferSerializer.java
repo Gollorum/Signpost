@@ -1,6 +1,6 @@
 package gollorum.signpost.utils.serialization;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 
 import java.util.Optional;
 
@@ -22,17 +22,17 @@ public class OptionalBufferSerializer<T> implements BufferSerializable<Optional<
     }
 
     @Override
-    public void write(Optional<T> t, FriendlyByteBuf buffer) {
+    public void encode(RegistryFriendlyByteBuf buffer, Optional<T> t) {
         if(t.isPresent()) {
             buffer.writeBoolean(true);
-            valueSerializer.write(t.get(), buffer);
+            valueSerializer.encode(buffer, t.get());
         } else buffer.writeBoolean(false);
     }
 
     @Override
-    public Optional<T> read(FriendlyByteBuf buffer) {
+    public Optional<T> decode(RegistryFriendlyByteBuf buffer) {
         if(buffer.readBoolean())
-            return Optional.ofNullable(valueSerializer.read(buffer));
+            return Optional.ofNullable(valueSerializer.decode(buffer));
         else return Optional.empty();
     }
 

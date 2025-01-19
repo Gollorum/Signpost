@@ -41,7 +41,7 @@ public class FabricPacketHandler extends PacketHandler {
     public <T> void register(Event<T> event, ResourceLocation id){
         events.put(event.getMessageClass(), new Tuple<>(event, id));
         registrar.common(id, buffer -> {
-            var message = event.decode(buffer);
+            var message = event.decode(buffer, );
             return new Payload<>(id, event, message);
         }, FabricPacketHandler::handle);
     }
@@ -91,7 +91,7 @@ public class FabricPacketHandler extends PacketHandler {
 
         @Override
         public void write(FriendlyByteBuf buffer) {
-            event.encode(message, buffer);
+            event.encode(buffer, message, );
         }
 
     }

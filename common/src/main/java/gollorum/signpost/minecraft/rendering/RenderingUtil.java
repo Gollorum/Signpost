@@ -77,9 +77,9 @@ public class RenderingUtil {
 
     public static ResourceLocation trim(ResourceLocation textureLocation){
         if(textureLocation.getPath().startsWith("textures/"))
-            textureLocation = new ResourceLocation(textureLocation.getNamespace(), textureLocation.getPath().substring("textures/".length()));
+            textureLocation = ResourceLocation.fromNamespaceAndPath(textureLocation.getNamespace(), textureLocation.getPath().substring("textures/".length()));
         if(textureLocation.getPath().endsWith(".png"))
-            textureLocation = new ResourceLocation(textureLocation.getNamespace(), textureLocation.getPath().substring(0, textureLocation.getPath().length() - ".png".length()));
+            textureLocation = ResourceLocation.fromNamespaceAndPath(textureLocation.getNamespace(), textureLocation.getPath().substring(0, textureLocation.getPath().length() - ".png".length()));
         return textureLocation;
     }
 

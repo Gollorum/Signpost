@@ -5,5 +5,5 @@ import net.minecraft.resources.ResourceLocation;
 
 public class WaystoneModelResources {
 
-    public static final ResourceLocation inPostLocation = new ResourceLocation(Signpost.MOD_ID, "block/in_post_waystone");
+    public static final ResourceLocation inPostLocation = ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/in_post_waystone");
 }

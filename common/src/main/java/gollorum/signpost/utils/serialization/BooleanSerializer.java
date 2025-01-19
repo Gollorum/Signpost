@@ -1,6 +1,6 @@
 package gollorum.signpost.utils.serialization;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 
 public final class BooleanSerializer implements BufferSerializable<Boolean> {
 
@@ -12,12 +12,12 @@ public final class BooleanSerializer implements BufferSerializable<Boolean> {
     }
 
     @Override
-    public void write(Boolean aBoolean, FriendlyByteBuf buffer) {
+    public void encode(RegistryFriendlyByteBuf buffer, Boolean aBoolean) {
         buffer.writeBoolean(aBoolean);
     }
 
     @Override
-    public Boolean read(FriendlyByteBuf buffer) {
+    public Boolean decode(RegistryFriendlyByteBuf buffer) {
         return buffer.readBoolean();
     }
 }

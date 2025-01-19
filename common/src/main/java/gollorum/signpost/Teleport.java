@@ -18,27 +18,27 @@ import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.BufferSerializable;
 import gollorum.signpost.utils.serialization.ComponentSerializer;
+import gollorum.signpost.utils.serialization.ItemStackSerializer;
 import gollorum.signpost.utils.serialization.StringSerializer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.portal.PortalInfo;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 import org.apache.logging.log4j.util.TriConsumer;
 
 import java.util.List;
@@ -91,17 +91,11 @@ public class Teleport {
 //                    );
 //                }
 //            };
-            var portalInfo = new PortalInfo(
-                location.asVec3(),
-                Vec3.ZERO,
-                yaw.degrees(),
-                pitch.degrees()
-            );
             Entity toTeleport = player;
             if(IConfig.getInstance().getServer().teleport().allowVehicle()) {
                 while(toTeleport.isPassenger()) toTeleport = toTeleport.getVehicle();
             }
-            teleportWithChildren(toTeleport, world, portalInfo);
+            teleportWithChildren(toTeleport, world, location, yaw, pitch);
 //            if (IConfig.getInstance().getServer().teleport().allowVehicle() && player.isPassenger()) {
 //                Entity vehicle = player.getVehicle();
 //                while(vehicle.isPassenger()) vehicle = vehicle.getVehicle();
@@ -143,7 +137,7 @@ public class Teleport {
         });
     }
 
-    private static <T extends Entity> T teleportWithChildren(T entity, ServerLevel level, PortalInfo tp) {
+    private static <T extends Entity> T teleportWithChildren(T entity, ServerLevel level, Vector3 pos, Angle yaw, Angle pitch) {
         var passengers = List.copyOf(entity.getPassengers());
 
         var leashed = findLeashedMobs(entity);
@@ -151,32 +145,32 @@ public class Teleport {
         var changesDimension = entity.level() != level;
 
         if(entity instanceof ServerPlayer)
-            entity.teleportTo(level, tp.pos.x, tp.pos.y, tp.pos.z, Set.of(), tp.yRot, tp.xRot);
+            entity.teleportTo(level, pos.x, pos.y, pos.z, Set.of(), yaw.degrees(), pitch.degrees(), true);  // TODO: Check if bool is fine
         else if (changesDimension) {
             entity.unRide();
-            Entity newCopy = entity.getType().create(level);
+            Entity newCopy = entity.getType().create(level, EntitySpawnReason.DIMENSION_TRAVEL);
             if (newCopy == null) {
                 return entity;
             }
             newCopy.restoreFrom(entity);
-            newCopy.moveTo(tp.pos.x, tp.pos.y, tp.pos.z, tp.yRot, tp.xRot);
-            newCopy.setYHeadRot(tp.yRot);
+            newCopy.moveTo(pos.x, pos.y, pos.z, yaw.degrees(), pitch.degrees());
+            newCopy.setYHeadRot(yaw.degrees());
             entity.setRemoved(Entity.RemovalReason.CHANGED_DIMENSION);
             level.addDuringTeleport(newCopy);
             entity = (T) newCopy;
         } else {
-            entity.moveTo(tp.pos.x, tp.pos.y, tp.pos.z, tp.yRot, tp.xRot);
-            entity.setYHeadRot(tp.yRot);
+            entity.moveTo(pos.x, pos.y, pos.z, yaw.degrees(), pitch.degrees());
+            entity.setYHeadRot(yaw.degrees());
         }
 
         var entity2 = entity;
 
         if(IConfig.getInstance().getServer().teleport().allowLead())
-            teleportLeadedAnimals(entity2, leashed, level, tp);
+            teleportLeadedAnimals(entity2, leashed, level, pos, yaw, pitch);
         else unleash(leashed);
 
         for(var p : passengers) {
-            var p2 = teleportWithChildren(p, level, tp);
+            var p2 = teleportWithChildren(p, level, pos, yaw, pitch);
             if(changesDimension || p instanceof ServerPlayer) IDelay.onServerForFrames(5, () -> p2.startRiding(entity2, true));
             else entity2.positionRider(p2);
         }
@@ -188,12 +182,12 @@ public class Teleport {
         return player.level().getEntitiesOfClass(Mob.class, searchBox, mob -> mob.getLeashHolder() == player);
     }
 
-    private static void teleportLeadedAnimals(Entity player, List<Mob> leashed, ServerLevel level, PortalInfo portalIngo) {
+    private static void teleportLeadedAnimals(Entity player, List<Mob> leashed, ServerLevel level, Vector3 pos, Angle yaw, Angle pitch) {
         for(Mob mob : leashed) {
             if(level != mob.level())
-                mob = teleportWithChildren(mob, level, portalIngo);
+                mob = teleportWithChildren(mob, level, pos, yaw, pitch);
             else {
-                mob.teleportTo(level, portalIngo.pos.x, portalIngo.pos.y, portalIngo.pos.z, Set.of(), portalIngo.yRot, portalIngo.xRot);
+                mob.teleportTo(level, pos.x, pos.y, pos.z, Set.of(), yaw.degrees(), pitch.degrees(), true); // TODO: Check if bool is fine
             }
             var mob2 = mob;
             IDelay.onServerForFrames(5, () -> mob2.setLeashedTo(player, true));
@@ -214,7 +208,7 @@ public class Teleport {
     // TODO DS: Test
     public static ItemStack getCost(ServerPlayer player, Vector3 from, Vector3 to) {
         var item = player.server.registryAccess().lookup(Registries.ITEM).flatMap(
-            registry -> registry.get(ResourceKey.create(Registries.ITEM, new ResourceLocation(IConfig.getInstance().getServer().teleport().costItem())))
+            registry -> registry.get(ResourceKey.create(Registries.ITEM, ResourceLocation.parse(IConfig.getInstance().getServer().teleport().costItem())))
         ).map(Holder.Reference::value).orElse(null);
         if(item == null || item.equals(Items.AIR) || player.isCreative() || player.isSpectator()) return ItemStack.EMPTY;
         int distancePerPayment = IConfig.getInstance().getServer().teleport().distancePerPayment();
@@ -243,15 +237,17 @@ public class Teleport {
         }
 
         @Override
-        public void encode(Package message, FriendlyByteBuf buffer) {
-            StringSerializer.instance.write(message.waystoneName, buffer);
+        public void encode(RegistryFriendlyByteBuf buffer, Package message) {
+            StringSerializer.Buffer.encode(buffer, message.waystoneName);
             buffer.writeBoolean(message.handle.isPresent());
             message.handle.ifPresent(h -> h.write(buffer));
         }
 
         @Override
-        public Package decode(FriendlyByteBuf buffer) {
-            return new Package(StringSerializer.instance.read(buffer), buffer.readBoolean() ? WaystoneHandle.read(buffer) : Optional.empty());
+        public Package decode(RegistryFriendlyByteBuf buffer) {
+            return new Package(StringSerializer.Buffer.decode(buffer), buffer.readBoolean()
+                ? WaystoneHandle.read(buffer)
+                : Optional.empty());
         }
 
         @Override
@@ -322,24 +318,24 @@ public class Teleport {
                     public Class<Info> getTargetClass() { return Info.class; }
 
                     @Override
-                    public void write(Info info, FriendlyByteBuf buffer) {
+                    public void encode(RegistryFriendlyByteBuf buffer, Info info) {
                         buffer.writeInt(info.maxDistance);
                         buffer.writeInt(info.distance);
-                        ComponentSerializer.instance.optional().write(info.cannotTeleportBecause, buffer);
-                        StringSerializer.instance.write(info.waystoneName, buffer);
-                        buffer.writeItem(info.cost);
-                        buffer.writeOptional(info.handle, (b, h) -> h.write(b));
+                        ComponentSerializer.instance.optional().encode(buffer, info.cannotTeleportBecause);
+                        StringSerializer.Buffer.encode(buffer, info.waystoneName);
+                        ItemStackSerializer.Buffer.encode(buffer, info.cost);
+                        buffer.writeOptional(info.handle, (b, h) -> h.write((RegistryFriendlyByteBuf)b));
                     }
 
                     @Override
-                    public Info read(FriendlyByteBuf buffer) {
+                    public Info decode(RegistryFriendlyByteBuf buffer) {
                         return new Info(
                             buffer.readInt(),
                             buffer.readInt(),
-                            ComponentSerializer.instance.optional().read(buffer),
-                            StringSerializer.instance.read(buffer),
-                            buffer.readItem(),
-                            buffer.readOptional(WaystoneHandle::read).flatMap(o -> o)
+                            ComponentSerializer.instance.optional().decode(buffer),
+                            StringSerializer.Buffer.decode(buffer),
+                            ItemStackSerializer.Buffer.decode(buffer),
+                            buffer.readOptional(h -> WaystoneHandle.read((RegistryFriendlyByteBuf)h)).flatMap(o -> o)
                         );
                     }
                 }
@@ -352,18 +348,17 @@ public class Teleport {
         }
 
         @Override
-        public void encode(Package message, FriendlyByteBuf buffer) {
-            Either.BufferSerializer.of(StringSerializer.instance, Package.Info.serializer)
-                .write(message.data, buffer);
-            PostTile.TilePartInfo.Serializer.optional().write(message.tilePartInfo, buffer);
+        public void encode(RegistryFriendlyByteBuf buffer, Package message) {
+            Either.BufferSerializer.of(StringSerializer.Buffer, Package.Info.serializer)
+                .encode(buffer, message.data);
+            PostTile.TilePartInfo.CompoundSerializer.optional().encode(buffer, message.tilePartInfo);
         }
 
         @Override
-        public Package decode(FriendlyByteBuf buffer) {
+        public Package decode(RegistryFriendlyByteBuf buffer) {
             return new Package(
-                Either.BufferSerializer.of(StringSerializer.instance, Package.Info.serializer)
-                    .read(buffer),
-                PostTile.TilePartInfo.Serializer.optional().read(buffer)
+                Either.BufferSerializer.of(StringSerializer.Buffer, Package.Info.serializer).decode(buffer),
+                PostTile.TilePartInfo.CompoundSerializer.optional().decode(buffer)
             );
         }
 

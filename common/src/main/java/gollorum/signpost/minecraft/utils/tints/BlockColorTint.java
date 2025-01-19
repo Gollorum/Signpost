@@ -2,13 +2,15 @@ package gollorum.signpost.minecraft.utils.tints;
 
 import gollorum.signpost.Signpost;
 import gollorum.signpost.utils.Tint;
+import gollorum.signpost.utils.serialization.BufferSerializable;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.ResourceLocationSerializer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.Block;
@@ -23,28 +25,27 @@ public record BlockColorTint(Block block, int tintIndex) implements Tint {
     }
 
     public static void register() {
-        Tint.Serialization.register("blockColor", serializer);
+        Tint.Serialization.register("blockColor", compoundSerializer);
     }
 
-    public static final CompoundSerializable<BlockColorTint> serializer = new CompoundSerializable<>() {
+    private static Registry<Block> getBlockRegistry() {
+        return Signpost.getServerInstance().registryAccess().get(Registries.BLOCK).get().value();
+    }
 
-        private static Registry<Block> getBlockRegistry() {
-            return Signpost.getServerInstance().registryAccess().registry(Registries.BLOCK).get();
-        }
+    private static Block getBlock(ResourceLocation key) {
+        return getBlockRegistry().get(key).get().value();
+    }
 
-        private static Block getBlock(ResourceLocation key) {
-            return Objects.requireNonNull(getBlockRegistry().get(key));
-        }
+    private static ResourceLocation getKey(Block block) {
+        return Objects.requireNonNull(getBlockRegistry().getKey(block));
+    }
 
-        private static ResourceLocation getKey(Block block) {
-            return Objects.requireNonNull(getBlockRegistry().getKey(block));
-        }
+    public static final CompoundSerializable<BlockColorTint> compoundSerializer = new CompoundSerializable<BlockColorTint>() {
 
         @Override
-        public CompoundTag write(BlockColorTint tint, CompoundTag compound) {
-            ResourceLocationSerializer.Instance.write(getKey(tint.block), compound);
+        public void encode(CompoundTag compound, BlockColorTint tint, HolderLookup.Provider provider) {
+            ResourceLocationSerializer.Instance.encode(compound, getKey(tint.block), provider);
             compound.putInt("TintIndex", tint.tintIndex);
-            return compound;
         }
 
         @Override
@@ -53,23 +54,26 @@ public record BlockColorTint(Block block, int tintIndex) implements Tint {
         }
 
         @Override
-        public BlockColorTint read(CompoundTag compound) {
+        public BlockColorTint decode(CompoundTag compound, HolderLookup.Provider provider) {
             return new BlockColorTint(
-                getBlock(ResourceLocationSerializer.Instance.read(compound)),
+                getBlock(ResourceLocationSerializer.Instance.decode(compound, provider)),
                 compound.getInt("TintIndex")
             );
         }
+    };
+
+    public static final BufferSerializable<BlockColorTint> bufferSerializer = new BufferSerializable<BlockColorTint>() {
 
         @Override
-        public void write(BlockColorTint tint, FriendlyByteBuf buffer) {
-            ResourceLocationSerializer.Instance.write(getKey(tint.block), buffer);
+        public void encode(RegistryFriendlyByteBuf buffer, BlockColorTint tint) {
+            ResourceLocationSerializer.Instance.encode(buffer, getKey(tint.block));
             buffer.writeInt(tint.tintIndex);
         }
 
         @Override
-        public BlockColorTint read(FriendlyByteBuf buffer) {
+        public BlockColorTint decode(RegistryFriendlyByteBuf buffer) {
             return new BlockColorTint(
-                getBlock(ResourceLocationSerializer.Instance.read(buffer)),
+                getBlock(ResourceLocationSerializer.Instance.decode(buffer)),
                 buffer.readInt()
             );
         }

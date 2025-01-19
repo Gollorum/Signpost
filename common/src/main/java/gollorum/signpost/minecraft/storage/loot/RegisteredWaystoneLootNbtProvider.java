@@ -1,18 +1,17 @@
 package gollorum.signpost.minecraft.storage.loot;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
 import gollorum.signpost.utils.WorldLocation;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
@@ -26,23 +25,23 @@ import java.util.Set;
 
 public final class RegisteredWaystoneLootNbtProvider implements NbtProvider {
 
-    public static LootNbtProviderType providerType = new LootNbtProviderType(Codec.unit(RegisteredWaystoneLootNbtProvider::new));
+    public static LootNbtProviderType providerType = new LootNbtProviderType(MapCodec.unit(RegisteredWaystoneLootNbtProvider::new));
 
     @Nullable
     @Override
     public Tag get(LootContext context) {
-        BlockEntity blockEntity = context.getParam(LootContextParams.BLOCK_ENTITY);
-        if(blockEntity instanceof WaystoneTile) {
-            WaystoneTile waystoneTile = (WaystoneTile) blockEntity;
+        BlockEntity blockEntity = context.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
+        if(blockEntity instanceof WaystoneTile waystoneTile) {
             CompoundTag ret = new CompoundTag();
             Optional<WaystoneHandle.Vanilla> handle = waystoneTile.getHandle()
                 .or(() -> WaystoneLibrary.getInstance().getHandleByLocation(new WorldLocation(waystoneTile.getBlockPos(), waystoneTile.getLevel())));
-            handle.ifPresent(h -> ret.put("Handle", WaystoneHandle.Vanilla.Serializer.write(h)));
+            HolderLookup.Provider registries = waystoneTile.getLevel().registryAccess();
+            handle.ifPresent(h -> ret.put("Handle", WaystoneHandle.Vanilla.CompoundSerializer.encode(h, registries)));
             waystoneTile.getName()
                 .or(() -> handle.flatMap(h -> WaystoneLibrary.getInstance().getData(h).map(d -> d.name)))
                 .ifPresent(n -> {
                     CompoundTag displayTag = new CompoundTag();
-                    displayTag.putString("Name", Component.Serializer.toJson(Component.literal(n)));
+                    displayTag.putString("Name", Component.Serializer.toJson(Component.literal(n), registries));
                     ret.put("display", displayTag);
                 });
             return ret;
@@ -50,7 +49,7 @@ public final class RegisteredWaystoneLootNbtProvider implements NbtProvider {
     }
 
     @Override
-    public Set<LootContextParam<?>> getReferencedContextParams() {
+    public Set<ContextKey<?>> getReferencedContextParams() {
         return ImmutableSet.of(LootContextParams.BLOCK_ENTITY);
     }
 

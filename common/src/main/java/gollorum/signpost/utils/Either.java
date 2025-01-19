@@ -2,8 +2,9 @@ package gollorum.signpost.utils;
 
 import gollorum.signpost.utils.serialization.BufferSerializable;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -178,29 +179,28 @@ public abstract class Either<Left, Right> {
         }
 
         @Override
-        public void write(Either<Left, Right> leftRightEither, FriendlyByteBuf buffer) {
+        public void encode(RegistryFriendlyByteBuf buffer, Either<Left, Right> leftRightEither) {
             buffer.writeBoolean(leftRightEither.isLeft());
             leftRightEither.consume(
-                l -> leftS.write(l, buffer),
-                r -> rightS.write(r, buffer)
+                l -> leftS.encode(buffer, l),
+                r -> rightS.encode(buffer, r)
             );
         }
 
         @Override
-        public Either<Left, Right> read(FriendlyByteBuf buffer) {
+        public Either<Left, Right> decode(RegistryFriendlyByteBuf buffer) {
             return buffer.readBoolean()
-                ? Either.left(leftS.read(buffer))
-                : Either.right(rightS.read(buffer));
+                ? Either.left(leftS.decode(buffer))
+                : Either.right(rightS.decode(buffer));
         }
     }
 
-    public static final class Serializer<Left, Right> extends BufferSerializer<Left, Right> implements CompoundSerializable<Either<Left, Right>> {
+    public static final class Serializer<Left, Right> implements CompoundSerializable<Either<Left, Right>> {
 
         private final CompoundSerializable<Left> leftS;
         private final CompoundSerializable<Right> rightS;
 
         public Serializer(CompoundSerializable<Left> leftS, CompoundSerializable<Right> rightS) {
-            super(leftS, rightS);
             this.leftS = leftS;
             this.rightS = rightS;
         }
@@ -210,10 +210,9 @@ public abstract class Either<Left, Right> {
         }
 
         @Override
-        public CompoundTag write(Either<Left, Right> leftRightEither, CompoundTag compound) {
+        public void encode(CompoundTag compound, Either<Left, Right> leftRightEither, HolderLookup.Provider provider) {
             compound.putBoolean("IsLeft", leftRightEither.isLeft());
-            compound.put("Data", leftRightEither.match(leftS::write, rightS::write));
-            return compound;
+            compound.put("Data", leftRightEither.match(t -> leftS.encode(t, provider), t1 -> rightS.encode(t1, provider)));
         }
 
         @Override
@@ -225,10 +224,10 @@ public abstract class Either<Left, Right> {
         }
 
         @Override
-        public Either<Left, Right> read(CompoundTag compound) {
+        public Either<Left, Right> decode(CompoundTag compound, HolderLookup.Provider provider) {
             return compound.getBoolean("IsLeft")
-                ? Either.left(leftS.read(compound.getCompound("Data")))
-                : Either.right(rightS.read(compound.getCompound("Data")));
+                ? Either.left(leftS.decode(compound.getCompound("Data"), provider))
+                : Either.right(rightS.decode(compound.getCompound("Data"), provider));
         }
 
     }

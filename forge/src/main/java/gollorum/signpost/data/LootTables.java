@@ -45,7 +45,7 @@ public class LootTables extends LootTableProvider {
     private void generateBlockLootTables(BiConsumer<ResourceLocation, LootTable.Builder> builder) {
         for(PostBlock.Variant variant : PostBlock.AllVariants)
             builder.accept(
-                new ResourceLocation(Signpost.MOD_ID, "blocks/" + ForgeRegistries.BLOCKS.getKey(variant.getBlock()).getPath()),
+                ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "blocks/" + ForgeRegistries.BLOCKS.getKey(variant.getBlock()).getPath()),
                 LootTable.lootTable()
                     .withPool(LootPool.lootPool()
                         .setRolls(ConstantValue.exactly(1))
@@ -57,11 +57,11 @@ public class LootTables extends LootTableProvider {
                     )
             );
         builder.accept(
-            new ResourceLocation(Signpost.MOD_ID, "blocks/" + ForgeRegistries.BLOCKS.getKey(WaystoneBlock.getInstance()).getPath()),
+            ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "blocks/" + ForgeRegistries.BLOCKS.getKey(WaystoneBlock.getInstance()).getPath()),
             mkWaystoneLootTable(WaystoneBlock.getInstance()));
         for(ModelWaystone.Variant variant : ModelWaystone.variants)
             builder.accept(
-                new ResourceLocation(Signpost.MOD_ID, "blocks/" + ForgeRegistries.BLOCKS.getKey(variant.getBlock()).getPath()),
+                ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "blocks/" + ForgeRegistries.BLOCKS.getKey(variant.getBlock()).getPath()),
                 mkWaystoneLootTable(variant.getBlock()));
     }
 

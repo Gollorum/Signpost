@@ -2,7 +2,7 @@ package gollorum.signpost.networking;
 
 import gollorum.signpost.utils.Tuple;
 import gollorum.signpost.utils.serialization.BufferSerializable;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -38,10 +38,10 @@ public abstract class ReflectionEvent<Self extends ReflectionEvent<Self>> implem
     }
 
     @Override
-    public final void encode(Self self, FriendlyByteBuf buffer) {
+    public final void encode(RegistryFriendlyByteBuf buffer, Self self) {
         try {
             for(Tuple<Field, BufferSerializable> tuple : fieldsAndSerializers) {
-                tuple._2.write(tuple._1.get(self), buffer);
+                tuple._2.encode(buffer, tuple._1.get(self));
             }
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Something went wrong trying to serialize class " + getClass().getName() + ": " + e.getMessage());
@@ -49,11 +49,11 @@ public abstract class ReflectionEvent<Self extends ReflectionEvent<Self>> implem
     }
 
     @Override
-    public final Self decode(FriendlyByteBuf buffer) {
+    public final Self decode(RegistryFriendlyByteBuf buffer) {
         try {
             Self self = (Self) getClass().newInstance();
             for(Tuple<Field, BufferSerializable> tuple : fieldsAndSerializers) {
-                tuple._1.set(self, tuple._2.read(buffer));
+                tuple._1.set(self, tuple._2.decode(buffer));
             }
             return self;
         } catch (InstantiationException | IllegalAccessException e) {

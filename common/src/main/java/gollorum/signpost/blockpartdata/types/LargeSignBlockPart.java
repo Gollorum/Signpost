@@ -15,9 +15,9 @@ import gollorum.signpost.utils.math.geometry.AABB;
 import gollorum.signpost.utils.math.geometry.Matrix4x4;
 import gollorum.signpost.utils.math.geometry.TransformedBox;
 import gollorum.signpost.utils.math.geometry.Vector3;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -33,15 +33,15 @@ public class LargeSignBlockPart extends SignBlockPart<LargeSignBlockPart> {
 
     public static final BlockPartMetadata<LargeSignBlockPart> METADATA = new BlockPartMetadata<>(
         "large_sign",
-        (sign, compound) -> {
-            compound.put("CoreData", CoreData.SERIALIZER.write(sign.coreData));
-            compound.put("Text0", NameProvider.Serializer.write(sign.text[0]));
-            compound.put("Text1", NameProvider.Serializer.write(sign.text[1]));
-            compound.put("Text2", NameProvider.Serializer.write(sign.text[2]));
-            compound.put("Text3", NameProvider.Serializer.write(sign.text[3]));
+        (sign, compound, provider) -> {
+            compound.put("CoreData", CoreData.SERIALIZER.encode(sign.coreData, provider));
+            compound.put("Text0", NameProvider.COMPOUND_SERIALIZER.encode(sign.text[0], provider));
+            compound.put("Text1", NameProvider.COMPOUND_SERIALIZER.encode(sign.text[1], provider));
+            compound.put("Text2", NameProvider.COMPOUND_SERIALIZER.encode(sign.text[2], provider));
+            compound.put("Text3", NameProvider.COMPOUND_SERIALIZER.encode(sign.text[3], provider));
         },
-        (compound) -> new LargeSignBlockPart(
-            CoreData.SERIALIZER.read(compound.getCompound("CoreData")),
+        (compound, provider) -> new LargeSignBlockPart(
+            CoreData.SERIALIZER.decode(compound.getCompound("CoreData"), provider),
             new NameProvider[]{
                 NameProvider.fetchFrom(compound.get("Text0")),
                 NameProvider.fetchFrom(compound.get("Text1")),
@@ -96,24 +96,24 @@ public class LargeSignBlockPart extends SignBlockPart<LargeSignBlockPart> {
         if(coreData.flip) transformedBounds = transformedBounds.scale(new Vector3(1, 1, -1));
     }
 
-    private void notifyTextChanged(InteractionInfo info) {
+    private void notifyTextChanged(InteractionInfo info, HolderLookup.Provider provider) {
         CompoundTag compound = new CompoundTag();
-        compound.put("Text0", NameProvider.Serializer.write(text[0]));
-        compound.put("Text1", NameProvider.Serializer.write(text[1]));
-        compound.put("Text2", NameProvider.Serializer.write(text[2]));
-        compound.put("Text3", NameProvider.Serializer.write(text[3]));
+        compound.put("Text0", NameProvider.COMPOUND_SERIALIZER.encode(text[0], provider));
+        compound.put("Text1", NameProvider.COMPOUND_SERIALIZER.encode(text[1], provider));
+        compound.put("Text2", NameProvider.COMPOUND_SERIALIZER.encode(text[2], provider));
+        compound.put("Text3", NameProvider.COMPOUND_SERIALIZER.encode(text[3], provider));
         info.mutationDistributor.accept(compound);
     }
 
     @Override
-    public void readMutationUpdate(CompoundTag compound, BlockEntity tile, Player editingPlayer) {
+    public void readMutationUpdate(CompoundTag compound, BlockEntity tile, Player editingPlayer, HolderLookup.Provider provider) {
         if(editingPlayer != null
             && !editingPlayer.level().isClientSide()
             && tile instanceof WithOwner.OfSignpost
             && !hasThePermissionToEdit(((WithOwner.OfSignpost)tile), editingPlayer)
         ) {
             // This should not happen unless a sender tries to hacc
-            editingPlayer.sendSystemMessage(Component.translatable(LangKeys.noPermissionSignpost));
+            editingPlayer.displayClientMessage(Component.translatable(LangKeys.noPermissionSignpost), true);
             return;
         }
         if (compound.contains("Text0")) {
@@ -128,7 +128,7 @@ public class LargeSignBlockPart extends SignBlockPart<LargeSignBlockPart> {
         if (compound.contains("Text3")) {
             text[3] = NameProvider.fetchFrom(compound.get("Text3"));
         }
-        super.readMutationUpdate(compound, tile, editingPlayer);
+        super.readMutationUpdate(compound, tile, editingPlayer, provider);
     }
 
     @Override
@@ -142,8 +142,8 @@ public class LargeSignBlockPart extends SignBlockPart<LargeSignBlockPart> {
     }
 
     @Override
-    public void writeTo(CompoundTag compound) {
-        METADATA.write(this, compound);
+    public void writeTo(CompoundTag compound, HolderLookup.Provider provider) {
+        METADATA.encode(compound, this, provider);
     }
 
 }

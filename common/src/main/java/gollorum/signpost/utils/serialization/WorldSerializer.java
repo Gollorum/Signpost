@@ -1,6 +1,7 @@
 package gollorum.signpost.utils.serialization;
 
 import gollorum.signpost.utils.Either;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -13,14 +14,14 @@ public class WorldSerializer implements CompoundSerializable<Either<Level, Resou
     private WorldSerializer(){}
 
     @Override
-    public CompoundTag write(Either<Level, ResourceLocation> world, CompoundTag compound) {
+    public void encode(CompoundTag compound, Either<Level, ResourceLocation> world, HolderLookup.Provider provider) {
         compound.putString("DimensionId", world.rightOr(w -> w.dimension().location()).toString());
         return compound;
     }
 
     @Override
-    public Either<Level, ResourceLocation> read(CompoundTag compound) {
-        return Either.right(new ResourceLocation(compound.getString("DimensionId")));
+    public Either<Level, ResourceLocation> decode(CompoundTag compound, HolderLookup.Provider provider) {
+        return Either.right(ResourceLocation.parse(compound.getString("DimensionId")));
     }
 
     @Override
@@ -34,12 +35,12 @@ public class WorldSerializer implements CompoundSerializable<Either<Level, Resou
     }
 
     @Override
-    public void write(Either<Level, ResourceLocation> world, FriendlyByteBuf buffer) {
+    public void encode(FriendlyByteBuf buffer, Either<Level, ResourceLocation> world) {
         buffer.writeResourceLocation(world.rightOr(w -> w.dimension().location()));
     }
 
     @Override
-    public Either<Level, ResourceLocation> read(FriendlyByteBuf buffer) {
+    public Either<Level, ResourceLocation> decode(FriendlyByteBuf buffer) {
         return Either.right(buffer.readResourceLocation());
     }
 

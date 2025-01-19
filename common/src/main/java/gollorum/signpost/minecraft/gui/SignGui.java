@@ -632,13 +632,13 @@ public class SignGui extends ExtendedScreen {
         AtomicInteger cycleItemIngredientIndex = new AtomicInteger(0);
         AtomicLong nextCycleAt = new AtomicLong(System.currentTimeMillis());
         cycleItem.set(() -> {
-            ItemStack[] options = PostBlock.AllVariants.get(cycleItemIndex.get()).type.addSignIngredient.get().getItems();
-            ir.setItemStack(options[cycleItemIngredientIndex.get()]);
-            if(cycleItemIngredientIndex.get() >= options.length - 1) {
+            var options = PostBlock.AllVariants.get(cycleItemIndex.get()).type.addSignIngredient.get().items();
+            ir.setItemStack(new ItemStack(options.get(cycleItemIngredientIndex.get()).value()));
+            if(cycleItemIngredientIndex.get() >= options.size() - 1) {
                 cycleItemIndex.set((cycleItemIndex.get() + 1) % PostBlock.AllVariants.size());
                 cycleItemIngredientIndex.set(0);
             } else cycleItemIngredientIndex.incrementAndGet();
-            nextCycleAt.set(nextCycleAt.get() + (options.length < 2 ? 1500 : (options.length == 2 ? 1000 : 500)));
+            nextCycleAt.set(nextCycleAt.get() + (options.size() < 2 ? 1500 : (options.size() == 2 ? 1000 : 500)));
             IDelay.onClientUntil(
                 () -> System.currentTimeMillis() >= nextCycleAt.get(),
                 () -> cycleItem.get().run()
@@ -908,6 +908,7 @@ public class SignGui extends ExtendedScreen {
     private void apply(Optional<WaystoneHandle> destinationId) {
         PostTile.TilePartInfo tilePartInfo = oldTilePartInfo.orElseGet(() ->
             new PostTile.TilePartInfo(tile.getLevel().dimension().location(), tile.getBlockPos(), UUID.randomUUID()));
+        var registries = tile.getLevel().registryAccess();
         CompoundTag data;
         boolean isLocked = lockButton.isLocked();
         var mainTex = oldSign.map(SignBlockPart::getMainTexture).orElse(modelType.mainTexture);
@@ -918,7 +919,7 @@ public class SignGui extends ExtendedScreen {
         ).orElseGet(() -> new AngleProvider.Literal(rotationInputField.getCurrentAngle()));
         switch (selectedType) {
             case Wide -> {
-                data = SmallWideSignBlockPart.METADATA.write(
+                data = SmallWideSignBlockPart.METADATA.encode(
                     new SmallWideSignBlockPart(
                         angle,
                         asNameProvider(wideSignInputBox.getValue()),
@@ -932,7 +933,7 @@ public class SignGui extends ExtendedScreen {
                         modelType,
                         isLocked,
                         oldSign.map(SignBlockPart::isMarkedForGeneration).orElse(false)
-                    )
+                    ), registries
                 );
                 if (oldSign.isPresent()) {
                     PacketHandler.getInstance().sendToServer(new PostTile.PartMutatedEvent.Packet(
@@ -949,7 +950,7 @@ public class SignGui extends ExtendedScreen {
                 }
             }
             case Short -> {
-                data = SmallShortSignBlockPart.METADATA.write(
+                data = SmallShortSignBlockPart.METADATA.encode(
                     new SmallShortSignBlockPart(
                         angle,
                         asNameProvider(shortSignInputBox.getValue()),
@@ -963,7 +964,7 @@ public class SignGui extends ExtendedScreen {
                         modelType,
                         isLocked,
                         oldSign.map(SignBlockPart::isMarkedForGeneration).orElse(false)
-                    )
+                    ), registries
                 );
                 if (oldSign.isPresent()) {
                     PacketHandler.getInstance().sendToServer(new PostTile.PartMutatedEvent.Packet(
@@ -980,7 +981,7 @@ public class SignGui extends ExtendedScreen {
                 }
             }
             case Large -> {
-                data = LargeSignBlockPart.METADATA.write(
+                data = LargeSignBlockPart.METADATA.encode(
                     new LargeSignBlockPart(
                         angle,
                         new NameProvider[]{
@@ -999,7 +1000,7 @@ public class SignGui extends ExtendedScreen {
                         modelType,
                         isLocked,
                         oldSign.map(SignBlockPart::isMarkedForGeneration).orElse(false)
-                    )
+                    ), registries
                 );
                 if (oldSign.isPresent()) {
                     PacketHandler.getInstance().sendToServer(new PostTile.PartMutatedEvent.Packet(

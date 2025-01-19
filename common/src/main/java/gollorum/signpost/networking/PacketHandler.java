@@ -6,13 +6,13 @@ import gollorum.signpost.Teleport;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.RequestSignGui;
 import gollorum.signpost.minecraft.gui.RequestWaystoneGui;
-import gollorum.signpost.platform.Services;
 import gollorum.signpost.utils.EventDispatcher;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Unit;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -25,8 +25,15 @@ public abstract class PacketHandler {
     public static PacketHandler getInstance() { return instance; }
 
     public interface Context {
+        HolderLookup.Provider getHolderLookupProvider();
+
         interface FromClient extends Context {
             Player getSender();
+
+            @Override
+            default HolderLookup.Provider getHolderLookupProvider(){
+                return getSender().registryAccess();
+            }
         }
         interface Client extends Context { }
 
@@ -36,7 +43,12 @@ public abstract class PacketHandler {
                 return sender;
             }
         }
-        record ClientFromServer() implements Context, Client { }
+        record ClientFromServer() implements Context, Client {
+            @Override
+            public HolderLookup.Provider getHolderLookupProvider(){
+                return net.minecraft.client.Minecraft.getInstance().player.registryAccess();
+            }
+        }
         record ClientFromClient(Player sender) implements Context, Client, FromClient {
             @Override
             public Player getSender() {
@@ -52,16 +64,16 @@ public abstract class PacketHandler {
     }
 
     protected void init(){
-        register(new PostTile.PartAddedEvent(), new ResourceLocation(Signpost.MOD_ID, "part_added"));
-        register(new PostTile.PartMutatedEvent(), new ResourceLocation(Signpost.MOD_ID, "part_mutated"));
-        register(new PostTile.PartRemovedEvent(), new ResourceLocation(Signpost.MOD_ID, "part_removed"));
-        register(new PostTile.UpdateAllPartsEvent(), new ResourceLocation(Signpost.MOD_ID, "update_all_parts"));
-        register(new Teleport.Request(), new ResourceLocation(Signpost.MOD_ID, "teleport_request"));
-        register(new Teleport.RequestGui(), new ResourceLocation(Signpost.MOD_ID, "teleport_request_gui"));
-        register(new RequestSignGui(), new ResourceLocation(Signpost.MOD_ID, "request_sign_gui"));
-        register(new RequestSignGui.ForNewSign(), new ResourceLocation(Signpost.MOD_ID, "request_sign_gui_for_new_sign"));
-        register(new RequestWaystoneGui(), new ResourceLocation(Signpost.MOD_ID, "request_waystone_gui"));
-        register(new BlockRestrictions.NotifyCountChanged(), new ResourceLocation(Signpost.MOD_ID, "block_restrictions_notify_count_changed"));
+        register(new PostTile.PartAddedEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "part_added"));
+        register(new PostTile.PartMutatedEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "part_mutated"));
+        register(new PostTile.PartRemovedEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "part_removed"));
+        register(new PostTile.UpdateAllPartsEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "update_all_parts"));
+        register(new Teleport.Request(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "teleport_request"));
+        register(new Teleport.RequestGui(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "teleport_request_gui"));
+        register(new RequestSignGui(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "request_sign_gui"));
+        register(new RequestSignGui.ForNewSign(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "request_sign_gui_for_new_sign"));
+        register(new RequestWaystoneGui(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "request_waystone_gui"));
+        register(new BlockRestrictions.NotifyCountChanged(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block_restrictions_notify_count_changed"));
         onInitialize.dispatch(this, true);
     }
 
@@ -77,10 +89,8 @@ public abstract class PacketHandler {
 
     public abstract <T> void sendToAll(T message);
 
-    public static interface Event<T> {
+    public static interface Event<T> extends StreamCodec<RegistryFriendlyByteBuf, T> {
         Class<T> getMessageClass();
-        void encode(T message, FriendlyByteBuf buffer);
-        T decode(FriendlyByteBuf buffer);
         void handle(T message, Context context);
 
         interface FromClient<T> extends Event<T> {

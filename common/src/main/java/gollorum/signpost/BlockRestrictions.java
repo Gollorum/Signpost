@@ -12,6 +12,7 @@ import gollorum.signpost.utils.Tuple;
 import gollorum.signpost.utils.serialization.BooleanSerializer;
 import gollorum.signpost.utils.serialization.IntSerializer;
 import gollorum.signpost.utils.serialization.StringSerializer;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -131,7 +132,7 @@ public class BlockRestrictions {
 		savedData = storage.computeIfAbsent(
             new SavedData.Factory<>(
                 BlockRestrictionsStorage::new,
-                compound -> new BlockRestrictionsStorage().load(compound),
+                (compound, provider) -> new BlockRestrictionsStorage().load(compound, provider),
                 DataFixTypes.SAVED_DATA_MAP_DATA
             ),
 			BlockRestrictionsStorage.NAME
@@ -211,11 +212,11 @@ public class BlockRestrictions {
 		if(savedData != null) savedData.setDirty();
 	}
 
-	public CompoundTag saveTo(CompoundTag compound) {
+	public CompoundTag saveTo(CompoundTag compound, HolderLookup.Provider provider) {
 		ListTag list = new ListTag();
 		list.addAll(values.entrySet().stream().map(e -> {
 			CompoundTag elementComp = new CompoundTag();
-			PlayerHandle.Serializer.write(e.getKey(), elementComp);
+			PlayerHandle.CompoundSerializer.encode(elementComp, e.getKey(), provider);
 			elementComp.putInt("remaining_waystones", e.getValue().waystonesLeft);
 			elementComp.putInt("remaining_signposts", e.getValue().signpostsLeft);
 			return elementComp;
@@ -224,14 +225,14 @@ public class BlockRestrictions {
 		return compound;
 	}
 
-	public void readFrom(CompoundTag compound) {
+	public void readFrom(CompoundTag compound, HolderLookup.Provider provider) {
 		Tag nbt = compound.get("blockRestrictions");
 		if(nbt instanceof ListTag) {
 			ListTag list = (ListTag) nbt;
 			values.clear();
 			values.putAll(list.stream().map(i -> {
 				CompoundTag elementCompound = (CompoundTag) i;
-				return Tuple.of(PlayerHandle.Serializer.read(elementCompound),
+				return Tuple.of(PlayerHandle.CompoundSerializer.decode(elementCompound, provider),
 					new Entry(elementCompound.getInt("remaining_waystones"), elementCompound.getInt("remaining_signposts")));
 			}).collect(Tuple.mapCollector()));
 		}
@@ -250,7 +251,7 @@ public class BlockRestrictions {
 			IsWaystoneNotification = isWaystoneNotification;
 		}
 
-		@SerializedWith(serializer = StringSerializer.class)
+		@SerializedWith(serializer = StringSerializer.Buffer.class)
 		private String langKey;
 
 		@SerializedWith(serializer = IntSerializer.class)

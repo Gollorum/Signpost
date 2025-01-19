@@ -18,6 +18,7 @@ import gollorum.signpost.utils.math.geometry.AABB;
 import gollorum.signpost.utils.math.geometry.Intersectable;
 import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.Vector3;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -39,8 +40,8 @@ public class WaystoneBlockPart implements BlockPart<WaystoneBlockPart>, WithOwne
 
 	public static final BlockPartMetadata<WaystoneBlockPart> METADATA = new BlockPartMetadata<>(
 		"Waystone",
-		WaystoneBlockPart::writeTo,
-		(compound) -> new WaystoneBlockPart(PlayerHandle.Serializer.optional().read(compound.getCompound("owner"))),
+        BlockPart::writeTo,
+		(compound, provider) -> new WaystoneBlockPart(PlayerHandle.CompoundSerializer.optional().decode(compound.getCompound("owner"), provider)),
         WaystoneBlockPart.class
 	);
 
@@ -60,14 +61,14 @@ public class WaystoneBlockPart implements BlockPart<WaystoneBlockPart>, WithOwne
 	public BlockPartMetadata<WaystoneBlockPart> getMeta() { return METADATA; }
 
 	@Override
-	public void writeTo(CompoundTag compound) {
-		compound.put("owner", PlayerHandle.Serializer.optional().write(owner, new CompoundTag()));
+	public void writeTo(CompoundTag compound, HolderLookup.Provider provider) {
+		compound.put("owner", PlayerHandle.CompoundSerializer.optional().encode(owner, provider));
 	}
 
 	@Override
-	public void readMutationUpdate(CompoundTag compound, BlockEntity tile, Player editingPlayer) {
+	public void readMutationUpdate(CompoundTag compound, BlockEntity tile, Player editingPlayer, HolderLookup.Provider provider) {
 		if(compound.contains("owner"))
-			owner = PlayerHandle.Serializer.optional().read(compound.getCompound("owner"));
+			owner = PlayerHandle.CompoundSerializer.optional().decode(compound.getCompound("owner"), provider);
 	}
 
 	@Override

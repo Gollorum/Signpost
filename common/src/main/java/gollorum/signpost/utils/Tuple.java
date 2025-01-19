@@ -1,6 +1,7 @@
 package gollorum.signpost.utils;
 
 import gollorum.signpost.utils.serialization.CompoundSerializable;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 
@@ -68,9 +69,9 @@ public class Tuple<T1, T2> {
         }
 
         @Override
-        public CompoundTag write(Tuple<T1, T2> tuple, CompoundTag compound) {
-            compound.put("left", serializer1.write(tuple._1));
-            compound.put("right", serializer2.write(tuple._2));
+        public void encode(CompoundTag compound, Tuple<T1, T2> tuple, HolderLookup.Provider provider) {
+            compound.put("left", serializer1.encode(tuple._1, ));
+            compound.put("right", serializer2.encode(tuple._2, ));
             return compound;
         }
 
@@ -83,24 +84,24 @@ public class Tuple<T1, T2> {
         }
 
         @Override
-        public Tuple<T1, T2> read(CompoundTag compound) {
+        public Tuple<T1, T2> decode(CompoundTag compound, HolderLookup.Provider provider) {
             return new Tuple<>(
-                serializer1.read(compound.getCompound("left")),
-                serializer2.read(compound.getCompound("right"))
+                serializer1.decode(compound.getCompound("left"), ),
+                serializer2.decode(compound.getCompound("right"), )
             );
         }
 
         @Override
-        public void write(Tuple<T1, T2> tuple, FriendlyByteBuf buffer) {
-            serializer1.write(tuple._1, buffer);
-            serializer2.write(tuple._2, buffer);
+        public void encode(FriendlyByteBuf buffer, Tuple<T1, T2> tuple) {
+            serializer1.encode(buffer, tuple._1, );
+            serializer2.encode(buffer, tuple._2, );
         }
 
         @Override
-        public Tuple<T1, T2> read(FriendlyByteBuf buffer) {
+        public Tuple<T1, T2> decode(FriendlyByteBuf buffer) {
             return new Tuple<>(
-                serializer1.read(buffer),
-                serializer2.read(buffer)
+                serializer1.decode(buffer, ),
+                serializer2.decode(buffer, )
             );
         }
     }

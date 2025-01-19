@@ -15,7 +15,7 @@ public class MiscRegistry {
 
     public static void register(){
         ArgumentTypeInfosAccessor.getByClassMap().put(WaystoneArgument.class, WAYSTONE_ARGUMENT);
-        Registry.register(BuiltInRegistries.COMMAND_ARGUMENT_TYPE, new ResourceLocation(MOD_ID, "waystone"), WAYSTONE_ARGUMENT);
+        Registry.register(BuiltInRegistries.COMMAND_ARGUMENT_TYPE, ResourceLocation.fromNamespaceAndPath(MOD_ID, "waystone"), WAYSTONE_ARGUMENT);
     }
 
 }

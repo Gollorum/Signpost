@@ -11,6 +11,7 @@ import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.*;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.datafix.fixes.References;
@@ -85,14 +86,14 @@ public class WaystoneTile extends BlockEntity implements WithOwner.OfWaystone, W
     }
 
     @Override
-    public void saveAdditional(CompoundTag compound) {
-        compound.put("Owner", PlayerHandle.Serializer.optional().write(owner));
+    public void saveAdditional(CompoundTag compound, HolderLookup.Provider registries) {
+        compound.put("Owner", PlayerHandle.CompoundSerializer.optional().encode(owner, registries));
     }
 
     @Override
-    public void load(CompoundTag compound) {
-        super.load(compound);
-        owner = PlayerHandle.Serializer.optional().read(compound.getCompound("Owner"));
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        owner = PlayerHandle.CompoundSerializer.optional().decode(tag.getCompound("Owner"), registries);
     }
 
 }

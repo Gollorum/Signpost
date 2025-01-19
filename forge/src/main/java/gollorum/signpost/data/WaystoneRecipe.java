@@ -35,7 +35,7 @@ public class WaystoneRecipe {
                 v.getBlock(),
                 1
             ).unlockedBy("has_waystone", has(ItemTags.WaystoneTag))
-            .save(consumer, new ResourceLocation(Signpost.MOD_ID, "cut_into_" + v.name));
+            .save(consumer, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "cut_into_" + v.name));
         }
         new SingleItemRecipeBuilder(
             RecipeCategory.DECORATIONS,
@@ -44,6 +44,6 @@ public class WaystoneRecipe {
             WaystoneBlock.getInstance(),
             1
         ).unlockedBy("has_waystone", has(ItemTags.WaystoneTag))
-            .save(consumer, new ResourceLocation(Signpost.MOD_ID, "cut_into_full_block"));
+            .save(consumer, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "cut_into_full_block"));
     }
 }

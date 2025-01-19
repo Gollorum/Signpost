@@ -46,11 +46,11 @@ public class Villages {
 		}
 
 		public ResourceLocation getSignpostStructureResourceLocation(String structureName) {
-			return new ResourceLocation(Signpost.MOD_ID, "village/" + name + "/" + structureName);
+			return ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "village/" + name + "/" + structureName);
 		}
 
 		public ResourceLocation getWaystoneStructureResourceLocation(String structureName) {
-			return new ResourceLocation(Signpost.MOD_ID, "village/" + (isCommonGround ? "common" : name) + "/" + structureName);
+			return ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "village/" + (isCommonGround ? "common" : name) + "/" + structureName);
 		}
 	}
 
@@ -123,11 +123,11 @@ public class Villages {
 	}
 
 	private static ResourceLocation getVillagePool(VillageType villageType) {
-		return new ResourceLocation("village/" + villageType.name + "/houses");
+		return ResourceLocation.parse("village/" + villageType.name + "/houses");
 	}
 
 	private static ResourceLocation getZombieVillagePool(VillageType villageType) {
-		return new ResourceLocation("village/" + villageType.name + "/zombie/houses");
+		return ResourceLocation.parse("village/" + villageType.name + "/zombie/houses");
 	}
 
 	private void addToPool(

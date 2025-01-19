@@ -32,16 +32,16 @@ public class ItemRegistry {
     public static final Item GENERATION_WAND = new GenerationWand();
 
     public static void register(){
-        Registry.register(BuiltInRegistries.ITEM, new ResourceLocation(MOD_ID, WaystoneBlock.REGISTRY_NAME), WAYSTONE_ITEM);
+        Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(MOD_ID, WaystoneBlock.REGISTRY_NAME), WAYSTONE_ITEM);
         for(var variant : ModelWaystone.variants)
             ModelWaystoneItems.add(Tuple.of(
                 variant,
-                Registry.register(BuiltInRegistries.ITEM, new ResourceLocation(MOD_ID, variant.registryName), new WaystoneItem(variant.getBlock(), new Item.Properties()))));
+                Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(MOD_ID, variant.registryName), new WaystoneItem(variant.getBlock(), new Item.Properties()))));
         for(var variant : PostBlock.AllVariants)
-            POSTS_ITEMS.add(Registry.register(BuiltInRegistries.ITEM, new ResourceLocation(MOD_ID, variant.registryName), new PostItemImpl(variant.getBlock(), new Item.Properties())));
-        Registry.register(BuiltInRegistries.ITEM, new ResourceLocation(MOD_ID, WaystoneGeneratorBlock.REGISTRY_NAME), WaystoneGeneratorItem);
-        Registry.register(BuiltInRegistries.ITEM, new ResourceLocation(MOD_ID, Wrench.registryName), WRENCH);
-        Registry.register(BuiltInRegistries.ITEM, new ResourceLocation(MOD_ID, Brush.registryName), BRUSH);
-        Registry.register(BuiltInRegistries.ITEM, new ResourceLocation(MOD_ID, GenerationWand.registryName), GENERATION_WAND);
+            POSTS_ITEMS.add(Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(MOD_ID, variant.registryName), new PostItemImpl(variant.getBlock(), new Item.Properties())));
+        Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(MOD_ID, WaystoneGeneratorBlock.REGISTRY_NAME), WaystoneGeneratorItem);
+        Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(MOD_ID, Wrench.registryName), WRENCH);
+        Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(MOD_ID, Brush.registryName), BRUSH);
+        Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(MOD_ID, GenerationWand.registryName), GENERATION_WAND);
     }
 }

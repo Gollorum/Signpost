@@ -1,9 +1,11 @@
 package gollorum.signpost;
 
+import gollorum.signpost.utils.serialization.BufferSerializable;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import net.minecraft.Util;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -47,13 +49,14 @@ public class PlayerHandle {
         return Signpost.getServerInstance().getPlayerList().getPlayer(id);
     }
 
-    public static final CompoundSerializable<PlayerHandle> Serializer = new SerializerImpl();
-    public static final class SerializerImpl implements CompoundSerializable<PlayerHandle> {
+    public static final CompoundSerializable<PlayerHandle> CompoundSerializer = new CompoundSerializerImpl();
+    public static final BufferSerializable<PlayerHandle> BufferSerializer = new BufferSerializerImpl();
+
+    private static final class CompoundSerializerImpl implements CompoundSerializable<PlayerHandle> {
 
         @Override
-        public CompoundTag write(PlayerHandle playerHandle, CompoundTag compound) {
+        public void encode(CompoundTag compound, PlayerHandle playerHandle, HolderLookup.Provider provider) {
             compound.putUUID("Id", playerHandle.id);
-            return compound;
         }
 
         @Override
@@ -62,22 +65,24 @@ public class PlayerHandle {
         }
 
         @Override
-        public PlayerHandle read(CompoundTag compound) {
+        public PlayerHandle decode(CompoundTag compound, HolderLookup.Provider provider) {
             return new PlayerHandle(compound.getUUID("Id"));
         }
+    }
 
+    private static final class BufferSerializerImpl implements BufferSerializable<PlayerHandle> {
         @Override
         public Class<PlayerHandle> getTargetClass() {
             return PlayerHandle.class;
         }
 
         @Override
-        public void write(PlayerHandle playerHandle, FriendlyByteBuf buffer) {
+        public void encode(RegistryFriendlyByteBuf buffer, PlayerHandle playerHandle) {
             buffer.writeUUID(playerHandle.id);
         }
 
         @Override
-        public PlayerHandle read(FriendlyByteBuf buffer) {
+        public PlayerHandle decode(RegistryFriendlyByteBuf buffer) {
             return new PlayerHandle(buffer.readUUID());
         }
     };

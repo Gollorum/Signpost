@@ -24,6 +24,7 @@ import gollorum.signpost.utils.math.geometry.AABB;
 import gollorum.signpost.utils.math.geometry.Intersectable;
 import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.Vector3;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -46,8 +47,8 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
 
     public static final BlockPartMetadata<PostBlockPart> METADATA = new BlockPartMetadata<>(
         "Post",
-        (post, compound) -> compound.put("texture", Texture.Serializer.write(post.texture)),
-        (compound) -> new PostBlockPart(Texture.readFrom(compound.get("texture"))),
+        (post, compound, provider) -> compound.put("texture", Texture.CompundSerializer.encode(post.texture, provider)),
+        (compound, provider) -> new PostBlockPart(Texture.readFrom(compound.get("texture"))),
         PostBlockPart.class
     );
 
@@ -142,19 +143,19 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
     }
 
     @Override
-    public void writeTo(CompoundTag compound) {
-        METADATA.write(this, compound);
+    public void writeTo(CompoundTag compound, HolderLookup.Provider provider) {
+        METADATA.encode(compound, this, provider);
     }
 
-    private void notifyTextureChanged(InteractionInfo info) {
-        CompoundTag compound = new CompoundTag();
-        compound.putString("type", "texture");
-        compound.put("texture", Texture.Serializer.write(texture));
-        info.mutationDistributor.accept(compound);
-    }
+//    private void notifyTextureChanged(InteractionInfo info) {
+//        CompoundTag compound = new CompoundTag();
+//        compound.putString("type", "texture");
+//        compound.put("texture", Texture.CompundSerializer.encode(texture));
+//        info.mutationDistributor.accept(compound);
+//    }
 
     @Override
-    public void readMutationUpdate(CompoundTag compound, BlockEntity tile, Player editingPlayer) {
+    public void readMutationUpdate(CompoundTag compound, BlockEntity tile, Player editingPlayer, HolderLookup.Provider provider) {
         setTexture(Texture.readFrom(compound.get("texture")));
     }
 

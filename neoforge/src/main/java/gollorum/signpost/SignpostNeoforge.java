@@ -12,7 +12,7 @@ import gollorum.signpost.registry.*;
 import gollorum.signpost.utils.Delay;
 import gollorum.signpost.worldgen.Villages;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -53,7 +53,7 @@ public class SignpostNeoforge {
 
         NeoForgePacketHandler.initialize(modBus);
         PacketHandler.onInitializeDo(e -> {
-            PacketHandler.getInstance().register(new JoinServerEvent(), new ResourceLocation(Signpost.MOD_ID, "join_server"));
+            PacketHandler.getInstance().register(new JoinServerEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "join_server"));
             return true;
         });
 
@@ -135,10 +135,10 @@ public class SignpostNeoforge {
         public Class<Package> getMessageClass() { return Package.class; }
 
         @Override
-        public void encode(Package message, FriendlyByteBuf buffer) { }
+        public void encode(RegistryFriendlyByteBuf buffer, Package message) { }
 
         @Override
-        public Package decode(FriendlyByteBuf buffer) { return new Package(); }
+        public Package decode(RegistryFriendlyByteBuf buffer) { return new Package(); }
 
         @Override
         public void handle(

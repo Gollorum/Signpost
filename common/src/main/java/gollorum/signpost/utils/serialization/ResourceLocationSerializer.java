@@ -1,14 +1,15 @@
 package gollorum.signpost.utils.serialization;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 
 public class ResourceLocationSerializer implements CompoundSerializable<ResourceLocation> {
 
-    public static ResourceLocationSerializer Instance = new ResourceLocationSerializer();
+    public static ResourceLocationSerializer Instance = ResourceLocation.parseSerializer();
 
-    public CompoundTag write(ResourceLocation location, CompoundTag compound) {
+    public void encode(CompoundTag compound, ResourceLocation location, HolderLookup.Provider provider) {
         compound.putString("ResourceLocation", location.toString());
         return compound;
     }
@@ -17,17 +18,17 @@ public class ResourceLocationSerializer implements CompoundSerializable<Resource
         return compound.contains("ResourceLocation");
     }
 
-    public ResourceLocation read(CompoundTag compound) {
-        return new ResourceLocation(compound.getString("ResourceLocation"));
+    public ResourceLocation decode(CompoundTag compound, HolderLookup.Provider provider) {
+        return ResourceLocation.parse(compound.getString("ResourceLocation"));
     }
 
     @Override
-    public void write(ResourceLocation resourceLocation, FriendlyByteBuf buffer) {
+    public void encode(FriendlyByteBuf buffer, ResourceLocation resourceLocation) {
         buffer.writeResourceLocation(resourceLocation);
     }
 
     @Override
-    public ResourceLocation read(FriendlyByteBuf buffer) {
+    public ResourceLocation decode(FriendlyByteBuf buffer) {
         return buffer.readResourceLocation();
     }
 

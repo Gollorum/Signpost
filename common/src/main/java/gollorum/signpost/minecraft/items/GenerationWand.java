@@ -12,7 +12,7 @@ public final class GenerationWand extends Item {
     public static final String registryName = "generation_wand";
 
     public GenerationWand() {
-        super(new Properties());
+        super(new Properties().stacksTo(1));
     }
 
     @Override

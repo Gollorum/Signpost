@@ -1,6 +1,6 @@
 package gollorum.signpost.utils.serialization;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 
 public class ComponentSerializer implements BufferSerializable<Component> {
@@ -13,12 +13,12 @@ public class ComponentSerializer implements BufferSerializable<Component> {
     }
 
     @Override
-    public void write(Component component, FriendlyByteBuf buffer) {
+    public void encode(RegistryFriendlyByteBuf buffer, Component component) {
         buffer.writeComponent(component);
     }
 
     @Override
-    public Component read(FriendlyByteBuf buffer) {
+    public Component decode(RegistryFriendlyByteBuf buffer) {
         return buffer.readComponent();
     }
 }

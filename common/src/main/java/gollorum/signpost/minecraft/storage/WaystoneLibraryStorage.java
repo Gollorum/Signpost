@@ -3,6 +3,7 @@ package gollorum.signpost.minecraft.storage;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.worldgen.VillageWaystone;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -13,7 +14,7 @@ public class WaystoneLibraryStorage extends SavedData {
     public static final String NAME = Signpost.MOD_ID + "_WaystoneLibrary";
 
     @Override
-    public CompoundTag save(CompoundTag compound) {
+    public CompoundTag save(CompoundTag compound, HolderLookup.Provider provider) {
         WaystoneLibrary.getInstance().saveTo(compound);
         compound.put("villageWaystones", VillageWaystone.serialize());
         return compound;

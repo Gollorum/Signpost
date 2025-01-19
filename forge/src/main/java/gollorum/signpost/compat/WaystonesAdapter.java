@@ -22,6 +22,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
@@ -41,8 +42,8 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
         instance = new WaystonesAdapter();
         ExternalWaystoneLibrary.onInitialize().addListener(ex -> { ex.registerAdapter(instance); });
         PacketHandler.onInitializeDo(packetHandler -> {
-            packetHandler.register(new RequestEvent(), new ResourceLocation(Signpost.MOD_ID, "waystones_adapter_request"));
-            packetHandler.register(new ReplyEvent(), new ResourceLocation(Signpost.MOD_ID, "waystones_adapter_reply"));
+            packetHandler.register(new RequestEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "waystones_adapter_request"));
+            packetHandler.register(new ReplyEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "waystones_adapter_reply"));
             return true;
         });
     }
@@ -149,7 +150,7 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
 
         @Override
         public void write(FriendlyByteBuf buffer) {
-            StringSerializer.instance.write(instance.typeTag(), buffer);
+            StringSerializer.instance.encode(buffer, instance.typeTag());
             buffer.writeUUID(id);
         }
 
@@ -209,14 +210,14 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
         }
 
         @Override
-        public void encode(Packet message, FriendlyByteBuf buffer) {
+        public void encode(RegistryFriendlyByteBuf buffer, Packet message) {
             buffer.writeInt(message.waystones.size());
             for(WaystoneWaystone waystone : message.waystones)
                 WaystoneImpl.write(buffer, waystone.wrapped);
         }
 
         @Override
-        public Packet decode(FriendlyByteBuf buffer) {
+        public Packet decode(RegistryFriendlyByteBuf buffer) {
             int size = buffer.readInt();
             List<WaystoneWaystone> waystones = new ArrayList<>();
             for(int i = 0; i < size; i++) waystones.add(new WaystoneWaystone(WaystoneImpl.read(buffer)));

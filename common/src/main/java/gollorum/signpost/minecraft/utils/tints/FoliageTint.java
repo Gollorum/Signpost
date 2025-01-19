@@ -4,6 +4,7 @@ import gollorum.signpost.utils.Tint;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -21,7 +22,7 @@ public class FoliageTint implements Tint {
 
     public static final CompoundSerializable<FoliageTint> serializer = new CompoundSerializable<>() {
         @Override
-        public CompoundTag write(FoliageTint foliageTint, CompoundTag compound) {
+        public void encode(CompoundTag compound, FoliageTint foliageTint, HolderLookup.Provider provider) {
             return compound;
         }
 
@@ -31,16 +32,16 @@ public class FoliageTint implements Tint {
         }
 
         @Override
-        public FoliageTint read(CompoundTag compound) {
+        public FoliageTint decode(CompoundTag compound, HolderLookup.Provider provider) {
             return new FoliageTint();
         }
 
         @Override
-        public void write(FoliageTint foliageTint, FriendlyByteBuf buffer) {
+        public void encode(FriendlyByteBuf buffer, FoliageTint foliageTint) {
         }
 
         @Override
-        public FoliageTint read(FriendlyByteBuf buffer) {
+        public FoliageTint decode(FriendlyByteBuf buffer) {
             return new FoliageTint();
         }
 

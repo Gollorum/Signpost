@@ -12,9 +12,9 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlerEvent;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
-import net.neoforged.neoforge.network.registration.IPayloadRegistrar;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,7 +22,7 @@ import java.util.function.Supplier;
 
 public class NeoForgePacketHandler extends PacketHandler {
 
-    private IPayloadRegistrar registrar;
+    private PayloadRegistrar registrar;
     private final Map<Class<?>, Tuple<Event<?>, ResourceLocation>> events = new HashMap<>();
 
     public static void initialize(IEventBus bus) {
@@ -31,8 +31,8 @@ public class NeoForgePacketHandler extends PacketHandler {
     }
 
     @SubscribeEvent
-    public static void register(final RegisterPayloadHandlerEvent event) {
-        final IPayloadRegistrar registrar = event.registrar(Signpost.MOD_ID);
+    public static void register(final RegisterPayloadHandlersEvent event) {
+        final PayloadRegistrar  registrar = event.registrar(Signpost.MOD_ID);
         ((NeoForgePacketHandler) instance).registrar = registrar;
         instance.init();
     }
@@ -40,8 +40,8 @@ public class NeoForgePacketHandler extends PacketHandler {
     @Override
     public <T> void register(Event<T> event, ResourceLocation id){
         events.put(event.getMessageClass(), new Tuple<>(event, id));
-        registrar.common(id, buffer -> {
-            var message = event.decode(buffer);
+        registrar.commonBidirectional(id, buffer -> {
+            var message = event.decode(buffer, );
             return new Payload<>(id, event, message);
         }, NeoForgePacketHandler::handle);
     }
@@ -91,7 +91,7 @@ public class NeoForgePacketHandler extends PacketHandler {
 
         @Override
         public void write(FriendlyByteBuf buffer) {
-            event.encode(message, buffer);
+            event.encode(buffer, message, );
         }
 
     }

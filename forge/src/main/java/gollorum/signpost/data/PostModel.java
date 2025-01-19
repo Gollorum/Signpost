@@ -30,10 +30,10 @@ public class PostModel {
     private final BlockModels blockModelProvider;
 
     public PostModel(BlockModels blockModelProvider) {
-        previewModel = new BlockModelBuilder(new ResourceLocation(previewLocation.getNamespace(), previewLocation.getPath()), blockModelProvider.existingFileHelper);
+        previewModel = new BlockModelBuilder(ResourceLocation.fromNamespaceAndPath(previewLocation.getNamespace(), previewLocation.getPath()), blockModelProvider.existingFileHelper);
         allModels = PostBlock.AllVariants.stream().collect(Collectors.<PostBlock.Variant, PostBlock.Variant, BlockModelBuilder>toMap(
             i -> i,
-            i -> new BlockModelBuilder(new ResourceLocation(Signpost.MOD_ID, "block/" + i.registryName), blockModelProvider.existingFileHelper)
+            i -> new BlockModelBuilder(ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/" + i.registryName), blockModelProvider.existingFileHelper)
         ));
         this.blockModelProvider = blockModelProvider;
 //        generator.addProvider(true, new Item(output, fileHelper));
@@ -87,7 +87,7 @@ public class PostModel {
 
     public void registerModels() {
         BlockModelBuilder previewBuilder = getBuilder(previewLocation)
-            .parent(new ModelFile.ExistingModelFile(new ResourceLocation("block/block"), blockModelProvider.existingFileHelper))
+            .parent(new ModelFile.ExistingModelFile(ResourceLocation.fromNamespaceAndPath("block/block"), blockModelProvider.existingFileHelper))
             .transforms()
                 .transform(ItemDisplayContext.GUI)
                     .rotation(30, 315, 0)

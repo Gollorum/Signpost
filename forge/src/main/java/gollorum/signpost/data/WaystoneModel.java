@@ -27,11 +27,11 @@ public class WaystoneModel {
 
 	public WaystoneModel(BlockModels blockModelProvider) {
 		this.blockModelProvider = blockModelProvider;
-		waystoneModel = new BlockModelBuilder(new ResourceLocation(Signpost.MOD_ID, "block/" + WaystoneBlock.REGISTRY_NAME), blockModelProvider.existingFileHelper);
+		waystoneModel = new BlockModelBuilder(ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/" + WaystoneBlock.REGISTRY_NAME), blockModelProvider.existingFileHelper);
 	}
 
 	public void registerModels() {
-		ResourceLocation waystoneTexture = new ResourceLocation(Signpost.MOD_ID, "block/waystone");
+		ResourceLocation waystoneTexture = ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/waystone");
 		blockModelProvider.cubeAll(WaystoneBlock.REGISTRY_NAME, waystoneTexture);
 
 		blockModelProvider.getBuilder(WaystoneModelResources.inPostLocation.getNamespace() + ResourceLocation.NAMESPACE_SEPARATOR + WaystoneModelResources.inPostLocation.getPath())
@@ -45,12 +45,12 @@ public class WaystoneModel {
         .texture("texture", waystoneTexture);
 
 		for(ModelWaystone.Variant variant : ModelWaystone.variants) {
-			ResourceLocation loc = new ResourceLocation(Signpost.MOD_ID, "block/" + variant.registryName);
+			ResourceLocation loc = ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/" + variant.registryName);
 			BlockModelBuilder builder = blockModelProvider.getBuilder(loc.toString())
-				.parent(new ModelFile.ExistingModelFile(new ResourceLocation("block/block"), blockModelProvider.existingFileHelper))
+				.parent(new ModelFile.ExistingModelFile(ResourceLocation.fromNamespaceAndPath("block/block"), blockModelProvider.existingFileHelper))
 				.texture("particle", waystoneTexture)
 				.customLoader(ObjModelBuilder::begin)
-				.modelLocation(new ResourceLocation(loc.getNamespace(), "models/block/" + variant.registryName + ".obj"))
+				.modelLocation(ResourceLocation.fromNamespaceAndPath(loc.getNamespace(), "models/block/" + variant.registryName + ".obj"))
 				.flipV(true)
 				.shadeQuads(true)
 				.emissiveAmbient(false)
