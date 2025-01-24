@@ -76,7 +76,7 @@ public class RequestSignGui implements PacketHandler.Event.ForClient<RequestSign
 
 		@Override
 		public void encode(RegistryFriendlyByteBuf buffer, Package message) {
-			WorldLocation.SERIALIZER.encode(buffer, message.loc);
+			WorldLocation.BUFFER_SERIALIZER.encode(buffer, message.loc);
 			PostBlock.ModelType.Serializer.encode(buffer, message.modelType);
 			Vector3.BufferSerializer.encode(buffer, message.localHitPos);
 			ItemStackSerializer.Buffer.encode(buffer, message.itemToDropOnBreak);
@@ -85,7 +85,7 @@ public class RequestSignGui implements PacketHandler.Event.ForClient<RequestSign
 		@Override
 		public Package decode(RegistryFriendlyByteBuf buffer) {
 			return new Package(
-				WorldLocation.SERIALIZER.decode(buffer),
+				WorldLocation.BUFFER_SERIALIZER.decode(buffer),
 				PostBlock.ModelType.Serializer.decode(buffer),
 				Vector3.BufferSerializer.decode(buffer),
 				ItemStackSerializer.Buffer.decode(buffer)

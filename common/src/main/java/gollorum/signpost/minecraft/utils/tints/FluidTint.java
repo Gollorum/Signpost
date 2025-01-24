@@ -23,7 +23,7 @@ public record FluidTint(Fluid fluid) implements Tint {
     }
 
     public static void register() {
-        Tint.Serialization.register("fluid", compoundSerializer);
+        Tint.Serialization.register("fluid", new Serializer(compoundSerializer, bufferSerializer));
     }
 
     private static Registry<Fluid> getFluidRegistry() {
@@ -35,17 +35,17 @@ public record FluidTint(Fluid fluid) implements Tint {
 
         @Override
         public void encode(CompoundTag compound, FluidTint fluidTint, HolderLookup.Provider provider) {
-            ResourceLocationSerializer.Instance.encode(compound, getFluidRegistry().getKey(fluidTint.fluid), provider);
+            ResourceLocationSerializer.COMPOUND.encode(compound, getFluidRegistry().getKey(fluidTint.fluid), provider);
         }
 
         @Override
         public boolean isContainedIn(CompoundTag compound) {
-            return ResourceLocationSerializer.Instance.isContainedIn(compound);
+            return ResourceLocationSerializer.COMPOUND.isContainedIn(compound);
         }
 
         @Override
         public FluidTint decode(CompoundTag compound, HolderLookup.Provider provider) {
-            return new FluidTint(getFluidRegistry().get(ResourceLocationSerializer.Instance.decode(compound, provider)).get().value());
+            return new FluidTint(getFluidRegistry().get(ResourceLocationSerializer.COMPOUND.decode(compound, provider)).get().value());
         }
     };
 
@@ -53,12 +53,12 @@ public record FluidTint(Fluid fluid) implements Tint {
 
         @Override
         public void encode(RegistryFriendlyByteBuf buffer, FluidTint fluidTint) {
-            ResourceLocationSerializer.Instance.encode(buffer, getFluidRegistry().getKey(fluidTint.fluid));
+            ResourceLocationSerializer.BUFFER.encode(buffer, getFluidRegistry().getKey(fluidTint.fluid));
         }
 
         @Override
         public FluidTint decode(RegistryFriendlyByteBuf buffer) {
-            return new FluidTint(getFluidRegistry().get(ResourceLocationSerializer.Instance.decode(buffer)).get().value());
+            return new FluidTint(getFluidRegistry().get(ResourceLocationSerializer.BUFFER.decode(buffer)).get().value());
         }
 
         @Override

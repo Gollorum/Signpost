@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.minecraft.gui.utils.*;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderType;
 
 public final class ImageInputBox extends InputBox implements Flippable {
 
@@ -53,7 +54,7 @@ public final class ImageInputBox extends InputBox implements Flippable {
     public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         RenderSystem.enableDepthTest();
-        graphics.blit(texture.location, backgroundRect.point.x, backgroundRect.point.y, 0, 0, backgroundRect.width, backgroundRect.height, isFlipped ? -backgroundRect.width : backgroundRect.width, backgroundRect.height);
+        graphics.blit(RenderType::guiTextured, texture.location, backgroundRect.point.x, backgroundRect.point.y, 0, 0, backgroundRect.width, backgroundRect.height, isFlipped ? -backgroundRect.width : backgroundRect.width, backgroundRect.height);
 
         super.renderWidget(graphics, mouseX, mouseY, partialTicks);
     }

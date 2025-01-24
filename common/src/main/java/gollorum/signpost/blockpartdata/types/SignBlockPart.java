@@ -142,8 +142,8 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
                 return new CoreData(
                     AngleProvider.fetchFrom(compound.getCompound("Angle"), provider),
                     compound.getBoolean("Flip"),
-                    Texture.readFrom(compound.get("Texture")),
-                    Texture.readFrom(compound.get("TextureDark")),
+                    Texture.readFrom(compound.get("Texture"), provider),
+                    Texture.readFrom(compound.get("TextureDark"), provider),
                     Overlay.CompoundSerializer.optional().decode(compound.getCompound("Overlay"), provider),
                     compound.getInt("Color"),
                     destination,
@@ -380,11 +380,11 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
 
         boolean updateTextures = false;
         if(compound.contains("Texture")) {
-            coreData.mainTexture = Texture.readFrom(compound.get("Texture"));
+            coreData.mainTexture = Texture.readFrom(compound.get("Texture"), provider);
             updateTextures = true;
         }
         if(compound.contains("TextureDark")){
-            coreData.secondaryTexture = Texture.readFrom(compound.get("TextureDark"));
+            coreData.secondaryTexture = Texture.readFrom(compound.get("TextureDark"), provider);
             updateTextures = true;
         }
         if(updateTextures) setTextures(coreData.mainTexture, coreData.secondaryTexture);

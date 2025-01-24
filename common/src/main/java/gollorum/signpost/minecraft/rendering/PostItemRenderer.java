@@ -17,6 +17,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -44,8 +45,9 @@ public class PostItemRenderer extends BlockEntityWithoutLevelRenderer {
             return;
         }
         List<BlockPartInstance> parts;
-        if(stack.hasTag() && stack.getTag().contains("Parts")) {
-            parts = PostTile.readPartInstances(stack.getTag().getCompound("Parts"));
+        var data = stack.get(DataComponents.CUSTOM_DATA);
+        if(data != null && data.contains("Parts")) {
+            parts = PostTile.readPartInstances(data.copyTag().getCompound("Parts"), Minecraft.getInstance().player.registryAccess());
         } else {
             parts = new ArrayList<>();
             PostBlock.ModelType type = ((PostBlock)((BlockItem) stack.getItem()).getBlock()).type;

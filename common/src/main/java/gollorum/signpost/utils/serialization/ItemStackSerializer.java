@@ -54,7 +54,7 @@ public final class ItemStackSerializer {
             return buffer.readBoolean()
                 ? ItemStack.EMPTY
                 : new ItemStack(
-                    BuiltInRegistries.ITEM.get(buffer.readResourceLocation()),
+                    BuiltInRegistries.ITEM.getValue(buffer.readResourceLocation()),
                     buffer.readInt()
                 );
         }

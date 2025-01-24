@@ -1,12 +1,13 @@
 package gollorum.signpost.minecraft.utils.tints;
 
 import gollorum.signpost.utils.Tint;
+import gollorum.signpost.utils.serialization.BufferSerializable;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.level.BlockAndTintGetter;
 
 public class GrassTint implements Tint {
@@ -17,14 +18,12 @@ public class GrassTint implements Tint {
     }
 
     public static void register() {
-        Tint.Serialization.register("grass", serializer);
+        Tint.Serialization.register("grass", new Serializer(compoundSerializer, bufferSerializable));
     }
 
-    public static final CompoundSerializable<GrassTint> serializer = new CompoundSerializable<>() {
+    public static final CompoundSerializable<GrassTint> compoundSerializer = new CompoundSerializable<>() {
         @Override
-        public void encode(CompoundTag compound, GrassTint grassTint, HolderLookup.Provider provider) {
-            return compound;
-        }
+        public void encode(CompoundTag compound, GrassTint grassTint, HolderLookup.Provider provider) { }
 
         @Override
         public boolean isContainedIn(CompoundTag compound) {
@@ -35,13 +34,16 @@ public class GrassTint implements Tint {
         public GrassTint decode(CompoundTag compound, HolderLookup.Provider provider) {
             return new GrassTint();
         }
+    };
+
+    public static final BufferSerializable<GrassTint> bufferSerializable = new BufferSerializable<>() {
 
         @Override
-        public void encode(FriendlyByteBuf buffer, GrassTint grassTint) {
+        public void encode(RegistryFriendlyByteBuf buffer, GrassTint grassTint) {
         }
 
         @Override
-        public GrassTint decode(FriendlyByteBuf buffer) {
+        public GrassTint decode(RegistryFriendlyByteBuf buffer) {
             return new GrassTint();
         }
 

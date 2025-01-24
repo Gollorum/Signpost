@@ -25,7 +25,7 @@ public record BlockColorTint(Block block, int tintIndex) implements Tint {
     }
 
     public static void register() {
-        Tint.Serialization.register("blockColor", compoundSerializer);
+        Tint.Serialization.register("blockColor", new Serializer(compoundSerializer, bufferSerializer));
     }
 
     private static Registry<Block> getBlockRegistry() {
@@ -44,19 +44,19 @@ public record BlockColorTint(Block block, int tintIndex) implements Tint {
 
         @Override
         public void encode(CompoundTag compound, BlockColorTint tint, HolderLookup.Provider provider) {
-            ResourceLocationSerializer.Instance.encode(compound, getKey(tint.block), provider);
+            ResourceLocationSerializer.COMPOUND.encode(compound, getKey(tint.block), provider);
             compound.putInt("TintIndex", tint.tintIndex);
         }
 
         @Override
         public boolean isContainedIn(CompoundTag compound) {
-            return ResourceLocationSerializer.Instance.isContainedIn(compound);
+            return ResourceLocationSerializer.COMPOUND.isContainedIn(compound);
         }
 
         @Override
         public BlockColorTint decode(CompoundTag compound, HolderLookup.Provider provider) {
             return new BlockColorTint(
-                getBlock(ResourceLocationSerializer.Instance.decode(compound, provider)),
+                getBlock(ResourceLocationSerializer.COMPOUND.decode(compound, provider)),
                 compound.getInt("TintIndex")
             );
         }
@@ -66,14 +66,14 @@ public record BlockColorTint(Block block, int tintIndex) implements Tint {
 
         @Override
         public void encode(RegistryFriendlyByteBuf buffer, BlockColorTint tint) {
-            ResourceLocationSerializer.Instance.encode(buffer, getKey(tint.block));
+            ResourceLocationSerializer.BUFFER.encode(buffer, getKey(tint.block));
             buffer.writeInt(tint.tintIndex);
         }
 
         @Override
         public BlockColorTint decode(RegistryFriendlyByteBuf buffer) {
             return new BlockColorTint(
-                getBlock(ResourceLocationSerializer.Instance.decode(buffer)),
+                getBlock(ResourceLocationSerializer.BUFFER.decode(buffer)),
                 buffer.readInt()
             );
         }

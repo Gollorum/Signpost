@@ -14,11 +14,11 @@ public class ComponentSerializer implements BufferSerializable<Component> {
 
     @Override
     public void encode(RegistryFriendlyByteBuf buffer, Component component) {
-        buffer.writeComponent(component);
+        buffer.writeUtf(Component.Serializer.toJson(component, buffer.registryAccess()));
     }
 
     @Override
     public Component decode(RegistryFriendlyByteBuf buffer) {
-        return buffer.readComponent();
+        return Component.Serializer.fromJson(buffer.readUtf(), buffer.registryAccess());
     }
 }

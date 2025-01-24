@@ -21,6 +21,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
@@ -116,8 +117,10 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
 
     private List<Tuple<TextureAtlasSprite, Optional<Tint>>> allSpritesFor(BlockItem item, ItemStack stack) {
         Block block = item.getBlock();
-        return block instanceof PostBlock && stack.hasTag() && stack.getTag().contains("Parts")
-            ? PostTile.readPartInstances(stack.getTag().getCompound("Parts"))
+        if (!(block instanceof PostBlock)) return allSpritesFor(block.defaultBlockState());
+        var data = stack.get(DataComponents.CUSTOM_DATA);
+        return data != null && data.contains("Parts")
+            ? PostTile.readPartInstances(data.copyTag().getCompound("Parts"), minecraft.player.registryAccess())
                 .stream().flatMap(i -> ((Collection<Texture>) i.blockPart.getAllTextures())
                     .stream().map(tex -> Tuple.of(spriteFrom(tex.location()), tex.tint()))
                 ).collect(Collectors.toList())

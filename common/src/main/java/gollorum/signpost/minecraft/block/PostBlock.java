@@ -21,6 +21,7 @@ import gollorum.signpost.utils.serialization.BufferSerializable;
 import gollorum.signpost.utils.serialization.StringSerializer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.*;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -34,6 +35,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -394,8 +396,9 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
                 tile.setSignpostOwner(Optional.of(PlayerHandle.from(placer)));
                 boolean shouldAddNewSign = placer instanceof ServerPlayer;
                 if (!world.isClientSide()) {
-                    if(stack.hasTag() && stack.getTag().contains("Parts")) {
-                        tile.readParts(stack.getTag().getCompound("Parts"));
+                    var customData = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+                    if(customData.contains("Parts")) {
+                        tile.readParts(customData.copyTag().getCompound("Parts"), world.registryAccess());
                         shouldAddNewSign = false;
                     } else {
                         tile.addPart(
@@ -433,7 +436,8 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
 
     @Override
     public void playerDestroy(Level world, Player player, BlockPos pos, BlockState state, @Nullable BlockEntity tile, ItemStack item) {
-        if(!player.isCreative() && tile instanceof PostTile && !EnchantmentHelper.getEnchantments(item).containsKey(Enchantments.SILK_TOUCH)) {
+        var silkTouchHolder = world.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.SILK_TOUCH);
+        if(!player.isCreative() && tile instanceof PostTile && EnchantmentHelper.getItemEnchantmentLevel(silkTouchHolder, item) == 0) {
             dropPartItems((PostTile) tile, world, pos);
         }
         super.playerDestroy(world, player, pos, state, tile, item);

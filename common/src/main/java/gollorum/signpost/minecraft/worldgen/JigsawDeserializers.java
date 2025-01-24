@@ -1,6 +1,6 @@
 package gollorum.signpost.minecraft.worldgen;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import gollorum.signpost.Signpost;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -27,10 +27,10 @@ public class JigsawDeserializers {
     public static Supplier<StructurePoolElementType<SignpostJigsawPiece>> signpost = null;
     public static Supplier<StructurePoolElementType<WaystoneJigsawPiece>> waystone = null;
 
-    private static <P extends StructurePoolElement> StructurePoolElementType<P> register(String name, Codec<P> codec) {
+    private static <P extends StructurePoolElement> StructurePoolElementType<P> register(String name, MapCodec<P> codec) {
         return Registry.register(BuiltInRegistries.STRUCTURE_POOL_ELEMENT, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, name), () -> codec);
     }
-    private static <P extends StructurePoolElement> StructurePoolElementType<P> registerLegacy(String name, Codec<P> codec) {
+    private static <P extends StructurePoolElement> StructurePoolElementType<P> registerLegacy(String name, MapCodec<P> codec) {
         return Registry.register(BuiltInRegistries.STRUCTURE_POOL_ELEMENT, name, () -> codec);
     }
 }

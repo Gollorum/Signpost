@@ -51,20 +51,20 @@ public class VillageWaystone {
             public void encode(CompoundTag compound, ChunkEntryKey key, HolderLookup.Provider provider) {
                 compound.putInt("x", key.chunkPos.x);
                 compound.putInt("z", key.chunkPos.z);
-                ResourceLocationSerializer.Instance.encode(compound, key.dimensionKey, );
+                ResourceLocationSerializer.COMPOUND.encode(compound, key.dimensionKey, provider);
             }
 
             @Override
             public boolean isContainedIn(CompoundTag compound) {
                 return compound.contains("x") && compound.contains("z") &&
-                    ResourceLocationSerializer.Instance.isContainedIn(compound);
+                    ResourceLocationSerializer.COMPOUND.isContainedIn(compound);
             }
 
             @Override
             public ChunkEntryKey decode(CompoundTag compound, HolderLookup.Provider provider) {
                 return new ChunkEntryKey(
                     new ChunkPos(compound.getInt("x"), compound.getInt("z")),
-                    ResourceLocationSerializer.Instance.decode(compound, )
+                    ResourceLocationSerializer.COMPOUND.decode(compound, provider)
                 );
             }
         }
@@ -93,32 +93,32 @@ public class VillageWaystone {
         Services.WAYSTONE_DISCOVERY_EVENT_LISTENER.initialize();
     }
 
-    public static Tag serialize() {
+    public static Tag serialize(HolderLookup.Provider registryAccess) {
         ListTag ret = new ListTag();
         ret.addAll(generatedWaystones.entrySet().stream().map(
             e -> {
                 CompoundTag compound = new CompoundTag();
-                compound.put("refPos", BlockPosSerializer.INSTANCE.encode(e.getKey()));
+                compound.put("refPos", BlockPosSerializer.COMPOUND.encode(e.getKey(), registryAccess));
                 generatedWaystonesByChunk.entrySet().stream().filter(ce -> ce.getValue().equals(e.getValue())).findFirst()
-                    .ifPresent(ce -> compound.put("chunkEntryKey", ChunkEntryKey.serializer.encode(ce.getKey())));
-                compound.put("waystone", WaystoneHandle.Vanilla.Serializer.encode(e.getValue()));
+                    .ifPresent(ce -> compound.put("chunkEntryKey", ChunkEntryKey.serializer.encode(ce.getKey(), registryAccess)));
+                compound.put("waystone", WaystoneHandle.Vanilla.CompoundSerializer.encode(e.getValue(), registryAccess));
                 return compound;
             }).toList());
         return ret;
     }
 
-    public static void deserialize(ListTag nbt) {
+    public static void deserialize(ListTag nbt, HolderLookup.Provider registryAccess) {
         generatedWaystones.clear();
         generatedWaystones.putAll(
             nbt.stream().collect(Collectors.toMap(
-                entry -> BlockPosSerializer.INSTANCE.decode(((CompoundTag) entry).getCompound("refPos"), ),
-                entry -> WaystoneHandle.Vanilla.Serializer.decode(((CompoundTag) entry).getCompound("waystone"), )
+                entry -> BlockPosSerializer.COMPOUND.decode(((CompoundTag) entry).getCompound("refPos"), registryAccess),
+                entry -> WaystoneHandle.Vanilla.CompoundSerializer.decode(((CompoundTag) entry).getCompound("waystone"), registryAccess)
             )));
         generatedWaystonesByChunk.clear();
         generatedWaystonesByChunk.putAll(
             nbt.stream().collect(Collectors.toMap(
-                entry -> ChunkEntryKey.serializer.decode(((CompoundTag) entry).getCompound("chunkEntryKey"), ),
-                entry -> WaystoneHandle.Vanilla.Serializer.decode(((CompoundTag) entry).getCompound("waystone"), )
+                entry -> ChunkEntryKey.serializer.decode(((CompoundTag) entry).getCompound("chunkEntryKey"), registryAccess),
+                entry -> WaystoneHandle.Vanilla.CompoundSerializer.decode(((CompoundTag) entry).getCompound("waystone"), registryAccess)
             )));
     }
 

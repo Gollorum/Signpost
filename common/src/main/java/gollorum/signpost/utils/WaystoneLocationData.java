@@ -30,20 +30,20 @@ public final class WaystoneLocationData {
 
         @Override
         public void encode(CompoundTag compound, WaystoneLocationData data, HolderLookup.Provider provider) {
-            compound.put("Block", WorldLocation.SERIALIZER.encode(data.block, provider));
+            compound.put("Block", WorldLocation.COMPOUND_SERIALIZER.encode(data.block, provider));
             compound.put("Spawn", Vector3.CompoundSerializer.encode(data.spawn, provider));
         }
 
         @Override
         public boolean isContainedIn(CompoundTag compound) {
-            return compound.contains("Block") && WorldLocation.SERIALIZER.isContainedIn(compound.getCompound("Block"))
+            return compound.contains("Block") && WorldLocation.COMPOUND_SERIALIZER.isContainedIn(compound.getCompound("Block"))
                 && compound.contains("Spawn") && Vector3.CompoundSerializer.isContainedIn(compound.getCompound("Spawn"));
         }
 
         @Override
         public WaystoneLocationData decode(CompoundTag compound, HolderLookup.Provider provider) {
             return new WaystoneLocationData(
-                WorldLocation.SERIALIZER.decode(compound.getCompound("Block"), provider),
+                WorldLocation.COMPOUND_SERIALIZER.decode(compound.getCompound("Block"), provider),
                 Vector3.CompoundSerializer.decode(compound.getCompound("Spawn"), provider)
             );
         }
@@ -53,14 +53,14 @@ public final class WaystoneLocationData {
 
         @Override
         public void encode(RegistryFriendlyByteBuf buffer, WaystoneLocationData data) {
-            WorldLocation.SERIALIZER.encode(buffer, data.block);
+            WorldLocation.BUFFER_SERIALIZER.encode(buffer, data.block);
             Vector3.BufferSerializer.encode(buffer, data.spawn);
         }
 
         @Override
         public WaystoneLocationData decode(RegistryFriendlyByteBuf buffer) {
             return new WaystoneLocationData(
-                WorldLocation.SERIALIZER.decode(buffer),
+                WorldLocation.BUFFER_SERIALIZER.decode(buffer),
                 Vector3.BufferSerializer.decode(buffer)
             );
         }

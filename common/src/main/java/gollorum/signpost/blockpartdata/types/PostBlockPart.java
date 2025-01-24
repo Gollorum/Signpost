@@ -48,7 +48,7 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
     public static final BlockPartMetadata<PostBlockPart> METADATA = new BlockPartMetadata<>(
         "Post",
         (post, compound, provider) -> compound.put("texture", Texture.CompundSerializer.encode(post.texture, provider)),
-        (compound, provider) -> new PostBlockPart(Texture.readFrom(compound.get("texture"))),
+        (compound, provider) -> new PostBlockPart(Texture.readFrom(compound.get("texture"), provider)),
         PostBlockPart.class
     );
 
@@ -156,7 +156,7 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
 
     @Override
     public void readMutationUpdate(CompoundTag compound, BlockEntity tile, Player editingPlayer, HolderLookup.Provider provider) {
-        setTexture(Texture.readFrom(compound.get("texture")));
+        setTexture(Texture.readFrom(compound.get("texture"), provider));
     }
 
     @Override

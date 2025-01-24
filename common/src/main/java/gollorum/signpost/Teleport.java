@@ -351,14 +351,14 @@ public class Teleport {
         public void encode(RegistryFriendlyByteBuf buffer, Package message) {
             Either.BufferSerializer.of(StringSerializer.Buffer, Package.Info.serializer)
                 .encode(buffer, message.data);
-            PostTile.TilePartInfo.CompoundSerializer.optional().encode(buffer, message.tilePartInfo);
+            PostTile.TilePartInfo.BufferSerializer.optional().encode(buffer, message.tilePartInfo);
         }
 
         @Override
         public Package decode(RegistryFriendlyByteBuf buffer) {
             return new Package(
                 Either.BufferSerializer.of(StringSerializer.Buffer, Package.Info.serializer).decode(buffer),
-                PostTile.TilePartInfo.CompoundSerializer.optional().decode(buffer)
+                PostTile.TilePartInfo.BufferSerializer.optional().decode(buffer)
             );
         }
 

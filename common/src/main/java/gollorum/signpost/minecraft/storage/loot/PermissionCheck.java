@@ -43,12 +43,12 @@ public final class PermissionCheck implements LootItemCondition {
 
     @Override
     public boolean test(LootContext lootContext) {
-        if(!lootContext.hasParam(LootContextParams.THIS_ENTITY)) return true;
-        Entity thisEntity = lootContext.getParam(LootContextParams.THIS_ENTITY);
+        if(!lootContext.hasParameter(LootContextParams.THIS_ENTITY)) return true;
+        Entity thisEntity = lootContext.getParameter(LootContextParams.THIS_ENTITY);
         if(thisEntity.hasPermissions(IConfig.IServer.getInstance().permissions().pickUnownedWaystonePermissionLevel())) return true;
 
-        if(!lootContext.hasParam(LootContextParams.BLOCK_ENTITY)) return false;
-        BlockEntity blockEntity = lootContext.getParam(LootContextParams.BLOCK_ENTITY);
+        if(!lootContext.hasParameter(LootContextParams.BLOCK_ENTITY)) return false;
+        BlockEntity blockEntity = lootContext.getParameter(LootContextParams.BLOCK_ENTITY);
         if(!(blockEntity instanceof WaystoneTile)) return false;
         WaystoneTile waystoneTile = (WaystoneTile) blockEntity;
         return waystoneTile.getWaystoneOwner()

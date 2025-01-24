@@ -361,7 +361,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
             @Override
             public void encode(CompoundTag compound, TilePartInfo tilePartInfo, HolderLookup.Provider provider) {
                 compound.putString("Dimension", tilePartInfo.dimensionKey.toString());
-                compound.put("Pos", BlockPosSerializer.INSTANCE.encode(tilePartInfo.pos, provider));
+                compound.put("Pos", BlockPosSerializer.COMPOUND.encode(tilePartInfo.pos, provider));
                 compound.putUUID("Id", tilePartInfo.identifier);
             }
 
@@ -376,7 +376,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
             public TilePartInfo decode(CompoundTag compound, HolderLookup.Provider provider) {
                 return new TilePartInfo(
                     ResourceLocation.parse(compound.getString("Dimension")),
-                    BlockPosSerializer.INSTANCE.decode(compound.getCompound("Pos"), provider),
+                    BlockPosSerializer.COMPOUND.decode(compound.getCompound("Pos"), provider),
                     compound.getUUID("Id")
                 );
             }
@@ -393,7 +393,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
             @Override
             public void encode(RegistryFriendlyByteBuf buffer, TilePartInfo tilePartInfo) {
                 buffer.writeResourceLocation(tilePartInfo.dimensionKey);
-                BlockPosSerializer.INSTANCE.encode(buffer, tilePartInfo.pos);
+                BlockPosSerializer.BUFFER.encode(buffer, tilePartInfo.pos);
                 buffer.writeUUID(tilePartInfo.identifier);
             }
 
@@ -401,7 +401,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
             public TilePartInfo decode(RegistryFriendlyByteBuf buffer) {
                 return new TilePartInfo(
                     buffer.readResourceLocation(),
-                    BlockPosSerializer.INSTANCE.decode(buffer),
+                    BlockPosSerializer.BUFFER.decode(buffer),
                     buffer.readUUID()
                 );
             }
@@ -599,7 +599,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
                     TilePartInfo.BufferSerializer.decode(buffer),
                     TagParser.parseTag(StringSerializer.Buffer.decode(buffer)),
                     StringSerializer.Buffer.decode(buffer),
-                    Vector3.CompoundSerializer.optional().decode(buffer)
+                    Vector3.BufferSerializer.optional().decode(buffer)
                 );
             } catch (CommandSyntaxException e) {
                 throw new RuntimeException(e);
@@ -668,12 +668,12 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         @Override
         public void encode(RegistryFriendlyByteBuf buffer, Packet message) {
             buffer.writeNbt(message.tag);
-            WorldLocation.SERIALIZER.encode(buffer, message.location);
+            WorldLocation.BUFFER_SERIALIZER.encode(buffer, message.location);
         }
 
         @Override
         public Packet decode(RegistryFriendlyByteBuf buffer) {
-            return new Packet(buffer.readNbt(), WorldLocation.SERIALIZER.decode(buffer));
+            return new Packet(buffer.readNbt(), WorldLocation.BUFFER_SERIALIZER.decode(buffer));
         }
 
         @Override

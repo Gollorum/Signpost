@@ -250,11 +250,11 @@ public class VillageSignpost {
 	private static Optional<Overlay> overlayFor(ServerLevel world, BlockPos pos) {
 		Holder<Biome> biomeHolder = world.getBiome(pos);
 		Biome biome = biomeHolder.value();
-		var featureRegistry = world.getServer().registryAccess().registry(Registries.PLACED_FEATURE);
+		var featureRegistry = world.getServer().registryAccess().lookup(Registries.PLACED_FEATURE);
 		boolean isJungle = featureRegistry.isPresent() && biome.getGenerationSettings().features().stream().flatMap(HolderSet::stream)
 			.anyMatch(f -> f.value().equals(featureRegistry.get().get(VegetationPlacements.TREES_JUNGLE)));
 		if(biome.shouldSnow(world, pos)
-			|| biome.getPrecipitationAt(pos) == Biome.Precipitation.SNOW) return Optional.of(Overlay.Snow);
+			|| biome.getPrecipitationAt(pos, world.getSeaLevel()) == Biome.Precipitation.SNOW) return Optional.of(Overlay.Snow);
 		else if (isJungle) return Optional.of(Overlay.Vine);
 		else if (Services.BIOME_ACCESSOR.downfallIn(biome) > 0.85f) return Optional.of(Overlay.Gras);
 		else return Optional.empty();

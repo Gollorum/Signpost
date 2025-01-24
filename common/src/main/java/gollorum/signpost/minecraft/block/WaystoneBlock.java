@@ -16,6 +16,8 @@ import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -25,6 +27,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -145,10 +148,12 @@ public abstract class WaystoneBlock extends BaseEntityBlock implements WithCount
                 t.setWaystoneOwner(Optional.of(PlayerHandle.from(placer)));
                 if(placer instanceof ServerPlayer sp) {
                     WorldLocation worldLocation = new WorldLocation(pos, world);
-                    boolean wasRegistered = getCustomName(stack).map(name -> {
+                    boolean wasRegistered = getCustomName(stack, world.registryAccess()).map(name -> {
                         WaystoneLocationData locationData = new WaystoneLocationData(worldLocation, Vector3.fromVec3d(placer.position()));
-                        CompoundTag handleTag = stack.getTagElement("Handle");
-                        Optional<WaystoneHandle.Vanilla> handle = handleTag != null ? Optional.of(WaystoneHandle.Vanilla.Serializer.decode(handleTag, )) : Optional.empty();
+                        CompoundTag handleTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getCompound("Handle");
+                        Optional<WaystoneHandle.Vanilla> handle = WaystoneHandle.Vanilla.CompoundSerializer.isContainedIn(handleTag)
+                            ? Optional.of(WaystoneHandle.Vanilla.CompoundSerializer.decode(handleTag, world.registryAccess()))
+                            : Optional.empty();
                         return WaystoneLibrary.getInstance().tryAddNew(name, locationData, (ServerPlayer) placer, handle);
                     }).orElse(false);
                     if(!wasRegistered)
@@ -161,11 +166,11 @@ public abstract class WaystoneBlock extends BaseEntityBlock implements WithCount
     }
 
     // Modified copy of ItemStack.getHoverName()
-    private static Optional<String> getCustomName(ItemStack stack) {
-        CompoundTag displayTag = stack.getTagElement("display");
+    private static Optional<String> getCustomName(ItemStack stack, HolderLookup.Provider registryAccess) {
+        CompoundTag displayTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getCompound("display");
         if (displayTag != null && displayTag.contains("Name", 8)) {
             try {
-                Component component = Component.Serializer.fromJson(displayTag.getString("Name"));
+                Component component = Component.Serializer.fromJson(displayTag.getString("Name"), registryAccess);
                 if (component != null) {
                     return Optional.of(component.getString());
                 }
@@ -200,8 +205,10 @@ public abstract class WaystoneBlock extends BaseEntityBlock implements WithCount
             if(player.hasPermissions(IConfig.IServer.getInstance().permissions().pickUnownedWaystonePermissionLevel())
                 || tile.getWaystoneOwner().map(o -> o.equals(PlayerHandle.from(player))).orElse(true)) {
 
-                tile.getHandle().ifPresent(h -> stack.addTagElement("Handle", WaystoneHandle.Vanilla.Serializer.encode(h)));
-                tile.getName().ifPresent(n -> stack.setHoverName(Component.literal(n)));
+                tile.getHandle().ifPresent(h -> stack.update(DataComponents.CUSTOM_DATA, CustomData.EMPTY, customData -> customData.update(tag -> {
+                    tag.put("Handle", WaystoneHandle.Vanilla.CompoundSerializer.encode(h, player.registryAccess()));
+                })));
+                tile.getName().ifPresent(n -> stack.set(DataComponents.CUSTOM_NAME, Component.literal(n)));
             }
         }
         return stack;

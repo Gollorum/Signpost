@@ -45,8 +45,6 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static net.minecraft.client.renderer.LevelRenderer.DIRECTIONS;
-
 public class RenderingUtil {
 
     public static BakedModel loadModel(ResourceLocation location) {

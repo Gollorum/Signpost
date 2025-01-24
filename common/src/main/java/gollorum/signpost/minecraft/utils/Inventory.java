@@ -34,11 +34,11 @@ public class Inventory {
 		if(!player.isCreative()) {
 			if(Inventory.tryConsume(player, itemStack))
 				onSuccess.accept(player);
-			else player.sendSystemMessage(Component.translatable(
+			else player.displayClientMessage(Component.translatable(
 				LangKeys.tooExpensive,
 				itemStack.getCount(),
 				Component.translatable(itemStack.getItem().getDescriptionId())
-			));
+			), false);
 		} else onSuccess.accept(player);
 	}
 

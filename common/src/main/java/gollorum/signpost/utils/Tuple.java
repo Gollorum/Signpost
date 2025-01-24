@@ -53,56 +53,56 @@ public class Tuple<T1, T2> {
         return Objects.hash(_1, _2);
     }
 
-    public static class Serializer<T1, T2> implements CompoundSerializable<Tuple<T1, T2>> {
-
-        private final CompoundSerializable<T1> serializer1;
-        private final CompoundSerializable<T2> serializer2;
-
-        public Serializer(CompoundSerializable<T1> serializer1, CompoundSerializable<T2> serializer2) {
-            this.serializer1 = serializer1;
-            this.serializer2 = serializer2;
-        }
-
-        @Override
-        public Class<Tuple<T1, T2>> getTargetClass() {
-            return (Class<Tuple<T1, T2>>) new Tuple<T1, T2>(null, null).getClass();
-        }
-
-        @Override
-        public void encode(CompoundTag compound, Tuple<T1, T2> tuple, HolderLookup.Provider provider) {
-            compound.put("left", serializer1.encode(tuple._1, ));
-            compound.put("right", serializer2.encode(tuple._2, ));
-            return compound;
-        }
-
-        @Override
-        public boolean isContainedIn(CompoundTag compound) {
-            return compound.contains("left")
-                && compound.contains("right")
-                && serializer1.isContainedIn(compound.getCompound("left"))
-                && serializer2.isContainedIn(compound.getCompound("right"));
-        }
-
-        @Override
-        public Tuple<T1, T2> decode(CompoundTag compound, HolderLookup.Provider provider) {
-            return new Tuple<>(
-                serializer1.decode(compound.getCompound("left"), ),
-                serializer2.decode(compound.getCompound("right"), )
-            );
-        }
-
-        @Override
-        public void encode(FriendlyByteBuf buffer, Tuple<T1, T2> tuple) {
-            serializer1.encode(buffer, tuple._1, );
-            serializer2.encode(buffer, tuple._2, );
-        }
-
-        @Override
-        public Tuple<T1, T2> decode(FriendlyByteBuf buffer) {
-            return new Tuple<>(
-                serializer1.decode(buffer, ),
-                serializer2.decode(buffer, )
-            );
-        }
-    }
+//    public static class Serializer<T1, T2> implements CompoundSerializable<Tuple<T1, T2>> {
+//
+//        private final CompoundSerializable<T1> serializer1;
+//        private final CompoundSerializable<T2> serializer2;
+//
+//        public Serializer(CompoundSerializable<T1> serializer1, CompoundSerializable<T2> serializer2) {
+//            this.serializer1 = serializer1;
+//            this.serializer2 = serializer2;
+//        }
+//
+//        @Override
+//        public Class<Tuple<T1, T2>> getTargetClass() {
+//            return (Class<Tuple<T1, T2>>) new Tuple<T1, T2>(null, null).getClass();
+//        }
+//
+//        @Override
+//        public void encode(CompoundTag compound, Tuple<T1, T2> tuple, HolderLookup.Provider provider) {
+//            compound.put("left", serializer1.encode(tuple._1, ));
+//            compound.put("right", serializer2.encode(tuple._2, ));
+//            return compound;
+//        }
+//
+//        @Override
+//        public boolean isContainedIn(CompoundTag compound) {
+//            return compound.contains("left")
+//                && compound.contains("right")
+//                && serializer1.isContainedIn(compound.getCompound("left"))
+//                && serializer2.isContainedIn(compound.getCompound("right"));
+//        }
+//
+//        @Override
+//        public Tuple<T1, T2> decode(CompoundTag compound, HolderLookup.Provider provider) {
+//            return new Tuple<>(
+//                serializer1.decode(compound.getCompound("left"), ),
+//                serializer2.decode(compound.getCompound("right"), )
+//            );
+//        }
+//
+//        @Override
+//        public void encode(FriendlyByteBuf buffer, Tuple<T1, T2> tuple) {
+//            serializer1.encode(buffer, tuple._1, );
+//            serializer2.encode(buffer, tuple._2, );
+//        }
+//
+//        @Override
+//        public Tuple<T1, T2> decode(FriendlyByteBuf buffer) {
+//            return new Tuple<>(
+//                serializer1.decode(buffer, ),
+//                serializer2.decode(buffer, )
+//            );
+//        }
+//    }
 }

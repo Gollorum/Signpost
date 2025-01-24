@@ -9,6 +9,7 @@ import gollorum.signpost.minecraft.gui.utils.TextureResource;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.renderer.GameRenderer;
 
 import javax.annotation.Nullable;
@@ -73,8 +74,7 @@ public class ColorInputBox extends InputBox {
     @Override
     public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         Tesselator tessellator = Tesselator.getInstance();
-        BufferBuilder bufferbuilder = tessellator.getBuilder();
-        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+        RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
         RenderSystem.setShaderTexture(0, TextureResource.background.location);
         int red = Colors.getRed(currentResult);
         int green = Colors.getGreen(currentResult);
@@ -82,12 +82,12 @@ public class ColorInputBox extends InputBox {
         RenderSystem.setShaderColor(1, 1, 1, 1);
         var x = getX();
         var y = getY();
-        bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-        bufferbuilder.vertex(x - height, y + height, 0.0D).uv(0, 1).color(red, green, blue, 255).endVertex();
-        bufferbuilder.vertex(x, y + height, 0.0D).uv(1, 1).color(red, green, blue, 255).endVertex();
-        bufferbuilder.vertex(x, y, 0.0D).uv(1, 0).color(red, green, blue, 255).endVertex();
-        bufferbuilder.vertex(x - height, y, 0.0D).uv(0, 0).color(red, green, blue, 255).endVertex();
-        tessellator.end();
+        BufferBuilder bufferbuilder = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        bufferbuilder.addVertex(x - height, y + height, 0).setUv(0, 1).setColor(red, green, blue, 255);
+        bufferbuilder.addVertex(x, y + height, 0).setUv(1, 1).setColor(red, green, blue, 255);
+        bufferbuilder.addVertex(x, y, 0).setUv(1, 0).setColor(red, green, blue, 255);
+        bufferbuilder.addVertex(x - height, y, 0).setUv(0, 0).setColor(red, green, blue, 255);
+        BufferUploader.drawWithShader(bufferbuilder.build());
         super.renderWidget(graphics, mouseX, mouseY, partialTicks);
     }
 

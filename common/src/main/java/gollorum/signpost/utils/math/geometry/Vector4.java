@@ -1,9 +1,11 @@
 package gollorum.signpost.utils.math.geometry;
 
+import gollorum.signpost.utils.serialization.BufferSerializable;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 
 import java.util.Objects;
 import java.util.function.Function;
@@ -95,11 +97,7 @@ public final class Vector4 {
         return Objects.hash(x, y, z, w);
     }
 
-    public static final Serializer SERIALIZER = new Serializer();
-
-    public static final class Serializer implements CompoundSerializable<Vector4> {
-
-        private Serializer(){}
+    public static final CompoundSerializable<Vector4> COMPOUND_SERIALIZER = new CompoundSerializable<>() {
 
         @Override
         public void encode(CompoundTag compound, Vector4 Vector4, HolderLookup.Provider provider) {
@@ -107,7 +105,6 @@ public final class Vector4 {
             compound.putFloat("Y", Vector4.y);
             compound.putFloat("Z", Vector4.z);
             compound.putFloat("W", Vector4.w);
-            return compound;
         }
 
         @Override
@@ -127,6 +124,9 @@ public final class Vector4 {
                 compound.getFloat("W")
             );
         }
+    };
+
+    public static final BufferSerializable<Vector4> BUFFER_SERIALIZER = new BufferSerializable<>() {
 
         @Override
         public Class<Vector4> getTargetClass() {
@@ -134,7 +134,7 @@ public final class Vector4 {
         }
 
         @Override
-        public void encode(FriendlyByteBuf buffer, Vector4 vec) {
+        public void encode(RegistryFriendlyByteBuf buffer, Vector4 vec) {
             buffer.writeFloat(vec.x);
             buffer.writeFloat(vec.y);
             buffer.writeFloat(vec.z);
@@ -142,7 +142,7 @@ public final class Vector4 {
         }
 
         @Override
-        public Vector4 decode(FriendlyByteBuf buffer) {
+        public Vector4 decode(RegistryFriendlyByteBuf buffer) {
             return new Vector4(
                 buffer.readFloat(),
                 buffer.readFloat(),
@@ -150,6 +150,6 @@ public final class Vector4 {
                 buffer.readFloat()
             );
         }
-    }
+    };
 
 }

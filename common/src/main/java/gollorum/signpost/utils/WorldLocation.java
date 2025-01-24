@@ -1,12 +1,14 @@
 package gollorum.signpost.utils;
 
 import gollorum.signpost.utils.serialization.BlockPosSerializer;
+import gollorum.signpost.utils.serialization.BufferSerializable;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.WorldSerializer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -70,32 +72,33 @@ public class WorldLocation {
         );
     }
 
-    public static final Serializer SERIALIZER = new Serializer();
-
-    public static final class Serializer implements CompoundSerializable<WorldLocation>{
+    public static final CompoundSerializable<WorldLocation> COMPOUND_SERIALIZER = new CompoundSerializable<WorldLocation>() {
 
         @Override
-        public void encode(CompoundTag compound, WorldLocation worldLocation, HolderLookup.Provider provider) {
-            compound.put("Pos", BlockPosSerializer.INSTANCE.encode(worldLocation.blockPos, ));
-            compound.put("Level", WorldSerializer.INSTANCE.encode(worldLocation.world, ));
-            return compound;
+        public void encode(CompoundTag compound, WorldLocation worldLocation, HolderLookup.Provider registryAccess) {
+            compound.put("Pos", BlockPosSerializer.COMPOUND.encode(worldLocation.blockPos, registryAccess));
+            compound.put("Level", WorldSerializer.COMPOUND.encode(worldLocation.world, registryAccess));
         }
 
         @Override
         public boolean isContainedIn(CompoundTag compound) {
             return compound.contains("Pos")
-                && BlockPosSerializer.INSTANCE.isContainedIn(compound.getCompound("Pos"))
+                && BlockPosSerializer.COMPOUND.isContainedIn(compound.getCompound("Pos"))
                 && compound.contains("Level")
-                && WorldSerializer.INSTANCE.isContainedIn(compound.getCompound("Level"));
+                && WorldSerializer.COMPOUND.isContainedIn(compound.getCompound("Level"));
         }
 
         @Override
-        public WorldLocation decode(CompoundTag compound, HolderLookup.Provider provider) {
+        public WorldLocation decode(CompoundTag compound, HolderLookup.Provider registryAccess) {
             return new WorldLocation(
-                BlockPosSerializer.INSTANCE.decode(compound.getCompound("Pos"), ),
-                WorldSerializer.INSTANCE.decode(compound.getCompound("Level"), )
+                BlockPosSerializer.COMPOUND.decode(compound.getCompound("Pos"), registryAccess),
+                WorldSerializer.COMPOUND.decode(compound.getCompound("Level"), registryAccess)
             );
         }
+    };
+
+    public static final BufferSerializable<WorldLocation> BUFFER_SERIALIZER = new BufferSerializable<WorldLocation>() {
+
 
         @Override
         public Class<WorldLocation> getTargetClass() {
@@ -103,17 +106,17 @@ public class WorldLocation {
         }
 
         @Override
-        public void encode(FriendlyByteBuf buffer, WorldLocation worldLocation) {
-            BlockPosSerializer.INSTANCE.encode(buffer, worldLocation.blockPos);
-            WorldSerializer.INSTANCE.encode(buffer, worldLocation.world);
+        public void encode(RegistryFriendlyByteBuf buffer, WorldLocation worldLocation) {
+            BlockPosSerializer.BUFFER.encode(buffer, worldLocation.blockPos);
+            WorldSerializer.BUFFER.encode(buffer, worldLocation.world);
         }
 
         @Override
-        public WorldLocation decode(FriendlyByteBuf buffer) {
+        public WorldLocation decode(RegistryFriendlyByteBuf buffer) {
             return new WorldLocation(
-                BlockPosSerializer.INSTANCE.decode(buffer),
-                WorldSerializer.INSTANCE.decode(buffer)
+                BlockPosSerializer.BUFFER.decode(buffer),
+                WorldSerializer.BUFFER.decode(buffer)
             );
         }
-    }
+    };
 }

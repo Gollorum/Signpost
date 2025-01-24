@@ -24,14 +24,14 @@ public class RequestWaystoneGui implements PacketHandler.Event.ForClient<Request
 
 	@Override
 	public void encode(RegistryFriendlyByteBuf buffer, Package message) {
-		WorldLocation.SERIALIZER.encode(buffer, message.location);
+		WorldLocation.BUFFER_SERIALIZER.encode(buffer, message.location);
 		WaystoneData.BUFFER_SERIALIZER.optional().encode(buffer, message.oldData);
 	}
 
 	@Override
 	public RequestWaystoneGui.Package decode(RegistryFriendlyByteBuf buffer) {
 		return new RequestWaystoneGui.Package(
-			WorldLocation.SERIALIZER.decode(buffer),
+			WorldLocation.BUFFER_SERIALIZER.decode(buffer),
 			WaystoneData.BUFFER_SERIALIZER.optional().decode(buffer)
 		);
 	}

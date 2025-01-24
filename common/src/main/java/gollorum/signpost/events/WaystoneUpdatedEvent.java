@@ -58,7 +58,7 @@ public abstract class WaystoneUpdatedEvent {
             if(event instanceof WaystoneRenamedEvent)
                 StringSerializer.Buffer.encode(buffer, ((WaystoneRenamedEvent)event).oldName);
             else if(event instanceof WaystoneMovedEvent)
-                WorldLocation.SERIALIZER.encode(buffer, ((WaystoneMovedEvent)event).newLocation);
+                WorldLocation.BUFFER_SERIALIZER.encode(buffer, ((WaystoneMovedEvent)event).newLocation);
             if(event instanceof WaystoneAddedOrRenamedEvent)
                 buffer.writeBoolean(((WaystoneAddedOrRenamedEvent) event).isLocked);
         }
@@ -72,7 +72,7 @@ public abstract class WaystoneUpdatedEvent {
                 case Added -> new WaystoneAddedEvent(location, name, buffer.readBoolean(), handle);
                 case Removed -> new WaystoneRemovedEvent(location, name, handle);
                 case Renamed -> new WaystoneRenamedEvent(location, name, StringSerializer.Buffer.decode(buffer), buffer.readBoolean(), handle);
-                case Moved -> new WaystoneMovedEvent(location, WorldLocation.SERIALIZER.decode(buffer), name, handle);
+                case Moved -> new WaystoneMovedEvent(location, WorldLocation.BUFFER_SERIALIZER.decode(buffer), name, handle);
                 default -> throw new RuntimeException("Type " + type + " is not supported");
             };
         }

@@ -38,7 +38,7 @@ public class SmallWideSignBlockPart extends SignBlockPart<SmallWideSignBlockPart
         },
         (compound, provider) -> new SmallWideSignBlockPart(
             CoreData.SERIALIZER.decode(compound.getCompound("CoreData"), provider),
-            NameProvider.fetchFrom(compound.get("Text"))
+            NameProvider.fetchFrom(compound.get("Text"), provider)
         ),
         SmallWideSignBlockPart.class
     );
@@ -101,11 +101,11 @@ public class SmallWideSignBlockPart extends SignBlockPart<SmallWideSignBlockPart
             && !hasThePermissionToEdit(((WithOwner.OfSignpost)tile), editingPlayer)
         ) {
             // This should not happen unless a sender tries to hacc
-            editingPlayer.sendSystemMessage(Component.translatable(LangKeys.noPermissionSignpost));
+            editingPlayer.displayClientMessage(Component.translatable(LangKeys.noPermissionSignpost), false);
             return;
         }
         if (compound.contains("Text")) {
-            setText(NameProvider.fetchFrom(compound.get("Text")));
+            setText(NameProvider.fetchFrom(compound.get("Text"), provider));
         }
         super.readMutationUpdate(compound, tile, editingPlayer, provider);
     }

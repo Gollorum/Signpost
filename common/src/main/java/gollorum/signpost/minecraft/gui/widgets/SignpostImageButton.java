@@ -5,6 +5,7 @@ import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.minecraft.gui.utils.TextureResource;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.CommonComponents;
 
 public class SignpostImageButton extends Button {
@@ -43,10 +44,11 @@ public class SignpostImageButton extends Button {
 
     @Override
     public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        graphics.blit(background.location,
+        graphics.blit(RenderType::guiTextured,
+            background.location,
             this.getX(), this.getY(),
             this.width, this.height,
-            background.offset.width, background.offset.height + (this.isHoveredOrFocused() ? background.size.height : 0.0f),
+            background.offset.width, background.offset.height + (this.isHoveredOrFocused() ? background.size.height : 0),
             background.size.width, background.size.height,
             background.fileSize.width, background.fileSize.height);
     }

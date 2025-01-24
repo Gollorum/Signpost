@@ -19,10 +19,12 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
+import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Optional;
 
 public class Villages {
 
@@ -61,16 +63,16 @@ public class Villages {
 
 	@SuppressWarnings("UnreachableCode") // it thinks the accessor mixin throws
     private void registerProcessorLists(RegistryAccess registryAccess) {
-		var optionalReg = registryAccess.registry(Registries.PROCESSOR_LIST);
+		var optionalReg = registryAccess.lookup(Registries.PROCESSOR_LIST);
 		if(optionalReg.isEmpty()) {
 			Signpost.LOGGER.error("Failed to initialize village generation: ProcessorList registry not found");
 			return;
 		}
 		var reg = optionalReg.get();
-		waystoneProcessorListDesert = reg.getHolderOrThrow(ProcessorListsAccessor.getEmpty());
-		waystoneProcessorListPlains = reg.getHolderOrThrow(ProcessorLists.STREET_PLAINS);
-		waystoneProcessorListSavanna = reg.getHolderOrThrow(ProcessorLists.STREET_SAVANNA);
-		waystoneProcessorListSnowyOrTaiga = reg.getHolderOrThrow(ProcessorLists.STREET_SNOWY_OR_TAIGA);
+		waystoneProcessorListDesert = reg.getOrThrow(ProcessorListsAccessor.getEmpty());
+		waystoneProcessorListPlains = reg.getOrThrow(ProcessorLists.STREET_PLAINS);
+		waystoneProcessorListSavanna = reg.getOrThrow(ProcessorLists.STREET_SAVANNA);
+		waystoneProcessorListSnowyOrTaiga = reg.getOrThrow(ProcessorLists.STREET_SNOWY_OR_TAIGA);
 	}
 
 	public static void reset() {
@@ -83,7 +85,7 @@ public class Villages {
 	public void initialize(RegistryAccess registryAccess) {
 		registerProcessorLists(registryAccess);
 
-		var optionalReg = registryAccess.registry(Registries.TEMPLATE_POOL);
+		var optionalReg = registryAccess.lookup(Registries.TEMPLATE_POOL);
 		if(optionalReg.isEmpty()) {
 			Signpost.LOGGER.error("Failed to initialize village generation: TemplatePool registry not found");
 			return;
@@ -103,7 +105,8 @@ public class Villages {
 					new WaystoneJigsawPiece(
 						villageType.getWaystoneStructureResourceLocation("waystone"),
 					    villageType.processorList,
-						StructureTemplatePool.Projection.RIGID
+						StructureTemplatePool.Projection.RIGID,
+                        Optional.empty()
 					),
 					1
 				),
@@ -112,6 +115,7 @@ public class Villages {
 						villageType.getSignpostStructureResourceLocation("signpost"),
 						villageType.processorList,
 						StructureTemplatePool.Projection.TERRAIN_MATCHING,
+                        Optional.of(LiquidSettings.APPLY_WATERLOGGING),
 						isZombie
 					),
 					3
@@ -135,18 +139,18 @@ public class Villages {
 		Registry<StructureTemplatePool> registry
 	) {
 		var key = ResourceKey.create(Registries.TEMPLATE_POOL, poolKey);
-		var poolHolder = registry.getHolder(key);
-		if(poolHolder.isEmpty()) {
+		var pool = registry.getValue(key);
+		if(pool == null) {
 			Signpost.LOGGER.error("Tried to add elements to village pool " + poolKey + ", but it was not found in the registry.");
 			return;
 		}
-		var pool = (StructureTemplatePoolAccessor) poolHolder.get().value();
-		var templates = new ArrayList<>(pool.getRawTemplates());
+        var templatePool = (StructureTemplatePoolAccessor) pool;
+		var templates = new ArrayList<>(templatePool.getRawTemplates());
 		for(Tuple<SinglePoolElement, Integer> tuple : houses) {
 			templates.add(new Pair<>(tuple._1, tuple._2));
-			for(int i = 0; i < tuple._2; i++) pool.getTemplates().add(tuple._1);
+			for(int i = 0; i < tuple._2; i++) templatePool.getTemplates().add(tuple._1);
 		}
-        pool.setRawTemplates(templates);
+        templatePool.setRawTemplates(templates);
 	}
 
 }

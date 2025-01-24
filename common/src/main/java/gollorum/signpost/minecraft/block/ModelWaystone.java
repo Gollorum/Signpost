@@ -113,13 +113,17 @@ public abstract class ModelWaystone extends BaseEntityBlock implements SimpleWat
 		this.registerDefaultState(this.defaultBlockState().setValue(Waterlogged, false).setValue(Facing, Direction.NORTH));
 	}
 
-	@Override
-	public String getDescriptionId() {
-		return WaystoneBlock.getInstance().getDescriptionId() + "_" + variant.langPrefix + "_" + variant.name;
-	}
+    @Override
+    protected InteractionResult useItemOn(ItemStack item, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        return use(world, pos, player);
+    }
 
-	@Override
-	public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+        return use(level, pos, player);
+    }
+
+	public InteractionResult use(Level world, BlockPos pos, Player player) {
 		WaystoneBlock.onRightClick(world, pos, player);
 		return InteractionResult.CONSUME;
 	}
@@ -165,8 +169,8 @@ public abstract class ModelWaystone extends BaseEntityBlock implements SimpleWat
 		return state.getValue(Waterlogged) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
 	}
 
-	@Override
-	public boolean propagatesSkylightDown(BlockState state, BlockGetter reader, BlockPos pos) {
+    @Override
+	public boolean propagatesSkylightDown(BlockState state) {
 		return !state.getValue(Waterlogged);
 	}
 

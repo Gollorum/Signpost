@@ -3,37 +3,41 @@ package gollorum.signpost.utils.serialization;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 
-public class ResourceLocationSerializer implements CompoundSerializable<ResourceLocation> {
+public class ResourceLocationSerializer {
 
-    public static ResourceLocationSerializer Instance = ResourceLocation.parseSerializer();
+    public static CompoundSerializable<ResourceLocation> COMPOUND = new CompoundSerializable<>() {
 
-    public void encode(CompoundTag compound, ResourceLocation location, HolderLookup.Provider provider) {
-        compound.putString("ResourceLocation", location.toString());
-        return compound;
-    }
+        public void encode(CompoundTag compound, ResourceLocation location, HolderLookup.Provider provider) {
+            compound.putString("ResourceLocation", location.toString());
+        }
 
-    public boolean isContainedIn(CompoundTag compound) {
-        return compound.contains("ResourceLocation");
-    }
+        public boolean isContainedIn(CompoundTag compound) {
+            return compound.contains("ResourceLocation");
+        }
 
-    public ResourceLocation decode(CompoundTag compound, HolderLookup.Provider provider) {
-        return ResourceLocation.parse(compound.getString("ResourceLocation"));
-    }
+        public ResourceLocation decode(CompoundTag compound, HolderLookup.Provider provider) {
+            return ResourceLocation.parse(compound.getString("ResourceLocation"));
+        }
+    };
 
-    @Override
-    public void encode(FriendlyByteBuf buffer, ResourceLocation resourceLocation) {
-        buffer.writeResourceLocation(resourceLocation);
-    }
+    public static BufferSerializable<ResourceLocation> BUFFER = new BufferSerializable<>() {
 
-    @Override
-    public ResourceLocation decode(FriendlyByteBuf buffer) {
-        return buffer.readResourceLocation();
-    }
+        @Override
+        public void encode(RegistryFriendlyByteBuf buffer, ResourceLocation resourceLocation) {
+            buffer.writeResourceLocation(resourceLocation);
+        }
 
-    @Override
-    public Class<ResourceLocation> getTargetClass() {
+        @Override
+        public ResourceLocation decode(RegistryFriendlyByteBuf buffer) {
+            return buffer.readResourceLocation();
+        }
+
+        @Override
+        public Class<ResourceLocation> getTargetClass() {
         return ResourceLocation.class;
     }
+    };
 }

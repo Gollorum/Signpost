@@ -7,6 +7,7 @@ import gollorum.signpost.minecraft.gui.utils.Rect;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -45,9 +46,8 @@ public class SpriteSelectionButton extends AbstractButton {
 
     @Override
     public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShader(CoreShaders.POSITION_TEX);
         RenderSystem.setShaderColor(r, g, b, this.alpha);
 
         RenderSystem.setShaderTexture(0, sprite.atlasLocation());
@@ -61,12 +61,12 @@ public class SpriteSelectionButton extends AbstractButton {
         int xMax = xMin + width;
         int yMin = this.getY();
         int yMax = yMin + height;
-        bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        bufferbuilder.vertex(matrix, xMin, yMax, blitOffset).uv(sprite.getU0(), sprite.getV1()).endVertex();
-        bufferbuilder.vertex(matrix, xMax, yMax, blitOffset).uv(sprite.getU1(), sprite.getV1()).endVertex();
-        bufferbuilder.vertex(matrix, xMax, yMin, blitOffset).uv(sprite.getU1(), sprite.getV0()).endVertex();
-        bufferbuilder.vertex(matrix, xMin, yMin, blitOffset).uv(sprite.getU0(), sprite.getV0()).endVertex();
-        BufferUploader.drawWithShader(bufferbuilder.end());
+        BufferBuilder bufferbuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        bufferbuilder.addVertex(matrix, xMin, yMax, blitOffset).setUv(sprite.getU0(), sprite.getV1());
+        bufferbuilder.addVertex(matrix, xMax, yMax, blitOffset).setUv(sprite.getU1(), sprite.getV1());
+        bufferbuilder.addVertex(matrix, xMax, yMin, blitOffset).setUv(sprite.getU1(), sprite.getV0());
+        bufferbuilder.addVertex(matrix, xMin, yMin, blitOffset).setUv(sprite.getU0(), sprite.getV0());
+        BufferUploader.drawWithShader(bufferbuilder.build());
         RenderSystem.disableBlend();
 //        BufferUploader.end(bufferbuilder);
         if(isHovered) graphics.fill(RenderType.guiOverlay(), xMin, yMin, xMax, yMax, 0x50ffffff);

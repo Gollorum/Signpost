@@ -15,16 +15,16 @@ public class WaystoneLibraryStorage extends SavedData {
 
     @Override
     public CompoundTag save(CompoundTag compound, HolderLookup.Provider provider) {
-        WaystoneLibrary.getInstance().saveTo(compound);
-        compound.put("villageWaystones", VillageWaystone.serialize());
+        WaystoneLibrary.getInstance().saveTo(compound, provider);
+        compound.put("villageWaystones", VillageWaystone.serialize(provider));
         return compound;
     }
 
-    public WaystoneLibraryStorage load(CompoundTag compound) {
-        WaystoneLibrary.getInstance().readFrom(compound);
+    public WaystoneLibraryStorage load(CompoundTag compound, HolderLookup.Provider registryAccess) {
+        WaystoneLibrary.getInstance().readFrom(compound, registryAccess);
         Tag villageWaystones = compound.get("villageWaystones");
         if(villageWaystones instanceof ListTag)
-            VillageWaystone.deserialize((ListTag) villageWaystones);
+            VillageWaystone.deserialize((ListTag) villageWaystones, registryAccess);
         return this;
     }
 

@@ -46,7 +46,7 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
 			Quaternionf rotation = new Quaternionf(new AxisAngle4f(sign.getAngle().get().radians(), new Vector3f(0,1,0)));
 			localToBlock.mulPose(rotation);
 			RenderingUtil.wrapInMatrixEntry(blockToView, () -> {
-				blockToView.mulPoseMatrix(localToBlock.last().pose());
+				blockToView.mulPose(localToBlock.last().pose());
 				if(!sign.isFlipped()) blockToView.mulPose(new Quaternionf(new AxisAngle4d(Math.PI, new Vector3f(0,1,0))));
 				renderText(sign, blockToView, Minecraft.getInstance().font, buffer, combinedLights);
 			});

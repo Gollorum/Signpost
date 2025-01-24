@@ -11,7 +11,9 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
@@ -149,7 +151,7 @@ public class DropDownSelection<EntryType> extends ImageButton {
         int yTexStart = this.isHovered ? texture.size.height : 0;
         int xTexStart = this.isListVisible ? texture.size.width : 0;
 
-        graphics.blit(texture.location, getX(), getY(), 100, xTexStart, yTexStart, this.width, this.height, texture.fileSize.height, texture.fileSize.width);
+        graphics.blit(RenderType::guiTextured, texture.location, getX(), getY(), 100, xTexStart, yTexStart, this.width, this.height, texture.fileSize.height, texture.fileSize.width);
         RenderSystem.enableDepthTest();
         if(isListVisible) list.render(graphics, mouseX, mouseY, partialTicks);
         graphics.pose().popPose();
@@ -190,23 +192,22 @@ public class DropDownSelection<EntryType> extends ImageButton {
             int i = this.getScrollbarPosition();
             int j = i + 6;
             Tesselator tesselator = Tesselator.getInstance();
-            BufferBuilder bufferbuilder = tesselator.getBuilder();
-            RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+            RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
             RenderSystem.setShaderTexture(0, TextureResource.background.location);
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             int backgroundBrightness = 170;
-            bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+            BufferBuilder bufferbuilder = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
             var x0 = getX();
             var x1 = x0 + width;
             var y0 = getY() + rimHeight;
             var y1 = getY() + height - rimHeight;
-            bufferbuilder.vertex(x0, y1, 0.0D).uv((float)x0 / 32.0F, (float)(y1 + (int)this.getScrollAmount()) / 32.0F).color(backgroundBrightness, backgroundBrightness, backgroundBrightness, 255).endVertex();
-            bufferbuilder.vertex(x1, y1, 0.0D).uv((float)x1 / 32.0F, (float)(y1 + (int)this.getScrollAmount()) / 32.0F).color(backgroundBrightness, backgroundBrightness, backgroundBrightness, 255).endVertex();
-            bufferbuilder.vertex(x1, y0, 0.0D).uv((float)x1 / 32.0F, (float)(y0 + (int)this.getScrollAmount()) / 32.0F).color(backgroundBrightness, backgroundBrightness, backgroundBrightness, 255).endVertex();
-            bufferbuilder.vertex(x0, y0, 0.0D).uv((float)x0 / 32.0F, (float)(y0 + (int)this.getScrollAmount()) / 32.0F).color(backgroundBrightness, backgroundBrightness, backgroundBrightness, 255).endVertex();
-            tesselator.end();
+            bufferbuilder.addVertex(x0, y1, 0.0f).setUv((float)x0 / 32.0F, (float)(y1 + (int)this.getScrollAmount()) / 32.0F).setColor(backgroundBrightness, backgroundBrightness, backgroundBrightness, 255);
+            bufferbuilder.addVertex(x1, y1, 0.0f).setUv((float)x1 / 32.0F, (float)(y1 + (int)this.getScrollAmount()) / 32.0F).setColor(backgroundBrightness, backgroundBrightness, backgroundBrightness, 255);
+            bufferbuilder.addVertex(x1, y0, 0.0f).setUv((float)x1 / 32.0F, (float)(y0 + (int)this.getScrollAmount()) / 32.0F).setColor(backgroundBrightness, backgroundBrightness, backgroundBrightness, 255);
+            bufferbuilder.addVertex(x0, y0, 0.0f).setUv((float)x0 / 32.0F, (float)(y0 + (int)this.getScrollAmount()) / 32.0F).setColor(backgroundBrightness, backgroundBrightness, backgroundBrightness, 255);
+            BufferUploader.drawWithShader(bufferbuilder.build());
 
-            this.renderList(graphics, mouseX, mouseY, partialTicks);
+            this.renderListItems(graphics, mouseX, mouseY, partialTicks);
             RenderSystem.disableDepthTest();
             this.renderStripe(new Point(x0 - 2, y0 - rimHeight), new Point(x0, y1 + rimHeight));
             this.renderStripe(new Point(x0, y0 - rimHeight), new Point(x1, y0));
@@ -217,23 +218,23 @@ public class DropDownSelection<EntryType> extends ImageButton {
             RenderSystem.enableBlend();
             RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ZERO, GlStateManager.DestFactor.ONE);
 //            RenderSystem.disableTexture();
-            RenderSystem.setShader(GameRenderer::getPositionColorShader);
-            bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-            bufferbuilder.vertex(x0, y0 + 4, 0.0D).uv(0.0F, 1.0F).color(0, 0, 0, 0).endVertex();
-            bufferbuilder.vertex(x1, y0 + 4, 0.0D).uv(1.0F, 1.0F).color(0, 0, 0, 0).endVertex();
-            bufferbuilder.vertex(x1, y0, 0.0D).uv(1.0F, 0.0F).color(0, 0, 0, 255).endVertex();
-            bufferbuilder.vertex(x0, y0, 0.0D).uv(0.0F, 0.0F).color(0, 0, 0, 255).endVertex();
-            tesselator.end();
-            bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-            bufferbuilder.vertex(x0, y1, 0.0D).uv(0.0F, 1.0F).color(0, 0, 0, 255).endVertex();
-            bufferbuilder.vertex(x1, y1, 0.0D).uv(1.0F, 1.0F).color(0, 0, 0, 255).endVertex();
-            bufferbuilder.vertex(x1, y1 - 4, 0.0D).uv(1.0F, 0.0F).color(0, 0, 0, 0).endVertex();
-            bufferbuilder.vertex(x0, y1 - 4, 0.0D).uv(0.0F, 0.0F).color(0, 0, 0, 0).endVertex();
-            tesselator.end();
+            RenderSystem.setShader(CoreShaders.POSITION_COLOR);
+            bufferbuilder = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+            bufferbuilder.addVertex(x0, y0 + 4, 0).setUv(0.0F, 1.0F).setColor(0, 0, 0, 0);
+            bufferbuilder.addVertex(x1, y0 + 4, 0).setUv(1.0F, 1.0F).setColor(0, 0, 0, 0);
+            bufferbuilder.addVertex(x1, y0, 0).setUv(1.0F, 0.0F).setColor(0, 0, 0, 255);
+            bufferbuilder.addVertex(x0, y0, 0).setUv(0.0F, 0.0F).setColor(0, 0, 0, 255);
+            BufferUploader.drawWithShader(bufferbuilder.build());
+            bufferbuilder = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+            bufferbuilder.addVertex(x0, y1, 0).setUv(0.0F, 1.0F).setColor(0, 0, 0, 255);
+            bufferbuilder.addVertex(x1, y1, 0).setUv(1.0F, 1.0F).setColor(0, 0, 0, 255);
+            bufferbuilder.addVertex(x1, y1 - 4, 0).setUv(1.0F, 0.0F).setColor(0, 0, 0, 0);
+            bufferbuilder.addVertex(x0, y1 - 4, 0).setUv(0.0F, 0.0F).setColor(0, 0, 0, 0);
+            BufferUploader.drawWithShader(bufferbuilder.build());
             int j1 = this.getMaxScroll();
             if (j1 > 0) {
 //                RenderSystem.disableTexture();
-                RenderSystem.setShader(GameRenderer::getPositionColorShader);
+                RenderSystem.setShader(CoreShaders.POSITION_COLOR);
                 int k1 = (int)((float)((y1 - y0) * (y1 - y0)) / (float)this.getMaxPosition());
                 k1 = Mth.clamp(k1, 32, y1 - y0 - 8);
                 int l1 = (int)this.getScrollAmount() * (y1 - y0 - k1) / j1 + y0;
@@ -241,24 +242,24 @@ public class DropDownSelection<EntryType> extends ImageButton {
                     l1 = y0;
                 }
 
-                bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-                bufferbuilder.vertex(i, y1, 0.0D).uv(0.0F, 1.0F).color(0, 0, 0, 255).endVertex();
-                bufferbuilder.vertex(j, y1, 0.0D).uv(1.0F, 1.0F).color(0, 0, 0, 255).endVertex();
-                bufferbuilder.vertex(j, y0, 0.0D).uv(1.0F, 0.0F).color(0, 0, 0, 255).endVertex();
-                bufferbuilder.vertex(i, y0, 0.0D).uv(0.0F, 0.0F).color(0, 0, 0, 255).endVertex();
-                tesselator.end();
-                bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-                bufferbuilder.vertex(i, l1 + k1, 0.0D).uv(0.0F, 1.0F).color(128, 128, 128, 255).endVertex();
-                bufferbuilder.vertex(j, l1 + k1, 0.0D).uv(1.0F, 1.0F).color(128, 128, 128, 255).endVertex();
-                bufferbuilder.vertex(j, l1, 0.0D).uv(1.0F, 0.0F).color(128, 128, 128, 255).endVertex();
-                bufferbuilder.vertex(i, l1, 0.0D).uv(0.0F, 0.0F).color(128, 128, 128, 255).endVertex();
-                tesselator.end();
-                bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-                bufferbuilder.vertex(i, l1 + k1 - 1, 0.0D).uv(0.0F, 1.0F).color(192, 192, 192, 255).endVertex();
-                bufferbuilder.vertex(j - 1, l1 + k1 - 1, 0.0D).uv(1.0F, 1.0F).color(192, 192, 192, 255).endVertex();
-                bufferbuilder.vertex(j - 1, l1, 0.0D).uv(1.0F, 0.0F).color(192, 192, 192, 255).endVertex();
-                bufferbuilder.vertex(i, l1, 0.0D).uv(0.0F, 0.0F).color(192, 192, 192, 255).endVertex();
-                tesselator.end();
+                bufferbuilder = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+                bufferbuilder.addVertex(i, y1, 0).setUv(0.0F, 1.0F).setColor(0, 0, 0, 255);
+                bufferbuilder.addVertex(j, y1, 0).setUv(1.0F, 1.0F).setColor(0, 0, 0, 255);
+                bufferbuilder.addVertex(j, y0, 0).setUv(1.0F, 0.0F).setColor(0, 0, 0, 255);
+                bufferbuilder.addVertex(i, y0, 0).setUv(0.0F, 0.0F).setColor(0, 0, 0, 255);
+                BufferUploader.drawWithShader(bufferbuilder.build());
+                bufferbuilder = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+                bufferbuilder.addVertex(i, l1 + k1, 0).setUv(0.0F, 1.0F).setColor(128, 128, 128, 255);
+                bufferbuilder.addVertex(j, l1 + k1, 0).setUv(1.0F, 1.0F).setColor(128, 128, 128, 255);
+                bufferbuilder.addVertex(j, l1, 0).setUv(1.0F, 0.0F).setColor(128, 128, 128, 255);
+                bufferbuilder.addVertex(i, l1, 0).setUv(0.0F, 0.0F).setColor(128, 128, 128, 255);
+                BufferUploader.drawWithShader(bufferbuilder.build());
+                bufferbuilder = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+                bufferbuilder.addVertex(i, l1 + k1 - 1, 0).setUv(0.0F, 1.0F).setColor(192, 192, 192, 255);
+                bufferbuilder.addVertex(j - 1, l1 + k1 - 1, 0).setUv(1.0F, 1.0F).setColor(192, 192, 192, 255);
+                bufferbuilder.addVertex(j - 1, l1, 0).setUv(1.0F, 0.0F).setColor(192, 192, 192, 255);
+                bufferbuilder.addVertex(i, l1, 0).setUv(0.0F, 0.0F).setColor(192, 192, 192, 255);
+                BufferUploader.drawWithShader(bufferbuilder.build());
             }
 
             this.renderDecorations(graphics, mouseX, mouseY);
@@ -267,21 +268,20 @@ public class DropDownSelection<EntryType> extends ImageButton {
         }
 
         protected void renderStripe(Point min, Point max) {
-            Tesselator tessellator = Tesselator.getInstance();
-            BufferBuilder bufferbuilder = tessellator.getBuilder();
-            RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+            Tesselator tesselator = Tesselator.getInstance();
+            RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
             RenderSystem.setShaderTexture(0, TextureResource.background.location);
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-            bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-            bufferbuilder.vertex(min.x, max.y, 0.0D).uv(min.x / 32f, max.y / 32.0f).color(255, 255, 255, 255).endVertex();
-            bufferbuilder.vertex(max.x, max.y, 0.0D).uv(max.x / 32f, max.y / 32.0f).color(255, 255, 255, 255).endVertex();
-            bufferbuilder.vertex(max.x, min.y, 0.0D).uv(max.x / 32f, min.y / 32.0f).color(255, 255, 255, 255).endVertex();
-            bufferbuilder.vertex(min.x, min.y, 0.0D).uv(min.x / 32f, min.y / 32.0f).color(255, 255, 255, 255).endVertex();
-            tessellator.end();
+            var bufferbuilder = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+            bufferbuilder.addVertex(min.x, max.y, 0).setUv(min.x / 32f, max.y / 32.0f).setColor(255, 255, 255, 255);
+            bufferbuilder.addVertex(max.x, max.y, 0).setUv(max.x / 32f, max.y / 32.0f).setColor(255, 255, 255, 255);
+            bufferbuilder.addVertex(max.x, min.y, 0).setUv(max.x / 32f, min.y / 32.0f).setColor(255, 255, 255, 255);
+            bufferbuilder.addVertex(min.x, min.y, 0).setUv(min.x / 32f, min.y / 32.0f).setColor(255, 255, 255, 255);
+            BufferUploader.drawWithShader(bufferbuilder.build());
         }
 
         @Override
-        protected void renderList(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        protected void renderListItems(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
             int itemCount = this.getItemCount();
             for(int i = 0; i < itemCount; ++i) {
                 int rowTop = this.getRowTop(i);

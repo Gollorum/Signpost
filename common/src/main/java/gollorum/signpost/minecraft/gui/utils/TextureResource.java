@@ -36,7 +36,7 @@ public class TextureResource {
     );
 
     public static final TextureResource itemBackground = new TextureResource(
-        ResourceLocation.fromNamespaceAndPath("textures/gui/widgets.png"), new TextureSize(22, 22),
+        ResourceLocation.withDefaultNamespace("textures/gui/widgets.png"), new TextureSize(22, 22),
         new TextureSize(256, 256), new TextureSize(60, 23)
     );
 

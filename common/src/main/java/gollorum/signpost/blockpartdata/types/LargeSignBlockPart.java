@@ -43,10 +43,10 @@ public class LargeSignBlockPart extends SignBlockPart<LargeSignBlockPart> {
         (compound, provider) -> new LargeSignBlockPart(
             CoreData.SERIALIZER.decode(compound.getCompound("CoreData"), provider),
             new NameProvider[]{
-                NameProvider.fetchFrom(compound.get("Text0")),
-                NameProvider.fetchFrom(compound.get("Text1")),
-                NameProvider.fetchFrom(compound.get("Text2")),
-                NameProvider.fetchFrom(compound.get("Text3"))}
+                NameProvider.fetchFrom(compound.get("Text0"), provider),
+                NameProvider.fetchFrom(compound.get("Text1"), provider),
+                NameProvider.fetchFrom(compound.get("Text2"), provider),
+                NameProvider.fetchFrom(compound.get("Text3"), provider)}
         ), LargeSignBlockPart.class);
 
     private NameProvider[] text;
@@ -117,16 +117,16 @@ public class LargeSignBlockPart extends SignBlockPart<LargeSignBlockPart> {
             return;
         }
         if (compound.contains("Text0")) {
-            text[0] = NameProvider.fetchFrom(compound.get("Text0"));
+            text[0] = NameProvider.fetchFrom(compound.get("Text0"), provider);
         }
         if (compound.contains("Text1")) {
-            text[1] = NameProvider.fetchFrom(compound.get("Text1"));
+            text[1] = NameProvider.fetchFrom(compound.get("Text1"), provider);
         }
         if (compound.contains("Text2")) {
-            text[2] = NameProvider.fetchFrom(compound.get("Text2"));
+            text[2] = NameProvider.fetchFrom(compound.get("Text2"), provider);
         }
         if (compound.contains("Text3")) {
-            text[3] = NameProvider.fetchFrom(compound.get("Text3"));
+            text[3] = NameProvider.fetchFrom(compound.get("Text3"), provider);
         }
         super.readMutationUpdate(compound, tile, editingPlayer, provider);
     }

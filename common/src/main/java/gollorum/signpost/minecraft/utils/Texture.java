@@ -28,20 +28,20 @@ public record Texture(ResourceLocation location, Optional<Tint> tint){
     public static final CompoundSerializable<Texture> CompundSerializer = new CompoundSerializable<>() {
         @Override
         public void encode(CompoundTag compound, Texture texture, HolderLookup.Provider provider) {
-            ResourceLocationSerializer.Instance.encode(compound, texture.location, provider);
-            compound.put("Tint", Tint.Serialization.instance.optional().encode(texture.tint, provider));
+            ResourceLocationSerializer.COMPOUND.encode(compound, texture.location, provider);
+            compound.put("Tint", Tint.Serialization.COMPOUND.optional().encode(texture.tint, provider));
         }
 
         @Override
         public boolean isContainedIn(CompoundTag compound) {
-            return ResourceLocationSerializer.Instance.isContainedIn(compound) && compound.contains("Tint");
+            return ResourceLocationSerializer.COMPOUND.isContainedIn(compound) && compound.contains("Tint");
         }
 
         @Override
         public Texture decode(CompoundTag compound, HolderLookup.Provider provider) {
             return new Texture(
-                ResourceLocationSerializer.Instance.decode(compound, provider),
-                Tint.Serialization.instance.optional().decode(compound.getCompound("Tint"), provider)
+                ResourceLocationSerializer.COMPOUND.decode(compound, provider),
+                Tint.Serialization.COMPOUND.optional().decode(compound.getCompound("Tint"), provider)
             );
         }
     };
@@ -50,15 +50,15 @@ public record Texture(ResourceLocation location, Optional<Tint> tint){
 
         @Override
         public void encode(RegistryFriendlyByteBuf buffer, Texture texture) {
-            ResourceLocationSerializer.Instance.encode(buffer, texture.location);
-            Tint.Serialization.instance.optional().encode(buffer, texture.tint);
+            ResourceLocationSerializer.BUFFER.encode(buffer, texture.location);
+            Tint.Serialization.BUFFER.optional().encode(buffer, texture.tint);
         }
 
         @Override
         public Texture decode(RegistryFriendlyByteBuf buffer) {
             return new Texture(
-                ResourceLocationSerializer.Instance.decode(buffer),
-                Tint.Serialization.instance.optional().decode(buffer)
+                ResourceLocationSerializer.BUFFER.decode(buffer),
+                Tint.Serialization.BUFFER.optional().decode(buffer)
             );
         }
 
