@@ -6,9 +6,12 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -27,8 +30,9 @@ public class PostBlockImpl extends PostBlock {
     public ItemStack getCloneItemStack(BlockState state, HitResult target, LevelReader level, BlockPos pos, Player player) {
         ItemStack ret = super.getCloneItemStack(state, target, level, pos, player);
         level.getBlockEntity(pos, PostTile.getBlockEntityType()).ifPresent(tile -> {
-            if(!ret.hasTag()) ret.setTag(new CompoundTag());
-            ret.getTag().put("Parts", tile.writeParts(false));
+            var component = ret.getComponents().getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+            component.put("Parts", tile.writeParts(false, level.registryAccess()));
+            ret.applyComponents(DataComponentPatch.builder().set(DataComponents.CUSTOM_DATA, CustomData.of(component)).build());
         });
         return ret;
     }

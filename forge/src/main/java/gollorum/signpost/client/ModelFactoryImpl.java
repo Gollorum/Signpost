@@ -18,7 +18,7 @@ public class ModelFactoryImpl implements ModelFactory {
     }
 
     @Override
-    public ModelBaker makeModelBaker(BiFunction<ResourceLocation, Material, TextureAtlasSprite> textureMapper, ResourceLocation model) {
+    public ModelBaker makeModelBaker(ModelBakery.TextureGetter textureMapper, ResourceLocation model) {
         return bakery.new ModelBakerImpl(textureMapper, model);
     }
 }

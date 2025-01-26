@@ -8,7 +8,6 @@ import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.mixin.BlockModelRendererAccessor;
 import gollorum.signpost.mixin.ModelManagerAccessor;
-import gollorum.signpost.mixin.VertexFormatAccessor;
 import gollorum.signpost.platform.ClientServices;
 import gollorum.signpost.platform.Services;
 import gollorum.signpost.utils.Lazy;
@@ -19,6 +18,7 @@ import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -56,8 +56,7 @@ public class RenderingUtil {
         final ResourceLocation textLoc = trim(textureLocation);
         Function<Material, TextureAtlasSprite> textureGetter = m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(textLoc);
         var modelBaker = ClientServices.MODEL_FACTORY.makeModelBaker((loc, m) -> textureGetter.apply(m), modelLocation);
-        var unbaked = modelBaker.getModel(modelLocation);
-        return unbaked.bake(modelBaker, textureGetter, new ModelState() {}, modelLocation);
+        return modelBaker.bake(modelLocation, new ModelState() {});
     }
 
     public static BakedModel loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation1, ResourceLocation textureLocation2) {
@@ -67,8 +66,7 @@ public class RenderingUtil {
             m.sprite().contents().name().equals(PostModelResources.mainTextureMarker)
                 ? textLoc1 : textLoc2);
         var modelBaker = ClientServices.MODEL_FACTORY.makeModelBaker((loc, m) -> textureGetter.apply(m), modelLocation);
-        var unbaked = modelBaker.getModel(modelLocation);
-        return unbaked.bake(modelBaker, textureGetter, new ModelState() {}, modelLocation);
+        return modelBaker.bake(modelLocation, new ModelState() {});
     }
 
     public static final Lazy<ModelBlockRenderer> Renderer = Lazy.of(() -> Minecraft.getInstance().getBlockRenderer().getModelRenderer());
@@ -113,30 +111,29 @@ public class RenderingUtil {
         );
     }
 
-    public static int drawString(Font fontRenderer, String text, Point point, Rect.XAlignment xAlignment, Rect.YAlignment yAlignment, int color, int maxWidth, boolean dropShadow){
-        MultiBufferSource.BufferSource buffer = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
-        int textWidth = fontRenderer.width(text);
-        float scale = Math.min(1f, maxWidth / (float) textWidth);
-        Matrix4f matrix = new Matrix4f().translation(
-            Rect.xCoordinateFor(point.x, maxWidth, xAlignment) + maxWidth * 0.5f,
-            Rect.yCoordinateFor(point.y, fontRenderer.lineHeight, yAlignment) + fontRenderer.lineHeight * 0.5f,
-            100
-        );
-        if(scale < 1) matrix.scale(scale, scale, scale);
-        int i = fontRenderer.drawInBatch(
-            text,
-            (maxWidth - Math.min(maxWidth, textWidth)) * 0.5f,
-            -fontRenderer.lineHeight * 0.5f,
-            color,
-            dropShadow,
-            matrix,
-            buffer,
-            Font.DisplayMode.NORMAL,
-            0,
-            0xf000f0
-        );
-        buffer.endBatch();
-        return i;
+    public static void drawString(GuiGraphics graphics, Font fontRenderer, String text, Point point, Rect.XAlignment xAlignment, Rect.YAlignment yAlignment, int color, int maxWidth, boolean dropShadow){
+        graphics.drawSpecial(buffer -> {
+            int textWidth = fontRenderer.width(text);
+            float scale = Math.min(1f, maxWidth / (float) textWidth);
+            Matrix4f matrix = new Matrix4f().translation(
+                Rect.xCoordinateFor(point.x, maxWidth, xAlignment) + maxWidth * 0.5f,
+                Rect.yCoordinateFor(point.y, fontRenderer.lineHeight, yAlignment) + fontRenderer.lineHeight * 0.5f,
+                100
+            );
+            if(scale < 1) matrix.scale(scale, scale, scale);
+            fontRenderer.drawInBatch(
+                text,
+                (maxWidth - Math.min(maxWidth, textWidth)) * 0.5f,
+                -fontRenderer.lineHeight * 0.5f,
+                color,
+                dropShadow,
+                matrix,
+                buffer,
+                Font.DisplayMode.NORMAL,
+                0,
+                0xf000f0
+            );
+        });
     }
 
     public static void renderGui(BakedModel model, PoseStack matrixStack, int[] tints, Point center, Angle yaw, Angle pitch, boolean isFlipped, float scale, Vector3 offset, RenderType renderType, Consumer<PoseStack> alsoDo) {
@@ -176,7 +173,7 @@ public class RenderingUtil {
                             g *= Colors.getGreen(tint) / 255f;
                             b *= Colors.getBlue(tint) / 255f;
                         }
-                        builder.putBulkData(matrixStack.last(), quad, r, g, b, combinedLight, combinedOverlay);
+                        builder.putBulkData(matrixStack.last(), quad, r, g, b, 1.0f, combinedLight, combinedOverlay);
                     }
 
                 }
@@ -208,7 +205,7 @@ public class RenderingUtil {
         int combinedOverlay
     ) {
         boolean useAmbientOcclusion = Minecraft.useAmbientOcclusion() && state.getLightEmission() == 0 && model.useAmbientOcclusion();
-        var vec3 = state.getOffset(level, pos);
+        var vec3 = state.getOffset(pos);
         blockToView.translate(vec3.x, vec3.y, vec3.z);
         try {
             return tesselate(level, model, state, tints, pos, blockToView, localToBlock, vertexConsumer, checkSides, random, combinedLight, combinedOverlay, useAmbientOcclusion);
@@ -239,7 +236,7 @@ public class RenderingUtil {
         boolean useAmbientOcclusion
     ) {
         boolean flag = false;
-        float[] aoValues = useAmbientOcclusion ? new float[DIRECTIONS.length * 2] : null;
+        float[] aoValues = useAmbientOcclusion ? new float[Direction.values().length * 2] : null;
         BitSet bitset = new BitSet(3);
         BlockPos.MutableBlockPos mutablePos = pos.mutable();
 
@@ -247,12 +244,12 @@ public class RenderingUtil {
         localToBlockNormal.invert();
         localToBlockNormal.transpose();
 
-        for(Direction direction : DIRECTIONS) {
+        for(Direction direction : Direction.values()) {
             random.setSeed(combinedLight);
             List<BakedQuad> list = model.getQuads(state, direction, random);
             if (!list.isEmpty()) {
                 mutablePos.setWithOffset(pos, direction);
-                if (!checkSides || Block.shouldRenderFace(state, level, pos, direction, mutablePos)) {
+                if (!checkSides || Block.shouldRenderFace(state, level.getBlockState(pos), direction)) {
                     if(useAmbientOcclusion)
                         renderModelFaceAO(level, state, tints, pos, blockToView, vertexConsumer, list, aoValues, bitset, combinedOverlay, localToBlock, localToBlockNormal);
                     else
@@ -368,10 +365,18 @@ public class RenderingUtil {
     }
 
     private static Direction transform(Direction dir, Matrix4f localPose) {
-        var rawNormal = dir.getNormal();
-        var normal = new Vector4f(rawNormal.getX(), rawNormal.getY(), rawNormal.getZ(), 0);
+        var normal = new Vector4f(dir.getStepX(), dir.getStepY(), dir.getStepZ(), 0);
         normal.mul(localPose);
-        return Direction.getNearest(normal.x(), normal.y(), normal.z());
+        var x = Math.abs(normal.x());
+        var y = Math.abs(normal.y());
+        var z = Math.abs(normal.z());
+        if (x > z && x > y) {
+            return normal.x() < 0 ? Direction.WEST : Direction.EAST;
+        } else if (y > z) {
+            return normal.y() < 0 ? Direction.DOWN : Direction.UP;
+        } else {
+            return normal.z() < 0 ? Direction.NORTH : Direction.SOUTH;
+        }
     }
 
     private static void putQuadData(int[] tints, VertexConsumer vertexConsumer, PoseStack.Pose pose, BakedQuad quad, float aor, float aog, float aob, float aoa, int lr, int lg, int lb, int la, int combinedOverlay) {
@@ -389,15 +394,16 @@ public class RenderingUtil {
             b = 1.0F;
         }
 
-        vertexConsumer.putBulkData(pose, quad, new float[]{aor, aog, aob, aoa}, r, g, b, new int[]{lr, lg, lb, la}, combinedOverlay, true);
+        vertexConsumer.putBulkData(pose, quad, new float[]{aor, aog, aob, aoa}, r, g, b, 1.0f, new int[]{lr, lg, lb, la}, combinedOverlay, true);
     }
 
-    private static int STRIDE = DefaultVertexFormat.BLOCK.getIntegerSize();
-    private static int POSITION = findOffset(DefaultVertexFormat.ELEMENT_POSITION);
-    private static int NORMAL = findOffset(DefaultVertexFormat.ELEMENT_NORMAL);
+    // I got these from IQuadTransformer
+    private static int STRIDE = STRIDE = DefaultVertexFormat.BLOCK.getVertexSize() / 4;
+    private static int POSITION = findOffset(VertexFormatElement.POSITION);
+    private static int NORMAL = findOffset(VertexFormatElement.NORMAL);
     private static int findOffset(VertexFormatElement element) {
-        int index = DefaultVertexFormat.BLOCK.getElements().indexOf(element);
-        return index < 0 ? -1 : ((VertexFormatAccessor)DefaultVertexFormat.BLOCK).getOffsets().getInt(index) / 4;
+        int index = DefaultVertexFormat.BLOCK.getOffset(element);
+        return index < 0 ? -1 : index / 4;
     }
 
     private static BakedQuad transform(BakedQuad original, Matrix4f localToBlock, Matrix3f localToBlockNormal) {
@@ -435,7 +441,7 @@ public class RenderingUtil {
                 vertices[offset] = (byte)((int)(posx.x() * 127.0F)) & 255 | ((byte)((int)(posx.y() * 127.0F)) & 255) << 8 | ((byte)((int)(posx.z() * 127.0F)) & 255) << 16 | normalIn & -16777216;
             }
         }
-        return new BakedQuad(vertices, original.getTintIndex(), dir, original.getSprite(), original.isShade());
+        return new BakedQuad(vertices, original.getTintIndex(), dir, original.getSprite(), original.isShade(), original.getLightEmission());
     }
 
     private static BakedQuad clampWithinUnitCube(BakedQuad quad){
@@ -451,7 +457,7 @@ public class RenderingUtil {
             newData[i * 8 + 1] = Float.floatToRawIntBits(y);
             newData[i * 8 + 2] = Float.floatToRawIntBits(z);
         }
-        return new BakedQuad(newData, quad.getTintIndex(), quad.getDirection(), quad.getSprite(), quad.isShade());
+        return new BakedQuad(newData, quad.getTintIndex(), quad.getDirection(), quad.getSprite(), quad.isShade(), quad.getLightEmission());
     }
 
 }

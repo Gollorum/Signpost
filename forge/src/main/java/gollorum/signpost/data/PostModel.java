@@ -87,7 +87,7 @@ public class PostModel {
 
     public void registerModels() {
         BlockModelBuilder previewBuilder = getBuilder(previewLocation)
-            .parent(new ModelFile.ExistingModelFile(ResourceLocation.fromNamespaceAndPath("block/block"), blockModelProvider.existingFileHelper))
+            .parent(new ModelFile.ExistingModelFile(ResourceLocation.withDefaultNamespace("block/block"), blockModelProvider.existingFileHelper))
             .transforms()
                 .transform(ItemDisplayContext.GUI)
                     .rotation(30, 315, 0)

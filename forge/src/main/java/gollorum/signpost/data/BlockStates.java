@@ -27,7 +27,7 @@ public class BlockStates extends BlockStateProvider {
 
     @Override
     protected void registerStatesAndModels() {
-        getVariantBuilder(WaystoneGeneratorBlock.instance)
+        getVariantBuilder(WaystoneGeneratorBlock.getInstance())
             .partialState().setModels(new ConfiguredModel(model.generatorModel));
         postBlockStateProvider.registerStatesAndModels();
     }

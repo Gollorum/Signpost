@@ -73,8 +73,8 @@ dependencies {
     // Forge's hack fix
     implementation('net.sf.jopt-simple:jopt-simple:5.0.4') { version { strictly '5.0.4' } }
 
-    compileOnly "curse.maven:balm-531761:5485035"
-    compileOnly fg.deobf("curse.maven:waystones-245755:5263485")
+//    compileOnly "curse.maven:balm-531761:5485035"
+//    compileOnly "curse.maven:waystones-245755:5841749"
 //    compileOnly fg.deobf("curse.maven:repurposed-structures-368293:5150178")
 }
 

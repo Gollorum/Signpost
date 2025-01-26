@@ -22,8 +22,6 @@ import org.joml.Vector4f;
 import javax.annotation.Nullable;
 import java.util.*;
 
-import static net.minecraft.client.renderer.LevelRenderer.DIRECTIONS;
-
 public class SignModel {
 
 	private final Map<Material, List<Quad>> quads = new HashMap<>();
@@ -59,7 +57,7 @@ public class SignModel {
 		int[] tints
 	) {
 		BitSet bitset = new BitSet(3);
-		float[] aoValues = useAmbientOcclusion ? new float[DIRECTIONS.length * 2] : null;
+		float[] aoValues = useAmbientOcclusion ? new float[Direction.values().length * 2] : null;
 		ModelBlockRenderer.AmbientOcclusionFace aoFace = useAmbientOcclusion ? new ModelBlockRenderer.AmbientOcclusionFace() : null;
 
 		var blockVertices = new Vector4f[4];
@@ -96,7 +94,7 @@ public class SignModel {
 				}
 
 				if(useAmbientOcclusion) {
-					var dir = Direction.getNearest(localNormal.x(), localNormal.y(), localNormal.z());
+					var dir = Direction.getApproximateNearest(localNormal.x(), localNormal.y(), localNormal.z());
 					calculateShape(level, state, pos, blockVertices, dir, aoValues, bitset);
 					aoFace.calculate(level, state, pos, dir, aoValues, bitset, true);
 				}
@@ -110,25 +108,21 @@ public class SignModel {
 					var vert = blockVertices[i];
 					vert.mul(blockToView);
 					if(useAmbientOcclusion) {
-						vertexBuilder.vertex(
-							vert.x(), vert.y(), vert.z(),
-							rFinal * aoFace.brightness[0], gFinal * aoFace.brightness[1], bFinal * aoFace.brightness[2], 1,
-							vertex.u,
-							vertex.v,
-							packedOverlay,
-							packedLight,
-							globalNormal.x(), globalNormal.y(), globalNormal.z()
-						);
+						vertexBuilder
+                            .addVertex(vert.x(), vert.y(), vert.z())
+                            .setColor(rFinal * aoFace.brightness[0], gFinal * aoFace.brightness[1], bFinal * aoFace.brightness[2], 1)
+                            .setUv(vertex.u, vertex.v)
+                            .setOverlay(packedOverlay)
+                            .setLight(packedLight)
+                            .setNormal(globalNormal.x(), globalNormal.y(), globalNormal.z());
 					} else
-						vertexBuilder.vertex(
-							vert.x(), vert.y(), vert.z(),
-							rFinal, gFinal, bFinal, 1,
-							vertex.u,
-							vertex.v,
-							packedOverlay,
-							packedLight,
-							globalNormal.x(), globalNormal.y(), globalNormal.z()
-						);
+                        vertexBuilder
+                            .addVertex(vert.x(), vert.y(), vert.z())
+                            .setColor(rFinal, gFinal, bFinal, 1)
+                            .setUv(vertex.u, vertex.v)
+                            .setOverlay(packedOverlay)
+                            .setLight(packedLight)
+                            .setNormal(globalNormal.x(), globalNormal.y(), globalNormal.z());
 				}
 			}
 		}
@@ -144,7 +138,7 @@ public class SignModel {
 			aoValues[Direction.UP.get3DDataValue()] = bounds.max.y;
 			aoValues[Direction.NORTH.get3DDataValue()] = bounds.min.z;
 			aoValues[Direction.SOUTH.get3DDataValue()] = bounds.max.z;
-			int j = DIRECTIONS.length;
+			int j = Direction.values().length;
 			aoValues[Direction.WEST.get3DDataValue() + j] = 1.0F - bounds.min.x;
 			aoValues[Direction.EAST.get3DDataValue() + j] = 1.0F - bounds.max.x;
 			aoValues[Direction.DOWN.get3DDataValue() + j] = 1.0F - bounds.min.y;

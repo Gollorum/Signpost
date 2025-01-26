@@ -320,6 +320,7 @@ public class DropDownSelection<EntryType> extends ImageButton {
                 if(shouldHighlightSelected && allEntries.indexOf(List.this.getEntry(i).content) == selectedIndex)
                     brightness = (int) (brightness * 0.6f);
                 RenderingUtil.drawString(
+                    graphics,
                     fontRenderer,
                     content.toString(),
                     new Point(List.this.getX(), p_render_2_ + 1),

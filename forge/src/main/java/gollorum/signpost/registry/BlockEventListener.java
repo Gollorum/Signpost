@@ -52,7 +52,7 @@ public class BlockEventListener {
                     // that the entity update packet arrives **before** the entity has been reconstructed, which
                     // leaves an empty, and thus invisible, post. To fix that, we manually send another update
                     // one frame later.
-                    PacketHandler.getInstance().sendToTracing(tile, () -> new PostTile.UpdateAllPartsEvent.Packet(tile.getUpdateTag(), WorldLocation.from(tile).get()));
+                    PacketHandler.getInstance().sendToTracing(tile, () -> new PostTile.UpdateAllPartsEvent.Packet(tile.getUpdateTag(event.getLevel().registryAccess()), WorldLocation.from(tile).get()));
 
                     postTile.removePart(traceResult.get().id);
                     if (event.getLevel() instanceof ServerLevel) {

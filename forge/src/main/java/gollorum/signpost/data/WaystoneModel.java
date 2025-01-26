@@ -47,7 +47,7 @@ public class WaystoneModel {
 		for(ModelWaystone.Variant variant : ModelWaystone.variants) {
 			ResourceLocation loc = ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/" + variant.registryName);
 			BlockModelBuilder builder = blockModelProvider.getBuilder(loc.toString())
-				.parent(new ModelFile.ExistingModelFile(ResourceLocation.fromNamespaceAndPath("block/block"), blockModelProvider.existingFileHelper))
+				.parent(new ModelFile.ExistingModelFile(ResourceLocation.withDefaultNamespace("block/block"), blockModelProvider.existingFileHelper))
 				.texture("particle", waystoneTexture)
 				.customLoader(ObjModelBuilder::begin)
 				.modelLocation(ResourceLocation.fromNamespaceAndPath(loc.getNamespace(), "models/block/" + variant.registryName + ".obj"))

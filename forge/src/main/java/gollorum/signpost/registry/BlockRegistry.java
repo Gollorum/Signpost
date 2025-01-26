@@ -39,7 +39,7 @@ public class BlockRegistry {
     }
 
     public static final RegistryObject<WaystoneGeneratorBlock> WaystoneGenerator =
-        Register.register(WaystoneGeneratorBlock.REGISTRY_NAME, () -> WaystoneGeneratorBlock.instance);
+        Register.register(WaystoneGeneratorBlock.REGISTRY_NAME, WaystoneGeneratorBlock::getInstance);
 
     public static void register(IEventBus bus){
         Register.register(bus);

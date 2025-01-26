@@ -29,8 +29,8 @@ public final class DataGeneration {
             BlockTags blocksTagProvider = new BlockTags(output, lookupProvider, fileHelper);
             datagenerator.addProvider(true, blocksTagProvider);
             datagenerator.addProvider(true, new ItemTags(output, lookupProvider, blocksTagProvider, fileHelper));
-            datagenerator.addProvider(true, new Recipes(output));
-            datagenerator.addProvider(true, new LootTables(output));
+            datagenerator.addProvider(true, new Recipes.Runner(output, lookupProvider));
+            datagenerator.addProvider(true, new LootTables(output, lookupProvider));
         }
         if(event.includeClient()) {
             BlockModels blockModelProvider = new BlockModels(datagenerator, output, fileHelper);
