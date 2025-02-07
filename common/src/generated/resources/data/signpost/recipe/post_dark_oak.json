@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "Signpost",
+  "key": {
+    "b": "#minecraft:dark_oak_logs",
+    "s": "minecraft:dark_oak_sign"
+  },
+  "pattern": [
+    "s",
+    "s",
+    "b"
+  ],
+  "result": {
+    "count": 2,
+    "id": "signpost:post_dark_oak"
+  }
+}

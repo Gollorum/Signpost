@@ -1,11 +1,15 @@
 package gollorum.signpost.minecraft.items;
 
+import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.block.WaystoneBlock;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -16,11 +20,13 @@ import java.util.List;
 public class WaystoneItem extends BlockItem {
 
     public WaystoneItem(WaystoneBlock waystone, Properties properties) {
-        super(waystone, properties);
+        super(waystone, properties
+            .setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, WaystoneBlock.REGISTRY_NAME))));
     }
 
     public WaystoneItem(ModelWaystone waystone, Properties properties) {
-        super(waystone, properties);
+        super(waystone, properties
+            .setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, waystone.variant.registryName))));
     }
 
     @Override

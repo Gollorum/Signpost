@@ -1,36 +1,18 @@
 package gollorum.signpost.minecraft.worldgen;
 
-import com.mojang.serialization.MapCodec;
 import gollorum.signpost.Signpost;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElementType;
 
-import java.util.function.Supplier;
+import java.util.function.BiConsumer;
 
 public class JigsawDeserializers {
 
-    public static void register() {
-        var signpostType = register("signpost_pool_element", SignpostJigsawPiece.codec);
-        var waystoneType = register("waystone_pool_element", WaystoneJigsawPiece.codec);
-
-        signpost = () -> signpostType;
-        waystone = () -> waystoneType;
-
-        // incorrect domain
-        registerLegacy("signpost_pool_element", SignpostJigsawPiece.codec);
-        registerLegacy("signpost_waystone_pool_element", WaystoneJigsawPiece.codec);
+    public static void register(BiConsumer<ResourceLocation, StructurePoolElementType<?>> register) {
+        register.accept(ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "signpost_pool_element"), signpost);
+        register.accept(ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "waystone_pool_element"), waystone);
     }
 
-    public static Supplier<StructurePoolElementType<SignpostJigsawPiece>> signpost = null;
-    public static Supplier<StructurePoolElementType<WaystoneJigsawPiece>> waystone = null;
-
-    private static <P extends StructurePoolElement> StructurePoolElementType<P> register(String name, MapCodec<P> codec) {
-        return Registry.register(BuiltInRegistries.STRUCTURE_POOL_ELEMENT, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, name), () -> codec);
-    }
-    private static <P extends StructurePoolElement> StructurePoolElementType<P> registerLegacy(String name, MapCodec<P> codec) {
-        return Registry.register(BuiltInRegistries.STRUCTURE_POOL_ELEMENT, name, () -> codec);
-    }
+    public static StructurePoolElementType<SignpostJigsawPiece> signpost = () -> SignpostJigsawPiece.codec;
+    public static StructurePoolElementType<WaystoneJigsawPiece> waystone = () -> WaystoneJigsawPiece.codec;
 }

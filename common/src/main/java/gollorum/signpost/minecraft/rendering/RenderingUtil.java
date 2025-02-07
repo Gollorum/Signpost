@@ -28,6 +28,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -55,8 +56,7 @@ public class RenderingUtil {
     public static BakedModel loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation) {
         final ResourceLocation textLoc = trim(textureLocation);
         Function<Material, TextureAtlasSprite> textureGetter = m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(textLoc);
-        var modelBaker = ClientServices.MODEL_FACTORY.makeModelBaker((loc, m) -> textureGetter.apply(m), modelLocation);
-        return modelBaker.bake(modelLocation, new ModelState() {});
+        return ClientServices.MODEL_FACTORY.bakeFor(textureGetter, modelLocation);
     }
 
     public static BakedModel loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation1, ResourceLocation textureLocation2) {
@@ -65,8 +65,7 @@ public class RenderingUtil {
         Function<Material, TextureAtlasSprite> textureGetter = m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(
             m.sprite().contents().name().equals(PostModelResources.mainTextureMarker)
                 ? textLoc1 : textLoc2);
-        var modelBaker = ClientServices.MODEL_FACTORY.makeModelBaker((loc, m) -> textureGetter.apply(m), modelLocation);
-        return modelBaker.bake(modelLocation, new ModelState() {});
+        return ClientServices.MODEL_FACTORY.bakeFor(textureGetter, modelLocation);
     }
 
     public static final Lazy<ModelBlockRenderer> Renderer = Lazy.of(() -> Minecraft.getInstance().getBlockRenderer().getModelRenderer());

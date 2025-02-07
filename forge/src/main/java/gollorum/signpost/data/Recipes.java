@@ -66,8 +66,8 @@ public class Recipes extends RecipeProvider {
     public void registerPosts() {
         for(PostBlock.Variant variant : PostBlock.AllVariants) {
             shaped(RecipeCategory.DECORATIONS, variant.getBlock(), 2)
-                .define('s', variant.type.signIngredient.get())
-                .define('b', variant.type.baseIngredient.get())
+                .define('s', variant.type.signIngredient.apply(registries))
+                .define('b', variant.type.baseIngredient.apply(registries))
                 .pattern("s")
                 .pattern("s")
                 .pattern("b")

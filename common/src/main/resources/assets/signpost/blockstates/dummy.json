@@ -1,0 +1,46 @@
+{
+  "variants": {
+    "post_only": {
+      "model": "signpost:block/post_only"
+    },
+    "in_post_waystone": {
+      "model": "signpost:block/in_post_waystone"
+    },
+    "large_sign": {
+      "model": "signpost:block/large_sign"
+    },
+    "large_sign_flipped": {
+      "model": "signpost:block/large_sign_flipped"
+    },
+    "large_sign_overlay": {
+      "model": "signpost:block/large_sign_overlay"
+    },
+    "large_sign_overlay_flipped": {
+      "model": "signpost:block/large_sign_overlay_flipped"
+    },
+    "small_short_sign": {
+      "model": "signpost:block/small_short_sign"
+    },
+    "small_short_sign_flipped": {
+      "model": "signpost:block/small_short_sign_flipped"
+    },
+    "small_short_sign_overlay": {
+      "model": "signpost:block/small_short_sign_overlay"
+    },
+    "small_short_sign_overlay_flipped": {
+      "model": "signpost:block/small_short_sign_overlay_flipped"
+    },
+    "small_wide_sign": {
+      "model": "signpost:block/small_wide_sign"
+    },
+    "small_wide_sign_flipped": {
+      "model": "signpost:block/small_wide_sign_flipped"
+    },
+    "small_wide_sign_overlay": {
+      "model": "signpost:block/small_wide_sign_overlay"
+    },
+    "small_wide_sign_overlay_flipped": {
+      "model": "signpost:block/small_wide_sign_overlay_flipped"
+    }
+  }
+}

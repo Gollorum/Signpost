@@ -13,6 +13,9 @@ import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.worldgen.VillageNamesProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -48,7 +51,9 @@ public class WaystoneGeneratorBlock extends BaseEntityBlock {
     }
 
     private WaystoneGeneratorBlock() {
-        super(Properties.of().mapColor(MapColor.WOOD));
+        super(Properties.of()
+            .setId(ResourceKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, REGISTRY_NAME)))
+            .mapColor(MapColor.WOOD));
     }
 
     @Nullable

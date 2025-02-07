@@ -1,5 +1,5 @@
-// 1.20.4	2024-04-18T08:00:36.4200328	Tags for minecraft:block mod id signpost
-72c629dbf85d3e93abad0b31b9ebb242c14a3426 data/minecraft/tags/blocks/mineable/axe.json
-dac1e2ed8288fd87c14174ae95704ca423e4ff85 data/minecraft/tags/blocks/mineable/pickaxe.json
-d7793b7d75cfeb3eb76899433172cf3ea57ec097 data/signpost/tags/blocks/signpost.json
-106d0284bcd297afdd932448a63a844ba0b60362 data/signpost/tags/blocks/waystone.json
+// 1.21.3	2025-02-02T11:10:30.5640734	Tags for minecraft:block mod id signpost
+72c629dbf85d3e93abad0b31b9ebb242c14a3426 data/minecraft/tags/block/mineable/axe.json
+dac1e2ed8288fd87c14174ae95704ca423e4ff85 data/minecraft/tags/block/mineable/pickaxe.json
+d7793b7d75cfeb3eb76899433172cf3ea57ec097 data/signpost/tags/block/signpost.json
+106d0284bcd297afdd932448a63a844ba0b60362 data/signpost/tags/block/waystone.json

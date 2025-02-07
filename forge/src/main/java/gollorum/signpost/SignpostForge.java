@@ -15,6 +15,7 @@ import gollorum.signpost.registry.*;
 import gollorum.signpost.utils.Delay;
 import gollorum.signpost.worldgen.Villages;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -32,6 +33,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.registries.RegisterEvent;
 
 import java.util.function.Consumer;
 
@@ -40,11 +42,11 @@ public class SignpostForge {
 
     private final Consumer<MinecraftServer> serverSetter;
     
-    public SignpostForge() {
+    public SignpostForge(FMLJavaModLoadingContext context) {
         serverSetter = Signpost.init(Config.INSTANCE, Delay.INSTANCE);
 
         IEventBus forgeBus = MinecraftForge.EVENT_BUS;
-        IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
+        IEventBus modBus = context.getModEventBus();
         forgeBus.register(new ForgeEvents());
         modBus.register(new ModBusEvents());
 
@@ -59,7 +61,7 @@ public class SignpostForge {
 
         forgeBus.register(Delay.INSTANCE);
 
-        Config.INSTANCE.register();
+        Config.INSTANCE.register(context);
 
         LootProviderRegistry.register(modBus);
         LootItemConditionRegistry.register(modBus);
@@ -67,8 +69,6 @@ public class SignpostForge {
         MiscRegistry.register(modBus);
 
         Compat.register();
-
-        JigsawDeserializers.register();
     }
     private static class ModBusEvents {
 
@@ -88,6 +88,11 @@ public class SignpostForge {
         @SubscribeEvent
         public void doClientStuff(final FMLClientSetupEvent event) {
             BlockEntityRenderers.register(PostTile.getBlockEntityType(), PostRenderer::new);
+        }
+
+        @SubscribeEvent
+        public void registerStuff(RegisterEvent event) {
+            JigsawDeserializers.register((loc, elem) -> event.register(Registries.STRUCTURE_POOL_ELEMENT, loc, () -> elem));
         }
 
     }

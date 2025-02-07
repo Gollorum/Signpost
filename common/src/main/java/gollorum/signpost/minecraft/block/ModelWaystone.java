@@ -1,10 +1,14 @@
 package gollorum.signpost.minecraft.block;
 
 import gollorum.signpost.BlockRestrictions;
+import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
 import gollorum.signpost.security.WithCountRestriction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -104,6 +108,7 @@ public abstract class ModelWaystone extends BaseEntityBlock implements SimpleWat
 			.noOcclusion()
 			.isViewBlocking((x, y, z) -> false)
 			.requiresCorrectToolForDrops()
+            .setId(ResourceKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, variant.registryName)))
 		);
 	}
 

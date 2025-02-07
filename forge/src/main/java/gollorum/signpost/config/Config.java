@@ -44,10 +44,10 @@ public class Config implements IConfig {
         ClientConfig = clientTuple._2;
     }
 
-    public void register() {
-        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, ServerConfig);
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, CommonConfig);
-        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ClientConfig);
+    public void register(ModLoadingContext modLoadingContext) {
+        modLoadingContext.registerConfig(ModConfig.Type.SERVER, ServerConfig);
+        modLoadingContext.registerConfig(ModConfig.Type.COMMON, CommonConfig);
+        modLoadingContext.registerConfig(ModConfig.Type.CLIENT, ClientConfig);
     }
 
     public static class Server implements IServer {

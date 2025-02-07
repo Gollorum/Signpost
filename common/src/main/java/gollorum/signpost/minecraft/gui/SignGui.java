@@ -632,7 +632,7 @@ public class SignGui extends ExtendedScreen {
         AtomicInteger cycleItemIngredientIndex = new AtomicInteger(0);
         AtomicLong nextCycleAt = new AtomicLong(System.currentTimeMillis());
         cycleItem.set(() -> {
-            var options = PostBlock.AllVariants.get(cycleItemIndex.get()).type.addSignIngredient.get().items();
+            var options = PostBlock.AllVariants.get(cycleItemIndex.get()).type.addSignIngredient.apply(minecraft().player.registryAccess()).items();
             ir.setItemStack(new ItemStack(options.get(cycleItemIngredientIndex.get()).value()));
             if(cycleItemIngredientIndex.get() >= options.size() - 1) {
                 cycleItemIndex.set((cycleItemIndex.get() + 1) % PostBlock.AllVariants.size());

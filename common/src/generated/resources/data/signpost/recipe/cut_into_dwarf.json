@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "#signpost:waystone",
+  "result": {
+    "count": 1,
+    "id": "signpost:waystone_model_dwarf"
+  }
+}

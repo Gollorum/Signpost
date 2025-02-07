@@ -91,7 +91,7 @@ public class SignpostJigsawPiece extends LegacySinglePoolElement {
 
     @Override
     public @NotNull StructurePoolElementType<?> getType() {
-        return JigsawDeserializers.signpost.get();
+        return JigsawDeserializers.signpost;
     }
 
     @Override

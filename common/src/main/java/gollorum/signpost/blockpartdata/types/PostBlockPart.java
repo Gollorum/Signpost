@@ -73,7 +73,7 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
     public InteractionResult interact(InteractionInfo info) {
         ItemStack heldItem = info.player.getItemInHand(info.hand);
         PlayerHandle playerHandle = PlayerHandle.from(info.player);
-        if(isValidSign(heldItem)) return attachSign(info, heldItem);
+        if(isValidSign(heldItem, info.player.registryAccess())) return attachSign(info, heldItem);
         else if(isWaystone(heldItem)) return attachWaystone(info, heldItem, playerHandle);
         else if(isBrush(heldItem)) return paint(info);
         else return InteractionResult.Ignored;
@@ -104,7 +104,7 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
         if (info.isRemote && info.tile.getParts().stream().filter(i -> i.blockPart instanceof SignBlockPart).count() < maxSignCount) {
             SignGui.display(
                 info.tile,
-                PostBlock.ModelType.from(info.player.getItemInHand(info.hand).getItem()).get(),
+                PostBlock.ModelType.from(info.player.getItemInHand(info.hand).getItem(), info.player.registryAccess()).get(),
                 info.traceResult.hitPos,
                 new ItemStack(heldItem.getItem(), 1)
             );
@@ -119,10 +119,10 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
         return InteractionResult.Accepted;
     }
 
-    private static boolean isValidSign(ItemStack itemStack) {
+    private static boolean isValidSign(ItemStack itemStack, HolderLookup.Provider registryAccess) {
         if(itemStack == null || itemStack.getCount() < 1) return false;
         Item item = itemStack.getItem();
-        return PostBlock.ModelType.from(item).isPresent();
+        return PostBlock.ModelType.from(item, registryAccess).isPresent();
     }
 
     private static boolean isWaystone(ItemStack itemStack) {

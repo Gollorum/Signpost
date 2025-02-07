@@ -15,11 +15,11 @@
     "ColorableButton",
     "ConfigurableFont",
     "LevelRendererAccessor",
-    "ModelBakeryInjector",
+    "ModelDiscoveryInjector",
     "ModelBakeryLeecher",
+    "ModelBakeryAccessor",
     "ModelManagerAccessor",
-    "ScreenAccessor",
-    "VertexFormatAccessor"
+    "ScreenAccessor"
   ],
   "server": [
   ],

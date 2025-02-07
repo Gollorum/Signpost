@@ -17,7 +17,7 @@ public final class ItemStackSerializer {
 
         @Override
         public void encode(CompoundTag compound, ItemStack itemStack, HolderLookup.Provider provider) {
-            compound.put("ItemStack", itemStack.save(provider));
+            compound.put("ItemStack", itemStack.saveOptional(provider));
         }
 
         @Override
@@ -27,9 +27,8 @@ public final class ItemStackSerializer {
 
         @Override
         public ItemStack decode(CompoundTag compound, HolderLookup.Provider provider) {
-            var tag = compound.get("ItemStack");
-            if(tag == null) return ItemStack.EMPTY;
-            return ItemStack.parse(provider, tag).orElse(ItemStack.EMPTY);
+            var tag = compound.getCompound("ItemStack");
+            return ItemStack.parseOptional(provider, tag);
         }
     }
 

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "e": "minecraft:ender_pearl",
+    "s": "minecraft:stone"
+  },
+  "pattern": [
+    "sss",
+    "ses",
+    "sss"
+  ],
+  "result": {
+    "count": 1,
+    "id": "signpost:waystone"
+  }
+}

@@ -81,7 +81,7 @@ public class WaystoneJigsawPiece extends LegacySinglePoolElement {
 
 	@Override
 	public @NotNull StructurePoolElementType<?> getType() {
-		return JigsawDeserializers.waystone.get();
+		return JigsawDeserializers.waystone;
 	}
 
 	@Override

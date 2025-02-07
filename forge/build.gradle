@@ -53,7 +53,7 @@ minecraft {
         data {
             workingDirectory file('runs/data')
             ideaModule "${rootProject.name}.${project.name}.main"
-            args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+            args '--mod', mod_id, '--all', '--output', file('../common/src/generated/resources/'), '--existing', file('../common/src/main/resources/')
             taskName 'Data'
             mods {
                 modDataRun {
@@ -64,7 +64,7 @@ minecraft {
     }
 }
 
-sourceSets.main.resources.srcDir 'src/generated/resources'
+sourceSets.main.resources.srcDir '../common/src/generated/resources'
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
@@ -76,16 +76,6 @@ dependencies {
 //    compileOnly "curse.maven:balm-531761:5485035"
 //    compileOnly "curse.maven:waystones-245755:5841749"
 //    compileOnly fg.deobf("curse.maven:repurposed-structures-368293:5150178")
-}
-
-sourceSets.main.resources.srcDir 'src/generated/resources'
-
-dependencies {
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-    annotationProcessor("org.spongepowered:mixin:0.8.5-SNAPSHOT:processor")
-
-    // Forge's hack fix
-    implementation('net.sf.jopt-simple:jopt-simple:5.0.4') { version { strictly '5.0.4' } }
 }
 
 publishing {

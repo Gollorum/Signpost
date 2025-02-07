@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 import java.util.function.BiFunction;
 
-public class ModelFactoryImpl implements ModelFactory {
+public class ModelFactoryImpl extends ModelFactory {
     private ModelBakery bakery;
 
     @Override

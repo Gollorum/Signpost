@@ -22,8 +22,8 @@ import java.util.Objects;
 
 public class PostBlockImpl extends PostBlock {
 
-    public PostBlockImpl(Properties properties, ModelType modelType) {
-        super(properties, modelType);
+    public PostBlockImpl(Properties properties, ModelType modelType, Variant variant) {
+        super(properties, modelType, variant);
     }
 
     @Override

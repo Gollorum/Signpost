@@ -24,6 +24,7 @@ import net.minecraft.core.*;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.ItemTags;
@@ -56,6 +57,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.apache.commons.lang3.function.TriFunction;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -84,7 +86,7 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
             ResourceLocation.parse("stripped_acacia_log"),
             ResourceLocation.parse("acacia_log"),
             r -> Ingredient.of(Items.ACACIA_SIGN),
-            r -> Ingredient.of(r.get().getOrThrow(ItemTags.ACACIA_LOGS)),
+            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.ACACIA_LOGS)),
             r -> Ingredient.of(Items.ACACIA_SIGN)
         );
         public static final ModelType Birch = new ModelType("birch",
@@ -92,14 +94,14 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
             ResourceLocation.parse("stripped_birch_log"),
             ResourceLocation.parse("birch_log"),
             r -> Ingredient.of(Items.BIRCH_SIGN),
-            r -> Ingredient.of(r.get().getOrThrow(ItemTags.BIRCH_LOGS)),
+            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.BIRCH_LOGS)),
             r -> Ingredient.of(Items.BIRCH_SIGN)
         );
         public static final ModelType Iron = new ModelType("iron",
             ResourceLocation.parse("iron_block"),
             ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "iron"),
             ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "iron_dark"),
-            r -> Ingredient.of(r.get().getOrThrow(ItemTags.SIGNS)),
+            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.SIGNS)),
             r -> Ingredient.of(Items.IRON_INGOT),
             r -> Ingredient.of(Items.IRON_INGOT)
         );
@@ -108,7 +110,7 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
             ResourceLocation.parse("stripped_jungle_log"),
             ResourceLocation.parse("jungle_log"),
             r -> Ingredient.of(Items.JUNGLE_SIGN),
-            r -> Ingredient.of(r.get().getOrThrow(ItemTags.JUNGLE_LOGS)),
+            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.JUNGLE_LOGS)),
             r -> Ingredient.of(Items.JUNGLE_SIGN)
         );
         public static final ModelType Oak = new ModelType("oak",
@@ -116,7 +118,7 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
             ResourceLocation.parse("stripped_oak_log"),
             ResourceLocation.parse("oak_log"),
             r -> Ingredient.of(Items.OAK_SIGN),
-            r -> Ingredient.of(r.get().getOrThrow(ItemTags.OAK_LOGS)),
+            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.OAK_LOGS)),
             r -> Ingredient.of(Items.OAK_SIGN)
         );
         public static final ModelType DarkOak = new ModelType("darkoak",
@@ -124,7 +126,7 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
             ResourceLocation.parse("stripped_dark_oak_log"),
             ResourceLocation.parse("dark_oak_log"),
             r -> Ingredient.of(Items.DARK_OAK_SIGN),
-            r -> Ingredient.of(r.get().getOrThrow(ItemTags.DARK_OAK_LOGS)),
+            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.DARK_OAK_LOGS)),
             r -> Ingredient.of(Items.DARK_OAK_SIGN)
         );
         public static final ModelType Spruce = new ModelType("spruce",
@@ -132,7 +134,7 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
             ResourceLocation.parse("stripped_spruce_log"),
             ResourceLocation.parse("spruce_log"),
             r -> Ingredient.of(Items.SPRUCE_SIGN),
-            r -> Ingredient.of(r.get().getOrThrow(ItemTags.SPRUCE_LOGS)),
+            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.SPRUCE_LOGS)),
             r -> Ingredient.of(Items.SPRUCE_SIGN)
         );
         public static final ModelType Mangrove = new ModelType("mangrove",
@@ -140,7 +142,7 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
             ResourceLocation.parse("stripped_mangrove_log"),
             ResourceLocation.parse("mangrove_log"),
             r -> Ingredient.of(Items.MANGROVE_SIGN),
-            r -> Ingredient.of(r.get().getOrThrow(ItemTags.MANGROVE_LOGS)),
+            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.MANGROVE_LOGS)),
             r -> Ingredient.of(Items.MANGROVE_SIGN)
         );
         public static final ModelType Bamboo = new ModelType("bamboo",
@@ -148,7 +150,7 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
             ResourceLocation.parse("stripped_bamboo_block"),
             ResourceLocation.parse("bamboo_block"),
             r -> Ingredient.of(Items.BAMBOO_SIGN),
-            r -> Ingredient.of(r.get().getOrThrow(ItemTags.BAMBOO_BLOCKS)),
+            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.BAMBOO_BLOCKS)),
             r -> Ingredient.of(Items.BAMBOO_SIGN)
         );
         public static final ModelType Cherry = new ModelType("cherry",
@@ -156,14 +158,14 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
             ResourceLocation.parse("stripped_cherry_log"),
             ResourceLocation.parse("cherry_log"),
             r -> Ingredient.of(Items.CHERRY_SIGN),
-            r -> Ingredient.of(r.get().getOrThrow(ItemTags.CHERRY_LOGS)),
+            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.CHERRY_LOGS)),
             r -> Ingredient.of(Items.CHERRY_SIGN)
         );
         public static final ModelType Stone = new ModelType("stone",
             ResourceLocation.parse("stone"),
             ResourceLocation.parse("stone"),
             ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "stone_dark"),
-            r -> Ingredient.of(r.get().getOrThrow(ItemTags.SIGNS)),
+            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.SIGNS)),
             r -> Ingredient.of(Items.STONE),
             r -> Ingredient.of(Items.STONE)
         );
@@ -171,7 +173,7 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
             ResourceLocation.parse("red_mushroom_block"),
             ResourceLocation.parse("mushroom_stem"),
             ResourceLocation.parse("red_mushroom_block"),
-            r -> Ingredient.of(r.get().getOrThrow(ItemTags.SIGNS)),
+            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.SIGNS)),
             r -> Ingredient.of(Items.RED_MUSHROOM_BLOCK),
             r -> Ingredient.of(Items.RED_MUSHROOM)
         );
@@ -179,7 +181,7 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
             ResourceLocation.parse("brown_mushroom_block"),
             ResourceLocation.parse("mushroom_stem"),
             ResourceLocation.parse("brown_mushroom_block"),
-            r -> Ingredient.of(r.get().getOrThrow(ItemTags.SIGNS)),
+            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.SIGNS)),
             r -> Ingredient.of(Items.BROWN_MUSHROOM_BLOCK),
             r -> Ingredient.of(Items.BROWN_MUSHROOM)
         );
@@ -188,7 +190,7 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
             ResourceLocation.parse("stripped_warped_stem"),
             ResourceLocation.parse("warped_stem"),
             r -> Ingredient.of(Items.WARPED_SIGN),
-            r -> Ingredient.of(r.get().getOrThrow(ItemTags.WARPED_STEMS)),
+            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.WARPED_STEMS)),
             r -> Ingredient.of(Items.WARPED_SIGN)
         );
         public static final ModelType Crimson = new ModelType("crimson",
@@ -196,23 +198,23 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
             ResourceLocation.parse("stripped_crimson_stem"),
             ResourceLocation.parse("crimson_stem"),
             r -> Ingredient.of(Items.CRIMSON_SIGN),
-            r -> Ingredient.of(r.get().getOrThrow(ItemTags.CRIMSON_STEMS)),
+            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.CRIMSON_STEMS)),
             r -> Ingredient.of(Items.CRIMSON_SIGN)
         );
-        private static final Lazy<Ingredient> sandstone = Lazy.of(() ->
-            Ingredient.of(Blocks.SANDSTONE, Blocks.CUT_SANDSTONE, Blocks.CHISELED_SANDSTONE, Blocks.SMOOTH_SANDSTONE));
+        private static final Ingredient sandstone =
+            Ingredient.of(Blocks.SANDSTONE, Blocks.CUT_SANDSTONE, Blocks.CHISELED_SANDSTONE, Blocks.SMOOTH_SANDSTONE);
         public static final ModelType Sandstone = new ModelType("sandstone",
             ResourceLocation.parse("sandstone"),
             ResourceLocation.parse("stripped_jungle_log"),
             ResourceLocation.parse("sandstone_bottom"),
-            r -> Ingredient.of(r.get().getOrThrow(ItemTags.SIGNS)),
-            r -> sandstone.get(),
-            r -> sandstone.get()
+            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.SIGNS)),
+            r -> sandstone,
+            r -> sandstone
         );
 
-        public static Optional<ModelType> from(Item signItem) {
+        public static Optional<ModelType> from(Item signItem, HolderLookup.Provider registryAccess) {
             return allTypes.values().stream()
-                .filter(t -> t.addSignIngredient.get().test(new ItemStack(signItem)))
+                .filter(t -> t.addSignIngredient.apply(registryAccess).test(new ItemStack(signItem)))
                 .findFirst();
         }
 
@@ -239,38 +241,18 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
         public final Texture postTexture;
         public final Texture mainTexture;
         public final Texture secondaryTexture;
-        public final Lazy<Ingredient> signIngredient;
-        public final Lazy<Ingredient> baseIngredient;
-        public final Lazy<Ingredient> addSignIngredient;
+        public final Function<HolderLookup.Provider, Ingredient> signIngredient;
+        public final Function<HolderLookup.Provider, Ingredient> baseIngredient;
+        public final Function<HolderLookup.Provider, Ingredient> addSignIngredient;
 
         ModelType(
             String name, ResourceLocation postTexture, ResourceLocation mainTexture, ResourceLocation secondaryTexture,
-            Function<Lazy<Registry<Item>>, Ingredient> signIngredient, Function<Lazy<Registry<Item>>, Ingredient> baseIngredient, Function<Lazy<Registry<Item>>, Ingredient> addSignIngredient) {
+            Function<HolderLookup.Provider, Ingredient> signIngredient, Function<HolderLookup.Provider, Ingredient> baseIngredient, Function<HolderLookup.Provider, Ingredient> addSignIngredient) {
             this(name, expand(postTexture), expand(mainTexture), expand(secondaryTexture), signIngredient, baseIngredient, addSignIngredient);
         }
 
-        ModelType(
-            String name,
-            Texture postTexture,
-            Texture mainTexture,
-            Texture secondaryTexture,
-            Function<Lazy<Registry<Item>>, Ingredient> signIngredient,
-            Function<Lazy<Registry<Item>>, Ingredient> baseIngredient,
-            Function<Lazy<Registry<Item>>, Ingredient> addSignIngredient) {
-            var itemRegistry = Lazy.of(() -> {
-                var lookup = Signpost.getServerType().isServer ? Signpost.getServerInstance().registryAccess() : Minecraft.getInstance().getSingleplayerServer().registryAccess();
-                return lookup.lookupOrThrow(Registries.ITEM);
-            });
-            this.name = name;
-            this.postTexture = postTexture;
-            this.mainTexture = mainTexture;
-            this.secondaryTexture = secondaryTexture;
-            this.signIngredient = Lazy.of(() -> signIngredient.apply(itemRegistry));
-            this.baseIngredient = Lazy.of(() -> baseIngredient.apply(itemRegistry));
-            this.addSignIngredient = Lazy.of(() -> addSignIngredient.apply(itemRegistry));
-        }
 
-        public ModelType(String name, Texture postTexture, Texture mainTexture, Texture secondaryTexture, Lazy<Ingredient> signIngredient, Lazy<Ingredient> baseIngredient, Lazy<Ingredient> addSignIngredient) {
+        public ModelType(String name, Texture postTexture, Texture mainTexture, Texture secondaryTexture, Function<HolderLookup.Provider, Ingredient> signIngredient, Function<HolderLookup.Provider, Ingredient> baseIngredient, Function<HolderLookup.Provider, Ingredient> addSignIngredient) {
             this.name = name;
             this.postTexture = postTexture;
             this.mainTexture = mainTexture;
@@ -300,12 +282,12 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
                 Texture.BufferSerializer.encode(buffer, modelType.postTexture);
                 Texture.BufferSerializer.encode(buffer, modelType.mainTexture);
                 Texture.BufferSerializer.encode(buffer, modelType.secondaryTexture);
-                Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, modelType.signIngredient.get());
-                Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, modelType.baseIngredient.get());
-                Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, modelType.addSignIngredient.get());
+                Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, modelType.signIngredient.apply(buffer.registryAccess()));
+                Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, modelType.baseIngredient.apply(buffer.registryAccess()));
+                Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, modelType.addSignIngredient.apply(buffer.registryAccess()));
             }
 
-            private <T> Lazy<T> constLazy(T t) { return Lazy.of(() -> t); }
+            private <T> Function<HolderLookup.Provider, T> constLazy(T t) { return r -> t; }
             @Override
             public ModelType decode(RegistryFriendlyByteBuf buffer) {
                 return new ModelType(
@@ -337,15 +319,16 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
         public final RequiredTool tool;
 
         public Variant(Properties properties, ModelType type, String registryName, RequiredTool tool) {
-            this.properties = properties;
+            this.registryName = REGISTRY_NAME + "_" + registryName;
+            this.properties = properties
+                .setId(ResourceKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, registryName)));
             this.type = type;
             this.tool = tool;
-            this.registryName = REGISTRY_NAME + "_" + registryName;
         }
 
-        public PostBlock createBlock(BiFunction<Properties, ModelType, PostBlock> factory) {
+        public PostBlock createBlock(TriFunction<Properties, ModelType, Variant, PostBlock> factory) {
             assert block == null;
-            return block = factory.apply(properties, type);
+            return block = factory.apply(properties, type, this);
         }
 
         public PostBlock getBlock() {
@@ -380,10 +363,12 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
     }
 
     public final ModelType type;
+    public final Variant variant;
 
-    protected PostBlock(Properties properties, ModelType type) {
+    protected PostBlock(Properties properties, ModelType type, Variant variant) {
         super(properties.noOcclusion());
         this.type = type;
+        this.variant = variant;
         this.registerDefaultState(this.defaultBlockState().setValue(WATERLOGGED, false));
     }
 
