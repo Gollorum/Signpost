@@ -168,6 +168,7 @@ public class SignGui extends ExtendedScreen {
 
     @Override
     protected void init() {
+        isClosed = false;
         SignType currentType;
         String currentWaystone;
         NameProvider[] currentText;
@@ -632,7 +633,8 @@ public class SignGui extends ExtendedScreen {
         AtomicInteger cycleItemIngredientIndex = new AtomicInteger(0);
         AtomicLong nextCycleAt = new AtomicLong(System.currentTimeMillis());
         cycleItem.set(() -> {
-            var options = PostBlock.AllVariants.get(cycleItemIndex.get()).type.addSignIngredient.apply(minecraft().player.registryAccess()).items();
+            if(isClosed) return;
+            var options = PostBlock.AllVariants.get(cycleItemIndex.get()).type.addSignIngredient.apply(Minecraft.getInstance().level.registryAccess()).items();
             ir.setItemStack(new ItemStack(options.get(cycleItemIngredientIndex.get()).value()));
             if(cycleItemIngredientIndex.get() >= options.size() - 1) {
                 cycleItemIndex.set((cycleItemIndex.get() + 1) % PostBlock.AllVariants.size());
@@ -885,9 +887,12 @@ public class SignGui extends ExtendedScreen {
         addRenderableWidget(widget);
     }
 
+    private boolean isClosed = false;
+
     @Override
     public void onClose() {
         super.onClose();
+        isClosed = true;
         WaystoneLibrary.getInstance().updateEventDispatcher.removeListener(waystoneUpdateListener);
     }
 
@@ -903,6 +908,7 @@ public class SignGui extends ExtendedScreen {
     private void done() {
         apply(asValidWaystone(waystoneInputBox.getValue()).map(w -> w.handle));
         minecraft().setScreen(null);
+        isClosed = true;
     }
 
     private void apply(Optional<WaystoneHandle> destinationId) {

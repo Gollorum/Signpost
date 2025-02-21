@@ -4,6 +4,7 @@ import com.mojang.datafixers.types.Type;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
+import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.block.WaystoneBlock;
 import gollorum.signpost.events.WaystoneUpdatedEvent;
 import gollorum.signpost.platform.Services;
@@ -21,6 +22,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 public class WaystoneTile extends BlockEntity implements WithOwner.OfWaystone, WaystoneContainer {
@@ -31,7 +33,12 @@ public class WaystoneTile extends BlockEntity implements WithOwner.OfWaystone, W
     public static BlockEntityType<WaystoneTile> createType() {
         assert type == null;
         Type<?> type = Util.fetchChoiceType(References.BLOCK_ENTITY, REGISTRY_NAME);
-        return WaystoneTile.type = Services.BLOCK_ENTITY_TYPE_FACTORY.create(WaystoneTile::new, new Block[]{WaystoneBlock.getInstance()}, type);
+        var blocks = new ArrayList<Block>();
+        blocks.add(WaystoneBlock.getInstance());
+        for(var variant : ModelWaystone.variants) {
+            blocks.add(variant.getBlock());
+        }
+        return WaystoneTile.type = Services.BLOCK_ENTITY_TYPE_FACTORY.create(WaystoneTile::new, blocks.toArray(Block[]::new), type);
     }
     public static BlockEntityType<WaystoneTile> getBlockEntityType() {
         assert type != null;
@@ -47,7 +54,7 @@ public class WaystoneTile extends BlockEntity implements WithOwner.OfWaystone, W
     public Optional<String> getName() { return name; }
 
     public WaystoneTile(BlockPos pos, BlockState state) {
-        super(type, pos, state);
+        super(getBlockEntityType(), pos, state);
     }
 
     private final EventDispatcher.Listener<WaystoneUpdatedEvent> updateListener = event -> {

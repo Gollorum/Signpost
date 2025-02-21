@@ -373,7 +373,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
     }
 
     @Override
-    public void readMutationUpdate(CompoundTag compound, BlockEntity tile, Player editingPlayer, HolderLookup.Provider provider) {
+    public void readMutationUpdate(CompoundTag compound, BlockEntity tile, @Nullable Player editingPlayer, HolderLookup.Provider provider) {
         if(compound.contains("CoreData")) compound = compound.getCompound("CoreData");
         if(compound.contains("Angle"))
             setAngle(AngleProvider.fetchFrom(compound.getCompound("Angle"), provider));
@@ -395,7 +395,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
             CompoundTag dest = compound.getCompound("Destination");
             Optional<WaystoneHandle> destination;
             if(dest.getBoolean("IsPresent")){
-                Optional<WaystoneHandle> d2 = WaystoneHandle.read(dest, editingPlayer.registryAccess());
+                Optional<WaystoneHandle> d2 = WaystoneHandle.read(dest, provider);
                 if (d2.isPresent()) {
                     setDestination(d2);
                 } else {
@@ -404,14 +404,14 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
             } else setDestination(Optional.empty());
         }
         if(compound.contains("ItemToDropOnBreak")) {
-            setItemToDropOnBreak(ItemStackSerializer.Compound.decode(compound.getCompound("ItemToDropOnBreak"), editingPlayer.registryAccess()));
+            setItemToDropOnBreak(ItemStackSerializer.Compound.decode(compound.getCompound("ItemToDropOnBreak"), provider));
         }
         if(compound.contains("ModelType"))
             PostBlock.ModelType.getByName(compound.getString("ModelType"), true).ifPresent(this::setModelType);
 
         OptionalCompoundSerializer<Overlay> overlaySerializer = Overlay.CompoundSerializer.optional();
         if(compound.contains("Overlay"))
-            setOverlay(overlaySerializer.decode(compound.getCompound("Overlay"), editingPlayer.registryAccess()));
+            setOverlay(overlaySerializer.decode(compound.getCompound("Overlay"), provider));
 
         if(compound.contains("IsLocked")) {
             if(editingPlayer == null || editingPlayer.level().isClientSide()

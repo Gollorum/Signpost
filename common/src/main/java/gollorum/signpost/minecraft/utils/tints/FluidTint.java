@@ -9,6 +9,7 @@ import gollorum.signpost.utils.serialization.ResourceLocationSerializer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -27,8 +28,7 @@ public record FluidTint(Fluid fluid) implements Tint {
     }
 
     private static Registry<Fluid> getFluidRegistry() {
-        assert Signpost.getServerType().isServer;
-        return Signpost.getServerInstance().registryAccess().get(Registries.FLUID).get().value();
+        return BuiltInRegistries.FLUID;
     }
 
     public static final CompoundSerializable<FluidTint> compoundSerializer = new CompoundSerializable<>() {

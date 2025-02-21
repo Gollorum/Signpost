@@ -1,6 +1,5 @@
 package gollorum.signpost.minecraft.utils.tints;
 
-import gollorum.signpost.Signpost;
 import gollorum.signpost.utils.Tint;
 import gollorum.signpost.utils.serialization.BufferSerializable;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
@@ -8,7 +7,7 @@ import gollorum.signpost.utils.serialization.ResourceLocationSerializer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
-import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -29,7 +28,7 @@ public record BlockColorTint(Block block, int tintIndex) implements Tint {
     }
 
     private static Registry<Block> getBlockRegistry() {
-        return Signpost.getServerInstance().registryAccess().get(Registries.BLOCK).get().value();
+        return BuiltInRegistries.BLOCK;
     }
 
     private static Block getBlock(ResourceLocation key) {
