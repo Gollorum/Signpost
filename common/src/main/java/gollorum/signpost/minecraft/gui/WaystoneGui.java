@@ -29,7 +29,8 @@ public class WaystoneGui extends ExtendedScreen {
 
     private Optional<Set<String>> allWaystoneNames = Optional.empty();
 
-    private static final TextureResource texture = TextureResource.waystoneNameField;
+    private static final TextureResource texture = TextureResource.edit;
+//    private static final TextureResource texture = TextureResource.waystoneNameField;
     private static final int inputBoxScale = 3;
     private static final int inputBoxYOffset = -46;
 

@@ -19,7 +19,6 @@ public class CutWaystoneRecipe extends StonecutterRecipe {
 
     public static final String RegistryName = "cut_waystone";
 
-    // TODO DS: ID?
     public CutWaystoneRecipe(String group, Ingredient ingredient, ItemStack result) {
         super(group, ingredient, result);
     }

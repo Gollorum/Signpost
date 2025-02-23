@@ -1,5 +1,6 @@
 package gollorum.signpost.minecraft.gui.widgets;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.minecraft.gui.utils.TextureResource;
@@ -44,11 +45,13 @@ public class SignpostImageButton extends Button {
 
     @Override
     public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        RenderSystem.enableDepthTest();
         graphics.blit(RenderType::guiTextured,
             background.location,
             this.getX(), this.getY(),
-            this.width, this.height,
             background.offset.width, background.offset.height + (this.isHoveredOrFocused() ? background.size.height : 0),
+            this.width, this.height,
             background.size.width, background.size.height,
             background.fileSize.width, background.fileSize.height);
     }

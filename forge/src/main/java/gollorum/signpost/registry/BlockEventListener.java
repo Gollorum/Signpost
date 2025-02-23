@@ -27,7 +27,7 @@ public class BlockEventListener {
     public static void register(IEventBus bus) { bus.register(BlockEventListener.class); }
 
     @SubscribeEvent
-    public static void onBlockPlaced(BlockEvent.EntityPlaceEvent event) {
+    public static void onBlockPlaced(BlockEvent.EntityPlaceEvent event) { // TODO: Notify client?
         if(!event.isCanceled() && event.getPlacedBlock().getBlock() instanceof WithCountRestriction) {
             BlockRestrictions.Type restrictionType = ((WithCountRestriction)event.getPlacedBlock().getBlock()).getBlockRestrictionType();
             PlayerHandle player = PlayerHandle.from(event.getEntity());

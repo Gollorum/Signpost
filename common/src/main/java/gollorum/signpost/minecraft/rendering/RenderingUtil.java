@@ -11,6 +11,7 @@ import gollorum.signpost.mixin.ModelManagerAccessor;
 import gollorum.signpost.platform.ClientServices;
 import gollorum.signpost.platform.Services;
 import gollorum.signpost.utils.Lazy;
+import gollorum.signpost.utils.Tuple;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.CrashReport;
@@ -39,6 +40,7 @@ import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import org.apache.commons.lang3.tuple.Triple;
 import org.joml.*;
 
 import java.lang.Math;
@@ -48,6 +50,12 @@ import java.util.function.Function;
 
 public class RenderingUtil {
 
+    private record SingleTexCacheKey(ResourceLocation modelLocation, ResourceLocation textureLocation){}
+    private record DoubleTexCacheKey(ResourceLocation modelLocation, ResourceLocation textureLocation1, ResourceLocation textureLocation2){}
+
+    private static final HashMap<SingleTexCacheKey, BakedModel> singleTexCache = new HashMap<>();
+    private static final HashMap<DoubleTexCacheKey, BakedModel> doubleTexCache = new HashMap<>();
+
     public static BakedModel loadModel(ResourceLocation location) {
         var modelManager = Minecraft.getInstance().getModelManager();
         return ((ModelManagerAccessor) modelManager).getBakedRegistry().getOrDefault(location, modelManager.getMissingModel());
@@ -55,17 +63,21 @@ public class RenderingUtil {
 
     public static BakedModel loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation) {
         final ResourceLocation textLoc = trim(textureLocation);
-        Function<Material, TextureAtlasSprite> textureGetter = m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(textLoc);
-        return ClientServices.MODEL_FACTORY.bakeFor(textureGetter, modelLocation);
+        return singleTexCache.computeIfAbsent(new SingleTexCacheKey(modelLocation, textLoc), key -> {
+            Function<Material, TextureAtlasSprite> textureGetter = m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(key.textureLocation);
+            return ClientServices.MODEL_FACTORY.bakeFor(textureGetter, key.modelLocation);
+        });
     }
 
     public static BakedModel loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation1, ResourceLocation textureLocation2) {
         final ResourceLocation textLoc1 = trim(textureLocation1);
         final ResourceLocation textLoc2 = trim(textureLocation2);
-        Function<Material, TextureAtlasSprite> textureGetter = m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(
-            m.sprite().contents().name().equals(PostModelResources.mainTextureMarker)
-                ? textLoc1 : textLoc2);
-        return ClientServices.MODEL_FACTORY.bakeFor(textureGetter, modelLocation);
+        return doubleTexCache.computeIfAbsent(new DoubleTexCacheKey(modelLocation, textLoc1, textLoc2), key -> {
+            Function<Material, TextureAtlasSprite> textureGetter = m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(
+                m.sprite().contents().name().equals(PostModelResources.mainTextureMarker)
+                    ? key.textureLocation1 : key.textureLocation2);
+            return ClientServices.MODEL_FACTORY.bakeFor(textureGetter, key.modelLocation);
+        });
     }
 
     public static final Lazy<ModelBlockRenderer> Renderer = Lazy.of(() -> Minecraft.getInstance().getBlockRenderer().getModelRenderer());

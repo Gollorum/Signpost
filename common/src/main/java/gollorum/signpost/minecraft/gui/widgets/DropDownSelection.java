@@ -151,7 +151,13 @@ public class DropDownSelection<EntryType> extends ImageButton {
         int yTexStart = this.isHovered ? texture.size.height : 0;
         int xTexStart = this.isListVisible ? texture.size.width : 0;
 
-        graphics.blit(RenderType::guiTextured, texture.location, getX(), getY(), 100, xTexStart, yTexStart, this.width, this.height, texture.fileSize.height, texture.fileSize.width);
+        graphics.blit(RenderType::guiTextured,
+            texture.location,
+            getX(), getY(),
+            xTexStart, yTexStart,
+            this.width, this.height,
+            texture.fileSize.height, texture.fileSize.width
+        );
         RenderSystem.enableDepthTest();
         if(isListVisible) list.render(graphics, mouseX, mouseY, partialTicks);
         graphics.pose().popPose();

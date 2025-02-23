@@ -28,8 +28,7 @@ public final class PermissionCheck implements LootItemCondition {
     }
 
     public static LootItemConditionType createConditionType() {
-        // TODO: What is this fieldOf?
-        return new LootItemConditionType(Codec.STRING.fieldOf("signpost").flatXmap(
+        return new LootItemConditionType(Codec.STRING.fieldOf("type").flatXmap(
         str -> Arrays.stream(Type.values()).filter(t -> t.name.equals(str)).findFirst().map(PermissionCheck::new).map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Unknown permission check type: " + str)),
         check -> DataResult.success(check.type.name)
     )); }

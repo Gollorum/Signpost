@@ -145,7 +145,7 @@ public class Teleport {
         var changesDimension = entity.level() != level;
 
         if(entity instanceof ServerPlayer)
-            entity.teleportTo(level, pos.x, pos.y, pos.z, Set.of(), yaw.degrees(), pitch.degrees(), true);  // TODO: Check if bool is fine
+            entity.teleportTo(level, pos.x, pos.y, pos.z, Set.of(), yaw.degrees(), pitch.degrees(), true);
         else if (changesDimension) {
             entity.unRide();
             Entity newCopy = entity.getType().create(level, EntitySpawnReason.DIMENSION_TRAVEL);
@@ -187,7 +187,7 @@ public class Teleport {
             if(level != mob.level())
                 mob = teleportWithChildren(mob, level, pos, yaw, pitch);
             else {
-                mob.teleportTo(level, pos.x, pos.y, pos.z, Set.of(), yaw.degrees(), pitch.degrees(), true); // TODO: Check if bool is fine
+                mob.teleportTo(level, pos.x, pos.y, pos.z, Set.of(), yaw.degrees(), pitch.degrees(), true);
             }
             var mob2 = mob;
             IDelay.onServerForFrames(5, () -> mob2.setLeashedTo(player, true));
@@ -205,7 +205,6 @@ public class Teleport {
         ConfirmTeleportGui.display(data, signInfo);
     }
 
-    // TODO DS: Test
     public static ItemStack getCost(ServerPlayer player, Vector3 from, Vector3 to) {
         var item = player.server.registryAccess().lookup(Registries.ITEM).flatMap(
             registry -> registry.get(ResourceKey.create(Registries.ITEM, ResourceLocation.parse(IConfig.getInstance().getServer().teleport().costItem())))
