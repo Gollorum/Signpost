@@ -40,9 +40,13 @@ public class NeoForgePacketHandler extends PacketHandler {
     @Override
     public <T> void register(Event<T> event, ResourceLocation id){
         events.put(event.getMessageClass(), new Tuple<>(event, id));
-        registrar.commonBidirectional(id, buffer -> {
-            var message = event.decode(buffer, );
-            return new Payload<>(id, event, message);
+        var type = new CustomPacketPayload.Type<Payload<T>>(id);
+        registrar.playBidirectional(type, event.map(
+            message -> new Payload<T>(type, event, message),
+            payload -> payload.message
+            ),
+//            var message = event.decode(buffer);
+//            return new Payload<>(id, event, message);
         }, NeoForgePacketHandler::handle);
     }
 
@@ -87,13 +91,6 @@ public class NeoForgePacketHandler extends PacketHandler {
         PacketDistributor.ALL.noArg().send(toPayload(message));
     }
 
-    private record Payload<T>(ResourceLocation id, Event<T> event, T message) implements CustomPacketPayload {
-
-        @Override
-        public void write(FriendlyByteBuf buffer) {
-            event.encode(buffer, message, );
-        }
-
-    }
+    private record Payload<T>(Type<Payload<T>> type, PacketHandler.Event<T> event, T message) implements CustomPacketPayload { }
 
 }
