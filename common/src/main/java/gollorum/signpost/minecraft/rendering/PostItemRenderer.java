@@ -14,9 +14,8 @@ import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.AngleProvider;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
+import net.minecraft.client.renderer.SpecialBlockModelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -26,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class PostItemRenderer extends BlockEntityWithoutLevelRenderer {
+public class PostItemRenderer extends SpecialBlockModelRenderer {
 
     private static PostItemRenderer instance;
     public static PostItemRenderer getInstance() {
