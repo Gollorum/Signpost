@@ -46,10 +46,10 @@ public class RequestSignGui implements PacketHandler.Event.ForClient<RequestSign
 		Optional<Tuple<PostTile, BlockPartInstance>> TupleO = TileEntityUtils.findTileEntityClient(
 			message.tilePartInfo.dimensionKey, message.tilePartInfo.pos, PostTile.getBlockEntityType()
 		).flatMap(tile -> tile.getPart(message.tilePartInfo.identifier)
-			.flatMap(part -> (part.blockPart instanceof SignBlockPart ? Optional.of(new Tuple<>(tile, part)) : Optional.empty())));
+			.flatMap(part -> (part.blockPart() instanceof SignBlockPart ? Optional.of(new Tuple<>(tile, part)) : Optional.empty())));
 		if (TupleO.isPresent()) {
 			Tuple<PostTile, BlockPartInstance> Tuple = TupleO.get();
-			SignGui.display(Tuple._1, (SignBlockPart) Tuple._2.blockPart, Tuple._2.offset, message.tilePartInfo);
+			SignGui.display(Tuple._1, (SignBlockPart) Tuple._2.blockPart(), Tuple._2.offset(), message.tilePartInfo);
 		} else {
 			Signpost.LOGGER.error("Tried to open sign gui, but something was missing.");
 		}

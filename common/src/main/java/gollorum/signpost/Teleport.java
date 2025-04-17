@@ -67,9 +67,9 @@ public class Teleport {
                 .subtract(location.withY(y -> y + player.getEyeHeight()));
             Angle yaw = Angle.between(
                 0, 1,
-                diff.x, diff.z
+                diff.x(), diff.z()
             );
-            Angle pitch = Angle.fromRadians((float) (Math.PI / 2 + Math.atan(Math.sqrt(diff.x * diff.x + diff.z * diff.z) / diff.y)));
+            Angle pitch = Angle.fromRadians((float) (Math.PI / 2 + Math.atan(Math.sqrt(diff.x() * diff.x() + diff.z() * diff.z()) / diff.y())));
             Level oldWorld = player.level();
             BlockPos oldPos = player.blockPosition();
             // Handle different dimensions outside GUI in case of external waystones
@@ -145,7 +145,7 @@ public class Teleport {
         var changesDimension = entity.level() != level;
 
         if(entity instanceof ServerPlayer)
-            entity.teleportTo(level, pos.x, pos.y, pos.z, Set.of(), yaw.degrees(), pitch.degrees(), true);
+            entity.teleportTo(level, pos.x(), pos.y(), pos.z(), Set.of(), yaw.degrees(), pitch.degrees(), true);
         else if (changesDimension) {
             entity.unRide();
             Entity newCopy = entity.getType().create(level, EntitySpawnReason.DIMENSION_TRAVEL);
@@ -153,13 +153,13 @@ public class Teleport {
                 return entity;
             }
             newCopy.restoreFrom(entity);
-            newCopy.moveTo(pos.x, pos.y, pos.z, yaw.degrees(), pitch.degrees());
+            newCopy.moveTo(pos.x(), pos.y(), pos.z(), yaw.degrees(), pitch.degrees());
             newCopy.setYHeadRot(yaw.degrees());
             entity.setRemoved(Entity.RemovalReason.CHANGED_DIMENSION);
             level.addDuringTeleport(newCopy);
             entity = (T) newCopy;
         } else {
-            entity.moveTo(pos.x, pos.y, pos.z, yaw.degrees(), pitch.degrees());
+            entity.moveTo(pos.x(), pos.y(), pos.z(), yaw.degrees(), pitch.degrees());
             entity.setYHeadRot(yaw.degrees());
         }
 
@@ -187,7 +187,7 @@ public class Teleport {
             if(level != mob.level())
                 mob = teleportWithChildren(mob, level, pos, yaw, pitch);
             else {
-                mob.teleportTo(level, pos.x, pos.y, pos.z, Set.of(), yaw.degrees(), pitch.degrees(), true);
+                mob.teleportTo(level, pos.x(), pos.y(), pos.z(), Set.of(), yaw.degrees(), pitch.degrees(), true);
             }
             var mob2 = mob;
             IDelay.onServerForFrames(5, () -> mob2.setLeashedTo(player, true));
@@ -371,8 +371,8 @@ public class Teleport {
                     info.pos,
                     PostTile.getBlockEntityType()
                 ).flatMap(tile -> tile.getPart(info.identifier)
-                    .flatMap(part -> part.blockPart instanceof SignBlockPart
-                        ? Optional.of(new ConfirmTeleportGui.SignInfo(tile, (SignBlockPart) part.blockPart, info, part.offset)) : Optional.empty()
+                    .flatMap(part -> part.blockPart() instanceof SignBlockPart
+                        ? Optional.of(new ConfirmTeleportGui.SignInfo(tile, (SignBlockPart) part.blockPart(), info, part.offset())) : Optional.empty()
                     ))));
             else message.data.consume(
                 l -> Minecraft.getInstance().player.displayClientMessage(Component.translatable(l), true),

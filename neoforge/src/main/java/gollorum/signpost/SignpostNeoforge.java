@@ -45,6 +45,7 @@ public class SignpostNeoforge {
 
         BlockRegistry.register(modBus);
         ItemRegistry.register(modBus);
+        DataComponentsRegistry.register(modBus);
         RecipeRegistry.register(modBus);
         TileEntityRegistry.register(modBus);
         BlockEventListener.register(forgeBus);

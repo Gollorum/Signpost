@@ -44,9 +44,9 @@ public class GuiBlockPartRenderer extends AbstractWidget {
             ms.translate(0, 0, 100);
             for(BlockPartInstance bpi : partsToRender) {
                 BlockPartRenderer.renderGuiDynamic(
-                    bpi.blockPart,
+                    bpi.blockPart(),
                     ms,
-                    center, yaw, pitch, false, scale, bpi.offset.withY(y -> y - 0.5f)
+                    center, yaw, pitch, false, scale, bpi.offset().withY(y -> y - 0.5f)
                 );
             }
         });

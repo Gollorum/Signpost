@@ -1,73 +1,100 @@
 package gollorum.signpost.minecraft.rendering;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import gollorum.signpost.Signpost;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.blockpartdata.types.PostBlockPart;
 import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
 import gollorum.signpost.blockpartdata.types.BlockPartRenderer;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.data.PostData;
 import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.utils.BlockPartInstance;
+import gollorum.signpost.utils.Either;
 import gollorum.signpost.utils.NameProvider;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.AngleProvider;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.SpecialBlockModelRenderer;
+import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.blockentity.SignRenderer;
+import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BannerPatternLayers;
+import net.minecraft.world.level.block.state.properties.WoodType;
+import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.stream.Collectors;
 
-public class PostItemRenderer extends SpecialBlockModelRenderer {
+public class PostItemRenderer implements SpecialModelRenderer<PostData> {
 
-    private static PostItemRenderer instance;
-    public static PostItemRenderer getInstance() {
-        if(instance == null) instance = new PostItemRenderer();
-        return instance;
+    private final PostBlock.ModelType fallbackType;
+
+    public PostItemRenderer(PostBlock.ModelType fallbackType) {
+        this.fallbackType = fallbackType;
     }
-    private PostItemRenderer() {
-        super(Minecraft.getInstance().getBlockEntityRenderDispatcher(), Minecraft.getInstance().getEntityModels());
+
+    @Nullable
+    public PostData extractArgument(ItemStack itemStack) {
+        return itemStack.get(PostData.TYPE);
     }
 
     @Override
-    public void renderByItem(ItemStack stack, ItemDisplayContext transformType, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, int combinedLight, int combinedOverlay) {
-        if(stack.isEmpty() || !(stack.getItem() instanceof BlockItem && ((BlockItem)stack.getItem()).getBlock() instanceof PostBlock)) {
-            Signpost.LOGGER.error("Tried to render a non-post item with the post renderer");
-            super.renderByItem(stack, transformType, matrixStack, renderTypeBuffer, combinedLight, combinedOverlay);
-            return;
-        }
+    public void render(@Nullable PostData data, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean hasFoilType) {
         List<BlockPartInstance> parts;
-        var data = stack.get(DataComponents.CUSTOM_DATA);
-        if(data != null && data.contains("Parts")) {
-            parts = PostTile.readPartInstances(data.copyTag().getCompound("Parts"), Minecraft.getInstance().player.registryAccess());
+        if (data != null) {
+            var registryAccess = Minecraft.getInstance().player.registryAccess();
+            parts = new ArrayList<>(data.parts().size());
+            for (var instance : data.parts().values()) {
+                parts.add(instance.deserialize(registryAccess));
+            }
         } else {
             parts = new ArrayList<>();
-            PostBlock.ModelType type = ((PostBlock)((BlockItem) stack.getItem()).getBlock()).type;
-            parts.add(new BlockPartInstance(new PostBlockPart(type.postTexture), Vector3.ZERO));
+            parts.add(new BlockPartInstance(new PostBlockPart(fallbackType.postTexture), Vector3.ZERO));
             parts.add(new BlockPartInstance(new SmallWideSignBlockPart(
-                new AngleProvider.Literal(Angle.fromDegrees(180)), new NameProvider.Literal(""), true, type.mainTexture, type.secondaryTexture,
-                Optional.empty(), Colors.white, Optional.empty(), ItemStack.EMPTY, type, false, false
-            ), new Vector3(0, 0.75f, 0)));
+                new AngleProvider.Literal(Angle.fromDegrees(180)), new NameProvider.Literal(""), true, fallbackType.mainTexture, fallbackType.secondaryTexture,
+                    Optional.empty(), Colors.white, Optional.empty(), ItemStack.EMPTY, fallbackType, false, false
+                ),
+                new Vector3(0, 0.75f, 0)));
         }
 
-        RenderingUtil.wrapInMatrixEntry(matrixStack, () -> {
-            matrixStack.translate(0.5, 0, 0.5);
+        RenderingUtil.wrapInMatrixEntry(poseStack, () -> {
+            poseStack.translate(0.5, 0, 0.5);
 
             for (BlockPartInstance now: parts) {
-                RenderingUtil.wrapInMatrixEntry(matrixStack, () ->
+                RenderingUtil.wrapInMatrixEntry(poseStack, () ->
                     BlockPartRenderer.renderGuiDynamic(
-                        now.blockPart, matrixStack, now.offset, renderTypeBuffer, combinedLight, combinedOverlay
+                        now.blockPart(), poseStack, now.offset(), bufferSource, packedLight, packedOverlay
                     ));
             }
 
-            if(renderTypeBuffer instanceof MultiBufferSource.BufferSource) ((MultiBufferSource.BufferSource) renderTypeBuffer).endBatch();
+            if(bufferSource instanceof MultiBufferSource.BufferSource) ((MultiBufferSource.BufferSource) bufferSource).endBatch();
         });
+    }
+
+    public record Unbaked(PostBlock.ModelType fallbackType) implements SpecialModelRenderer.Unbaked {
+
+        public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
+            instance.group(
+                PostBlock.ModelType.CODEC.fieldOf("fallback").forGetter(Unbaked::fallbackType)
+            ).apply(instance, Unbaked::new)
+        );
+
+        @Override
+        public SpecialModelRenderer<?> bake(EntityModelSet modelSet) {
+            return new PostItemRenderer(this.fallbackType);
+        }
+
+        @Override
+        public MapCodec<Unbaked> type() {
+            return MAP_CODEC;
+        }
     }
 }

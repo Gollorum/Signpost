@@ -3,6 +3,7 @@ package gollorum.signpost.minecraft.gui;
 import com.google.common.collect.Streams;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.data.PostData;
 import gollorum.signpost.minecraft.gui.utils.*;
 import gollorum.signpost.minecraft.gui.widgets.GuiBlockPartRenderer;
 import gollorum.signpost.minecraft.gui.widgets.ItemButton;
@@ -97,7 +98,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
 
         addRenderableWidget(new GuiBlockPartRenderer(
             tile.getParts().stream()
-                .map(p -> p.blockPart == part ? new BlockPartInstance(displayPart, p.offset) : p)
+                .map(p -> p.blockPart() == part ? new BlockPartInstance(displayPart, p.offset()) : p)
                 .collect(Collectors.toList()),
             new Point(width / 2, height / 4),
             Angle.fromDegrees(minecraft().player.getYRot() + 180),
@@ -118,13 +119,18 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
     private List<Tuple<TextureAtlasSprite, Optional<Tint>>> allSpritesFor(BlockItem item, ItemStack stack) {
         Block block = item.getBlock();
         if (!(block instanceof PostBlock)) return allSpritesFor(block.defaultBlockState());
-        var data = stack.get(DataComponents.CUSTOM_DATA);
-        return data != null && data.contains("Parts")
-            ? PostTile.readPartInstances(data.copyTag().getCompound("Parts"), minecraft.player.registryAccess())
-                .stream().flatMap(i -> ((Collection<Texture>) i.blockPart.getAllTextures())
-                    .stream().map(tex -> Tuple.of(spriteFrom(tex.location()), tex.tint()))
-                ).collect(Collectors.toList())
-            : allSpritesFor(block.defaultBlockState());
+        var data = stack.get(PostData.TYPE);
+        if (data != null) {
+            var ret = new ArrayList<Tuple<TextureAtlasSprite, Optional<Tint>>>(data.parts().size());
+            for (var entry : data.parts().entrySet()) {
+                var part = entry.getValue();
+                Collection<Texture> partTextures = part.blockPart().deserialize(minecraft.player.registryAccess()).getAllTextures();
+                for (Texture tex : partTextures) {
+                    ret.add(Tuple.of(spriteFrom(tex.location()), tex.tint()));
+                }
+            }
+            return ret;
+        } else return allSpritesFor(block.defaultBlockState());
     }
 
     private List<Tuple<TextureAtlasSprite, Optional<Tint>>> allSpritesFor(BucketItem item) {

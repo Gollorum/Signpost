@@ -1,5 +1,6 @@
 package gollorum.signpost.minecraft.block;
 
+import com.mojang.serialization.Codec;
 import gollorum.signpost.BlockRestrictions;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
@@ -7,6 +8,7 @@ import gollorum.signpost.blockpartdata.types.PostBlockPart;
 import gollorum.signpost.interactions.Interactable;
 import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.data.PostData;
 import gollorum.signpost.minecraft.gui.RequestSignGui;
 import gollorum.signpost.minecraft.utils.Texture;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
@@ -14,12 +16,10 @@ import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.security.WithCountRestriction;
 import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.utils.IDelay;
-import gollorum.signpost.utils.Lazy;
 import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.BufferSerializable;
 import gollorum.signpost.utils.serialization.StringSerializer;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.*;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
@@ -62,7 +62,6 @@ import org.apache.commons.lang3.function.TriFunction;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.BiFunction;
 
 public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock, WithCountRestriction {
 
@@ -71,7 +70,17 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
 
         private static final Map<String, ModelType> allTypes = new HashMap<>();
 
-        public static void register(ModelType modelType, String name) { allTypes.put(name, modelType); }
+        public static final Codec<ModelType> CODEC = Codec.string(3, 30).xmap(
+            allTypes::get,
+            type -> type.name
+        );
+
+        public static void register(ModelType modelType, String name) {
+            if (name.length() < 3 || name.length() > 30) {
+                throw new IllegalArgumentException("ModelType name must be between 3 and 30 characters");
+            }
+            allTypes.put(name, modelType);
+        }
         public static void register(ModelType modelType) { register(modelType, modelType.name); }
         public static Optional<ModelType> getByName(String name, boolean logErrorIfNotPresent) {
             if (allTypes.containsKey(name)) return Optional.of(allTypes.get(name));
@@ -381,9 +390,9 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
                 tile.setSignpostOwner(Optional.of(PlayerHandle.from(placer)));
                 boolean shouldAddNewSign = placer instanceof ServerPlayer;
                 if (!world.isClientSide()) {
-                    var customData = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
-                    if(customData.contains("Parts")) {
-                        tile.readParts(customData.copyTag().getCompound("Parts"), world.registryAccess());
+                    var customData = stack.get(PostData.TYPE);
+                    if(customData != null) {
+                        tile.readData(customData, world.registryAccess());
                         shouldAddNewSign = false;
                     } else {
                         tile.addPart(
@@ -455,11 +464,6 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
     }
 
     @Override
-    public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.ENTITYBLOCK_ANIMATED;
-    }
-
-    @Override
     public VoxelShape getCollisionShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context) {
         return getShape(state, worldIn, pos, context);
     }
@@ -484,10 +488,10 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
     public static InteractionResult onActivate(PostTile tile, Level world, Player player, InteractionHand hand) {
         return switch (tile
             .trace(player)
-            .map(p -> p.part.blockPart.interact(new InteractionInfo(
+            .map(p -> p.part.blockPart().interact(new InteractionInfo(
                 InteractionInfo.Type.RightClick,
                 player, hand, tile, p,
-                data -> tile.notifyMutation(p.id, data, p.part.blockPart.getMeta().identifier),
+                data -> tile.notifyMutation(p.id, data, p.part.blockPart().getMeta().identifier),
                 world.isClientSide()
             )))
             .orElse(Interactable.InteractionResult.Ignored)

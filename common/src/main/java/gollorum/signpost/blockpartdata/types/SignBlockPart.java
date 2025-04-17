@@ -282,7 +282,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
                 } else {
                     Vector3 diff = info.traceResult.ray.start.negated().add(0.5f, 0.5f, 0.5f).withY(0).normalized();
                     Vector3 rayDir = info.traceResult.ray.dir.withY(0).normalized();
-                    Angle angleToPost = Angle.between(rayDir.x, rayDir.z, diff.x, diff.z).normalized();
+                    Angle angleToPost = Angle.between(rayDir.x(), rayDir.z(), diff.x(), diff.z()).normalized();
                     setAngle(new AngleProvider.Literal(coreData.angleProvider
                         .get().add(Angle.fromDegrees(angleToPost.radians() < 0 ? 15 : -15))));
                     notifyAngleChanged(info);

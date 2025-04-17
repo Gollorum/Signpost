@@ -80,7 +80,7 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
     }
 
     private InteractionResult attachWaystone(InteractionInfo info, ItemStack heldItem, PlayerHandle playerHandle) {
-        if(info.tile.getParts().stream().noneMatch(p -> p.blockPart instanceof WaystoneBlockPart)) {
+        if(info.tile.getParts().stream().noneMatch(p -> p.blockPart() instanceof WaystoneBlockPart)) {
             if (!info.isRemote && BlockRestrictions.getInstance().tryDecrementRemaining(BlockRestrictions.Type.Waystone, playerHandle)) {
                 info.tile.addPart(
                     new BlockPartInstance(new WaystoneBlockPart(playerHandle), Vector3.ZERO),
@@ -101,7 +101,7 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
     }
 
     private InteractionResult attachSign(InteractionInfo info, ItemStack heldItem) {
-        if (info.isRemote && info.tile.getParts().stream().filter(i -> i.blockPart instanceof SignBlockPart).count() < maxSignCount) {
+        if (info.isRemote && info.tile.getParts().stream().filter(i -> i.blockPart() instanceof SignBlockPart).count() < maxSignCount) {
             SignGui.display(
                 info.tile,
                 PostBlock.ModelType.from(info.player.getItemInHand(info.hand).getItem(), info.player.registryAccess()).get(),

@@ -33,9 +33,9 @@ public class SignModelFactory<TextureIdentifier> {
         Collection<CubeFacesData<TextureIdentifier>> directions
     ) {
         Vector3 max = min.add(size);
-        int textureDepth = Math.round(size.z);
-        float maxFrontU = minU + Math.round(size.x);
-        float maxFrontV = minV + Math.round(size.y);
+        int textureDepth = Math.round(size.z());
+        float maxFrontU = minU + Math.round(size.x());
+        float maxFrontV = minV + Math.round(size.y());
         addCube(min, max, directions.stream().collect(Collectors.toMap(
             cubeFacesData -> cubeFacesData.direction(),
             cubeFacesData -> {
@@ -74,25 +74,25 @@ public class SignModelFactory<TextureIdentifier> {
         FaceRotation secondaryTextureRotation, TextureIdentifier mainTexture,
         int textureSize
     ) {
-        assert size.y > 2;
+        assert size.y() > 2;
         Predicate<Direction> sideNotCulled = d ->
             (!d.equals(Direction.WEST) || shouldRenderWest) &&
                 (!d.equals(Direction.EAST) || shouldRenderEast);
         makePartialCube(
             min,
-            new Vector3(size.x, rimHeight, size.z),
-            uMin, vMin + size.y - rimHeight, true,
+            new Vector3(size.x(), rimHeight, size.z()),
+            uMin, vMin + size.y() - rimHeight, true,
             CubeFacesData.all(secondaryTexture, secondaryTextureRotation, textureSize, 1, d -> sideNotCulled.test(d) && !d.equals(Direction.UP))
         );
         makePartialCube(
-            min.withY(y -> y + size.y - rimHeight),
-            new Vector3(size.x, rimHeight, size.z),
+            min.withY(y -> y + size.y() - rimHeight),
+            new Vector3(size.x(), rimHeight, size.z()),
             uMin, vMin, true,
             CubeFacesData.all(secondaryTexture, secondaryTextureRotation, textureSize, 1, d -> sideNotCulled.test(d) && !d.equals(Direction.DOWN))
         );
         makePartialCube(
             min.withY(y -> y + rimHeight),
-            new Vector3(size.x, size.y - 2 * rimHeight, size.z),
+            new Vector3(size.x(), size.y() - 2 * rimHeight, size.z()),
             uMin, vMin + rimHeight, true,
             CubeFacesData.from(d ->
                 d.equals(Direction.SOUTH) || isBothSided
@@ -327,8 +327,8 @@ public class SignModelFactory<TextureIdentifier> {
     public static class Builder {
         public static final BiConsumer<BlockModelBuilder, Cube<String>> BlockModel = (b, cube) -> {
             BlockModelBuilder.ElementBuilder builder = b.element()
-                .from(cube.from.x, cube.from.y, cube.from.z)
-                .to(cube.to.x, cube.to.y, cube.to.z);
+                .from(cube.from.x(), cube.from.y(), cube.from.z())
+                .to(cube.to.x(), cube.to.y(), cube.to.z());
             for(Map.Entry<Direction, FaceData<String>> face: cube.sides.entrySet()) {
                 Direction dir = face.getKey();
                 FaceData<String> faceData = face.getValue();
@@ -344,8 +344,8 @@ public class SignModelFactory<TextureIdentifier> {
 
         public static final BiConsumer<BlockModelBuilder, Cube<String>> BlockModelFlipped = (b, cube) -> {
             BlockModelBuilder.ElementBuilder builder = b.element()
-                .from(cube.from.x, cube.from.y, -cube.to.z)
-                .to(cube.to.x, cube.to.y, -cube.from.z);
+                .from(cube.from.x(), cube.from.y(), -cube.to.z())
+                .to(cube.to.x(), cube.to.y(), -cube.from.z());
             for(Map.Entry<Direction, FaceData<String>> face: cube.sides.entrySet()) {
                 Direction dir = face.getKey();
                 Direction.Axis axis = dir.getAxis();

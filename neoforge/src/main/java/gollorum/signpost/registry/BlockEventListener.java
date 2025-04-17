@@ -43,7 +43,7 @@ public class BlockEventListener {
         if(!event.isCanceled() && tile instanceof PostTile) {
             PostTile postTile = (PostTile) tile;
             Optional<PostTile.TraceResult> traceResult = postTile.trace(event.getPlayer());
-            if(traceResult.isPresent() && !(traceResult.get().part.blockPart instanceof PostBlockPart)) {
+            if(traceResult.isPresent() && !(traceResult.get().part.blockPart() instanceof PostBlockPart)) {
                 event.setCanceled(true);
                 IDelay.onServerForFrames(1, () -> {
 
@@ -59,7 +59,7 @@ public class BlockEventListener {
                         ServerLevel world = (ServerLevel) event.getLevel();
                         if (!event.getPlayer().isCreative()) {
                             BlockPos pos = tile.getBlockPos();
-                            for (ItemStack item : (Collection<ItemStack>) traceResult.get().part.blockPart.getDrops(postTile)) {
+                            for (ItemStack item : (Collection<ItemStack>) traceResult.get().part.blockPart().getDrops(postTile)) {
                                 ItemEntity itementity = new ItemEntity(
                                     world,
                                     pos.getX() + world.getRandom().nextFloat() * 0.5 + 0.25,

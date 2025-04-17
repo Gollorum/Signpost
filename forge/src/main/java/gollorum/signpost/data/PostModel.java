@@ -172,8 +172,8 @@ public class PostModel {
     private static BlockModelBuilder makePostAt(Vector3 center, BlockModelBuilder builder) {
         builder
             .element()
-                .from(center.x - 2, center.y - 8, center.z - 2)
-                .to(center.x + 2, center.y + 8, center.z + 2)
+                .from(center.x() - 2, center.y() - 8, center.z() - 2)
+                .to(center.x() + 2, center.y() + 8, center.z() + 2)
             .face(Direction.SOUTH)
                 .texture("#" + texturePost)
                 .uvs(0, 0, 4, 16)

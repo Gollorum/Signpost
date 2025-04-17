@@ -223,8 +223,8 @@ public class SignGui extends ExtendedScreen {
         int centerOffset = (typeSelectionButtonsSize.width + typeSelectionButtonsSpace) / 2;
 
         var postTexture = tile.getParts().stream()
-            .filter(p -> p.blockPart instanceof PostBlockPart)
-            .map(p -> ((PostBlockPart)p.blockPart).getTexture())
+            .filter(p -> p.blockPart() instanceof PostBlockPart)
+            .map(p -> ((PostBlockPart) p.blockPart()).getTexture())
             .findFirst().orElse(tile.modelType.postTexture);
         var mainTexture = oldSign.map(SignBlockPart::getMainTexture).orElse(modelType.mainTexture);
         var secondaryTexture = oldSign.map(SignBlockPart::getSecondaryTexture).orElse(modelType.secondaryTexture);
@@ -945,13 +945,13 @@ public class SignGui extends ExtendedScreen {
                     PacketHandler.getInstance().sendToServer(new PostTile.PartMutatedEvent.Packet(
                         tilePartInfo, data,
                         SmallWideSignBlockPart.METADATA.identifier,
-                        new Vector3(0, localHitPos.y > 0.5f ? 0.75f : 0.25f, 0)
+                        new Vector3(0, localHitPos.y() > 0.5f ? 0.75f : 0.25f, 0)
                     ));
                 } else {
                     PacketHandler.getInstance().sendToServer(new PostTile.PartAddedEvent.Packet(
                         tilePartInfo, data,
                         SmallWideSignBlockPart.METADATA.identifier,
-                        new Vector3(0, localHitPos.y > 0.5f ? 0.75f : 0.25f, 0), itemToDropOnBreak, PlayerHandle.from(minecraft().player)
+                        new Vector3(0, localHitPos.y() > 0.5f ? 0.75f : 0.25f, 0), itemToDropOnBreak, PlayerHandle.from(minecraft().player)
                     ));
                 }
             }
@@ -976,13 +976,13 @@ public class SignGui extends ExtendedScreen {
                     PacketHandler.getInstance().sendToServer(new PostTile.PartMutatedEvent.Packet(
                         tilePartInfo, data,
                         SmallShortSignBlockPart.METADATA.identifier,
-                        new Vector3(0, localHitPos.y > 0.5f ? 0.75f : 0.25f, 0)
+                        new Vector3(0, localHitPos.y() > 0.5f ? 0.75f : 0.25f, 0)
                     ));
                 } else {
                     PacketHandler.getInstance().sendToServer(new PostTile.PartAddedEvent.Packet(
                         tilePartInfo, data,
                         SmallShortSignBlockPart.METADATA.identifier,
-                        new Vector3(0, localHitPos.y > 0.5f ? 0.75f : 0.25f, 0), itemToDropOnBreak, PlayerHandle.from(minecraft().player)
+                        new Vector3(0, localHitPos.y() > 0.5f ? 0.75f : 0.25f, 0), itemToDropOnBreak, PlayerHandle.from(minecraft().player)
                     ));
                 }
             }
@@ -1012,7 +1012,7 @@ public class SignGui extends ExtendedScreen {
                     PacketHandler.getInstance().sendToServer(new PostTile.PartMutatedEvent.Packet(
                         tilePartInfo, data,
                         LargeSignBlockPart.METADATA.identifier,
-                        new Vector3(0, localHitPos.y >= 0.5f ? 0.501f : 0.499f, 0)
+                        new Vector3(0, localHitPos.y() >= 0.5f ? 0.501f : 0.499f, 0)
                     ));
                 } else {
                     PacketHandler.getInstance().sendToServer(new PostTile.PartAddedEvent.Packet(

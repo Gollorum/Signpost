@@ -7,6 +7,7 @@ import gollorum.signpost.Signpost;
 import gollorum.signpost.blockpartdata.types.*;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.config.IConfig;
+import gollorum.signpost.minecraft.data.PostData;
 import gollorum.signpost.minecraft.items.Wrench;
 import gollorum.signpost.minecraft.utils.SideUtils;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
@@ -18,7 +19,6 @@ import gollorum.signpost.utils.*;
 import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.*;
-import io.netty.util.internal.ConcurrentSet;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -77,13 +77,13 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     }
 
     private final Map<UUID, BlockPartInstance> parts = new ConcurrentHashMap<>();
-    public static final Set<BlockPartMetadata<?>> partsMetadata = new ConcurrentSet<>();
+    public static final Map<String, BlockPartMetadata<?>> partsMetadata = new ConcurrentHashMap<>();
     static {
-        partsMetadata.add(PostBlockPart.METADATA);
-        partsMetadata.add(SmallWideSignBlockPart.METADATA);
-        partsMetadata.add(SmallShortSignBlockPart.METADATA);
-        partsMetadata.add(LargeSignBlockPart.METADATA);
-        partsMetadata.add(WaystoneBlockPart.METADATA);
+        partsMetadata.put(PostBlockPart.METADATA.identifier, PostBlockPart.METADATA);
+        partsMetadata.put(SmallWideSignBlockPart.METADATA.identifier, SmallWideSignBlockPart.METADATA);
+        partsMetadata.put(SmallShortSignBlockPart.METADATA.identifier, SmallShortSignBlockPart.METADATA);
+        partsMetadata.put(LargeSignBlockPart.METADATA.identifier, LargeSignBlockPart.METADATA);
+        partsMetadata.put(WaystoneBlockPart.METADATA.identifier, WaystoneBlockPart.METADATA);
     }
 
 	public static class TraceResult {
@@ -119,12 +119,12 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     }
     public UUID addPart(UUID identifier, BlockPartInstance part, ItemStack cost, PlayerHandle player, boolean shouldNotify){
         parts.put(identifier, part);
-        part.blockPart.attachTo(this);
+        part.blockPart().attachTo(this);
         if(shouldNotify && hasLevel() && !getLevel().isClientSide()) sendToTracing(() -> new PartAddedEvent.Packet(
             new TilePartInfo(this, identifier),
-            part.blockPart.write(player.asEntity().registryAccess()),
-            part.blockPart.getMeta().identifier,
-            part.offset,
+            part.blockPart().write(player.asEntity().registryAccess()),
+            part.blockPart().getMeta().identifier,
+            part.offset(),
             cost, player
         ));
         return identifier;
@@ -138,22 +138,22 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         }
         if(getLevel() != null && !getLevel().isClientSide())
             sendToTracing(() -> new PartRemovedEvent.Packet(new TilePartInfo(this, id), false));
-        oldPart.blockPart.removeFrom(this);
+        oldPart.blockPart().removeFrom(this);
         setChanged();
         return oldPart;
     }
 
     public void onDestroy() {
-        for (BlockPartInstance part: parts.values()) part.blockPart.removeFrom(this);
+        for (BlockPartInstance part: parts.values()) part.blockPart().removeFrom(this);
     }
 
     public Collection<BlockPartInstance> getParts(){ return parts.values(); }
 
     public VoxelShape getBounds(){
         return parts.values().stream().map(t -> t
-            .blockPart.getIntersection()
+                .blockPart().getIntersection()
             .getBounds()
-            .offset(t.offset)
+            .offset(t.offset())
             .asMinecraftBB()
         ).map(Shapes::create)
         .reduce((b1, b2) -> Shapes.join(b1, b2, BooleanOp.OR)).orElse(Shapes.empty());
@@ -177,7 +177,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
 
         Optional<Tuple<UUID, Float>> closestTrace = Optional.empty();
         for(Map.Entry<UUID, BlockPartInstance> t : parts.entrySet()){
-            Optional<Float> now = t.getValue().blockPart.intersectWith(ray, t.getValue().offset);
+            Optional<Float> now = t.getValue().blockPart().intersectWith(ray, t.getValue().offset());
             if(now.isPresent() && (!closestTrace.isPresent() || closestTrace.get().getB() > now.get()))
                 closestTrace = Optional.of(new Tuple<>(t.getKey(), now.get()));
         }
@@ -193,14 +193,14 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     public Tag writeParts(boolean includeIDs, HolderLookup.Provider provider) {
         CompoundTag compound = new CompoundTag();
         for(Map.Entry<BlockPartMetadata, List<Map.Entry<UUID, BlockPartInstance>>> entry: parts.entrySet().stream()
-            .collect(Collectors.groupingBy(p -> p.getValue().blockPart.getMeta())).entrySet()
+            .collect(Collectors.groupingBy(p -> p.getValue().blockPart().getMeta())).entrySet()
         ){
             List<Map.Entry<UUID, BlockPartInstance>> instances = entry.getValue();
             ListTag list = new ListTag();
             for (Map.Entry<UUID, BlockPartInstance> e : instances) {
                 BlockPartInstance instance = e.getValue();
-                CompoundTag subComp = instance.blockPart.write(provider);
-                subComp.put("Offset", Vector3.CompoundSerializer.encode(instance.offset, provider));
+                CompoundTag subComp = instance.blockPart().write(provider);
+                subComp.put("Offset", Vector3.CompoundSerializer.encode(instance.offset(), provider));
                 if(includeIDs) subComp.putUUID("PartId", e.getKey());
                 list.add(subComp);
             }
@@ -222,7 +222,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
 
     public static List<BlockPartInstance> readPartInstances(CompoundTag compound, HolderLookup.Provider provider) {
         List<BlockPartInstance> parts = new ArrayList<>();
-        for(BlockPartMetadata<?> meta : partsMetadata){
+        for(BlockPartMetadata<?> meta : partsMetadata.values()){
             if(compound.contains(meta.identifier)) {
                 ListTag list = compound.getList(meta.identifier, Tag.TAG_COMPOUND);
                 for(int i = 0; i < list.size(); i++){
@@ -241,7 +241,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
 
     public void readParts(CompoundTag compound, HolderLookup.Provider provider) {
         parts.clear();
-        for(BlockPartMetadata<?> meta : partsMetadata){
+        for(BlockPartMetadata<?> meta : partsMetadata.values()){
             if(compound.contains(meta.identifier)) {
                 ListTag list = compound.getList(meta.identifier, Tag.TAG_COMPOUND);
                 for(int i = 0; i < list.size(); i++){
@@ -260,6 +260,20 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         }
     }
 
+    public void readData(PostData data, HolderLookup.Provider provider) {
+        parts.clear();
+        for(Map.Entry<UUID, BlockPartInstance.SerializedRepresentation> entry : data.parts().entrySet()) {
+            var id = entry.getKey();
+            var serialized = entry.getValue();
+            addPart(
+                id,
+                serialized.deserialize(provider),
+                ItemStack.EMPTY,
+                PlayerHandle.Invalid
+            );
+        }
+    }
+
     private void readSelf(CompoundTag compound, HolderLookup.Provider provider){
         readParts(compound.getCompound("Parts"), provider);
         drop = ItemStackSerializer.Compound.decode(compound.getCompound("Drop"), provider);
@@ -273,10 +287,10 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         if(!IConfig.IServer.getInstance().worldGen().debugMode() && level instanceof ServerLevel serverLevel) {
             IDelay.forFrames(1, false, () -> {
                 boolean hasChanged = false;
-                for(var e : parts.entrySet().stream().sorted((e1, e2) -> Float.compare(e2.getValue().offset.y, e1.getValue().offset.y)).toList()) {
-                    if (e.getValue().blockPart instanceof SignBlockPart<?> sign
+                for(var e : parts.entrySet().stream().sorted((e1, e2) -> Float.compare(e2.getValue().offset().y(), e1.getValue().offset().y())).toList()) {
+                    if (e.getValue().blockPart() instanceof SignBlockPart<?> sign
                         && sign.isMarkedForGeneration()
-                        && VillageSignpost.populate(this, sign, e.getKey(), e.getValue().offset.y, serverLevel)
+                        && VillageSignpost.populate(this, sign, e.getKey(), e.getValue().offset().y(), serverLevel)
                     ) hasChanged = true;
                 }
                 if(hasChanged) level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 2);
@@ -312,7 +326,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     }
 
     public Collection<ItemStack> getDrops() {
-        List<ItemStack> ret = parts.values().stream().flatMap(p -> (Stream<ItemStack>) p.blockPart.getDrops(this).stream())
+        List<ItemStack> ret = parts.values().stream().flatMap(p -> (Stream<ItemStack>) p.blockPart().getDrops(this).stream())
             .collect(Collectors.toList());
         return ret;
     }
@@ -324,8 +338,8 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     public Optional<PlayerHandle> getSignpostOwner() { return owner; }
 
     public Optional<PlayerHandle> getWaystoneOwner() {
-        return getParts().stream().filter(p -> p.blockPart instanceof WaystoneBlockPart).findFirst()
-            .flatMap(p -> ((WaystoneBlockPart)p.blockPart).getWaystoneOwner());
+        return getParts().stream().filter(p -> p.blockPart() instanceof WaystoneBlockPart).findFirst()
+            .flatMap(p -> ((WaystoneBlockPart) p.blockPart()).getWaystoneOwner());
     }
 
     public static boolean isAngleTool(Item item) {
@@ -475,7 +489,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
                 message.info.pos,
                 PostTile.getBlockEntityType()
             ).ifPresent(tile -> {
-                Optional<BlockPartMetadata<?>> meta = partsMetadata.stream().filter(m -> m.identifier.equals(message.partMetaIdentifier)).findFirst();
+                Optional<BlockPartMetadata<?>> meta = Optional.ofNullable(partsMetadata.get(message.partMetaIdentifier));
                 if (meta.isPresent()) {
                     tile.addPart(message.info.identifier,
                         new BlockPartInstance(meta.get().decode(message.partData, context.getHolderLookupProvider()), message.offset),
@@ -531,7 +545,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
                     tile -> {
                         BlockPartInstance oldPart = tile.removePart(message.info.identifier);
                         if(oldPart != null && context instanceof PacketHandler.Context.Server serverContext && !serverContext.sender().isCreative() && message.shouldDropItem){
-                            for(ItemStack item : (Collection<ItemStack>) oldPart.blockPart.getDrops(tile)) {
+                            for(ItemStack item : (Collection<ItemStack>) oldPart.blockPart().getDrops(tile)) {
                                 if(!serverContext.sender().getInventory().add(item))
                                     if(tile.getLevel() instanceof ServerLevel) {
                                         ServerLevel serverWorld = (ServerLevel) tile.getLevel();
@@ -617,20 +631,20 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
                         Optional<BlockPartInstance> part = tile.getPart(message.info.identifier);
                         if(part.isPresent()) {
                             BlockPartInstance blockPartInstance = part.get();
-                            if(blockPartInstance.blockPart.getMeta().identifier.equals(message.partMetaIdentifier)) {
-                                blockPartInstance.blockPart.readMutationUpdate(message.data, tile, isServer ? ((PacketHandler.Context.Server)context).sender() : null, context.getHolderLookupProvider());
+                            if(blockPartInstance.blockPart().getMeta().identifier.equals(message.partMetaIdentifier)) {
+                                blockPartInstance.blockPart().readMutationUpdate(message.data, tile, isServer ? ((PacketHandler.Context.Server)context).sender() : null, context.getHolderLookupProvider());
                                 if(message.offset.isPresent()) {
                                     tile.parts.remove(message.info.identifier);
-                                    tile.parts.put(message.info.identifier, new BlockPartInstance(blockPartInstance.blockPart, message.offset.get()));
-                                    blockPartInstance.blockPart.attachTo(tile);
+                                    tile.parts.put(message.info.identifier, new BlockPartInstance(blockPartInstance.blockPart(), message.offset.get()));
+                                    blockPartInstance.blockPart().attachTo(tile);
                                 }
                             } else {
-                                Optional<BlockPartMetadata<?>> meta = partsMetadata.stream().filter(m -> m.identifier.equals(message.partMetaIdentifier)).findFirst();
+                                Optional<BlockPartMetadata<?>> meta = Optional.ofNullable(partsMetadata.get(message.partMetaIdentifier));
                                 if (meta.isPresent()) {
                                     tile.parts.remove(message.info.identifier);
                                     BlockPart<?> newPart = meta.get().decode(message.data, context.getHolderLookupProvider());
                                     tile.parts.put(message.info.identifier,
-                                        new BlockPartInstance(newPart, message.offset.orElse(blockPartInstance.offset)));
+                                        new BlockPartInstance(newPart, message.offset.orElse(blockPartInstance.offset())));
                                     newPart.attachTo(tile);
                                 } else {
                                     Signpost.LOGGER.warn("Could not find meta for part " + message.partMetaIdentifier);

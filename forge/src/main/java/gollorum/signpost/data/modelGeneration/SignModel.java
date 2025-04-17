@@ -132,35 +132,35 @@ public class SignModel {
 		var bounds = new AABB(Arrays.stream(vertices).map(Vector3::fromVector4f));
 
 		if(aoValues != null) {
-			aoValues[Direction.WEST.get3DDataValue()] = bounds.min.x;
-			aoValues[Direction.EAST.get3DDataValue()] = bounds.max.x;
-			aoValues[Direction.DOWN.get3DDataValue()] = bounds.min.y;
-			aoValues[Direction.UP.get3DDataValue()] = bounds.max.y;
-			aoValues[Direction.NORTH.get3DDataValue()] = bounds.min.z;
-			aoValues[Direction.SOUTH.get3DDataValue()] = bounds.max.z;
+			aoValues[Direction.WEST.get3DDataValue()] = bounds.min.x();
+			aoValues[Direction.EAST.get3DDataValue()] = bounds.max.x();
+			aoValues[Direction.DOWN.get3DDataValue()] = bounds.min.y();
+			aoValues[Direction.UP.get3DDataValue()] = bounds.max.y();
+			aoValues[Direction.NORTH.get3DDataValue()] = bounds.min.z();
+			aoValues[Direction.SOUTH.get3DDataValue()] = bounds.max.z();
 			int j = Direction.values().length;
-			aoValues[Direction.WEST.get3DDataValue() + j] = 1.0F - bounds.min.x;
-			aoValues[Direction.EAST.get3DDataValue() + j] = 1.0F - bounds.max.x;
-			aoValues[Direction.DOWN.get3DDataValue() + j] = 1.0F - bounds.min.y;
-			aoValues[Direction.UP.get3DDataValue() + j] = 1.0F - bounds.max.y;
-			aoValues[Direction.NORTH.get3DDataValue() + j] = 1.0F - bounds.min.z;
-			aoValues[Direction.SOUTH.get3DDataValue() + j] = 1.0F - bounds.max.z;
+			aoValues[Direction.WEST.get3DDataValue() + j] = 1.0F - bounds.min.x();
+			aoValues[Direction.EAST.get3DDataValue() + j] = 1.0F - bounds.max.x();
+			aoValues[Direction.DOWN.get3DDataValue() + j] = 1.0F - bounds.min.y();
+			aoValues[Direction.UP.get3DDataValue() + j] = 1.0F - bounds.max.y();
+			aoValues[Direction.NORTH.get3DDataValue() + j] = 1.0F - bounds.min.z();
+			aoValues[Direction.SOUTH.get3DDataValue() + j] = 1.0F - bounds.max.z();
 		}
 
 		float minThresh = 1.0E-4F;
 		float maxThresh = 0.9999F;
 		switch (dir) {
 			case DOWN, UP -> {
-				bitSet.set(1, bounds.min.x >= minThresh || bounds.min.z >= minThresh || bounds.max.x <= maxThresh || bounds.max.z <= maxThresh);
-				bitSet.set(0, bounds.min.y == bounds.max.y && ((dir == Direction.DOWN ? bounds.min.y < minThresh : bounds.max.y > maxThresh) || state.isCollisionShapeFullBlock(level, pos)));
+				bitSet.set(1, bounds.min.x() >= minThresh || bounds.min.z() >= minThresh || bounds.max.x() <= maxThresh || bounds.max.z() <= maxThresh);
+				bitSet.set(0, bounds.min.y() == bounds.max.y() && ((dir == Direction.DOWN ? bounds.min.y() < minThresh : bounds.max.y() > maxThresh) || state.isCollisionShapeFullBlock(level, pos)));
 			}
             case NORTH, SOUTH -> {
-				bitSet.set(1, bounds.min.x >= minThresh || bounds.min.y >= minThresh || bounds.max.x <= maxThresh || bounds.max.y <= maxThresh);
-				bitSet.set(0, bounds.min.z == bounds.max.z && ((dir == Direction.NORTH ? bounds.min.z < minThresh : bounds.max.z > maxThresh) || state.isCollisionShapeFullBlock(level, pos)));
+				bitSet.set(1, bounds.min.x() >= minThresh || bounds.min.y() >= minThresh || bounds.max.x() <= maxThresh || bounds.max.y() <= maxThresh);
+				bitSet.set(0, bounds.min.z() == bounds.max.z() && ((dir == Direction.NORTH ? bounds.min.z() < minThresh : bounds.max.z() > maxThresh) || state.isCollisionShapeFullBlock(level, pos)));
 			}
 			case WEST, EAST -> {
-				bitSet.set(1, bounds.min.y >= minThresh || bounds.min.z >= minThresh || bounds.max.y <= maxThresh || bounds.max.z <= maxThresh);
-				bitSet.set(0, bounds.min.x == bounds.max.x && ((dir == Direction.EAST ? bounds.min.x < minThresh : bounds.max.x > maxThresh) || state.isCollisionShapeFullBlock(level, pos)));
+				bitSet.set(1, bounds.min.y() >= minThresh || bounds.min.z() >= minThresh || bounds.max.y() <= maxThresh || bounds.max.z() <= maxThresh);
+				bitSet.set(0, bounds.min.x() == bounds.max.x() && ((dir == Direction.EAST ? bounds.min.x() < minThresh : bounds.max.x() > maxThresh) || state.isCollisionShapeFullBlock(level, pos)));
 			}
 		}
 	}

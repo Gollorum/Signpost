@@ -36,55 +36,55 @@ public class Cube<TextureIdentifier> {
 		Quad<TextureIdentifier> quad = switch (direction) {
             case DOWN -> new Quad<>(
                 new Vertex[]{
-                    new Vertex(from.withX(to.x), toU, toV),
-                    new Vertex(to.withY(from.y), toU, fromV),
-                    new Vertex(from.withZ(to.z), fromU, fromV),
+                    new Vertex(from.withX(to.x()), toU, toV),
+                    new Vertex(to.withY(from.y()), toU, fromV),
+                    new Vertex(from.withZ(to.z()), fromU, fromV),
                     new Vertex(from, fromU, toV),
                 },
                 new Vector3(0, -1, 0),
                 faceData);
             case UP -> new Quad<>(
                 new Vertex[]{
-                    new Vertex(to.withZ(from.z), toU, fromV),
-                    new Vertex(from.withY(to.y), fromU, fromV),
-                    new Vertex(to.withX(from.x), fromU, toV),
+                    new Vertex(to.withZ(from.z()), toU, fromV),
+                    new Vertex(from.withY(to.y()), fromU, fromV),
+                    new Vertex(to.withX(from.x()), fromU, toV),
                     new Vertex(to, toU, toV),
                 },
                 new Vector3(0, 1, 0),
                 faceData);
             case SOUTH -> new Quad<>(
                 new Vertex[]{
-                    new Vertex(to.withY(from.y), fromU, toV),
+                    new Vertex(to.withY(from.y()), fromU, toV),
                     new Vertex(to, fromU, fromV),
-                    new Vertex(to.withX(from.x), toU, fromV),
-                    new Vertex(from.withZ(to.z), toU, toV),
+                    new Vertex(to.withX(from.x()), toU, fromV),
+                    new Vertex(from.withZ(to.z()), toU, toV),
                 },
                 new Vector3(0, 0, 1),
                 faceData);
             case NORTH -> new Quad<>(
                 new Vertex[]{
-                    new Vertex(from.withY(to.y), fromU, fromV),
-                    new Vertex(to.withZ(from.z), toU, fromV),
-                    new Vertex(from.withX(to.x), toU, toV),
+                    new Vertex(from.withY(to.y()), fromU, fromV),
+                    new Vertex(to.withZ(from.z()), toU, fromV),
+                    new Vertex(from.withX(to.x()), toU, toV),
                     new Vertex(from, fromU, toV),
                 },
                 new Vector3(0, 0, -1),
                 faceData);
             case EAST -> new Quad<>(
                 new Vertex[]{
-                    new Vertex(from.withX(to.x), fromU, toV),
-                    new Vertex(to.withZ(from.z), fromU, fromV),
+                    new Vertex(from.withX(to.x()), fromU, toV),
+                    new Vertex(to.withZ(from.z()), fromU, fromV),
                     new Vertex(to, toU, fromV),
-                    new Vertex(to.withY(from.y), toU, toV),
+                    new Vertex(to.withY(from.y()), toU, toV),
                 },
                 new Vector3(1, 0, 0),
                 faceData);
             case WEST -> new Quad<>(
                 new Vertex[]{
                     new Vertex(from, toU, toV),
-                    new Vertex(from.withZ(to.z), fromU, toV),
-                    new Vertex(to.withX(from.x), fromU, fromV),
-                    new Vertex(from.withY(to.y), toU, fromV),
+                    new Vertex(from.withZ(to.z()), fromU, toV),
+                    new Vertex(to.withX(from.x()), fromU, fromV),
+                    new Vertex(from.withY(to.y()), toU, fromV),
                 },
                 new Vector3(-1, 0, 0),
                 faceData);

@@ -52,6 +52,7 @@ public class SignpostForge {
 
         BlockRegistry.register(modBus);
         ItemRegistry.register(modBus);
+        DataComponentsRegistry.register(modBus);
         RecipeRegistry.register(modBus);
         TileEntityRegistry.register(modBus);
         DataGeneration.register(modBus);

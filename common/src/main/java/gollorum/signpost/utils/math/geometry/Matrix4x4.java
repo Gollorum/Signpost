@@ -34,9 +34,9 @@ public class Matrix4x4 {
     ); }
 
     public static Matrix4x4 translate(Vector3 v) { return new Matrix4x4(
-        1, 0, 0, v.x,
-        0, 1, 0, v.y,
-        0, 0, 1, v.z,
+        1, 0, 0, v.x(),
+        0, 1, 0, v.y(),
+        0, 0, 1, v.z(),
         0, 0, 0, 1
     ); }
 
@@ -70,9 +70,9 @@ public class Matrix4x4 {
     }
 
     public static Matrix4x4 scale(Vector3 scale) { return new Matrix4x4(
-        scale.x, 0, 0, 0,
-        0, scale.y, 0, 0,
-        0, 0, scale.z, 0,
+        scale.x(), 0, 0, 0,
+        0, scale.y(), 0, 0,
+        0, 0, scale.z(), 0,
         0, 0, 0, 1
     ); }
 

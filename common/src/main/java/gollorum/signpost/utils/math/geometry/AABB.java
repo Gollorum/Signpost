@@ -54,13 +54,13 @@ public class AABB implements Intersectable<Ray, Float> {
     public Vector3[] allCorners(){
         Vector3[] ret = new Vector3[8];
         ret[0] = min;
-        ret[1] = new Vector3(max.x, min.y, min.z);
-        ret[2] = new Vector3(min.x, max.y, min.z);
-        ret[3] = new Vector3(min.x, min.y, max.z);
-        ret[4] = new Vector3(max.x, max.y, min.z);
-        ret[5] = new Vector3(max.x, min.y, max.z);
-        ret[6] = new Vector3(min.x, max.y, max.z);
-        ret[7] = new Vector3(max.x, max.y, max.z);
+        ret[1] = new Vector3(max.x(), min.y(), min.z());
+        ret[2] = new Vector3(min.x(), max.y(), min.z());
+        ret[3] = new Vector3(min.x(), min.y(), max.z());
+        ret[4] = new Vector3(max.x(), max.y(), min.z());
+        ret[5] = new Vector3(max.x(), min.y(), max.z());
+        ret[6] = new Vector3(min.x(), max.y(), max.z());
+        ret[7] = new Vector3(max.x(), max.y(), max.z());
         return ret;
     }
 }

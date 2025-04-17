@@ -11,7 +11,6 @@ import gollorum.signpost.mixin.ModelManagerAccessor;
 import gollorum.signpost.platform.ClientServices;
 import gollorum.signpost.platform.Services;
 import gollorum.signpost.utils.Lazy;
-import gollorum.signpost.utils.Tuple;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.CrashReport;
@@ -29,8 +28,6 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.ModelResourceLocation;
-import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -40,7 +37,6 @@ import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import org.apache.commons.lang3.tuple.Triple;
 import org.joml.*;
 
 import java.lang.Math;
@@ -162,15 +158,15 @@ public class RenderingUtil {
     public static void renderGui(BakedModel model, PoseStack matrixStack, int[] tints, Vector3 offset, Angle yaw, VertexConsumer builder, RenderType renderType, int combinedLight, int combinedOverlay, Consumer<PoseStack> alsoDo) {
         wrapInMatrixEntry(matrixStack, () -> {
             matrixStack.mulPose(new Quaternionf(new AxisAngle4f(yaw.radians(), new Vector3f(0, 1, 0))));
-            matrixStack.translate(offset.x, offset.y, offset.z);
+            matrixStack.translate(offset.x(), offset.y(), offset.z());
             wrapInMatrixEntry(matrixStack, () -> {
 
                 List<Direction> allDirections = new ArrayList<>(Arrays.asList(Direction.values()));
                 allDirections.add(null);
 
                 RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-                RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS);
-                Minecraft.getInstance().getTextureManager().getTexture(InventoryMenu.BLOCK_ATLAS).setFilter(false, false);
+//                RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS);
+//                Minecraft.getInstance().getTextureManager().getTexture(InventoryMenu.BLOCK_ATLAS).setFilter(false, false);
                 RandomSource random = RandomSource.create();
                 for(Direction dir : allDirections) {
                     random.setSeed(42L);

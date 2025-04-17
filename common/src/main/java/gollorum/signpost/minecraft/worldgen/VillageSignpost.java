@@ -41,7 +41,7 @@ public class VillageSignpost {
 		BlockPos pieceLocation = tile.getBlockPos();
 		BlockPos villageLocation = VillageGenUtils.getVillageLocationFor(level, pieceLocation, 512);
 		Random random = new Random(level.getSeed() ^ pieceLocation.asLong());
-		var blockedTargets = tile.getParts().stream().flatMap(p -> p.blockPart instanceof SignBlockPart<?> sbb && !sbb.isMarkedForGeneration() ? sbb.getDestination().stream() : Stream.empty()).collect(Collectors.toSet());
+		var blockedTargets = tile.getParts().stream().flatMap(p -> p.blockPart() instanceof SignBlockPart<?> sbb && !sbb.isMarkedForGeneration() ? sbb.getDestination().stream() : Stream.empty()).collect(Collectors.toSet());
 		Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> possibleTargets = fetchPossibleTargets(pieceLocation, villageLocation, level.dimension().location(), random, blockedTargets);
 		if(possibleTargets.isEmpty())
 			return false;
@@ -130,7 +130,7 @@ public class VillageSignpost {
 		WaystoneData targetData = nextTargetOption.get()._2;
 
 		Angle rotation = SignBlockPart.pointingAt(tilePos, target._1);
-		if(tile.getParts().stream().anyMatch(instance -> !(instance.blockPart instanceof PostBlockPart) && !(instance.blockPart instanceof SignBlockPart<?> s && s.isMarkedForGeneration()) && isNearly(instance.offset.y, y))) {
+		if(tile.getParts().stream().anyMatch(instance -> !(instance.blockPart() instanceof PostBlockPart) && !(instance.blockPart() instanceof SignBlockPart<?> s && s.isMarkedForGeneration()) && isNearly(instance.offset().y(), y))) {
 			possibleTargets.add(target);
 			return Collections.emptySet();
 		}
