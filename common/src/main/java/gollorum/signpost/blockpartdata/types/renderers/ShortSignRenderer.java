@@ -9,7 +9,7 @@ import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.utils.math.MathUtils;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.renderer.block.model.BlockModelPart;
 import org.joml.AxisAngle4d;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -29,12 +29,12 @@ public class ShortSignRenderer extends SignRenderer<SmallShortSignBlockPart> {
 	private static final float FONT_SIZE_VOXELS = 2 / TEXT_RATIO;
 
 	@Override
-	protected BakedModel makeBakedModel(SmallShortSignBlockPart sign) {
+	protected BlockModelPart makeBakedModel(SmallShortSignBlockPart sign) {
 		return ModelRegistry.ShortBakedSign.makeModel(sign);
 	}
 
 	@Override
-	protected BakedModel makeBakedOverlayModel(SmallShortSignBlockPart sign, Overlay overlay) {
+	protected BlockModelPart makeBakedOverlayModel(SmallShortSignBlockPart sign, Overlay overlay) {
 		return ModelRegistry.ShortBakedSign.makeOverlayModel(sign, overlay);
 	}
 

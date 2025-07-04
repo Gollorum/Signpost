@@ -24,8 +24,8 @@ public class PostBlockImpl extends PostBlock {
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockState state, HitResult target, LevelReader level, BlockPos pos, Player player) {
-        ItemStack ret = super.getCloneItemStack(state, target, level, pos, player);
+    protected ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) {
+        ItemStack ret = super.getCloneItemStack(level, pos, state, includeData);
         level.getBlockEntity(pos, PostTile.getBlockEntityType()).ifPresent(tile -> {
             if(!ret.hasTag()) ret.setTag(new CompoundTag());
             ret.getTag().put("Parts", tile.writeParts(false));

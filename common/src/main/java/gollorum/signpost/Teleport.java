@@ -195,7 +195,7 @@ public class Teleport {
     }
 
     private static void unleash(List<Mob> leashed) {
-        for(Mob mob : leashed) mob.dropLeash(true, true);
+        for(Mob mob : leashed) mob.dropLeash();
     }
 
     public static void requestOnClient(

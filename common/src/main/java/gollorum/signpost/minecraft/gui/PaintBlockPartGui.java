@@ -19,13 +19,12 @@ import gollorum.signpost.utils.Tint;
 import gollorum.signpost.utils.Tuple;
 import gollorum.signpost.utils.math.Angle;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Item;
@@ -55,7 +54,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
         this.tile = tile;
         this.part = part;
         this.displayPart = displayPart;
-        atlasSpriteGetter = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS);
+        atlasSpriteGetter = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS);
         oldSprite = Tuple.of(spriteFrom(oldTexture.location()), oldTexture.tint());
         this.identifier = identifier;
     }
@@ -68,7 +67,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
     protected void init() {
         super.init();
 
-        var blocksToRender = minecraft().player.getInventory().items.stream()
+        var blocksToRender = Streams.stream(minecraft().player.getInventory())
             .filter(i -> !i.isEmpty() && (i.getItem() instanceof BlockItem || i.getItem() instanceof BucketItem))
             .map(i -> {
                 ItemStack ret = i.copy();
@@ -148,10 +147,11 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
     }
 
     private List<Tuple<TextureAtlasSprite, Optional<Tint>>> allSpritesFor(BlockState state) {
-        BakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
+        var model = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
         return Arrays.stream(faces)
-            .flatMap(side -> model.getQuads(null, side, font.random).stream())
-            .map(bakedQuad -> Tuple.of(bakedQuad.getSprite(), bakedQuad.getTintIndex()))
+            .flatMap(side -> model.collectParts(font.random)
+                .stream().flatMap(part -> part.getQuads(side).stream())
+            ).map(bakedQuad -> Tuple.of(bakedQuad.sprite(), bakedQuad.tintIndex()))
             .distinct()
             .map(loc -> Tuple.of(loc._1, loc._2 >= 0 ? Optional.<Tint>of(new BlockColorTint(state.getBlock(), loc._2)) : Optional.<Tint>empty()))
             .collect(Collectors.toList());

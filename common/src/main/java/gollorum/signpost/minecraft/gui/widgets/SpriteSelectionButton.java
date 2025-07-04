@@ -7,8 +7,6 @@ import gollorum.signpost.minecraft.gui.utils.Rect;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.renderer.CoreShaders;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
@@ -46,29 +44,11 @@ public class SpriteSelectionButton extends AbstractButton {
 
     @Override
     public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
-        RenderSystem.setShader(CoreShaders.POSITION_TEX);
-        RenderSystem.setShaderColor(r, g, b, this.alpha);
-
-        RenderSystem.setShaderTexture(0, sprite.atlasLocation());
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.enableDepthTest();
-
-        Matrix4f matrix = graphics.pose().last().pose();
-        float blitOffset = 0f;
+        graphics.blitSprite(RenderType::guiTextured, sprite, this.getX(), this.getY(), this.width, this.height);
         int xMin = this.getX();
         int xMax = xMin + width;
         int yMin = this.getY();
         int yMax = yMin + height;
-        BufferBuilder bufferbuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        bufferbuilder.addVertex(matrix, xMin, yMax, blitOffset).setUv(sprite.getU0(), sprite.getV1());
-        bufferbuilder.addVertex(matrix, xMax, yMax, blitOffset).setUv(sprite.getU1(), sprite.getV1());
-        bufferbuilder.addVertex(matrix, xMax, yMin, blitOffset).setUv(sprite.getU1(), sprite.getV0());
-        bufferbuilder.addVertex(matrix, xMin, yMin, blitOffset).setUv(sprite.getU0(), sprite.getV0());
-        BufferUploader.drawWithShader(bufferbuilder.build());
-        RenderSystem.disableBlend();
-//        BufferUploader.end(bufferbuilder);
         if(isHovered) graphics.fill(RenderType.guiOverlay(), xMin, yMin, xMax, yMax, 0x50ffffff);
 
     }

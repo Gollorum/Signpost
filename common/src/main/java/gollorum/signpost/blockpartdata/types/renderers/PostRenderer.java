@@ -13,28 +13,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 public class PostRenderer extends BlockPartRenderer<PostBlockPart> {
-
-	private static final Map<ResourceLocation, BakedModel> cachedBakedModels = new ConcurrentHashMap<>();
-
-
-	private BakedModel makeBakedModel(PostBlockPart post) {
-		return cachedBakedModels
-			.computeIfAbsent(post.getTexture().location(),
-				x -> RenderingUtil.loadModel(
-					PostModelResources.postLocation,
-					post.getTexture().location()
-				)
-			);
-	}
 
 	@Override
 	public void render(
@@ -53,7 +35,11 @@ public class PostRenderer extends BlockPartRenderer<PostBlockPart> {
 		RenderingUtil.render(
             blockToView,
             localToBlock.last().pose(),
-            makeBakedModel(post),
+			RenderingUtil.loadModel(
+				PostModelResources.postLocation,
+				post.getTexture().location(),
+				RenderingUtil.IdentityModelState
+			),
             tileEntity.getLevel(),
             tileEntity.getBlockState(),
             tileEntity.getBlockPos(),
@@ -69,13 +55,21 @@ public class PostRenderer extends BlockPartRenderer<PostBlockPart> {
 	@Override
 	public void renderGui(PostBlockPart post, PoseStack matrixStack, Point center, Angle yaw, Angle pitch, boolean isFlipped, float scale, Vector3 offset) {
 		var tints = new int[]{post.getTexture().tint().map(t -> t.getColorAt(Minecraft.getInstance().level, Minecraft.getInstance().player.blockPosition())).orElse(Colors.white)};
-		RenderingUtil.renderGui(makeBakedModel(post), matrixStack, tints, center, yaw, pitch, isFlipped, scale, offset, RenderType.solid(), m -> {});
+		RenderingUtil.renderGui(RenderingUtil.loadModel(
+			PostModelResources.postLocation,
+			post.getTexture().location(),
+			RenderingUtil.IdentityModelState
+		), matrixStack, tints, center, yaw, pitch, isFlipped, scale, offset, RenderType.solid(), m -> {});
 	}
 
 	@Override
 	public void renderGui(PostBlockPart post, PoseStack matrixStack, Vector3 offset, MultiBufferSource buffer, int combinedLight, int combinedOverlay) {
 		var tints = new int[]{post.getTexture().tint().map(t -> t.getColorAt(Minecraft.getInstance().level, Minecraft.getInstance().player.blockPosition())).orElse(Colors.white)};
-		RenderingUtil.renderGui(makeBakedModel(post), matrixStack, tints, offset, Angle.ZERO, buffer.getBuffer(RenderType.solid()), RenderType.solid(), combinedLight, combinedOverlay, m -> {});
+		RenderingUtil.renderGui(RenderingUtil.loadModel(
+			PostModelResources.postLocation,
+			post.getTexture().location(),
+			RenderingUtil.IdentityModelState
+		), matrixStack, tints, offset, Angle.ZERO, buffer.getBuffer(RenderType.solid()), RenderType.solid(), combinedLight, combinedOverlay, m -> {});
 	}
 
 }

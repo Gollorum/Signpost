@@ -26,8 +26,8 @@
                   }
                 },
                 {
-                  "condition": "signpost:permission_check",
-                  "signpost": "pick_waystone"
+                  "type": "pick_waystone",
+                  "condition": "signpost:permission_check"
                 }
               ],
               "functions": [

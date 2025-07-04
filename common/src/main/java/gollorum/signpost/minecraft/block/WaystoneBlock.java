@@ -35,6 +35,7 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
@@ -202,18 +203,20 @@ public abstract class WaystoneBlock extends BaseEntityBlock implements WithCount
         }
     }
 
-    public static ItemStack fillClonedItemStack(ItemStack stack, BlockGetter level, BlockPos pos, Player player) {
+    @Override
+    protected ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) {
+        return WaystoneBlock.fillClonedItemStack(super.getCloneItemStack(level, pos, state, includeData), level, pos);
+    }
+
+    public static ItemStack fillClonedItemStack(ItemStack stack, LevelReader level, BlockPos pos) {
         BlockEntity untypedEntity = level.getBlockEntity(pos);
         if(untypedEntity instanceof WaystoneTile) {
             WaystoneTile tile = (WaystoneTile) untypedEntity;
-            if(player.hasPermissions(IConfig.IServer.getInstance().permissions().pickUnownedWaystonePermissionLevel())
-                || tile.getWaystoneOwner().map(o -> o.equals(PlayerHandle.from(player))).orElse(true)) {
 
-                tile.getHandle().ifPresent(h -> stack.update(DataComponents.CUSTOM_DATA, CustomData.EMPTY, customData -> customData.update(tag -> {
-                    tag.put("Handle", WaystoneHandle.Vanilla.CompoundSerializer.encode(h, player.registryAccess()));
-                })));
-                tile.getName().ifPresent(n -> stack.set(DataComponents.CUSTOM_NAME, Component.literal(n)));
-            }
+            tile.getHandle().ifPresent(h -> stack.update(DataComponents.CUSTOM_DATA, CustomData.EMPTY, customData -> customData.update(tag -> {
+                tag.put("Handle", WaystoneHandle.Vanilla.CompoundSerializer.encode(h, level.registryAccess()));
+            })));
+            tile.getName().ifPresent(n -> stack.set(DataComponents.CUSTOM_NAME, Component.literal(n)));
         }
         return stack;
     }

@@ -33,7 +33,7 @@ public interface BlockPart<T extends BlockPart<T>> extends Interactable {
             PostTile.partsMetadata::get,
             meta -> meta.identifier
         ),
-        Codec.withAlternative(CompoundTag.CODEC, TagParser.AS_CODEC)
+        Codec.withAlternative(CompoundTag.CODEC, TagParser.LENIENT_CODEC)
     ).xmap(
         pair -> new SerializedRepresentation(pair.getFirst(), pair.getSecond()),
         rep -> Pair.of(rep.metadata, rep.tag)

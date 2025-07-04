@@ -92,7 +92,7 @@ public final class Angle {
 
         @Override
         public Angle decode(CompoundTag compound, HolderLookup.Provider provider) {
-            return Angle.fromRadians(compound.getFloat(key));
+            return Angle.fromRadians(compound.getFloatOr(key, 0));
         }
     };
 

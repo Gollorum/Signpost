@@ -7,15 +7,11 @@ import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.mixin.BlockModelRendererAccessor;
-import gollorum.signpost.mixin.ModelManagerAccessor;
 import gollorum.signpost.platform.ClientServices;
 import gollorum.signpost.platform.Services;
 import gollorum.signpost.utils.Lazy;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import net.minecraft.CrashReport;
-import net.minecraft.CrashReportCategory;
-import net.minecraft.ReportedException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -24,15 +20,15 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -46,33 +42,39 @@ import java.util.function.Function;
 
 public class RenderingUtil {
 
-    private record SingleTexCacheKey(ResourceLocation modelLocation, ResourceLocation textureLocation){}
-    private record DoubleTexCacheKey(ResourceLocation modelLocation, ResourceLocation textureLocation1, ResourceLocation textureLocation2){}
+    private record NoTexCacheKey(ResourceLocation modelLocation, ModelState modelState){}
+    private record SingleTexCacheKey(ResourceLocation modelLocation, ResourceLocation textureLocation, ModelState modelState){}
+    private record DoubleTexCacheKey(ResourceLocation modelLocation, ResourceLocation textureLocation1, ResourceLocation textureLocation2, ModelState modelState){}
 
-    private static final HashMap<SingleTexCacheKey, BakedModel> singleTexCache = new HashMap<>();
-    private static final HashMap<DoubleTexCacheKey, BakedModel> doubleTexCache = new HashMap<>();
+    private static final HashMap<NoTexCacheKey, BlockModelPart> noTexCache = new HashMap<>();
+    private static final HashMap<SingleTexCacheKey, BlockModelPart> singleTexCache = new HashMap<>();
+    private static final HashMap<DoubleTexCacheKey, BlockModelPart> doubleTexCache = new HashMap<>();
 
-    public static BakedModel loadModel(ResourceLocation location) {
-        var modelManager = Minecraft.getInstance().getModelManager();
-        return ((ModelManagerAccessor) modelManager).getBakedRegistry().getOrDefault(location, modelManager.getMissingModel());
-    }
+    public static ModelState IdentityModelState = new ModelState() {};
 
-    public static BakedModel loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation) {
-        final ResourceLocation textLoc = trim(textureLocation);
-        return singleTexCache.computeIfAbsent(new SingleTexCacheKey(modelLocation, textLoc), key -> {
-            Function<Material, TextureAtlasSprite> textureGetter = m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(key.textureLocation);
-            return ClientServices.MODEL_FACTORY.bakeFor(textureGetter, key.modelLocation);
+    public static BlockModelPart loadModel(ResourceLocation modelLocation, ModelState modelState) {
+        return noTexCache.computeIfAbsent(new NoTexCacheKey(modelLocation, modelState), key -> {
+            Function<Material, TextureAtlasSprite> textureGetter = m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(m.texture());
+            return ClientServices.MODEL_FACTORY.bakeFor(textureGetter, key.modelLocation, modelState);
         });
     }
 
-    public static BakedModel loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation1, ResourceLocation textureLocation2) {
+    public static BlockModelPart loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation, ModelState modelState) {
+        final ResourceLocation textLoc = trim(textureLocation);
+        return singleTexCache.computeIfAbsent(new SingleTexCacheKey(modelLocation, textLoc, modelState), key -> {
+            Function<Material, TextureAtlasSprite> textureGetter = m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(key.textureLocation);
+            return ClientServices.MODEL_FACTORY.bakeFor(textureGetter, key.modelLocation, modelState);
+        });
+    }
+
+    public static BlockModelPart loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation1, ResourceLocation textureLocation2, ModelState modelState) {
         final ResourceLocation textLoc1 = trim(textureLocation1);
         final ResourceLocation textLoc2 = trim(textureLocation2);
-        return doubleTexCache.computeIfAbsent(new DoubleTexCacheKey(modelLocation, textLoc1, textLoc2), key -> {
+        return doubleTexCache.computeIfAbsent(new DoubleTexCacheKey(modelLocation, textLoc1, textLoc2, modelState), key -> {
             Function<Material, TextureAtlasSprite> textureGetter = m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(
                 m.sprite().contents().name().equals(PostModelResources.mainTextureMarker)
                     ? key.textureLocation1 : key.textureLocation2);
-            return ClientServices.MODEL_FACTORY.bakeFor(textureGetter, key.modelLocation);
+            return ClientServices.MODEL_FACTORY.bakeFor(textureGetter, key.modelLocation, modelState);
         });
     }
 
@@ -89,7 +91,7 @@ public class RenderingUtil {
     public static void render(
         PoseStack blockToView,
         Matrix4f localToBlock,
-        BakedModel model,
+        BlockModelPart model,
         Level world,
         BlockState state,
         BlockPos pos,
@@ -143,7 +145,7 @@ public class RenderingUtil {
         });
     }
 
-    public static void renderGui(BakedModel model, PoseStack matrixStack, int[] tints, Point center, Angle yaw, Angle pitch, boolean isFlipped, float scale, Vector3 offset, RenderType renderType, Consumer<PoseStack> alsoDo) {
+    public static void renderGui(BlockModelPart model, PoseStack matrixStack, int[] tints, Point center, Angle yaw, Angle pitch, boolean isFlipped, float scale, Vector3 offset, RenderType renderType, Consumer<PoseStack> alsoDo) {
         wrapInMatrixEntry(matrixStack, () -> {
             matrixStack.translate(center.x, center.y, 0);
             matrixStack.scale(scale, -scale, scale);
@@ -155,7 +157,7 @@ public class RenderingUtil {
         });
     }
 
-    public static void renderGui(BakedModel model, PoseStack matrixStack, int[] tints, Vector3 offset, Angle yaw, VertexConsumer builder, RenderType renderType, int combinedLight, int combinedOverlay, Consumer<PoseStack> alsoDo) {
+    public static void renderGui(BlockModelPart model, PoseStack matrixStack, int[] tints, Vector3 offset, Angle yaw, VertexConsumer builder, RenderType renderType, int combinedLight, int combinedOverlay, Consumer<PoseStack> alsoDo) {
         wrapInMatrixEntry(matrixStack, () -> {
             matrixStack.mulPose(new Quaternionf(new AxisAngle4f(yaw.radians(), new Vector3f(0, 1, 0))));
             matrixStack.translate(offset.x(), offset.y(), offset.z());
@@ -170,12 +172,12 @@ public class RenderingUtil {
                 RandomSource random = RandomSource.create();
                 for(Direction dir : allDirections) {
                     random.setSeed(42L);
-                    for(BakedQuad quad: model.getQuads(null, dir, random)) {
+                    for(BakedQuad quad: model.getQuads(dir)) {
                         float r = 1;
                         float g = 1;
                         float b = 1;
                         if(quad.isTinted()) {
-                            var tint = tints[quad.getTintIndex()];
+                            var tint = tints[quad.tintIndex()];
                             r *= Colors.getRed(tint) / 255f;
                             g *= Colors.getGreen(tint) / 255f;
                             b *= Colors.getBlue(tint) / 255f;
@@ -197,9 +199,9 @@ public class RenderingUtil {
     }
 
     // These are modified copies of stuff in the ModelBlockRenderer to allow custom tints and dynamic ao.
-    private static boolean tesselateBlock(
+    private static void tesselateBlock(
         BlockAndTintGetter level,
-        BakedModel model,
+        BlockModelPart model,
         BlockState state,
         int[] tints,
         BlockPos pos,
@@ -211,25 +213,35 @@ public class RenderingUtil {
         long combinedLight,
         int combinedOverlay
     ) {
-        boolean useAmbientOcclusion = Minecraft.useAmbientOcclusion() && state.getLightEmission() == 0 && model.useAmbientOcclusion();
-        var vec3 = state.getOffset(pos);
-        blockToView.translate(vec3.x, vec3.y, vec3.z);
-        try {
-            return tesselate(level, model, state, tints, pos, blockToView, localToBlock, vertexConsumer, checkSides, random, combinedLight, combinedOverlay, useAmbientOcclusion);
-        } catch (Throwable throwable) {
-            CrashReport crashreport = CrashReport.forThrowable(throwable, "Tesselating block model");
-            CrashReportCategory crashreportcategory = crashreport.addCategory("Block model being tesselated");
-            CrashReportCategory.populateBlockDetails(crashreportcategory, level, pos, state);
-            crashreportcategory.setDetail("Using AO", useAmbientOcclusion);
-            throw new ReportedException(crashreport);
-        }
+//        boolean useAmbientOcclusion = Minecraft.useAmbientOcclusion() && state.getLightEmission() == 0 && model.useAmbientOcclusion();
+//        var vec3 = state.getOffset(pos);
+//        blockToView.translate(vec3.x, vec3.y, vec3.z);
+//        try {
+            Minecraft.getInstance().getBlockRenderer().getModelRenderer().tesselateBlock(
+                level,
+                List.of(new CustomTintedModel(model, tints)),
+                state,
+                pos,
+                blockToView,
+                vertexConsumer,
+                checkSides,
+                combinedOverlay
+            );
+//            return tesselate(level, model, state, tints, pos, blockToView, localToBlock, vertexConsumer, checkSides, random, combinedLight, combinedOverlay, useAmbientOcclusion);
+//        } catch (Throwable throwable) {
+//            CrashReport crashreport = CrashReport.forThrowable(throwable, "Tesselating block model");
+//            CrashReportCategory crashreportcategory = crashreport.addCategory("Block model being tesselated");
+//            CrashReportCategory.populateBlockDetails(crashreportcategory, level, pos, state);
+//            crashreportcategory.setDetail("Using AO", useAmbientOcclusion);
+//            throw new ReportedException(crashreport);
+//        }
     }
 
     private static final AmbientOcclusionsAccessor ambientOcclusionAccessor = Services.load(AmbientOcclusionsAccessor.class);
 
     public static boolean tesselate(
         BlockAndTintGetter level,
-        BakedModel model,
+        BlockModelPart model,
         BlockState state,
         int[] tints,
         BlockPos pos,
@@ -253,21 +265,21 @@ public class RenderingUtil {
 
         for(Direction direction : Direction.values()) {
             random.setSeed(combinedLight);
-            List<BakedQuad> list = model.getQuads(state, direction, random);
+            List<BakedQuad> list = model.getQuads(direction);
             if (!list.isEmpty()) {
                 mutablePos.setWithOffset(pos, direction);
                 if (!checkSides || Block.shouldRenderFace(state, level.getBlockState(pos), direction)) {
                     if(useAmbientOcclusion)
                         renderModelFaceAO(level, state, tints, pos, blockToView, vertexConsumer, list, aoValues, bitset, combinedOverlay, localToBlock, localToBlockNormal);
                     else
-                        renderModelWithoutAo(level, state, tints, pos, LevelRenderer.getLightColor(level, state, mutablePos), combinedOverlay, false, blockToView, vertexConsumer, list, bitset, localToBlock, localToBlockNormal);
+                        renderModelWithoutAo(level, state, tints, pos, LevelRenderer.getLightColor(LevelRenderer.BrightnessGetter.DEFAULT, level, state, mutablePos), combinedOverlay, false, blockToView, vertexConsumer, list, bitset, localToBlock, localToBlockNormal);
                     flag = true;
                 }
             }
         }
 
         random.setSeed(combinedLight);
-        List<BakedQuad> quads = model.getQuads(state, null, random);
+        List<BakedQuad> quads = model.getQuads(null);
         if (!quads.isEmpty()) {
             if(useAmbientOcclusion)
                 renderModelFaceAO(level, state, tints, pos, blockToView, vertexConsumer, quads, aoValues, bitset, combinedOverlay, localToBlock, localToBlockNormal);
@@ -279,27 +291,27 @@ public class RenderingUtil {
         return flag;
     }
 
-//    public static BakedModel withReplacedTexture(BakedModel original, Function<TextureAtlasSprite, TextureAtlasSprite> mapping) {
+//    public static BlockModelPart withReplacedTexture(BlockModelPart original, Function<TextureAtlasSprite, TextureAtlasSprite> mapping) {
 //
-//        return new BakedModel() {
+//        return new BlockModelPart() {
 //            @Override
 //            public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand) {
 //                return original.getQuads(state, side, rand).stream().map(q -> {
-//                    var tas = mapping.apply(q.getSprite());
+//                    var tas = mapping.apply(q.sprite());
 //                    if(tas == null) return q;
-//                    var vertices = q.getVertices().clone();
+//                    var vertices = q.vertices().clone();
 //                    for(var vertex = 0; vertex < 4; vertex++){
 //                        var i = vertex * 8 + 4;
-//                        var u0 = q.getSprite().getU0();
-//                        var u1 = q.getSprite().getU1();
-//                        var v0 = q.getSprite().getV0();
-//                        var v1 = q.getSprite().getV1();
+//                        var u0 = q.sprite().getU0();
+//                        var u1 = q.sprite().getU1();
+//                        var v0 = q.sprite().getV0();
+//                        var v1 = q.sprite().getV1();
 //                        var rawU = (Float.intBitsToFloat(vertices[i]) - u0) / (u1 - u0);
 //                        var rawV = (Float.intBitsToFloat(vertices[i + 1]) - v0) / (v1 - v0);
 //                        vertices[i] = Float.floatToRawIntBits(tas.getU(rawU));
 //                        vertices[i + 1] = Float.floatToRawIntBits(tas.getV(rawV));
 //                    }
-//                    return new BakedQuad(vertices, q.getTintIndex(), q.getDirection(), tas, q.isShade());
+//                    return new BakedQuad(vertices, q.tintIndex(), q.direction(), tas, q.shade());
 //                }).collect(Collectors.toList());
 //            }
 //
@@ -345,9 +357,9 @@ public class RenderingUtil {
         for(BakedQuad bakedquad : quads) {
             bakedquad = transform(bakedquad, localToBlock, localToBlockNormal);
             var shadingQuad = clampWithinUnitCube(bakedquad);
-            ((BlockModelRendererAccessor)Renderer.get()).shapeCalculation(level, state, pos, shadingQuad.getVertices(), shadingQuad.getDirection(), aoFloats, bitset);
+            ((BlockModelRendererAccessor)Renderer.get()).shapeCalculation(level, state, pos, shadingQuad.vertices(), shadingQuad.direction(), aoFloats, bitset);
 //            if (!ForgeHooksClient.calculateFaceWithoutAO(level, state, pos, bakedquad, bitset.get(0), brightness, lightmap))
-            ambientOcclusionAccessor.calculate(level, state, pos, shadingQuad.getDirection(), aoFloats, bitset, shadingQuad.isShade());
+            ambientOcclusionAccessor.calculate(level, state, pos, shadingQuad.direction(), aoFloats, bitset, shadingQuad.shade());
             var brightness = ambientOcclusionAccessor.getBrightness();
             var lightmap = ambientOcclusionAccessor.getLightMap();
             putQuadData(tints, vertexConsumer, poseMatrix, bakedquad, brightness[0], brightness[1], brightness[2], brightness[3], lightmap[0], lightmap[1], lightmap[2], lightmap[3], combinedOverlay);
@@ -361,12 +373,12 @@ public class RenderingUtil {
             bakedquad = transform(bakedquad, localToBlock, localToBlockNormal);
             if (p_111007_) {
                 var shadingQuad = clampWithinUnitCube(bakedquad);
-                ((BlockModelRendererAccessor)Renderer.get()).shapeCalculation(level, state, pos, shadingQuad.getVertices(), shadingQuad.getDirection(), (float[])null, bitSet);
-                BlockPos blockpos = bitSet.get(0) ? pos.relative(shadingQuad.getDirection()) : pos;
-                lightColor = LevelRenderer.getLightColor(level, state, blockpos);
+                ((BlockModelRendererAccessor)Renderer.get()).shapeCalculation(level, state, pos, shadingQuad.vertices(), shadingQuad.direction(), (float[])null, bitSet);
+                BlockPos blockpos = bitSet.get(0) ? pos.relative(shadingQuad.direction()) : pos;
+                lightColor = LevelRenderer.getLightColor(LevelRenderer.BrightnessGetter.DEFAULT, level, state, blockpos);
             }
 
-            float f = level.getShade(bakedquad.getDirection(), bakedquad.isShade());
+            float f = level.getShade(bakedquad.direction(), bakedquad.shade());
             putQuadData(tints, vertexConsumer, poseMatrix, bakedquad, f, f, f, f, lightColor, lightColor, lightColor, lightColor, combinedOverlay);
         }
     }
@@ -391,7 +403,7 @@ public class RenderingUtil {
         float g;
         float b;
         if (quad.isTinted()) {
-            int i = tints[quad.getTintIndex()];
+            int i = tints[quad.tintIndex()];
             r = (float)(i >> 16 & 255) / 255.0F;
             g = (float)(i >> 8 & 255) / 255.0F;
             b = (float)(i & 255) / 255.0F;
@@ -414,8 +426,8 @@ public class RenderingUtil {
     }
 
     private static BakedQuad transform(BakedQuad original, Matrix4f localToBlock, Matrix3f localToBlockNormal) {
-        var dir = transform(original.getDirection(), localToBlock);
-        int[] vertices = original.getVertices();
+        var dir = transform(original.direction(), localToBlock);
+        int[] vertices = original.vertices();
         vertices = Arrays.copyOf(vertices, vertices.length);
 
         int i;
@@ -448,11 +460,11 @@ public class RenderingUtil {
                 vertices[offset] = (byte)((int)(posx.x() * 127.0F)) & 255 | ((byte)((int)(posx.y() * 127.0F)) & 255) << 8 | ((byte)((int)(posx.z() * 127.0F)) & 255) << 16 | normalIn & -16777216;
             }
         }
-        return new BakedQuad(vertices, original.getTintIndex(), dir, original.getSprite(), original.isShade(), original.getLightEmission());
+        return new BakedQuad(vertices, original.tintIndex(), dir, original.sprite(), original.shade(), original.lightEmission());
     }
 
     private static BakedQuad clampWithinUnitCube(BakedQuad quad){
-        var oldData = quad.getVertices();
+        var oldData = quad.vertices();
         var newData = new int[oldData.length];
         for (int i = 0; i < 4; i++)
         {
@@ -464,7 +476,7 @@ public class RenderingUtil {
             newData[i * 8 + 1] = Float.floatToRawIntBits(y);
             newData[i * 8 + 2] = Float.floatToRawIntBits(z);
         }
-        return new BakedQuad(newData, quad.getTintIndex(), quad.getDirection(), quad.getSprite(), quad.isShade(), quad.getLightEmission());
+        return new BakedQuad(newData, quad.tintIndex(), quad.direction(), quad.sprite(), quad.shade(), quad.lightEmission());
     }
 
 }

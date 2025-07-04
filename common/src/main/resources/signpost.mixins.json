@@ -17,8 +17,6 @@
     "LevelRendererAccessor",
     "ModelDiscoveryInjector",
     "ModelBakeryLeecher",
-    "ModelBakeryAccessor",
-    "ModelManagerAccessor",
     "ScreenAccessor"
   ],
   "server": [

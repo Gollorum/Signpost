@@ -32,8 +32,8 @@ public final class OptionalCompoundSerializer<T> implements CompoundSerializable
 
     @Override
     public Optional<T> decode(CompoundTag compound, HolderLookup.Provider provider) {
-        if(compound.getBoolean("IsPresent"))
-            return Optional.ofNullable(valueSerializer.decode(compound.getCompound("Value"), provider));
+        if(compound.getBooleanOr("IsPresent", false))
+            return Optional.ofNullable(valueSerializer.decode(compound.getCompoundOrEmpty("Value"), provider));
         else return Optional.empty();
     }
 

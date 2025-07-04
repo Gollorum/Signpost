@@ -26,9 +26,11 @@ public interface WaystoneHandle {
     }
 
     static Optional<WaystoneHandle> read(CompoundTag compound, HolderLookup.Provider provider) {
-        String type = compound.getString("type");
-        if(type.equals(Vanilla.typeTag)) return Optional.of(Vanilla.CompoundSerializer.decode(compound, provider));
-        else return ExternalWaystoneLibrary.getInstance().read(type, compound);
+        var type = compound.getString("type");
+        if (type.isEmpty())
+            return Optional.empty();
+        if(type.get().equals(Vanilla.typeTag)) return Optional.of(Vanilla.CompoundSerializer.decode(compound, provider));
+        else return ExternalWaystoneLibrary.getInstance().read(type.get(), compound);
     }
 
     public static class Vanilla implements WaystoneHandle {
@@ -77,7 +79,7 @@ public interface WaystoneHandle {
             @Override
             public void encode(CompoundTag compound, Vanilla playerHandle, HolderLookup.Provider provider) {
                 compound.putString("type", typeTag);
-                compound.putUUID("Id", playerHandle.id);
+                compound.putByteArray("Id", playerHandle.id.);
             }
 
             @Override

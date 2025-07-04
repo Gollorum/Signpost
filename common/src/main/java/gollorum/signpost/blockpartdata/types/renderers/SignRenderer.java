@@ -14,8 +14,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.joml.*;
@@ -24,8 +24,8 @@ import java.lang.Math;
 
 public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPartRenderer<T> {
 
-	protected abstract BakedModel makeBakedModel(T sign);
-	protected abstract BakedModel makeBakedOverlayModel(T sign, Overlay overlay);
+	protected abstract BlockModelPart makeBakedModel(T sign);
+	protected abstract BlockModelPart makeBakedOverlayModel(T sign, Overlay overlay);
 
 	@Override
 	public void render(

@@ -19,6 +19,7 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -201,6 +202,11 @@ public abstract class ModelWaystone extends BaseEntityBlock implements SimpleWat
 		if(!world.isClientSide() && world instanceof Level) {
 			WaystoneTile.onRemoved((ServerLevel) world, pos);
 		}
+	}
+
+	@Override
+	protected ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) {
+		return WaystoneBlock.fillClonedItemStack(super.getCloneItemStack(level, pos, state, includeData), level, pos);
 	}
 
 }

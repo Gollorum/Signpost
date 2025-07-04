@@ -8,7 +8,7 @@ import gollorum.signpost.minecraft.rendering.ModelRegistry;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.renderer.block.model.BlockModelPart;
 import org.joml.AxisAngle4d;
 import org.joml.Quaternionf;
 import org.joml.Vector3d;
@@ -30,12 +30,12 @@ public class LargeSignRenderer extends SignRenderer<LargeSignBlockPart> {
 	private static final float FONT_SIZE_VOXELS = 2 / TEXT_RATIO;
 
 	@Override
-	protected BakedModel makeBakedModel(LargeSignBlockPart sign) {
+	protected BlockModelPart makeBakedModel(LargeSignBlockPart sign) {
 		return ModelRegistry.LargeBakedSign.makeModel(sign);
 	}
 
 	@Override
-	protected BakedModel makeBakedOverlayModel(LargeSignBlockPart sign, Overlay overlay) {
+	protected BlockModelPart makeBakedOverlayModel(LargeSignBlockPart sign, Overlay overlay) {
 		return ModelRegistry.LargeBakedSign.makeOverlayModel(sign, overlay);
 	}
 

@@ -1,6 +1,5 @@
 package gollorum.signpost.minecraft.gui.widgets;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import gollorum.signpost.minecraft.gui.utils.*;
@@ -11,11 +10,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.WidgetSprites;
-import net.minecraft.client.renderer.CoreShaders;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -147,7 +143,6 @@ public class DropDownSelection<EntryType> extends ImageButton {
         graphics.pose().pushPose();
         graphics.pose().translate(0, 0, 100);
         super.renderWidget(graphics, mouseX, mouseY, partialTicks);
-        RenderSystem.disableDepthTest();
         int yTexStart = this.isHovered ? texture.size.height : 0;
         int xTexStart = this.isListVisible ? texture.size.width : 0;
 
@@ -158,7 +153,6 @@ public class DropDownSelection<EntryType> extends ImageButton {
             this.width, this.height,
             texture.fileSize.height, texture.fileSize.width
         );
-        RenderSystem.enableDepthTest();
         if(isListVisible) list.render(graphics, mouseX, mouseY, partialTicks);
         graphics.pose().popPose();
     }
@@ -175,7 +169,7 @@ public class DropDownSelection<EntryType> extends ImageButton {
             super(minecraft, width, height, topRight.y + rimHeight, 14);
             this.setX(topRight.x - width);
 //            super(minecraft, width, height, topRight.x - width, topRight.y + rimHeight);
-            this.setRenderHeader(false, 0);
+//            this.setRenderHeader(false, 0);
             headerHeight = 14;
             this.rimHeight = rimHeight;
             updateContent();
@@ -183,7 +177,7 @@ public class DropDownSelection<EntryType> extends ImageButton {
 
         public void updateContent() {
             this.replaceEntries(allEntries.stream().filter(filter).map(Entry::new).collect(Collectors.toList()));
-            setScrollAmount(getScrollAmount());
+            setScrollAmount(scrollAmount());
         }
 
         @Override
@@ -195,8 +189,8 @@ public class DropDownSelection<EntryType> extends ImageButton {
         public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
 //            super.renderWidget();
 //            this.renderBackground(graphics);
-            int i = this.getScrollbarPosition();
-            int j = i + 6;
+//            int i = this.getScrollbarPosition();
+//            int j = i + 6;
             Tesselator tesselator = Tesselator.getInstance();
             RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
             RenderSystem.setShaderTexture(0, TextureResource.background.location);
@@ -207,10 +201,10 @@ public class DropDownSelection<EntryType> extends ImageButton {
             var x1 = x0 + width;
             var y0 = getY() + rimHeight;
             var y1 = getY() + height - rimHeight;
-            bufferbuilder.addVertex(x0, y1, 0.0f).setUv((float)x0 / 32.0F, (float)(y1 + (int)this.getScrollAmount()) / 32.0F).setColor(backgroundBrightness, backgroundBrightness, backgroundBrightness, 255);
-            bufferbuilder.addVertex(x1, y1, 0.0f).setUv((float)x1 / 32.0F, (float)(y1 + (int)this.getScrollAmount()) / 32.0F).setColor(backgroundBrightness, backgroundBrightness, backgroundBrightness, 255);
-            bufferbuilder.addVertex(x1, y0, 0.0f).setUv((float)x1 / 32.0F, (float)(y0 + (int)this.getScrollAmount()) / 32.0F).setColor(backgroundBrightness, backgroundBrightness, backgroundBrightness, 255);
-            bufferbuilder.addVertex(x0, y0, 0.0f).setUv((float)x0 / 32.0F, (float)(y0 + (int)this.getScrollAmount()) / 32.0F).setColor(backgroundBrightness, backgroundBrightness, backgroundBrightness, 255);
+            bufferbuilder.addVertex(x0, y1, 0.0f).setUv((float)x0 / 32.0F, (float)(y1 + (int)this.scrollAmount()) / 32.0F).setColor(backgroundBrightness, backgroundBrightness, backgroundBrightness, 255);
+            bufferbuilder.addVertex(x1, y1, 0.0f).setUv((float)x1 / 32.0F, (float)(y1 + (int)this.scrollAmount()) / 32.0F).setColor(backgroundBrightness, backgroundBrightness, backgroundBrightness, 255);
+            bufferbuilder.addVertex(x1, y0, 0.0f).setUv((float)x1 / 32.0F, (float)(y0 + (int)this.scrollAmount()) / 32.0F).setColor(backgroundBrightness, backgroundBrightness, backgroundBrightness, 255);
+            bufferbuilder.addVertex(x0, y0, 0.0f).setUv((float)x0 / 32.0F, (float)(y0 + (int)this.scrollAmount()) / 32.0F).setColor(backgroundBrightness, backgroundBrightness, backgroundBrightness, 255);
             BufferUploader.drawWithShader(bufferbuilder.build());
 
             this.renderListItems(graphics, mouseX, mouseY, partialTicks);
@@ -237,36 +231,38 @@ public class DropDownSelection<EntryType> extends ImageButton {
             bufferbuilder.addVertex(x1, y1 - 4, 0).setUv(1.0F, 0.0F).setColor(0, 0, 0, 0);
             bufferbuilder.addVertex(x0, y1 - 4, 0).setUv(0.0F, 0.0F).setColor(0, 0, 0, 0);
             BufferUploader.drawWithShader(bufferbuilder.build());
-            int j1 = this.getMaxScroll();
-            if (j1 > 0) {
-//                RenderSystem.disableTexture();
-                RenderSystem.setShader(CoreShaders.POSITION_COLOR);
-                int k1 = (int)((float)((y1 - y0) * (y1 - y0)) / (float)this.getMaxPosition());
-                k1 = Mth.clamp(k1, 32, y1 - y0 - 8);
-                int l1 = (int)this.getScrollAmount() * (y1 - y0 - k1) / j1 + y0;
-                if (l1 < y0) {
-                    l1 = y0;
-                }
+//            int j1 = this.maxScrollAmount();
+//            if (j1 > 0) {
+////                RenderSystem.disableTexture();
+//                RenderSystem.setShader(CoreShaders.POSITION_COLOR);
+//                int k1 = (int)((float)((y1 - y0) * (y1 - y0)) / (float)this.getMaxPosition());
+//                k1 = Mth.clamp(k1, 32, y1 - y0 - 8);
+//                int l1 = (int)this.scrollAmount() * (y1 - y0 - k1) / j1 + y0;
+//                if (l1 < y0) {
+//                    l1 = y0;
+//                }
+//
+//                bufferbuilder = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+//                bufferbuilder.addVertex(i, y1, 0).setUv(0.0F, 1.0F).setColor(0, 0, 0, 255);
+//                bufferbuilder.addVertex(j, y1, 0).setUv(1.0F, 1.0F).setColor(0, 0, 0, 255);
+//                bufferbuilder.addVertex(j, y0, 0).setUv(1.0F, 0.0F).setColor(0, 0, 0, 255);
+//                bufferbuilder.addVertex(i, y0, 0).setUv(0.0F, 0.0F).setColor(0, 0, 0, 255);
+//                BufferUploader.drawWithShader(bufferbuilder.build());
+//                bufferbuilder = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+//                bufferbuilder.addVertex(i, l1 + k1, 0).setUv(0.0F, 1.0F).setColor(128, 128, 128, 255);
+//                bufferbuilder.addVertex(j, l1 + k1, 0).setUv(1.0F, 1.0F).setColor(128, 128, 128, 255);
+//                bufferbuilder.addVertex(j, l1, 0).setUv(1.0F, 0.0F).setColor(128, 128, 128, 255);
+//                bufferbuilder.addVertex(i, l1, 0).setUv(0.0F, 0.0F).setColor(128, 128, 128, 255);
+//                BufferUploader.drawWithShader(bufferbuilder.build());
+//                bufferbuilder = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+//                bufferbuilder.addVertex(i, l1 + k1 - 1, 0).setUv(0.0F, 1.0F).setColor(192, 192, 192, 255);
+//                bufferbuilder.addVertex(j - 1, l1 + k1 - 1, 0).setUv(1.0F, 1.0F).setColor(192, 192, 192, 255);
+//                bufferbuilder.addVertex(j - 1, l1, 0).setUv(1.0F, 0.0F).setColor(192, 192, 192, 255);
+//                bufferbuilder.addVertex(i, l1, 0).setUv(0.0F, 0.0F).setColor(192, 192, 192, 255);
+//                BufferUploader.drawWithShader(bufferbuilder.build());
+//            }
 
-                bufferbuilder = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-                bufferbuilder.addVertex(i, y1, 0).setUv(0.0F, 1.0F).setColor(0, 0, 0, 255);
-                bufferbuilder.addVertex(j, y1, 0).setUv(1.0F, 1.0F).setColor(0, 0, 0, 255);
-                bufferbuilder.addVertex(j, y0, 0).setUv(1.0F, 0.0F).setColor(0, 0, 0, 255);
-                bufferbuilder.addVertex(i, y0, 0).setUv(0.0F, 0.0F).setColor(0, 0, 0, 255);
-                BufferUploader.drawWithShader(bufferbuilder.build());
-                bufferbuilder = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-                bufferbuilder.addVertex(i, l1 + k1, 0).setUv(0.0F, 1.0F).setColor(128, 128, 128, 255);
-                bufferbuilder.addVertex(j, l1 + k1, 0).setUv(1.0F, 1.0F).setColor(128, 128, 128, 255);
-                bufferbuilder.addVertex(j, l1, 0).setUv(1.0F, 0.0F).setColor(128, 128, 128, 255);
-                bufferbuilder.addVertex(i, l1, 0).setUv(0.0F, 0.0F).setColor(128, 128, 128, 255);
-                BufferUploader.drawWithShader(bufferbuilder.build());
-                bufferbuilder = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-                bufferbuilder.addVertex(i, l1 + k1 - 1, 0).setUv(0.0F, 1.0F).setColor(192, 192, 192, 255);
-                bufferbuilder.addVertex(j - 1, l1 + k1 - 1, 0).setUv(1.0F, 1.0F).setColor(192, 192, 192, 255);
-                bufferbuilder.addVertex(j - 1, l1, 0).setUv(1.0F, 0.0F).setColor(192, 192, 192, 255);
-                bufferbuilder.addVertex(i, l1, 0).setUv(0.0F, 0.0F).setColor(192, 192, 192, 255);
-                BufferUploader.drawWithShader(bufferbuilder.build());
-            }
+            renderScrollbar(graphics);
 
             this.renderDecorations(graphics, mouseX, mouseY);
 //            RenderSystem.enableTexture();
@@ -305,10 +301,10 @@ public class DropDownSelection<EntryType> extends ImageButton {
 
         }
 
-        @Override
-        protected int getScrollbarPosition() {
-            return getX() + width - 6;
-        }
+//        @Override
+//        protected int getScrollbarPosition() {
+//            return getX() + width - 6;
+//        }
 
         public class Entry extends ObjectSelectionList.Entry<Entry> {
 

@@ -100,7 +100,7 @@ public abstract class Overlay {
 
         @Override
         public Overlay decode(CompoundTag compound, HolderLookup.Provider provider) {
-            String id = compound.getString("Id");
+            String id = compound.getStringOr("Id", "id_not_found");
             if(!overlayRegistry.containsKey(id)) {
                 Signpost.LOGGER.error("Tried to read overlay with id " + id + ", but it was not registered.");
                 return Gras;

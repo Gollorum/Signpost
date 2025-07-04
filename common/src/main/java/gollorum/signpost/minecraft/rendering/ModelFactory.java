@@ -1,11 +1,19 @@
 package gollorum.signpost.minecraft.rendering;
 
+import com.google.common.collect.Lists;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.BlockModelPart;
+import net.minecraft.client.renderer.block.model.SimpleModelWrapper;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.*;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
 public abstract class ModelFactory {
@@ -16,23 +24,22 @@ public abstract class ModelFactory {
         this.bakery = bakery;
     }
 
-    public abstract ModelBaker makeModelBaker(ModelBakery.TextureGetter textureMapper, ModelResourceLocation model);
+    public abstract ModelBaker makeModelBaker(SpriteGetter spriteGetter);
 
-    public BakedModel bakeFor(Function<Material, TextureAtlasSprite> textureMapper, ResourceLocation model) {
-        return makeModelBaker(
-            new ModelBakery.TextureGetter() {
+    public BlockModelPart bakeFor(Function<Material, TextureAtlasSprite> textureMapper, ResourceLocation model, ModelState modelState) {
+        var baker = makeModelBaker(
+            new SpriteGetter() {
                 @Override
-                public TextureAtlasSprite get(ModelDebugName modelDebugName, Material material) {
+                public TextureAtlasSprite get(Material material, ModelDebugName modelDebugName) {
                     return textureMapper.apply(material);
                 }
 
                 @Override
-                public TextureAtlasSprite reportMissingReference(ModelDebugName modelDebugName, String s) {
+                public TextureAtlasSprite reportMissingReference(String s, ModelDebugName modelDebugName) {
                     return ((AtlasSet.StitchResult) Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS)).missing();
                 }
-            },
-            new ModelResourceLocation(model, "")
-        ).bake(model, new ModelState(){});
+            }
+        );
+        return SimpleModelWrapper.bake(baker, model, modelState);
     }
-
 }

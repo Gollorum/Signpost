@@ -8,6 +8,7 @@ import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -38,7 +39,7 @@ public class SignModel {
 				)).toArray(Quad.Vertex[]::new),
 				q.faceData().tintIndex()
 			);
-			quads.computeIfAbsent(new Material(InventoryMenu.BLOCK_ATLAS, q.faceData().texture()), k -> new ArrayList<>())
+			quads.computeIfAbsent(new Material(TextureAtlas.LOCATION_BLOCKS, q.faceData().texture()), k -> new ArrayList<>())
 				.add(quad);
 		}
 	}

@@ -10,6 +10,7 @@ import gollorum.signpost.events.WaystoneUpdatedEvent;
 import gollorum.signpost.minecraft.config.IConfig;
 import gollorum.signpost.minecraft.gui.PaintSignGui;
 import gollorum.signpost.minecraft.gui.RequestSignGui;
+import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.items.Brush;
 import gollorum.signpost.minecraft.items.GenerationWand;
 import gollorum.signpost.minecraft.utils.LangKeys;
@@ -132,27 +133,27 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
 
             @Override
             public CoreData decode(CompoundTag compound, HolderLookup.Provider provider) {
-                CompoundTag dest = compound.getCompound("Destination");
+                CompoundTag dest = compound.getCompoundOrEmpty("Destination");
                 Optional<WaystoneHandle> destination;
-                if(dest.getBoolean("IsPresent")){
+                if(dest.getBooleanOr("IsPresent", false)){
                     Optional<WaystoneHandle> d2 = WaystoneHandle.read(dest, provider);
                     if(!d2.isPresent()) Signpost.LOGGER.error("Error deserializing waystone handle of unknown type: " + dest.getString("type"));
                     destination = d2;
                 } else destination = Optional.empty();
                 return new CoreData(
-                    AngleProvider.fetchFrom(compound.getCompound("Angle"), provider),
-                    compound.getBoolean("Flip"),
+                    AngleProvider.fetchFrom(compound.getCompoundOrEmpty("Angle"), provider),
+                    compound.getBooleanOr("Flip", false),
                     Texture.readFrom(compound.get("Texture"), provider),
                     Texture.readFrom(compound.get("TextureDark"), provider),
-                    Overlay.CompoundSerializer.optional().decode(compound.getCompound("Overlay"), provider),
-                    compound.getInt("Color"),
+                    Overlay.CompoundSerializer.optional().decode(compound.getCompoundOrEmpty("Overlay"), provider),
+                    compound.getIntOr("Color", Colors.white),
                     destination,
-                    PostBlock.ModelType.getByName(compound.getString("ModelType"), true)
+                    PostBlock.ModelType.getByName(compound.getStringOr("ModelType", "model_type_not_found"), true)
                         .orElseThrow(() -> new RuntimeException("Tried to load sign post model type " + compound.getString("ModelType") +
                             ", but it hasn't been registered. @Dev: You have to call Post.ModelType.register")),
-                    ItemStackSerializer.Compound.decode(compound.getCompound("ItemToDropOnBreak"), provider),
-                   compound.getBoolean("IsLocked"),
-                   compound.getBoolean("IsMarkedForGeneration")
+                    ItemStackSerializer.Compound.decode(compound.getCompoundOrEmpty("ItemToDropOnBreak"), provider),
+                   compound.getBooleanOr("IsLocked", false),
+                   compound.getBooleanOr("IsMarkedForGeneration", false)
                 );
             }
         }
@@ -374,9 +375,9 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
 
     @Override
     public void readMutationUpdate(CompoundTag compound, BlockEntity tile, @Nullable Player editingPlayer, HolderLookup.Provider provider) {
-        if(compound.contains("CoreData")) compound = compound.getCompound("CoreData");
+        if(compound.contains("CoreData")) compound = compound.getCompoundOrEmpty("CoreData");
         if(compound.contains("Angle"))
-            setAngle(AngleProvider.fetchFrom(compound.getCompound("Angle"), provider));
+            setAngle(AngleProvider.fetchFrom(compound.getCompoundOrEmpty("Angle"), provider));
 
         boolean updateTextures = false;
         if(compound.contains("Texture")) {
@@ -389,12 +390,12 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
         }
         if(updateTextures) setTextures(coreData.mainTexture, coreData.secondaryTexture);
 
-        if(compound.contains("Flip")) setFlip(compound.getBoolean("Flip"));
-        if(compound.contains("Color")) setColor(compound.getInt("Color"));
+        if(compound.contains("Flip")) setFlip(compound.getBooleanOr("Flip", false));
+        if(compound.contains("Color")) setColor(compound.getIntOr("Color", Colors.white));
         if(compound.contains("Destination")) {
-            CompoundTag dest = compound.getCompound("Destination");
+            CompoundTag dest = compound.getCompoundOrEmpty("Destination");
             Optional<WaystoneHandle> destination;
-            if(dest.getBoolean("IsPresent")){
+            if(dest.getBooleanOr("IsPresent", false)){
                 Optional<WaystoneHandle> d2 = WaystoneHandle.read(dest, provider);
                 if (d2.isPresent()) {
                     setDestination(d2);
@@ -404,23 +405,23 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
             } else setDestination(Optional.empty());
         }
         if(compound.contains("ItemToDropOnBreak")) {
-            setItemToDropOnBreak(ItemStackSerializer.Compound.decode(compound.getCompound("ItemToDropOnBreak"), provider));
+            setItemToDropOnBreak(ItemStackSerializer.Compound.decode(compound.getCompoundOrEmpty("ItemToDropOnBreak"), provider));
         }
         if(compound.contains("ModelType"))
-            PostBlock.ModelType.getByName(compound.getString("ModelType"), true).ifPresent(this::setModelType);
+            PostBlock.ModelType.getByName(compound.getStringOr("ModelType", "model_type_not_found"), true).ifPresent(this::setModelType);
 
         OptionalCompoundSerializer<Overlay> overlaySerializer = Overlay.CompoundSerializer.optional();
         if(compound.contains("Overlay"))
-            setOverlay(overlaySerializer.decode(compound.getCompound("Overlay"), provider));
+            setOverlay(overlaySerializer.decode(compound.getCompoundOrEmpty("Overlay"), provider));
 
         if(compound.contains("IsLocked")) {
             if(editingPlayer == null || editingPlayer.level().isClientSide()
                 || ((WithOwner.OfSignpost)tile).getSignpostOwner().map(owner -> editingPlayer.getUUID().equals(owner.id)).orElse(true)
                 || editingPlayer.hasPermissions(IConfig.IServer.getInstance().permissions().editLockedSignCommandPermissionLevel()))
-                coreData.isLocked = compound.getBoolean("IsLocked");
+                coreData.isLocked = compound.getBooleanOr("IsLocked", false);
         }
         if(compound.contains("IsMarkedForGeneration"))
-            coreData.isMarkedForGeneration = compound.getBoolean("IsMarkedForGeneration");
+            coreData.isMarkedForGeneration = compound.getBooleanOr("IsMarkedForGeneration", false);
 
         tile.setChanged();
     }

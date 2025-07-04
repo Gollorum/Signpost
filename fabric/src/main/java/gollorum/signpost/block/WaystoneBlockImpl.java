@@ -26,11 +26,6 @@ public class WaystoneBlockImpl extends WaystoneBlock {
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockState state, HitResult target, LevelReader level, BlockPos pos, Player player) {
-        return WaystoneBlock.fillClonedItemStack(super.getCloneItemStack(state, target, level, pos, player), level, pos, player);
-    }
-
-    @Override
     protected @NotNull MapCodec<? extends BaseEntityBlock> codec() {
         return simpleCodec(WaystoneBlockImpl::new);
     }

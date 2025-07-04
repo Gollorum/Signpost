@@ -6,11 +6,9 @@ import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.minecraft.gui.utils.TextureResource;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.CoreShaders;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.RenderType;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -73,22 +71,23 @@ public class ColorInputBox extends InputBox {
 
     @Override
     public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        Tesselator tessellator = Tesselator.getInstance();
-        RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
-        RenderSystem.setShaderTexture(0, TextureResource.background.location);
-        int red = Colors.getRed(currentResult);
-        int green = Colors.getGreen(currentResult);
-        int blue = Colors.getBlue(currentResult);
-        RenderSystem.setShaderColor(1, 1, 1, 1);
-        var x = getX();
-        var y = getY();
-        BufferBuilder bufferbuilder = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-        bufferbuilder.addVertex(x - height, y + height, 0).setUv(0, 1).setColor(red, green, blue, 255);
-        bufferbuilder.addVertex(x, y + height, 0).setUv(1, 1).setColor(red, green, blue, 255);
-        bufferbuilder.addVertex(x, y, 0).setUv(1, 0).setColor(red, green, blue, 255);
-        bufferbuilder.addVertex(x - height, y, 0).setUv(0, 0).setColor(red, green, blue, 255);
-        BufferUploader.drawWithShader(bufferbuilder.build());
-        super.renderWidget(graphics, mouseX, mouseY, partialTicks);
+        graphics.blitSprite(RenderType::guiTextured, TextureResource.background.location, getX(), getY(), width, height, currentResult);
+//        Tesselator tessellator = Tesselator.getInstance();
+//        RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
+//        RenderSystem.setShaderTexture(0, TextureResource.background.location);
+//        int red = Colors.getRed(currentResult);
+//        int green = Colors.getGreen(currentResult);
+//        int blue = Colors.getBlue(currentResult);
+//        RenderSystem.setShaderColor(1, 1, 1, 1);
+//        var x = getX();
+//        var y = getY();
+//        BufferBuilder bufferbuilder = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+//        bufferbuilder.addVertex(x - height, y + height, 0).setUv(0, 1).setColor(red, green, blue, 255);
+//        bufferbuilder.addVertex(x, y + height, 0).setUv(1, 1).setColor(red, green, blue, 255);
+//        bufferbuilder.addVertex(x, y, 0).setUv(1, 0).setColor(red, green, blue, 255);
+//        bufferbuilder.addVertex(x - height, y, 0).setUv(0, 0).setColor(red, green, blue, 255);
+//        BufferUploader.drawWithShader(bufferbuilder.build());
+//        super.renderWidget(graphics, mouseX, mouseY, partialTicks);
     }
 
     public void setColorResponder(@Nullable Consumer<Integer> responder) {
