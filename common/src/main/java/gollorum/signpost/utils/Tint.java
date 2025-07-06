@@ -1,14 +1,12 @@
 package gollorum.signpost.utils;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import gollorum.signpost.minecraft.utils.tints.*;
-import gollorum.signpost.utils.serialization.BufferSerializable;
-import gollorum.signpost.utils.serialization.CompoundSerializable;
-import gollorum.signpost.utils.serialization.StringSerializer;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.level.BlockAndTintGetter;
 
 import java.util.HashMap;
@@ -19,8 +17,9 @@ public interface Tint {
     int getColorAt(BlockAndTintGetter level, BlockPos pos);
 
     record Serializer(
-        CompoundSerializable<? extends Tint> compound,
-        BufferSerializable<? extends Tint> buffer
+        Class<? extends Tint> targetClass,
+        MapCodec<? extends Tint> codec,
+        StreamCodec<ByteBuf, ? extends Tint> streamCodec
     ) { }
 
     public static class Serialization {
@@ -37,56 +36,39 @@ public interface Tint {
             FluidTint.register();
         }
 
-        public static final CompoundSerializable<Tint> COMPOUND = new CompoundSerializable<>() {
-
-            @Override
-            public void encode(CompoundTag compound, Tint tint, HolderLookup.Provider provider) {
+        public static final Codec<Tint> CODEC = Codec.STRING.dispatch("Type",
+            tint -> {
                 for (var e : allSerializers.entrySet()) {
-                    if (tint.getClass() == e.getValue().buffer().getTargetClass()) {
-                        compound.putString("Type", e.getKey());
-                        ((CompoundSerializable<Tint>) e.getValue().compound()).encode(compound, tint, provider);
-                        return;
+                    if (tint.getClass() == e.getValue().targetClass()) {
+                        return e.getKey();
                     }
                 }
                 throw new RuntimeException("Failed to serialize tint type " + tint.getClass());
-            }
+            }, type -> {
+                if (allSerializers.containsKey(type)) {
+                    return allSerializers.get(type).codec();
+                } else {
+                    throw new RuntimeException("Unknown tint type: " + type);
+                }
+            });
 
-            @Override
-            public boolean isContainedIn(CompoundTag compound) {
-                return compound.contains("Type") && allSerializers.containsKey(compound.getString("Type"));
-            }
-
-            @Override
-            public Tint decode(CompoundTag compound, HolderLookup.Provider provider) {
-                return allSerializers.get(compound.getString("Type")).compound().decode(compound, provider);
-            }
-        };
-
-        public static final BufferSerializable<Tint> BUFFER = new BufferSerializable<>() {
-
-            @Override
-            public void encode(RegistryFriendlyByteBuf buffer, Tint tint) {
+        public static final StreamCodec<ByteBuf, Tint> STREAM_CODEC = ByteBufCodecs.STRING_UTF8.dispatch(
+            tint -> {
                 for (var e : allSerializers.entrySet()) {
-                    if(tint.getClass() == e.getValue().buffer().getTargetClass()) {
-                        StringSerializer.Buffer.encode(buffer, e.getKey());
-                        ((BufferSerializable<Tint>)e.getValue().buffer()).encode(buffer, tint);
-                        return;
+                    if (tint == e.getValue().streamCodec()) {
+                        return e.getKey();
                     }
                 }
                 throw new RuntimeException("Failed to serialize tint type " + tint.getClass());
+            },
+            type -> {
+                if (allSerializers.containsKey(type)) {
+                    return allSerializers.get(type).streamCodec();
+                } else {
+                    throw new RuntimeException("Unknown tint type: " + type);
+                }
             }
-
-            @Override
-            public Tint decode(RegistryFriendlyByteBuf buffer) {
-                return allSerializers.get(StringSerializer.Buffer.decode(buffer)).buffer().decode(buffer);
-            }
-
-            @Override
-            public Class<Tint> getTargetClass() {
-                return Tint.class;
-            }
-
-        };
+        );
     }
 
 }

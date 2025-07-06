@@ -2,6 +2,8 @@ package gollorum.signpost.minecraft.block.tiles;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.datafixers.types.Type;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blockpartdata.types.*;
@@ -19,14 +21,17 @@ import gollorum.signpost.utils.*;
 import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.*;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -79,11 +84,11 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     private final Map<UUID, BlockPartInstance> parts = new ConcurrentHashMap<>();
     public static final Map<String, BlockPartMetadata<?>> partsMetadata = new ConcurrentHashMap<>();
     static {
-        partsMetadata.put(PostBlockPart.METADATA.identifier, PostBlockPart.METADATA);
-        partsMetadata.put(SmallWideSignBlockPart.METADATA.identifier, SmallWideSignBlockPart.METADATA);
-        partsMetadata.put(SmallShortSignBlockPart.METADATA.identifier, SmallShortSignBlockPart.METADATA);
-        partsMetadata.put(LargeSignBlockPart.METADATA.identifier, LargeSignBlockPart.METADATA);
-        partsMetadata.put(WaystoneBlockPart.METADATA.identifier, WaystoneBlockPart.METADATA);
+        partsMetadata.put(PostBlockPart.METADATA.identifier(), PostBlockPart.METADATA);
+        partsMetadata.put(SmallWideSignBlockPart.METADATA.identifier(), SmallWideSignBlockPart.METADATA);
+        partsMetadata.put(SmallShortSignBlockPart.METADATA.identifier(), SmallShortSignBlockPart.METADATA);
+        partsMetadata.put(LargeSignBlockPart.METADATA.identifier(), LargeSignBlockPart.METADATA);
+        partsMetadata.put(WaystoneBlockPart.METADATA.identifier(), WaystoneBlockPart.METADATA);
     }
 
 	public static class TraceResult {
@@ -123,7 +128,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         if(shouldNotify && hasLevel() && !getLevel().isClientSide()) sendToTracing(() -> new PartAddedEvent.Packet(
             new TilePartInfo(this, identifier),
             part.blockPart().write(player.asEntity().registryAccess()),
-            part.blockPart().getMeta().identifier,
+            part.blockPart().getMeta().identifier(),
             part.offset(),
             cost, player
         ));
@@ -204,7 +209,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
                 if(includeIDs) subComp.putUUID("PartId", e.getKey());
                 list.add(subComp);
             }
-            compound.put(entry.getKey().identifier, list);
+            compound.put(entry.getKey().identifier(), list);
         }
         return compound;
     }
@@ -223,8 +228,8 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     public static List<BlockPartInstance> readPartInstances(CompoundTag compound, HolderLookup.Provider provider) {
         List<BlockPartInstance> parts = new ArrayList<>();
         for(BlockPartMetadata<?> meta : partsMetadata.values()){
-            if(compound.contains(meta.identifier)) {
-                ListTag list = compound.getList(meta.identifier, Tag.TAG_COMPOUND);
+            if(compound.contains(meta.identifier())) {
+                ListTag list = compound.getList(meta.identifier(), Tag.TAG_COMPOUND);
                 for(int i = 0; i < list.size(); i++){
                     CompoundTag comp = list.getCompound(i);
                     parts.add(
@@ -242,8 +247,8 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     public void readParts(CompoundTag compound, HolderLookup.Provider provider) {
         parts.clear();
         for(BlockPartMetadata<?> meta : partsMetadata.values()){
-            if(compound.contains(meta.identifier)) {
-                ListTag list = compound.getList(meta.identifier, Tag.TAG_COMPOUND);
+            if(compound.contains(meta.identifier())) {
+                ListTag list = compound.getList(meta.identifier(), Tag.TAG_COMPOUND);
                 for(int i = 0; i < list.size(); i++){
                     CompoundTag comp = list.getCompound(i);
                     addPart(
@@ -367,59 +372,18 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
             this.identifier = identifier;
         }
 
-        public static final CompoundSerializable<TilePartInfo> CompoundSerializer = new CompoundSerializerImpl();
-        public static final BufferSerializable<TilePartInfo> BufferSerializer = new BufferSerializerImpl();
+        public static final Codec<TilePartInfo> CODEC = RecordCodecBuilder.create(i -> i.group(
+            ResourceLocation.CODEC.fieldOf("Dimension").forGetter(t -> t.dimensionKey),
+            BlockPosSerializer.CODEC.fieldOf("Pos").forGetter(t -> t.pos),
+            UUIDUtil.CODEC.fieldOf("Id").forGetter(t -> t.identifier)
+        ).apply(i, TilePartInfo::new));
 
-        private static final class CompoundSerializerImpl implements CompoundSerializable<TilePartInfo> {
-
-            @Override
-            public void encode(CompoundTag compound, TilePartInfo tilePartInfo, HolderLookup.Provider provider) {
-                compound.putString("Dimension", tilePartInfo.dimensionKey.toString());
-                compound.put("Pos", BlockPosSerializer.COMPOUND.encode(tilePartInfo.pos, provider));
-                compound.putUUID("Id", tilePartInfo.identifier);
-            }
-
-            @Override
-            public boolean isContainedIn(CompoundTag compound) {
-                return compound.contains("Dimension")
-                    && compound.contains("Pos")
-                    && compound.contains("Id");
-            }
-
-            @Override
-            public TilePartInfo decode(CompoundTag compound, HolderLookup.Provider provider) {
-                return new TilePartInfo(
-                    ResourceLocation.parse(compound.getString("Dimension")),
-                    BlockPosSerializer.COMPOUND.decode(compound.getCompound("Pos"), provider),
-                    compound.getUUID("Id")
-                );
-            }
-
-        }
-
-        private static final class BufferSerializerImpl implements BufferSerializable<TilePartInfo> {
-
-            @Override
-            public Class<TilePartInfo> getTargetClass() {
-                return TilePartInfo.class;
-            }
-
-            @Override
-            public void encode(RegistryFriendlyByteBuf buffer, TilePartInfo tilePartInfo) {
-                buffer.writeResourceLocation(tilePartInfo.dimensionKey);
-                BlockPosSerializer.BUFFER.encode(buffer, tilePartInfo.pos);
-                buffer.writeUUID(tilePartInfo.identifier);
-            }
-
-            @Override
-            public TilePartInfo decode(RegistryFriendlyByteBuf buffer) {
-                return new TilePartInfo(
-                    buffer.readResourceLocation(),
-                    BlockPosSerializer.BUFFER.decode(buffer),
-                    buffer.readUUID()
-                );
-            }
-        };
+        public static final StreamCodec<ByteBuf, TilePartInfo> STREAM_CODEC = StreamCodec.composite(
+            ResourceLocation.STREAM_CODEC, t -> t.dimensionKey,
+            BlockPos.STREAM_CODEC, t -> t.pos,
+            UUIDUtil.STREAM_CODEC, t -> t.identifier,
+            TilePartInfo::new
+        );
 
     }
 
@@ -631,7 +595,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
                         Optional<BlockPartInstance> part = tile.getPart(message.info.identifier);
                         if(part.isPresent()) {
                             BlockPartInstance blockPartInstance = part.get();
-                            if(blockPartInstance.blockPart().getMeta().identifier.equals(message.partMetaIdentifier)) {
+                            if(blockPartInstance.blockPart().getMeta().identifier().equals(message.partMetaIdentifier)) {
                                 blockPartInstance.blockPart().readMutationUpdate(message.data, tile, isServer ? ((PacketHandler.Context.Server)context).sender() : null, context.getHolderLookupProvider());
                                 if(message.offset.isPresent()) {
                                     tile.parts.remove(message.info.identifier);

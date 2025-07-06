@@ -1,13 +1,11 @@
 package gollorum.signpost.minecraft.utils.tints;
 
+import com.mojang.serialization.MapCodec;
 import gollorum.signpost.utils.Tint;
-import gollorum.signpost.utils.serialization.BufferSerializable;
-import gollorum.signpost.utils.serialization.CompoundSerializable;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.level.BlockAndTintGetter;
 
 public class FoliageTint implements Tint {
@@ -18,39 +16,11 @@ public class FoliageTint implements Tint {
     }
 
     public static void register() {
-        Tint.Serialization.register("foliage", new Serializer(compoundSerializer, bufferSerializer));
+        Tint.Serialization.register("foliage", new Serializer(FoliageTint.class, CODEC, STREAM_CODEC));
     }
 
-    public static final CompoundSerializable<FoliageTint> compoundSerializer = new CompoundSerializable<>() {
-        @Override
-        public void encode(CompoundTag compound, FoliageTint foliageTint, HolderLookup.Provider provider) { }
+    public static final MapCodec<FoliageTint> CODEC = MapCodec.unit(new FoliageTint());
 
-        @Override
-        public boolean isContainedIn(CompoundTag compound) {
-            return true;
-        }
-
-        @Override
-        public FoliageTint decode(CompoundTag compound, HolderLookup.Provider provider) {
-            return new FoliageTint();
-        }
-    };
-
-    public static final BufferSerializable<FoliageTint> bufferSerializer = new BufferSerializable<>() {
-
-        @Override
-        public void encode(RegistryFriendlyByteBuf buffer, FoliageTint foliageTint) {
-        }
-
-        @Override
-        public FoliageTint decode(RegistryFriendlyByteBuf buffer) {
-            return new FoliageTint();
-        }
-
-        @Override
-        public Class<FoliageTint> getTargetClass() {
-            return FoliageTint.class;
-        }
-    };
+    public static final StreamCodec<ByteBuf, FoliageTint> STREAM_CODEC = StreamCodec.unit(new FoliageTint());
 
 }

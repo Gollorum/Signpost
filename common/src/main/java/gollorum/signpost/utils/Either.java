@@ -1,10 +1,14 @@
 package gollorum.signpost.utils;
 
+import com.mojang.serialization.Codec;
 import gollorum.signpost.utils.serialization.BufferSerializable;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -23,6 +27,17 @@ public abstract class Either<Left, Right> {
     }
     public static <Left, Right> Either<Left, Right> rightIfPresent(Optional<Right> right, Supplier<Left> left) {
         return right.map(Either::<Left, Right>right).orElseGet(() -> left(left.get()));
+    }
+
+    public static <Left, Right> Either<Left, Right> fromMojangEither(com.mojang.datafixers.util.Either<Left, Right> mojangEither) {
+        return mojangEither.map(Either::left, Either::right);
+    }
+
+    public com.mojang.datafixers.util.Either<Left, Right> toMojangEither() {
+        return match(
+            com.mojang.datafixers.util.Either::left,
+            com.mojang.datafixers.util.Either::right
+        );
     }
 
     private Either() { }
@@ -159,77 +174,20 @@ public abstract class Either<Left, Right> {
         }
     }
 
-    public static class BufferSerializer<Left, Right> implements BufferSerializable<Either<Left, Right>> {
-
-        private final BufferSerializable<Left> leftS;
-        private final BufferSerializable<Right> rightS;
-
-        public BufferSerializer(BufferSerializable<Left> leftS, BufferSerializable<Right> rightS) {
-            this.leftS = leftS;
-            this.rightS = rightS;
-        }
-
-        public static <L, R> BufferSerializer<L, R> of(BufferSerializable<L> ls, BufferSerializable<R> rs) {
-            return new BufferSerializer<>(ls, rs);
-        }
-
-        @Override
-        public Class<Either<Left, Right>> getTargetClass() {
-            return (Class<Either<Left, Right>>) Either.<Left, Right>left(null).getClass();
-        }
-
-        @Override
-        public void encode(RegistryFriendlyByteBuf buffer, Either<Left, Right> leftRightEither) {
-            buffer.writeBoolean(leftRightEither.isLeft());
-            leftRightEither.consume(
-                l -> leftS.encode(buffer, l),
-                r -> rightS.encode(buffer, r)
-            );
-        }
-
-        @Override
-        public Either<Left, Right> decode(RegistryFriendlyByteBuf buffer) {
-            return buffer.readBoolean()
-                ? Either.left(leftS.decode(buffer))
-                : Either.right(rightS.decode(buffer));
-        }
+    public static <Left, Right> StreamCodec<ByteBuf, Either<Left, Right>> streamCodec(StreamCodec<ByteBuf, Left> leftCodec, StreamCodec<ByteBuf, Right> rightCodec) {
+        return ByteBufCodecs.either(leftCodec, rightCodec).map(
+            Either::fromMojangEither,
+            Either::toMojangEither
+        );
     }
 
-    public static final class Serializer<Left, Right> implements CompoundSerializable<Either<Left, Right>> {
-
-        private final CompoundSerializable<Left> leftS;
-        private final CompoundSerializable<Right> rightS;
-
-        public Serializer(CompoundSerializable<Left> leftS, CompoundSerializable<Right> rightS) {
-            this.leftS = leftS;
-            this.rightS = rightS;
-        }
-
-        public static <L, R> Serializer<L, R> of(CompoundSerializable<L> ls, CompoundSerializable<R> rs) {
-            return new Serializer<>(ls, rs);
-        }
-
-        @Override
-        public void encode(CompoundTag compound, Either<Left, Right> leftRightEither, HolderLookup.Provider provider) {
-            compound.putBoolean("IsLeft", leftRightEither.isLeft());
-            compound.put("Data", leftRightEither.match(t -> leftS.encode(t, provider), t1 -> rightS.encode(t1, provider)));
-        }
-
-        @Override
-        public boolean isContainedIn(CompoundTag compound) {
-            return compound.contains("IsLeft") && compound.contains("Data") &&
-                compound.getBoolean("IsLeft")
-                    ? leftS.isContainedIn(compound.getCompound("Data"))
-                    : rightS.isContainedIn(compound.getCompound("Data"));
-        }
-
-        @Override
-        public Either<Left, Right> decode(CompoundTag compound, HolderLookup.Provider provider) {
-            return compound.getBoolean("IsLeft")
-                ? Either.left(leftS.decode(compound.getCompound("Data"), provider))
-                : Either.right(rightS.decode(compound.getCompound("Data"), provider));
-        }
-
+    public static <Left, Right> Codec<Either<Left, Right>> codec(Codec<Left> leftCodec, Codec<Right> rightCodec) {
+        return Codec.BOOL.fieldOf("IsLeft").codec().<Either<Left, Right>>dispatch(
+            Either::isLeft,
+            isLeft -> (isLeft
+                ? leftCodec.<Either<Left, Right>>xmap(Either::left, Either::leftOrThrow)
+                : rightCodec.<Either<Left, Right>>xmap(Either::right, Either::rightOrThrow)
+            ).fieldOf("Data")
+        );
     }
-
 }

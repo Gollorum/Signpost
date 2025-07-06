@@ -47,7 +47,7 @@ public class WaystoneDiscoveryEventListener implements IWaystoneDiscoveryEventLi
             Optional<WaystoneData> dataOption = WaystoneLibrary.getInstance().getData(handle);
             dataOption.ifPresentOrElse(
                 data -> trackedPlayers.computeIfAbsent(event.getPlayer(), p -> PlatformDependent.newConcurrentHashMap())
-                    .putIfAbsent(handle, data.location.block.blockPos),
+                    .putIfAbsent(handle, data.location.block().blockPos),
                 () -> allEntries.remove(key)
             );
         }

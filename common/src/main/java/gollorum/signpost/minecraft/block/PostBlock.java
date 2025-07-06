@@ -21,7 +21,6 @@ import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.BufferSerializable;
 import gollorum.signpost.utils.serialization.StringSerializer;
 import net.minecraft.core.*;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
@@ -36,7 +35,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -491,7 +489,7 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
             .map(p -> p.part.blockPart().interact(new InteractionInfo(
                 InteractionInfo.Type.RightClick,
                 player, hand, tile, p,
-                data -> tile.notifyMutation(p.id, data, p.part.blockPart().getMeta().identifier),
+                data -> tile.notifyMutation(p.id, data, p.part.blockPart().getMeta().identifier()),
                 world.isClientSide()
             )))
             .orElse(Interactable.InteractionResult.Ignored)

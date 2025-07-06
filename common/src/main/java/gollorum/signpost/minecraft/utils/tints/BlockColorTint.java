@@ -1,15 +1,15 @@
 package gollorum.signpost.minecraft.utils.tints;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.utils.Tint;
-import gollorum.signpost.utils.serialization.BufferSerializable;
-import gollorum.signpost.utils.serialization.CompoundSerializable;
-import gollorum.signpost.utils.serialization.ResourceLocationSerializer;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.Block;
@@ -24,7 +24,7 @@ public record BlockColorTint(Block block, int tintIndex) implements Tint {
     }
 
     public static void register() {
-        Tint.Serialization.register("blockColor", new Serializer(compoundSerializer, bufferSerializer));
+        Tint.Serialization.register("blockColor", new Serializer(BlockColorTint.class, CODEC, STREAM_CODEC));
     }
 
     private static Registry<Block> getBlockRegistry() {
@@ -39,48 +39,16 @@ public record BlockColorTint(Block block, int tintIndex) implements Tint {
         return Objects.requireNonNull(getBlockRegistry().getKey(block));
     }
 
-    public static final CompoundSerializable<BlockColorTint> compoundSerializer = new CompoundSerializable<BlockColorTint>() {
+    public static final MapCodec<BlockColorTint> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+        Block.CODEC.fieldOf("Block").forGetter(BlockColorTint::block),
+        Codec.INT.fieldOf("TintIndex").forGetter(BlockColorTint::tintIndex)
+    ).apply(i, BlockColorTint::new));
 
-        @Override
-        public void encode(CompoundTag compound, BlockColorTint tint, HolderLookup.Provider provider) {
-            ResourceLocationSerializer.COMPOUND.encode(compound, getKey(tint.block), provider);
-            compound.putInt("TintIndex", tint.tintIndex);
-        }
 
-        @Override
-        public boolean isContainedIn(CompoundTag compound) {
-            return ResourceLocationSerializer.COMPOUND.isContainedIn(compound);
-        }
-
-        @Override
-        public BlockColorTint decode(CompoundTag compound, HolderLookup.Provider provider) {
-            return new BlockColorTint(
-                getBlock(ResourceLocationSerializer.COMPOUND.decode(compound, provider)),
-                compound.getInt("TintIndex")
-            );
-        }
-    };
-
-    public static final BufferSerializable<BlockColorTint> bufferSerializer = new BufferSerializable<BlockColorTint>() {
-
-        @Override
-        public void encode(RegistryFriendlyByteBuf buffer, BlockColorTint tint) {
-            ResourceLocationSerializer.BUFFER.encode(buffer, getKey(tint.block));
-            buffer.writeInt(tint.tintIndex);
-        }
-
-        @Override
-        public BlockColorTint decode(RegistryFriendlyByteBuf buffer) {
-            return new BlockColorTint(
-                getBlock(ResourceLocationSerializer.BUFFER.decode(buffer)),
-                buffer.readInt()
-            );
-        }
-
-        @Override
-        public Class<BlockColorTint> getTargetClass() {
-            return BlockColorTint.class;
-        }
-    };
+    public static final StreamCodec<ByteBuf, BlockColorTint> STREAM_CODEC = StreamCodec.composite(
+        ResourceLocation.STREAM_CODEC, t -> getKey(t.block),
+        ByteBufCodecs.INT, t -> t.tintIndex,
+        (blockKey, tintIndex) -> new BlockColorTint(getBlock(blockKey), tintIndex)
+    );
 
 }

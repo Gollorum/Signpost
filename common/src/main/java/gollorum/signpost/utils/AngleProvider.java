@@ -1,26 +1,35 @@
 package gollorum.signpost.utils;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.serialization.BufferSerializable;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.world.entity.animal.Cod;
+
+import java.util.Optional;
 
 public interface AngleProvider {
 
     Angle get();
 
-    public static final class Literal implements AngleProvider {
-        private final Angle angle;
-
-        public Literal(Angle angle) { this.angle = angle; }
+    public static final record Literal(Angle angle) implements AngleProvider {
+        public static final MapCodec<Literal> Codec = RecordCodecBuilder.mapCodec(i -> i.group(
+            Angle.Codec.fieldOf("angle").forGetter(Literal::angle)
+        ).apply(i, Literal::new));
 
         @Override
         public Angle get() { return angle; }
     }
 
     public static final class WaystoneTarget implements AngleProvider {
+        public static final MapCodec<WaystoneTarget> Codec = RecordCodecBuilder.mapCodec(i -> i.group(
+            Angle.Codec.fieldOf("cachedAngle").forGetter(WaystoneTarget::get)
+        ).apply(i, WaystoneTarget::new));
 
         private Angle cachedAngle;
         public void setCachedAngle(Angle cachedAngle) { this.cachedAngle = cachedAngle; }
@@ -33,66 +42,21 @@ public interface AngleProvider {
         public Angle get() { return cachedAngle; }
     }
 
-    public static AngleProvider fetchFrom(CompoundTag tag, HolderLookup.Provider provider) {
-        return CompoundSerializer.isContainedIn(tag)
-            ? CompoundSerializer.decode(tag, provider)
-            : new Literal(Angle.CompoundSerializer.decode(tag, provider));
-    }
-    public static final CompoundSerializable<AngleProvider> CompoundSerializer = new CompoundSerializable<>() {
-        @Override
-        public void encode(CompoundTag compound, AngleProvider angleProvider, HolderLookup.Provider provider) {
-            if (angleProvider instanceof Literal) {
-                compound.putString("type", "literal");
-                compound.put("angle", Angle.CompoundSerializer.encode(((Literal) angleProvider).angle, provider));
-            } else if (angleProvider instanceof WaystoneTarget) {
-                compound.putString("type", "waystone");
-                compound.put("cachedAngle", Angle.CompoundSerializer.encode(angleProvider.get(), provider));
-            } else throw new RuntimeException("Invalid angle provider type " + angleProvider.getClass());
+    public static final Codec<AngleProvider> Codec = RecordCodecBuilder.create(i -> i.group(
+        com.mojang.serialization.Codec.STRING.fieldOf("type").forGetter(a -> {
+            if (a instanceof Literal) return "literal";
+            else if (a instanceof WaystoneTarget) return "waystone";
+            else throw new RuntimeException("Invalid angle provider type " + a.getClass());
+        }),
+        Angle.Codec.optionalFieldOf("angle").forGetter(a -> a instanceof Literal(Angle angle) ? Optional.of(angle) : Optional.empty()),
+        Angle.Codec.optionalFieldOf("cachedAngle").forGetter(a -> a instanceof WaystoneTarget w ? Optional.of(w.get()) : Optional.empty()),
+        com.mojang.serialization.Codec.FLOAT.optionalFieldOf("Radians").forGetter(a -> Optional.empty())
+    ).apply(i, (type, literal, waystone, legacyLiteral) ->
+        switch (type) {
+            case "literal" -> new Literal(literal.get());
+            case "waystone" -> new WaystoneTarget(waystone.get());
+            default -> new Literal(Angle.fromRadians(legacyLiteral.get()));
         }
+    ));
 
-        @Override
-        public boolean isContainedIn(CompoundTag compound) {
-            return compound.contains("type") || Angle.CompoundSerializer.isContainedIn(compound);
-        }
-
-        @Override
-        public AngleProvider decode(CompoundTag compound, HolderLookup.Provider provider) {
-            String type = compound.getString("type");
-            if (type.equals("literal")) return new Literal(Angle.CompoundSerializer.decode(compound.getCompound("angle"), provider));
-            else if (type.equals("waystone")) return new WaystoneTarget(
-                Angle.CompoundSerializer.decode(compound.getCompound("cachedAngle"), provider)
-            );
-            else if(Angle.CompoundSerializer.isContainedIn(compound)) return new Literal(Angle.CompoundSerializer.decode(compound, provider));
-            else throw new RuntimeException("Invalid angle provider type " + type);
-        }
-    };
-
-    public static final BufferSerializable<AngleProvider> BufferSerializer = new BufferSerializable<>() {
-
-        @Override
-        public void encode(RegistryFriendlyByteBuf buffer, AngleProvider angleProvider) {
-            if (angleProvider instanceof Literal) {
-                buffer.writeUtf("literal");
-                Angle.BufferSerializer.encode(buffer, ((Literal) angleProvider).angle);
-            } else if (angleProvider instanceof WaystoneTarget) {
-                buffer.writeUtf("waystone");
-                Angle.BufferSerializer.encode(buffer, angleProvider.get());
-            } else throw new RuntimeException("Invalid angle provider type " + angleProvider.getClass());
-        }
-
-        @Override
-        public AngleProvider decode(RegistryFriendlyByteBuf buffer) {
-            return switch (buffer.readUtf()) {
-                case "literal" -> new Literal(Angle.BufferSerializer.decode(buffer));
-                case "waystone" -> new WaystoneTarget(Angle.BufferSerializer.decode(buffer));
-                default -> throw new RuntimeException("Invalid angle provider type " + buffer.readUtf());
-            };
-        }
-
-        @Override
-        public Class<AngleProvider> getTargetClass() {
-            return AngleProvider.class;
-        }
-
-    };
 }

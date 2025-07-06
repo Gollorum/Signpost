@@ -1,13 +1,16 @@
 package gollorum.signpost.minecraft.utils.tints;
 
+import com.mojang.serialization.MapCodec;
 import gollorum.signpost.utils.Tint;
 import gollorum.signpost.utils.serialization.BufferSerializable;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.level.BlockAndTintGetter;
 
 public class GrassTint implements Tint {
@@ -18,39 +21,11 @@ public class GrassTint implements Tint {
     }
 
     public static void register() {
-        Tint.Serialization.register("grass", new Serializer(compoundSerializer, bufferSerializable));
+        Tint.Serialization.register("grass", new Serializer(GrassTint.class, CODEC, STREAM_CODEC));
     }
 
-    public static final CompoundSerializable<GrassTint> compoundSerializer = new CompoundSerializable<>() {
-        @Override
-        public void encode(CompoundTag compound, GrassTint grassTint, HolderLookup.Provider provider) { }
+    public static final MapCodec<GrassTint> CODEC = MapCodec.unit(new GrassTint());
 
-        @Override
-        public boolean isContainedIn(CompoundTag compound) {
-            return true;
-        }
-
-        @Override
-        public GrassTint decode(CompoundTag compound, HolderLookup.Provider provider) {
-            return new GrassTint();
-        }
-    };
-
-    public static final BufferSerializable<GrassTint> bufferSerializable = new BufferSerializable<>() {
-
-        @Override
-        public void encode(RegistryFriendlyByteBuf buffer, GrassTint grassTint) {
-        }
-
-        @Override
-        public GrassTint decode(RegistryFriendlyByteBuf buffer) {
-            return new GrassTint();
-        }
-
-        @Override
-        public Class<GrassTint> getTargetClass() {
-            return GrassTint.class;
-        }
-    };
+    public static final StreamCodec<ByteBuf, GrassTint> STREAM_CODEC = StreamCodec.unit(new GrassTint());
 
 }

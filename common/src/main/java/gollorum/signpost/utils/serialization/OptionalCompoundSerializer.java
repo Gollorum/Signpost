@@ -1,40 +1,19 @@
 package gollorum.signpost.utils.serialization;
 
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import java.util.Optional;
 
-public final class OptionalCompoundSerializer<T> implements CompoundSerializable<Optional<T>> {
+public final class OptionalCompoundSerializer {
 
     public static final String key = "Value";
 
-    private final CompoundSerializable<T> valueSerializer;
-
-    private OptionalCompoundSerializer(CompoundSerializable<T> valueSerializer) {
-        this.valueSerializer = valueSerializer;
-    }
-
-    public static <T> OptionalCompoundSerializer<T> from(CompoundSerializable<T> valueSerializer) {
-        return new OptionalCompoundSerializer<>(valueSerializer);
-    }
-
-    @Override
-    public void encode(CompoundTag compound, Optional<T> t, HolderLookup.Provider provider) {
-        compound.putBoolean("IsPresent", t.isPresent());
-        t.ifPresent(value -> compound.put("Value", valueSerializer.encode(value, provider)));
-    }
-
-    @Override
-    public boolean isContainedIn(CompoundTag compound) {
-        return compound.contains("IsPresent");
-    }
-
-    @Override
-    public Optional<T> decode(CompoundTag compound, HolderLookup.Provider provider) {
-        if(compound.getBooleanOr("IsPresent", false))
-            return Optional.ofNullable(valueSerializer.decode(compound.getCompoundOrEmpty("Value"), provider));
-        else return Optional.empty();
+    public static <T> Codec<Optional<T>> from(Codec<T> inner) {
+        return RecordCodecBuilder.create(i -> i.group(
+            Codec.BOOL.fieldOf("IsPresent").forGetter(Optional::isPresent),
+            inner.optionalFieldOf(key).forGetter(optional -> optional)
+        ).apply(i, (isPresent, value) -> isPresent ? value : Optional.empty()));
     }
 
 }

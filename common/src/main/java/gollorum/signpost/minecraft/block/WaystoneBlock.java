@@ -155,7 +155,7 @@ public abstract class WaystoneBlock extends BaseEntityBlock implements WithCount
                     WorldLocation worldLocation = new WorldLocation(pos, world);
                     boolean wasRegistered = getCustomName(stack, world.registryAccess()).map(name -> {
                         WaystoneLocationData locationData = new WaystoneLocationData(worldLocation, Vector3.fromVec3d(placer.position()));
-                        CompoundTag handleTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getCompound("Handle");
+                        CompoundTag handleTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getCompoundOrEmpty("Handle");
                         Optional<WaystoneHandle.Vanilla> handle = WaystoneHandle.Vanilla.CompoundSerializer.isContainedIn(handleTag)
                             ? Optional.of(WaystoneHandle.Vanilla.CompoundSerializer.decode(handleTag, world.registryAccess()))
                             : Optional.empty();
@@ -172,10 +172,10 @@ public abstract class WaystoneBlock extends BaseEntityBlock implements WithCount
 
     // Modified copy of ItemStack.getHoverName()
     private static Optional<String> getCustomName(ItemStack stack, HolderLookup.Provider registryAccess) {
-        CompoundTag displayTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getCompound("display");
-        if (displayTag != null && displayTag.contains("Name", 8)) {
+        var displayTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getCompound("display");
+        if (displayTag.isPresent() && displayTag.get().contains("Name")) {
             try {
-                Component component = Component.Serializer.fromJson(displayTag.getString("Name"), registryAccess);
+                Component component = Component.Serializer.fromJson(displayTag.get().getStringOr("Name", ""), registryAccess);
                 if (component != null) {
                     return Optional.of(component.getString());
                 }

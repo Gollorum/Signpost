@@ -1,5 +1,6 @@
 package gollorum.signpost.blockpartdata;
 
+import com.mojang.serialization.Codec;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blockpartdata.types.LargeSignBlockPart;
 import gollorum.signpost.blockpartdata.types.SignBlockPart;
@@ -85,27 +86,14 @@ public abstract class Overlay {
         register(Snow);
     }
 
-    public static final CompoundSerializable<Overlay> CompoundSerializer = new SerializerImpl();
-    public static final class SerializerImpl implements CompoundSerializable<Overlay> {
-
-        @Override
-        public void encode(CompoundTag compound, Overlay overlay, HolderLookup.Provider provider) {
-            compound.putString("Id", overlay.id);
-        }
-
-        @Override
-        public boolean isContainedIn(CompoundTag compound) {
-            return compound.contains("Id");
-        }
-
-        @Override
-        public Overlay decode(CompoundTag compound, HolderLookup.Provider provider) {
-            String id = compound.getStringOr("Id", "id_not_found");
+    public static final Codec<Overlay> CODEC = Codec.STRING.xmap(
+        id -> {
             if(!overlayRegistry.containsKey(id)) {
                 Signpost.LOGGER.error("Tried to read overlay with id " + id + ", but it was not registered.");
                 return Gras;
             } else return overlayRegistry.get(id);
-        }
-    };
+        },
+        overlay -> overlay.id
+    );
 
 }

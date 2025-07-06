@@ -184,11 +184,11 @@ public class WaystoneLibrary {
     }
 
     public Optional<String> update(String newName, WaystoneLocationData location, @Nullable Player editingPlayer, boolean isLocked) {
-        assert Signpost.getServerType().isServer && location.block.world.match(w -> (w instanceof ServerLevel), i -> true);
+        assert Signpost.getServerType().isServer && location.block().world.match(w -> (w instanceof ServerLevel), i -> true);
         WaystoneHandle.Vanilla[] oldWaystones = allWaystones
             .entrySet()
             .stream()
-            .filter(e -> e.getValue().locationData.block.equals(location.block))
+            .filter(e -> e.getValue().locationData.block().equals(location.block()))
             .map(Map.Entry::getKey)
             .distinct()
             .toArray(WaystoneHandle.Vanilla[]::new);
@@ -230,7 +230,7 @@ public class WaystoneLibrary {
     public boolean tryAddNew(String newName, WaystoneLocationData location, ServerPlayer editingPlayer, Optional<WaystoneHandle.Vanilla> handle) {
         if(handle.map(h -> !validateHandleDoesNotExist(h, editingPlayer)).orElse(false)) return false;
         if(!validateNameDoesNotExist(newName, editingPlayer)) return false;
-        if(allWaystones.values().stream().anyMatch(entry -> entry.locationData.block.equals(location.block))) {
+        if(allWaystones.values().stream().anyMatch(entry -> entry.locationData.block().equals(location.block()))) {
             Signpost.LOGGER.error("Waystone at " + location + " (new name: " + newName +") was already present. " +
                 "This indicates invalid state.");
             return false;
@@ -301,7 +301,7 @@ public class WaystoneLibrary {
         if(!oldEntry.isPresent()) return false;
         else {
             allWaystones.remove(oldEntry.get().getKey());
-            Vector3 newSpawnLocation = oldEntry.get().getValue().locationData.spawn
+            Vector3 newSpawnLocation = oldEntry.get().getValue().locationData.spawn()
                 .add(Vector3.fromBlockPos(newLocation.blockPos.subtract(oldLocation.blockPos)));
             allWaystones.put(oldEntry.get().getKey(), new WaystoneEntry(oldEntry.get().getValue().name, new WaystoneLocationData(newLocation, newSpawnLocation),
                 oldEntry.get().getValue().isLocked));
@@ -335,7 +335,7 @@ public class WaystoneLibrary {
     private Optional<Map.Entry<WaystoneHandle.Vanilla, WaystoneEntry>> getByLocation(WorldLocation location){
         assert Signpost.getServerType().isServer;
         return allWaystones.entrySet().stream()
-            .filter(e -> e.getValue().locationData.block.equals(location)).findFirst();
+            .filter(e -> e.getValue().locationData.block().equals(location)).findFirst();
     }
 
     public void requestAllWaystoneNames(Consumer<Map<WaystoneHandle.Vanilla, String>> onReply, Optional<PlayerHandle> onlyKnownBy, boolean isClient) {
@@ -433,7 +433,7 @@ public class WaystoneLibrary {
     private Optional<WaystoneData> tryGetWaystoneDataAt(WorldLocation location) {
         assert Signpost.getServerType().isServer;
         return getInstance().allWaystones.entrySet().stream()
-            .filter(e -> e.getValue().locationData.block.equals(location))
+            .filter(e -> e.getValue().locationData.block().equals(location))
             .findFirst()
             .map(entry -> new WaystoneData(
                 entry.getKey(),
@@ -469,17 +469,17 @@ public class WaystoneLibrary {
 
     private boolean assertTileEntityExists(WaystoneEntry entry) {
         var cache = checkedTileEntities.computeIfAbsent(
-            entry.locationData.block.world.rightOr(l -> l.dimension().location()),
+            entry.locationData.block().world.rightOr(l -> l.dimension().location()),
             key -> new HashMap<>()
         );
         var time = System.currentTimeMillis();
-        var blockPos = entry.locationData.block.blockPos;
+        var blockPos = entry.locationData.block().blockPos;
         var lastChecked = cache.get(blockPos);
         if(lastChecked != null && lastChecked + tileEntityExistenceCheckCooldownMillis >= time) {
             return true;
         }
 
-        Optional<ServerLevel> level = TileEntityUtils.toWorld(entry.locationData.block.world, false)
+        Optional<ServerLevel> level = TileEntityUtils.toWorld(entry.locationData.block().world, false)
             .flatMap(lv -> lv instanceof ServerLevel ? Optional.of((ServerLevel)lv) : Optional.empty());
         if(level.isEmpty()) return true; // Something is wrong, I cannot find the level to check.
         if(((LevelAccessor)level.get()).getThread() != Thread.currentThread()) { // Cannot check on wrong thread.
@@ -682,8 +682,8 @@ public class WaystoneLibrary {
                 Player player = serverContext.sender();
                 switch (message.event.getType()){
                     case Added:
-                        if(!TileEntityUtils.findTileEntityAt(message.event.location.block, WaystoneContainer.class, false).isPresent()) {
-                            Signpost.LOGGER.error("Tried to add a waystone where no compatible TileEntity was present: " + message.event.location.block);
+                        if(!TileEntityUtils.findTileEntityAt(message.event.location.block(), WaystoneContainer.class, false).isPresent()) {
+                            Signpost.LOGGER.error("Tried to add a waystone where no compatible TileEntity was present: " + message.event.location.block());
                             return;
                         }
                     case Renamed:
@@ -694,7 +694,7 @@ public class WaystoneLibrary {
                         break;
                     case Moved:
                         getInstance().updateLocation(
-                            message.event.location.block,
+                            message.event.location.block(),
                             ((WaystoneMovedEvent)message.event).newLocation
                         );
                     default: throw new RuntimeException("Type " + message.event.getType() + " is not supported");

@@ -1,5 +1,7 @@
 package gollorum.signpost.utils.math;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.utils.serialization.BufferSerializable;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
 import net.minecraft.core.HolderLookup;
@@ -75,43 +77,8 @@ public final class Angle {
         return Float.hashCode(radians);
     }
 
-    public static final CompoundSerializable<Angle> CompoundSerializer = new SerializerImpl();
-    public static final class SerializerImpl implements CompoundSerializable<Angle> {
-
-        private static final String key = "Radians";
-
-        @Override
-        public void encode(CompoundTag compound, Angle angle, HolderLookup.Provider provider) {
-            compound.putFloat(key, angle.radians);
-        }
-
-        @Override
-        public boolean isContainedIn(CompoundTag compound) {
-            return compound.contains(key);
-        }
-
-        @Override
-        public Angle decode(CompoundTag compound, HolderLookup.Provider provider) {
-            return Angle.fromRadians(compound.getFloatOr(key, 0));
-        }
-    };
-
-    public static final BufferSerializable<Angle> BufferSerializer = new BufferSerializable<Angle>() {
-
-        @Override
-        public Class<Angle> getTargetClass() {
-            return Angle.class;
-        }
-
-        @Override
-        public void encode(RegistryFriendlyByteBuf buffer, Angle angle) {
-            buffer.writeFloat(angle.radians);
-        }
-
-        @Override
-        public Angle decode(RegistryFriendlyByteBuf buffer) {
-            return Angle.fromRadians(buffer.readFloat());
-        }
-    };
+    public static final Codec<Angle> Codec = RecordCodecBuilder.create(i -> i.group(
+        com.mojang.serialization.Codec.FLOAT.fieldOf("Radians").forGetter(Angle::radians)
+    ).apply(i, Angle::new));
 
 }

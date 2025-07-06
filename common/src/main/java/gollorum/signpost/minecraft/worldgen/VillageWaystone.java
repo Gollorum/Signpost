@@ -1,5 +1,7 @@
 package gollorum.signpost.minecraft.worldgen;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.block.ModelWaystone;
@@ -22,14 +24,7 @@ import java.util.stream.Collectors;
 
 public class VillageWaystone {
 
-    public static class ChunkEntryKey {
-        public final ChunkPos chunkPos;
-        public final ResourceLocation dimensionKey;
-
-        public ChunkEntryKey(ChunkPos chunkPos, ResourceLocation dimensionKey) {
-            this.chunkPos = chunkPos;
-            this.dimensionKey = dimensionKey;
-        }
+    public record ChunkEntryKey(ChunkPos chunkPos, ResourceLocation dimensionKey) {
 
         @Override
         public boolean equals(Object o) {
@@ -39,35 +34,12 @@ public class VillageWaystone {
             return chunkPos.equals(that.chunkPos) && dimensionKey.equals(that.dimensionKey);
         }
 
-        @Override
-        public int hashCode() {
-            return Objects.hash(chunkPos, dimensionKey);
-        }
+        public static final Codec<ChunkEntryKey> CODEC = RecordCodecBuilder.create(i -> i.group(
+            Codec.INT.fieldOf("x").forGetter(c -> c.chunkPos.x),
+            Codec.INT.fieldOf("z").forGetter(c -> c.chunkPos.z),
+            ResourceLocation.CODEC.fieldOf("ResourceLocation").forGetter(ChunkEntryKey::dimensionKey)
+        ).apply(i, (x, z, recloc) -> new ChunkEntryKey(new ChunkPos(x, z), recloc)));
 
-        public static final Serializer serializer = new Serializer();
-        public static class Serializer implements CompoundSerializable<ChunkEntryKey> {
-
-            @Override
-            public void encode(CompoundTag compound, ChunkEntryKey key, HolderLookup.Provider provider) {
-                compound.putInt("x", key.chunkPos.x);
-                compound.putInt("z", key.chunkPos.z);
-                ResourceLocationSerializer.COMPOUND.encode(compound, key.dimensionKey, provider);
-            }
-
-            @Override
-            public boolean isContainedIn(CompoundTag compound) {
-                return compound.contains("x") && compound.contains("z") &&
-                    ResourceLocationSerializer.COMPOUND.isContainedIn(compound);
-            }
-
-            @Override
-            public ChunkEntryKey decode(CompoundTag compound, HolderLookup.Provider provider) {
-                return new ChunkEntryKey(
-                    new ChunkPos(compound.getInt("x"), compound.getInt("z")),
-                    ResourceLocationSerializer.COMPOUND.decode(compound, provider)
-                );
-            }
-        }
     }
 
     // Key is not the position of the block, it's a reference position.

@@ -1,18 +1,15 @@
 package gollorum.signpost.minecraft.utils.tints;
 
-import gollorum.signpost.Signpost;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import gollorum.signpost.minecraft.gui.utils.IFluidTextureProvider;
 import gollorum.signpost.utils.Tint;
-import gollorum.signpost.utils.serialization.BufferSerializable;
-import gollorum.signpost.utils.serialization.CompoundSerializable;
-import gollorum.signpost.utils.serialization.ResourceLocationSerializer;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.material.Fluid;
 
@@ -24,47 +21,21 @@ public record FluidTint(Fluid fluid) implements Tint {
     }
 
     public static void register() {
-        Tint.Serialization.register("fluid", new Serializer(compoundSerializer, bufferSerializer));
+        Tint.Serialization.register("fluid", new Serializer(FluidTint.class, CODEC, STREAM_CODEC));
     }
 
     private static Registry<Fluid> getFluidRegistry() {
         return BuiltInRegistries.FLUID;
     }
 
-    public static final CompoundSerializable<FluidTint> compoundSerializer = new CompoundSerializable<>() {
+    public static final MapCodec<FluidTint> CODEC = Codec.STRING.fieldOf("ResourceLocation").xmap(
+        s -> new FluidTint(getFluidRegistry().get(ResourceLocation.parse(s)).get().value()),
+        t -> getFluidRegistry().getKey(t.fluid).toString()
+    );
 
-        @Override
-        public void encode(CompoundTag compound, FluidTint fluidTint, HolderLookup.Provider provider) {
-            ResourceLocationSerializer.COMPOUND.encode(compound, getFluidRegistry().getKey(fluidTint.fluid), provider);
-        }
-
-        @Override
-        public boolean isContainedIn(CompoundTag compound) {
-            return ResourceLocationSerializer.COMPOUND.isContainedIn(compound);
-        }
-
-        @Override
-        public FluidTint decode(CompoundTag compound, HolderLookup.Provider provider) {
-            return new FluidTint(getFluidRegistry().get(ResourceLocationSerializer.COMPOUND.decode(compound, provider)).get().value());
-        }
-    };
-
-    public static final BufferSerializable<FluidTint> bufferSerializer = new BufferSerializable<>() {
-
-        @Override
-        public void encode(RegistryFriendlyByteBuf buffer, FluidTint fluidTint) {
-            ResourceLocationSerializer.BUFFER.encode(buffer, getFluidRegistry().getKey(fluidTint.fluid));
-        }
-
-        @Override
-        public FluidTint decode(RegistryFriendlyByteBuf buffer) {
-            return new FluidTint(getFluidRegistry().get(ResourceLocationSerializer.BUFFER.decode(buffer)).get().value());
-        }
-
-        @Override
-        public Class<FluidTint> getTargetClass() {
-            return FluidTint.class;
-        }
-    };
+    public static final StreamCodec<ByteBuf, FluidTint> STREAM_CODEC = ResourceLocation.STREAM_CODEC.map(
+        rl -> new FluidTint(getFluidRegistry().getValue(rl)),
+        t -> getFluidRegistry().getKey(t.fluid)
+    );
 
 }

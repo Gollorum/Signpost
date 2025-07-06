@@ -19,7 +19,6 @@ import gollorum.signpost.utils.Tint;
 import gollorum.signpost.utils.Tuple;
 import gollorum.signpost.utils.math.Angle;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
@@ -198,7 +197,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
         PacketHandler.getInstance().sendToServer(new PostTile.PartMutatedEvent.Packet(
             new PostTile.TilePartInfo(tile, identifier),
             part.getMeta().encode(displayPart, minecraft.level.registryAccess()),
-            part.getMeta().identifier
+            part.getMeta().identifier()
         ));
     }
 }

@@ -1,25 +1,28 @@
 package gollorum.signpost.utils;
 
+import com.mojang.serialization.Codec;
 import gollorum.signpost.utils.serialization.BufferSerializable;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 
 public interface NameProvider {
 
     String get();
 
-    public static final class Literal implements NameProvider {
+    public record Literal(String name) implements NameProvider {
 
-        private final String name;
+            @Override
+            public String get() {
+                return name;
+            }
 
-        @Override
-        public String get() { return name; }
-
-        public Literal(String name) { this.name = name; }
     }
 
     public static final class WaystoneTarget implements NameProvider {
@@ -47,45 +50,36 @@ public interface NameProvider {
         };
     }
 
-    public static final CompoundSerializable<NameProvider> COMPOUND_SERIALIZER = new CompoundSerializable<>() {
+    public static final Codec<NameProvider> CODEC = Codec.STRING.dispatch("type",
+        nameProvider -> {
+            if (nameProvider instanceof Literal) {
+                return "literal";
+            } else if (nameProvider instanceof WaystoneTarget) {
+                return "waystone";
+            } else {
+                throw new RuntimeException("Unknown NameProvider type: " + nameProvider.getClass());
+            }
+        },
+        type ->
+            switch (type) {
+                case "literal" -> Codec.STRING.fieldOf("name").xmap(Literal::new, Literal::get);
+                case "waystone" -> Codec.STRING.fieldOf("name").xmap(WaystoneTarget::new, WaystoneTarget::get);
+                default -> throw new RuntimeException("Unknown NameProvider type: " + type);
+            }
+        );
 
-        @Override
-        public void encode(CompoundTag compound, NameProvider nameProvider, HolderLookup.Provider provider) {
-            compound.putString("name", nameProvider.get());
-            compound.putString("type", nameProvider instanceof Literal ? "literal" : "waystone");
-        }
-
-        @Override
-        public boolean isContainedIn(CompoundTag compound) {
-            return compound.contains("name") && compound.contains("type");
-        }
-
-        @Override
-        public NameProvider decode(CompoundTag compound, HolderLookup.Provider provider) {
-            String type = compound.getString("type");
-            String name = compound.getString("name");
-            return from(type, name);
-        }
-    };
-
-    public static final BufferSerializable<NameProvider> BUFFER_SERIALIZABLE = new BufferSerializable<>() {
-
-        @Override
-        public void encode(RegistryFriendlyByteBuf buffer, NameProvider nameProvider) {
-            buffer.writeUtf(nameProvider instanceof Literal ? "literal" : "waystone");
-            buffer.writeUtf(nameProvider.get());
-        }
-
-        @Override
-        public NameProvider decode(RegistryFriendlyByteBuf buffer) {
-            return from(buffer.readUtf(), buffer.readUtf());
-        }
-
-        @Override
-        public Class<NameProvider> getTargetClass() {
-            return NameProvider.class;
-        }
-
-    };
+    public static final StreamCodec<ByteBuf, NameProvider> STREAM_CODEC = StreamCodec.composite(
+        ByteBufCodecs.STRING_UTF8, t -> {
+            if (t instanceof Literal) {
+                return "literal";
+            } else if (t instanceof WaystoneTarget) {
+                return "waystone";
+            } else {
+                throw new RuntimeException("Unknown NameProvider type: " + t.getClass());
+            }
+        },
+        ByteBufCodecs.STRING_UTF8, NameProvider::get,
+        NameProvider::from
+    );
 
 }

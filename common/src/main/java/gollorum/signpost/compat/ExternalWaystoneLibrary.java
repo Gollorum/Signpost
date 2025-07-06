@@ -1,10 +1,14 @@
 package gollorum.signpost.compat;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.utils.EventDispatcher;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.ArrayList;
@@ -29,13 +33,13 @@ public class ExternalWaystoneLibrary {
 
     private final List<Adapter> adapters = new ArrayList<>();
 
-    public Optional<WaystoneHandle> read(String type, FriendlyByteBuf buffer) {
-        for(Adapter adapter : adapters) if(adapter.typeTag().equals(type)) return Optional.of(adapter.read(buffer));
+    public Optional<MapCodec<? extends WaystoneHandle>> getCodec(String type) {
+        for(Adapter adapter : adapters) if(adapter.typeTag().equals(type)) return Optional.of(adapter.getCodec());
         return Optional.empty();
     }
 
-    public Optional<WaystoneHandle> read(String type, CompoundTag compound) {
-        for(Adapter adapter : adapters) if(adapter.typeTag().equals(type)) return Optional.of(adapter.read(compound));
+    public Optional<StreamCodec<ByteBuf, ? extends WaystoneHandle>> getStreamCodec(String type) {
+        for(Adapter adapter : adapters) if(adapter.typeTag().equals(type)) return Optional.of(adapter.getStreamCodec());
         return Optional.empty();
     }
 
@@ -61,11 +65,11 @@ public class ExternalWaystoneLibrary {
         // call this on the client
         void requestKnownWaystones(Consumer<Collection<ExternalWaystone>> consumer);
 
-        WaystoneHandle read(FriendlyByteBuf buffer);
-        WaystoneHandle read(CompoundTag compound);
-
         Optional<ExternalWaystone> getData(WaystoneHandle handle);
         Optional<Component> cannotTeleportToBecause(Player player, WaystoneHandle handle);
+
+        MapCodec<? extends WaystoneHandle> getCodec();
+        StreamCodec<ByteBuf, ? extends WaystoneHandle> getStreamCodec();
     }
 
 }

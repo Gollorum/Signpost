@@ -82,7 +82,7 @@ public class VillageSignpost {
 	}
 	private static Stream<Tuple<BlockPos, WaystoneHandle.Vanilla>> nonVillageWaystones(ResourceLocation dimension) {
 		return WaystoneLibrary.getInstance().getAllWaystoneInfo().stream()
-			.map(info -> new Tuple<>(info.locationData.block.blockPos, info.handle))
+			.map(info -> new Tuple<>(info.locationData.block().blockPos, info.handle))
 			.filter(t -> VillageWaystone.getAllEntries(dimension).stream().noneMatch(e -> e.getValue().equals(t._2)));
 	}
 

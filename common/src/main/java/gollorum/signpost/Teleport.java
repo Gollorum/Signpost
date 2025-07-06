@@ -57,13 +57,13 @@ public class Teleport {
     }
 
     public static void toWaystone(WaystoneLocationData waystoneData, ServerPlayer player){
-        waystoneData.block.world.mapLeft(Optional::of)
+        waystoneData.block().world.mapLeft(Optional::of)
             .leftOr(i -> TileEntityUtils.findWorld(i, false))
         .ifPresent(unspecificWorld -> {
             if(!(unspecificWorld instanceof ServerLevel)) return;
             ServerLevel world = (ServerLevel) unspecificWorld;
-            Vector3 location = waystoneData.spawn;
-            Vector3 diff = Vector3.fromBlockPos(waystoneData.block.blockPos).add(new Vector3(0.5f, 0.5f, 0.5f))
+            Vector3 location = waystoneData.spawn();
+            Vector3 diff = Vector3.fromBlockPos(waystoneData.block().blockPos).add(new Vector3(0.5f, 0.5f, 0.5f))
                 .subtract(location.withY(y -> y + player.getEyeHeight()));
             Angle yaw = Angle.between(
                 0, 1,
@@ -261,7 +261,7 @@ public class Teleport {
                 WaystoneLocationData waystoneData = data.get().loc();
 
                 Optional<Component> cannotTeleportBecause = WaystoneHandleUtils.cannotTeleportToBecause(player, handle, message.waystoneName);
-                int distance = (int) waystoneData.spawn.distanceTo(Vector3.fromVec3d(player.position()));
+                int distance = (int) waystoneData.spawn().distanceTo(Vector3.fromVec3d(player.position()));
                 int maxDistance = IConfig.getInstance().getServer().teleport().maximumDistance();
                 boolean isTooFarAway = maxDistance > 0 && distance > maxDistance;
                 cannotTeleportBecause.ifPresent(player::sendSystemMessage);
@@ -270,7 +270,7 @@ public class Teleport {
 
                 Inventory.tryPay(
                     player,
-                    Teleport.getCost(player, Vector3.fromVec3d(player.position()), waystoneData.spawn),
+                    Teleport.getCost(player, Vector3.fromVec3d(player.position()), waystoneData.spawn()),
                     p -> Teleport.toWaystone(waystoneData, p)
                 );
             } else player.sendSystemMessage(

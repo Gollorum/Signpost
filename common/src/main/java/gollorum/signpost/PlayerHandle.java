@@ -1,11 +1,16 @@
 package gollorum.signpost;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.utils.serialization.BufferSerializable;
 import gollorum.signpost.utils.serialization.CompoundSerializable;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -15,17 +20,12 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.UUID;
 
-public class PlayerHandle {
+public record PlayerHandle(@Nonnull UUID id) {
 
 	public static final PlayerHandle Invalid = new PlayerHandle((LivingEntity) null);
-	public final UUID id;
-
-    public PlayerHandle(@Nonnull UUID id) {
-        this.id = id;
-    }
 
     public PlayerHandle(@Nullable Entity player) {
-        this.id = player == null ? Util.NIL_UUID : player.getUUID();
+        this(player == null ? Util.NIL_UUID : player.getUUID());
     }
 
     public static PlayerHandle from(@Nullable Entity player) {
@@ -49,42 +49,14 @@ public class PlayerHandle {
         return Signpost.getServerInstance().getPlayerList().getPlayer(id);
     }
 
-    public static final CompoundSerializable<PlayerHandle> CompoundSerializer = new CompoundSerializerImpl();
-    public static final BufferSerializable<PlayerHandle> BufferSerializer = new BufferSerializerImpl();
+    public static final Codec<PlayerHandle> CODEC = RecordCodecBuilder.create(i -> i.group(
+        UUIDUtil.CODEC.fieldOf("Id").forGetter(PlayerHandle::id)
+    ).apply(i, PlayerHandle::new));
 
-    private static final class CompoundSerializerImpl implements CompoundSerializable<PlayerHandle> {
-
-        @Override
-        public void encode(CompoundTag compound, PlayerHandle playerHandle, HolderLookup.Provider provider) {
-            compound.putUUID("Id", playerHandle.id);
-        }
-
-        @Override
-        public boolean isContainedIn(CompoundTag compound) {
-            return compound.contains("Id");
-        }
-
-        @Override
-        public PlayerHandle decode(CompoundTag compound, HolderLookup.Provider provider) {
-            return new PlayerHandle(compound.getUUID("Id"));
-        }
-    }
-
-    private static final class BufferSerializerImpl implements BufferSerializable<PlayerHandle> {
-        @Override
-        public Class<PlayerHandle> getTargetClass() {
-            return PlayerHandle.class;
-        }
-
-        @Override
-        public void encode(RegistryFriendlyByteBuf buffer, PlayerHandle playerHandle) {
-            buffer.writeUUID(playerHandle.id);
-        }
-
-        @Override
-        public PlayerHandle decode(RegistryFriendlyByteBuf buffer) {
-            return new PlayerHandle(buffer.readUUID());
-        }
-    };
+    public static final StreamCodec<ByteBuf, PlayerHandle> STREAM_CODEC = StreamCodec.composite(
+        UUIDUtil.STREAM_CODEC,
+        PlayerHandle::id,
+        PlayerHandle::new
+    );
 
 }

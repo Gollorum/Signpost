@@ -195,7 +195,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
             if (handle.equals(event.handle)) {
                 if (self.getAngle() instanceof AngleProvider.WaystoneTarget)
                     ((AngleProvider.WaystoneTarget) self.getAngle()).setCachedAngle(
-                        pointingAt(myBlockPos, event.location.block.blockPos));
+                        pointingAt(myBlockPos, event.location.block().blockPos));
                 for(NameProvider np : self.getNameProviders())
                     if(np instanceof NameProvider.WaystoneTarget)
                         ((NameProvider.WaystoneTarget)np).setCachedName(event.name);
@@ -306,13 +306,13 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
                 new Teleport.RequestGui.Package(
                     Either.rightIfPresent(WaystoneLibrary.getInstance().getData(dest), () -> LangKeys.waystoneNotFound).mapRight(data -> {
                         Optional<Component> cannotTeleportBecause = WaystoneHandleUtils.cannotTeleportToBecause(player, dest, data.name());
-                        int distance = (int) data.loc().spawn.distanceTo(Vector3.fromVec3d(player.position()));
+                        int distance = (int) data.loc().spawn().distanceTo(Vector3.fromVec3d(player.position()));
                         return new Teleport.RequestGui.Package.Info(
                             IConfig.IServer.getInstance().teleport().maximumDistance(),
                             distance,
                             cannotTeleportBecause,
                             data.name(),
-                            Teleport.getCost(player, Vector3.fromVec3d(player.position()), data.loc().spawn),
+                            Teleport.getCost(player, Vector3.fromVec3d(player.position()), data.loc().spawn()),
                             Optional.of(data.handle())
                         );
                     }),

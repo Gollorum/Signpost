@@ -74,7 +74,7 @@ public class SignGui extends ExtendedScreen {
     private final ItemStack itemToDropOnBreak;
 
     private final Consumer<WaystoneUpdatedEvent> waystoneUpdateListener = event -> {
-        WaystoneEntry newEntry = new WaystoneEntry(event.name, event.name, event.handle, event.location.block.blockPos);
+        WaystoneEntry newEntry = new WaystoneEntry(event.name, event.name, event.handle, event.location.block().blockPos);
         switch(event.getType()) {
             case Added:
                 waystoneDropdown.addEntry(newEntry);
@@ -86,7 +86,7 @@ public class SignGui extends ExtendedScreen {
                 break;
             case Renamed:
                 String oldName = ((WaystoneRenamedEvent)event).oldName;
-                WaystoneEntry oldEntry = new WaystoneEntry(oldName, oldName, event.handle, event.location.block.blockPos);
+                WaystoneEntry oldEntry = new WaystoneEntry(oldName, oldName, event.handle, event.location.block().blockPos);
                 waystoneDropdown.removeEntry(oldEntry);
                 waystoneDropdown.addEntry(newEntry);
                 break;
@@ -592,13 +592,13 @@ public class SignGui extends ExtendedScreen {
                     e.getValue()._1,
                     e.getValue()._1,
                     e.getKey(),
-                    e.getValue()._2.block.blockPos
+                    e.getValue()._2.block().blockPos
                 )).filter(e -> oldWaystone.map(oldE -> !e.handle.equals(oldE.handle)).orElse(true))
                     .collect(Collectors.toList()));
                 setupFromSign.accept(id ->
                     id instanceof WaystoneHandle.Vanilla
                         ? Optional.ofNullable(n.get(id))
-                            .map(e -> Tuple.of(e._1, e._1, e._2.block.blockPos))
+                            .map(e -> Tuple.of(e._1, e._1, e._2.block().blockPos))
                         : Optional.empty());
             }, Optional.of(PlayerHandle.from(minecraft().player)), true);
             ExternalWaystoneLibrary.getInstance().requestKnownWaystones(n -> {
@@ -606,7 +606,7 @@ public class SignGui extends ExtendedScreen {
                     w.name() + " " + w.handle().modMark(),
                     w.name(),
                     w.handle(),
-                    w.loc().block.blockPos
+                    w.loc().block().blockPos
                 )).collect(Collectors.toList());
                 waystoneDropdown.addEntries(entries.stream().filter(e -> oldWaystone.map(oldE -> !e.handle.equals(oldE.handle)).orElse(true))
                     .collect(Collectors.toList()));
@@ -944,13 +944,13 @@ public class SignGui extends ExtendedScreen {
                 if (oldSign.isPresent()) {
                     PacketHandler.getInstance().sendToServer(new PostTile.PartMutatedEvent.Packet(
                         tilePartInfo, data,
-                        SmallWideSignBlockPart.METADATA.identifier,
+                        SmallWideSignBlockPart.METADATA.identifier(),
                         new Vector3(0, localHitPos.y() > 0.5f ? 0.75f : 0.25f, 0)
                     ));
                 } else {
                     PacketHandler.getInstance().sendToServer(new PostTile.PartAddedEvent.Packet(
                         tilePartInfo, data,
-                        SmallWideSignBlockPart.METADATA.identifier,
+                        SmallWideSignBlockPart.METADATA.identifier(),
                         new Vector3(0, localHitPos.y() > 0.5f ? 0.75f : 0.25f, 0), itemToDropOnBreak, PlayerHandle.from(minecraft().player)
                     ));
                 }
@@ -975,13 +975,13 @@ public class SignGui extends ExtendedScreen {
                 if (oldSign.isPresent()) {
                     PacketHandler.getInstance().sendToServer(new PostTile.PartMutatedEvent.Packet(
                         tilePartInfo, data,
-                        SmallShortSignBlockPart.METADATA.identifier,
+                        SmallShortSignBlockPart.METADATA.identifier(),
                         new Vector3(0, localHitPos.y() > 0.5f ? 0.75f : 0.25f, 0)
                     ));
                 } else {
                     PacketHandler.getInstance().sendToServer(new PostTile.PartAddedEvent.Packet(
                         tilePartInfo, data,
-                        SmallShortSignBlockPart.METADATA.identifier,
+                        SmallShortSignBlockPart.METADATA.identifier(),
                         new Vector3(0, localHitPos.y() > 0.5f ? 0.75f : 0.25f, 0), itemToDropOnBreak, PlayerHandle.from(minecraft().player)
                     ));
                 }
@@ -1011,13 +1011,13 @@ public class SignGui extends ExtendedScreen {
                 if (oldSign.isPresent()) {
                     PacketHandler.getInstance().sendToServer(new PostTile.PartMutatedEvent.Packet(
                         tilePartInfo, data,
-                        LargeSignBlockPart.METADATA.identifier,
+                        LargeSignBlockPart.METADATA.identifier(),
                         new Vector3(0, localHitPos.y() >= 0.5f ? 0.501f : 0.499f, 0)
                     ));
                 } else {
                     PacketHandler.getInstance().sendToServer(new PostTile.PartAddedEvent.Packet(
                         tilePartInfo, data,
-                        LargeSignBlockPart.METADATA.identifier,
+                        LargeSignBlockPart.METADATA.identifier(),
                         new Vector3(0, 0.5f, 0), itemToDropOnBreak, PlayerHandle.from(minecraft().player)
                     ));
                 }
