@@ -18,7 +18,7 @@ public class SideUtils {
 
 	public static void makePlayerPayIfEditor(boolean isRemote, Player sender, PlayerHandle playerHandle, ItemStack cost) {
 		Player player = isRemote ? SideUtils.getClientPlayer().get() : sender;
-		if (player.getUUID().equals(playerHandle.id)) {
+		if (player.getUUID().equals(playerHandle.id())) {
 			if (!player.isCreative())
 				player.getInventory().clearOrCountMatchingItems(
 					i -> i.getItem().equals(cost.getItem()),
@@ -28,7 +28,7 @@ public class SideUtils {
 		} else {
 			Signpost.LOGGER.error(
 				"Tried to apply cost but the sender was not the expected one (expected {}, got {})",
-				playerHandle.id,
+				playerHandle.id(),
 				player.getUUID()
 			);
 		}

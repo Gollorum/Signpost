@@ -46,7 +46,6 @@ public class SignpostImageButton extends Button {
     @Override
     public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        RenderSystem.enableDepthTest();
         graphics.blit(RenderType::guiTextured,
             background.location,
             this.getX(), this.getY(),

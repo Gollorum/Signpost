@@ -16,16 +16,15 @@ import gollorum.signpost.utils.WaystoneHandleUtils;
 import gollorum.signpost.utils.WaystoneLocationData;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import gollorum.signpost.utils.serialization.BufferSerializable;
-import gollorum.signpost.utils.serialization.ComponentSerializer;
-import gollorum.signpost.utils.serialization.ItemStackSerializer;
-import gollorum.signpost.utils.serialization.StringSerializer;
+import gollorum.signpost.utils.serialization.ComponentCodec;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -57,13 +56,13 @@ public class Teleport {
     }
 
     public static void toWaystone(WaystoneLocationData waystoneData, ServerPlayer player){
-        waystoneData.block().world.mapLeft(Optional::of)
+        waystoneData.block().world().mapLeft(Optional::of)
             .leftOr(i -> TileEntityUtils.findWorld(i, false))
         .ifPresent(unspecificWorld -> {
             if(!(unspecificWorld instanceof ServerLevel)) return;
             ServerLevel world = (ServerLevel) unspecificWorld;
             Vector3 location = waystoneData.spawn();
-            Vector3 diff = Vector3.fromBlockPos(waystoneData.block().blockPos).add(new Vector3(0.5f, 0.5f, 0.5f))
+            Vector3 diff = Vector3.fromBlockPos(waystoneData.block().blockPos()).add(new Vector3(0.5f, 0.5f, 0.5f))
                 .subtract(location.withY(y -> y + player.getEyeHeight()));
             Angle yaw = Angle.between(
                 0, 1,
@@ -72,7 +71,7 @@ public class Teleport {
             Angle pitch = Angle.fromRadians((float) (Math.PI / 2 + Math.atan(Math.sqrt(diff.x() * diff.x() + diff.z() * diff.z()) / diff.y())));
             Level oldWorld = player.level();
             BlockPos oldPos = player.blockPosition();
-            // Handle different dimensions outside GUI in case of external waystones
+            // handle different dimensions outside GUI in case of external waystones
             if (!player.level().dimensionType().equals(world.dimensionType())) {
                 if (!(IConfig.getInstance().getServer().teleport().enableAcrossDimensions())) {
                     player.sendSystemMessage(Component.translatable(LangKeys.differentDimension));
@@ -153,13 +152,13 @@ public class Teleport {
                 return entity;
             }
             newCopy.restoreFrom(entity);
-            newCopy.moveTo(pos.x(), pos.y(), pos.z(), yaw.degrees(), pitch.degrees());
+            newCopy.moveOrInterpolateTo(pos.asVec3(), yaw.degrees(), pitch.degrees());
             newCopy.setYHeadRot(yaw.degrees());
             entity.setRemoved(Entity.RemovalReason.CHANGED_DIMENSION);
             level.addDuringTeleport(newCopy);
             entity = (T) newCopy;
         } else {
-            entity.moveTo(pos.x(), pos.y(), pos.z(), yaw.degrees(), pitch.degrees());
+            entity.moveOrInterpolateTo(pos.asVec3(), yaw.degrees(), pitch.degrees());
             entity.setYHeadRot(yaw.degrees());
         }
 
@@ -219,34 +218,22 @@ public class Teleport {
 
     public static final class Request implements PacketHandler.Event.ForServer<Request.Package> {
 
-        public static final class Package {
-            public final String waystoneName;
-            public final Optional<WaystoneHandle> handle;
-            public Package(
-                String waystoneName, Optional<WaystoneHandle> handle
-            ) {
-                this.waystoneName = waystoneName;
-                this.handle = handle;
-            }
+        public record Package(String waystoneName, Optional<WaystoneHandle> handle) {
+            public static final StreamCodec<RegistryFriendlyByteBuf, Package> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.STRING_UTF8, Package::waystoneName,
+                ByteBufCodecs.optional(WaystoneHandle.STREAM_CODEC), Package::handle,
+                Package::new
+            );
+        }
+
+        @Override
+        public StreamCodec<RegistryFriendlyByteBuf, Package> codec() {
+            return Package.STREAM_CODEC;
         }
 
         @Override
         public Class<Package> getMessageClass() {
             return Package.class;
-        }
-
-        @Override
-        public void encode(RegistryFriendlyByteBuf buffer, Package message) {
-            StringSerializer.Buffer.encode(buffer, message.waystoneName);
-            buffer.writeBoolean(message.handle.isPresent());
-            message.handle.ifPresent(h -> h.write(buffer));
-        }
-
-        @Override
-        public Package decode(RegistryFriendlyByteBuf buffer) {
-            return new Package(StringSerializer.Buffer.decode(buffer), buffer.readBoolean()
-                ? WaystoneHandle.read(buffer)
-                : Optional.empty());
         }
 
         @Override
@@ -282,83 +269,43 @@ public class Teleport {
 
     public static final class RequestGui implements PacketHandler.Event<RequestGui.Package> {
 
-        public static final class Package {
+        public record Package(Either<String, Info> data, Optional<PostTile.TilePartInfo> tilePartInfo) {
 
-            public final Either<String, Info> data;
-            public final Optional<PostTile.TilePartInfo> tilePartInfo;
+            public static final StreamCodec<RegistryFriendlyByteBuf, Package> STREAM_CODEC = StreamCodec.composite(
+                Either.streamCodec(ByteBufCodecs.STRING_UTF8, Info.STREAM_CODEC), Package::data,
+                ByteBufCodecs.optional(PostTile.TilePartInfo.STREAM_CODEC), Package::tilePartInfo,
+                Package::new
+            );
 
-            public Package(Either<String, Info> data, Optional<PostTile.TilePartInfo> tilePartInfo) {
-                this.data = data;
-                this.tilePartInfo = tilePartInfo;
+            public record Info(
+                int maxDistance,
+                int distance,
+                Optional<Component> cannotTeleportBecause,
+                String waystoneName,
+                ItemStack cost,
+                Optional<WaystoneHandle> handle
+            ) {
+
+                public static final StreamCodec<RegistryFriendlyByteBuf, Info> STREAM_CODEC = StreamCodec.composite(
+                    ByteBufCodecs.INT, Info::maxDistance,
+                    ByteBufCodecs.INT, Info::distance,
+                    ByteBufCodecs.optional(ComponentCodec.instance), Info::cannotTeleportBecause,
+                    ByteBufCodecs.STRING_UTF8, Info::waystoneName,
+                    ItemStack.OPTIONAL_STREAM_CODEC, Info::cost,
+                    ByteBufCodecs.optional(WaystoneHandle.STREAM_CODEC), Info::handle,
+                    Info::new
+                );
             }
+        }
 
-            public static final class Info {
-
-                public final int maxDistance;
-                public final int distance;
-                public final Optional<Component> cannotTeleportBecause;
-                public final String waystoneName;
-                public final ItemStack cost;
-                public final Optional<WaystoneHandle> handle;
-
-                public Info(int maxDistance, int distance, Optional<Component> cannotTeleportBecause, String waystoneName, ItemStack cost, Optional<WaystoneHandle> handle) {
-                    this.maxDistance = maxDistance;
-                    this.distance = distance;
-                    this.cannotTeleportBecause = cannotTeleportBecause;
-                    this.waystoneName = waystoneName;
-                    this.cost = cost;
-                    this.handle = handle;
-                }
-
-                public static final Serializer serializer = new Serializer();
-                public static final class Serializer implements BufferSerializable<Info> {
-
-                    @Override
-                    public Class<Info> getTargetClass() { return Info.class; }
-
-                    @Override
-                    public void encode(RegistryFriendlyByteBuf buffer, Info info) {
-                        buffer.writeInt(info.maxDistance);
-                        buffer.writeInt(info.distance);
-                        ComponentSerializer.instance.optional().encode(buffer, info.cannotTeleportBecause);
-                        StringSerializer.Buffer.encode(buffer, info.waystoneName);
-                        ItemStackSerializer.Buffer.encode(buffer, info.cost);
-                        buffer.writeOptional(info.handle, (b, h) -> h.write((RegistryFriendlyByteBuf)b));
-                    }
-
-                    @Override
-                    public Info decode(RegistryFriendlyByteBuf buffer) {
-                        return new Info(
-                            buffer.readInt(),
-                            buffer.readInt(),
-                            ComponentSerializer.instance.optional().decode(buffer),
-                            StringSerializer.Buffer.decode(buffer),
-                            ItemStackSerializer.Buffer.decode(buffer),
-                            buffer.readOptional(h -> WaystoneHandle.read((RegistryFriendlyByteBuf)h)).flatMap(o -> o)
-                        );
-                    }
-                }
-            }
+        @Override
+        public StreamCodec<RegistryFriendlyByteBuf, Package> codec() {
+            return Package.STREAM_CODEC;
         }
 
         @Override
         public Class<Package> getMessageClass() {
             return Package.class;
-        }
-
-        @Override
-        public void encode(RegistryFriendlyByteBuf buffer, Package message) {
-            Either.BufferSerializer.of(StringSerializer.Buffer, Package.Info.serializer)
-                .encode(buffer, message.data);
-            PostTile.TilePartInfo.BufferSerializer.optional().encode(buffer, message.tilePartInfo);
-        }
-
-        @Override
-        public Package decode(RegistryFriendlyByteBuf buffer) {
-            return new Package(
-                Either.BufferSerializer.of(StringSerializer.Buffer, Package.Info.serializer).decode(buffer),
-                PostTile.TilePartInfo.BufferSerializer.optional().decode(buffer)
-            );
         }
 
         @Override

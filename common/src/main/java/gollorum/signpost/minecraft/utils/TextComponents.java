@@ -19,7 +19,7 @@ public final class TextComponents {
         MutableComponent ret = shouldHighlight ? Colors.wrap(name, Colors.highlight) : Component.literal(name);
         if(player != null && player.hasPermissions(IConfig.IServer.getInstance().permissions().teleportPermissionLevel()))
             ret.setStyle(ret.getStyle()
-                .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/signpost teleport \"" + name + "\""))
+                .withClickEvent(new ClickEvent.SuggestCommand("/signpost teleport \"" + name + "\""))
                 .withUnderlined(true)
             );
         return ret;

@@ -1,9 +1,11 @@
 package gollorum.signpost.networking;
 
+import com.mojang.serialization.Codec;
 import gollorum.signpost.Signpost;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -36,20 +38,16 @@ public class ForgePacketHandler extends PacketHandler {
 
     @Override
     public <T> void register(Event<T> event, ResourceLocation id){
-        register(event.getMessageClass(),
-                 (message, buffer) -> event.encode(buffer, message),
-                 event::decode, event::handle);
+        register(event.getMessageClass(), event.codec(), event::handle);
     }
 
     public <T> void register(
         Class<T> messageClass,
-        BiConsumer<T, RegistryFriendlyByteBuf> encode,
-        Function<RegistryFriendlyByteBuf, T> decode,
+        StreamCodec<RegistryFriendlyByteBuf, T> codec,
         BiConsumer<T, Context> handle
     ){
         channel.messageBuilder(messageClass, NetworkProtocol.PLAY)
-            .encoder(encode)
-            .decoder(decode)
+            .codec(codec)
             .consumerMainThread(handle(handle))
             .add();
     }

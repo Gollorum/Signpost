@@ -1,5 +1,7 @@
 package gollorum.signpost.blockpartdata.types;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.*;
 import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.blockpartdata.types.renderers.BlockPartWaystoneUpdateListener;
@@ -10,7 +12,6 @@ import gollorum.signpost.events.WaystoneUpdatedEvent;
 import gollorum.signpost.minecraft.config.IConfig;
 import gollorum.signpost.minecraft.gui.PaintSignGui;
 import gollorum.signpost.minecraft.gui.RequestSignGui;
-import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.items.Brush;
 import gollorum.signpost.minecraft.items.GenerationWand;
 import gollorum.signpost.minecraft.utils.LangKeys;
@@ -23,20 +24,19 @@ import gollorum.signpost.utils.math.geometry.Intersectable;
 import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.TransformedBox;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import gollorum.signpost.utils.serialization.CompoundSerializable;
 import gollorum.signpost.utils.serialization.ItemStackSerializer;
 import gollorum.signpost.utils.serialization.OptionalCompoundSerializer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
@@ -46,7 +46,7 @@ import java.util.Optional;
 
 public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements BlockPart<Self> {
 
-    protected static final class CoreData {
+    public static final class CoreData {
         public AngleProvider angleProvider;
         public boolean flip;
         public Texture mainTexture;
@@ -94,69 +94,40 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
             );
         }
 
-        public static final Serializer SERIALIZER = new Serializer();
-        public static final class Serializer implements CompoundSerializable<CoreData> {
-            private Serializer(){}
-            @Override
-            public void encode(CompoundTag compound, CoreData coreData, HolderLookup.Provider provider) {
-                compound.put("Angle", AngleProvider.CompoundSerializer.encode(coreData.angleProvider, provider));
-                compound.putBoolean("Flip", coreData.flip);
-                compound.put("Texture", Texture.CompundSerializer.encode(coreData.mainTexture, provider));
-                compound.put("TextureDark", Texture.CompundSerializer.encode(coreData.secondaryTexture, provider));
-                compound.put("Overlay", Overlay.CompoundSerializer.optional().encode(coreData.overlay, provider));
-                compound.putInt("Color", coreData.color);
+        public static final Codec<CoreData> CODEC = RecordCodecBuilder.create(i -> i.group(
+            AngleProvider.CODEC.fieldOf("Angle").forGetter(coreData -> coreData.angleProvider),
+            Codec.BOOL.fieldOf("Flip").forGetter(coreData -> coreData.flip),
+            Texture.CODEC.fieldOf("Texture").forGetter(coreData -> coreData.mainTexture),
+            Texture.CODEC.fieldOf("TextureDark").forGetter(coreData -> coreData.secondaryTexture),
+            OptionalCompoundSerializer.from(Overlay.CODEC).fieldOf("Overlay").forGetter(coreData -> coreData.overlay),
+            Codec.INT.fieldOf("Color").forGetter(coreData -> coreData.color),
+            WaystoneHandle.MAP_CODEC.codec().optionalFieldOf("Destination").forGetter(coreData -> coreData.destination),
+            PostBlock.ModelType.CODEC.fieldOf("ModelType").forGetter(coreData -> coreData.modelType),
+            ItemStackSerializer.CODEC.fieldOf("ItemToDropOnBreak").forGetter(coreData -> coreData.itemToDropOnBreak),
+            Codec.BOOL.fieldOf("IsLocked").forGetter(coreData -> coreData.isLocked),
+            Codec.BOOL.fieldOf("IsMarkedForGeneration").forGetter(coreData -> coreData.isMarkedForGeneration)
+        ).apply(i, CoreData::new));
 
-                CompoundTag dest = new CompoundTag();
-                dest.putBoolean("IsPresent", coreData.destination.isPresent());
-                coreData.destination.ifPresent(d -> d.write(dest, provider));
-                compound.put("Destination", dest);
-
-                compound.put("ItemToDropOnBreak", ItemStackSerializer.Compound.encode(coreData.itemToDropOnBreak, provider));
-                compound.putString("ModelType", coreData.modelType.name);
-                compound.putBoolean("IsLocked", coreData.isLocked);
-                compound.putBoolean("IsMarkedForGeneration", coreData.isMarkedForGeneration);
-            }
-
-            @Override
-            public boolean isContainedIn(CompoundTag compound) {
-                return compound.contains("Angle")
-                    && compound.contains("Flip")
-                    && compound.contains("Texture")
-                    && compound.contains("TextureDark")
-                    && compound.contains("Overlay")
-                    && compound.contains("Color")
-                    && compound.contains("Destination")
-                    && compound.contains("ItemToDropOnBreak")
-                    && compound.contains("IsLocked")
-                    && compound.contains("IsMarkedForGeneration");
-            }
-
-            @Override
-            public CoreData decode(CompoundTag compound, HolderLookup.Provider provider) {
-                CompoundTag dest = compound.getCompoundOrEmpty("Destination");
-                Optional<WaystoneHandle> destination;
-                if(dest.getBooleanOr("IsPresent", false)){
-                    Optional<WaystoneHandle> d2 = WaystoneHandle.read(dest, provider);
-                    if(!d2.isPresent()) Signpost.LOGGER.error("Error deserializing waystone handle of unknown type: " + dest.getString("type"));
-                    destination = d2;
-                } else destination = Optional.empty();
-                return new CoreData(
-                    AngleProvider.fetchFrom(compound.getCompoundOrEmpty("Angle"), provider),
-                    compound.getBooleanOr("Flip", false),
-                    Texture.readFrom(compound.get("Texture"), provider),
-                    Texture.readFrom(compound.get("TextureDark"), provider),
-                    Overlay.CompoundSerializer.optional().decode(compound.getCompoundOrEmpty("Overlay"), provider),
-                    compound.getIntOr("Color", Colors.white),
-                    destination,
-                    PostBlock.ModelType.getByName(compound.getStringOr("ModelType", "model_type_not_found"), true)
-                        .orElseThrow(() -> new RuntimeException("Tried to load sign post model type " + compound.getString("ModelType") +
-                            ", but it hasn't been registered. @Dev: You have to call Post.ModelType.register")),
-                    ItemStackSerializer.Compound.decode(compound.getCompoundOrEmpty("ItemToDropOnBreak"), provider),
-                   compound.getBooleanOr("IsLocked", false),
-                   compound.getBooleanOr("IsMarkedForGeneration", false)
-                );
-            }
-        }
+        public static final StreamCodec<RegistryFriendlyByteBuf, CoreData> STREAM_CODEC = StreamCodec.composite(
+            AngleProvider.STREAM_CODEC, coreData -> coreData.angleProvider,
+            ByteBufCodecs.BOOL, coreData -> coreData.flip,
+            Tuple.streamCodec(Texture.STREAM_CODEC, Texture.STREAM_CODEC), coreData -> Tuple.of(
+                coreData.mainTexture, coreData.secondaryTexture
+            ),
+            Tuple.streamCodec(ByteBufCodecs.optional(Overlay.STREAM_CODEC), ByteBufCodecs.INT), coreData -> Tuple.of(
+                coreData.overlay,
+                coreData.color
+            ),
+            ByteBufCodecs.optional(WaystoneHandle.STREAM_CODEC), coreData -> coreData.destination,
+            PostBlock.ModelType.STREAM_CODEC, coreData -> coreData.modelType,
+            ItemStack.OPTIONAL_STREAM_CODEC, coreData -> coreData.itemToDropOnBreak,
+            ByteBufCodecs.BOOL, coreData -> coreData.isLocked,
+            ByteBufCodecs.BOOL, coreData -> coreData.isMarkedForGeneration,
+            (angleProvider, flip, txts, overlayAndColor, destination, modelType, itemToDropOnBreak, isLocked, isMarkedForGeneration) ->
+                new CoreData(
+                    angleProvider, flip, txts._1(), txts._2(), overlayAndColor._1(), overlayAndColor._2(), destination, modelType, itemToDropOnBreak, isLocked, isMarkedForGeneration
+                )
+        );
     }
 
     public static Angle pointingAt(BlockPos block, BlockPos target) {
@@ -195,7 +166,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
             if (handle.equals(event.handle)) {
                 if (self.getAngle() instanceof AngleProvider.WaystoneTarget)
                     ((AngleProvider.WaystoneTarget) self.getAngle()).setCachedAngle(
-                        pointingAt(myBlockPos, event.location.block().blockPos));
+                        pointingAt(myBlockPos, event.location.block().blockPos()));
                 for(NameProvider np : self.getNameProviders())
                     if(np instanceof NameProvider.WaystoneTarget)
                         ((NameProvider.WaystoneTarget)np).setCachedName(event.name);
@@ -240,7 +211,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
 
     public boolean hasThePermissionToEdit(WithOwner tile, @Nullable Player player) {
         return !(tile instanceof WithOwner.OfSignpost) || !coreData.isLocked || player == null
-            || ((WithOwner.OfSignpost)tile).getSignpostOwner().map(o -> o.id.equals(player.getUUID())).orElse(true)
+            || ((WithOwner.OfSignpost)tile).getSignpostOwner().map(o -> o.id().equals(player.getUUID())).orElse(true)
             || player.hasPermissions(IConfig.IServer.getInstance().permissions().editLockedSignCommandPermissionLevel());
     }
 
@@ -279,18 +250,18 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
             if(holdsAngleTool(info)) {
                 if(info.player.isCrouching()) {
                     setFlip(!isFlipped());
-                    notifyFlipChanged(info);
+                    notifyChange(info);
                 } else {
                     Vector3 diff = info.traceResult.ray.start.negated().add(0.5f, 0.5f, 0.5f).withY(0).normalized();
                     Vector3 rayDir = info.traceResult.ray.dir.withY(0).normalized();
                     Angle angleToPost = Angle.between(rayDir.x(), rayDir.z(), diff.x(), diff.z()).normalized();
                     setAngle(new AngleProvider.Literal(coreData.angleProvider
                         .get().add(Angle.fromDegrees(angleToPost.radians() < 0 ? 15 : -15))));
-                    notifyAngleChanged(info);
+                    notifyChange(info);
                 }
             } else if(isGenerationWand(heldItem)) {
                 coreData.isMarkedForGeneration = !coreData.isMarkedForGeneration;
-                notifyMarkedForGenerationChanged(info);
+                notifyChange(info);
             } else if(!isBrush(heldItem))
                 tryTeleport((ServerPlayer) info.player, info.getTilePartInfo());
         } else if(isBrush(heldItem))
@@ -348,82 +319,8 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
         return InteractionResult.Accepted;
     }
 
-    protected void notifyAngleChanged(InteractionInfo info) {
-        CompoundTag compound = new CompoundTag();
-        compound.put("Angle", AngleProvider.CompoundSerializer.encode(coreData.angleProvider, info.player.registryAccess()));
-        info.mutationDistributor.accept(compound);
-    }
-
-    protected void notifyTextureChanged(InteractionInfo info) {
-        CompoundTag compound = new CompoundTag();
-        compound.put("Texture", Texture.CompundSerializer.encode(coreData.mainTexture, info.player.registryAccess()));
-        compound.put("TextureDark", Texture.CompundSerializer.encode(coreData.secondaryTexture, info.player.registryAccess()));
-        info.mutationDistributor.accept(compound);
-    }
-
-    protected void notifyFlipChanged(InteractionInfo info) {
-        CompoundTag compound = new CompoundTag();
-        compound.putBoolean("Flip", coreData.flip);
-        info.mutationDistributor.accept(compound);
-    }
-
-    protected void notifyMarkedForGenerationChanged(InteractionInfo info) {
-        CompoundTag compound = new CompoundTag();
-        compound.putBoolean("IsMarkedForGeneration", coreData.isMarkedForGeneration);
-        info.mutationDistributor.accept(compound);
-    }
-
-    @Override
-    public void readMutationUpdate(CompoundTag compound, BlockEntity tile, @Nullable Player editingPlayer, HolderLookup.Provider provider) {
-        if(compound.contains("CoreData")) compound = compound.getCompoundOrEmpty("CoreData");
-        if(compound.contains("Angle"))
-            setAngle(AngleProvider.fetchFrom(compound.getCompoundOrEmpty("Angle"), provider));
-
-        boolean updateTextures = false;
-        if(compound.contains("Texture")) {
-            coreData.mainTexture = Texture.readFrom(compound.get("Texture"), provider);
-            updateTextures = true;
-        }
-        if(compound.contains("TextureDark")){
-            coreData.secondaryTexture = Texture.readFrom(compound.get("TextureDark"), provider);
-            updateTextures = true;
-        }
-        if(updateTextures) setTextures(coreData.mainTexture, coreData.secondaryTexture);
-
-        if(compound.contains("Flip")) setFlip(compound.getBooleanOr("Flip", false));
-        if(compound.contains("Color")) setColor(compound.getIntOr("Color", Colors.white));
-        if(compound.contains("Destination")) {
-            CompoundTag dest = compound.getCompoundOrEmpty("Destination");
-            Optional<WaystoneHandle> destination;
-            if(dest.getBooleanOr("IsPresent", false)){
-                Optional<WaystoneHandle> d2 = WaystoneHandle.read(dest, provider);
-                if (d2.isPresent()) {
-                    setDestination(d2);
-                } else {
-                    Signpost.LOGGER.error("Error deserializing waystone handle of unknown type: " + dest.getString("type"));
-                }
-            } else setDestination(Optional.empty());
-        }
-        if(compound.contains("ItemToDropOnBreak")) {
-            setItemToDropOnBreak(ItemStackSerializer.Compound.decode(compound.getCompoundOrEmpty("ItemToDropOnBreak"), provider));
-        }
-        if(compound.contains("ModelType"))
-            PostBlock.ModelType.getByName(compound.getStringOr("ModelType", "model_type_not_found"), true).ifPresent(this::setModelType);
-
-        OptionalCompoundSerializer<Overlay> overlaySerializer = Overlay.CompoundSerializer.optional();
-        if(compound.contains("Overlay"))
-            setOverlay(overlaySerializer.decode(compound.getCompoundOrEmpty("Overlay"), provider));
-
-        if(compound.contains("IsLocked")) {
-            if(editingPlayer == null || editingPlayer.level().isClientSide()
-                || ((WithOwner.OfSignpost)tile).getSignpostOwner().map(owner -> editingPlayer.getUUID().equals(owner.id)).orElse(true)
-                || editingPlayer.hasPermissions(IConfig.IServer.getInstance().permissions().editLockedSignCommandPermissionLevel()))
-                coreData.isLocked = compound.getBooleanOr("IsLocked", false);
-        }
-        if(compound.contains("IsMarkedForGeneration"))
-            coreData.isMarkedForGeneration = compound.getBooleanOr("IsMarkedForGeneration", false);
-
-        tile.setChanged();
+    protected void notifyChange(InteractionInfo info) {
+        info.mutationDistributor.run();
     }
 
     @Override

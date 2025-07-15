@@ -4,37 +4,32 @@ import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.WaystoneData;
 import gollorum.signpost.utils.WorldLocation;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 
 import java.util.Optional;
 
 public class RequestWaystoneGui implements PacketHandler.Event.ForClient<RequestWaystoneGui.Package> {
 
-	public static class Package {
-		public final WorldLocation location;
-		public final Optional<WaystoneData> oldData;
-
+	public record Package(WorldLocation location, Optional<WaystoneData> oldData) {
 		public Package(WorldLocation location, Optional<WaystoneData> oldData) {
 			this.location = location.withoutExplicitLevel();
-            this.oldData = oldData.map(WaystoneData::withoutExplicitLevel);
+			this.oldData = oldData.map(WaystoneData::withoutExplicitLevel);
 		}
+		public static final StreamCodec<RegistryFriendlyByteBuf, Package> STREAM_CODEC = StreamCodec.composite(
+			WorldLocation.STREAM_CODEC, Package::location,
+			ByteBufCodecs.optional(WaystoneData.STREAM_CODEC), Package::oldData,
+			Package::new
+		);
+	}
+
+	@Override
+	public StreamCodec<RegistryFriendlyByteBuf, Package> codec() {
+		return Package.STREAM_CODEC;
 	}
 
 	@Override
 	public Class<RequestWaystoneGui.Package> getMessageClass() { return RequestWaystoneGui.Package.class; }
-
-	@Override
-	public void encode(RegistryFriendlyByteBuf buffer, Package message) {
-		WorldLocation.BUFFER_SERIALIZER.encode(buffer, message.location);
-		WaystoneData.BUFFER_SERIALIZER.optional().encode(buffer, message.oldData);
-	}
-
-	@Override
-	public RequestWaystoneGui.Package decode(RegistryFriendlyByteBuf buffer) {
-		return new RequestWaystoneGui.Package(
-			WorldLocation.BUFFER_SERIALIZER.decode(buffer),
-			WaystoneData.BUFFER_SERIALIZER.optional().decode(buffer)
-		);
-	}
 
 	@Override
 	public void handle(

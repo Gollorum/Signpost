@@ -30,7 +30,8 @@
                 {
                   "function": "minecraft:copy_components",
                   "include": [
-                    "minecraft:custom_data"
+                    "signpost:waystone_data",
+                    "signpost:post_data"
                   ],
                   "source": "block_entity"
                 }

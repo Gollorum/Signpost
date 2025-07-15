@@ -93,8 +93,8 @@ public class WaystoneGui extends ExtendedScreen {
         );
         addRenderableWidget(lockButton);
         oldData.ifPresent(data -> {
-            inputBox.setValue(data.name);
-            lockButton.setLocked(data.isLocked);
+            inputBox.setValue(data.name());
+            lockButton.setLocked(data.isLocked());
         });
         doneButton = Button.builder(
             Component.translatable(LangKeys.done),
@@ -126,7 +126,7 @@ public class WaystoneGui extends ExtendedScreen {
 
     private boolean isValid(String name) {
         return allWaystoneNames.map(names -> !names.contains(name)).orElse(true)
-            || (oldData.isPresent() && oldData.get().name.equals(name));
+            || (oldData.isPresent() && oldData.get().name().equals(name));
     }
 
     @Override

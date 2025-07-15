@@ -33,8 +33,8 @@ public class CreativeModeTabRegistry {
                 output.accept(post.get());
             output.accept(ItemRegistry.WAYSTONE_ITEM.get());
             for(var modelWaystone : ItemRegistry.ModelWaystoneItems)
-                if (IConfig.IServer.getInstance().allowedWaystones().contains(modelWaystone._1.name))
-                    output.accept(modelWaystone._2.get());
+                if (IConfig.IServer.getInstance().allowedWaystones().contains(modelWaystone._1().name))
+                    output.accept(modelWaystone._2().get());
         })
         .build()
     );

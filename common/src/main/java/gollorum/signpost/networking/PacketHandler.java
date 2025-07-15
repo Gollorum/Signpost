@@ -7,6 +7,7 @@ import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.RequestSignGui;
 import gollorum.signpost.minecraft.gui.RequestWaystoneGui;
 import gollorum.signpost.utils.EventDispatcher;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -89,9 +90,11 @@ public abstract class PacketHandler {
 
     public abstract <T> void sendToAll(T message);
 
-    public static interface Event<T> extends StreamCodec<RegistryFriendlyByteBuf, T> {
+    public static interface Event<T> {
         Class<T> getMessageClass();
         void handle(T message, Context context);
+
+        StreamCodec<RegistryFriendlyByteBuf, T> codec();
 
         interface FromClient<T> extends Event<T> {
             @Override

@@ -147,8 +147,8 @@ public class Villages {
         var templatePool = (StructureTemplatePoolAccessor) pool;
 		var templates = new ArrayList<>(templatePool.getRawTemplates());
 		for(Tuple<SinglePoolElement, Integer> tuple : houses) {
-			templates.add(new Pair<>(tuple._1, tuple._2));
-			for(int i = 0; i < tuple._2; i++) templatePool.getTemplates().add(tuple._1);
+			templates.add(new Pair<>(tuple._1(), tuple._2()));
+			for(int i = 0; i < tuple._2(); i++) templatePool.getTemplates().add(tuple._1());
 		}
         templatePool.setRawTemplates(templates);
 	}

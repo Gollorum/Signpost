@@ -5,6 +5,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.data.PostData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
@@ -28,9 +29,8 @@ public class PostBlockImpl extends PostBlock {
         ItemStack ret = super.getCloneItemStack(level,  pos, state, includeData);
         if (!includeData) return ret;
         level.getBlockEntity(pos, PostTile.getBlockEntityType()).ifPresent(tile -> {
-            var component = ret.getComponents().getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-            component.put("Parts", tile.writeParts(false, level.registryAccess()));
-            ret.applyComponents(DataComponentPatch.builder().set(DataComponents.CUSTOM_DATA, CustomData.of(component)).build());
+            var data = new PostData(tile.parts());
+            ret.applyComponents(DataComponentPatch.builder().set(PostData.TYPE, data).build());
         });
         return ret;
     }

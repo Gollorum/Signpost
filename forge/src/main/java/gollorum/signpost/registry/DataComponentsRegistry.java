@@ -1,6 +1,7 @@
 package gollorum.signpost.registry;
 
 import gollorum.signpost.minecraft.data.PostData;
+import gollorum.signpost.minecraft.data.WaystoneHandleData;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -15,6 +16,9 @@ public class DataComponentsRegistry {
 
     public static final RegistryObject<DataComponentType<PostData>> POST_DATA =
         Register.register("post_data", () -> PostData.TYPE);
+
+    public static final RegistryObject<DataComponentType<WaystoneHandleData>> WAYSTONE_DATA =
+        Register.register("waystone_data", () -> WaystoneHandleData.TYPE);
 
 
     public static void register(IEventBus bus){

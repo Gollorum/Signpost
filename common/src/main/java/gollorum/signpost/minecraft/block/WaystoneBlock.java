@@ -2,7 +2,7 @@ package gollorum.signpost.minecraft.block;
 
 import gollorum.signpost.*;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
-import gollorum.signpost.minecraft.config.IConfig;
+import gollorum.signpost.minecraft.data.WaystoneHandleData;
 import gollorum.signpost.minecraft.gui.RequestWaystoneGui;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.minecraft.utils.TextComponents;
@@ -19,7 +19,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -32,7 +31,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -84,7 +82,7 @@ public abstract class WaystoneBlock extends BaseEntityBlock implements WithCount
             .getHandleByLocation(worldLocation)
             .flatMap(WaystoneLibrary.getInstance()::getData);
         boolean wantsToOpenGui = data.isEmpty()
-            || WaystoneLibrary.getInstance().isDiscovered(PlayerHandle.from(player), data.get().handle);
+            || WaystoneLibrary.getInstance().isDiscovered(PlayerHandle.from(player), data.get().handle());
         boolean mayOpenGui = data.map(d -> d.hasThePermissionToEdit(player)).orElse(true);
         if(wantsToOpenGui && mayOpenGui){
             PacketHandler.getInstance().sendToPlayer(player, new RequestWaystoneGui.Package(worldLocation, data));
@@ -111,16 +109,16 @@ public abstract class WaystoneBlock extends BaseEntityBlock implements WithCount
     }
 
     private static void discover(ServerPlayer player, WaystoneData data) {
-        if(WaystoneLibrary.getInstance().addDiscovered(new PlayerHandle(player.getUUID()), data.handle))
-            player.sendSystemMessage(Component.translatable(LangKeys.discovered, TextComponents.waystone(player, data.name)));
+        if(WaystoneLibrary.getInstance().addDiscovered(new PlayerHandle(player.getUUID()), data.handle()))
+            player.sendSystemMessage(Component.translatable(LangKeys.discovered, TextComponents.waystone(player, data.name())));
     }
 
     public static void discover(PlayerHandle player, WaystoneData data) {
         assert Signpost.getServerType().isServer;
-        if(WaystoneLibrary.getInstance().addDiscovered(player, data.handle)) {
+        if(WaystoneLibrary.getInstance().addDiscovered(player, data.handle())) {
             ServerPlayer playerEntity = player.asEntity();
             if(playerEntity != null)
-                playerEntity.sendSystemMessage(Component.translatable(LangKeys.discovered, TextComponents.waystone(playerEntity, data.name)));
+                playerEntity.sendSystemMessage(Component.translatable(LangKeys.discovered, TextComponents.waystone(playerEntity, data.name())));
         }
     }
 
@@ -155,11 +153,11 @@ public abstract class WaystoneBlock extends BaseEntityBlock implements WithCount
                     WorldLocation worldLocation = new WorldLocation(pos, world);
                     boolean wasRegistered = getCustomName(stack, world.registryAccess()).map(name -> {
                         WaystoneLocationData locationData = new WaystoneLocationData(worldLocation, Vector3.fromVec3d(placer.position()));
-                        CompoundTag handleTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getCompoundOrEmpty("Handle");
-                        Optional<WaystoneHandle.Vanilla> handle = WaystoneHandle.Vanilla.CompoundSerializer.isContainedIn(handleTag)
-                            ? Optional.of(WaystoneHandle.Vanilla.CompoundSerializer.decode(handleTag, world.registryAccess()))
+                        var handleTag = stack.get(WaystoneHandleData.TYPE);
+                        Optional<WaystoneHandle.Vanilla> handle = handleTag != null
+                            ? Optional.of(handleTag.handle())
                             : Optional.empty();
-                        return WaystoneLibrary.getInstance().tryAddNew(name, locationData, (ServerPlayer) placer, handle);
+                        return WaystoneLibrary.getInstance().tryAddNew(name, locationData, sp, handle);
                     }).orElse(false);
                     if(!wasRegistered)
                         PacketHandler.getInstance().sendToPlayer(
@@ -172,17 +170,12 @@ public abstract class WaystoneBlock extends BaseEntityBlock implements WithCount
 
     // Modified copy of ItemStack.getHoverName()
     private static Optional<String> getCustomName(ItemStack stack, HolderLookup.Provider registryAccess) {
-        var displayTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getCompound("display");
-        if (displayTag.isPresent() && displayTag.get().contains("Name")) {
-            try {
-                Component component = Component.Serializer.fromJson(displayTag.get().getStringOr("Name", ""), registryAccess);
-                if (component != null) {
-                    return Optional.of(component.getString());
-                }
-
-            } catch (Exception ignored) {}
+        var component = stack.getCustomName();
+        if (component != null) {
+            return Optional.of(component.getString());
+        } else {
+            return Optional.empty();
         }
-        return Optional.empty();
     }
 
     @Override
@@ -213,9 +206,7 @@ public abstract class WaystoneBlock extends BaseEntityBlock implements WithCount
         if(untypedEntity instanceof WaystoneTile) {
             WaystoneTile tile = (WaystoneTile) untypedEntity;
 
-            tile.getHandle().ifPresent(h -> stack.update(DataComponents.CUSTOM_DATA, CustomData.EMPTY, customData -> customData.update(tag -> {
-                tag.put("Handle", WaystoneHandle.Vanilla.CompoundSerializer.encode(h, level.registryAccess()));
-            })));
+            tile.getHandle().ifPresent(h -> stack.set(WaystoneHandleData.TYPE, new WaystoneHandleData(h)));
             tile.getName().ifPresent(n -> stack.set(DataComponents.CUSTOM_NAME, Component.literal(n)));
         }
         return stack;

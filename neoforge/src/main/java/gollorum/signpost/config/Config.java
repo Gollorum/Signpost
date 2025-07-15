@@ -7,7 +7,6 @@ import gollorum.signpost.minecraft.config.ITeleportConfig;
 import gollorum.signpost.minecraft.config.IWorldGenConfig;
 import gollorum.signpost.utils.Tuple;
 import net.neoforged.fml.ModLoadingContext;
-import net.neoforged.fml.config.IConfigSpec;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
@@ -35,14 +34,14 @@ public class Config implements IConfig {
 
     public Config() {
         var serverTuple = Tuple.from(new ModConfigSpec.Builder().configure(Server::new));
-        Server = serverTuple._1;
-        ServerConfig = serverTuple._2;
+        Server = serverTuple._1();
+        ServerConfig = serverTuple._2();
         var commonTuple = Tuple.from(new ModConfigSpec.Builder().configure(Common::new));
-        Common = commonTuple._1;
-        CommonConfig = commonTuple._2;
+        Common = commonTuple._1();
+        CommonConfig = commonTuple._2();
         var clientTuple = Tuple.from(new ModConfigSpec.Builder().configure(Client::new));
-        Client = clientTuple._1;
-        ClientConfig = clientTuple._2;
+        Client = clientTuple._1();
+        ClientConfig = clientTuple._2();
     }
 
     public void register() {

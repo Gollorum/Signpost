@@ -53,7 +53,6 @@ public final class ImageInputBox extends InputBox implements Flippable {
     @Override
     public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        RenderSystem.enableDepthTest();
         graphics.blit(RenderType::guiTextured,
             texture.location,
             backgroundRect.point.x, backgroundRect.point.y,

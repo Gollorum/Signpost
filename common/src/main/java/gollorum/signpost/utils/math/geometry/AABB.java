@@ -18,9 +18,9 @@ public class AABB implements Intersectable<Ray, Float> {
     }
 
     public AABB(Stream<Vector3> vectors) {
-        var tuple = vectors.map(v -> Tuple.of(v, v)).reduce((l, r) -> Tuple.of(Vector3.min(l._1, r._1), Vector3.max(l._2, r._2))).get();
-        this.min = tuple._1;
-        this.max = tuple._2;
+        var tuple = vectors.map(v -> Tuple.of(v, v)).reduce((l, r) -> Tuple.of(Vector3.min(l._1(), r._1()), Vector3.max(l._2(), r._2()))).get();
+        this.min = tuple._1();
+        this.max = tuple._2();
     }
 
     @Override

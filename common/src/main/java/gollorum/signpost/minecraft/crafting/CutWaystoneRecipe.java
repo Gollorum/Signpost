@@ -2,6 +2,7 @@ package gollorum.signpost.minecraft.crafting;
 
 import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.config.IConfig;
+import gollorum.signpost.minecraft.data.WaystoneHandleData;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.BlockItem;
@@ -39,12 +40,9 @@ public class CutWaystoneRecipe extends StonecutterRecipe {
     public @NotNull ItemStack assemble(SingleRecipeInput container, HolderLookup.Provider registryAccess) {
         ItemStack ret = super.assemble(container, registryAccess);
         ItemStack ingred = container.getItem(0);
-        if(ingred.has(DataComponents.CUSTOM_DATA)) {
-            var data = ingred.get(DataComponents.CUSTOM_DATA).copyTag();
-            if (ret.has(DataComponents.CUSTOM_DATA)) {
-                data = ret.get(DataComponents.CUSTOM_DATA).copyTag().merge(data);
-            }
-            ret.set(DataComponents.CUSTOM_DATA, CustomData.of(data));
+        if(ingred.has(WaystoneHandleData.TYPE)) {
+            var data = ingred.get(WaystoneHandleData.TYPE);
+            ret.set(WaystoneHandleData.TYPE, data);
         }
         return ret;
     }

@@ -2,15 +2,11 @@ package gollorum.signpost.utils.serialization;
 
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.StreamCodec;
 
-public class ComponentSerializer implements BufferSerializable<Component> {
+public class ComponentCodec implements StreamCodec<RegistryFriendlyByteBuf, Component> {
 
-    public static final ComponentSerializer instance = new ComponentSerializer();
-
-    @Override
-    public Class<Component> getTargetClass() {
-        return Component.class;
-    }
+    public static final ComponentCodec instance = new ComponentCodec();
 
     @Override
     public void encode(RegistryFriendlyByteBuf buffer, Component component) {

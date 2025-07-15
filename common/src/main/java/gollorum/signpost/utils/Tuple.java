@@ -1,24 +1,12 @@
 package gollorum.signpost.utils;
 
-import gollorum.signpost.utils.serialization.CompoundSerializable;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-public class Tuple<T1, T2> {
-
-    public final T1 _1;
-    public final T2 _2;
-
-    public Tuple(T1 _1, T2 _2) {
-        this._1 = _1;
-        this._2 = _2;
-    }
+public record Tuple<T1, T2>(T1 _1, T2 _2) {
 
     public static <T1, T2> Tuple<T1, T2> from(org.apache.commons.lang3.tuple.Pair<T1, T2> pair) {
         return new Tuple<>(pair.getLeft(), pair.getRight());
@@ -28,32 +16,46 @@ public class Tuple<T1, T2> {
         return new Tuple<>(pair.getKey(), pair.getValue());
     }
 
-    public T1 getLeft() { return _1; }
-    public T2 getRight() { return _2; }
+    public T1 getLeft() {
+        return _1;
+    }
 
-    public Tuple<T2, T1> flip() { return new Tuple<>(_2, _1); }
+    public T2 getRight() {
+        return _2;
+    }
 
-    public static <T1, T2> Tuple<T1, T2> of(T1 left, T2 right) { return new Tuple<>(left, right); }
-    public static <T1, T2, T3> Tuple<Tuple<T1, T2>, T3> of(T1 left, T2 right, T3 last) { return Tuple.of(Tuple.of(left, right), last); }
+    public Tuple<T2, T1> flip() {
+        return new Tuple<>(_2, _1);
+    }
+
+    public static <T1, T2> Tuple<T1, T2> of(T1 left, T2 right) {
+        return new Tuple<>(left, right);
+    }
+
+    public static <T1, T2, T3> Tuple<Tuple<T1, T2>, T3> of(T1 left, T2 right, T3 last) {
+        return Tuple.of(Tuple.of(left, right), last);
+    }
 
     public static <Key, Value> Collector<Tuple<Key, Value>, ?, Map<Key, Value>> mapCollector() {
         return Collectors.toMap(t -> t._1, t -> t._2);
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Tuple<?, ?> tuple = (Tuple<?, ?>) o;
-        return Objects.equals(_1, tuple._1) && Objects.equals(_2, tuple._2);
+    public static <TBuf, T1, T2> StreamCodec<TBuf, Tuple<T1, T2>> streamCodec(StreamCodec<? super TBuf, T1> codec1, StreamCodec<? super TBuf, T2> codec2) {
+        return new StreamCodec<>() {
+            @Override
+            public void encode(TBuf buffer, Tuple<T1, T2> tuple) {
+                codec1.encode(buffer, tuple._1);
+                codec2.encode(buffer, tuple._2);
+            }
+
+            @Override
+            public Tuple<T1, T2> decode(TBuf buffer) {
+                return new Tuple<>(codec1.decode(buffer), codec2.decode(buffer));
+            }
+        };
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(_1, _2);
-    }
-
-//    public static class Serializer<T1, T2> implements CompoundSerializable<Tuple<T1, T2>> {
+    //    public static class Serializer<T1, T2> implements CompoundSerializable<Tuple<T1, T2>> {
 //
 //        private final CompoundSerializable<T1> serializer1;
 //        private final CompoundSerializable<T2> serializer2;

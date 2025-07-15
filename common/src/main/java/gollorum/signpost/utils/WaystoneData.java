@@ -17,8 +17,14 @@ import java.util.Optional;
 public record WaystoneData(WaystoneHandle.Vanilla handle, String name, WaystoneLocationData location, boolean isLocked) implements gollorum.signpost.WaystoneDataBase {
 
     public WaystoneData withoutExplicitLevel() {
-        if(location.block().world.isLeft()) {
-            return new WaystoneData(handle, name, new WaystoneLocationData(new WorldLocation(location.block().blockPos, Either.right(location.block().world.leftOrThrow().dimension().location())), location.spawn()), isLocked);
+        if(location.block().world().isLeft()) {
+            return new WaystoneData(
+                handle,
+                name,
+                new WaystoneLocationData(
+                    new WorldLocation(location.block().blockPos(), Either.right(location.block().world().leftOrThrow().dimension().location())),
+                    location.spawn()),
+                isLocked);
         } else {
             return this;
         }
@@ -36,10 +42,10 @@ public record WaystoneData(WaystoneHandle.Vanilla handle, String name, WaystoneL
 
     public static boolean hasSecurityPermissions(Player player, WaystoneLocationData locationData) {
         return player.hasPermissions(IConfig.IServer.getInstance().permissions().editLockedWaystoneCommandPermissionLevel())
-            || TileEntityUtils.toWorld(locationData.block().world, !(player instanceof ServerPlayer))
-                .map(w -> w.getBlockEntity(locationData.block().blockPos))
+            || TileEntityUtils.toWorld(locationData.block().world(), !(player instanceof ServerPlayer))
+                .map(w -> w.getBlockEntity(locationData.block().blockPos()))
                 .flatMap(tile -> tile instanceof WithOwner.OfWaystone ? ((WithOwner.OfWaystone)tile).getWaystoneOwner() : Optional.empty())
-                .map(owner -> owner.id.equals(player.getUUID()))
+                .map(owner -> owner.id().equals(player.getUUID()))
                 .orElse(true);
     }
 
@@ -49,7 +55,7 @@ public record WaystoneData(WaystoneHandle.Vanilla handle, String name, WaystoneL
     }
 
     public static final Codec<WaystoneData> CODEC = RecordCodecBuilder.create(i -> i.group(
-        WaystoneHandle.Vanilla.CODEC.fieldOf("Handle").forGetter(WaystoneData::handle),
+        WaystoneHandle.Vanilla.CODEC.fieldOf("handle").forGetter(WaystoneData::handle),
         Codec.STRING.fieldOf("Name").forGetter(WaystoneData::name),
         WaystoneLocationData.CODEC.fieldOf("Location").forGetter(WaystoneData::location),
         Codec.BOOL.fieldOf("IsLocked").forGetter(WaystoneData::isLocked)

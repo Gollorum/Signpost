@@ -95,7 +95,6 @@ public class SignpostNeoforge {
             serverSetter.accept(e.getServer());
             WaystoneLibrary.initialize();
             BlockRestrictions.initialize();
-            Villages.reset();
 //            VillageRegistry.register(e);
             Villages.instance.initialize(e.getServer().registryAccess());
             new WaystoneDiscoveryEventListener().initialize();

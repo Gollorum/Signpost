@@ -9,9 +9,9 @@ import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
 import gollorum.signpost.minecraft.utils.tints.FoliageTint;
 import gollorum.signpost.minecraft.utils.tints.GrassTint;
 import gollorum.signpost.utils.Tint;
-import gollorum.signpost.utils.serialization.CompoundSerializable;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.Collection;
@@ -41,7 +41,7 @@ public abstract class Overlay {
         return t;
     }
 
-    public static final Overlay Gras = new Overlay(Optional.of(new GrassTint()), "gras") {
+    public static final Overlay Gras = new Overlay(Optional.of(GrassTint.INSTANCE), "gras") {
         @Override
         public ResourceLocation textureFor(Class<? extends SignBlockPart> signClass) {
             return signClass.equals(SmallWideSignBlockPart.class)
@@ -54,7 +54,7 @@ public abstract class Overlay {
         }
     };
 
-    public static final Overlay Vine = new Overlay(Optional.of(new FoliageTint()), "vine") {
+    public static final Overlay Vine = new Overlay(Optional.of(FoliageTint.INSTANCE), "vine") {
         @Override
         public ResourceLocation textureFor(Class<? extends SignBlockPart> signClass) {
             return signClass.equals(SmallWideSignBlockPart.class)
@@ -87,6 +87,16 @@ public abstract class Overlay {
     }
 
     public static final Codec<Overlay> CODEC = Codec.STRING.xmap(
+        id -> {
+            if(!overlayRegistry.containsKey(id)) {
+                Signpost.LOGGER.error("Tried to read overlay with id " + id + ", but it was not registered.");
+                return Gras;
+            } else return overlayRegistry.get(id);
+        },
+        overlay -> overlay.id
+    );
+
+    public static final StreamCodec<ByteBuf, Overlay> STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(
         id -> {
             if(!overlayRegistry.containsKey(id)) {
                 Signpost.LOGGER.error("Tried to read overlay with id " + id + ", but it was not registered.");

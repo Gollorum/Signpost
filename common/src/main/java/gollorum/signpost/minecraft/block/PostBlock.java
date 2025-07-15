@@ -18,11 +18,11 @@ import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.utils.IDelay;
 import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import gollorum.signpost.utils.serialization.BufferSerializable;
-import gollorum.signpost.utils.serialization.StringSerializer;
 import net.minecraft.core.*;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -62,13 +62,17 @@ import java.util.*;
 import java.util.function.Function;
 
 public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock, WithCountRestriction {
+    @Override
+    public boolean hasDynamicShape() {
+        return true;
+    }
 
     public static final EnumProperty<Direction> Facing = BlockStateProperties.HORIZONTAL_FACING;
     public static class ModelType {
 
         private static final Map<String, ModelType> allTypes = new HashMap<>();
 
-        public static final Codec<ModelType> CODEC = Codec.string(3, 30).xmap(
+        public static final Codec<ModelType> CODEC = Codec.STRING.xmap(
             allTypes::get,
             type -> type.name
         );
@@ -276,38 +280,23 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
             ), Optional.empty());
         }
 
-        public static BufferSerializable<ModelType> Serializer = new SerializerImpl();
-        public static final class SerializerImpl implements BufferSerializable<ModelType> {
-            @Override
-            public Class<ModelType> getTargetClass() {
-                return ModelType.class;
+        private static final StreamCodec<RegistryFriendlyByteBuf, Function<HolderLookup.Provider, Ingredient>> ingredientGetterStreamCodec = StreamCodec.of(
+            (buffer, i) -> Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, i.apply(buffer.registryAccess())),
+            buffer -> {
+                Ingredient ingredient = Ingredient.CONTENTS_STREAM_CODEC.decode(buffer);
+                return (r) -> ingredient;
             }
-
-            @Override
-            public void encode(RegistryFriendlyByteBuf buffer, ModelType modelType) {
-                StringSerializer.Buffer.encode(buffer, modelType.name);
-                Texture.BufferSerializer.encode(buffer, modelType.postTexture);
-                Texture.BufferSerializer.encode(buffer, modelType.mainTexture);
-                Texture.BufferSerializer.encode(buffer, modelType.secondaryTexture);
-                Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, modelType.signIngredient.apply(buffer.registryAccess()));
-                Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, modelType.baseIngredient.apply(buffer.registryAccess()));
-                Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, modelType.addSignIngredient.apply(buffer.registryAccess()));
-            }
-
-            private <T> Function<HolderLookup.Provider, T> constLazy(T t) { return r -> t; }
-            @Override
-            public ModelType decode(RegistryFriendlyByteBuf buffer) {
-                return new ModelType(
-                    StringSerializer.Buffer.decode(buffer),
-                    Texture.BufferSerializer.decode(buffer),
-                    Texture.BufferSerializer.decode(buffer),
-                    Texture.BufferSerializer.decode(buffer),
-                    constLazy(Ingredient.CONTENTS_STREAM_CODEC.decode(buffer)),
-                    constLazy(Ingredient.CONTENTS_STREAM_CODEC.decode(buffer)),
-                    constLazy(Ingredient.CONTENTS_STREAM_CODEC.decode(buffer))
-                );
-            }
-        };
+        );
+        public static final StreamCodec<RegistryFriendlyByteBuf, ModelType> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.STRING_UTF8, mt -> mt.name,
+            Texture.STREAM_CODEC, mt -> mt.postTexture,
+            Texture.STREAM_CODEC, mt -> mt.mainTexture,
+            Texture.STREAM_CODEC, mt -> mt.secondaryTexture,
+            ingredientGetterStreamCodec, mt -> mt.signIngredient,
+            ingredientGetterStreamCodec, mt -> mt.baseIngredient,
+            ingredientGetterStreamCodec, mt -> mt.addSignIngredient,
+            ModelType::new
+        );
 
     }
 
@@ -390,7 +379,7 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
                 if (!world.isClientSide()) {
                     var customData = stack.get(PostData.TYPE);
                     if(customData != null) {
-                        tile.readData(customData, world.registryAccess());
+                        tile.readData(customData);
                         shouldAddNewSign = false;
                     } else {
                         tile.addPart(
@@ -438,10 +427,20 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
     @SuppressWarnings("deprecation")
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
-        BlockEntity t = world.getBlockEntity(pos);
+        return getInteractionShape(state, world, pos);
+    }
+
+    @Override
+    protected VoxelShape getInteractionShape(BlockState state, BlockGetter level, BlockPos pos) {
+        BlockEntity t = level.getBlockEntity(pos);
         return t instanceof PostTile
             ? ((PostTile) t).getBounds()
             : Shapes.empty();
+    }
+
+    @Override
+    protected VoxelShape getVisualShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return getInteractionShape(state, level, pos);
     }
 
     @SuppressWarnings("deprecation")
@@ -489,7 +488,7 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
             .map(p -> p.part.blockPart().interact(new InteractionInfo(
                 InteractionInfo.Type.RightClick,
                 player, hand, tile, p,
-                data -> tile.notifyMutation(p.id, data, p.part.blockPart().getMeta().identifier()),
+                () -> tile.notifyMutation(p.id, p.part, p.part.blockPart().getMeta().identifier()),
                 world.isClientSide()
             )))
             .orElse(Interactable.InteractionResult.Ignored)

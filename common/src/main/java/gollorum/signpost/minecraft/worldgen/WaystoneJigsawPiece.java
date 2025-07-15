@@ -68,7 +68,7 @@ public class WaystoneJigsawPiece extends LegacySinglePoolElement {
         boolean keepJigsaws
 	) {
 		if(!IConfig.IServer.getInstance().worldGen().isVillageGenerationEnabled()) return false;
-		if(generatedPieces.contains(villageLocation) || VillageWaystone.doesWaystoneExistIn(villageLocation)) return false;
+		if(generatedPieces.contains(villageLocation) || VillageWaystone.getInstance().doesWaystoneExistIn(villageLocation)) return false;
 
 		StructurePlaceSettings placementSettings = this.getSettings(rotation, boundingBox, liquidSettings, keepJigsaws);
 

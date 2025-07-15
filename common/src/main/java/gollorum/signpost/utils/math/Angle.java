@@ -2,12 +2,9 @@ package gollorum.signpost.utils.math;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import gollorum.signpost.utils.serialization.BufferSerializable;
-import gollorum.signpost.utils.serialization.CompoundSerializable;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 
 public final class Angle {
 
@@ -77,8 +74,13 @@ public final class Angle {
         return Float.hashCode(radians);
     }
 
-    public static final Codec<Angle> Codec = RecordCodecBuilder.create(i -> i.group(
+    public static final Codec<Angle> CODEC = RecordCodecBuilder.create(i -> i.group(
         com.mojang.serialization.Codec.FLOAT.fieldOf("Radians").forGetter(Angle::radians)
     ).apply(i, Angle::new));
+
+    public static final StreamCodec<ByteBuf, Angle> STREAM_CODEC = ByteBufCodecs.FLOAT.map(
+        Angle::fromRadians,
+        Angle::radians
+    );
 
 }

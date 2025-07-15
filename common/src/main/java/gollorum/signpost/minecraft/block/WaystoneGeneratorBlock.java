@@ -122,13 +122,14 @@ public class WaystoneGeneratorBlock extends BaseEntityBlock {
                 .setValue(ModelWaystone.Waterlogged, isWater),
             18
         );
-        WaystoneLibrary.getInstance().update(
+        var lib = WaystoneLibrary.getInstance();
+        lib.update(
             name,
             locationDataFor(pos, serverLevel, facing),
             null,
             false
         );
-        VillageWaystone.register(name, villageLocation, serverLevel, pos);
+        lib.data.villageWaystones.register(lib, name, villageLocation, serverLevel, pos);
         return true;
     }
 

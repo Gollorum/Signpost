@@ -58,7 +58,6 @@ public class GuiModelRenderer implements Renderable, Flippable {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         float scale = Math.min(width, height);
         PoseStack matrixStack = new PoseStack();
-        RenderSystem.enableBlend();
         RenderingUtil.wrapInMatrixEntry(matrixStack, () -> {
             matrixStack.translate(0, 0, -10);
             if(isFlipped) matrixStack.mulPose(new Quaternionf(new AxisAngle4d(Math.PI, new Vector3f(0, 1, 0))));

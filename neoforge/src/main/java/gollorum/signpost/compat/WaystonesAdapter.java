@@ -6,7 +6,7 @@ import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.networking.ReflectionEvent;
+import gollorum.signpost.networking.PacketHandler.Event;
 import gollorum.signpost.utils.EventDispatcher;
 import gollorum.signpost.utils.WaystoneLocationData;
 import gollorum.signpost.utils.WorldLocation;
@@ -42,7 +42,7 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
         instance = new WaystonesAdapter();
         ExternalWaystoneLibrary.onInitialize().addListener(ex -> { ex.registerAdapter(instance); });
         PacketHandler.onInitializeDo(packetHandler -> {
-            packetHandler.register(new RequestEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "waystones_adapter_request"));
+            packetHandler.register(RequestEvent.INSTANCE, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "waystones_adapter_request"));
             packetHandler.register(new ReplyEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "waystones_adapter_reply"));
         });
     }
@@ -57,7 +57,7 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
     @Override
     public void requestKnownWaystones(Consumer<Collection<ExternalWaystone>> consumer) {
         onReply.addListener(consumer);
-        PacketHandler.getInstance().sendToServer(new RequestEvent());
+        PacketHandler.getInstance().sendToServer(RequestEvent.INSTANCE);
     }
 
     @Override
@@ -175,7 +175,7 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
 
     }
 
-    public static final class RequestEvent extends ReflectionEvent.ForServer<RequestEvent> {
+    public static final class RequestEvent implements PacketHandler.Event.ForServer<RequestEvent> {
 
         @Override
         public Class<RequestEvent> getMessageClass() {

@@ -1,30 +1,16 @@
 package gollorum.signpost.utils.math.geometry;
 
-import gollorum.signpost.utils.serialization.BufferSerializable;
-import gollorum.signpost.utils.serialization.CompoundSerializable;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 
-import java.util.Objects;
 import java.util.function.Function;
 
-public final class Vector4 {
+public record Vector4(float x, float y, float z, float w) {
 
-    public static final Vector4 ZERO = new Vector4(0,0,0, 0);
-
-    public final float x;
-    public final float y;
-    public final float z;
-    public final float w;
-
-    public Vector4(float x, float y, float z, float w) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.w = w;
-    }
+    public static final Vector4 ZERO = new Vector4(0, 0, 0, 0);
 
     public Vector4 add(Vector4 other) {
         return new Vector4(x + other.x, y + other.y, z + other.z, w + other.w);
@@ -51,11 +37,11 @@ public final class Vector4 {
         );
     }
 
-    public Vector4 map(Function<Float, Float> f){
+    public Vector4 map(Function<Float, Float> f) {
         return new Vector4(f.apply(x), f.apply(y), f.apply(z), f.apply(w));
     }
 
-    public Vector4 map(Vector4 b, Function<Float, Function<Float, Float>> f){
+    public Vector4 map(Vector4 b, Function<Float, Function<Float, Float>> f) {
         return new Vector4(
             f.apply(x).apply(b.x),
             f.apply(y).apply(b.y),
@@ -64,7 +50,7 @@ public final class Vector4 {
         );
     }
 
-    public Vector4 map(Vector4 b, Vector4 c, Function<Float, Function<Float, Function<Float, Float>>> f){
+    public Vector4 map(Vector4 b, Vector4 c, Function<Float, Function<Float, Function<Float, Float>>> f) {
         return new Vector4(
             f.apply(x).apply(b.x).apply(c.x),
             f.apply(y).apply(b.y).apply(c.y),
@@ -73,13 +59,21 @@ public final class Vector4 {
         );
     }
 
-    public float max() { return Math.max(Math.max(Math.max(x, y), z), w); }
+    public float max() {
+        return Math.max(Math.max(Math.max(x, y), z), w);
+    }
 
-    public float min() { return Math.max(Math.min(Math.min(x, y), z), w); }
+    public float min() {
+        return Math.max(Math.min(Math.min(x, y), z), w);
+    }
 
-    public float dot(Vector4 v) { return x * v.x + y * v.y + z * v.z + w * v.w; }
+    public float dot(Vector4 v) {
+        return x * v.x + y * v.y + z * v.z + w * v.w;
+    }
 
-    public Vector3 xyz() { return new Vector3(x, y, z); }
+    public Vector3 xyz() {
+        return new Vector3(x, y, z);
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -92,64 +86,18 @@ public final class Vector4 {
             Float.compare(Vector4.w, w) == 0;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(x, y, z, w);
-    }
+    public static final Codec<Vector4> CODEC = RecordCodecBuilder.create(i -> i.group(
+        Codec.FLOAT.fieldOf("X").forGetter(Vector4::x),
+        Codec.FLOAT.fieldOf("Y").forGetter(Vector4::y),
+        Codec.FLOAT.fieldOf("Z").forGetter(Vector4::z),
+        Codec.FLOAT.fieldOf("W").forGetter(Vector4::w)
+    ).apply(i, Vector4::new));
 
-    public static final CompoundSerializable<Vector4> COMPOUND_SERIALIZER = new CompoundSerializable<>() {
-
-        @Override
-        public void encode(CompoundTag compound, Vector4 Vector4, HolderLookup.Provider provider) {
-            compound.putFloat("X", Vector4.x);
-            compound.putFloat("Y", Vector4.y);
-            compound.putFloat("Z", Vector4.z);
-            compound.putFloat("W", Vector4.w);
-        }
-
-        @Override
-        public boolean isContainedIn(CompoundTag compound) {
-            return compound.contains("X") &&
-                compound.contains("Y") &&
-                compound.contains("Z") &&
-                compound.contains("W");
-        }
-
-        @Override
-        public Vector4 decode(CompoundTag compound, HolderLookup.Provider provider) {
-            return new Vector4(
-                compound.getFloat("X"),
-                compound.getFloat("Y"),
-                compound.getFloat("Z"),
-                compound.getFloat("W")
-            );
-        }
-    };
-
-    public static final BufferSerializable<Vector4> BUFFER_SERIALIZER = new BufferSerializable<>() {
-
-        @Override
-        public Class<Vector4> getTargetClass() {
-            return Vector4.class;
-        }
-
-        @Override
-        public void encode(RegistryFriendlyByteBuf buffer, Vector4 vec) {
-            buffer.writeFloat(vec.x);
-            buffer.writeFloat(vec.y);
-            buffer.writeFloat(vec.z);
-            buffer.writeFloat(vec.w);
-        }
-
-        @Override
-        public Vector4 decode(RegistryFriendlyByteBuf buffer) {
-            return new Vector4(
-                buffer.readFloat(),
-                buffer.readFloat(),
-                buffer.readFloat(),
-                buffer.readFloat()
-            );
-        }
-    };
-
+    public static final StreamCodec<ByteBuf, Vector4> STREAM_CODEC = StreamCodec.composite(
+        ByteBufCodecs.FLOAT, Vector4::x,
+        ByteBufCodecs.FLOAT, Vector4::y,
+        ByteBufCodecs.FLOAT, Vector4::z,
+        ByteBufCodecs.FLOAT, Vector4::w,
+        Vector4::new
+    );
 }

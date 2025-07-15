@@ -57,7 +57,7 @@ public class FabricPacketHandler extends PacketHandler {
 
     private <T> Payload<T> toPayload(T message) {
         var tuple = events.get(message.getClass());
-        return new Payload<>(tuple._2, (Event<T>) tuple._1, message);
+        return new Payload<>(tuple._2(), (Event<T>) tuple._1(), message);
     }
 
     @Override

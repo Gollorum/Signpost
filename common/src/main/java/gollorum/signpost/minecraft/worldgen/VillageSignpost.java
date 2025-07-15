@@ -60,10 +60,10 @@ public class VillageSignpost {
 
 	private static Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> fetchPossibleTargets(BlockPos pieceLocation, BlockPos villageLocation, ResourceLocation dimension, Random random, Set<WaystoneHandle> blockedTargets) {
 		return allWaystoneTargets(villageLocation, dimension)
-			.map(e -> new Tuple<>(e, (float) Math.sqrt(e._1.distSqr(pieceLocation)) * (0.5f + random.nextFloat())))
-			.sorted((e1, e2) -> Float.compare(e1._2, e2._2))
+			.map(e -> new Tuple<>(e, (float) Math.sqrt(e._1().distSqr(pieceLocation)) * (0.5f + random.nextFloat())))
+			.sorted((e1, e2) -> Float.compare(e1._2(), e2._2()))
 			.map(Tuple::getLeft)
-			.filter(e -> !blockedTargets.contains(e._2))
+			.filter(e -> !blockedTargets.contains(e._2()))
 			.collect(Collectors.toCollection(LinkedList::new));
 	}
 
@@ -73,17 +73,20 @@ public class VillageSignpost {
 			? villageWaystones
 			: Streams.concat(villageWaystones, nonVillageWaystones(dimension))
 		).filter(e -> !(waystonesTargetedByVillage.containsKey(villageLocation)
-			&& waystonesTargetedByVillage.get(villageLocation).contains(e._2)));
+			&& waystonesTargetedByVillage.get(villageLocation).contains(e._2())));
 	}
 	private static Stream<Tuple<BlockPos, WaystoneHandle.Vanilla>> villageWaystonesExceptSelf(BlockPos villageLocation, ResourceLocation dimension) {
-		return VillageWaystone.getAllEntries(dimension).stream()
+		var lib = WaystoneLibrary.getInstance();
+		return lib.getVillageWaystones().getAllEntries(lib, dimension).stream()
 	        .filter(e -> !(e.getKey().equals(villageLocation)))
 	        .map(Tuple::from);
 	}
 	private static Stream<Tuple<BlockPos, WaystoneHandle.Vanilla>> nonVillageWaystones(ResourceLocation dimension) {
-		return WaystoneLibrary.getInstance().getAllWaystoneInfo().stream()
-			.map(info -> new Tuple<>(info.locationData.block().blockPos, info.handle))
-			.filter(t -> VillageWaystone.getAllEntries(dimension).stream().noneMatch(e -> e.getValue().equals(t._2)));
+		var lib = WaystoneLibrary.getInstance();
+		return lib.getAllWaystoneInfo().stream()
+			.map(info -> new Tuple<>(info.locationData().block().blockPos(), info.handle()))
+			.filter(t -> lib.getVillageWaystones().getAllEntries(lib, dimension).stream()
+				.noneMatch(e -> e.getValue().equals(t._2())));
 	}
 
 	private static Collection<WaystoneHandle.Vanilla> populateSignPostGeneration(
@@ -126,10 +129,10 @@ public class VillageSignpost {
 	) {
 		var nextTargetOption = fetchNextTarget(possibleTargets);
 		if(nextTargetOption.isEmpty()) return Collections.emptySet();
-		var target = nextTargetOption.get()._1;
-		WaystoneData targetData = nextTargetOption.get()._2;
+		var target = nextTargetOption.get()._1();
+		WaystoneData targetData = nextTargetOption.get()._2();
 
-		Angle rotation = SignBlockPart.pointingAt(tilePos, target._1);
+		Angle rotation = SignBlockPart.pointingAt(tilePos, target._1());
 		if(tile.getParts().stream().anyMatch(instance -> !(instance.blockPart() instanceof PostBlockPart) && !(instance.blockPart() instanceof SignBlockPart<?> s && s.isMarkedForGeneration()) && isNearly(instance.offset().y(), y))) {
 			possibleTargets.add(target);
 			return Collections.emptySet();
@@ -137,9 +140,9 @@ public class VillageSignpost {
 		tile.addPart(
 			new BlockPartInstance(
 				new SmallWideSignBlockPart(
-					new AngleProvider.WaystoneTarget(rotation), new NameProvider.WaystoneTarget(targetData.name), shouldFlip(facing, rotation),
+					new AngleProvider.WaystoneTarget(rotation), new NameProvider.WaystoneTarget(targetData.name()), shouldFlip(facing, rotation),
 					generatorPart.getMainTexture(), generatorPart.getSecondaryTexture(),
-					overlayFor(world, tilePos).or(generatorPart::getOverlay), generatorPart.getColor(), Optional.of(target._2),
+					overlayFor(world, tilePos).or(generatorPart::getOverlay), generatorPart.getColor(), Optional.of(target._2()),
 					ItemStack.EMPTY, tile.modelType, false, false
 				),
 				new Vector3(0, y, 0)
@@ -148,7 +151,7 @@ public class VillageSignpost {
 			PlayerHandle.Invalid,
 		false
 		);
-		return Collections.singleton(target._2);
+		return Collections.singleton(target._2());
 	}
 
 	private static boolean isNearly(float a, float b) { return Math.abs(a - b) < 1e-5f; }
@@ -164,18 +167,18 @@ public class VillageSignpost {
 	) {
 		var nextTargetOption = fetchNextTarget(possibleTargets);
 		if(nextTargetOption.isEmpty()) return Collections.emptySet();
-		var target = nextTargetOption.get()._1;
-		WaystoneData targetData = nextTargetOption.get()._2;
+		var target = nextTargetOption.get()._1();
+		WaystoneData targetData = nextTargetOption.get()._2();
 
-		Angle rotation = SignBlockPart.pointingAt(tilePos, target._1);
+		Angle rotation = SignBlockPart.pointingAt(tilePos, target._1());
 		boolean shouldFlip = shouldFlip(facing, rotation);
 		Optional<Overlay> overlay = overlayFor(world, tilePos).or(generatorPart::getOverlay);
 		tile.addPart(
 			new BlockPartInstance(
 				new SmallShortSignBlockPart(
-					new AngleProvider.WaystoneTarget(rotation), new NameProvider.WaystoneTarget(targetData.name), shouldFlip,
+					new AngleProvider.WaystoneTarget(rotation), new NameProvider.WaystoneTarget(targetData.name()), shouldFlip,
 					generatorPart.getMainTexture(), generatorPart.getSecondaryTexture(),
-					overlay, generatorPart.getColor(), Optional.of(target._2),
+					overlay, generatorPart.getColor(), Optional.of(target._2()),
 					ItemStack.EMPTY, tile.modelType, false, false
 				),
 				new Vector3(0, y, 0)
@@ -186,25 +189,25 @@ public class VillageSignpost {
 		);
 
 		var secondNextTargetOption = fetchNextTarget(possibleTargets);
-		if(secondNextTargetOption.isEmpty()) return Collections.singleton(target._2);
-		var secondTarget = secondNextTargetOption.get()._1;
+		if(secondNextTargetOption.isEmpty()) return Collections.singleton(target._2());
+		var secondTarget = secondNextTargetOption.get()._1();
 
 		List<Tuple<BlockPos, WaystoneHandle.Vanilla>> skippedTargets = new ArrayList<>();
 		while(secondTarget != null) {
-			WaystoneData secondTargetData = secondNextTargetOption.get()._2;
-			Angle secondRotation = SignBlockPart.pointingAt(tilePos, secondTarget._1);
+			WaystoneData secondTargetData = secondNextTargetOption.get()._2();
+			Angle secondRotation = SignBlockPart.pointingAt(tilePos, secondTarget._1());
 			boolean shouldSecondFlip = shouldFlip(facing, secondRotation);
 			if(shouldSecondFlip == shouldFlip) {
 				skippedTargets.add(secondTarget);
 				secondNextTargetOption = fetchNextTarget(possibleTargets);
-				secondTarget = secondNextTargetOption.isEmpty() ? null : secondNextTargetOption.get()._1;
+				secondTarget = secondNextTargetOption.isEmpty() ? null : secondNextTargetOption.get()._1();
 				continue;
 			}
-			WaystoneHandle.Vanilla secondTargetHandle = secondTarget._2;
+			WaystoneHandle.Vanilla secondTargetHandle = secondTarget._2();
 			tile.addPart(
 				new BlockPartInstance(
 					new SmallShortSignBlockPart(
-						new AngleProvider.WaystoneTarget(secondRotation), new NameProvider.WaystoneTarget(secondTargetData.name), shouldSecondFlip,
+						new AngleProvider.WaystoneTarget(secondRotation), new NameProvider.WaystoneTarget(secondTargetData.name()), shouldSecondFlip,
 						generatorPart.getMainTexture(), generatorPart.getSecondaryTexture(),
 						overlay, generatorPart.getColor(), Optional.of(secondTargetHandle),
 						ItemStack.EMPTY, tile.modelType, false, false
@@ -221,8 +224,8 @@ public class VillageSignpost {
 		possibleTargets.clear();
 		possibleTargets.addAll(skippedTargets);
 		return secondTarget == null
-			? Collections.singleton(target._2)
-			: ImmutableList.of(target._2, secondTarget._2);
+			? Collections.singleton(target._2())
+			: ImmutableList.of(target._2(), secondTarget._2());
 	}
 
 	private static Optional<Tuple<Tuple<BlockPos, WaystoneHandle.Vanilla>, WaystoneData>> fetchNextTarget(Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> possibleTargets) {
@@ -231,11 +234,11 @@ public class VillageSignpost {
 		while(target == null && !possibleTargets.isEmpty()) {
 			target = possibleTargets.poll();
 			if(target == null) continue;
-			if(!WaystoneLibrary.getInstance().contains(target._2)) {
+			if(!WaystoneLibrary.getInstance().contains(target._2())) {
 				target = null;
 				continue;
 			}
-			Optional<WaystoneData> dataOptional = WaystoneLibrary.getInstance().getData(target._2);
+			Optional<WaystoneData> dataOptional = WaystoneLibrary.getInstance().getData(target._2());
 			if(dataOptional.isPresent()) targetData = dataOptional.get();
 			else target = null;
 		}

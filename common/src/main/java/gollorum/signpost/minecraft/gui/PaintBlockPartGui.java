@@ -75,7 +75,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
             })
             .distinct()
             .map(is -> Tuple.of(allSpritesFor(is), is))
-            .filter(p -> !p._1.isEmpty()).toList();
+            .filter(p -> !p._1().isEmpty()).toList();
 
         int rows = (blocksToRender.size() + 8) / 9;
 
@@ -87,8 +87,8 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
                 var tuple = blocksToRender.get(x + y * 9);
                 addRenderableWidget(new ItemButton(
                     left + x * ItemButton.width, top, Rect.XAlignment.Left, Rect.YAlignment.Bottom,
-                    tuple._2,
-                    b -> setupTextureButtonsFor(tuple._1),
+                    tuple._2(),
+                    b -> setupTextureButtonsFor(tuple._1()),
                     Minecraft.getInstance().getItemRenderer(), font
                 ));
             }
@@ -122,7 +122,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
             var ret = new ArrayList<Tuple<TextureAtlasSprite, Optional<Tint>>>(data.parts().size());
             for (var entry : data.parts().entrySet()) {
                 var part = entry.getValue();
-                Collection<Texture> partTextures = part.blockPart().deserialize(minecraft.player.registryAccess()).getAllTextures();
+                Collection<Texture> partTextures = part.blockPart().getAllTextures();
                 for (Texture tex : partTextures) {
                     ret.add(Tuple.of(spriteFrom(tex.location()), tex.tint()));
                 }
@@ -152,7 +152,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
                 .stream().flatMap(part -> part.getQuads(side).stream())
             ).map(bakedQuad -> Tuple.of(bakedQuad.sprite(), bakedQuad.tintIndex()))
             .distinct()
-            .map(loc -> Tuple.of(loc._1, loc._2 >= 0 ? Optional.<Tint>of(new BlockColorTint(state.getBlock(), loc._2)) : Optional.<Tint>empty()))
+            .map(loc -> Tuple.of(loc._1(), loc._2() >= 0 ? Optional.<Tint>of(new BlockColorTint(state.getBlock(), loc._2())) : Optional.<Tint>empty()))
             .collect(Collectors.toList());
     }
 
@@ -175,8 +175,8 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
                     spriteButtonSize, spriteButtonSize,
                     Rect.XAlignment.Left, Rect.YAlignment.Center
                 ),
-                sprite._1, sprite._2.map(t -> t.getColorAt(minecraft.level, minecraft.player.blockPosition())).orElse(Colors.white),
-                imgButton -> setTexture(displayPart, new Texture(sprite._1.contents().name(), sprite._2))
+                sprite._1(), sprite._2().map(t -> t.getColorAt(minecraft.level, minecraft.player.blockPosition())).orElse(Colors.white),
+                imgButton -> setTexture(displayPart, new Texture(sprite._1().contents().name(), sprite._2()))
             );
             addRenderableWidget(newButton);
             textureButtons.add(newButton);
@@ -196,7 +196,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
         super.onClose();
         PacketHandler.getInstance().sendToServer(new PostTile.PartMutatedEvent.Packet(
             new PostTile.TilePartInfo(tile, identifier),
-            part.getMeta().encode(displayPart, minecraft.level.registryAccess()),
+            displayPart,
             part.getMeta().identifier()
         ));
     }

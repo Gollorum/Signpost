@@ -5,12 +5,15 @@ import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.WaystoneBlock;
+import gollorum.signpost.minecraft.data.PostData;
+import gollorum.signpost.minecraft.data.WaystoneHandleData;
 import gollorum.signpost.minecraft.storage.loot.PermissionCheck;
-import gollorum.signpost.minecraft.storage.loot.RegisteredWaystoneLootNbtProvider;
+import gollorum.signpost.minecraft.storage.loot.RegisteredWaystoneLootDataFunction;
 import net.minecraft.advancements.critereon.*;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
-import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.component.predicates.DataComponentPredicates;
+import net.minecraft.core.component.predicates.EnchantmentsPredicate;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.loot.LootTableProvider;
@@ -62,7 +65,9 @@ public class LootTables extends LootTableProvider {
                     .withPool(LootPool.lootPool()
                         .setRolls(ConstantValue.exactly(1))
                         .add(LootItem.lootTableItem(variant.getBlock())
-                            .apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY).include(DataComponents.CUSTOM_DATA))
+                            .apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY)
+                                .include(WaystoneHandleData.TYPE)
+                                .include(PostData.TYPE))
                             .when(hasSilkTouch(registryAccess))
                             .otherwise(LootItem.lootTableItem(variant.getBlock()))
                         )
@@ -82,17 +87,31 @@ public class LootTables extends LootTableProvider {
             .withPool(LootPool.lootPool()
                 .setRolls(ConstantValue.exactly(1))
                 .add(LootItem.lootTableItem(block)
-                    .apply(CopyCustomDataFunction.copyData(new RegisteredWaystoneLootNbtProvider())
-                        .copy("Handle", "Handle")
-                        .copy("display", "display", CopyCustomDataFunction.MergeStrategy.MERGE)
-                    ).when(hasSilkTouch(registryAccess))
+                    .apply(RegisteredWaystoneLootDataFunction::new)
+                    .when(hasSilkTouch(registryAccess))
                     .when(new PermissionCheck.Builder(PermissionCheck.Type.CanPickWaystone))
                     .otherwise(LootItem.lootTableItem(block))));
     }
 
     private LootItemCondition.Builder hasSilkTouch(HolderLookup.Provider registryAccess) {
         HolderLookup.RegistryLookup<Enchantment> registrylookup = registryAccess.lookupOrThrow(Registries.ENCHANTMENT);
-        return MatchTool.toolMatches(ItemPredicate.Builder.item().withSubPredicate(ItemSubPredicates.ENCHANTMENTS, ItemEnchantmentsPredicate.enchantments(List.of(new EnchantmentPredicate(registrylookup.getOrThrow(Enchantments.SILK_TOUCH), MinMaxBounds.Ints.atLeast(1))))));
+        return MatchTool.toolMatches(
+            ItemPredicate.Builder.item()
+                .withComponents(
+                    DataComponentMatchers.Builder.components()
+                        .partial(
+                            DataComponentPredicates.ENCHANTMENTS,
+                            EnchantmentsPredicate.enchantments(
+                                List.of(
+                                    new EnchantmentPredicate(
+                                        registrylookup.getOrThrow(Enchantments.SILK_TOUCH), MinMaxBounds.Ints.atLeast(1)
+                                    )
+                                )
+                            )
+                        )
+                        .build()
+                )
+        );
     }
 
 

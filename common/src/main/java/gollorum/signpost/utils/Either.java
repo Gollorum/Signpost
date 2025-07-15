@@ -1,12 +1,7 @@
 package gollorum.signpost.utils;
 
 import com.mojang.serialization.Codec;
-import gollorum.signpost.utils.serialization.BufferSerializable;
-import gollorum.signpost.utils.serialization.CompoundSerializable;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
@@ -174,8 +169,8 @@ public abstract class Either<Left, Right> {
         }
     }
 
-    public static <Left, Right> StreamCodec<ByteBuf, Either<Left, Right>> streamCodec(StreamCodec<ByteBuf, Left> leftCodec, StreamCodec<ByteBuf, Right> rightCodec) {
-        return ByteBufCodecs.either(leftCodec, rightCodec).map(
+    public static <Left, Right, TBuf extends ByteBuf> StreamCodec<TBuf, Either<Left, Right>> streamCodec(StreamCodec<? super TBuf, Left> leftCodec, StreamCodec<? super TBuf, Right> rightCodec) {
+        return ByteBufCodecs.<TBuf, Left, Right>either(leftCodec, rightCodec).map(
             Either::fromMojangEither,
             Either::toMojangEither
         );

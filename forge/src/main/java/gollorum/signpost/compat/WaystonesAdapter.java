@@ -1,17 +1,17 @@
 package gollorum.signpost.compat;
 
 import com.google.common.collect.Lists;
+import com.mojang.serialization.MapCodec;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.networking.ReflectionEvent;
 import gollorum.signpost.utils.EventDispatcher;
 import gollorum.signpost.utils.WaystoneLocationData;
 import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import gollorum.signpost.utils.serialization.StringSerializer;
+import io.netty.buffer.ByteBuf;
 import net.blay09.mods.waystones.api.Waystone;
 import net.blay09.mods.waystones.api.WaystoneVisibility;
 import net.blay09.mods.waystones.api.WaystonesAPI;
@@ -20,11 +20,11 @@ import net.blay09.mods.waystones.core.PlayerWaystoneManager;
 import net.blay09.mods.waystones.core.WaystoneImpl;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -43,7 +43,7 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
         instance = new WaystonesAdapter();
         ExternalWaystoneLibrary.onInitialize().addListener(ex -> { ex.registerAdapter(instance); });
         PacketHandler.onInitializeDo(packetHandler -> {
-            packetHandler.register(new RequestEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "waystones_adapter_request"));
+            packetHandler.register(RequestEvent.INSTANCE, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "waystones_adapter_request"));
             packetHandler.register(new ReplyEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "waystones_adapter_reply"));
             return true;
         });
@@ -59,7 +59,7 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
     @Override
     public void requestKnownWaystones(Consumer<Collection<ExternalWaystone>> consumer) {
         onReply.addListener(consumer);
-        PacketHandler.getInstance().sendToServer(new RequestEvent());
+        PacketHandler.getInstance().sendToServer(RequestEvent.INSTANCE);
     }
 
     @Override
@@ -68,7 +68,7 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
     }
 
     private Optional<WaystoneWaystone> getData(Handle handle) {
-        return WaystonesAPI.getWaystone(Signpost.getServerInstance().overworld(), handle.id).map(WaystoneWaystone::new);
+        return WaystonesAPI.getWaystone(Signpost.getServerInstance(), handle.id).map(WaystoneWaystone::new);
     }
 
     private static final String notActivatedKey = "gui.waystones.inventory.no_waystones_activated";
@@ -84,20 +84,16 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
     }
 
     @Override
-    public WaystoneHandle read(FriendlyByteBuf buffer) {
-        return new Handle(buffer.readUUID());
+    public MapCodec<? extends WaystoneHandle> getCodec() {
+        return ExternalWaystone.Handle.MAP_CODEC;
     }
 
     @Override
-    public WaystoneHandle read(CompoundTag compound) {
-        return new Handle(compound.getUUID("id"));
+    public StreamCodec<ByteBuf, ? extends WaystoneHandle> getStreamCodec() {
+        return Handle.STREAM_CODEC;
     }
 
-    public static class WaystoneWaystone implements ExternalWaystone {
-
-        public final Waystone wrapped;
-
-        public WaystoneWaystone(Waystone wrapped) {this.wrapped = wrapped;}
+    public record WaystoneWaystone(Waystone wrapped) implements ExternalWaystone {
 
         @Override
         public String name() {
@@ -107,18 +103,18 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
         @Override
         public WaystoneLocationData loc() {
             WorldLocation blockPos = new WorldLocation(wrapped.getPos(), wrapped.getDimension().location());
-            return new WaystoneLocationData(blockPos, Vector3.fromBlockPos(blockPos.blockPos.relative(spawnInDirection(blockPos))));
+            return new WaystoneLocationData(blockPos, Vector3.fromBlockPos(blockPos.blockPos().relative(spawnInDirection(blockPos))));
         }
 
         private Direction spawnInDirection(WorldLocation blockPos) {
-            Level world = TileEntityUtils.toWorld(blockPos.world, false).orElse(null);
-            BlockState state = world != null ? world.getBlockState(blockPos.blockPos) : null;
-            if(state == null || !state.hasProperty(WaystoneBlock.FACING)) return Direction.NORTH;
+            Level world = TileEntityUtils.toWorld(blockPos.world(), false).orElse(null);
+            BlockState state = world != null ? world.getBlockState(blockPos.blockPos()) : null;
+            if (state == null || !state.hasProperty(WaystoneBlock.FACING)) return Direction.NORTH;
             Direction direction = state.getValue(WaystoneBlock.FACING);
             List<Direction> directionCandidates = Lists.newArrayList(direction, Direction.EAST, Direction.WEST, Direction.SOUTH, Direction.NORTH);
 
             for (Direction candidate : directionCandidates) {
-                BlockPos offsetPos = blockPos.blockPos.relative(candidate);
+                BlockPos offsetPos = blockPos.blockPos().relative(candidate);
                 BlockPos offsetPosUp = offsetPos.above();
                 if (!world.getBlockState(offsetPos).isSuffocating(world, offsetPos) && !world.getBlockState(offsetPosUp).isSuffocating(world, offsetPosUp)) {
                     return candidate;
@@ -133,11 +129,19 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
         }
     }
 
-    public static class Handle implements ExternalWaystone.Handle {
+    public static record Handle(UUID id) implements ExternalWaystone.Handle {
 
-        public final UUID id;
+        public static final MapCodec<Handle> CODEC =
+            UUIDUtil.CODEC.xmap(Handle::new, Handle::id)
+                .fieldOf("id");
 
-        public Handle(UUID id) {this.id = id;}
+        public static final StreamCodec<ByteBuf, Handle> STREAM_CODEC =
+            UUIDUtil.STREAM_CODEC.map(Handle::new, Handle::id);
+
+        @Override
+        public String typeTag() {
+            return instance.typeTag();
+        }
 
         @Override
         public String modMark() {
@@ -149,17 +153,6 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
             return LangKeys.noTeleportWaystoneMod;
         }
 
-        @Override
-        public void write(RegistryFriendlyByteBuf buffer) {
-            StringSerializer.Buffer.encode(buffer, instance.typeTag());
-            buffer.writeUUID(id);
-        }
-
-        @Override
-        public void write(CompoundTag compound, HolderLookup.Provider provider) {
-            compound.putString("type", instance.typeTag());
-            compound.putUUID("id", id);
-        }
 
         @Override
         public boolean equals(Object o) {
@@ -176,7 +169,13 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
 
     }
 
-    public static final class RequestEvent extends ReflectionEvent.ForServer<RequestEvent> {
+    public static final class RequestEvent implements PacketHandler.Event.ForServer<RequestEvent> {
+        public static final RequestEvent INSTANCE = new RequestEvent();
+        
+        @Override
+        public StreamCodec<RegistryFriendlyByteBuf, RequestEvent> codec() {
+            return StreamCodec.unit(RequestEvent.INSTANCE);
+        }
 
         @Override
         public Class<RequestEvent> getMessageClass() {
@@ -197,31 +196,24 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
 
     public static final class ReplyEvent implements PacketHandler.Event<ReplyEvent.Packet> {
 
-        public static final class Packet {
-            public Collection<WaystoneWaystone> waystones;
-            public Packet(Collection<WaystoneWaystone> waystones) {
-                this.waystones = waystones;
-            }
+        public static final record Packet(Collection<WaystoneWaystone> waystones) {
+            public static final StreamCodec<RegistryFriendlyByteBuf, Packet> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.collection(
+                    ArrayList::new,
+                    WaystoneImpl.STREAM_CODEC.map(WaystoneWaystone::new, WaystoneWaystone::wrapped)
+                ), Packet::waystones,
+                Packet::new
+            );
+        }
+
+        @Override
+        public StreamCodec<RegistryFriendlyByteBuf, Packet> codec() {
+            return Packet.STREAM_CODEC;
         }
 
         @Override
         public Class<Packet> getMessageClass() {
             return Packet.class;
-        }
-
-        @Override
-        public void encode(RegistryFriendlyByteBuf buffer, Packet message) {
-            buffer.writeInt(message.waystones.size());
-            for(WaystoneWaystone waystone : message.waystones)
-                WaystoneImpl.write(buffer, waystone.wrapped);
-        }
-
-        @Override
-        public Packet decode(RegistryFriendlyByteBuf buffer) {
-            int size = buffer.readInt();
-            List<WaystoneWaystone> waystones = new ArrayList<>();
-            for(int i = 0; i < size; i++) waystones.add(new WaystoneWaystone(WaystoneImpl.read(buffer)));
-            return new Packet(waystones);
         }
 
         @Override

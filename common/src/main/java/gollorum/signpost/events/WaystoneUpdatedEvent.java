@@ -3,9 +3,9 @@ package gollorum.signpost.events;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.utils.WaystoneLocationData;
 import gollorum.signpost.utils.WorldLocation;
-import gollorum.signpost.utils.serialization.BufferSerializable;
-import gollorum.signpost.utils.serialization.StringSerializer;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 
 import java.util.Optional;
 
@@ -40,39 +40,36 @@ public abstract class WaystoneUpdatedEvent {
 
     public abstract Type getType();
 
-    public static class Serializer implements BufferSerializable<WaystoneUpdatedEvent> {
+    public static class Serializer implements StreamCodec<FriendlyByteBuf, WaystoneUpdatedEvent> {
 
         public static final Serializer INSTANCE = new Serializer();
         private Serializer(){}
 
         @Override
-        public Class<WaystoneUpdatedEvent> getTargetClass() {
-            return WaystoneUpdatedEvent.class;
-        }
-
-        public void encode(RegistryFriendlyByteBuf buffer, WaystoneUpdatedEvent event) {
+        public void encode(FriendlyByteBuf buffer, WaystoneUpdatedEvent event) {
             buffer.writeEnum(event.getType());
-            WaystoneLocationData.BUFFER_SERIALIZER.encode(buffer, event.location);
-            StringSerializer.Buffer.encode(buffer, event.name);
-            WaystoneHandle.Vanilla.BufferSerializer.encode(buffer, event.handle);
+            WaystoneLocationData.STREAM_CODEC.encode(buffer, event.location);
+            ByteBufCodecs.STRING_UTF8.encode(buffer, event.name);
+            WaystoneHandle.Vanilla.STREAM_CODEC.encode(buffer, event.handle);
             if(event instanceof WaystoneRenamedEvent)
-                StringSerializer.Buffer.encode(buffer, ((WaystoneRenamedEvent)event).oldName);
+                ByteBufCodecs.STRING_UTF8.encode(buffer, ((WaystoneRenamedEvent)event).oldName);
             else if(event instanceof WaystoneMovedEvent)
-                WorldLocation.BUFFER_SERIALIZER.encode(buffer, ((WaystoneMovedEvent)event).newLocation);
+                WorldLocation.STREAM_CODEC.encode(buffer, ((WaystoneMovedEvent)event).newLocation);
             if(event instanceof WaystoneAddedOrRenamedEvent)
                 buffer.writeBoolean(((WaystoneAddedOrRenamedEvent) event).isLocked);
         }
 
-        public WaystoneUpdatedEvent decode(RegistryFriendlyByteBuf buffer) {
+        @Override
+        public WaystoneUpdatedEvent decode(FriendlyByteBuf buffer) {
             Type type = buffer.readEnum(Type.class);
-            WaystoneLocationData location = WaystoneLocationData.BUFFER_SERIALIZER.decode(buffer);
-            String name = StringSerializer.Buffer.decode(buffer);
-            WaystoneHandle.Vanilla handle = WaystoneHandle.Vanilla.BufferSerializer.decode(buffer);
+            WaystoneLocationData location = WaystoneLocationData.STREAM_CODEC.decode(buffer);
+            String name = ByteBufCodecs.STRING_UTF8.decode(buffer);
+            WaystoneHandle.Vanilla handle = WaystoneHandle.Vanilla.STREAM_CODEC.decode(buffer);
             return switch (type) {
                 case Added -> new WaystoneAddedEvent(location, name, buffer.readBoolean(), handle);
                 case Removed -> new WaystoneRemovedEvent(location, name, handle);
-                case Renamed -> new WaystoneRenamedEvent(location, name, StringSerializer.Buffer.decode(buffer), buffer.readBoolean(), handle);
-                case Moved -> new WaystoneMovedEvent(location, WorldLocation.BUFFER_SERIALIZER.decode(buffer), name, handle);
+                case Renamed -> new WaystoneRenamedEvent(location, name, ByteBufCodecs.STRING_UTF8.decode(buffer), buffer.readBoolean(), handle);
+                case Moved -> new WaystoneMovedEvent(location, WorldLocation.STREAM_CODEC.decode(buffer), name, handle);
                 default -> throw new RuntimeException("Type " + type + " is not supported");
             };
         }

@@ -1,15 +1,11 @@
 package gollorum.signpost.utils;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.utils.math.Angle;
-import gollorum.signpost.utils.serialization.BufferSerializable;
-import gollorum.signpost.utils.serialization.CompoundSerializable;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.world.entity.animal.Cod;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 
 import java.util.Optional;
 
@@ -17,19 +13,22 @@ public interface AngleProvider {
 
     Angle get();
 
+    String getTypeTag();
+
     public static final record Literal(Angle angle) implements AngleProvider {
-        public static final MapCodec<Literal> Codec = RecordCodecBuilder.mapCodec(i -> i.group(
-            Angle.Codec.fieldOf("angle").forGetter(Literal::angle)
-        ).apply(i, Literal::new));
+        public static final StreamCodec<ByteBuf, Literal> STREAM_CODEC = Angle.STREAM_CODEC
+            .map(Literal::new, Literal::angle);
 
         @Override
         public Angle get() { return angle; }
+
+        @Override
+        public String getTypeTag() { return "literal"; }
     }
 
     public static final class WaystoneTarget implements AngleProvider {
-        public static final MapCodec<WaystoneTarget> Codec = RecordCodecBuilder.mapCodec(i -> i.group(
-            Angle.Codec.fieldOf("cachedAngle").forGetter(WaystoneTarget::get)
-        ).apply(i, WaystoneTarget::new));
+        public static final StreamCodec<ByteBuf, WaystoneTarget> STREAM_CODEC = Angle.STREAM_CODEC
+            .map(WaystoneTarget::new, WaystoneTarget::get);
 
         private Angle cachedAngle;
         public void setCachedAngle(Angle cachedAngle) { this.cachedAngle = cachedAngle; }
@@ -40,16 +39,15 @@ public interface AngleProvider {
 
         @Override
         public Angle get() { return cachedAngle; }
+
+        @Override
+        public String getTypeTag() { return "waystone"; }
     }
 
-    public static final Codec<AngleProvider> Codec = RecordCodecBuilder.create(i -> i.group(
-        com.mojang.serialization.Codec.STRING.fieldOf("type").forGetter(a -> {
-            if (a instanceof Literal) return "literal";
-            else if (a instanceof WaystoneTarget) return "waystone";
-            else throw new RuntimeException("Invalid angle provider type " + a.getClass());
-        }),
-        Angle.Codec.optionalFieldOf("angle").forGetter(a -> a instanceof Literal(Angle angle) ? Optional.of(angle) : Optional.empty()),
-        Angle.Codec.optionalFieldOf("cachedAngle").forGetter(a -> a instanceof WaystoneTarget w ? Optional.of(w.get()) : Optional.empty()),
+    public static final Codec<AngleProvider> CODEC = RecordCodecBuilder.create(i -> i.group(
+        com.mojang.serialization.Codec.STRING.fieldOf("type").forGetter(AngleProvider::getTypeTag),
+        Angle.CODEC.optionalFieldOf("angle").forGetter(a -> a instanceof Literal(Angle angle) ? Optional.of(angle) : Optional.empty()),
+        Angle.CODEC.optionalFieldOf("cachedAngle").forGetter(a -> a instanceof WaystoneTarget w ? Optional.of(w.get()) : Optional.empty()),
         com.mojang.serialization.Codec.FLOAT.optionalFieldOf("Radians").forGetter(a -> Optional.empty())
     ).apply(i, (type, literal, waystone, legacyLiteral) ->
         switch (type) {
@@ -58,5 +56,14 @@ public interface AngleProvider {
             default -> new Literal(Angle.fromRadians(legacyLiteral.get()));
         }
     ));
+
+    public static final StreamCodec<ByteBuf, AngleProvider> STREAM_CODEC =
+        ByteBufCodecs.STRING_UTF8.dispatch(AngleProvider::getTypeTag,
+            type -> switch (type) {
+                case "literal" -> Literal.STREAM_CODEC;
+                case "waystone" -> WaystoneTarget.STREAM_CODEC;
+                default -> Angle.STREAM_CODEC.map(Literal::new, Literal::angle);
+            }
+        );
 
 }

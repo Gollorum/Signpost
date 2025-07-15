@@ -17,6 +17,7 @@ import gollorum.signpost.worldgen.Villages;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -103,9 +104,6 @@ public class SignpostForge {
         @SubscribeEvent
         public void serverAboutToStart(ServerAboutToStartEvent e) {
             serverSetter.accept(e.getServer());
-            WaystoneLibrary.initialize();
-            BlockRestrictions.initialize();
-            Villages.reset();
 //            VillageRegistry.register(e);
             Villages.instance.initialize(e.getServer().registryAccess());
             new WaystoneDiscoveryEventListener().initialize();
@@ -116,8 +114,16 @@ public class SignpostForge {
             if(!e.getEntity().level().isClientSide && Signpost.getServerInstance().isDedicatedServer())
                 PacketHandler.getInstance().sendToPlayer(
                     (ServerPlayer) e.getEntity(),
-                    new JoinServerEvent.Package()
+                    JoinServerEvent.Package.INSTANCE
                 );
+        }
+
+        @SubscribeEvent
+        public void onWorldLoad(LevelEvent.Load event) {
+            if (event.getLevel() instanceof ServerLevel world &&
+                ((ServerLevel) event.getLevel()).dimension().equals(Level.OVERWORLD)) {
+                WaystoneLibrary.initializeServer(world);
+            }
         }
 
         @SubscribeEvent
@@ -125,37 +131,30 @@ public class SignpostForge {
             serverSetter.accept(null);
         }
 
-        @SubscribeEvent
-        public void onWorldLoad(LevelEvent.Load event) {
-            if (event.getLevel() instanceof ServerLevel world &&
-                ((ServerLevel) event.getLevel()).dimension().equals(Level.OVERWORLD)) {
-                if(!WaystoneLibrary.getInstance().hasStorageBeenSetup())
-                    WaystoneLibrary.getInstance().setupStorage(world);
-                if(!BlockRestrictions.getInstance().hasStorageBeenSetup())
-                    BlockRestrictions.getInstance().setupStorage(world);
-            }
-        }
-
     }
 
     private static final class JoinServerEvent implements PacketHandler.Event<JoinServerEvent.Package> {
 
-        public static final class Package {}
+        public static final class Package {
+
+            public static final Package INSTANCE = new Package();
+
+            public static final StreamCodec<RegistryFriendlyByteBuf, Package> CODEC = StreamCodec.unit(INSTANCE);
+        }
+
+        @Override
+        public StreamCodec<RegistryFriendlyByteBuf, Package> codec() {
+            return Package.CODEC;
+        }
 
         @Override
         public Class<Package> getMessageClass() { return Package.class; }
 
         @Override
-        public void encode(RegistryFriendlyByteBuf buffer, Package message) { }
-
-        @Override
-        public Package decode(RegistryFriendlyByteBuf buffer) { return new Package(); }
-
-        @Override
         public void handle(
             Package message, PacketHandler.Context context
         ) {
-            WaystoneLibrary.initialize();
+            WaystoneLibrary.initializeClient();
         }
     }
 

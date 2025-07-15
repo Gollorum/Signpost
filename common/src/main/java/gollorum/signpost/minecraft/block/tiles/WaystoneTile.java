@@ -71,8 +71,8 @@ public class WaystoneTile extends BlockEntity implements WithOwner.OfWaystone, W
         IDelay.forFrames(10, level.isClientSide(), () -> {
             WaystoneLibrary.getInstance().requestWaystoneAt(new WorldLocation(getBlockPos(), level),
                 data -> {
-                    handle = data.map(d -> d.handle);
-                    name = data.map(d -> d.name);
+                    handle = data.map(WaystoneData::handle);
+                    name = data.map(WaystoneData::name);
                 },
                 level.isClientSide());
             WaystoneLibrary.getInstance().updateEventDispatcher.addListener(updateListener);
@@ -94,13 +94,13 @@ public class WaystoneTile extends BlockEntity implements WithOwner.OfWaystone, W
 
     @Override
     public void saveAdditional(CompoundTag compound, HolderLookup.Provider registries) {
-        compound.put("Owner", PlayerHandle.CompoundSerializer.optional().encode(owner, registries));
+        compound.store(PlayerHandle.CODEC.optionalFieldOf("Owner"), owner);
     }
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        owner = PlayerHandle.CompoundSerializer.optional().decode(tag.getCompound("Owner"), registries);
+        owner = tag.read(PlayerHandle.CODEC.fieldOf("Owner"));
     }
 
 }

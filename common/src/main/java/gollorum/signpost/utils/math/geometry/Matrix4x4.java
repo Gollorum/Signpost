@@ -20,17 +20,17 @@ public class Matrix4x4 {
     );
     
     public static Matrix4x4 FromColumns(Vector4 c0, Vector4 c1, Vector4 c2, Vector4 c3) { return new Matrix4x4(
-        c0.x, c1.x, c2.x, c3.x,
-        c0.y, c1.y, c2.y, c3.y,
-        c0.z, c1.z, c2.z, c3.z,
-        c0.w, c1.w, c2.w, c3.w
+        c0.x(), c1.x(), c2.x(), c3.x(),
+        c0.y(), c1.y(), c2.y(), c3.y(),
+        c0.z(), c1.z(), c2.z(), c3.z(),
+        c0.w(), c1.w(), c2.w(), c3.w()
     ); }
 
     public static Matrix4x4 FromRows(Vector4 r0, Vector4 r1, Vector4 r2, Vector4 r3) { return new Matrix4x4(
-        r0.x, r0.y, r0.z, r0.w,
-        r1.x, r1.y, r1.z, r1.w,
-        r2.x, r2.y, r2.z, r2.w,
-        r3.x, r3.y, r3.z, r3.w
+        r0.x(), r0.y(), r0.z(), r0.w(),
+        r1.x(), r1.y(), r1.z(), r1.w(),
+        r2.x(), r2.y(), r2.z(), r2.w(),
+        r3.x(), r3.y(), r3.z(), r3.w()
     ); }
 
     public static Matrix4x4 translate(Vector3 v) { return new Matrix4x4(

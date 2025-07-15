@@ -41,13 +41,14 @@ public class WaystoneDiscoveryEventListener implements IWaystoneDiscoveryEventLi
             event.getPos(),
             event.getPlayer().serverLevel().dimension().location()
         );
-        Map<VillageWaystone.ChunkEntryKey, WaystoneHandle.Vanilla> allEntries = VillageWaystone.getAllEntriesByChunk(true);
+        var lib = WaystoneLibrary.getInstance();
+        Map<VillageWaystone.ChunkEntryKey, WaystoneHandle.Vanilla> allEntries = lib.getVillageWaystones().getAllEntriesByChunk(lib, true);
         WaystoneHandle.Vanilla handle = allEntries.get(key);
-        if(handle != null && !WaystoneLibrary.getInstance().isDiscovered(PlayerHandle.from(event.getPlayer()), handle)) {
-            Optional<WaystoneData> dataOption = WaystoneLibrary.getInstance().getData(handle);
+        if(handle != null && !lib.isDiscovered(PlayerHandle.from(event.getPlayer()), handle)) {
+            Optional<WaystoneData> dataOption = lib.getData(handle);
             dataOption.ifPresentOrElse(
                 data -> trackedPlayers.computeIfAbsent(event.getPlayer(), p -> PlatformDependent.newConcurrentHashMap())
-                    .putIfAbsent(handle, data.location.block().blockPos),
+                    .putIfAbsent(handle, data.location().block().blockPos()),
                 () -> allEntries.remove(key)
             );
         }
@@ -57,7 +58,8 @@ public class WaystoneDiscoveryEventListener implements IWaystoneDiscoveryEventLi
     public static void onUnWatchChunk(ChunkWatchEvent.UnWatch event) {
         ConcurrentMap<WaystoneHandle.Vanilla, BlockPos> set = trackedPlayers.get(event.getPlayer());
         if(set == null) return;
-        WaystoneHandle.Vanilla handle = VillageWaystone.getAllEntriesByChunk(false).get(
+        var lib = WaystoneLibrary.getInstance();
+        WaystoneHandle.Vanilla handle = lib.getVillageWaystones().getAllEntriesByChunk(lib, false).get(
             new VillageWaystone.ChunkEntryKey(
                 event.getPos(),
                 event.getPlayer().serverLevel().dimension().location()
@@ -78,7 +80,7 @@ public class WaystoneDiscoveryEventListener implements IWaystoneDiscoveryEventLi
                             map.getKey().sendSystemMessage(
                                 Component.translatable(
                                     LangKeys.discovered,
-                                    TextComponents.waystone(map.getKey(), data.name)
+                                    TextComponents.waystone(map.getKey(), data.name())
                                 ));
                         }
                     });

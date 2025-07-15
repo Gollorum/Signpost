@@ -14,8 +14,6 @@ import gollorum.signpost.utils.Either;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.ImageButton;
-import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.network.chat.Component;
 
 import java.util.Optional;
@@ -79,16 +77,16 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 				editButtonTop.set(height / 2 + 20);
 			},
 			d -> {
-				boolean isTooFarAway = d.maxDistance > 0 && d.distance > d.maxDistance;
-				if(d.cannotTeleportBecause.isEmpty() && !isTooFarAway) {
+				boolean isTooFarAway = d.maxDistance() > 0 && d.distance() > d.maxDistance();
+				if(d.cannotTeleportBecause().isEmpty() && !isTooFarAway) {
 					addRenderableOnly(new TextDisplay(
-						Component.translatable(LangKeys.confirmTeleport, Colors.wrap(d.waystoneName, Colors.highlight)),
+						Component.translatable(LangKeys.confirmTeleport, Colors.wrap(d.waystoneName(), Colors.highlight)),
 						new Point(width / 2, height / 2 - 20),
 						Rect.XAlignment.Center, Rect.YAlignment.Bottom,
 						font
 					));
 
-					if (!d.cost.isEmpty()) {
+					if (!d.cost().isEmpty()) {
 						addRenderableOnly(new TextDisplay(
 							Component.translatable(LangKeys.cost),
 							new Point(width / 2 - costCenterSpace / 2, height / 2),
@@ -106,7 +104,7 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 						));
 						addRenderableOnly(new GuiItemRenderer(
 							new Rect(itemRect.center(), 16, 16, Rect.XAlignment.Center, Rect.YAlignment.Center),
-							d.cost
+                            d.cost()
 						));
 					}
 
@@ -136,7 +134,7 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 					).build());
 					editButtonTop.set(cancelRect.max().y + 20);
 				} else {
-					d.cannotTeleportBecause.ifPresent(reason ->
+					d.cannotTeleportBecause().ifPresent(reason ->
 						addRenderableOnly(new TextDisplay(
 							reason,
 							new Point(width / 2, height / 2 - 20),
@@ -147,10 +145,10 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 						addRenderableOnly(new TextDisplay(
 							Component.translatable(
 								LangKeys.tooFarAway,
-								Colors.wrap(Integer.toString(d.distance), Colors.highlight),
-								Colors.wrap(Integer.toString(d.maxDistance), Colors.highlight)
+								Colors.wrap(Integer.toString(d.distance()), Colors.highlight),
+								Colors.wrap(Integer.toString(d.maxDistance()), Colors.highlight)
 							),
-							new Point(width / 2, height / 2 - (d.cannotTeleportBecause.isEmpty() ? 20 : 40)),
+							new Point(width / 2, height / 2 - (d.cannotTeleportBecause().isEmpty() ? 20 : 40)),
 							Rect.XAlignment.Center, Rect.YAlignment.Bottom,
 							font
 						));
@@ -174,7 +172,7 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 		minecraft().setScreen(null);
 		data.consume(
 			langKey -> minecraft().player.displayClientMessage(Component.translatable(langKey), true),
-			data -> PacketHandler.getInstance().sendToServer(new Teleport.Request.Package(data.waystoneName, data.handle))
+			data -> PacketHandler.getInstance().sendToServer(new Teleport.Request.Package(data.waystoneName(), data.handle()))
 		);
 	}
 

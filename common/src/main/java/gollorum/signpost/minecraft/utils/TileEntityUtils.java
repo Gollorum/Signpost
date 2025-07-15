@@ -46,14 +46,14 @@ public class TileEntityUtils {
     }
 
     public static <T> Optional<T> findTileEntityAt(WorldLocation location, Class<T> c, boolean onClient) {
-        return toWorld(location.world, onClient)
-            .map(w -> w.getBlockEntity(location.blockPos))
+        return toWorld(location.world(), onClient)
+            .map(w -> w.getBlockEntity(location.blockPos()))
             .flatMap(tile -> c.isAssignableFrom(tile.getClass()) ? Optional.of((T)tile) : Optional.empty());
     }
 
     public static <T extends BlockEntity> Optional<T> findTileEntityAt(WorldLocation location, BlockEntityType<T> c, boolean onClient) {
-        return toWorld(location.world, onClient)
-            .flatMap(w -> w.getBlockEntity(location.blockPos, c));
+        return toWorld(location.world(), onClient)
+            .flatMap(w -> w.getBlockEntity(location.blockPos(), c));
     }
 
     public static <T> void delayUntilTileEntityExistsAt(WorldLocation location, Class<T> c, Consumer<T> action, int timeout, boolean onClient, Optional<Runnable> onTimeOut) {

@@ -19,7 +19,7 @@ public record CustomTintedModel(
         return Lists.transform(original.getQuads(direction), quad ->
             new BakedQuad(
                 quad.vertices(),
-                tint[quad.tintIndex()],
+                quad.tintIndex() == -1 ? -1 : tint[quad.tintIndex()],
                 quad.direction(),
                 quad.sprite(),
                 quad.shade(),

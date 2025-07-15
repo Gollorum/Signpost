@@ -1,27 +1,19 @@
 package gollorum.signpost;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.minecraft.config.IConfig;
-import gollorum.signpost.minecraft.storage.BlockRestrictionsStorage;
 import gollorum.signpost.minecraft.utils.ClientFrameworkAdapter;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.networking.ReflectionEvent;
-import gollorum.signpost.networking.SerializedWith;
 import gollorum.signpost.security.WithOwner;
-import gollorum.signpost.utils.Tuple;
-import gollorum.signpost.utils.serialization.BooleanSerializer;
-import gollorum.signpost.utils.serialization.IntSerializer;
-import gollorum.signpost.utils.serialization.StringSerializer;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.saveddata.SavedData;
-import net.minecraft.world.level.storage.DimensionDataStorage;
+import net.minecraft.world.level.saveddata.SavedDataType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,10 +21,21 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 // Server only.
-public class BlockRestrictions {
+public class BlockRestrictions extends SavedData {
+
+	public static final Codec<BlockRestrictions> CODEC = Codec.unboundedMap(
+		PlayerHandle.CODEC,
+		Entry.CODEC
+	).xmap(BlockRestrictions::new, br -> br.values);
+
+	public static final SavedDataType<BlockRestrictions> TYPE = new SavedDataType<>(
+		Signpost.MOD_ID + "_BlockRestrictions",
+		BlockRestrictions::new,
+		CODEC,
+		DataFixTypes.SAVED_DATA_MAP_DATA
+	);
 
 	public enum Type {
 		Waystone(
@@ -84,10 +87,7 @@ public class BlockRestrictions {
 			Function<Object, Optional<PlayerHandle>> tryGetOwner
 		) {
 			this.getOverridePermissionLevel = overridePermissionLevelSupplier;
-			this.setCount = (e, i) -> {
-				setCount.accept(e, i);
-				BlockRestrictions.getInstance().markDirty();
-			};
+			this.setCount = setCount;
 			this.getCount = getCount;
 			this.errorLangKey = errorLangKey;
 			this.remainingLangKey = remainingLangKey;
@@ -98,19 +98,17 @@ public class BlockRestrictions {
 		}
 	}
 
-	private static BlockRestrictions instance;
-	public static BlockRestrictions getInstance() { return instance; }
-
-	private SavedData savedData = null;
-	public boolean hasStorageBeenSetup() { return savedData != null; }
-
-	public static void initialize() {
-		instance = new BlockRestrictions();
+	public static BlockRestrictions getInstance() {
+		assert Signpost.getServerType().isServer;
+		return Signpost.getServerInstance().overworld().getDataStorage().computeIfAbsent(TYPE);
 	}
 
-	private BlockRestrictions() {}
-
 	private static class Entry {
+		public static final Codec<Entry> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.INT.fieldOf("remaining_waystones").forGetter(e -> e.waystonesLeft),
+			Codec.INT.fieldOf("remaining_signposts").forGetter(e -> e.signpostsLeft)
+		).apply(i, Entry::new));
+
 		public int waystonesLeft;
 		public int signpostsLeft;
 		public Entry(int waystonesLeft, int signpostsLeft) {
@@ -121,25 +119,21 @@ public class BlockRestrictions {
 			return player.equals(PlayerHandle.Invalid)
 				? new Entry(-1, -1)
 				: new Entry(
-					IConfig.IServer.getInstance().permissions().defaultMaxWaystonesPerPlayer(),
-					IConfig.IServer.getInstance().permissions().defaultMaxSignpostsPerPlayer()
-				);
+				IConfig.IServer.getInstance().permissions().defaultMaxWaystonesPerPlayer(),
+				IConfig.IServer.getInstance().permissions().defaultMaxSignpostsPerPlayer()
+			);
 		}
 	}
 
-	public void setupStorage(ServerLevel world){
-		DimensionDataStorage storage = world.getDataStorage();
-		savedData = storage.computeIfAbsent(
-            new SavedData.Factory<>(
-                BlockRestrictionsStorage::new,
-                (compound, provider) -> new BlockRestrictionsStorage().load(compound, provider),
-                DataFixTypes.SAVED_DATA_MAP_DATA
-            ),
-			BlockRestrictionsStorage.NAME
-		);
+	private final Map<PlayerHandle, Entry> values;
+
+	private BlockRestrictions() {
+		this.values = new HashMap<>();
 	}
 
-	private final Map<PlayerHandle, Entry> values = new HashMap<>();
+	private BlockRestrictions(Map<PlayerHandle, Entry> values) {
+		this.values = values;
+	}
 
 	private Entry getEntry(PlayerHandle player) {
 		return values.computeIfAbsent(player, Entry::forNewUser);
@@ -162,7 +156,7 @@ public class BlockRestrictions {
 			default: throw new IllegalArgumentException();
 		}
 		if(oldCount != newCount) {
-			markDirty();
+			setDirty();
 			return true;
 		} else return false;
 	}
@@ -173,9 +167,10 @@ public class BlockRestrictions {
 		int prevCount = type.getCount.apply(entry);
 		if(prevCount >= 0) {
 			type.setCount.accept(entry, prevCount + 1);
+			setDirty();
 			PacketHandler.getInstance().sendToPlayer(
-				(ServerPlayer) player.asEntity(),
-				new NotifyCountChanged(type.remainingLangKey, prevCount + 1, type == Type.Waystone)
+                player.asEntity(),
+				new NotifyCountChanged.Package(type.remainingLangKey, prevCount + 1, type == Type.Waystone)
 			);
 		}
 	}
@@ -186,9 +181,10 @@ public class BlockRestrictions {
 		int prevCount = type.getCount.apply(entry);
 		if(prevCount >= 1) {
 			type.setCount.accept(entry, prevCount - 1);
+			setDirty();
 			PacketHandler.getInstance().sendToPlayer(
-				(ServerPlayer) player.asEntity(),
-				new NotifyCountChanged(type.remainingLangKey, prevCount - 1, type == Type.Waystone)
+                player.asEntity(),
+				new NotifyCountChanged.Package(type.remainingLangKey, prevCount - 1, type == Type.Waystone)
 			);
 			return true;
 		} else {
@@ -207,67 +203,30 @@ public class BlockRestrictions {
 		};
 	}
 
-	private void markDirty() {
-		// savedData is null on dedicated clients
-		if(savedData != null) savedData.setDirty();
-	}
+	public static final class NotifyCountChanged implements PacketHandler.Event.ForClient<NotifyCountChanged.Package> {
 
-	public CompoundTag saveTo(CompoundTag compound, HolderLookup.Provider provider) {
-		ListTag list = new ListTag();
-		list.addAll(values.entrySet().stream().map(e -> {
-			CompoundTag elementComp = new CompoundTag();
-			PlayerHandle.CompoundSerializer.encode(elementComp, e.getKey(), provider);
-			elementComp.putInt("remaining_waystones", e.getValue().waystonesLeft);
-			elementComp.putInt("remaining_signposts", e.getValue().signpostsLeft);
-			return elementComp;
-		}).collect(Collectors.toSet()));
-		compound.put("blockRestrictions", list);
-		return compound;
-	}
-
-	public void readFrom(CompoundTag compound, HolderLookup.Provider provider) {
-		Tag nbt = compound.get("blockRestrictions");
-		if(nbt instanceof ListTag) {
-			ListTag list = (ListTag) nbt;
-			values.clear();
-			values.putAll(list.stream().map(i -> {
-				CompoundTag elementCompound = (CompoundTag) i;
-				return Tuple.of(PlayerHandle.CompoundSerializer.decode(elementCompound, provider),
-					new Entry(elementCompound.getInt("remaining_waystones"), elementCompound.getInt("remaining_signposts")));
-			}).collect(Tuple.mapCollector()));
+		public static final record Package(String langKey, Integer count, boolean isWaystoneNotification) {
+			private static final StreamCodec<RegistryFriendlyByteBuf, Package> STREAM_CODEC = StreamCodec.composite(
+				ByteBufCodecs.STRING_UTF8, Package::langKey,
+				ByteBufCodecs.INT, Package::count,
+				ByteBufCodecs.BOOL, Package::isWaystoneNotification,
+				Package::new
+			);
 		}
-	}
-
-	public static class NotifyCountChanged extends ReflectionEvent.ForClient<NotifyCountChanged> {
-
-		public NotifyCountChanged() {
-			super();
-		}
-
-		public NotifyCountChanged(String langKey, Integer count, boolean isWaystoneNotification) {
-			super(null);
-			this.langKey = langKey;
-			this.count = count;
-			IsWaystoneNotification = isWaystoneNotification;
-		}
-
-		@SerializedWith(serializer = StringSerializer.Buffer.class)
-		private String langKey;
-
-		@SerializedWith(serializer = IntSerializer.class)
-		private Integer count;
-
-		@SerializedWith(serializer = BooleanSerializer.class)
-		private Boolean IsWaystoneNotification;
 
 		@Override
-		public Class<NotifyCountChanged> getMessageClass() {
-			return NotifyCountChanged.class;
+		public StreamCodec<RegistryFriendlyByteBuf, Package> codec() {
+			return Package.STREAM_CODEC;
+		}
+
+		@Override
+		public Class<Package> getMessageClass() {
+			return Package.class;
 		}
 
         @Override
-        public void handle(NotifyCountChanged message, PacketHandler.Context.Client context) {
-            if((message.IsWaystoneNotification
+        public void handle(Package message, PacketHandler.Context.Client context) {
+            if((message.isWaystoneNotification
                 ? IConfig.IClient.getInstance().enableWaystoneLimitNotifications()
                 : IConfig.IClient.getInstance().enableSignpostLimitNotifications()
             )) ClientFrameworkAdapter.showStatusMessage(Component.translatable(message.langKey, message.count), true);

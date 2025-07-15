@@ -17,7 +17,11 @@ public class Inventory {
 		List<ItemStack> ret = new ArrayList<>();
 		ret.add(player.getMainHandItem());
 		ret.add(player.getOffhandItem());
-		ret.addAll(player.getInventory().items);
+		for (var item : player.getInventory()){
+			if (item != null && !item.isEmpty()) {
+				ret.add(item);
+			}
+		}
 		return ret;
 	}
 

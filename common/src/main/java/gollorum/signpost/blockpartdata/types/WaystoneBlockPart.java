@@ -18,11 +18,10 @@ import gollorum.signpost.utils.math.geometry.AABB;
 import gollorum.signpost.utils.math.geometry.Intersectable;
 import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
+import gollorum.signpost.utils.serialization.OptionalCompoundSerializer;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.BlockEntity;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -40,8 +39,11 @@ public class WaystoneBlockPart implements BlockPart<WaystoneBlockPart>, WithOwne
 
 	public static final BlockPartMetadata<WaystoneBlockPart> METADATA = new BlockPartMetadata<>(
 		"Waystone",
-        BlockPart::writeTo,
-		(compound, provider) -> new WaystoneBlockPart(PlayerHandle.CompoundSerializer.optional().decode(compound.getCompound("owner"), provider)),
+		OptionalCompoundSerializer.from(PlayerHandle.CODEC).fieldOf("owner")
+			.xmap(WaystoneBlockPart::new, w -> w.owner),
+		ByteBufCodecs.optional(PlayerHandle.STREAM_CODEC)
+			.map(WaystoneBlockPart::new, w -> w.owner)
+			.mapStream(it -> it),
         WaystoneBlockPart.class
 	);
 
@@ -60,18 +62,7 @@ public class WaystoneBlockPart implements BlockPart<WaystoneBlockPart>, WithOwne
 	@Override
 	public BlockPartMetadata<WaystoneBlockPart> getMeta() { return METADATA; }
 
-	@Override
-	public void writeTo(CompoundTag compound, HolderLookup.Provider provider) {
-		compound.put("owner", PlayerHandle.CompoundSerializer.optional().encode(owner, provider));
-	}
-
-	@Override
-	public void readMutationUpdate(CompoundTag compound, BlockEntity tile, Player editingPlayer, HolderLookup.Provider provider) {
-		if(compound.contains("owner"))
-			owner = PlayerHandle.CompoundSerializer.optional().decode(compound.getCompound("owner"), provider);
-	}
-
-	@Override
+    @Override
 	public boolean hasThePermissionToEdit(WithOwner tile, @Nullable Player player) { return true; }
 
 	@Override

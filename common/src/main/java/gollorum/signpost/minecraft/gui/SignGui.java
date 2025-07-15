@@ -74,7 +74,7 @@ public class SignGui extends ExtendedScreen {
     private final ItemStack itemToDropOnBreak;
 
     private final Consumer<WaystoneUpdatedEvent> waystoneUpdateListener = event -> {
-        WaystoneEntry newEntry = new WaystoneEntry(event.name, event.name, event.handle, event.location.block().blockPos);
+        WaystoneEntry newEntry = new WaystoneEntry(event.name, event.name, event.handle, event.location.block().blockPos());
         switch(event.getType()) {
             case Added:
                 waystoneDropdown.addEntry(newEntry);
@@ -86,7 +86,7 @@ public class SignGui extends ExtendedScreen {
                 break;
             case Renamed:
                 String oldName = ((WaystoneRenamedEvent)event).oldName;
-                WaystoneEntry oldEntry = new WaystoneEntry(oldName, oldName, event.handle, event.location.block().blockPos);
+                WaystoneEntry oldEntry = new WaystoneEntry(oldName, oldName, event.handle, event.location.block().blockPos());
                 waystoneDropdown.removeEntry(oldEntry);
                 waystoneDropdown.addEntry(newEntry);
                 break;
@@ -579,9 +579,9 @@ public class SignGui extends ExtendedScreen {
                 oldWaystone.ifPresent(oldWs -> {
                     Optional<Tuple<Tuple<String, String>, BlockPos>> name = map.apply(oldWs.handle);
                     if (name.isPresent()) {
-                        oldWs.entryName = name.get()._1._1;
-                        oldWs.displayName = name.get()._1._2;
-                        oldWs.pos = name.get()._2;
+                        oldWs.entryName = name.get()._1()._1();
+                        oldWs.displayName = name.get()._1()._2();
+                        oldWs.pos = name.get()._2();
                         waystoneInputBox.setValue(oldWs.entryName);
                     }
                 });
@@ -589,16 +589,16 @@ public class SignGui extends ExtendedScreen {
             };
             WaystoneLibrary.getInstance().requestAllWaystones(n -> {
                 waystoneDropdown.addEntries(n.entrySet().stream().map(e -> new WaystoneEntry(
-                    e.getValue()._1,
-                    e.getValue()._1,
+                        e.getValue()._1(),
+                        e.getValue()._1(),
                     e.getKey(),
-                    e.getValue()._2.block().blockPos
+                    e.getValue()._2().block().blockPos()
                 )).filter(e -> oldWaystone.map(oldE -> !e.handle.equals(oldE.handle)).orElse(true))
                     .collect(Collectors.toList()));
                 setupFromSign.accept(id ->
                     id instanceof WaystoneHandle.Vanilla
                         ? Optional.ofNullable(n.get(id))
-                            .map(e -> Tuple.of(e._1, e._1, e._2.block().blockPos))
+                            .map(e -> Tuple.of(e._1(), e._1(), e._2().block().blockPos()))
                         : Optional.empty());
             }, Optional.of(PlayerHandle.from(minecraft().player)), true);
             ExternalWaystoneLibrary.getInstance().requestKnownWaystones(n -> {
@@ -606,7 +606,7 @@ public class SignGui extends ExtendedScreen {
                     w.name() + " " + w.handle().modMark(),
                     w.name(),
                     w.handle(),
-                    w.loc().block().blockPos
+                    w.loc().block().blockPos()
                 )).collect(Collectors.toList());
                 waystoneDropdown.addEntries(entries.stream().filter(e -> oldWaystone.map(oldE -> !e.handle.equals(oldE.handle)).orElse(true))
                     .collect(Collectors.toList()));
@@ -915,7 +915,7 @@ public class SignGui extends ExtendedScreen {
         PostTile.TilePartInfo tilePartInfo = oldTilePartInfo.orElseGet(() ->
             new PostTile.TilePartInfo(tile.getLevel().dimension().location(), tile.getBlockPos(), UUID.randomUUID()));
         var registries = tile.getLevel().registryAccess();
-        CompoundTag data;
+        BlockPart data;
         boolean isLocked = lockButton.isLocked();
         var mainTex = oldSign.map(SignBlockPart::getMainTexture).orElse(modelType.mainTexture);
         var secondaryTex = oldSign.map(SignBlockPart::getSecondaryTexture).orElse(modelType.secondaryTexture);
@@ -925,52 +925,49 @@ public class SignGui extends ExtendedScreen {
         ).orElseGet(() -> new AngleProvider.Literal(rotationInputField.getCurrentAngle()));
         switch (selectedType) {
             case Wide -> {
-                data = SmallWideSignBlockPart.METADATA.encode(
-                    new SmallWideSignBlockPart(
-                        angle,
-                        asNameProvider(wideSignInputBox.getValue()),
-                        wideSignRenderer.isFlipped(),
-                        mainTex,
-                        secondaryTex,
-                        selectedOverlay,
-                        colorInputBox.getCurrentColor(),
-                        destinationId,
-                        itemToDropOnBreak,
-                        modelType,
-                        isLocked,
-                        oldSign.map(SignBlockPart::isMarkedForGeneration).orElse(false)
-                    ), registries
+                data = new SmallWideSignBlockPart(
+                    angle,
+                    asNameProvider(wideSignInputBox.getValue()),
+                    wideSignRenderer.isFlipped(),
+                    mainTex,
+                    secondaryTex,
+                    selectedOverlay,
+                    colorInputBox.getCurrentColor(),
+                    destinationId,
+                    itemToDropOnBreak,
+                    modelType,
+                    isLocked,
+                    oldSign.map(SignBlockPart::isMarkedForGeneration).orElse(false)
                 );
                 if (oldSign.isPresent()) {
                     PacketHandler.getInstance().sendToServer(new PostTile.PartMutatedEvent.Packet(
-                        tilePartInfo, data,
+                        tilePartInfo,
+                        data,
                         SmallWideSignBlockPart.METADATA.identifier(),
                         new Vector3(0, localHitPos.y() > 0.5f ? 0.75f : 0.25f, 0)
                     ));
                 } else {
                     PacketHandler.getInstance().sendToServer(new PostTile.PartAddedEvent.Packet(
-                        tilePartInfo, data,
-                        SmallWideSignBlockPart.METADATA.identifier(),
-                        new Vector3(0, localHitPos.y() > 0.5f ? 0.75f : 0.25f, 0), itemToDropOnBreak, PlayerHandle.from(minecraft().player)
+                        tilePartInfo,
+                        new BlockPartInstance(data, new Vector3(0, localHitPos.y() > 0.5f ? 0.75f : 0.25f, 0)),
+                        itemToDropOnBreak, PlayerHandle.from(minecraft().player)
                     ));
                 }
             }
             case Short -> {
-                data = SmallShortSignBlockPart.METADATA.encode(
-                    new SmallShortSignBlockPart(
-                        angle,
-                        asNameProvider(shortSignInputBox.getValue()),
-                        shortSignRenderer.isFlipped(),
-                        mainTex,
-                        secondaryTex,
-                        selectedOverlay,
-                        colorInputBox.getCurrentColor(),
-                        destinationId,
-                        itemToDropOnBreak,
-                        modelType,
-                        isLocked,
-                        oldSign.map(SignBlockPart::isMarkedForGeneration).orElse(false)
-                    ), registries
+                data = new SmallShortSignBlockPart(
+                    angle,
+                    asNameProvider(shortSignInputBox.getValue()),
+                    shortSignRenderer.isFlipped(),
+                    mainTex,
+                    secondaryTex,
+                    selectedOverlay,
+                    colorInputBox.getCurrentColor(),
+                    destinationId,
+                    itemToDropOnBreak,
+                    modelType,
+                    isLocked,
+                    oldSign.map(SignBlockPart::isMarkedForGeneration).orElse(false)
                 );
                 if (oldSign.isPresent()) {
                     PacketHandler.getInstance().sendToServer(new PostTile.PartMutatedEvent.Packet(
@@ -980,33 +977,31 @@ public class SignGui extends ExtendedScreen {
                     ));
                 } else {
                     PacketHandler.getInstance().sendToServer(new PostTile.PartAddedEvent.Packet(
-                        tilePartInfo, data,
-                        SmallShortSignBlockPart.METADATA.identifier(),
-                        new Vector3(0, localHitPos.y() > 0.5f ? 0.75f : 0.25f, 0), itemToDropOnBreak, PlayerHandle.from(minecraft().player)
+                        tilePartInfo,
+                        new BlockPartInstance(data, new Vector3(0, localHitPos.y() > 0.5f ? 0.75f : 0.25f, 0)),
+                        itemToDropOnBreak, PlayerHandle.from(minecraft().player)
                     ));
                 }
             }
             case Large -> {
-                data = LargeSignBlockPart.METADATA.encode(
-                    new LargeSignBlockPart(
-                        angle,
-                        new NameProvider[]{
-                            asNameProvider(largeSignInputBoxes.get(0).getValue()),
-                            asNameProvider(largeSignInputBoxes.get(1).getValue()),
-                            asNameProvider(largeSignInputBoxes.get(2).getValue()),
-                            asNameProvider(largeSignInputBoxes.get(3).getValue()),
-                        },
-                        currentSignRenderer.isFlipped(),
-                        mainTex,
-                        secondaryTex,
-                        selectedOverlay,
-                        colorInputBox.getCurrentColor(),
-                        destinationId,
-                        itemToDropOnBreak,
-                        modelType,
-                        isLocked,
-                        oldSign.map(SignBlockPart::isMarkedForGeneration).orElse(false)
-                    ), registries
+                data = new LargeSignBlockPart(
+                    angle,
+                    new NameProvider[]{
+                        asNameProvider(largeSignInputBoxes.get(0).getValue()),
+                        asNameProvider(largeSignInputBoxes.get(1).getValue()),
+                        asNameProvider(largeSignInputBoxes.get(2).getValue()),
+                        asNameProvider(largeSignInputBoxes.get(3).getValue()),
+                    },
+                    currentSignRenderer.isFlipped(),
+                    mainTex,
+                    secondaryTex,
+                    selectedOverlay,
+                    colorInputBox.getCurrentColor(),
+                    destinationId,
+                    itemToDropOnBreak,
+                    modelType,
+                    isLocked,
+                    oldSign.map(SignBlockPart::isMarkedForGeneration).orElse(false)
                 );
                 if (oldSign.isPresent()) {
                     PacketHandler.getInstance().sendToServer(new PostTile.PartMutatedEvent.Packet(
@@ -1016,9 +1011,9 @@ public class SignGui extends ExtendedScreen {
                     ));
                 } else {
                     PacketHandler.getInstance().sendToServer(new PostTile.PartAddedEvent.Packet(
-                        tilePartInfo, data,
-                        LargeSignBlockPart.METADATA.identifier(),
-                        new Vector3(0, 0.5f, 0), itemToDropOnBreak, PlayerHandle.from(minecraft().player)
+                        tilePartInfo,
+                        new BlockPartInstance(data, new Vector3(0, 0.5f, 0)),
+                        itemToDropOnBreak, PlayerHandle.from(minecraft().player)
                     ));
                 }
             }

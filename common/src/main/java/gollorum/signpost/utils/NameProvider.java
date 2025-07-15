@@ -1,14 +1,7 @@
 package gollorum.signpost.utils;
 
 import com.mojang.serialization.Codec;
-import gollorum.signpost.utils.serialization.BufferSerializable;
-import gollorum.signpost.utils.serialization.CompoundSerializable;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
@@ -34,12 +27,6 @@ public interface NameProvider {
         public String get() { return cachedName; }
 
         public WaystoneTarget(String cachedName) { this.cachedName = cachedName; }
-    }
-
-    public static NameProvider fetchFrom(Tag tag, HolderLookup.Provider provider) {
-        return tag instanceof CompoundTag && COMPOUND_SERIALIZER.isContainedIn((CompoundTag) tag)
-            ? COMPOUND_SERIALIZER.decode((CompoundTag) tag, provider)
-            : new Literal(tag.getAsString());
     }
 
     private static NameProvider from(String type, String name) {

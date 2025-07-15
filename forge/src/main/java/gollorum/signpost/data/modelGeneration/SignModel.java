@@ -44,90 +44,90 @@ public class SignModel {
 		}
 	}
 
-	public void render(
-		Matrix4f blockToView,
-		Matrix4f localToBlock,
-		MultiBufferSource buffer,
-		RenderType renderType,
-		int packedLight,
-		int packedOverlay,
-		boolean useAmbientOcclusion,
-		@Nullable BlockAndTintGetter level,
-		@Nullable BlockState state,
-		@Nullable BlockPos pos,
-		int[] tints
-	) {
-		BitSet bitset = new BitSet(3);
-		float[] aoValues = useAmbientOcclusion ? new float[Direction.values().length * 2] : null;
-		ModelBlockRenderer.AmbientOcclusionFace aoFace = useAmbientOcclusion ? new ModelBlockRenderer.AmbientOcclusionFace() : null;
-
-		var blockVertices = new Vector4f[4];
-		var colors = new float[3 * tints.length];
-		for(var i = 0; i < tints.length; i++) {
-			int tint = tints[i];
-			colors[i * 3] = Colors.getRed(tint) / 255f;
-			colors[i * 3 + 1] = Colors.getGreen(tint) / 255f;
-			colors[i * 3 + 2] = Colors.getBlue(tint) / 255f;
-		}
-
-		for(Map.Entry<Material, List<Quad>> entry : quads.entrySet()) {
-			for(Quad quad : entry.getValue()) {
-
-				var localNormal = new Vector4f(quad.normal.x(), quad.normal.y(), quad.normal.z(), 0);
-				localNormal.mul(localToBlock);
-
-				float rFinal = 1;
-				float gFinal = 1;
-				float bFinal = 1;
-				if(quad.tintIndex >= 0) {
-					rFinal = colors[quad.tintIndex * 3];
-					gFinal = colors[quad.tintIndex * 3 + 1];
-					bFinal = colors[quad.tintIndex * 3 + 2];
-				}
-
-				VertexConsumer vertexBuilder = entry.getKey().buffer(buffer, x -> renderType);
-
-				for(var i = 0; i < quad.vertices.length; i++) {
-					var vertex = quad.vertices[i];
-					var vert = new Vector4f(vertex.pos.x(), vertex.pos.y(), vertex.pos.z(), 1.0F);
-					vert.mul(localToBlock);
-					blockVertices[i] = vert;
-				}
-
-				if(useAmbientOcclusion) {
-					var dir = Direction.getApproximateNearest(localNormal.x(), localNormal.y(), localNormal.z());
-					calculateShape(level, state, pos, blockVertices, dir, aoValues, bitset);
-					aoFace.calculate(level, state, pos, dir, aoValues, bitset, true);
-				}
-
-				var globalNormal = localNormal;
-				localNormal = null;
-				globalNormal.mul(blockToView);
-
-				for(var i = 0; i < quad.vertices.length; i++) {
-					var vertex = quad.vertices[i];
-					var vert = blockVertices[i];
-					vert.mul(blockToView);
-					if(useAmbientOcclusion) {
-						vertexBuilder
-                            .addVertex(vert.x(), vert.y(), vert.z())
-                            .setColor(rFinal * aoFace.brightness[0], gFinal * aoFace.brightness[1], bFinal * aoFace.brightness[2], 1)
-                            .setUv(vertex.u, vertex.v)
-                            .setOverlay(packedOverlay)
-                            .setLight(packedLight)
-                            .setNormal(globalNormal.x(), globalNormal.y(), globalNormal.z());
-					} else
-                        vertexBuilder
-                            .addVertex(vert.x(), vert.y(), vert.z())
-                            .setColor(rFinal, gFinal, bFinal, 1)
-                            .setUv(vertex.u, vertex.v)
-                            .setOverlay(packedOverlay)
-                            .setLight(packedLight)
-                            .setNormal(globalNormal.x(), globalNormal.y(), globalNormal.z());
-				}
-			}
-		}
-	}
+//	public void render(
+//		Matrix4f blockToView,
+//		Matrix4f localToBlock,
+//		MultiBufferSource buffer,
+//		RenderType renderType,
+//		int packedLight,
+//		int packedOverlay,
+//		boolean useAmbientOcclusion,
+//		@Nullable BlockAndTintGetter level,
+//		@Nullable BlockState state,
+//		@Nullable BlockPos pos,
+//		int[] tints
+//	) {
+//		BitSet bitset = new BitSet(3);
+//		float[] aoValues = useAmbientOcclusion ? new float[Direction.values().length * 2] : null;
+//		ModelBlockRenderer.AmbientOcclusionFace aoFace = useAmbientOcclusion ? new ModelBlockRenderer.AmbientOcclusionFace() : null;
+//
+//		var blockVertices = new Vector4f[4];
+//		var colors = new float[3 * tints.length];
+//		for(var i = 0; i < tints.length; i++) {
+//			int tint = tints[i];
+//			colors[i * 3] = Colors.getRed(tint) / 255f;
+//			colors[i * 3 + 1] = Colors.getGreen(tint) / 255f;
+//			colors[i * 3 + 2] = Colors.getBlue(tint) / 255f;
+//		}
+//
+//		for(Map.Entry<Material, List<Quad>> entry : quads.entrySet()) {
+//			for(Quad quad : entry.getValue()) {
+//
+//				var localNormal = new Vector4f(quad.normal.x(), quad.normal.y(), quad.normal.z(), 0);
+//				localNormal.mul(localToBlock);
+//
+//				float rFinal = 1;
+//				float gFinal = 1;
+//				float bFinal = 1;
+//				if(quad.tintIndex >= 0) {
+//					rFinal = colors[quad.tintIndex * 3];
+//					gFinal = colors[quad.tintIndex * 3 + 1];
+//					bFinal = colors[quad.tintIndex * 3 + 2];
+//				}
+//
+//				VertexConsumer vertexBuilder = entry.getKey().buffer(buffer, x -> renderType);
+//
+//				for(var i = 0; i < quad.vertices.length; i++) {
+//					var vertex = quad.vertices[i];
+//					var vert = new Vector4f(vertex.pos.x(), vertex.pos.y(), vertex.pos.z(), 1.0F);
+//					vert.mul(localToBlock);
+//					blockVertices[i] = vert;
+//				}
+//
+//				if(useAmbientOcclusion) {
+//					var dir = Direction.getApproximateNearest(localNormal.x(), localNormal.y(), localNormal.z());
+//					calculateShape(level, state, pos, blockVertices, dir, aoValues, bitset);
+//					aoFace.calculate(level, state, pos, dir, aoValues, bitset, true);
+//				}
+//
+//				var globalNormal = localNormal;
+//				localNormal = null;
+//				globalNormal.mul(blockToView);
+//
+//				for(var i = 0; i < quad.vertices.length; i++) {
+//					var vertex = quad.vertices[i];
+//					var vert = blockVertices[i];
+//					vert.mul(blockToView);
+//					if(useAmbientOcclusion) {
+//						vertexBuilder
+//                            .addVertex(vert.x(), vert.y(), vert.z())
+//                            .setColor(rFinal * aoFace.brightness[0], gFinal * aoFace.brightness[1], bFinal * aoFace.brightness[2], 1)
+//                            .setUv(vertex.u, vertex.v)
+//                            .setOverlay(packedOverlay)
+//                            .setLight(packedLight)
+//                            .setNormal(globalNormal.x(), globalNormal.y(), globalNormal.z());
+//					} else
+//                        vertexBuilder
+//                            .addVertex(vert.x(), vert.y(), vert.z())
+//                            .setColor(rFinal, gFinal, bFinal, 1)
+//                            .setUv(vertex.u, vertex.v)
+//                            .setOverlay(packedOverlay)
+//                            .setLight(packedLight)
+//                            .setNormal(globalNormal.x(), globalNormal.y(), globalNormal.z());
+//				}
+//			}
+//		}
+//	}
 
 	private static void calculateShape(BlockAndTintGetter level, BlockState state, BlockPos pos, Vector4f[] vertices, Direction dir, @Nullable float[] aoValues, BitSet bitSet) {
 		var bounds = new AABB(Arrays.stream(vertices).map(Vector3::fromVector4f));

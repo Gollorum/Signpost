@@ -25,7 +25,7 @@ public class WaystoneHandleUtils {
                 reason.set(Optional.of(Component.translatable(LangKeys.notDiscovered, Colors.wrap(waystoneName, Colors.highlight))));
             }
             
-            WaystoneLibrary.getInstance().getLocationData((WaystoneHandle.Vanilla) dest).block().world.mapLeft(Optional::of)
+            WaystoneLibrary.getInstance().getLocationData((WaystoneHandle.Vanilla) dest).block().world().mapLeft(Optional::of)
                     .leftOr(i -> TileEntityUtils.findWorld(i, false))
                     .ifPresent(world -> {
                         boolean isAcrossDimensionsAndEnforceDimension = !(player.level().dimension().equals(world.dimension())) && !(IConfig.IServer.getInstance().teleport().enableAcrossDimensions());

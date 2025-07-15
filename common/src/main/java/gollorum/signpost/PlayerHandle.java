@@ -2,14 +2,9 @@ package gollorum.signpost;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import gollorum.signpost.utils.serialization.BufferSerializable;
-import gollorum.signpost.utils.serialization.CompoundSerializable;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.Util;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.UUIDUtil;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;

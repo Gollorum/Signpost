@@ -12,9 +12,9 @@ import java.util.function.UnaryOperator;
 
 //public class ItemComponents {
 //
-//    public static final DataComponentType<WaystoneHandle.Vanilla> WAYSTONE_HANDLE = register("Handle",
+//    public static final DataComponentType<WaystoneHandle.Vanilla> WAYSTONE_HANDLE = register("handle",
 //        builder -> builder
-//            .networkSynchronized(WaystoneHandle.Vanilla.BufferSerializer)
+//            .networkSynchronized(WaystoneHandle.Vanilla.STREAM_CODEC)
 //            .persistent(WaystoneHandle.Vanilla.vanillaCodec)
 //    );
 //

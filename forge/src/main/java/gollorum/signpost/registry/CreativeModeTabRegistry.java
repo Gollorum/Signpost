@@ -2,7 +2,6 @@ package gollorum.signpost.registry;
 
 import gollorum.signpost.minecraft.config.IConfig;
 import gollorum.signpost.minecraft.utils.LangKeys;
-import gollorum.signpost.platform.Services;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
@@ -34,8 +33,8 @@ public class CreativeModeTabRegistry {
                 output.accept(post.get());
             output.accept(ItemRegistry.WAYSTONE_ITEM.get());
             for(var modelWaystone : ItemRegistry.ModelWaystoneItems)
-                if (IConfig.IServer.getInstance().allowedWaystones().contains(modelWaystone._1.name))
-                    output.accept(modelWaystone._2.get());
+                if (IConfig.IServer.getInstance().allowedWaystones().contains(modelWaystone._1().name))
+                    output.accept(modelWaystone._2().get());
         })
         .build()
     );

@@ -8,13 +8,7 @@ import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.config.IConfig;
 import gollorum.signpost.platform.Services;
 import gollorum.signpost.utils.serialization.BlockPosSerializer;
-import gollorum.signpost.utils.serialization.CompoundSerializable;
-import gollorum.signpost.utils.serialization.ResourceLocationSerializer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
@@ -23,6 +17,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class VillageWaystone {
+
+    public static final Codec<VillageWaystone> CODEC = Entry.CODEC.listOf()
+        .xmap(VillageWaystone::new, villageWaystone -> villageWaystone.allEntries);
 
     public record ChunkEntryKey(ChunkPos chunkPos, ResourceLocation dimensionKey) {
 
@@ -44,80 +41,91 @@ public class VillageWaystone {
 
     // Key is not the position of the block, it's a reference position.
     // This is usually the village's position.
-    private static final Map<BlockPos, WaystoneHandle.Vanilla> generatedWaystones = new HashMap<>();
-    private static final Map<ChunkEntryKey, WaystoneHandle.Vanilla> generatedWaystonesByChunk = new HashMap<>();
+    private final Map<BlockPos, WaystoneHandle.Vanilla> generatedWaystones;
+    private final Map<ChunkEntryKey, WaystoneHandle.Vanilla> generatedWaystonesByChunk;
+    private final List<Entry> allEntries;
 
-    public static boolean doesWaystoneExistIn(BlockPos villageLocation) {
+    public static VillageWaystone getInstance() {
+        return WaystoneLibrary.getInstance().data.villageWaystones;
+    }
+
+    public VillageWaystone() {
+        this.generatedWaystones = new HashMap<>();
+        this.generatedWaystonesByChunk = new HashMap<>();
+        this.allEntries = new ArrayList<>();
+    }
+
+    private VillageWaystone(List<Entry> generatedWaystones) {
+        this.generatedWaystones = new HashMap<>();
+        this.generatedWaystonesByChunk = new HashMap<>();
+        this.allEntries = generatedWaystones;
+        for (Entry entry : generatedWaystones) {
+            this.generatedWaystones.put(entry.referencePos, entry.handle);
+            this.generatedWaystonesByChunk.put(entry.chunkEntryKey, entry.handle);
+        }
+    }
+
+    private record Entry(WaystoneHandle.Vanilla handle, BlockPos referencePos, ChunkEntryKey chunkEntryKey) {
+        public static final Codec<Entry> CODEC = RecordCodecBuilder.create(i -> i.group(
+            WaystoneHandle.Vanilla.CODEC.fieldOf("waystone").forGetter(Entry::handle),
+            BlockPosSerializer.CODEC.fieldOf("refPos").forGetter(Entry::referencePos),
+            ChunkEntryKey.CODEC.fieldOf("chunkEntryKey").forGetter(Entry::chunkEntryKey)
+        ).apply(i, Entry::new));
+    }
+
+    public boolean doesWaystoneExistIn(BlockPos villageLocation) {
         return generatedWaystones.containsKey(villageLocation);
     }
-    public static void register(String name, BlockPos referencePos, ServerLevel world, BlockPos blockPos) {
-		WaystoneLibrary.getInstance().getHandleByName(name).ifPresent(handle -> {
+    public void register(WaystoneLibrary waystoneLibrary, String name, BlockPos referencePos, ServerLevel world, BlockPos blockPos) {
+        waystoneLibrary.getHandleByName(name).ifPresent(handle -> {
 			ChunkEntryKey key = new ChunkEntryKey(new ChunkPos(blockPos), world.dimension().location());
 			generatedWaystones.put(referencePos, handle);
 			generatedWaystonesByChunk.put(key, handle);
-			WaystoneLibrary.getInstance().markDirty();
+            allEntries.add(new Entry(handle, referencePos, key));
+            waystoneLibrary.markDirty();
             Services.WAYSTONE_DISCOVERY_EVENT_LISTENER.registerNew(handle, world, blockPos);
 		});
 	}
 
     public static void reset() {
-        generatedWaystones.clear();
         Services.WAYSTONE_DISCOVERY_EVENT_LISTENER.initialize();
     }
 
-    public static Tag serialize(HolderLookup.Provider registryAccess) {
-        ListTag ret = new ListTag();
-        ret.addAll(generatedWaystones.entrySet().stream().map(
-            e -> {
-                CompoundTag compound = new CompoundTag();
-                compound.put("refPos", BlockPosSerializer.COMPOUND.encode(e.getKey(), registryAccess));
-                generatedWaystonesByChunk.entrySet().stream().filter(ce -> ce.getValue().equals(e.getValue())).findFirst()
-                    .ifPresent(ce -> compound.put("chunkEntryKey", ChunkEntryKey.serializer.encode(ce.getKey(), registryAccess)));
-                compound.put("waystone", WaystoneHandle.Vanilla.CompoundSerializer.encode(e.getValue(), registryAccess));
-                return compound;
-            }).toList());
-        return ret;
-    }
-
-    public static void deserialize(ListTag nbt, HolderLookup.Provider registryAccess) {
-        generatedWaystones.clear();
-        generatedWaystones.putAll(
-            nbt.stream().collect(Collectors.toMap(
-                entry -> BlockPosSerializer.COMPOUND.decode(((CompoundTag) entry).getCompound("refPos"), registryAccess),
-                entry -> WaystoneHandle.Vanilla.CompoundSerializer.decode(((CompoundTag) entry).getCompound("waystone"), registryAccess)
-            )));
-        generatedWaystonesByChunk.clear();
-        generatedWaystonesByChunk.putAll(
-            nbt.stream().collect(Collectors.toMap(
-                entry -> ChunkEntryKey.serializer.decode(((CompoundTag) entry).getCompound("chunkEntryKey"), registryAccess),
-                entry -> WaystoneHandle.Vanilla.CompoundSerializer.decode(((CompoundTag) entry).getCompound("waystone"), registryAccess)
-            )));
-    }
-
-
-	public static Set<Map.Entry<BlockPos, WaystoneHandle.Vanilla>> getAllEntries(ResourceLocation dimension) {
-		List<BlockPos> toRemove = generatedWaystones.entrySet().stream()
-            .filter(e -> WaystoneLibrary.getInstance().getData(e.getValue()).isEmpty())
-            .map(Map.Entry::getKey).toList();
-		for(BlockPos key : toRemove) generatedWaystones.remove(key);
+	public Set<Map.Entry<BlockPos, WaystoneHandle.Vanilla>> getAllEntries(WaystoneLibrary waystoneLibrary, ResourceLocation dimension) {
+		var toRemove = allEntries.stream()
+            .filter(e -> waystoneLibrary.getData(e.handle).isEmpty())
+            .toList();
+		for(Entry entry : toRemove) {
+            generatedWaystones.remove(entry.referencePos);
+            generatedWaystonesByChunk.remove(entry.chunkEntryKey);
+            allEntries.remove(entry);
+        }
+        if (!toRemove.isEmpty())
+            waystoneLibrary.markDirty();
 		return generatedWaystones.entrySet().stream()
             .filter(e -> dimensionOf(e.getValue()).map(d -> d.equals(dimension)).orElse(true))
             .collect(Collectors.toSet());
 	}
 
-    private static Optional<ResourceLocation> dimensionOf(WaystoneHandle.Vanilla handle) {
+    private Optional<ResourceLocation> dimensionOf(WaystoneHandle.Vanilla handle) {
         return generatedWaystonesByChunk.entrySet().stream()
             .filter(e -> e.getValue().equals(handle))
             .findFirst()
             .map(e -> e.getKey().dimensionKey);
     }
 
-	public static Map<ChunkEntryKey, WaystoneHandle.Vanilla> getAllEntriesByChunk(boolean validateExistence) {
+	public Map<ChunkEntryKey, WaystoneHandle.Vanilla> getAllEntriesByChunk(WaystoneLibrary waystoneLibrary, boolean validateExistence) {
         if(validateExistence) {
-            List<ChunkEntryKey> toRemove = generatedWaystonesByChunk.entrySet().stream()
-                .filter(e -> WaystoneLibrary.getInstance().getData(e.getValue()).isEmpty())
-                .map(Map.Entry::getKey).toList();
-            for (ChunkEntryKey key : toRemove) generatedWaystonesByChunk.remove(key);
+            var toRemove = allEntries.stream()
+                .filter(e -> waystoneLibrary.getData(e.handle).isEmpty())
+                .toList();
+            for(Entry entry : toRemove) {
+                generatedWaystones.remove(entry.referencePos);
+                generatedWaystonesByChunk.remove(entry.chunkEntryKey);
+                allEntries.remove(entry);
+            }
+            if (!toRemove.isEmpty())
+                waystoneLibrary.markDirty();
         }
 		return generatedWaystonesByChunk;
 	}

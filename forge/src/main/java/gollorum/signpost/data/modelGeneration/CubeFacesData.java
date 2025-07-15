@@ -20,7 +20,7 @@ public record CubeFacesData<TextureIdentifier>(Direction direction, TextureIdent
         return Arrays.stream(Direction.values())
             .map(d -> faceDataGetter.apply(d).map(fd -> Tuple.of(d, fd)))
             .filter(Optional::isPresent).map(Optional::get)
-            .map(Tuple -> new CubeFacesData<>(Tuple._1, Tuple._2._1._1, Tuple._2._1._2, Tuple._2._2._1, Tuple._2._2._2))
+            .map(Tuple -> new CubeFacesData<>(Tuple._1(), Tuple._2()._1()._1(), Tuple._2()._1()._2(), Tuple._2()._2()._1(), Tuple._2()._2()._2()))
             .collect(Collectors.toList());
     }
 

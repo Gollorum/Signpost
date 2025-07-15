@@ -50,11 +50,7 @@ public class PostItemRenderer implements SpecialModelRenderer<PostData> {
     public void render(@Nullable PostData data, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean hasFoilType) {
         List<BlockPartInstance> parts;
         if (data != null) {
-            var registryAccess = Minecraft.getInstance().player.registryAccess();
-            parts = new ArrayList<>(data.parts().size());
-            for (var instance : data.parts().values()) {
-                parts.add(instance.deserialize(registryAccess));
-            }
+            parts = new ArrayList<>(data.parts().values());
         } else {
             parts = new ArrayList<>();
             parts.add(new BlockPartInstance(new PostBlockPart(fallbackType.postTexture), Vector3.ZERO));

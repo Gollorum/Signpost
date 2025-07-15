@@ -1,12 +1,12 @@
 package gollorum.signpost.utils.math.geometry;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.utils.math.Angle;
-import gollorum.signpost.utils.serialization.BufferSerializable;
-import gollorum.signpost.utils.serialization.CompoundSerializable;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -174,56 +174,16 @@ public record Vector3(float x, float y, float z) {
         return (float) Math.sqrt(x * x + y * y + z * z);
     }
 
-    public static final CompoundSerializable<Vector3> CompoundSerializer = new SerializerImpl();
+    public static final Codec<Vector3> CODEC = RecordCodecBuilder.create(i -> i.group(
+        Codec.FLOAT.fieldOf("x").forGetter(Vector3::x),
+        Codec.FLOAT.fieldOf("y").forGetter(Vector3::y),
+        Codec.FLOAT.fieldOf("z").forGetter(Vector3::z)
+    ).apply(i, Vector3::new));
 
-    public static final class SerializerImpl implements CompoundSerializable<Vector3> {
-
-        @Override
-        public void encode(CompoundTag compound, Vector3 vector3, HolderLookup.Provider provider) {
-            compound.putFloat("X", vector3.x);
-            compound.putFloat("Y", vector3.y);
-            compound.putFloat("Z", vector3.z);
-        }
-
-        @Override
-        public boolean isContainedIn(CompoundTag compound) {
-            return compound.contains("X")
-                && compound.contains("Y")
-                && compound.contains("Z");
-        }
-
-        @Override
-        public Vector3 decode(CompoundTag compound, HolderLookup.Provider provider) {
-            return new Vector3(
-                compound.getFloat("X"),
-                compound.getFloat("Y"),
-                compound.getFloat("Z")
-            );
-        }
-    }
-
-    public static final BufferSerializable<Vector3> BufferSerializer = new BufferSerializable<>() {
-
-        @Override
-        public Class<Vector3> getTargetClass() {
-            return Vector3.class;
-        }
-
-        @Override
-        public void encode(RegistryFriendlyByteBuf buffer, Vector3 vec) {
-            buffer.writeFloat(vec.x);
-            buffer.writeFloat(vec.y);
-            buffer.writeFloat(vec.z);
-        }
-
-        @Override
-        public Vector3 decode(RegistryFriendlyByteBuf buffer) {
-            return new Vector3(
-                buffer.readFloat(),
-                buffer.readFloat(),
-                buffer.readFloat()
-            );
-        }
-    };
-
+    public static final StreamCodec<ByteBuf, Vector3> STREAM_CODEC = StreamCodec.composite(
+        ByteBufCodecs.FLOAT, Vector3::x,
+        ByteBufCodecs.FLOAT, Vector3::y,
+        ByteBufCodecs.FLOAT, Vector3::z,
+        Vector3::new
+    );
 }

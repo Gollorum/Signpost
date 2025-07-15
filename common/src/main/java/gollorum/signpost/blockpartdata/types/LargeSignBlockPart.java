@@ -1,13 +1,11 @@
 package gollorum.signpost.blockpartdata.types;
 
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.blockpartdata.Overlay;
-import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.utils.CoordinatesUtil;
-import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.minecraft.utils.Texture;
-import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.BlockPartMetadata;
 import gollorum.signpost.utils.AngleProvider;
 import gollorum.signpost.utils.NameProvider;
@@ -15,12 +13,8 @@ import gollorum.signpost.utils.math.geometry.AABB;
 import gollorum.signpost.utils.math.geometry.Matrix4x4;
 import gollorum.signpost.utils.math.geometry.TransformedBox;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.util.Optional;
 
@@ -33,23 +27,35 @@ public class LargeSignBlockPart extends SignBlockPart<LargeSignBlockPart> {
 
     public static final BlockPartMetadata<LargeSignBlockPart> METADATA = new BlockPartMetadata<>(
         "large_sign",
-        (sign, compound, provider) -> {
-            compound.put("CoreData", CoreData.SERIALIZER.encode(sign.coreData, provider));
-            compound.put("Text0", NameProvider.COMPOUND_SERIALIZER.encode(sign.text[0], provider));
-            compound.put("Text1", NameProvider.COMPOUND_SERIALIZER.encode(sign.text[1], provider));
-            compound.put("Text2", NameProvider.COMPOUND_SERIALIZER.encode(sign.text[2], provider));
-            compound.put("Text3", NameProvider.COMPOUND_SERIALIZER.encode(sign.text[3], provider));
-        },
-        (compound, provider) -> new LargeSignBlockPart(
-            CoreData.SERIALIZER.decode(compound.getCompound("CoreData"), provider),
-            new NameProvider[]{
-                NameProvider.fetchFrom(compound.get("Text0"), provider),
-                NameProvider.fetchFrom(compound.get("Text1"), provider),
-                NameProvider.fetchFrom(compound.get("Text2"), provider),
-                NameProvider.fetchFrom(compound.get("Text3"), provider)}
-        ), LargeSignBlockPart.class);
+        RecordCodecBuilder.mapCodec(i -> i.group(
+            CoreData.CODEC.fieldOf("CoreData").forGetter(sign -> sign.coreData),
+            NameProvider.CODEC.fieldOf("Text0").forGetter(sign -> sign.text[0]),
+            NameProvider.CODEC.fieldOf("Text1").forGetter(sign -> sign.text[1]),
+            NameProvider.CODEC.fieldOf("Text2").forGetter(sign -> sign.text[2]),
+            NameProvider.CODEC.fieldOf("Text3").forGetter(sign -> sign.text[3])
+        ).apply(i, LargeSignBlockPart::new)),
+        StreamCodec.composite(
+            CoreData.STREAM_CODEC, sign -> sign.coreData,
+            NameProvider.STREAM_CODEC, sign -> sign.text[0],
+            NameProvider.STREAM_CODEC, sign -> sign.text[1],
+            NameProvider.STREAM_CODEC, sign -> sign.text[2],
+            NameProvider.STREAM_CODEC, sign -> sign.text[3],
+            LargeSignBlockPart::new
+        ),
+        LargeSignBlockPart.class);
 
     private NameProvider[] text;
+
+    public LargeSignBlockPart(
+        CoreData coreData,
+        NameProvider text0,
+        NameProvider text1,
+        NameProvider text2,
+        NameProvider text3
+    ) {
+        super(coreData);
+        this.text = new NameProvider[]{text0, text1, text2, text3};
+    }
 
     public LargeSignBlockPart(
         CoreData coreData,
@@ -96,41 +102,6 @@ public class LargeSignBlockPart extends SignBlockPart<LargeSignBlockPart> {
         if(coreData.flip) transformedBounds = transformedBounds.scale(new Vector3(1, 1, -1));
     }
 
-    private void notifyTextChanged(InteractionInfo info, HolderLookup.Provider provider) {
-        CompoundTag compound = new CompoundTag();
-        compound.put("Text0", NameProvider.COMPOUND_SERIALIZER.encode(text[0], provider));
-        compound.put("Text1", NameProvider.COMPOUND_SERIALIZER.encode(text[1], provider));
-        compound.put("Text2", NameProvider.COMPOUND_SERIALIZER.encode(text[2], provider));
-        compound.put("Text3", NameProvider.COMPOUND_SERIALIZER.encode(text[3], provider));
-        info.mutationDistributor.accept(compound);
-    }
-
-    @Override
-    public void readMutationUpdate(CompoundTag compound, BlockEntity tile, Player editingPlayer, HolderLookup.Provider provider) {
-        if(editingPlayer != null
-            && !editingPlayer.level().isClientSide()
-            && tile instanceof WithOwner.OfSignpost
-            && !hasThePermissionToEdit(((WithOwner.OfSignpost)tile), editingPlayer)
-        ) {
-            // This should not happen unless a sender tries to hacc
-            editingPlayer.displayClientMessage(Component.translatable(LangKeys.noPermissionSignpost), true);
-            return;
-        }
-        if (compound.contains("Text0")) {
-            text[0] = NameProvider.fetchFrom(compound.get("Text0"), provider);
-        }
-        if (compound.contains("Text1")) {
-            text[1] = NameProvider.fetchFrom(compound.get("Text1"), provider);
-        }
-        if (compound.contains("Text2")) {
-            text[2] = NameProvider.fetchFrom(compound.get("Text2"), provider);
-        }
-        if (compound.contains("Text3")) {
-            text[3] = NameProvider.fetchFrom(compound.get("Text3"), provider);
-        }
-        super.readMutationUpdate(compound, tile, editingPlayer, provider);
-    }
-
     @Override
     public LargeSignBlockPart copy() {
         return new LargeSignBlockPart(coreData.copy(), text);
@@ -139,11 +110,6 @@ public class LargeSignBlockPart extends SignBlockPart<LargeSignBlockPart> {
     @Override
     public BlockPartMetadata<LargeSignBlockPart> getMeta() {
         return METADATA;
-    }
-
-    @Override
-    public void writeTo(CompoundTag compound, HolderLookup.Provider provider) {
-        METADATA.encode(compound, this, provider);
     }
 
 }

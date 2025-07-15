@@ -14,12 +14,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ModelDiscovery.class)
 public abstract class ModelDiscoveryInjector {
 
-     @Inject(method = "discoverDependencies", at = @At("TAIL"))
-     public void injectPostModelResources(CallbackInfo ci) {
-         getBlockModel_invoke(WaystoneModelResources.inPostLocation);
-         for(var loc : PostModelResources.all) getBlockModel_invoke(loc);
-     }
-
-     @Invoker("getBlockModel")
-     protected abstract UnbakedModel getBlockModel_invoke(ResourceLocation location);
+//     @Inject(method = "discoverDependencies", at = @At("TAIL"))
+//     public void injectPostModelResources(CallbackInfo ci) {
+//         getOrCreateModel_invoke(WaystoneModelResources.inPostLocation);
+//         for(var loc : PostModelResources.all) getOrCreateModel_invoke(loc);
+//     }
+//
+//     @Invoker("getOrCreateModel")
+//     protected abstract ModelDiscovery.ModelWrapper getOrCreateModel_invoke(ResourceLocation location);
 }

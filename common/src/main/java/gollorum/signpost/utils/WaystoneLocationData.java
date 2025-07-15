@@ -3,12 +3,7 @@ package gollorum.signpost.utils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import gollorum.signpost.utils.serialization.BufferSerializable;
-import gollorum.signpost.utils.serialization.CompoundSerializable;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 
 /**
@@ -17,8 +12,8 @@ import net.minecraft.network.codec.StreamCodec;
 public record WaystoneLocationData(WorldLocation block, Vector3 spawn) {
 
     public WaystoneLocationData withoutExplicitLevel() {
-        if (block.world.isLeft()) {
-            return new WaystoneLocationData(new WorldLocation(block.blockPos, Either.right(block.world.leftOrThrow().dimension().location())), spawn);
+        if (block.world().isLeft()) {
+            return new WaystoneLocationData(new WorldLocation(block.blockPos(), Either.right(block.world().leftOrThrow().dimension().location())), spawn);
         } else {
             return this;
         }

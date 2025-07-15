@@ -10,34 +10,28 @@ import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.utils.Tuple;
 import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import gollorum.signpost.utils.serialization.ItemStackSerializer;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Optional;
 
 public class RequestSignGui implements PacketHandler.Event.ForClient<RequestSignGui.Package> {
 
-	public static class Package {
-		public final PostTile.TilePartInfo tilePartInfo;
+	public record Package(PostTile.TilePartInfo tilePartInfo) {
+		public static final StreamCodec<RegistryFriendlyByteBuf, Package> STREAM_CODEC = StreamCodec.composite(
+			PostTile.TilePartInfo.STREAM_CODEC, Package::tilePartInfo,
+			Package::new
+		);
+	}
 
-		public Package(PostTile.TilePartInfo tilePartInfo) {
-			this.tilePartInfo = tilePartInfo;
-		}
+	@Override
+	public StreamCodec<RegistryFriendlyByteBuf, Package> codec() {
+		return Package.STREAM_CODEC;
 	}
 
 	@Override
 	public Class<Package> getMessageClass() { return Package.class; }
-
-	@Override
-	public void encode(RegistryFriendlyByteBuf buffer, Package message) {
-		PostTile.TilePartInfo.BufferSerializer.encode(buffer, message.tilePartInfo);
-	}
-
-	@Override
-	public Package decode(RegistryFriendlyByteBuf buffer) {
-		return new Package(PostTile.TilePartInfo.BufferSerializer.decode(buffer));
-	}
 
 	@Override
 	public void handle(
@@ -49,7 +43,7 @@ public class RequestSignGui implements PacketHandler.Event.ForClient<RequestSign
 			.flatMap(part -> (part.blockPart() instanceof SignBlockPart ? Optional.of(new Tuple<>(tile, part)) : Optional.empty())));
 		if (TupleO.isPresent()) {
 			Tuple<PostTile, BlockPartInstance> Tuple = TupleO.get();
-			SignGui.display(Tuple._1, (SignBlockPart) Tuple._2.blockPart(), Tuple._2.offset(), message.tilePartInfo);
+			SignGui.display(Tuple._1(), (SignBlockPart) Tuple._2().blockPart(), Tuple._2().offset(), message.tilePartInfo);
 		} else {
 			Signpost.LOGGER.error("Tried to open sign gui, but something was missing.");
 		}
@@ -57,40 +51,29 @@ public class RequestSignGui implements PacketHandler.Event.ForClient<RequestSign
 
 	public static class ForNewSign implements PacketHandler.Event.ForClient<ForNewSign.Package> {
 
-		public static class Package {
-			private final WorldLocation loc;
-			private final PostBlock.ModelType modelType;
-			private final Vector3 localHitPos;
-			private final ItemStack itemToDropOnBreak;
-
+		public record Package(WorldLocation loc, PostBlock.ModelType modelType, Vector3 localHitPos, ItemStack itemToDropOnBreak) {
 			public Package(WorldLocation loc, PostBlock.ModelType modelType, Vector3 localHitPos, ItemStack itemToDropOnBreak) {
 				this.loc = loc.withoutExplicitLevel();
 				this.modelType = modelType;
 				this.localHitPos = localHitPos;
 				this.itemToDropOnBreak = itemToDropOnBreak;
 			}
+			public static final StreamCodec<RegistryFriendlyByteBuf, Package> STREAM_CODEC = StreamCodec.composite(
+				WorldLocation.STREAM_CODEC, Package::loc,
+				PostBlock.ModelType.STREAM_CODEC, Package::modelType,
+				Vector3.STREAM_CODEC, Package::localHitPos,
+				ItemStack.OPTIONAL_STREAM_CODEC, Package::itemToDropOnBreak,
+				Package::new
+			);
+		}
+
+		@Override
+		public StreamCodec<RegistryFriendlyByteBuf, Package> codec() {
+			return Package.STREAM_CODEC;
 		}
 
 		@Override
 		public Class<Package> getMessageClass() { return Package.class; }
-
-		@Override
-		public void encode(RegistryFriendlyByteBuf buffer, Package message) {
-			WorldLocation.BUFFER_SERIALIZER.encode(buffer, message.loc);
-			PostBlock.ModelType.Serializer.encode(buffer, message.modelType);
-			Vector3.BufferSerializer.encode(buffer, message.localHitPos);
-			ItemStackSerializer.Buffer.encode(buffer, message.itemToDropOnBreak);
-		}
-
-		@Override
-		public Package decode(RegistryFriendlyByteBuf buffer) {
-			return new Package(
-				WorldLocation.BUFFER_SERIALIZER.decode(buffer),
-				PostBlock.ModelType.Serializer.decode(buffer),
-				Vector3.BufferSerializer.decode(buffer),
-				ItemStackSerializer.Buffer.decode(buffer)
-			);
-		}
 
 		@Override
 		public void handle(

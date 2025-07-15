@@ -88,7 +88,6 @@ public class SignpostFabric implements ModInitializer {
             serverSetter.accept(server);
             WaystoneLibrary.initialize();
             BlockRestrictions.initialize();
-            Villages.reset();
 //            VillageRegistry.register(e);
             Villages.instance.initialize(server.registryAccess());
             new WaystoneDiscoveryEventListener().initialize();

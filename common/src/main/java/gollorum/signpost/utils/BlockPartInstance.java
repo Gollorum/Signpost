@@ -1,25 +1,28 @@
 package gollorum.signpost.utils;
 
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 
 public record BlockPartInstance(BlockPart blockPart, Vector3 offset) {
 
-    public record SerializedRepresentation(BlockPart.SerializedRepresentation blockPart, Vec3 offset) {
-        public BlockPartInstance deserialize(HolderLookup.Provider registryAccess) {
-            return new BlockPartInstance(blockPart.deserialize(registryAccess), Vector3.fromVec3d(offset));
-        }
-    }
+    public static final MapCodec<BlockPartInstance> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+        BlockPart.CODEC.forGetter(BlockPartInstance::blockPart),
+        Vector3.CODEC.fieldOf("Offset").forGetter(BlockPartInstance::offset)
+    ).apply(i, BlockPartInstance::new));
 
-    public static final Codec<SerializedRepresentation> CODEC = Codec.pair(
-        BlockPart.CODEC,
-        Vec3.CODEC
-    ).xmap(
-        pair -> new SerializedRepresentation(pair.getFirst(), pair.getSecond()),
-        instance -> Pair.of(instance.blockPart, instance.offset)
+    public static final Codec<BlockPartInstance> CODEC = RecordCodecBuilder.create(i -> i.group(
+        BlockPart.CODEC.forGetter(BlockPartInstance::blockPart),
+        Vector3.CODEC.fieldOf("Offset").forGetter(BlockPartInstance::offset)
+    ).apply(i, BlockPartInstance::new));
+
+    public static final StreamCodec<RegistryFriendlyByteBuf, BlockPartInstance> STREAM_CODEC = StreamCodec.composite(
+        BlockPart.STREAM_CODEC, BlockPartInstance::blockPart,
+        Vector3.STREAM_CODEC, BlockPartInstance::offset,
+        BlockPartInstance::new
     );
 
 }

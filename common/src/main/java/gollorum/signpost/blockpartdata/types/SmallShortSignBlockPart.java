@@ -1,12 +1,11 @@
 package gollorum.signpost.blockpartdata.types;
 
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.utils.CoordinatesUtil;
-import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.minecraft.utils.Texture;
-import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.BlockPartMetadata;
 import gollorum.signpost.utils.AngleProvider;
 import gollorum.signpost.utils.NameProvider;
@@ -14,12 +13,8 @@ import gollorum.signpost.utils.math.geometry.AABB;
 import gollorum.signpost.utils.math.geometry.Matrix4x4;
 import gollorum.signpost.utils.math.geometry.TransformedBox;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.util.Optional;
 
@@ -32,13 +27,14 @@ public class SmallShortSignBlockPart extends SignBlockPart<SmallShortSignBlockPa
 
     public static final BlockPartMetadata<SmallShortSignBlockPart> METADATA = new BlockPartMetadata<>(
         "small_short_sign",
-        (sign, compound, provider) -> {
-            compound.put("CoreData", CoreData.SERIALIZER.encode(sign.coreData, provider));
-            compound.put("Text", NameProvider.COMPOUND_SERIALIZER.encode(sign.text, provider));
-        },
-        (compound, provider) -> new SmallShortSignBlockPart(
-            CoreData.SERIALIZER.decode(compound.getCompound("CoreData"), provider),
-            NameProvider.fetchFrom(compound.get("Text"), provider)
+        RecordCodecBuilder.mapCodec(i -> i.group(
+            CoreData.CODEC.fieldOf("CoreData").forGetter(sign -> sign.coreData),
+            NameProvider.CODEC.fieldOf("Text").forGetter(sign -> sign.text)
+        ).apply(i, SmallShortSignBlockPart::new)),
+        StreamCodec.composite(
+            CoreData.STREAM_CODEC, sign -> sign.coreData,
+            NameProvider.STREAM_CODEC, sign -> sign.text,
+            SmallShortSignBlockPart::new
         ),
         SmallShortSignBlockPart.class
     );
@@ -86,29 +82,6 @@ public class SmallShortSignBlockPart extends SignBlockPart<SmallShortSignBlockPa
         transformedBounds = new TransformedBox(LOCAL_BOUNDS).rotateAlong(Matrix4x4.Axis.Y, coreData.angleProvider.get());
     }
 
-//    private void notifyTextChanged(InteractionInfo info) {
-//        CompoundTag compound = new CompoundTag();
-//        compound.put("Text", NameProvider.Serializer.encode(text, ));
-//        info.mutationDistributor.accept(compound);
-//    }
-
-    @Override
-    public void readMutationUpdate(CompoundTag compound, BlockEntity tile, Player editingPlayer, HolderLookup.Provider provider) {
-        if(editingPlayer != null
-            && !editingPlayer.level().isClientSide()
-            && tile instanceof WithOwner.OfSignpost
-            && !hasThePermissionToEdit(((WithOwner.OfSignpost)tile), editingPlayer)
-        ) {
-            // This should not happen unless a sender tries to hacc
-            editingPlayer.displayClientMessage(Component.translatable(LangKeys.noPermissionSignpost), false);
-            return;
-        }
-        if (compound.contains("Text")) {
-            setText(NameProvider.fetchFrom(compound.get("Text"), provider));
-        }
-        super.readMutationUpdate(compound, tile, editingPlayer, provider);
-    }
-
     @Override
     public SmallShortSignBlockPart copy() {
         return new SmallShortSignBlockPart(coreData.copy(), text);
@@ -117,11 +90,6 @@ public class SmallShortSignBlockPart extends SignBlockPart<SmallShortSignBlockPa
     @Override
     public BlockPartMetadata<SmallShortSignBlockPart> getMeta() {
         return METADATA;
-    }
-
-    @Override
-    public void writeTo(CompoundTag compound, HolderLookup.Provider provider) {
-        METADATA.encode(compound, this, provider);
     }
 
 }

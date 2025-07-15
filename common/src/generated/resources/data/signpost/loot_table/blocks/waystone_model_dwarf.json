@@ -32,22 +32,7 @@
               ],
               "functions": [
                 {
-                  "function": "minecraft:copy_custom_data",
-                  "ops": [
-                    {
-                      "op": "replace",
-                      "source": "Handle",
-                      "target": "Handle"
-                    },
-                    {
-                      "op": "merge",
-                      "source": "display",
-                      "target": "display"
-                    }
-                  ],
-                  "source": {
-                    "type": "signpost:waystone"
-                  }
+                  "function": "signpost:waystone"
                 }
               ],
               "name": "signpost:waystone_model_dwarf"

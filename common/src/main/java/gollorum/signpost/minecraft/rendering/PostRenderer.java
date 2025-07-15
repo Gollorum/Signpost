@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.server.level.BlockDestructionProgress;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -30,7 +31,8 @@ public class PostRenderer implements BlockEntityRenderer<PostTile> {
     @Override
     public void render(
         PostTile tile, float partialTicks, PoseStack matrixStack,
-        MultiBufferSource buffer, int combinedLight, int combinedOverlay
+        MultiBufferSource buffer, int combinedLight, int combinedOverlay,
+        Vec3 whateverThisIs
     ) {
         long randomSeed = tile.hashCode();
         RandomSource random = RandomSource.create(randomSeed);
