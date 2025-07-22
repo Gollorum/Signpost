@@ -1,6 +1,5 @@
 package gollorum.signpost.blockpartdata.types;
 
-import gollorum.signpost.BlockRestrictions;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.interactions.InteractionInfo;
@@ -80,7 +79,7 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
 
     private InteractionResult attachWaystone(InteractionInfo info, ItemStack heldItem, PlayerHandle playerHandle) {
         if(info.tile.getParts().stream().noneMatch(p -> p.blockPart() instanceof WaystoneBlockPart)) {
-            if (!info.isRemote && BlockRestrictions.getInstance().tryDecrementRemaining(BlockRestrictions.Type.Waystone, playerHandle)) {
+            if (!info.isRemote) {
                 info.tile.addPart(
                     new BlockPartInstance(new WaystoneBlockPart(playerHandle), Vector3.ZERO),
                     new ItemStack(heldItem.getItem()),

@@ -1,12 +1,10 @@
 package gollorum.signpost.registry;
 
-import gollorum.signpost.BlockRestrictions;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.blockpartdata.types.PostBlockPart;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.security.WithCountRestriction;
 import gollorum.signpost.utils.IDelay;
 import gollorum.signpost.utils.WorldLocation;
 import net.minecraft.core.BlockPos;
@@ -27,18 +25,7 @@ public class BlockEventListener {
     public static void register(IEventBus bus) { bus.register(BlockEventListener.class); }
 
     @SubscribeEvent
-    public static void onBlockPlaced(BlockEvent.EntityPlaceEvent event) { // TODO: Notify client?
-        if(!event.isCanceled() && event.getPlacedBlock().getBlock() instanceof WithCountRestriction) {
-            BlockRestrictions.Type restrictionType = ((WithCountRestriction)event.getPlacedBlock().getBlock()).getBlockRestrictionType();
-            PlayerHandle player = PlayerHandle.from(event.getEntity());
-            if(!BlockRestrictions.getInstance().tryDecrementRemaining(restrictionType, player))
-                event.setCanceled(true);
-        }
-    }
-
-    @SubscribeEvent
     public static void onBlockRemoved(BlockEvent.BreakEvent event) {
-        Block block = event.getState().getBlock();
         BlockEntity tile = event.getLevel().getBlockEntity(event.getPos());
         if(!event.isCanceled() && tile instanceof PostTile) {
             PostTile postTile = (PostTile) tile;
@@ -75,14 +62,9 @@ public class BlockEventListener {
                 });
             } else postTile.onDestroy();
         }
-        if(!event.isCanceled() && block instanceof WithCountRestriction) {
-            BlockRestrictions.Type restrictionType = ((WithCountRestriction)block).getBlockRestrictionType();
-            restrictionType.tryGetOwner.apply(tile).ifPresent(owner ->
-                BlockRestrictions.getInstance().incrementRemaining(restrictionType, owner));
 
-            if(event.getLevel() instanceof ServerLevel) {
-                WaystoneTile.onRemoved((ServerLevel) event.getLevel(), event.getPos());
-            }
+        if(event.getLevel() instanceof ServerLevel) {
+            WaystoneTile.onRemoved((ServerLevel) event.getLevel(), event.getPos());
         }
     }
 

@@ -1,13 +1,11 @@
 package gollorum.signpost.networking;
 
-import gollorum.signpost.BlockRestrictions;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.Teleport;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.RequestSignGui;
 import gollorum.signpost.minecraft.gui.RequestWaystoneGui;
 import gollorum.signpost.utils.EventDispatcher;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -74,7 +72,6 @@ public abstract class PacketHandler {
         register(new RequestSignGui(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "request_sign_gui"));
         register(new RequestSignGui.ForNewSign(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "request_sign_gui_for_new_sign"));
         register(new RequestWaystoneGui(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "request_waystone_gui"));
-        register(new BlockRestrictions.NotifyCountChanged(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block_restrictions_notify_count_changed"));
         onInitialize.dispatch(this, true);
     }
 

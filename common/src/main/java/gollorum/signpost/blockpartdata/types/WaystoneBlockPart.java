@@ -1,6 +1,5 @@
 package gollorum.signpost.blockpartdata.types;
 
-import gollorum.signpost.BlockRestrictions;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneLibrary;
@@ -78,7 +77,6 @@ public class WaystoneBlockPart implements BlockPart<WaystoneBlockPart>, WithOwne
 				WaystoneLibrary.getInstance().removeAt(location.get(), PlayerHandle.Invalid);
 			else
                 Signpost.LOGGER.error("Waystone tile at {} was removed but world was null. This means that the waystone has not been cleaned up correctly.", tile.getBlockPos());
-			getWaystoneOwner().ifPresent(o -> BlockRestrictions.getInstance().incrementRemaining(BlockRestrictions.Type.Waystone, o));
 		}
 	}
 

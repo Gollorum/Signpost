@@ -3,7 +3,6 @@ package gollorum.signpost.registry;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import gollorum.signpost.Signpost;
-import gollorum.signpost.minecraft.commands.BlockRestrictions;
 import gollorum.signpost.minecraft.commands.DiscoverWaystone;
 import gollorum.signpost.minecraft.commands.ListWaystones;
 import gollorum.signpost.minecraft.commands.Teleport;
@@ -25,7 +24,6 @@ public class CommandRegistry {
 				.then(ListWaystones.register())
 				.then(DiscoverWaystone.register())
 				.then(Teleport.register())
-				.then(BlockRestrictions.register())
 		);
 	}
 
