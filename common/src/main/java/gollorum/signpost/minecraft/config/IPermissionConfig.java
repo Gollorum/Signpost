@@ -5,11 +5,7 @@ public interface IPermissionConfig {
 	int editLockedSignCommandPermissionLevel();
 	int teleportPermissionLevel();
 	int discoverPermissionLevel();
-	int setBlockRestrictionPermissionLevel();
 	int listPermissionLevel();
 
 	int pickUnownedWaystonePermissionLevel();
-
-	int defaultMaxWaystonesPerPlayer();
-	int defaultMaxSignpostsPerPlayer();
 }

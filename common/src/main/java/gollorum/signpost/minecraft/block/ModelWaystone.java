@@ -1,9 +1,7 @@
 package gollorum.signpost.minecraft.block;
 
-import gollorum.signpost.BlockRestrictions;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
-import gollorum.signpost.security.WithCountRestriction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
@@ -41,7 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-public abstract class ModelWaystone extends BaseEntityBlock implements SimpleWaterloggedBlock, WithCountRestriction {
+public abstract class ModelWaystone extends BaseEntityBlock implements SimpleWaterloggedBlock {
 
 	public static final BooleanProperty Waterlogged = BlockStateProperties.WATERLOGGED;
 	public static final EnumProperty<Direction> Facing = BlockStateProperties.HORIZONTAL_FACING;
@@ -184,11 +182,6 @@ public abstract class ModelWaystone extends BaseEntityBlock implements SimpleWat
 	@Override
 	public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
 		return variant.shape;
-	}
-
-	@Override
-	public BlockRestrictions.Type getBlockRestrictionType() {
-		return BlockRestrictions.Type.Waystone;
 	}
 
 	@Override

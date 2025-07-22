@@ -1,7 +1,6 @@
 package gollorum.signpost.minecraft.block;
 
 import com.mojang.serialization.Codec;
-import gollorum.signpost.BlockRestrictions;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blockpartdata.types.PostBlockPart;
@@ -13,7 +12,6 @@ import gollorum.signpost.minecraft.gui.RequestSignGui;
 import gollorum.signpost.minecraft.utils.Texture;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.security.WithCountRestriction;
 import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.utils.IDelay;
 import gollorum.signpost.utils.WorldLocation;
@@ -61,7 +59,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
 
-public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock, WithCountRestriction {
+public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
     @Override
     public boolean hasDynamicShape() {
         return true;
@@ -522,11 +520,6 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
     public BlockState mirror(BlockState state, Mirror mirrorIn) {
         if(!state.hasProperty(Facing)) return state;
         return state.setValue(Facing, state.getValue(Facing).getOpposite());
-    }
-
-    @Override
-    public BlockRestrictions.Type getBlockRestrictionType() {
-        return BlockRestrictions.Type.Signpost;
     }
 
 }

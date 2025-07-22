@@ -8,7 +8,6 @@ import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.minecraft.utils.TextComponents;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.security.WithCountRestriction;
 import gollorum.signpost.utils.IDelay;
 import gollorum.signpost.utils.WaystoneData;
 import gollorum.signpost.utils.WaystoneLocationData;
@@ -29,7 +28,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -49,7 +47,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import javax.annotation.Nullable;
 import java.util.Optional;
 
-public abstract class WaystoneBlock extends BaseEntityBlock implements WithCountRestriction {
+public abstract class WaystoneBlock extends BaseEntityBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final String REGISTRY_NAME = "waystone";
@@ -176,11 +174,6 @@ public abstract class WaystoneBlock extends BaseEntityBlock implements WithCount
         } else {
             return Optional.empty();
         }
-    }
-
-    @Override
-    public BlockRestrictions.Type getBlockRestrictionType() {
-        return BlockRestrictions.Type.Waystone;
     }
 
     @Override
