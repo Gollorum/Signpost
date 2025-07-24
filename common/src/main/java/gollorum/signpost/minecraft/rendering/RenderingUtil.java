@@ -14,6 +14,8 @@ import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
@@ -39,41 +41,41 @@ import java.util.function.Function;
 
 public class RenderingUtil {
 
-    private record NoTexCacheKey(ResourceLocation modelLocation, ModelState modelState){}
-    private record SingleTexCacheKey(ResourceLocation modelLocation, ResourceLocation textureLocation, ModelState modelState){}
-    private record DoubleTexCacheKey(ResourceLocation modelLocation, ResourceLocation textureLocation1, ResourceLocation textureLocation2, ModelState modelState){}
-
-    private static final HashMap<NoTexCacheKey, BlockModelPart> noTexCache = new HashMap<>();
-    private static final HashMap<SingleTexCacheKey, BlockModelPart> singleTexCache = new HashMap<>();
-    private static final HashMap<DoubleTexCacheKey, BlockModelPart> doubleTexCache = new HashMap<>();
-
-    public static ModelState IdentityModelState = new ModelState() {};
-
-    public static BlockModelPart loadModel(ResourceLocation modelLocation, ModelState modelState) {
-        return noTexCache.computeIfAbsent(new NoTexCacheKey(modelLocation, modelState), key -> {
-            Function<Material, TextureAtlasSprite> textureGetter = m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(m.texture());
-            return ClientServices.MODEL_FACTORY.bakeFor(textureGetter, key.modelLocation, modelState);
-        });
-    }
-
-    public static BlockModelPart loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation, ModelState modelState) {
-        final ResourceLocation textLoc = trim(textureLocation);
-        return singleTexCache.computeIfAbsent(new SingleTexCacheKey(modelLocation, textLoc, modelState), key -> {
-            Function<Material, TextureAtlasSprite> textureGetter = m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(key.textureLocation);
-            return ClientServices.MODEL_FACTORY.bakeFor(textureGetter, key.modelLocation, modelState);
-        });
-    }
-
-    public static BlockModelPart loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation1, ResourceLocation textureLocation2, ModelState modelState) {
-        final ResourceLocation textLoc1 = trim(textureLocation1);
-        final ResourceLocation textLoc2 = trim(textureLocation2);
-        return doubleTexCache.computeIfAbsent(new DoubleTexCacheKey(modelLocation, textLoc1, textLoc2, modelState), key -> {
-            Function<Material, TextureAtlasSprite> textureGetter = m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(
-                m.sprite().contents().name().equals(PostModelResources.mainTextureMarker)
-                    ? key.textureLocation1 : key.textureLocation2);
-            return ClientServices.MODEL_FACTORY.bakeFor(textureGetter, key.modelLocation, modelState);
-        });
-    }
+//    private record NoTexCacheKey(ResourceLocation modelLocation, ModelState modelState){}
+//    private record SingleTexCacheKey(ResourceLocation modelLocation, ResourceLocation textureLocation, ModelState modelState){}
+//    private record DoubleTexCacheKey(ResourceLocation modelLocation, ResourceLocation textureLocation1, ResourceLocation textureLocation2, ModelState modelState){}
+//
+//    private static final HashMap<NoTexCacheKey, BlockModelPart> noTexCache = new HashMap<>();
+//    private static final HashMap<SingleTexCacheKey, BlockModelPart> singleTexCache = new HashMap<>();
+//    private static final HashMap<DoubleTexCacheKey, BlockModelPart> doubleTexCache = new HashMap<>();
+//
+//    public static ModelState IdentityModelState = new ModelState() {};
+//
+//    public static BlockModelPart loadModel(ResourceLocation modelLocation, ModelState modelState) {
+//        return noTexCache.computeIfAbsent(new NoTexCacheKey(modelLocation, modelState), key -> {
+//            Function<Material, TextureAtlasSprite> textureGetter = m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(m.texture());
+//            return ClientServices.MODEL_FACTORY.bakeFor(textureGetter, key.modelLocation, modelState);
+//        });
+//    }
+//
+//    public static BlockModelPart loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation, ModelState modelState) {
+//        final ResourceLocation textLoc = trim(textureLocation);
+//        return singleTexCache.computeIfAbsent(new SingleTexCacheKey(modelLocation, textLoc, modelState), key -> {
+//            Function<Material, TextureAtlasSprite> textureGetter = m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(key.textureLocation);
+//            return ClientServices.MODEL_FACTORY.bakeFor(textureGetter, key.modelLocation, modelState);
+//        });
+//    }
+//
+//    public static BlockModelPart loadModel(ResourceLocation modelLocation, ResourceLocation textureLocation1, ResourceLocation textureLocation2, ModelState modelState) {
+//        final ResourceLocation textLoc1 = trim(textureLocation1);
+//        final ResourceLocation textLoc2 = trim(textureLocation2);
+//        return doubleTexCache.computeIfAbsent(new DoubleTexCacheKey(modelLocation, textLoc1, textLoc2, modelState), key -> {
+//            Function<Material, TextureAtlasSprite> textureGetter = m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(
+//                m.sprite().contents().name().equals(PostModelResources.mainTextureMarker)
+//                    ? key.textureLocation1 : key.textureLocation2);
+//            return ClientServices.MODEL_FACTORY.bakeFor(textureGetter, key.modelLocation, modelState);
+//        });
+//    }
 
     public static final Lazy<ModelBlockRenderer> Renderer = Lazy.of(() -> Minecraft.getInstance().getBlockRenderer().getModelRenderer());
 
@@ -88,7 +90,7 @@ public class RenderingUtil {
     public static void render(
         PoseStack blockToView,
         Matrix4f localToBlock,
-        BlockModelPart model,
+        ModelPart model,
         Level world,
         BlockState state,
         BlockPos pos,
@@ -99,22 +101,23 @@ public class RenderingUtil {
         int combinedOverlay,
         int[] tints
     ){
-        wrapInMatrixEntry(blockToView, () ->
-            tesselateBlock(
-                world,
-                model,
-                state,
-                tints,
-                pos,
-                blockToView,
-                localToBlock,
-                buffer,
-                checkSides,
-                random,
-                rand,
-                combinedOverlay
-            )
-        );
+//        wrapInMatrixEntry(blockToView, () ->
+            model.render(blockToView, buffer, )
+//            tesselateBlock(
+//                world,
+//                model,
+//                state,
+//                tints,
+//                pos,
+//                blockToView,
+//                localToBlock,
+//                buffer,
+//                checkSides,
+//                random,
+//                rand,
+//                combinedOverlay
+//            )
+//        );
     }
 
     public static void drawString(GuiGraphics graphics, Font fontRenderer, String text, Point point, Rect.XAlignment xAlignment, Rect.YAlignment yAlignment, int color, int maxWidth, boolean dropShadow){

@@ -43,7 +43,7 @@ public class PostRenderer extends BlockPartRenderer<PostBlockPart> {
             tileEntity.getLevel(),
             tileEntity.getBlockState(),
             tileEntity.getBlockPos(),
-            buffer.getBuffer(RenderType.solid()),
+            buffer.getBuffer(RenderType.solid()), // TOODO: Texture
             false,
             random,
             randomSeed,
