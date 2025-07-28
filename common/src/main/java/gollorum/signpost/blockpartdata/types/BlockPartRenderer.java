@@ -70,7 +70,7 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
     }
 
     public static <T extends BlockPart<T>> void renderGuiDynamic(
-        T part, PoseStack matrixStack, Point center, Angle yaw, Angle pitch, boolean isFlipped, float scale, Vector3 offset
+        T part, PoseStack matrixStack, Point center, Angle yaw, Angle pitch, boolean isFlipped, float scale, Vector3 offset, MultiBufferSource buffer
     ) {
         Optional<BlockPartRenderer<T>> renderer = BlockPartRenderer.getFor((Class<T>) part.getClass());
         if(renderer.isPresent()) {
@@ -82,7 +82,8 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
                 pitch,
                 isFlipped,
                 scale,
-                offset
+                offset,
+                buffer
             );
         } else {
             Signpost.LOGGER.error("Block part renderer was not found for " + part.getClass());
@@ -121,7 +122,8 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
     );
 
     public abstract void renderGui(
-        T part, PoseStack matrixStack, Point center, Angle yaw, Angle pitch, boolean isFlipped, float scale, Vector3 offset
+        T part, PoseStack matrixStack, Point center, Angle yaw, Angle pitch, boolean isFlipped, float scale, Vector3 offset,
+        MultiBufferSource buffer
     );
 
     public abstract void renderGui(

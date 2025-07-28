@@ -40,15 +40,18 @@ public class GuiBlockPartRenderer extends AbstractWidget {
             graphics.fill(RenderType.guiOverlay(), getX(), getY(), getX() + width, getY() + height, 0x20ffffff);
 
         PoseStack ms = new PoseStack();
-        RenderingUtil.wrapInMatrixEntry(ms, () -> {
-            ms.translate(0, 0, 100);
-            for(BlockPartInstance bpi : partsToRender) {
-                BlockPartRenderer.renderGuiDynamic(
-                    bpi.blockPart(),
-                    ms,
-                    center, yaw, pitch, false, scale, bpi.offset().withY(y -> y - 0.5f)
-                );
-            }
+        graphics.drawSpecial(buffer -> {
+            RenderingUtil.wrapInMatrixEntry(ms, () -> {
+                ms.translate(0, 0, 100);
+                for(BlockPartInstance bpi : partsToRender) {
+                    BlockPartRenderer.renderGuiDynamic(
+                        bpi.blockPart(),
+                        ms,
+                        center, yaw, pitch, false, scale, bpi.offset().withY(y -> y - 0.5f),
+                        buffer
+                    );
+                }
+            });
         });
     }
 

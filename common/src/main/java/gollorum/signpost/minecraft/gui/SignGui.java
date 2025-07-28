@@ -14,7 +14,9 @@ import gollorum.signpost.events.WaystoneRenamedEvent;
 import gollorum.signpost.events.WaystoneUpdatedEvent;
 import gollorum.signpost.minecraft.gui.utils.*;
 import gollorum.signpost.minecraft.gui.widgets.*;
+import gollorum.signpost.minecraft.models.PostModel;
 import gollorum.signpost.minecraft.rendering.FlippableModel;
+import gollorum.signpost.minecraft.rendering.TexturedModel;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.mixin.ScreenAccessor;
 import gollorum.signpost.networking.PacketHandler;
@@ -229,14 +231,14 @@ public class SignGui extends ExtendedScreen {
         var mainTexture = oldSign.map(SignBlockPart::getMainTexture).orElse(modelType.mainTexture);
         var secondaryTexture = oldSign.map(SignBlockPart::getSecondaryTexture).orElse(modelType.secondaryTexture);
 
-        FlippableModel postModel = FlippableModel.loadSymmetrical(PostModelResources.postLocation, postTexture.location());
-        FlippableModel wideModel = FlippableModel.loadFrom(
+        FlippableModel postModel = FlippableModel.fromSymmetric(new TexturedModel(PostModel.MODEL.bake(16, 16), postTexture.location(), Colors.white)); // TODO DS: ???
+        FlippableModel wideModel = FlippableModel.from(
             PostModelResources.wideLocation, PostModelResources.wideFlippedLocation, mainTexture.location(), secondaryTexture.location()
         );
-        FlippableModel shortModel = FlippableModel.loadFrom(
+        FlippableModel shortModel = FlippableModel.from(
             PostModelResources.shortLocation, PostModelResources.shortFlippedLocation, mainTexture.location(), secondaryTexture.location()
         );
-        FlippableModel largeModel = FlippableModel.loadFrom(
+        FlippableModel largeModel = FlippableModel.from(
             PostModelResources.largeLocation, PostModelResources.largeFlippedLocation, mainTexture.location(), secondaryTexture.location()
         );
 

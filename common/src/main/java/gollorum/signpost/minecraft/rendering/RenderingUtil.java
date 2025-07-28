@@ -1,13 +1,8 @@
 package gollorum.signpost.minecraft.rendering;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import gollorum.signpost.minecraft.gui.PostModelResources;
-import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.utils.Rect;
-import gollorum.signpost.platform.ClientServices;
-import gollorum.signpost.platform.Services;
 import gollorum.signpost.utils.Lazy;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
@@ -15,31 +10,35 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.ModelState;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.BlockAndTintGetter;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 import org.joml.*;
 
 import java.lang.Math;
-import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class RenderingUtil {
+
+    public static ModelPart EMPTY_MODEL;
+    public static PartDefinition EMPTY_PART;
+    static {
+
+        var meshDefinition = new MeshDefinition();
+        var EMPTY_PART = meshDefinition.getRoot();
+        EMPTY_PART.addOrReplaceChild(
+            "waystone",
+            CubeListBuilder.create(),
+            PartPose.ZERO
+        );
+        EMPTY_MODEL = EMPTY_PART.bake(0,0);
+    }
 
 //    private record NoTexCacheKey(ResourceLocation modelLocation, ModelState modelState){}
 //    private record SingleTexCacheKey(ResourceLocation modelLocation, ResourceLocation textureLocation, ModelState modelState){}
@@ -89,20 +88,13 @@ public class RenderingUtil {
 
     public static void render(
         PoseStack blockToView,
-        Matrix4f localToBlock,
-        ModelPart model,
-        Level world,
-        BlockState state,
-        BlockPos pos,
+        TexturedModel model,
         VertexConsumer buffer,
-        boolean checkSides,
-        RandomSource random,
-        long rand,
-        int combinedOverlay,
-        int[] tints
+        int combinedLights,
+        int combinedOverlay
     ){
 //        wrapInMatrixEntry(blockToView, () ->
-            model.render(blockToView, buffer, )
+            model.model().render(blockToView, buffer, combinedLights, combinedOverlay, model.tint());
 //            tesselateBlock(
 //                world,
 //                model,
@@ -145,48 +137,24 @@ public class RenderingUtil {
         });
     }
 
-    public static void renderGui(BlockModelPart model, PoseStack matrixStack, int[] tints, Point center, Angle yaw, Angle pitch, boolean isFlipped, float scale, Vector3 offset, RenderType renderType, Consumer<PoseStack> alsoDo) {
+    public static void renderGui(TexturedModel model, PoseStack matrixStack, Point center, Angle yaw, Angle pitch, boolean isFlipped, float scale, Vector3 offset, MultiBufferSource buffer, Consumer<PoseStack> alsoDo) {
         wrapInMatrixEntry(matrixStack, () -> {
             matrixStack.translate(center.x, center.y, 0);
             matrixStack.scale(scale, -scale, scale);
             matrixStack.mulPose(new Quaternionf(new AxisAngle4f(pitch.radians(), new Vector3f(1, 0, 0))));
             if(isFlipped) matrixStack.mulPose(new Quaternionf(new AxisAngle4d(Math.PI, new Vector3f(0, 1, 0))));
-            MultiBufferSource.BufferSource renderTypeBuffer = Minecraft.getInstance().renderBuffers().bufferSource();
-            renderGui(model, matrixStack, tints, offset, yaw, renderTypeBuffer.getBuffer(renderType), renderType, 0xf000f0, OverlayTexture.NO_OVERLAY, alsoDo);
-            renderTypeBuffer.endBatch();
+            renderGui(model, matrixStack, offset, yaw, buffer, FLAT_LIGHT_PROBABLY, OverlayTexture.NO_OVERLAY, alsoDo);
         });
     }
 
-    public static void renderGui(BlockModelPart model, PoseStack matrixStack, int[] tints, Vector3 offset, Angle yaw, VertexConsumer builder, RenderType renderType, int combinedLight, int combinedOverlay, Consumer<PoseStack> alsoDo) {
+    public static final int FLAT_LIGHT_PROBABLY = 0xf000f0;
+
+    public static void renderGui(TexturedModel model, PoseStack matrixStack, Vector3 offset, Angle yaw, MultiBufferSource buffer, int combinedLight, int combinedOverlay, Consumer<PoseStack> alsoDo) {
         wrapInMatrixEntry(matrixStack, () -> {
             matrixStack.mulPose(new Quaternionf(new AxisAngle4f(yaw.radians(), new Vector3f(0, 1, 0))));
             matrixStack.translate(offset.x(), offset.y(), offset.z());
-            wrapInMatrixEntry(matrixStack, () -> {
 
-                List<Direction> allDirections = new ArrayList<>(Arrays.asList(Direction.values()));
-                allDirections.add(null);
-
-                RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-//                RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS);
-//                Minecraft.getInstance().getTextureManager().getTexture(InventoryMenu.BLOCK_ATLAS).setFilter(false, false);
-                RandomSource random = RandomSource.create();
-                for(Direction dir : allDirections) {
-                    random.setSeed(42L);
-                    for(BakedQuad quad: model.getQuads(dir)) {
-                        float r = 1;
-                        float g = 1;
-                        float b = 1;
-                        if(quad.isTinted()) {
-                            var tint = tints[quad.tintIndex()];
-                            r *= Colors.getRed(tint) / 255f;
-                            g *= Colors.getGreen(tint) / 255f;
-                            b *= Colors.getBlue(tint) / 255f;
-                        }
-                        builder.putBulkData(matrixStack.last(), quad, r, g, b, 1.0f, combinedLight, combinedOverlay);
-                    }
-
-                }
-            });
+            render(matrixStack, model, buffer.getBuffer(RenderType.guiTextured(model.texture())), combinedLight, combinedOverlay);
 
             alsoDo.accept(matrixStack);
         });
@@ -199,43 +167,43 @@ public class RenderingUtil {
     }
 
     // These are modified copies of stuff in the ModelBlockRenderer to allow custom tints and dynamic ao.
-    private static void tesselateBlock(
-        BlockAndTintGetter level,
-        BlockModelPart model,
-        BlockState state,
-        int[] tints,
-        BlockPos pos,
-        PoseStack blockToView,
-        Matrix4f localToBlock,
-        VertexConsumer vertexConsumer,
-        boolean checkSides,
-        RandomSource random,
-        long combinedLight,
-        int combinedOverlay
-    ) {
-//        boolean useAmbientOcclusion = Minecraft.useAmbientOcclusion() && state.getLightEmission() == 0 && model.useAmbientOcclusion();
-//        var vec3 = state.getOffset(pos);
-//        blockToView.translate(vec3.x, vec3.y, vec3.z);
-//        try {
-            Minecraft.getInstance().getBlockRenderer().getModelRenderer().tesselateBlock(
-                level,
-                List.of(new CustomTintedModel(model, tints)),
-                state,
-                pos,
-                blockToView,
-                vertexConsumer,
-                checkSides,
-                combinedOverlay
-            );
-//            return tesselate(level, model, state, tints, pos, blockToView, localToBlock, vertexConsumer, checkSides, random, combinedLight, combinedOverlay, useAmbientOcclusion);
-//        } catch (Throwable throwable) {
-//            CrashReport crashreport = CrashReport.forThrowable(throwable, "Tesselating block model");
-//            CrashReportCategory crashreportcategory = crashreport.addCategory("Block model being tesselated");
-//            CrashReportCategory.populateBlockDetails(crashreportcategory, level, pos, state);
-//            crashreportcategory.setDetail("Using AO", useAmbientOcclusion);
-//            throw new ReportedException(crashreport);
-//        }
-    }
+//    private static void tesselateBlock(
+//        BlockAndTintGetter level,
+//        BlockModelPart model,
+//        BlockState state,
+//        int[] tints,
+//        BlockPos pos,
+//        PoseStack blockToView,
+//        Matrix4f localToBlock,
+//        VertexConsumer vertexConsumer,
+//        boolean checkSides,
+//        RandomSource random,
+//        long combinedLight,
+//        int combinedOverlay
+//    ) {
+////        boolean useAmbientOcclusion = Minecraft.useAmbientOcclusion() && state.getLightEmission() == 0 && model.useAmbientOcclusion();
+////        var vec3 = state.getOffset(pos);
+////        blockToView.translate(vec3.x, vec3.y, vec3.z);
+////        try {
+//            Minecraft.getInstance().getBlockRenderer().getModelRenderer().tesselateBlock(
+//                level,
+//                List.of(new TintedModel(model, tints)),
+//                state,
+//                pos,
+//                blockToView,
+//                vertexConsumer,
+//                checkSides,
+//                combinedOverlay
+//            );
+////            return tesselate(level, model, state, tints, pos, blockToView, localToBlock, vertexConsumer, checkSides, random, combinedLight, combinedOverlay, useAmbientOcclusion);
+////        } catch (Throwable throwable) {
+////            CrashReport crashreport = CrashReport.forThrowable(throwable, "Tesselating block model");
+////            CrashReportCategory crashreportcategory = crashreport.addCategory("Block model being tesselated");
+////            CrashReportCategory.populateBlockDetails(crashreportcategory, level, pos, state);
+////            crashreportcategory.setDetail("Using AO", useAmbientOcclusion);
+////            throw new ReportedException(crashreport);
+////        }
+//    }
 
 //    private static final AmbientOcclusionsAccessor ambientOcclusionAccessor = Services.load(AmbientOcclusionsAccessor.class);
 
@@ -291,12 +259,12 @@ public class RenderingUtil {
 //        return flag;
 //    }
 
-//    public static BlockModelPart withReplacedTexture(BlockModelPart original, Function<TextureAtlasSprite, TextureAtlasSprite> mapping) {
+//    public static BlockModelPart withReplacedTexture(BlockModelPart model, Function<TextureAtlasSprite, TextureAtlasSprite> mapping) {
 //
 //        return new BlockModelPart() {
 //            @Override
 //            public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand) {
-//                return original.getQuads(state, side, rand).stream().map(q -> {
+//                return model.getQuads(state, side, rand).stream().map(q -> {
 //                    var tas = mapping.apply(q.sprite());
 //                    if(tas == null) return q;
 //                    var vertices = q.vertices().clone();
@@ -317,37 +285,37 @@ public class RenderingUtil {
 //
 //            @Override
 //            public boolean useAmbientOcclusion() {
-//                return original.useAmbientOcclusion();
+//                return model.useAmbientOcclusion();
 //            }
 //
 //            @Override
 //            public boolean isGui3d() {
-//                return original.isGui3d();
+//                return model.isGui3d();
 //            }
 //
 //            @Override
 //            public boolean usesBlockLight() {
-//                return original.usesBlockLight();
+//                return model.usesBlockLight();
 //            }
 //
 //            @Override
 //            public boolean isCustomRenderer() {
-//                return original.isCustomRenderer();
+//                return model.isCustomRenderer();
 //            }
 //
 //            @Override
 //            public TextureAtlasSprite getParticleIcon() {
-//                return original.getParticleIcon();
+//                return model.getParticleIcon();
 //            }
 //
 //            @Override
 //            public ItemTransforms getTransforms() {
-//                return original.getTransforms();
+//                return model.getTransforms();
 //            }
 //
 //            @Override
 //            public ItemOverrides getOverrides() {
-//                return original.getOverrides();
+//                return model.getOverrides();
 //            }
 //    };
 //}
@@ -425,9 +393,9 @@ public class RenderingUtil {
 //        return index < 0 ? -1 : index / 4;
 //    }
 //
-//    private static BakedQuad transform(BakedQuad original, Matrix4f localToBlock, Matrix3f localToBlockNormal) {
-//        var dir = transform(original.direction(), localToBlock);
-//        int[] vertices = original.vertices();
+//    private static BakedQuad transform(BakedQuad model, Matrix4f localToBlock, Matrix3f localToBlockNormal) {
+//        var dir = transform(model.direction(), localToBlock);
+//        int[] vertices = model.vertices();
 //        vertices = Arrays.copyOf(vertices, vertices.length);
 //
 //        int i;
@@ -460,7 +428,7 @@ public class RenderingUtil {
 //                vertices[offset] = (byte)((int)(posx.x() * 127.0F)) & 255 | ((byte)((int)(posx.y() * 127.0F)) & 255) << 8 | ((byte)((int)(posx.z() * 127.0F)) & 255) << 16 | normalIn & -16777216;
 //            }
 //        }
-//        return new BakedQuad(vertices, original.tintIndex(), dir, original.sprite(), original.shade(), original.lightEmission());
+//        return new BakedQuad(vertices, model.tintIndex(), dir, model.sprite(), model.shade(), model.lightEmission());
 //    }
 //
 //    private static BakedQuad clampWithinUnitCube(BakedQuad quad){

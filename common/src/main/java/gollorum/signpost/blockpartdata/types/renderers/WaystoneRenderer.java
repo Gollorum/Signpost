@@ -4,9 +4,11 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.blockpartdata.types.BlockPartRenderer;
 import gollorum.signpost.blockpartdata.types.WaystoneBlockPart;
 import gollorum.signpost.minecraft.gui.WaystoneModelResources;
+import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.gui.utils.Point;
+import gollorum.signpost.minecraft.gui.utils.TextureResource;
+import gollorum.signpost.minecraft.models.WaystoneInPostModel;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
-import gollorum.signpost.utils.Lazy;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -33,28 +35,31 @@ public class WaystoneRenderer extends BlockPartRenderer<WaystoneBlockPart> {
 	) {
 		RenderingUtil.render(
 			blockToView,
-			localToBlock.last().pose(),
-			RenderingUtil.loadModel(WaystoneModelResources.inPostLocation, RenderingUtil.IdentityModelState),
-			tileEntity.getLevel(),
-			tileEntity.getBlockState(),
-			tileEntity.getBlockPos(),
-			buffer.getBuffer(RenderType.solid()),
-			false,
-			random,
-			randomSeed,
+			WaystoneInPostModel.MODEL.bake(16, 16), // TODO DS: ???
+			buffer.getBuffer(RenderType.entitySolid(TextureResource.waystoneTextureLocation)),
+			RenderingUtil.FLAT_LIGHT_PROBABLY,
 			combinedOverlay,
-			new int[0]
+			Colors.white
 		);
 	}
 
 	@Override
-	public void renderGui(WaystoneBlockPart part, PoseStack matrixStack, Point center, Angle yaw, Angle pitch, boolean isFlipped, float scale, Vector3 offset) {
-		RenderingUtil.renderGui(RenderingUtil.loadModel(WaystoneModelResources.inPostLocation, RenderingUtil.IdentityModelState), matrixStack, new int[0], center, yaw, pitch, isFlipped, scale, offset, RenderType.solid(), m -> {});
+	public void renderGui(WaystoneBlockPart part, PoseStack matrixStack, Point center, Angle yaw, Angle pitch, boolean isFlipped, float scale, Vector3 offset, MultiBufferSource buffer) {
+		RenderingUtil.renderGui(
+			WaystoneInPostModel.MODEL.bake(16, 16), // TODO DS: ???
+			matrixStack,
+			Colors.white,
+			center, yaw, pitch, isFlipped, scale, offset,
+			buffer.getBuffer(RenderType.guiTextured(TextureResource.waystoneTextureLocation)), m -> {});
 	}
 
 	@Override
 	public void renderGui(WaystoneBlockPart waystone, PoseStack matrixStack, Vector3 offset, MultiBufferSource buffer, int combinedLight, int combinedOverlay) {
-		RenderingUtil.renderGui(RenderingUtil.loadModel(WaystoneModelResources.inPostLocation, RenderingUtil.IdentityModelState), matrixStack, new int[0], offset, Angle.ZERO, buffer.getBuffer(RenderType.solid()), RenderType.solid(), combinedLight, combinedOverlay, m -> {});
+		RenderingUtil.renderGui(
+			WaystoneInPostModel.MODEL.bake(16, 16), // TODO DS: ???
+			matrixStack, offset, Angle.ZERO,
+			buffer.getBuffer(RenderType.guiTextured(TextureResource.waystoneTextureLocation)),
+			combinedLight, combinedOverlay, Colors.white, m -> {});
 	}
 
 }

@@ -4,11 +4,10 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.blockpartdata.types.LargeSignBlockPart;
-import gollorum.signpost.minecraft.rendering.ModelRegistry;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.block.model.BlockModelPart;
 import org.joml.AxisAngle4d;
 import org.joml.Quaternionf;
 import org.joml.Vector3d;
@@ -30,13 +29,18 @@ public class LargeSignRenderer extends SignRenderer<LargeSignBlockPart> {
 	private static final float FONT_SIZE_VOXELS = 2 / TEXT_RATIO;
 
 	@Override
-	protected BlockModelPart makeBakedModel(LargeSignBlockPart sign) {
-		return ModelRegistry.LargeBakedSign.makeModel(sign);
+	protected ModelPart makeMainModel(LargeSignBlockPart sign) {
+		return RenderingUtil.EMPTY_MODEL;
 	}
 
 	@Override
-	protected BlockModelPart makeBakedOverlayModel(LargeSignBlockPart sign, Overlay overlay) {
-		return ModelRegistry.LargeBakedSign.makeOverlayModel(sign, overlay);
+	protected ModelPart makeSecondaryModel(LargeSignBlockPart sign) {
+		return RenderingUtil.EMPTY_MODEL;
+	}
+
+	@Override
+	protected ModelPart makeBakedOverlayModel(LargeSignBlockPart sign, Overlay overlay) {
+		return RenderingUtil.EMPTY_MODEL;
 	}
 
 	@Override
