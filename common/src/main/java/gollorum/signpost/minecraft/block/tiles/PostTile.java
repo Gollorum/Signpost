@@ -498,6 +498,9 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
                         }
                         tile.parts.put(message.info.identifier, new BlockPartInstance(message.blockPart, offset));
                         message.blockPart().attachTo(tile);
+                        tile.setChanged();
+                        if(isServer)
+                            tile.sendToTracing(() -> message);
                     },
                     100,
                     !isServer,

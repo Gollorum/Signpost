@@ -54,7 +54,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
         this.part = part;
         this.displayPart = displayPart;
         atlasSpriteGetter = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS);
-        oldSprite = Tuple.of(spriteFrom(oldTexture.location()), oldTexture.tint());
+        oldSprite = Tuple.of(oldTexture.toMaterial().sprite(), oldTexture.tint());
         this.identifier = identifier;
     }
     
@@ -124,7 +124,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
                 var part = entry.getValue();
                 Collection<Texture> partTextures = part.blockPart().getAllTextures();
                 for (Texture tex : partTextures) {
-                    ret.add(Tuple.of(spriteFrom(tex.location()), tex.tint()));
+                    ret.add(Tuple.of(tex.toMaterial().sprite(), tex.tint()));
                 }
             }
             return ret;
@@ -176,7 +176,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
                     Rect.XAlignment.Left, Rect.YAlignment.Center
                 ),
                 sprite._1(), sprite._2().map(t -> t.getColorAt(minecraft.level, minecraft.player.blockPosition())).orElse(Colors.white),
-                imgButton -> setTexture(displayPart, new Texture(sprite._1().contents().name(), sprite._2()))
+                imgButton -> setTexture(displayPart, new Texture(sprite._1().contents().name(), sprite._1().atlasLocation(), sprite._2()))
             );
             addRenderableWidget(newButton);
             textureButtons.add(newButton);

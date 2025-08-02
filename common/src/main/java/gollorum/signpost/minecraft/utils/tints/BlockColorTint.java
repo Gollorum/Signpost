@@ -40,7 +40,7 @@ public record BlockColorTint(Block block, int tintIndex) implements Tint {
     }
 
     public static final MapCodec<BlockColorTint> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-        Block.CODEC.fieldOf("Block").forGetter(BlockColorTint::block),
+        ResourceLocation.CODEC.fieldOf("Block").xmap(BlockColorTint::getBlock, BlockColorTint::getKey).forGetter(BlockColorTint::block),
         Codec.INT.fieldOf("TintIndex").forGetter(BlockColorTint::tintIndex)
     ).apply(i, BlockColorTint::new));
 

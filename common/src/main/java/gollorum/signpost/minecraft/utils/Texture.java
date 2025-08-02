@@ -5,27 +5,39 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.utils.Tint;
 import gollorum.signpost.utils.serialization.OptionalCompoundSerializer;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.resources.model.Material;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.Optional;
 
-public record Texture(ResourceLocation location, Optional<Tint> tint){
-    public Texture(ResourceLocation location) { this(location, Optional.empty()); }
+public record Texture(ResourceLocation location, ResourceLocation atlasLocation, Optional<Tint> tint){
+    public Texture(ResourceLocation location) { this(location, Optional.empty(), Optional.empty()); }
+
+    private Texture(ResourceLocation location, Optional<ResourceLocation> atlasLocation, Optional<Tint> tint) {
+        this(location, atlasLocation.orElse(TextureAtlas.LOCATION_BLOCKS), tint);
+    }
 
     @Override
     public String toString() {
         return null;
     }
 
+    public Material toMaterial() {
+        return new Material(atlasLocation, location);
+    }
+
     public static final Codec<Texture> CODEC = RecordCodecBuilder.create(i -> i.group(
         ResourceLocation.CODEC.fieldOf("ResourceLocation").forGetter(Texture::location),
+        ResourceLocation.CODEC.optionalFieldOf("AtlasLocation").forGetter(t -> Optional.of(t.atlasLocation)),
         OptionalCompoundSerializer.from(Tint.Serialization.CODEC).fieldOf("Tint").forGetter(Texture::tint)
     ).apply(i, Texture::new));
 
     public static final StreamCodec<ByteBuf, Texture> STREAM_CODEC = StreamCodec.composite(
         ResourceLocation.STREAM_CODEC, Texture::location,
+        ResourceLocation.STREAM_CODEC, Texture::atlasLocation,
         ByteBufCodecs.optional(Tint.Serialization.STREAM_CODEC), Texture::tint,
         Texture::new
     );

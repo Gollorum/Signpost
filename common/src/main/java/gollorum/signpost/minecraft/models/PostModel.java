@@ -14,6 +14,7 @@ public class PostModel {
         MODEL.addOrReplaceChild(
             "post",
             CubeListBuilder.create()
+                .texOffs(0, -4)
                 .addBox(
                     -2, 0, -2,
                     4, 16, 4,

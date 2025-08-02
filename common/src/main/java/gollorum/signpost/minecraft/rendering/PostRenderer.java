@@ -45,25 +45,22 @@ public class PostRenderer implements BlockEntityRenderer<PostTile> {
             .map(Optional::get)
             .collect(Collectors.toSet());
         boolean shouldUseOriginalBuffer = partsBeingBroken == null || partsBeingBroken.isEmpty() || partsBeingBroken.stream().anyMatch(i -> i.blockPart() instanceof PostBlockPart);
-        var localPose = new PoseStack();
-        localPose.translate(0.5, 0, 0.5);
-        for (BlockPartInstance now: tile.getParts()) {
-            RenderingUtil.wrapInMatrixEntry(localPose, () -> {
-                localPose.translate(now.offset().x() + randomOffset * random.nextDouble(), now.offset().y() + randomOffset * random.nextDouble(), now.offset().z() + randomOffset * random.nextDouble());
-                BlockPartRenderer.renderDynamic(
-                    now.blockPart(),
-                    tile,
-                    renderer,
-                    matrixStack,
-                    localPose,
-                    shouldUseOriginalBuffer || partsBeingBroken.contains(now) ? buffer : Minecraft.getInstance().renderBuffers().bufferSource(),
-                    combinedLight,
-                    combinedOverlay,
-                    random,
-                    randomSeed
-                );
-            });
-        }
+        RenderingUtil.wrapInMatrixEntry(matrixStack, () -> {
+            matrixStack.translate(0.5, 0, 0.5);
+            for (BlockPartInstance now: tile.getParts()) {
+                RenderingUtil.wrapInMatrixEntry(matrixStack, () -> {
+                    matrixStack.translate(now.offset().x() + randomOffset * random.nextDouble(), now.offset().y() + randomOffset * random.nextDouble(), now.offset().z() + randomOffset * random.nextDouble());
+                    BlockPartRenderer.renderDynamic(
+                        now.blockPart(),
+                        tile,
+                        matrixStack,
+                        shouldUseOriginalBuffer || partsBeingBroken.contains(now) ? buffer : Minecraft.getInstance().renderBuffers().bufferSource(),
+                        combinedLight,
+                        combinedOverlay
+                    );
+                });
+            }
+        });
     }
 
 }

@@ -1,6 +1,7 @@
 package gollorum.signpost.minecraft.gui.utils;
 
 import gollorum.signpost.Signpost;
+import gollorum.signpost.minecraft.utils.Texture;
 import net.minecraft.resources.ResourceLocation;
 
 public class TextureResource {
@@ -44,7 +45,7 @@ public class TextureResource {
         "textures/gui/edit.png", new TextureSize(15, 15), new TextureSize(15, 30)
     );
 
-    public static final ResourceLocation waystoneTextureLocation = ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "texture/block/waystone");
+    public static final Texture waystoneTextureLocation = new Texture(ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "texture/block/waystone"));
 
     public final ResourceLocation location;
     public final TextureSize size;

@@ -54,18 +54,19 @@ public class GuiModelRenderer implements Renderable, Flippable {
             RenderingUtil.wrapInMatrixEntry(matrixStack, () -> {
                 matrixStack.translate(0, 0, -10);
                 if(isFlipped) matrixStack.mulPose(new Quaternionf(new AxisAngle4d(Math.PI, new Vector3f(0, 1, 0))));
-                RenderingUtil.renderGui(
-                    model.get(isFlipped),
-                    new PoseStack(),
-                    center,
-                    Angle.ZERO,
-                    Angle.ZERO,
-                    isFlipped,
-                    scale,
-                    new Vector3(modelSpaceXOffset, modelSpaceYOffset, 0),
-                    buffer,
-                    m -> {}
-                );
+                for (var moo : model.get(isFlipped))
+                    RenderingUtil.renderGui(
+                        moo,
+                        new PoseStack(),
+                        center,
+                        Angle.ZERO,
+                        Angle.ZERO,
+                        isFlipped,
+                        scale,
+                        new Vector3(modelSpaceXOffset, modelSpaceYOffset, 0),
+                        buffer,
+                        m -> {}
+                    );
             });
         });
     }

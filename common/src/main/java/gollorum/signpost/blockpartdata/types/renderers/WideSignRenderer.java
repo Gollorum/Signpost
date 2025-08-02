@@ -5,10 +5,12 @@ import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.blockpartdata.types.SmallShortSignBlockPart;
 import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
+import gollorum.signpost.minecraft.models.WideSignModel;
 import gollorum.signpost.minecraft.rendering.ModelRegistry;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
 import org.joml.AxisAngle4d;
@@ -31,18 +33,18 @@ public class WideSignRenderer extends SignRenderer<SmallWideSignBlockPart> {
 	private static final float FONT_SIZE_VOXELS = 2 / TEXT_RATIO;
 
 	@Override
-	protected ModelPart makeMainModel(SmallWideSignBlockPart sign) {
-		return RenderingUtil.EMPTY_MODEL;
+	protected PartDefinition makeMainModel(SmallWideSignBlockPart sign) {
+		return (sign.isFlipped() ? WideSignModel.MODEL_MAIN_FLIPPED : WideSignModel.MODEL_MAIN);
 	}
 
 	@Override
-	protected ModelPart makeSecondaryModel(SmallWideSignBlockPart sign) {
-		return RenderingUtil.EMPTY_MODEL;
+	protected PartDefinition makeSecondaryModel(SmallWideSignBlockPart sign) {
+		return (sign.isFlipped() ? WideSignModel.MODEL_SECONDARY_FLIPPED : WideSignModel.MODEL_SECONDARY);
 	}
 
 	@Override
-	protected ModelPart makeBakedOverlayModel(SmallWideSignBlockPart sign, Overlay overlay) {
-		return RenderingUtil.EMPTY_MODEL;
+	protected PartDefinition makeBakedOverlayModel(SmallWideSignBlockPart sign, Overlay overlay) {
+		return (sign.isFlipped() ? WideSignModel.MODEL_OVERLAY_FLIPPED : WideSignModel.MODEL_OVERLAY);
 	}
 
 	@Override

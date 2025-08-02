@@ -60,9 +60,7 @@ public class ModelButton extends SignpostImageButton {
                 rectBuilder.apply(rect),
                 model.model,
                 model.modelSpaceXOffset,
-                model.modelSpaceYOffset,
-                model.renderType,
-                model.tints));
+                model.modelSpaceYOffset));
         }
     }
 
@@ -80,16 +78,12 @@ public class ModelButton extends SignpostImageButton {
         public final float modelSpaceXOffset;
         public final float modelSpaceYOffset;
         public final ItemStack itemStack;
-        public final RenderType renderType;
-        public final int[] tints;
 
-        public ModelData(FlippableModel model, float modelSpaceXOffset, float modelSpaceYOffset, ItemStack itemStack, RenderType renderType, int[] tints) {
+        public ModelData(FlippableModel model, float modelSpaceXOffset, float modelSpaceYOffset, ItemStack itemStack) {
             this.model = model;
             this.modelSpaceXOffset = modelSpaceXOffset;
             this.modelSpaceYOffset = modelSpaceYOffset;
             this.itemStack = itemStack;
-            this.renderType = renderType;
-            this.tints = tints;
         }
 
     }

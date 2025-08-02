@@ -8,8 +8,6 @@ import gollorum.signpost.utils.BlockPart;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.util.Map;
@@ -41,28 +39,20 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
     public static <T extends BlockPart<T>> void renderDynamic(
         T part,
         BlockEntity tileEntity,
-        BlockEntityRenderDispatcher renderDispatcher,
         PoseStack blockToView,
-        PoseStack localToBlock,
         MultiBufferSource buffer,
         int combinedLights,
-        int combinedOverlay,
-        RandomSource random,
-        long randomSeed
+        int combinedOverlay
     ) {
         Optional<BlockPartRenderer<T>> renderer = BlockPartRenderer.getFor((Class<T>) part.getClass());
         if(renderer.isPresent()) {
             renderer.get().render(
                 part,
                 tileEntity,
-                renderDispatcher,
                 blockToView,
-                localToBlock,
                 buffer,
                 combinedLights,
-                combinedOverlay,
-                random,
-                randomSeed
+                combinedOverlay
             );
         } else {
             Signpost.LOGGER.error("Block part renderer was not found for " + part.getClass());
@@ -111,14 +101,10 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
     public abstract void render(
         T part,
         BlockEntity tileEntity,
-        BlockEntityRenderDispatcher renderDispatcher,
         PoseStack blockToView,
-        PoseStack localToBlock,
         MultiBufferSource buffer,
         int combinedLights,
-        int combinedOverlay,
-        RandomSource random,
-        long randomSeed
+        int combinedOverlay
     );
 
     public abstract void renderGui(

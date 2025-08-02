@@ -10,6 +10,8 @@ import gollorum.signpost.minecraft.utils.tints.FoliageTint;
 import gollorum.signpost.minecraft.utils.tints.GrassTint;
 import gollorum.signpost.utils.Tint;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.resources.model.Material;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
@@ -35,6 +37,13 @@ public abstract class Overlay {
     }
 
     public abstract ResourceLocation textureFor(Class<? extends SignBlockPart> signClass);
+    // TODO DS: :
+    public Material materialFor(Class<? extends SignBlockPart> signClass) {
+        return new Material(
+            TextureAtlas.LOCATION_BLOCKS,
+            textureFor(signClass)
+        );
+    }
 
     private static <T> T logErrorAndReturn(String error, T t) {
         Signpost.LOGGER.error(error);

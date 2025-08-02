@@ -14,7 +14,10 @@ import gollorum.signpost.events.WaystoneRenamedEvent;
 import gollorum.signpost.events.WaystoneUpdatedEvent;
 import gollorum.signpost.minecraft.gui.utils.*;
 import gollorum.signpost.minecraft.gui.widgets.*;
+import gollorum.signpost.minecraft.models.LargeSignModel;
 import gollorum.signpost.minecraft.models.PostModel;
+import gollorum.signpost.minecraft.models.ShortSignModel;
+import gollorum.signpost.minecraft.models.WideSignModel;
 import gollorum.signpost.minecraft.rendering.FlippableModel;
 import gollorum.signpost.minecraft.rendering.TexturedModel;
 import gollorum.signpost.minecraft.utils.LangKeys;
@@ -26,6 +29,7 @@ import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.*;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
@@ -231,15 +235,89 @@ public class SignGui extends ExtendedScreen {
         var mainTexture = oldSign.map(SignBlockPart::getMainTexture).orElse(modelType.mainTexture);
         var secondaryTexture = oldSign.map(SignBlockPart::getSecondaryTexture).orElse(modelType.secondaryTexture);
 
-        FlippableModel postModel = FlippableModel.fromSymmetric(new TexturedModel(PostModel.MODEL.bake(16, 16), postTexture.location(), Colors.white)); // TODO DS: ???
+        FlippableModel postModel = FlippableModel.fromSymmetric(
+            new TexturedModel[]{new TexturedModel(
+                PostModel.MODEL,
+                postTexture.toMaterial(),
+                colorFrom(postTexture.tint())
+            )});
         FlippableModel wideModel = FlippableModel.from(
-            PostModelResources.wideLocation, PostModelResources.wideFlippedLocation, mainTexture.location(), secondaryTexture.location()
+            new TexturedModel[]{
+                new TexturedModel(
+                    WideSignModel.MODEL_MAIN,
+                    mainTexture.toMaterial(),
+                    colorFrom(mainTexture.tint())
+                ),
+                new TexturedModel(
+                    WideSignModel.MODEL_SECONDARY,
+                    secondaryTexture.toMaterial(),
+                    colorFrom(secondaryTexture.tint())
+                )
+            },
+            new TexturedModel[]{
+                new TexturedModel(
+                    WideSignModel.MODEL_MAIN_FLIPPED,
+                    mainTexture.toMaterial(),
+                    colorFrom(mainTexture.tint())
+                ),
+                new TexturedModel(
+                    WideSignModel.MODEL_SECONDARY_FLIPPED,
+                    secondaryTexture.toMaterial(),
+                    colorFrom(secondaryTexture.tint())
+                )
+            }
         );
         FlippableModel shortModel = FlippableModel.from(
-            PostModelResources.shortLocation, PostModelResources.shortFlippedLocation, mainTexture.location(), secondaryTexture.location()
+            new TexturedModel[]{
+                new TexturedModel(
+                    ShortSignModel.MODEL_MAIN,
+                    mainTexture.toMaterial(),
+                    colorFrom(mainTexture.tint())
+                ),
+                new TexturedModel(
+                    ShortSignModel.MODEL_SECONDARY,
+                    secondaryTexture.toMaterial(),
+                    colorFrom(secondaryTexture.tint())
+                )
+            },
+            new TexturedModel[]{
+                new TexturedModel(
+                    ShortSignModel.MODEL_MAIN_FLIPPED,
+                    mainTexture.toMaterial(),
+                    colorFrom(mainTexture.tint())
+                ),
+                new TexturedModel(
+                    ShortSignModel.MODEL_SECONDARY_FLIPPED,
+                    secondaryTexture.toMaterial(),
+                    colorFrom(secondaryTexture.tint())
+                )
+            }
         );
         FlippableModel largeModel = FlippableModel.from(
-            PostModelResources.largeLocation, PostModelResources.largeFlippedLocation, mainTexture.location(), secondaryTexture.location()
+            new TexturedModel[]{
+                new TexturedModel(
+                    LargeSignModel.MODEL_MAIN,
+                    mainTexture.toMaterial(),
+                    colorFrom(mainTexture.tint())
+                ),
+                new TexturedModel(
+                    LargeSignModel.MODEL_SECONDARY,
+                    secondaryTexture.toMaterial(),
+                    colorFrom(secondaryTexture.tint())
+                )
+            },
+            new TexturedModel[]{
+                new TexturedModel(
+                    LargeSignModel.MODEL_MAIN_FLIPPED,
+                    mainTexture.toMaterial(),
+                    colorFrom(mainTexture.tint())
+                ),
+                new TexturedModel(
+                    LargeSignModel.MODEL_SECONDARY_FLIPPED,
+                    secondaryTexture.toMaterial(),
+                    colorFrom(secondaryTexture.tint())
+                )
+            }
         );
 
         addRenderableWidget(
@@ -250,8 +328,8 @@ public class SignGui extends ExtendedScreen {
                 Rect.XAlignment.Center, Rect.YAlignment.Top,
                 rect -> rect.withPoint(p -> p.add(-4, 0)).scaleCenter(0.75f),
                 this::switchToWide,
-                new ModelButton.ModelData(postModel, 0, -0.5f, itemStack, RenderType.solid(), new int[]{colorFrom(postTexture.tint())}),
-                new ModelButton.ModelData(wideModel, 0, 0.25f, itemStack, RenderType.solid(), new int[]{colorFrom(mainTexture.tint()), colorFrom(secondaryTexture.tint())})
+                new ModelButton.ModelData(postModel, 0, -0.5f, itemStack),
+                new ModelButton.ModelData(wideModel, 0, 0.25f, itemStack)
             )
         );
 
@@ -263,8 +341,8 @@ public class SignGui extends ExtendedScreen {
                 Rect.XAlignment.Center, Rect.YAlignment.Top,
                 rect -> rect.withPoint(p -> p.add(-11, 0)).scaleCenter(0.75f),
                 this::switchToShort,
-                new ModelButton.ModelData(postModel, 0, -0.5f, itemStack, RenderType.solid(), new int[]{colorFrom(postTexture.tint())}),
-                new ModelButton.ModelData(shortModel, 0, 0.25f, itemStack, RenderType.solid(), new int[]{colorFrom(mainTexture.tint()), colorFrom(secondaryTexture.tint())})
+                new ModelButton.ModelData(postModel, 0, -0.5f, itemStack),
+                new ModelButton.ModelData(shortModel, 0, 0.25f, itemStack)
             )
         );
 
@@ -276,8 +354,8 @@ public class SignGui extends ExtendedScreen {
                 Rect.XAlignment.Center, Rect.YAlignment.Top,
                 rect -> rect.withPoint(p -> p.add(-3, 0)).scaleCenter(0.75f),
                 this::switchToLarge,
-                new ModelButton.ModelData(postModel, 0, -0.5f, itemStack, RenderType.solid(), new int[]{colorFrom(postTexture.tint())}),
-                new ModelButton.ModelData(largeModel, 0, 0, itemStack, RenderType.solid(), new int[]{colorFrom(mainTexture.tint()), colorFrom(secondaryTexture.tint())})
+                new ModelButton.ModelData(postModel, 0, -0.5f, itemStack),
+                new ModelButton.ModelData(largeModel, 0, 0, itemStack)
             )
         );
 
@@ -407,9 +485,8 @@ public class SignGui extends ExtendedScreen {
             Rect.YAlignment.Top);
         GuiModelRenderer postRenderer = new GuiModelRenderer(
             modelRect, postModel,
-            0, -0.5f,
-            RenderType.solid(),
-            new int[]{colorFrom(postTexture.tint())});
+            0, -0.5f
+        );
         addRenderableOnly(postRenderer);
         Point modelRectTop = modelRect.at(Rect.XAlignment.Center, Rect.YAlignment.Top);
 
@@ -425,9 +502,8 @@ public class SignGui extends ExtendedScreen {
 
         wideSignRenderer = new GuiModelRenderer(
             modelRect, wideModel,
-            0, 0.24f,
-            RenderType.solid(),
-            new int[]{colorFrom(mainTexture.tint()), colorFrom(secondaryTexture.tint())});
+            0, 0.24f
+        );
         widgetsToFlip.add(wideSignRenderer);
 
         Rect shortInputRect = new Rect(
@@ -441,9 +517,8 @@ public class SignGui extends ExtendedScreen {
 
         shortSignRenderer = new GuiModelRenderer(
             modelRect, shortModel,
-            0, 0.24f,
-            RenderType.solid(),
-            new int[]{colorFrom(mainTexture.tint()), colorFrom(secondaryTexture.tint())});
+            0, 0.24f
+        );
         widgetsToFlip.add(shortSignRenderer);
 
         Rect largeInputRect = new Rect(
@@ -478,9 +553,8 @@ public class SignGui extends ExtendedScreen {
 
         largeSignRenderer = new GuiModelRenderer(
             modelRect, largeModel,
-            0, -0.01f,
-            RenderType.solid(),
-            new int[]{colorFrom(mainTexture.tint()), colorFrom(secondaryTexture.tint())});
+            0, -0.01f
+        );
         widgetsToFlip.add(largeSignRenderer);
 
         largeSignInputBoxes = ImmutableList.of(firstLarge, secondLarge, thirdLarge, fourthLarge);
@@ -508,17 +582,30 @@ public class SignGui extends ExtendedScreen {
         overlaySelectionButtons.clear();
         int i = 0;
         for(Overlay overlay: Overlay.getAllOverlays()) {
-            FlippableModel overlayModel = FlippableModel.loadFrom(
-                PostModelResources.wideOverlayLocation, PostModelResources.wideOverlayFlippedLocation, overlay.textureFor(SmallWideSignBlockPart.class)
+            FlippableModel overlayModel = FlippableModel.from(
+                new TexturedModel[]{
+                    new TexturedModel(
+                        WideSignModel.MODEL_OVERLAY,
+                        overlay.materialFor(SmallWideSignBlockPart.class),
+                        colorFrom(overlay.tint)
+                    )
+                },
+                new TexturedModel[]{
+                    new TexturedModel(
+                        WideSignModel.MODEL_OVERLAY_FLIPPED,
+                        overlay.materialFor(SmallWideSignBlockPart.class),
+                        colorFrom(overlay.tint)
+                    )
+                }
             );
             overlaySelectionButtons.add(new ModelButton(
                 TextureResource.signTypeSelection, new Point(getCenterX() - centerGap - i * 37, rotationInputBoxRect.max().y + 15),
                 overlayButtonsScale, Rect.XAlignment.Right, Rect.YAlignment.Top,
                 rect -> rect.withPoint(p -> p.add(Math.round(-4 / typeSelectionButtonsScale * overlayButtonsScale), 0)).scaleCenter(0.75f),
                 () -> switchOverlay(Optional.of(overlay)),
-                new ModelButton.ModelData(postModel, 0, -0.5f, itemStack, RenderType.solid(), new int[]{colorFrom(postTexture.tint())}),
-                new ModelButton.ModelData(wideModel, 0, 0.25f, itemStack, RenderType.solid(), new int[]{colorFrom(mainTexture.tint()), colorFrom(secondaryTexture.tint())}),
-                new ModelButton.ModelData(overlayModel, 0, 0.25f, itemStack, RenderType.cutout(), new int[]{colorFrom(overlay.tint)})
+                new ModelButton.ModelData(postModel, 0, -0.5f, itemStack),
+                new ModelButton.ModelData(wideModel, 0, 0.25f, itemStack),
+                new ModelButton.ModelData(overlayModel, 0, 0.25f, itemStack)
             ));
             i++;
         }
@@ -528,8 +615,8 @@ public class SignGui extends ExtendedScreen {
                 overlayButtonsScale, Rect.XAlignment.Right, Rect.YAlignment.Top,
                 rect -> rect.withPoint(p -> p.add(Math.round(-4 / typeSelectionButtonsScale * overlayButtonsScale), 0)).scaleCenter(0.75f),
                 () -> switchOverlay(Optional.empty()),
-                new ModelButton.ModelData(postModel, 0, -0.5f, itemStack, RenderType.solid(), new int[]{colorFrom(postTexture.tint())}),
-                new ModelButton.ModelData(wideModel, 0, 0.25f, itemStack, RenderType.solid(), new int[]{colorFrom(mainTexture.tint()), colorFrom(secondaryTexture.tint())})
+                new ModelButton.ModelData(postModel, 0, -0.5f, itemStack),
+                new ModelButton.ModelData(wideModel, 0, 0.25f, itemStack)
             ));
         for(Button button : overlaySelectionButtons) addRenderableWidget(button);
 
@@ -825,26 +912,65 @@ public class SignGui extends ExtendedScreen {
             case Wide:
                 currentOverlay = new GuiModelRenderer(
                     wideSignRenderer.rect,
-                    FlippableModel.loadFrom(PostModelResources.wideOverlayLocation, PostModelResources.wideOverlayFlippedLocation, o.textureFor(SmallWideSignBlockPart.class)),
-                    0, 0.25f,
-                    RenderType.cutout(),
-                    new int[]{colorFrom(o.tint)});
+                    FlippableModel.from(
+                        new TexturedModel[]{
+                            new TexturedModel(
+                                WideSignModel.MODEL_OVERLAY,
+                                o.materialFor(SmallWideSignBlockPart.class),
+                                colorFrom(o.tint)
+                            )
+                        },
+                        new TexturedModel[]{
+                            new TexturedModel(
+                                WideSignModel.MODEL_OVERLAY_FLIPPED,
+                                o.materialFor(SmallWideSignBlockPart.class),
+                                colorFrom(o.tint)
+                            )
+                        }
+                    ),
+                    0, 0.25f);
                 break;
             case Short:
                 currentOverlay = new GuiModelRenderer(
                     shortSignRenderer.rect,
-                    FlippableModel.loadFrom(PostModelResources.shortOverlayLocation, PostModelResources.shortOverlayFlippedLocation, o.textureFor(SmallShortSignBlockPart.class)),
-                    0, 0.25f,
-                    RenderType.cutout(),
-                    new int[]{colorFrom(o.tint)});
+                    FlippableModel.from(
+                        new TexturedModel[]{
+                            new TexturedModel(
+                                ShortSignModel.MODEL_OVERLAY,
+                                o.materialFor(SmallShortSignBlockPart.class),
+                                colorFrom(o.tint)
+                            )
+                        },
+                        new TexturedModel[]{
+                            new TexturedModel(
+                                ShortSignModel.MODEL_OVERLAY_FLIPPED,
+                                o.materialFor(SmallShortSignBlockPart.class),
+                                colorFrom(o.tint)
+                            )
+                        }
+                    ),
+                    0, 0.25f);
                 break;
             case Large:
                 currentOverlay = new GuiModelRenderer(
                     largeSignRenderer.rect,
-                    FlippableModel.loadFrom(PostModelResources.largeOverlayLocation, PostModelResources.largeOverlayFlippedLocation, o.textureFor(LargeSignBlockPart.class)),
-                    0, 0,
-                    RenderType.cutout(),
-                    new int[]{colorFrom(o.tint)});
+                    FlippableModel.from(
+                        new TexturedModel[]{
+                            new TexturedModel(
+                                LargeSignModel.MODEL_OVERLAY,
+                                o.materialFor(LargeSignBlockPart.class),
+                                colorFrom(o.tint)
+                            )
+                        },
+                        new TexturedModel[]{
+                            new TexturedModel(
+                                LargeSignModel.MODEL_OVERLAY_FLIPPED,
+                                o.materialFor(LargeSignBlockPart.class),
+                                colorFrom(o.tint)
+                            )
+                        }
+                    ),
+                    0, 0);
                 break;
         }
         addRenderableOnly(currentOverlay);

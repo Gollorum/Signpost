@@ -5,6 +5,6 @@ import net.minecraft.world.item.ItemStack;
 
 public final class ItemStackSerializer {
 
-    public static final MapCodec<ItemStack> CODEC = ItemStack.CODEC.fieldOf("ItemStack");
+    public static final MapCodec<ItemStack> CODEC = ItemStack.OPTIONAL_CODEC.fieldOf("ItemStack");
 
 }

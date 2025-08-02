@@ -23,15 +23,16 @@ import org.joml.*;
 
 import java.lang.Math;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class RenderingUtil {
 
-    public static ModelPart EMPTY_MODEL;
-    public static PartDefinition EMPTY_PART;
+    public static final ModelPart EMPTY_MODEL;
+    public static final PartDefinition EMPTY_PART;
     static {
 
         var meshDefinition = new MeshDefinition();
-        var EMPTY_PART = meshDefinition.getRoot();
+        EMPTY_PART = meshDefinition.getRoot();
         EMPTY_PART.addOrReplaceChild(
             "waystone",
             CubeListBuilder.create(),
@@ -89,27 +90,23 @@ public class RenderingUtil {
     public static void render(
         PoseStack blockToView,
         TexturedModel model,
+        MultiBufferSource buffer,
+        int combinedLights,
+        int combinedOverlay,
+        Function<ResourceLocation, RenderType> renderTypeFactory
+    ) {
+        render(blockToView, model.model(), model.texture().buffer(buffer, renderTypeFactory), combinedLights, combinedOverlay, model.tint());
+    }
+
+    public static void render(
+        PoseStack blockToView,
+        ModelPart model,
         VertexConsumer buffer,
         int combinedLights,
-        int combinedOverlay
-    ){
-//        wrapInMatrixEntry(blockToView, () ->
-            model.model().render(blockToView, buffer, combinedLights, combinedOverlay, model.tint());
-//            tesselateBlock(
-//                world,
-//                model,
-//                state,
-//                tints,
-//                pos,
-//                blockToView,
-//                localToBlock,
-//                buffer,
-//                checkSides,
-//                random,
-//                rand,
-//                combinedOverlay
-//            )
-//        );
+        int combinedOverlay,
+        int color
+    ) {
+        model.render(blockToView, buffer, combinedLights, combinedOverlay, color);
     }
 
     public static void drawString(GuiGraphics graphics, Font fontRenderer, String text, Point point, Rect.XAlignment xAlignment, Rect.YAlignment yAlignment, int color, int maxWidth, boolean dropShadow){
@@ -154,7 +151,7 @@ public class RenderingUtil {
             matrixStack.mulPose(new Quaternionf(new AxisAngle4f(yaw.radians(), new Vector3f(0, 1, 0))));
             matrixStack.translate(offset.x(), offset.y(), offset.z());
 
-            render(matrixStack, model, buffer.getBuffer(RenderType.guiTextured(model.texture())), combinedLight, combinedOverlay);
+            render(matrixStack, model.model(), model.texture().buffer(buffer, RenderType::guiTextured), combinedLight, combinedOverlay, model.tint());
 
             alsoDo.accept(matrixStack);
         });

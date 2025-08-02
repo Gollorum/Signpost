@@ -1,23 +1,27 @@
 package gollorum.signpost.minecraft.rendering;
 
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.resources.ResourceLocation;
+
 public class FlippableModel {
 
-	public final TexturedModel model;
-	public final TexturedModel flippedModel;
+	public final TexturedModel[] model;
+	public final TexturedModel[] flippedModel;
 
-	public FlippableModel(TexturedModel model, TexturedModel flippedModel) {
+	public FlippableModel(TexturedModel[] model, TexturedModel[] flippedModel) {
 		this.model = model;
 		this.flippedModel = flippedModel;
 	}
 
-	public TexturedModel get(boolean isFlipped) { return isFlipped ? flippedModel : model; }
+	public TexturedModel[] get(boolean isFlipped) { return isFlipped ? flippedModel : model; }
 
-	public static FlippableModel from(TexturedModel model, TexturedModel flippedModel) {
-		return new FlippableModel(model, flippedModel);
+	public static FlippableModel from(TexturedModel[] models, TexturedModel[] flippedModels) {
+		return new FlippableModel(models, flippedModels);
 	}
 
-	public static FlippableModel fromSymmetric(TexturedModel model) {
-		return new FlippableModel(model, model);
+	public static FlippableModel fromSymmetric(TexturedModel[] models) {
+		return new FlippableModel(models, models);
 	}
 
 //	public static FlippableModel loadFrom(ResourceLocation modelLocation, ResourceLocation modelLocationFlipped, ResourceLocation texture) {

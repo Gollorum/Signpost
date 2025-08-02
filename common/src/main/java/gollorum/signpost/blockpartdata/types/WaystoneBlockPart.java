@@ -87,7 +87,7 @@ public class WaystoneBlockPart implements BlockPart<WaystoneBlockPart>, WithOwne
 
 	@Override
 	public Collection<Texture> getAllTextures() {
-		return Collections.singleton(new Texture(TextureResource.waystoneTextureLocation));
+		return Collections.singleton(TextureResource.waystoneTextureLocation);
 	}
 
 }

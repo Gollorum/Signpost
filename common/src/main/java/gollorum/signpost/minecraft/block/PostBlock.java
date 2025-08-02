@@ -275,7 +275,7 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
             return new Texture(ResourceLocation.fromNamespaceAndPath(
                 loc.getNamespace(),
                 loc.getPath().startsWith("block/") ? loc.getPath() : "block/"+loc.getPath()
-            ), Optional.empty());
+            ));
         }
 
         private static final StreamCodec<RegistryFriendlyByteBuf, Function<HolderLookup.Provider, Ingredient>> ingredientGetterStreamCodec = StreamCodec.of(

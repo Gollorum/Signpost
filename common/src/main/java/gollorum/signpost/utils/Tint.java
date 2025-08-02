@@ -55,7 +55,7 @@ public interface Tint {
         public static final StreamCodec<ByteBuf, Tint> STREAM_CODEC = ByteBufCodecs.STRING_UTF8.dispatch(
             tint -> {
                 for (var e : allSerializers.entrySet()) {
-                    if (tint == e.getValue().streamCodec()) {
+                    if (tint.getClass() == e.getValue().targetClass()) {
                         return e.getKey();
                     }
                 }
