@@ -1,27 +1,17 @@
 package gollorum.signpost.minecraft.models;
 
-import net.minecraft.client.model.geom.PartPose;
-import net.minecraft.client.model.geom.builders.CubeListBuilder;
-import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.model.geom.builders.PartDefinition;
+import gollorum.signpost.minecraft.models.modelGeneration.QuadModel;
+import gollorum.signpost.minecraft.models.modelGeneration.SignModelFactory;
 
 public class WaystoneInPostModel {
 
-    public static final PartDefinition MODEL;
+    public static final QuadModel MODEL;
 
     static {
-        var meshDefinition = new MeshDefinition();
-        MODEL = meshDefinition.getRoot();
-        MODEL.addOrReplaceChild(
-            "waystone",
-            CubeListBuilder.create()
-                .addBox(
-                    -3, 0, -3,
-                    6, 6, 6,
-                    false
-                ),
-            PartPose.ZERO
-        );
+        MODEL = new SignModelFactory<Integer>()
+            .makeWaystoneInPost(0)
+            .build(QuadModel.builderForSingleTexture(), SignModelFactory.Builder.CUBE_LIST_BUILDER)
+            [0];
     }
 
 }

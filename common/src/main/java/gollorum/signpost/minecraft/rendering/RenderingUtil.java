@@ -3,6 +3,7 @@ package gollorum.signpost.minecraft.rendering;
 import com.mojang.blaze3d.vertex.*;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.utils.Rect;
+import gollorum.signpost.minecraft.models.modelGeneration.QuadModel;
 import gollorum.signpost.utils.Lazy;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
@@ -107,6 +108,37 @@ public class RenderingUtil {
         int color
     ) {
         model.render(blockToView, buffer, combinedLights, combinedOverlay, color);
+    }
+
+    // copied from ModelPart.render, sort of
+    public static void render(
+        PoseStack poseStack,
+        QuadModel model,
+        VertexConsumer buffer,
+        int combinedLights,
+        int combinedOverlay,
+        int color
+    ) {
+        var pose = poseStack.last();
+        var matrix = pose.pose();
+        var bufferVector = new Vector3f();
+
+        for (var quad : model.quads()) {
+            pose.transformNormal(quad.normal(), bufferVector);
+            var normalX = bufferVector.x;
+            var normalY = bufferVector.y;
+            var normalZ = bufferVector.z;
+
+            for (var vertex : quad.vertices()) {
+                matrix.transformPosition(vertex.pos(), bufferVector);
+                buffer.addVertex(
+                    bufferVector.x(), bufferVector.y(), bufferVector.z(),
+                    color,
+                    vertex.u(), vertex.v(),
+                    combinedOverlay, combinedLights,
+                    normalX, normalY, normalZ);
+            }
+        }
     }
 
     public static void drawString(GuiGraphics graphics, Font fontRenderer, String text, Point point, Rect.XAlignment xAlignment, Rect.YAlignment yAlignment, int color, int maxWidth, boolean dropShadow){

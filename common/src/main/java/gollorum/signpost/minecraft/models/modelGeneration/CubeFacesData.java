@@ -1,4 +1,4 @@
-package gollorum.signpost.data.modelGeneration;
+package gollorum.signpost.minecraft.models.modelGeneration;
 
 import gollorum.signpost.utils.Tuple;
 import net.minecraft.core.Direction;

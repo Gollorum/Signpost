@@ -1,4 +1,4 @@
-package gollorum.signpost.data.modelGeneration;
+package gollorum.signpost.minecraft.models.modelGeneration;
 
 import java.util.function.Function;
 

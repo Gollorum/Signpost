@@ -58,7 +58,7 @@ public class VillageWaystone {
     private VillageWaystone(List<Entry> generatedWaystones) {
         this.generatedWaystones = new HashMap<>();
         this.generatedWaystonesByChunk = new HashMap<>();
-        this.allEntries = generatedWaystones;
+        this.allEntries = new ArrayList<>(generatedWaystones);
         for (Entry entry : generatedWaystones) {
             this.generatedWaystones.put(entry.referencePos, entry.handle);
             this.generatedWaystonesByChunk.put(entry.chunkEntryKey, entry.handle);
@@ -119,7 +119,7 @@ public class VillageWaystone {
             var toRemove = allEntries.stream()
                 .filter(e -> waystoneLibrary.getData(e.handle).isEmpty())
                 .toList();
-            for(Entry entry : toRemove) {
+            for (Entry entry : toRemove) {
                 generatedWaystones.remove(entry.referencePos);
                 generatedWaystonesByChunk.remove(entry.chunkEntryKey);
                 allEntries.remove(entry);

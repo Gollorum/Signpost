@@ -1,14 +1,10 @@
-package gollorum.signpost.data.modelGeneration;
-
-import net.minecraftforge.client.model.generators.ModelBuilder;
+package gollorum.signpost.minecraft.models.modelGeneration;
 
 public enum FaceRotation {
-    Zero(ModelBuilder.FaceRotation.ZERO),
-    Clockwise90(ModelBuilder.FaceRotation.CLOCKWISE_90),
-    CounterClockwise90(ModelBuilder.FaceRotation.COUNTERCLOCKWISE_90),
-    UpsideDown(ModelBuilder.FaceRotation.UPSIDE_DOWN);
-
-    public final ModelBuilder.FaceRotation asMinecraft;
+    Zero,
+    Clockwise90,
+    CounterClockwise90,
+    UpsideDown;
 
     public FaceRotation inverse() {
         return switch (this) {
@@ -26,9 +22,5 @@ public enum FaceRotation {
             case CounterClockwise90 -> Clockwise90;
             case UpsideDown -> Zero;
         };
-    }
-
-    FaceRotation(ModelBuilder.FaceRotation asMinecraft) {
-        this.asMinecraft = asMinecraft;
     }
 }

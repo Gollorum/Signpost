@@ -5,9 +5,10 @@ import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.blockpartdata.types.LargeSignBlockPart;
 import gollorum.signpost.blockpartdata.types.SmallShortSignBlockPart;
 import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
+import gollorum.signpost.data.modelGeneration.ModelBuilderFactory;
 import gollorum.signpost.minecraft.block.PostBlock;
+import gollorum.signpost.minecraft.models.modelGeneration.SignModelFactory;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import gollorum.signpost.data.modelGeneration.SignModelFactory;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -104,7 +105,7 @@ public class PostModel {
             .end();
         makePostAt(new Vector3(8, 8, 8), previewBuilder);
         new SignModelFactory<String>().makeWideSign(new Vector3(8, 12, 8), "#" + textureSign, "#" + secondaryTexture)
-            .build(previewBuilder, SignModelFactory.Builder.BlockModel);
+            .build(previewBuilder, ModelBuilderFactory.BlockModel);
 
         makePostAt(new Vector3(0, 8, 0), getBuilder(postLocation))
             .texture(texturePost, PostBlock.ModelType.Oak.postTexture.location());
@@ -154,18 +155,18 @@ public class PostModel {
     }
 
     private void buildDefaultAndFlipped(SignModelFactory<String> factory, ResourceLocation main, ResourceLocation flipped) {
-        factory.build(getBuilder(main), SignModelFactory.Builder.BlockModel)
+        factory.build(getBuilder(main), ModelBuilderFactory.BlockModel)
             .texture(textureSign, mainTextureMarker)
             .texture(secondaryTexture, PostBlock.ModelType.Oak.secondaryTexture.location());
-        factory.build(getBuilder(flipped), SignModelFactory.Builder.BlockModelFlipped)
+        factory.build(getBuilder(flipped), ModelBuilderFactory.BlockModelFlipped)
             .texture(textureSign, mainTextureMarker)
             .texture(secondaryTexture, PostBlock.ModelType.Oak.secondaryTexture.location());
     }
 
     private void buildDefaultAndFlippedOverlay(SignModelFactory<String> factory, ResourceLocation main, ResourceLocation flipped, ResourceLocation texture) {
-        factory.build(getBuilder(main), SignModelFactory.Builder.BlockModel)
+        factory.build(getBuilder(main), ModelBuilderFactory.BlockModel)
             .texture(textureSign, texture);
-        factory.build(getBuilder(flipped), SignModelFactory.Builder.BlockModelFlipped)
+        factory.build(getBuilder(flipped), ModelBuilderFactory.BlockModelFlipped)
             .texture(textureSign, texture);
     }
 

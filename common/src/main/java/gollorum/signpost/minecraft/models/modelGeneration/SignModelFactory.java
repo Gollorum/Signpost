@@ -1,11 +1,10 @@
-package gollorum.signpost.data.modelGeneration;
+package gollorum.signpost.minecraft.models.modelGeneration;
 
 import gollorum.signpost.minecraft.gui.utils.TextureResource;
 import gollorum.signpost.utils.Tuple;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.core.Direction;
-import net.minecraftforge.client.model.generators.BlockModelBuilder;
-import net.minecraftforge.client.model.generators.ModelBuilder;
+import org.joml.Vector3f;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -288,6 +287,22 @@ public class SignModelFactory<TextureIdentifier> {
         );
     }
 
+    public SignModelFactory<TextureIdentifier> makeWaystoneInPost(TextureIdentifier textureIdentifier) {
+        return addCube(
+            new Vector3(-3, 0, -3), new Vector3(6, 6, 6),
+            Arrays.stream(Direction.values()).collect(Collectors.toMap(
+                d -> d,
+                d -> {
+                    TextureArea textureArea = new TextureArea(
+                        new TextureSegment(5, 11, false),
+                        new TextureSegment(5, 11, false)
+                    );
+                    return new FaceData<>(textureArea, FaceRotation.Zero, textureIdentifier, TextureResource.defaultTextureSize, 0);
+                }
+            ))
+        );
+    }
+
     public SignModelFactory<TextureIdentifier> map(Function<Cube<TextureIdentifier>, Cube<TextureIdentifier>> func) {
         SignModelFactory<TextureIdentifier> ret = new SignModelFactory<>();
         ret.cubes.addAll(cubes.stream().map(func).collect(Collectors.toList()));
@@ -325,49 +340,122 @@ public class SignModelFactory<TextureIdentifier> {
     }
 
     public static class Builder {
-        public static final BiConsumer<BlockModelBuilder, Cube<String>> BlockModel = (b, cube) -> {
-            BlockModelBuilder.ElementBuilder builder = b.element()
-                .from(cube.from.x(), cube.from.y(), cube.from.z())
-                .to(cube.to.x(), cube.to.y(), cube.to.z());
-            for(Map.Entry<Direction, FaceData<String>> face: cube.sides.entrySet()) {
-                Direction dir = face.getKey();
-                FaceData<String> faceData = face.getValue();
-                TextureArea textureArea = faceData.textureArea().rotate(faceData.rotation(), true);
-                ModelBuilder<BlockModelBuilder>.ElementBuilder.FaceBuilder faceBuilder = builder.face(dir)
-                    .texture(faceData.texture())
-                    .uvs(textureArea.u.from, textureArea.v.from, textureArea.u.to, textureArea.v.to)
-                    .tintindex(faceData.tintIndex());
-                if(!faceData.rotation().equals(FaceRotation.Zero))
-                    faceBuilder.rotation(faceData.rotation().asMinecraft);
+
+        public static final BiConsumer<QuadModel[], Cube<Integer>> CUBE_LIST_BUILDER = (builders, cube) -> {
+            for (var face : cube.sides.entrySet()) {
+                var dir = face.getKey();
+                var faceData = face.getValue();
+                var textureArea = faceData.textureArea()
+//                    .flipU()
+                    .rotate(faceData.rotation(), true)
+                    .map(u -> u / 16, v -> v/16);
+                var from = cube.from.div(16f).withX(x->-x).withZ(z->-z);
+                var to = cube.to.div(16f).withX(x->-x).withZ(z->-z);
+                var vertices = switch (dir) {
+                    case DOWN -> new Quad.Vertex[]{
+                        new Quad.Vertex(new Vector3f(to.x(), from.y(), to.z()), textureArea.u.to, textureArea.v.to),
+                        new Quad.Vertex(new Vector3f(from.x(), from.y(), to.z()), textureArea.u.from, textureArea.v.to),
+                        new Quad.Vertex(new Vector3f(from.x(), from.y(), from.z()), textureArea.u.from, textureArea.v.from),
+                        new Quad.Vertex(new Vector3f(to.x(), from.y(), from.z()), textureArea.u.to, textureArea.v.from)
+                    };
+                    case UP -> new Quad.Vertex[]{
+                        new Quad.Vertex(new Vector3f(to.x(), to.y(), from.z()), textureArea.u.to, textureArea.v.to),
+                        new Quad.Vertex(new Vector3f(from.x(), to.y(), from.z()), textureArea.u.from, textureArea.v.to),
+                        new Quad.Vertex(new Vector3f(from.x(), to.y(), to.z()), textureArea.u.from, textureArea.v.from),
+                        new Quad.Vertex(new Vector3f(to.x(), to.y(), to.z()), textureArea.u.to, textureArea.v.from)
+                    };
+                    case NORTH -> new Quad.Vertex[]{
+                        new Quad.Vertex(new Vector3f(to.x(), from.y(), from.z()), textureArea.u.to, textureArea.v.from),
+                        new Quad.Vertex(new Vector3f(from.x(), from.y(), from.z()), textureArea.u.from, textureArea.v.from),
+                        new Quad.Vertex(new Vector3f(from.x(), to.y(), from.z()), textureArea.u.from, textureArea.v.to),
+                        new Quad.Vertex(new Vector3f(to.x(), to.y(), from.z()), textureArea.u.to, textureArea.v.to)
+                    };
+                    case SOUTH -> new Quad.Vertex[]{
+                        new Quad.Vertex(new Vector3f(from.x(), from.y(), to.z()), textureArea.u.to, textureArea.v.from),
+                        new Quad.Vertex(new Vector3f(to.x(), from.y(), to.z()), textureArea.u.from, textureArea.v.from),
+                        new Quad.Vertex(new Vector3f(to.x(), to.y(), to.z()), textureArea.u.from, textureArea.v.to),
+                        new Quad.Vertex(new Vector3f(from.x(), to.y(), to.z()), textureArea.u.to, textureArea.v.to)
+                    };
+                    case WEST -> new Quad.Vertex[]{
+                        new Quad.Vertex(new Vector3f(from.x(), from.y(), from.z()), textureArea.u.to, textureArea.v.from),
+                        new Quad.Vertex(new Vector3f(from.x(), from.y(), to.z()), textureArea.u.from, textureArea.v.from),
+                        new Quad.Vertex(new Vector3f(from.x(), to.y(), to.z()), textureArea.u.from, textureArea.v.to),
+                        new Quad.Vertex(new Vector3f(from.x(), to.y(), from.z()), textureArea.u.to, textureArea.v.to)
+                    };
+                    case EAST -> new Quad.Vertex[]{
+                        new Quad.Vertex(new Vector3f(to.x(), from.y(), to.z()), textureArea.u.to, textureArea.v.from),
+                        new Quad.Vertex(new Vector3f(to.x(), from.y(), from.z()), textureArea.u.from, textureArea.v.from),
+                        new Quad.Vertex(new Vector3f(to.x(), to.y(), from.z()), textureArea.u.from, textureArea.v.to),
+                        new Quad.Vertex(new Vector3f(to.x(), to.y(), to.z()), textureArea.u.to, textureArea.v.to)
+                    };
+                };
+                for (var i = 0; i < vertices.length; i++){
+                    vertices[i] = new Quad.Vertex(vertices[i].pos(), vertices[(i+1) % vertices.length].v(), vertices[(i+1) % vertices.length].u());
+                }
+                builders[faceData.texture()].quads().add(new Quad(vertices, dir.step()));
             }
         };
 
-        public static final BiConsumer<BlockModelBuilder, Cube<String>> BlockModelFlipped = (b, cube) -> {
-            BlockModelBuilder.ElementBuilder builder = b.element()
-                .from(cube.from.x(), cube.from.y(), -cube.to.z())
-                .to(cube.to.x(), cube.to.y(), -cube.from.z());
-            for(Map.Entry<Direction, FaceData<String>> face: cube.sides.entrySet()) {
-                Direction dir = face.getKey();
+        public static final BiConsumer<QuadModel[], Cube<Integer>> CUBE_LIST_BUILDER_FLIPPED = (builders, cube) -> {
+            for (var face : cube.sides.entrySet()) {
+                var dir = face.getKey();
+                var faceData = face.getValue();
+                var textureArea = faceData.textureArea()
+                    .map(u -> u / 16, v -> v/16);
                 Direction.Axis axis = dir.getAxis();
-                FaceData<String> faceData = face.getValue();
-                TextureArea textureArea = faceData.textureArea();
-                if(axis.equals(Direction.Axis.Z)) {
                     dir = dir.getOpposite();
+                if (axis.equals(Direction.Axis.Z)) {
                     textureArea = textureArea.flipU();
-                } else if(axis.equals(Direction.Axis.X)) {
+                } else if (axis.equals(Direction.Axis.X)) {
                     textureArea = textureArea.flipU();
                 } else {
                     textureArea = textureArea.flipV();
                 }
                 textureArea = textureArea.rotate(faceData.rotation(), true);
-                ModelBuilder<BlockModelBuilder>.ElementBuilder.FaceBuilder faceBuilder = builder.face(dir)
-                    .texture(faceData.texture())
-                    .uvs(textureArea.u.from, textureArea.v.from, textureArea.u.to, textureArea.v.to)
-                    .tintindex(faceData.tintIndex());;
-                if(!faceData.rotation().equals(FaceRotation.Zero))
-                    faceBuilder.rotation(faceData.rotation().asMinecraft);
+                var from = cube.to.div(16f).withZ(z -> -z);
+                var to = cube.from.div(16f).withZ(z -> -z);
+                var vertices = switch (dir) {
+                    case DOWN -> new Quad.Vertex[]{
+                        new Quad.Vertex(new Vector3f(to.x(), from.y(), to.z()), textureArea.u.to, textureArea.v.to),
+                        new Quad.Vertex(new Vector3f(from.x(), from.y(), to.z()), textureArea.u.from, textureArea.v.to),
+                        new Quad.Vertex(new Vector3f(from.x(), from.y(), from.z()), textureArea.u.from, textureArea.v.from),
+                        new Quad.Vertex(new Vector3f(to.x(), from.y(), from.z()), textureArea.u.to, textureArea.v.from)
+                    };
+                    case UP -> new Quad.Vertex[]{
+                        new Quad.Vertex(new Vector3f(to.x(), to.y(), from.z()), textureArea.u.to, textureArea.v.to),
+                        new Quad.Vertex(new Vector3f(from.x(), to.y(), from.z()), textureArea.u.from, textureArea.v.to),
+                        new Quad.Vertex(new Vector3f(from.x(), to.y(), to.z()), textureArea.u.from, textureArea.v.from),
+                        new Quad.Vertex(new Vector3f(to.x(), to.y(), to.z()), textureArea.u.to, textureArea.v.from)
+                    };
+                    case NORTH -> new Quad.Vertex[]{
+                        new Quad.Vertex(new Vector3f(to.x(), from.y(), from.z()), textureArea.u.to, textureArea.v.from),
+                        new Quad.Vertex(new Vector3f(from.x(), from.y(), from.z()), textureArea.u.from, textureArea.v.from),
+                        new Quad.Vertex(new Vector3f(from.x(), to.y(), from.z()), textureArea.u.from, textureArea.v.to),
+                        new Quad.Vertex(new Vector3f(to.x(), to.y(), from.z()), textureArea.u.to, textureArea.v.to)
+                    };
+                    case SOUTH -> new Quad.Vertex[]{
+                        new Quad.Vertex(new Vector3f(from.x(), from.y(), to.z()), textureArea.u.to, textureArea.v.from),
+                        new Quad.Vertex(new Vector3f(to.x(), from.y(), to.z()), textureArea.u.from, textureArea.v.from),
+                        new Quad.Vertex(new Vector3f(to.x(), to.y(), to.z()), textureArea.u.from, textureArea.v.to),
+                        new Quad.Vertex(new Vector3f(from.x(), to.y(), to.z()), textureArea.u.to, textureArea.v.to)
+                    };
+                    case WEST -> new Quad.Vertex[]{
+                        new Quad.Vertex(new Vector3f(from.x(), from.y(), from.z()), textureArea.u.to, textureArea.v.from),
+                        new Quad.Vertex(new Vector3f(from.x(), from.y(), to.z()), textureArea.u.from, textureArea.v.from),
+                        new Quad.Vertex(new Vector3f(from.x(), to.y(), to.z()), textureArea.u.from, textureArea.v.to),
+                        new Quad.Vertex(new Vector3f(from.x(), to.y(), from.z()), textureArea.u.to, textureArea.v.to)
+                    };
+                    case EAST -> new Quad.Vertex[]{
+                        new Quad.Vertex(new Vector3f(to.x(), from.y(), to.z()), textureArea.u.to, textureArea.v.from),
+                        new Quad.Vertex(new Vector3f(to.x(), from.y(), from.z()), textureArea.u.from, textureArea.v.from),
+                        new Quad.Vertex(new Vector3f(to.x(), to.y(), from.z()), textureArea.u.from, textureArea.v.to),
+                        new Quad.Vertex(new Vector3f(to.x(), to.y(), to.z()), textureArea.u.to, textureArea.v.to)
+                    };
+                };
+                builders[faceData.texture()].quads().add(new Quad(vertices, dir.step()));
             }
         };
+
     }
 
 }

@@ -7,14 +7,13 @@ import gollorum.signpost.blockpartdata.types.SignBlockPart;
 import gollorum.signpost.minecraft.config.IConfig;
 import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.gui.utils.Point;
+import gollorum.signpost.minecraft.models.modelGeneration.QuadModel;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.minecraft.rendering.TexturedModel;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -24,9 +23,9 @@ import java.lang.Math;
 
 public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPartRenderer<T> {
 
-	protected abstract PartDefinition makeMainModel(T sign);
-	protected abstract PartDefinition makeSecondaryModel(T sign);
-	protected abstract PartDefinition makeBakedOverlayModel(T sign, Overlay overlay);
+	protected abstract QuadModel makeMainModel(T sign);
+	protected abstract QuadModel makeSecondaryModel(T sign);
+	protected abstract QuadModel makeBakedOverlayModel(T sign, Overlay overlay);
 
 	@Override
 	public void render(

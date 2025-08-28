@@ -1,4 +1,4 @@
-package gollorum.signpost.data.modelGeneration;
+package gollorum.signpost.minecraft.models.modelGeneration;
 
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.core.Direction;
