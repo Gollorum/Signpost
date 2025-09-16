@@ -20,10 +20,10 @@ public class ModelBuilderFactory {
         for (Map.Entry<Direction, FaceData<String>> face : cube.sides.entrySet()) {
             Direction dir = face.getKey();
             FaceData<String> faceData = face.getValue();
-            TextureArea textureArea = faceData.textureArea().rotate(faceData.rotation(), true);
+            TextureArea textureArea = faceData.textureArea().rotate(faceData.rotation());
             ModelBuilder<BlockModelBuilder>.ElementBuilder.FaceBuilder faceBuilder = builder.face(dir)
                 .texture(faceData.texture())
-                .uvs(textureArea.u.from, textureArea.v.from, textureArea.u.to, textureArea.v.to)
+                .uvs(textureArea.from.x, textureArea.from.y, textureArea.to.x, textureArea.to.y)
                 .tintindex(faceData.tintIndex());
             if (!faceData.rotation().equals(FaceRotation.Zero))
                 faceBuilder.rotation(FaceRotationUtils.asMinecraft(faceData.rotation()));
@@ -47,10 +47,10 @@ public class ModelBuilderFactory {
             } else {
                 textureArea = textureArea.flipV();
             }
-            textureArea = textureArea.rotate(faceData.rotation(), true);
+            textureArea = textureArea.rotate(faceData.rotation());
             ModelBuilder<BlockModelBuilder>.ElementBuilder.FaceBuilder faceBuilder = builder.face(dir)
                 .texture(faceData.texture())
-                .uvs(textureArea.u.from, textureArea.v.from, textureArea.u.to, textureArea.v.to)
+                .uvs(textureArea.from.x, textureArea.from.y, textureArea.to.x, textureArea.to.y)
                 .tintindex(faceData.tintIndex());
             if (!faceData.rotation().equals(FaceRotation.Zero))
                 faceBuilder.rotation(FaceRotationUtils.asMinecraft(faceData.rotation()));

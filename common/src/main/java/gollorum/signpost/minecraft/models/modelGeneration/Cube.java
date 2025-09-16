@@ -29,10 +29,10 @@ public class Cube<TextureIdentifier> {
 	}
 
 	private Quad<TextureIdentifier> getQuad(Direction direction, FaceData<TextureIdentifier> faceData) {
-		float fromU = faceData.textureArea().u.to;
-		float toU = faceData.textureArea().u.from;
-		float fromV = faceData.textureArea().v.from;
-		float toV = faceData.textureArea().v.to;
+		float fromU = faceData.textureArea().from.x;
+		float toU = faceData.textureArea().to.x;
+		float fromV = faceData.textureArea().from.y;
+		float toV = faceData.textureArea().to.y;
 		Quad<TextureIdentifier> quad = switch (direction) {
             case DOWN -> new Quad<>(
                 new Vertex[]{
