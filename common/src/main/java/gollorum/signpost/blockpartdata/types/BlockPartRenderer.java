@@ -108,12 +108,24 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
     );
 
     public abstract void renderGui(
-        T part, PoseStack matrixStack, Point center, Angle yaw, Angle pitch, boolean isFlipped, float scale, Vector3 offset,
+        T part,
+        PoseStack matrixStack,
+        Point center,
+        Angle yaw,
+        Angle pitch,
+        boolean isFlipped,
+        float scale,
+        Vector3 offset,
         MultiBufferSource buffer
     );
 
     public abstract void renderGui(
-        T part, PoseStack matrixStack, Vector3 offset, MultiBufferSource buffer, int combinedLight, int combinedOverlay
+        T part,
+        PoseStack matrixStack,
+        Vector3 offset,
+        MultiBufferSource buffer,
+        int combinedLight,
+        int combinedOverlay
     );
 
 }

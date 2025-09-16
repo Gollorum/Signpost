@@ -177,13 +177,14 @@ public class RenderingUtil {
     }
 
     public static final int FLAT_LIGHT_PROBABLY = 0xf000f0;
+//    public static final int FLAT_LIGHT_PROBABLY = 240;
 
     public static void renderGui(TexturedModel model, PoseStack matrixStack, Vector3 offset, Angle yaw, MultiBufferSource buffer, int combinedLight, int combinedOverlay, Consumer<PoseStack> alsoDo) {
         wrapInMatrixEntry(matrixStack, () -> {
             matrixStack.mulPose(new Quaternionf(new AxisAngle4f(yaw.radians(), new Vector3f(0, 1, 0))));
             matrixStack.translate(offset.x(), offset.y(), offset.z());
 
-            render(matrixStack, model.model(), model.texture().buffer(buffer, RenderType::guiTextured), combinedLight, combinedOverlay, model.tint());
+            render(matrixStack, model.model(), model.texture().buffer(buffer, RenderType::entityCutout), combinedLight, combinedOverlay, model.tint());
 
             alsoDo.accept(matrixStack);
         });
