@@ -35,7 +35,7 @@ public class WaystoneRenderer extends BlockPartRenderer<WaystoneBlockPart> {
 				Colors.white
 			),
 			buffer,
-			RenderingUtil.FLAT_LIGHT_PROBABLY,
+			combinedLights,
 			combinedOverlay,
 			RenderType::entitySolid
 		);

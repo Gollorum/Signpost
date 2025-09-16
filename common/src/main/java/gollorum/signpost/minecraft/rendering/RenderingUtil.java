@@ -15,6 +15,7 @@ import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
@@ -176,7 +177,8 @@ public class RenderingUtil {
         });
     }
 
-    public static final int FLAT_LIGHT_PROBABLY = 0xf000f0;
+    public static final int FLAT_LIGHT_PROBABLY = LightTexture.FULL_BRIGHT;
+//    public static final int FLAT_LIGHT_PROBABLY = 0xf000f0;
 //    public static final int FLAT_LIGHT_PROBABLY = 240;
 
     public static void renderGui(TexturedModel model, PoseStack matrixStack, Vector3 offset, Angle yaw, MultiBufferSource buffer, int combinedLight, int combinedOverlay, Consumer<PoseStack> alsoDo) {
