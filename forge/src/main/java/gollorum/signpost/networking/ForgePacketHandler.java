@@ -1,15 +1,13 @@
 package gollorum.signpost.networking;
 
-import com.mojang.serialization.Codec;
 import gollorum.signpost.Signpost;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.network.CustomPayloadEvent;
@@ -17,7 +15,6 @@ import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.network.*;
 
 import java.util.function.BiConsumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class ForgePacketHandler extends PacketHandler {
@@ -57,9 +54,7 @@ public class ForgePacketHandler extends PacketHandler {
             context.enqueueWork(() -> {
                 if(context.getConnection().getReceiving() == PacketFlow.CLIENTBOUND)
                     DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> handle.accept(message,
-                        context.getSender() == null
-                            ? new Context.ClientFromServer()
-                            : new Context.ClientFromClient(context.getSender())));
+                        new Context.Client()));
                 else handle.accept(message, new Context.Server(context.getSender()));
             });
             context.setPacketHandled(true);
@@ -77,7 +72,7 @@ public class ForgePacketHandler extends PacketHandler {
     }
 
     @Override
-    public <T> void sendToTracing(Level world, BlockPos pos, Supplier<T> t) {
+    public <T> void sendToTracing(ServerLevel world, BlockPos pos, Supplier<T> t) {
         if(world == null) Signpost.LOGGER.warn("No world to notify mutation");
         else if(pos == null) Signpost.LOGGER.warn("No position to notify mutation");
         else channel.send(t.get(), PacketDistributor.TRACKING_CHUNK.with(world.getChunkAt(pos)));
@@ -85,7 +80,7 @@ public class ForgePacketHandler extends PacketHandler {
 
     @Override
     public <T> void sendToTracing(BlockEntity tile, Supplier<T> t) {
-        sendToTracing(tile.getLevel(), tile.getBlockPos(), t);
+        sendToTracing((ServerLevel) tile.getLevel(), tile.getBlockPos(), t);
     }
 
     @Override

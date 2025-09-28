@@ -5,14 +5,13 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.data.PostData;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -24,11 +23,12 @@ public class PostBlockImpl extends PostBlock {
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockState state, HitResult target, LevelReader level, BlockPos pos, Player player) {
-        ItemStack ret = super.getCloneItemStack(state, target, level, pos, player);
+    protected ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) {
+        ItemStack ret = super.getCloneItemStack(level,  pos, state, includeData);
+        if (!includeData) return ret;
         level.getBlockEntity(pos, PostTile.getBlockEntityType()).ifPresent(tile -> {
-            if(!ret.hasTag()) ret.setTag(new CompoundTag());
-            ret.getTag().put("Parts", tile.writeParts(false));
+            var data = new PostData(tile.parts());
+            ret.applyComponents(DataComponentPatch.builder().set(PostData.TYPE, data).build());
         });
         return ret;
     }

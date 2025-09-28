@@ -16,8 +16,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.event.TickEvent;
 import net.neoforged.neoforge.event.level.ChunkWatchEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 import java.util.Map;
 import java.util.Optional;
@@ -41,13 +41,14 @@ public class WaystoneDiscoveryEventListener implements IWaystoneDiscoveryEventLi
             event.getPos(),
             event.getPlayer().serverLevel().dimension().location()
         );
-        Map<VillageWaystone.ChunkEntryKey, WaystoneHandle.Vanilla> allEntries = VillageWaystone.getAllEntriesByChunk();
+        var lib = WaystoneLibrary.getInstance();
+        Map<VillageWaystone.ChunkEntryKey, WaystoneHandle.Vanilla> allEntries = lib.getVillageWaystones().getAllEntriesByChunk(lib, true);
         WaystoneHandle.Vanilla handle = allEntries.get(key);
-        if(handle != null && !WaystoneLibrary.getInstance().isDiscovered(PlayerHandle.from(event.getPlayer()), handle)) {
-            Optional<WaystoneData> dataOption = WaystoneLibrary.getInstance().getData(handle);
+        if(handle != null && !lib.isDiscovered(PlayerHandle.from(event.getPlayer()), handle)) {
+            Optional<WaystoneData> dataOption = lib.getData(handle);
             dataOption.ifPresentOrElse(
                 data -> trackedPlayers.computeIfAbsent(event.getPlayer(), p -> PlatformDependent.newConcurrentHashMap())
-                    .putIfAbsent(handle, data.location.block().blockPos),
+                    .putIfAbsent(handle, data.location().block().blockPos()),
                 () -> allEntries.remove(key)
             );
         }
@@ -57,7 +58,8 @@ public class WaystoneDiscoveryEventListener implements IWaystoneDiscoveryEventLi
     public static void onUnWatchChunk(ChunkWatchEvent.UnWatch event) {
         ConcurrentMap<WaystoneHandle.Vanilla, BlockPos> set = trackedPlayers.get(event.getPlayer());
         if(set == null) return;
-        WaystoneHandle.Vanilla handle = VillageWaystone.getAllEntriesByChunk().get(
+        var lib = WaystoneLibrary.getInstance();
+        WaystoneHandle.Vanilla handle = lib.getVillageWaystones().getAllEntriesByChunk(lib, false).get(
             new VillageWaystone.ChunkEntryKey(
                 event.getPos(),
                 event.getPlayer().serverLevel().dimension().location()
@@ -68,7 +70,7 @@ public class WaystoneDiscoveryEventListener implements IWaystoneDiscoveryEventLi
     }
 
     @SubscribeEvent
-    public static void onTick(TickEvent.ServerTickEvent event) {
+    public static void onTick(ServerTickEvent event) {
         if(!WaystoneLibrary.hasInstance()) return;
         for(Map.Entry<ServerPlayer, ConcurrentMap<WaystoneHandle.Vanilla, BlockPos>> map : trackedPlayers.entrySet()) {
             for(Map.Entry<WaystoneHandle.Vanilla, BlockPos> inner : map.getValue().entrySet()) {
@@ -78,7 +80,7 @@ public class WaystoneDiscoveryEventListener implements IWaystoneDiscoveryEventLi
                             map.getKey().sendSystemMessage(
                                 Component.translatable(
                                     LangKeys.discovered,
-                                    TextComponents.waystone(map.getKey(), data.name)
+                                    TextComponents.waystone(map.getKey(), data.name())
                                 ));
                         }
                     });

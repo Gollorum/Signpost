@@ -34,6 +34,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.entity.Entity;
@@ -390,7 +391,14 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
                 if(message.cost.getCount() > 0 &&
                        (!isClientSide ||
                             (SideUtils.getClientPlayer().map(player -> player.getUUID().equals(message.player.id())).orElse(false)))) {
-                    SideUtils.makePlayerPayIfEditor(isClientSide, context instanceof PacketHandler.Context.FromClient fc ? fc.getSender() : null, message.player, message.cost);
+                    SideUtils.makePlayerPayIfEditor(
+                        isClientSide,
+                        context instanceof PacketHandler.Context.Server(ServerPlayer sender)
+                            ? sender
+                            : null,
+                        message.player,
+                        message.cost
+                    );
                 }
                 tile.setChanged();
             });

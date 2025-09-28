@@ -1,7 +1,8 @@
 package gollorum.signpost.utils;
 
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.event.TickEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -111,7 +112,7 @@ public class Delay implements IDelay {
     }
 
     @SubscribeEvent
-    void onServerTick(TickEvent.ServerTickEvent event) {
+    void onServerTick(ServerTickEvent event) {
         Task[] tasks = serverTasks.toArray(new Task[0]);
         serverTasks.clear();
         for(Task task: tasks) {
@@ -121,7 +122,7 @@ public class Delay implements IDelay {
     }
 
     @SubscribeEvent
-    void onClientTick(TickEvent.ClientTickEvent event) {
+    void onClientTick(ClientTickEvent event) {
         Task[] tasks = clientTasks.toArray(new Task[0]);
         clientTasks.clear();
         for(Task task: tasks) {

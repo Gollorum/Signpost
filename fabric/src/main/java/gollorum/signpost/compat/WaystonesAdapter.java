@@ -6,7 +6,6 @@ import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.networking.PacketHandler.Event;
 import gollorum.signpost.utils.EventDispatcher;
 import gollorum.signpost.utils.WaystoneLocationData;
 import gollorum.signpost.utils.WorldLocation;
@@ -186,7 +185,7 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
         public void handle(RequestEvent message, PacketHandler.Context.Server context) {
             PacketHandler.getInstance().sendToPlayer(
                 context.sender(),
-                new ReplyEvent.Packet(PlayerWaystoneManager.getActivatedWaystones(context.getSender())
+                new ReplyEvent.Packet(PlayerWaystoneManager.getActivatedWaystones(context.getPlayer())
                     .stream()
                     .map(WaystoneWaystone::new)
                     .collect(Collectors.toList()))

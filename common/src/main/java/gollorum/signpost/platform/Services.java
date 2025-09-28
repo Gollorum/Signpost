@@ -2,15 +2,11 @@ package gollorum.signpost.platform;
 
 import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.block.tiles.IBlockEntityTypeFactory;
-import gollorum.signpost.minecraft.config.IConfig;
 import gollorum.signpost.minecraft.gui.utils.IFluidTextureProvider;
-import gollorum.signpost.minecraft.rendering.ModelFactory;
 import gollorum.signpost.minecraft.storage.loot.ILootItemConditionRegistry;
 import gollorum.signpost.minecraft.worldgen.BiomeAccessor;
 import gollorum.signpost.minecraft.worldgen.IWaystoneDiscoveryEventListener;
-import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.platform.services.IPlatformHelper;
-import gollorum.signpost.utils.IDelay;
 
 import java.util.ServiceLoader;
 

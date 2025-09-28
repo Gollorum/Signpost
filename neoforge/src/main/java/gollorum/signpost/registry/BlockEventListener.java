@@ -1,12 +1,9 @@
 package gollorum.signpost.registry;
 
-import gollorum.signpost.BlockRestrictions;
-import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.blockpartdata.types.PostBlockPart;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
 import gollorum.signpost.networking.PacketHandler;
-import gollorum.signpost.security.WithCountRestriction;
 import gollorum.signpost.utils.IDelay;
 import gollorum.signpost.utils.WorldLocation;
 import net.minecraft.core.BlockPos;
@@ -27,16 +24,6 @@ public class BlockEventListener {
     public static void register(IEventBus bus) { bus.register(BlockEventListener.class); }
 
     @SubscribeEvent
-    public static void onBlockPlaced(BlockEvent.EntityPlaceEvent event) {
-        if(!event.isCanceled() && event.getPlacedBlock().getBlock() instanceof WithCountRestriction) {
-            BlockRestrictions.Type restrictionType = ((WithCountRestriction)event.getPlacedBlock().getBlock()).getBlockRestrictionType();
-            PlayerHandle player = PlayerHandle.from(event.getEntity());
-            if(!BlockRestrictions.getInstance().tryDecrementRemaining(restrictionType, player))
-                event.setCanceled(true);
-        }
-    }
-
-    @SubscribeEvent
     public static void onBlockRemoved(BlockEvent.BreakEvent event) {
         Block block = event.getState().getBlock();
         BlockEntity tile = event.getLevel().getBlockEntity(event.getPos());
@@ -52,7 +39,7 @@ public class BlockEventListener {
                     // that the entity update packet arrives **before** the entity has been reconstructed, which
                     // leaves an empty, and thus invisible, post. To fix that, we manually send another update
                     // one frame later.
-                    PacketHandler.getInstance().sendToTracing(tile, () -> new PostTile.UpdateAllPartsEvent.Packet(tile.getUpdateTag(), WorldLocation.from(tile).get()));
+                    PacketHandler.getInstance().sendToTracing(tile, () -> new PostTile.UpdateAllPartsEvent.Packet(tile.getUpdateTag(event.getLevel().registryAccess()), WorldLocation.from(tile).get()));
 
                     postTile.removePart(traceResult.get().id);
                     if (event.getLevel() instanceof ServerLevel) {
@@ -75,14 +62,8 @@ public class BlockEventListener {
                 });
             } else postTile.onDestroy();
         }
-        if(!event.isCanceled() && block instanceof WithCountRestriction) {
-            BlockRestrictions.Type restrictionType = ((WithCountRestriction)block).getBlockRestrictionType();
-            restrictionType.tryGetOwner.apply(tile).ifPresent(owner ->
-                BlockRestrictions.getInstance().incrementRemaining(restrictionType, owner));
-
-            if(event.getLevel() instanceof ServerLevel) {
-                WaystoneTile.onRemoved((ServerLevel) event.getLevel(), event.getPos());
-            }
+        if(!event.isCanceled() && event.getLevel() instanceof ServerLevel) {
+            WaystoneTile.onRemoved((ServerLevel) event.getLevel(), event.getPos());
         }
     }
 

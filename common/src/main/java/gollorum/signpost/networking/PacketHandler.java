@@ -11,9 +11,8 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.util.function.Supplier;
@@ -26,32 +25,16 @@ public abstract class PacketHandler {
     public interface Context {
         HolderLookup.Provider getHolderLookupProvider();
 
-        interface FromClient extends Context {
-            Player getSender();
-
+        record Server(ServerPlayer sender) implements Context {
             @Override
-            default HolderLookup.Provider getHolderLookupProvider(){
-                return getSender().registryAccess();
+            public HolderLookup.Provider getHolderLookupProvider(){
+                return sender.registryAccess();
             }
         }
-        interface Client extends Context { }
-
-        record Server(ServerPlayer sender) implements Context, FromClient {
-            @Override
-            public Player getSender() {
-                return sender;
-            }
-        }
-        record ClientFromServer() implements Context, Client {
+        record Client() implements Context {
             @Override
             public HolderLookup.Provider getHolderLookupProvider(){
                 return net.minecraft.client.Minecraft.getInstance().player.registryAccess();
-            }
-        }
-        record ClientFromClient(Player sender) implements Context, Client, FromClient {
-            @Override
-            public Player getSender() {
-                return sender;
             }
         }
     }
@@ -81,7 +64,7 @@ public abstract class PacketHandler {
 
     public abstract <T> void sendToPlayer(ServerPlayer target, T message);
 
-    public abstract <T> void sendToTracing(Level world, BlockPos pos, Supplier<T> t);
+    public abstract <T> void sendToTracing(ServerLevel world, BlockPos pos, Supplier<T> t);
 
     public abstract <T> void sendToTracing(BlockEntity tile, Supplier<T> t);
 
@@ -92,16 +75,6 @@ public abstract class PacketHandler {
         void handle(T message, Context context);
 
         StreamCodec<RegistryFriendlyByteBuf, T> codec();
-
-        interface FromClient<T> extends Event<T> {
-            @Override
-            default void handle(T message, Context context) {
-                if(context instanceof Context.FromClient client){
-                    handle(message, client);
-                } else throw new RuntimeException("Tried to handle event originating from server as if it came from client");
-            }
-            void handle(T message, Context.FromClient context);
-        }
 
         interface ForClient<T> extends Event<T> {
             @Override

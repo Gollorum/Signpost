@@ -45,9 +45,9 @@ public class Config implements IConfig {
     }
 
     public void register() {
-        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, ServerConfig);
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, CommonConfig);
-        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ClientConfig);
+        ModLoadingContext.get().getActiveContainer().registerConfig(ModConfig.Type.SERVER, ServerConfig);
+        ModLoadingContext.get().getActiveContainer().registerConfig(ModConfig.Type.COMMON, CommonConfig);
+        ModLoadingContext.get().getActiveContainer().registerConfig(ModConfig.Type.CLIENT, ClientConfig);
     }
 
     public static class Server implements IServer {

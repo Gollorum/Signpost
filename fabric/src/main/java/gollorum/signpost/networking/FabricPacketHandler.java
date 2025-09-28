@@ -6,8 +6,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -51,7 +51,7 @@ public class FabricPacketHandler extends PacketHandler {
             payload.event.handle(payload.message, context.flow().isClientbound()
                 ? context.player()
                     .<Context>map(Context.ClientFromClient::new)
-                    .orElseGet(Context.ClientFromServer::new)
+                    .orElseGet(Context.Client::new)
                 : new Context.Server((ServerPlayer) context.player().get())));
     }
 
@@ -71,7 +71,7 @@ public class FabricPacketHandler extends PacketHandler {
     }
 
     @Override
-    public <T> void sendToTracing(Level world, BlockPos pos, Supplier<T> t) {
+    public <T> void sendToTracing(ServerLevel world, BlockPos pos, Supplier<T> t) {
         if(world == null) Signpost.LOGGER.warn("No world to notify mutation");
         else if(pos == null) Signpost.LOGGER.warn("No position to notify mutation");
         else PacketDistributor.TRACKING_CHUNK.with(world.getChunkAt(pos)).send(toPayload(t.get()));

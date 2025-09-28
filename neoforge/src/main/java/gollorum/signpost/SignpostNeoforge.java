@@ -6,13 +6,16 @@ import gollorum.signpost.compat.ExternalWaystoneLibrary;
 import gollorum.signpost.config.Config;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.rendering.PostRenderer;
+import gollorum.signpost.minecraft.worldgen.JigsawDeserializers;
 import gollorum.signpost.networking.NeoForgePacketHandler;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.registry.*;
 import gollorum.signpost.utils.Delay;
 import gollorum.signpost.worldgen.Villages;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -28,6 +31,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import net.neoforged.neoforge.registries.RegisterEvent;
 
 import java.util.function.Consumer;
 
@@ -68,7 +72,6 @@ public class SignpostNeoforge {
         MiscRegistry.register(modBus);
 
         Compat.register();
-        JigsawDeserializerRegistry.register(modBus);
     }
 
     private static class ModBusEvents {
@@ -86,6 +89,11 @@ public class SignpostNeoforge {
             BlockEntityRenderers.register(PostTile.getBlockEntityType(), PostRenderer::new);
         }
 
+        @SubscribeEvent
+        public void registerStuff(RegisterEvent event) {
+            JigsawDeserializers.register((loc, elem) -> event.register(Registries.STRUCTURE_POOL_ELEMENT, loc, () -> elem));
+        }
+
     }
 
     private class ForgeEvents {
@@ -93,8 +101,6 @@ public class SignpostNeoforge {
         @SubscribeEvent
         public void serverAboutToStart(ServerAboutToStartEvent e) {
             serverSetter.accept(e.getServer());
-            WaystoneLibrary.initialize();
-            BlockRestrictions.initialize();
 //            VillageRegistry.register(e);
             Villages.instance.initialize(e.getServer().registryAccess());
             new WaystoneDiscoveryEventListener().initialize();
@@ -105,8 +111,16 @@ public class SignpostNeoforge {
             if(!e.getEntity().level().isClientSide && Signpost.getServerInstance().isDedicatedServer())
                 PacketHandler.getInstance().sendToPlayer(
                     (ServerPlayer) e.getEntity(),
-                    new JoinServerEvent.Package()
+                    JoinServerEvent.Package.INSTANCE
                 );
+        }
+
+        @SubscribeEvent
+        public void onWorldLoad(LevelEvent.Load event) {
+            if (event.getLevel() instanceof ServerLevel world &&
+                ((ServerLevel) event.getLevel()).dimension().equals(Level.OVERWORLD)) {
+                WaystoneLibrary.initializeServer(world);
+            }
         }
 
         @SubscribeEvent
@@ -114,39 +128,31 @@ public class SignpostNeoforge {
             serverSetter.accept(null);
         }
 
-        @SubscribeEvent
-        public void onWorldLoad(LevelEvent.Load event) {
-            if (event.getLevel() instanceof ServerLevel world &&
-                ((ServerLevel) event.getLevel()).dimension().equals(Level.OVERWORLD)) {
-                if(!WaystoneLibrary.getInstance().hasStorageBeenSetup())
-                    WaystoneLibrary.getInstance().setupStorage(world);
-                if(!BlockRestrictions.getInstance().hasStorageBeenSetup())
-                    BlockRestrictions.getInstance().setupStorage(world);
-            }
-        }
-
     }
 
     private static final class JoinServerEvent implements PacketHandler.Event<JoinServerEvent.Package> {
 
-        public static final class Package {}
+        public static final class Package {
+
+            public static final Package INSTANCE = new Package();
+
+            public static final StreamCodec<RegistryFriendlyByteBuf, Package> CODEC = StreamCodec.unit(INSTANCE);
+        }
+
+        @Override
+        public StreamCodec<RegistryFriendlyByteBuf, Package> codec() {
+            return Package.CODEC;
+        }
 
         @Override
         public Class<Package> getMessageClass() { return Package.class; }
 
         @Override
-        public void encode(RegistryFriendlyByteBuf buffer, Package message) { }
-
-        @Override
-        public Package decode(RegistryFriendlyByteBuf buffer) { return new Package(); }
-
-        @Override
         public void handle(
             Package message, PacketHandler.Context context
         ) {
-            WaystoneLibrary.initialize();
+            WaystoneLibrary.initializeClient();
         }
-
     }
 
 }

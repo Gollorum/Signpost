@@ -14,8 +14,6 @@
     "ColorableButton",
     "ConfigurableFont",
     "LevelRendererAccessor",
-    "ModelDiscoveryInjector",
-    "ModelBakeryLeecher",
     "ScreenAccessor"
   ],
   "server": [
