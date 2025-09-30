@@ -39,9 +39,11 @@ public abstract class PacketHandler {
         }
     }
 
+    private boolean hasBeenInitialized = false;
+
     private static final EventDispatcher.Impl.WithPublicDispatch<PacketHandler> onInitialize = new EventDispatcher.Impl.WithPublicDispatch<>();
     public static void onInitializeDo(EventDispatcher.Listener<PacketHandler> action) {
-        if(instance == null) onInitialize.addListener(action);
+        if (instance == null || !instance.hasBeenInitialized) onInitialize.addListener(action);
         else action.accept(instance);
     }
 
@@ -55,6 +57,7 @@ public abstract class PacketHandler {
         register(new RequestSignGui(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "request_sign_gui"));
         register(new RequestSignGui.ForNewSign(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "request_sign_gui_for_new_sign"));
         register(new RequestWaystoneGui(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "request_waystone_gui"));
+        hasBeenInitialized = true;
         onInitialize.dispatch(this, true);
     }
 

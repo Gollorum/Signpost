@@ -112,7 +112,7 @@ public class Delay implements IDelay {
     }
 
     @SubscribeEvent
-    void onServerTick(ServerTickEvent event) {
+    void onServerTick(ServerTickEvent.Pre event) {
         Task[] tasks = serverTasks.toArray(new Task[0]);
         serverTasks.clear();
         for(Task task: tasks) {
@@ -122,7 +122,7 @@ public class Delay implements IDelay {
     }
 
     @SubscribeEvent
-    void onClientTick(ClientTickEvent event) {
+    void onClientTick(ClientTickEvent.Pre event) {
         Task[] tasks = clientTasks.toArray(new Task[0]);
         clientTasks.clear();
         for(Task task: tasks) {

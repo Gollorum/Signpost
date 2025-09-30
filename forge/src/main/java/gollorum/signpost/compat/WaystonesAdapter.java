@@ -186,7 +186,7 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
         public void handle(RequestEvent message, PacketHandler.Context.Server context) {
             PacketHandler.getInstance().sendToPlayer(
                 context.sender(),
-                new ReplyEvent.Packet(PlayerWaystoneManager.getActivatedWaystones(context.getPlayer())
+                new ReplyEvent.Packet(PlayerWaystoneManager.getActivatedWaystones(context.sender())
                     .stream()
                     .map(WaystoneWaystone::new)
                     .collect(Collectors.toList()))

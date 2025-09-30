@@ -70,7 +70,7 @@ public class WaystoneDiscoveryEventListener implements IWaystoneDiscoveryEventLi
     }
 
     @SubscribeEvent
-    public static void onTick(ServerTickEvent event) {
+    public static void onTick(ServerTickEvent.Pre event) {
         if(!WaystoneLibrary.hasInstance()) return;
         for(Map.Entry<ServerPlayer, ConcurrentMap<WaystoneHandle.Vanilla, BlockPos>> map : trackedPlayers.entrySet()) {
             for(Map.Entry<WaystoneHandle.Vanilla, BlockPos> inner : map.getValue().entrySet()) {

@@ -33,12 +33,12 @@ public class Config implements IConfig {
     public IClient getClient() { return Client; }
 
     public Config() {
-        var serverTuple = Tuple.from(new ModConfigSpec.Builder().configure(Server::new));
-        Server = serverTuple._1();
-        ServerConfig = serverTuple._2();
         var commonTuple = Tuple.from(new ModConfigSpec.Builder().configure(Common::new));
         Common = commonTuple._1();
         CommonConfig = commonTuple._2();
+        var serverTuple = Tuple.from(new ModConfigSpec.Builder().configure(builder -> new Server(builder, Common)));
+        Server = serverTuple._1();
+        ServerConfig = serverTuple._2();
         var clientTuple = Tuple.from(new ModConfigSpec.Builder().configure(Client::new));
         Client = clientTuple._1();
         ClientConfig = clientTuple._2();
@@ -50,7 +50,7 @@ public class Config implements IConfig {
         ModLoadingContext.get().getActiveContainer().registerConfig(ModConfig.Type.CLIENT, ClientConfig);
     }
 
-    public static class Server implements IServer {
+    public class Server implements IServer {
 
         private final ITeleportConfig teleport;
         private final IWorldGenConfig worldGen;
@@ -75,7 +75,7 @@ public class Config implements IConfig {
         @Override
         public ITeleportConfig teleport() { return teleport; }
 
-        public Server(ModConfigSpec.Builder builder) {
+        public Server(ModConfigSpec.Builder builder, Common commonConfig) {
             builder.push("teleport");
             teleport = new TeleportConfig(builder);
             builder.pop();
@@ -99,7 +99,7 @@ public class Config implements IConfig {
             builder.pop();
 
             builder.push("world_gen");
-            worldGen = new WorldGenConfig(builder, true);
+            worldGen = new WorldGenConfig(builder, true, commonConfig);
             builder.pop();
         }
 
@@ -114,7 +114,7 @@ public class Config implements IConfig {
 
         public Common(ModConfigSpec.Builder builder) {
             builder.push("world_gen_defaults");
-            worldGenDefaults = new WorldGenConfig(builder, false);
+            worldGenDefaults = new WorldGenConfig(builder, false, this);
             builder.pop();
 
         }

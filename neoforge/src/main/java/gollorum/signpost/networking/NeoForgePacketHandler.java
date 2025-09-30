@@ -32,7 +32,7 @@ public class NeoForgePacketHandler extends PacketHandler {
 
     @SubscribeEvent
     public static void register(final RegisterPayloadHandlersEvent event) {
-        final PayloadRegistrar  registrar = event.registrar(Signpost.MOD_ID);
+        final PayloadRegistrar registrar = event.registrar(Signpost.MOD_ID);
         ((NeoForgePacketHandler) instance).registrar = registrar;
         instance.init();
     }

@@ -6,6 +6,7 @@ import gollorum.signpost.minecraft.config.IWorldGenConfig;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 import javax.annotation.Nullable;
+import java.rmi.Naming;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -36,9 +37,16 @@ public class WorldGenConfig implements IWorldGenConfig {
     private final ModConfigSpec.BooleanValue overrideDefaults;
 
     private final boolean isServer;
+    private final Config.Common commonConfig;
 
     private <T> Supplier<T> defaults(T defaultVal, Function<WorldGenConfig, ModConfigSpec.ConfigValue<T>> factory) {
-        return isServer ? () -> factory.apply(Config.INSTANCE.Common.worldGenDefaults).get() : () -> defaultVal;
+        return isServer ? () -> {
+            try {
+                return factory.apply(commonConfig.worldGenDefaults).get();
+            } catch (IllegalStateException e) {
+                return defaultVal;
+            }
+        } : () -> defaultVal;
     }
 
     private <T> T getFinalValue(Function<WorldGenConfig, T> factory) {
@@ -48,8 +56,9 @@ public class WorldGenConfig implements IWorldGenConfig {
         );
     }
 
-    WorldGenConfig(ModConfigSpec.Builder builder, boolean isServer) {
+    WorldGenConfig(ModConfigSpec.Builder builder, boolean isServer, Config.Common commonConfig) {
         this.isServer = isServer;
+        this.commonConfig = commonConfig;
         overrideDefaults = isServer
             ? builder.comment("Enables this [world_gen] section. If false, the COMMON config values will be used")
             .define("override_defaults", true)
