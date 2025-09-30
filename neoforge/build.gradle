@@ -36,4 +36,7 @@ neoForge {
     }
 }
 
-sourceSets.main.resources { srcDir 'src/generated/resources' }
+sourceSets.main.resources.srcDirs (
+    '../common/src/generated/resources',
+    'src/generated/resources'
+)

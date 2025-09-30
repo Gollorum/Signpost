@@ -1,6 +1,5 @@
 package gollorum.signpost;
 
-
 import gollorum.signpost.compat.Compat;
 import gollorum.signpost.compat.ExternalWaystoneLibrary;
 import gollorum.signpost.config.Config;
