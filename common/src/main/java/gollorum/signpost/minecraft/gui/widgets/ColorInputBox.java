@@ -1,6 +1,5 @@
 package gollorum.signpost.minecraft.gui.widgets;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.gui.utils.Point;
@@ -71,23 +70,20 @@ public class ColorInputBox extends InputBox {
 
     @Override
     public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        graphics.blitSprite(RenderType::guiTextured, TextureResource.background.location, getX(), getY(), width, height, currentResult);
-//        Tesselator tessellator = Tesselator.getInstance();
-//        RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
-//        RenderSystem.setShaderTexture(0, TextureResource.background.location);
-//        int red = Colors.getRed(currentResult);
-//        int green = Colors.getGreen(currentResult);
-//        int blue = Colors.getBlue(currentResult);
-//        RenderSystem.setShaderColor(1, 1, 1, 1);
-//        var x = getX();
-//        var y = getY();
-//        BufferBuilder bufferbuilder = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-//        bufferbuilder.addVertex(x - height, y + height, 0).setUv(0, 1).setColor(red, green, blue, 255);
-//        bufferbuilder.addVertex(x, y + height, 0).setUv(1, 1).setColor(red, green, blue, 255);
-//        bufferbuilder.addVertex(x, y, 0).setUv(1, 0).setColor(red, green, blue, 255);
-//        bufferbuilder.addVertex(x - height, y, 0).setUv(0, 0).setColor(red, green, blue, 255);
-//        BufferUploader.drawWithShader(bufferbuilder.build());
-//        super.renderWidget(graphics, mouseX, mouseY, partialTicks);
+        graphics.drawSpecial(bufferSource -> {
+            RenderType rendertype = RenderType.guiTextured(TextureResource.paintBackground.location);
+            int red = Colors.getRed(currentResult);
+            int green = Colors.getGreen(currentResult);
+            int blue = Colors.getBlue(currentResult);
+            var x = getX();
+            var y = getY();
+            VertexConsumer vertexconsumer = bufferSource.getBuffer(rendertype);
+            vertexconsumer.addVertex(x - height, y + height, 0).setUv(0, 1).setColor(red, green, blue, 255);
+            vertexconsumer.addVertex(x, y + height, 0).setUv(1, 1).setColor(red, green, blue, 255);
+            vertexconsumer.addVertex(x, y, 0).setUv(1, 0).setColor(red, green, blue, 255);
+            vertexconsumer.addVertex(x - height, y, 0).setUv(0, 0).setColor(red, green, blue, 255);
+        });
+        super.renderWidget(graphics, mouseX, mouseY, partialTicks);
     }
 
     public void setColorResponder(@Nullable Consumer<Integer> responder) {

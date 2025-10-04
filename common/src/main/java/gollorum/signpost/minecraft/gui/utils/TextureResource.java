@@ -28,7 +28,7 @@ public class TextureResource {
         "textures/gui/flip_direction.png", new TextureSize(15, 15), new TextureSize(15, 30)
     );
 
-    public static final TextureResource background = new TextureResource(
+    public static final TextureResource paintBackground = new TextureResource(
         "textures/gui/background.png", new TextureSize(16, 16)
     );
 

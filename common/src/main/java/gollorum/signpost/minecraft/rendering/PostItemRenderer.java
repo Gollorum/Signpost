@@ -68,45 +68,6 @@ public class PostItemRenderer implements SpecialModelRenderer<PostData> {
 
         RenderingUtil.wrapInMatrixEntry(poseStack, () -> {
             poseStack.translate(0.5, 0, 0.5);
-//            switch (displayContext) {
-//                case GUI -> {
-//                    poseStack.translate(0.5, 0.125, 0.5);
-//                    poseStack.mulPose(Axis.XP.rotationDegrees(30));
-//                    poseStack.mulPose(Axis.YP.rotationDegrees(45));
-//                    poseStack.scale(0.7f, 0.7f, 0.7f);
-//                }
-//                case FIRST_PERSON_RIGHT_HAND -> {
-//                    poseStack.translate(0.5, 0.25, 0.5);
-//                    poseStack.mulPose(Axis.YP.rotationDegrees(315));
-//                    poseStack.scale(0.45f, 0.45f, 0.45f);
-//                }
-//                case FIRST_PERSON_LEFT_HAND -> {
-//                    poseStack.translate(0.5, 0.25, 0.5);
-//                    poseStack.mulPose(Axis.YP.rotationDegrees(35));
-//                    poseStack.scale(0.45f, 0.45f, 0.45f);
-//                }
-//                case THIRD_PERSON_RIGHT_HAND -> {
-//                    poseStack.translate(0.5, 0.6, 0.40);
-//                    poseStack.mulPose(Axis.XP.rotationDegrees(75));
-//                    poseStack.mulPose(Axis.YP.rotationDegrees(315));
-//                    poseStack.scale(0.45f, 0.45f, 0.45f);
-//                }
-//                case THIRD_PERSON_LEFT_HAND -> {
-//                    poseStack.translate(0.5, 0.6, 0.40);
-//                    poseStack.mulPose(Axis.XP.rotationDegrees(75));
-//                    poseStack.mulPose(Axis.YP.rotationDegrees(35));
-//                    poseStack.scale(0.45f, 0.45f, 0.45f);
-//                }
-//                case GROUND -> {
-//                    poseStack.translate(0.5, 0.0, 0.5);
-//                    poseStack.scale(0.25f, 0.25f, 0.25f);
-//                }
-//                case FIXED -> {
-//                    poseStack.translate(0.5, 0.25, 0.5);
-//                    poseStack.mulPose(Axis.YP.rotationDegrees(180));
-//                    poseStack.scale(0.5f, 0.5f, 0.5f);
-//                }
-//            }
             switch (displayContext) {
                 case GUI -> {
                     poseStack.mulPose(Axis.YP.rotationDegrees(90));
