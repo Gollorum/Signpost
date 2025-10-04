@@ -33,8 +33,7 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
         PoseStack blockToView,
         MultiBufferSource buffer,
         int combinedLights,
-        int combinedOverlay,
-        boolean dropNormalsForGui
+        int combinedOverlay
     ) {
         if(sign.isMarkedForGeneration() && !IConfig.IServer.getInstance().worldGen().debugMode()) return;
         RenderingUtil.wrapInMatrixEntry(blockToView, () -> {
@@ -54,8 +53,7 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
                 buffer,
                 combinedLights,
                 combinedOverlay,
-                RenderType::entitySolid,
-                dropNormalsForGui
+                RenderType::entitySolid
             );
             RenderingUtil.render(
                 blockToView,
@@ -67,8 +65,7 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
                 buffer,
                 combinedLights,
                 combinedOverlay,
-                RenderType::entitySolid,
-                dropNormalsForGui
+                RenderType::entitySolid
             );
             sign.getOverlay().ifPresent(o -> {
                 RenderingUtil.render(
@@ -81,8 +78,7 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
                     buffer,
                     combinedLights,
                     combinedOverlay,
-                    RenderType::entityCutout,
-                    dropNormalsForGui
+                    RenderType::entityCutout
                 );
             });
         });

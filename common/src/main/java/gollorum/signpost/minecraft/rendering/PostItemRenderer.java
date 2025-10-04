@@ -133,8 +133,7 @@ public class PostItemRenderer implements SpecialModelRenderer<PostData> {
                         poseStack,
                         bufferSource,
                         packedLight,
-                        packedOverlay,
-                        false
+                        packedOverlay
                     );
                 });
             }
