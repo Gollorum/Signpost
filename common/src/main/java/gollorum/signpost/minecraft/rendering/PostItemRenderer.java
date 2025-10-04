@@ -16,6 +16,7 @@ import gollorum.signpost.utils.NameProvider;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.AngleProvider;
 import gollorum.signpost.utils.math.geometry.Vector3;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
@@ -123,10 +124,19 @@ public class PostItemRenderer implements SpecialModelRenderer<PostData> {
             }
 
             for (BlockPartInstance now: parts) {
-                RenderingUtil.wrapInMatrixEntry(poseStack, () ->
-                    BlockPartRenderer.renderGuiDynamic(
-                        now.blockPart(), poseStack, now.offset(), bufferSource, packedLight, packedOverlay
-                    ));
+                RenderingUtil.wrapInMatrixEntry(poseStack, () -> {
+                    poseStack.translate(now.offset().x(), now.offset().y(), now.offset().z());
+                    BlockPartRenderer.renderDynamic(
+                        now.blockPart(),
+                        Minecraft.getInstance().level,
+                        Minecraft.getInstance().player.blockPosition(),
+                        poseStack,
+                        bufferSource,
+                        packedLight,
+                        packedOverlay,
+                        false
+                    );
+                });
             }
 
             if(bufferSource instanceof MultiBufferSource.BufferSource) ((MultiBufferSource.BufferSource) bufferSource).endBatch();

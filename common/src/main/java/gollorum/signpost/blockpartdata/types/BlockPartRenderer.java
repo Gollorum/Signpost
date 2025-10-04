@@ -3,12 +3,10 @@ package gollorum.signpost.blockpartdata.types;
 import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blockpartdata.types.renderers.*;
-import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.utils.BlockPart;
-import gollorum.signpost.utils.math.Angle;
-import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 import java.util.Map;
 import java.util.Optional;
@@ -38,7 +36,8 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
 
     public static <T extends BlockPart<T>> void renderDynamic(
         T part,
-        BlockEntity tileEntity,
+        Level level,
+        BlockPos pos,
         PoseStack blockToView,
         MultiBufferSource buffer,
         int combinedLights,
@@ -48,7 +47,8 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
         if(renderer.isPresent()) {
             renderer.get().render(
                 part,
-                tileEntity,
+                level,
+                pos,
                 blockToView,
                 buffer,
                 combinedLights,
@@ -59,72 +59,13 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
         }
     }
 
-    public static <T extends BlockPart<T>> void renderGuiDynamic(
-        T part, PoseStack matrixStack, Point center, Angle yaw, Angle pitch, boolean isFlipped, float scale, Vector3 offset, MultiBufferSource buffer
-    ) {
-        Optional<BlockPartRenderer<T>> renderer = BlockPartRenderer.getFor((Class<T>) part.getClass());
-        if(renderer.isPresent()) {
-            renderer.get().renderGui(
-                part,
-                matrixStack,
-                center,
-                yaw,
-                pitch,
-                isFlipped,
-                scale,
-                offset,
-                buffer
-            );
-        } else {
-            Signpost.LOGGER.error("Block part renderer was not found for " + part.getClass());
-        }
-    }
-
-    public static <T extends BlockPart<T>> void renderGuiDynamic(
-        T part, PoseStack matrixStack, Vector3 offset, MultiBufferSource buffer, int combinedLight, int combinedOverlay
-    ) {
-        Optional<BlockPartRenderer<T>> renderer = BlockPartRenderer.getFor((Class<T>) part.getClass());
-        if(renderer.isPresent()) {
-            renderer.get().renderGui(
-                part,
-                matrixStack,
-                offset,
-                buffer,
-                combinedLight,
-                combinedOverlay
-            );
-        } else {
-            Signpost.LOGGER.error("Block part renderer was not found for " + part.getClass());
-        }
-    }
-
     public abstract void render(
         T part,
-        BlockEntity tileEntity,
+        Level level,
+        BlockPos blockPos,
         PoseStack blockToView,
         MultiBufferSource buffer,
         int combinedLights,
-        int combinedOverlay
-    );
-
-    public abstract void renderGui(
-        T part,
-        PoseStack matrixStack,
-        Point center,
-        Angle yaw,
-        Angle pitch,
-        boolean isFlipped,
-        float scale,
-        Vector3 offset,
-        MultiBufferSource buffer
-    );
-
-    public abstract void renderGui(
-        T part,
-        PoseStack matrixStack,
-        Vector3 offset,
-        MultiBufferSource buffer,
-        int combinedLight,
         int combinedOverlay
     );
 

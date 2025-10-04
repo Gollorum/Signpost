@@ -1,16 +1,17 @@
 package gollorum.signpost.minecraft.gui.widgets;
 
+import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.minecraft.gui.utils.Flippable;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.minecraft.rendering.FlippableModel;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
-import gollorum.signpost.utils.math.Angle;
-import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import org.joml.AxisAngle4d;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -49,25 +50,22 @@ public class GuiModelRenderer implements Renderable, Flippable {
 
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         graphics.drawSpecial(buffer -> {
+            Lighting.setupForFlatItems();
             float scale = Math.min(width, height);
             PoseStack matrixStack = new PoseStack();
-            RenderingUtil.wrapInMatrixEntry(matrixStack, () -> {
-                matrixStack.translate(0, 0, -10);
-                if(isFlipped) matrixStack.mulPose(new Quaternionf(new AxisAngle4d(Math.PI, new Vector3f(0, 1, 0))));
-                for (var moo : model.get(isFlipped))
-                    RenderingUtil.renderGui(
-                        moo,
-                        new PoseStack(),
-                        center,
-                        Angle.ZERO,
-                        Angle.ZERO,
-                        isFlipped,
-                        scale,
-                        new Vector3(modelSpaceXOffset, modelSpaceYOffset, 0),
-                        buffer,
-                        m -> {}
-                    );
-            });
+            matrixStack.translate(center.x, center.y, 0);
+            matrixStack.scale(scale, -scale, scale);
+            if(isFlipped) matrixStack.mulPose(new Quaternionf(new AxisAngle4d(Math.PI, new Vector3f(0, 1, 0))));
+            matrixStack.translate(modelSpaceXOffset, modelSpaceYOffset, 0);
+            for (var moo : model.get(isFlipped))
+                RenderingUtil.render(
+                    matrixStack,
+                    moo.model(),
+                    moo.texture().buffer(buffer, RenderType::entityCutout),
+                    LightTexture.FULL_BRIGHT,
+                    OverlayTexture.NO_OVERLAY,
+                    moo.tint()
+                );
         });
     }
 

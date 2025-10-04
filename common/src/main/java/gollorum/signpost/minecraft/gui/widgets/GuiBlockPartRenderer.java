@@ -1,20 +1,30 @@
 package gollorum.signpost.minecraft.gui.widgets;
 
+import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.blockpartdata.types.BlockPartRenderer;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.utils.math.Angle;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.RandomSource;
+import org.joml.AxisAngle4f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.Collection;
 
 public class GuiBlockPartRenderer extends AbstractWidget {
+
+    private static final double randomOffset = 0.001;
 
     private final Collection<BlockPartInstance> partsToRender;
     private final Point center;
@@ -39,17 +49,34 @@ public class GuiBlockPartRenderer extends AbstractWidget {
         if(isHovered)
             graphics.fill(RenderType.guiOverlay(), getX(), getY(), getX() + width, getY() + height, 0x20ffffff);
 
+        long randomSeed = this.hashCode();
+        RandomSource random = RandomSource.create(randomSeed);
         PoseStack ms = new PoseStack();
         graphics.drawSpecial(buffer -> {
+            Lighting.setupForFlatItems();
             RenderingUtil.wrapInMatrixEntry(ms, () -> {
                 ms.translate(0, 0, 100);
+                ms.translate(center.x, center.y, 0);
+                ms.scale(scale, -scale, scale);
+                ms.mulPose(new Quaternionf(new AxisAngle4f(pitch.radians(), new Vector3f(1, 0, 0))));
+                ms.mulPose(new Quaternionf(new AxisAngle4f(yaw.radians(), new Vector3f(0, 1, 0))));
+                ms.translate(0, -0.5, 0);
                 for(BlockPartInstance bpi : partsToRender) {
-                    BlockPartRenderer.renderGuiDynamic(
-                        bpi.blockPart(),
-                        ms,
-                        center, yaw, pitch, false, scale, bpi.offset().withY(y -> y - 0.5f),
-                        buffer
-                    );
+                    RenderingUtil.wrapInMatrixEntry(ms, () -> {
+                        ms.translate(
+                            bpi.offset().x() + randomOffset * random.nextDouble(),
+                            bpi.offset().y() + randomOffset * random.nextDouble(),
+                            bpi.offset().z() + randomOffset * random.nextDouble());
+                        BlockPartRenderer.renderDynamic(
+                            bpi.blockPart(),
+                            Minecraft.getInstance().level,
+                            Minecraft.getInstance().player.blockPosition(),
+                            ms,
+                            buffer,
+                            LightTexture.FULL_BRIGHT,
+                            OverlayTexture.NO_OVERLAY
+                        );
+                    });
                 }
             });
         });

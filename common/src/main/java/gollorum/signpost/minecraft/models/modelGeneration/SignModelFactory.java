@@ -45,10 +45,10 @@ public class SignModelFactory<TextureIdentifier> {
                 TextureArea texCoords = switch (cubeFacesData.direction()) {
                     case UP -> new TextureArea(
                         new TextureSegment(minU, maxFrontU, clampCoords),
-                        new TextureSegment(maxFrontV, maxFrontV + textureDepth, clampCoords));
+                        new TextureSegment(minV - textureDepth, minV, clampCoords));
                     case DOWN -> new TextureArea(
                         new TextureSegment(minU, maxFrontU, clampCoords),
-                        new TextureSegment(minV - textureDepth, minV, clampCoords));
+                        new TextureSegment(maxFrontV, maxFrontV + textureDepth, clampCoords));
                     case SOUTH -> new TextureArea(
                         new TextureSegment(minU, maxFrontU, clampCoords),
                         new TextureSegment(minV, maxFrontV, clampCoords));
@@ -313,29 +313,6 @@ public class SignModelFactory<TextureIdentifier> {
         return ret;
     }
 
-    public SignModelFactory<TextureIdentifier> flipZ() {
-        return this.map(cube -> {
-            Map<Direction, FaceData<TextureIdentifier>> sides = new HashMap<>();
-            for(Map.Entry<Direction, FaceData<TextureIdentifier>> face : cube.sides.entrySet()) {
-                Direction dir = face.getKey();
-                FaceData<TextureIdentifier> faceData = face.getValue();
-                sides.put(dir, new FaceData<>(
-                    faceData.textureArea(),
-                    faceData.rotation(),
-                    faceData.texture(),
-                    true,
-                    faceData.textureSize(),
-                    faceData.tintIndex()
-                ));
-            }
-            return new Cube<>(
-                cube.from.withZ(z -> -z),
-                cube.to.withZ(z -> -z),
-                sides
-            );
-        });
-    }
-
     public <Result> Result build(Result builder, BiConsumer<Result, Cube<TextureIdentifier>> mkCube) {
         for(Cube<TextureIdentifier> cube: cubes) {
             mkCube.accept(builder, cube);
@@ -349,12 +326,7 @@ public class SignModelFactory<TextureIdentifier> {
             for (var face : cube.sides.entrySet()) {
                 var dir = face.getKey();
                 var faceData = face.getValue();
-                var textureArea = faceData.textureArea()
-                    .rotate(faceData.rotation())
-                    .map(u -> u / 16, v -> v/16);
-                var from = cube.from.div(16f);
-                var to = cube.to.div(16f);
-                var vertices = verticesFor(dir, from, textureArea, to);
+                var vertices = verticesFor(cube, dir, faceData);
                 builders[faceData.texture()].quads().add(new Quad(vertices, dir.step()));
             }
         };
@@ -363,27 +335,31 @@ public class SignModelFactory<TextureIdentifier> {
             for (var face : cube.sides.entrySet()) {
                 var dir = face.getKey();
                 var faceData = face.getValue();
-                var textureArea = faceData.textureArea();
-                Direction.Axis axis = dir.getAxis();
+                var vertices = verticesFor(cube, dir, faceData);
+                if (dir.getAxis().equals(Direction.Axis.Z))
                     dir = dir.getOpposite();
-//                if (axis.equals(Direction.Axis.Z)) {
-//                    textureArea = textureArea.flipU();
-//                } else if (axis.equals(Direction.Axis.X)) {
-//                    textureArea = textureArea.flipU();
-//                } else {
-//                    textureArea = textureArea.flipV();
-//                }
-                textureArea = textureArea
-                    .rotate(faceData.rotation())
-                    .map(u -> u / 16, v -> v/16);
-                var from = cube.to.div(16f).withZ(z -> -z);
-                var to = cube.from.div(16f).withZ(z -> -z);
-                var vertices = verticesFor(dir, from, textureArea, to);
+                for (var i = 0; i < vertices.length / 2; i++) {
+                    var tmp = vertices[i];
+                    vertices[i] = vertices[vertices.length - 1 - i];
+                    vertices[vertices.length - 1 - i] = tmp;
+                }
+                for (var vertex : vertices) {
+                    vertex.pos().z = -vertex.pos().z;
+                }
                 builders[faceData.texture()].quads().add(new Quad(vertices, dir.step()));
             }
         };
 
-        private static Quad.Vertex @NotNull [] verticesFor(Direction dir, Vector3 from, TextureArea textureArea, Vector3 to) {
+        private static Quad.Vertex[] verticesFor(Cube<Integer> cube, Direction dir, FaceData<Integer> faceData) {
+            var textureArea = faceData.textureArea()
+                .rotate(faceData.rotation())
+                .map(u -> u / 16, v -> v / 16);
+            var from = cube.from.div(16f);
+            var to = cube.to.div(16f);
+            return verticesFor(dir, from, textureArea, to);
+        }
+
+        private static Quad.Vertex[] verticesFor(Direction dir, Vector3 from, TextureArea textureArea, Vector3 to) {
             return switch (dir) {
                 case DOWN -> new Quad.Vertex[]{
                     new Quad.Vertex(new Vector3f(from.x(), from.y(), from.z()), textureArea.fromTo),

@@ -49,10 +49,14 @@ public class PostRenderer implements BlockEntityRenderer<PostTile> {
             matrixStack.translate(0.5, 0, 0.5);
             for (BlockPartInstance now: tile.getParts()) {
                 RenderingUtil.wrapInMatrixEntry(matrixStack, () -> {
-                    matrixStack.translate(now.offset().x() + randomOffset * random.nextDouble(), now.offset().y() + randomOffset * random.nextDouble(), now.offset().z() + randomOffset * random.nextDouble());
+                    matrixStack.translate(
+                        now.offset().x() + randomOffset * random.nextDouble(),
+                        now.offset().y() + randomOffset * random.nextDouble(),
+                        now.offset().z() + randomOffset * random.nextDouble());
                     BlockPartRenderer.renderDynamic(
                         now.blockPart(),
-                        tile,
+                        tile.getLevel(),
+                        tile.getBlockPos(),
                         matrixStack,
                         shouldUseOriginalBuffer || partsBeingBroken.contains(now) ? buffer : Minecraft.getInstance().renderBuffers().bufferSource(),
                         combinedLight,
