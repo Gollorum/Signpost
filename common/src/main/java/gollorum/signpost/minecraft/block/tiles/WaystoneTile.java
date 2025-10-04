@@ -7,13 +7,17 @@ import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.block.WaystoneBlock;
 import gollorum.signpost.events.WaystoneUpdatedEvent;
+import gollorum.signpost.minecraft.data.WaystoneHandleData;
 import gollorum.signpost.platform.Services;
 import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.*;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.level.Level;
@@ -58,7 +62,7 @@ public class WaystoneTile extends BlockEntity implements WithOwner.OfWaystone, W
     }
 
     private final EventDispatcher.Listener<WaystoneUpdatedEvent> updateListener = event -> {
-        if(WorldLocation.from(this).map(loc -> loc.equals(event.location.block())).orElse(false)) {
+        if (WorldLocation.from(this).map(loc -> loc.equals(event.location.block())).orElse(false)) {
             name = Optional.of(event.name);
             handle = Optional.of(event.handle);
         }
@@ -100,7 +104,13 @@ public class WaystoneTile extends BlockEntity implements WithOwner.OfWaystone, W
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        owner = tag.read(PlayerHandle.CODEC.fieldOf("Owner"));
+        owner = tag.read(PlayerHandle.CODEC.optionalFieldOf("Owner")).flatMap(it -> it);
     }
 
+    @Override
+    protected void collectImplicitComponents(DataComponentMap.Builder components) {
+        super.collectImplicitComponents(components);
+        handle.ifPresent(h -> components.set(WaystoneHandleData.TYPE, new WaystoneHandleData(h)));
+        name.ifPresent(n -> components.set(DataComponents.CUSTOM_NAME, Component.literal(n)));
+    }
 }

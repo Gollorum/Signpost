@@ -35,7 +35,7 @@ public class Inventory {
 	}
 
 	public static <TPlayer extends Player> void tryPay(TPlayer player, ItemStack itemStack, Consumer<TPlayer> onSuccess) {
-		if(!player.isCreative()) {
+		if(!player.hasInfiniteMaterials()) {
 			if(Inventory.tryConsume(player, itemStack))
 				onSuccess.accept(player);
 			else player.displayClientMessage(Component.translatable(

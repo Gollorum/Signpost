@@ -1,8 +1,8 @@
 package gollorum.signpost.registry;
 
 import gollorum.signpost.Signpost;
-import gollorum.signpost.minecraft.storage.loot.ILootItemConditionRegistry;
-import gollorum.signpost.minecraft.storage.loot.PermissionCheck;
+import gollorum.signpost.minecraft.loot.ILootItemConditionRegistry;
+import gollorum.signpost.minecraft.loot.PermissionCheck;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;

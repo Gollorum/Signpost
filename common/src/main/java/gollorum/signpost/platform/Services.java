@@ -3,7 +3,7 @@ package gollorum.signpost.platform;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.block.tiles.IBlockEntityTypeFactory;
 import gollorum.signpost.minecraft.gui.utils.IFluidTextureProvider;
-import gollorum.signpost.minecraft.storage.loot.ILootItemConditionRegistry;
+import gollorum.signpost.minecraft.loot.ILootItemConditionRegistry;
 import gollorum.signpost.minecraft.worldgen.BiomeAccessor;
 import gollorum.signpost.minecraft.worldgen.IWaystoneDiscoveryEventListener;
 import gollorum.signpost.platform.services.IPlatformHelper;

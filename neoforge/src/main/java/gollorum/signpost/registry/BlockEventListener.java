@@ -25,7 +25,6 @@ public class BlockEventListener {
 
     @SubscribeEvent
     public static void onBlockRemoved(BlockEvent.BreakEvent event) {
-        Block block = event.getState().getBlock();
         BlockEntity tile = event.getLevel().getBlockEntity(event.getPos());
         if(!event.isCanceled() && tile instanceof PostTile) {
             PostTile postTile = (PostTile) tile;
@@ -46,7 +45,7 @@ public class BlockEventListener {
                         ServerLevel world = (ServerLevel) event.getLevel();
                         if (!event.getPlayer().isCreative()) {
                             BlockPos pos = tile.getBlockPos();
-                            for (ItemStack item : (Collection<ItemStack>) traceResult.get().part.blockPart().getDrops(postTile)) {
+                            for (ItemStack item : (Collection<ItemStack>) traceResult.get().part.blockPart().getDrops()) {
                                 ItemEntity itementity = new ItemEntity(
                                     world,
                                     pos.getX() + world.getRandom().nextFloat() * 0.5 + 0.25,
@@ -61,9 +60,6 @@ public class BlockEventListener {
                     }
                 });
             } else postTile.onDestroy();
-        }
-        if(!event.isCanceled() && event.getLevel() instanceof ServerLevel) {
-            WaystoneTile.onRemoved((ServerLevel) event.getLevel(), event.getPos());
         }
     }
 

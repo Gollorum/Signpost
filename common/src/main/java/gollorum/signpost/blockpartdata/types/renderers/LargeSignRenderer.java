@@ -47,7 +47,6 @@ public class LargeSignRenderer extends SignRenderer<LargeSignBlockPart> {
 	@Override
 	public void renderText(LargeSignBlockPart sign, PoseStack matrix, Font fontRenderer, MultiBufferSource buffer, int combinedLights) {
 		RenderingUtil.wrapInMatrixEntry(matrix, () -> {
-			matrix.mulPose(new Quaternionf(new AxisAngle4d(Math.PI, new Vector3d(0, 0, 1))));
 			matrix.translate(0, 3.5f * VoxelSize, -3.005 * VoxelSize);
 
 			RenderingUtil.wrapInMatrixEntry(matrix, () -> render(sign, fontRenderer, sign.getText()[3].get(), matrix, buffer, combinedLights, false));

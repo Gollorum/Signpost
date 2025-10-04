@@ -293,7 +293,7 @@ public class SignModelFactory<TextureIdentifier> {
 
     public SignModelFactory<TextureIdentifier> makeWaystoneInPost(TextureIdentifier textureIdentifier) {
         return addCube(
-            new Vector3(-3, 0, -3), new Vector3(6, 6, 6),
+            new Vector3(-3, 0, -3), new Vector3(3, 6, 3),
             Arrays.stream(Direction.values()).collect(Collectors.toMap(
                 d -> d,
                 d -> {
@@ -350,17 +350,10 @@ public class SignModelFactory<TextureIdentifier> {
                 var dir = face.getKey();
                 var faceData = face.getValue();
                 var textureArea = faceData.textureArea()
-//                    .flipU()
                     .rotate(faceData.rotation())
                     .map(u -> u / 16, v -> v/16);
-                var from = cube.from.div(16f)
-//                    .withX(x->-x)
-//                    .withZ(z->-z)
-                    ;
-                var to = cube.to.div(16f)
-//                    .withX(x->-x)
-//                    .withZ(z->-z)
-                    ;
+                var from = cube.from.div(16f);
+                var to = cube.to.div(16f);
                 var vertices = verticesFor(dir, from, textureArea, to);
                 builders[faceData.texture()].quads().add(new Quad(vertices, dir.step()));
             }
@@ -393,40 +386,40 @@ public class SignModelFactory<TextureIdentifier> {
         private static Quad.Vertex @NotNull [] verticesFor(Direction dir, Vector3 from, TextureArea textureArea, Vector3 to) {
             return switch (dir) {
                 case DOWN -> new Quad.Vertex[]{
-                    new Quad.Vertex(new Vector3f(from.x(), from.y(), from.z()), textureArea.from),
-                    new Quad.Vertex(new Vector3f(to.x(), from.y(), from.z()), textureArea.toFrom),
-                    new Quad.Vertex(new Vector3f(to.x(), from.y(), to.z()), textureArea.to),
-                    new Quad.Vertex(new Vector3f(from.x(), from.y(), to.z()), textureArea.fromTo)
+                    new Quad.Vertex(new Vector3f(from.x(), from.y(), from.z()), textureArea.fromTo),
+                    new Quad.Vertex(new Vector3f(to.x(), from.y(), from.z()), textureArea.to),
+                    new Quad.Vertex(new Vector3f(to.x(), from.y(), to.z()), textureArea.toFrom),
+                    new Quad.Vertex(new Vector3f(from.x(), from.y(), to.z()), textureArea.from)
                 };
                 case UP -> new Quad.Vertex[]{
-                    new Quad.Vertex(new Vector3f(from.x(), to.y(), to.z()), textureArea.from),
-                    new Quad.Vertex(new Vector3f(to.x(), to.y(), to.z()), textureArea.toFrom),
-                    new Quad.Vertex(new Vector3f(to.x(), to.y(), from.z()), textureArea.to),
-                    new Quad.Vertex(new Vector3f(from.x(), to.y(), from.z()), textureArea.fromTo)
+                    new Quad.Vertex(new Vector3f(from.x(), to.y(), to.z()), textureArea.fromTo),
+                    new Quad.Vertex(new Vector3f(to.x(), to.y(), to.z()), textureArea.to),
+                    new Quad.Vertex(new Vector3f(to.x(), to.y(), from.z()), textureArea.toFrom),
+                    new Quad.Vertex(new Vector3f(from.x(), to.y(), from.z()), textureArea.from)
                 };
                 case NORTH -> new Quad.Vertex[]{
-                    new Quad.Vertex(new Vector3f(to.x(), from.y(), from.z()), textureArea.from),
-                    new Quad.Vertex(new Vector3f(from.x(), from.y(), from.z()), textureArea.toFrom),
-                    new Quad.Vertex(new Vector3f(from.x(), to.y(), from.z()), textureArea.to),
-                    new Quad.Vertex(new Vector3f(to.x(), to.y(), from.z()), textureArea.fromTo)
+                    new Quad.Vertex(new Vector3f(to.x(), from.y(), from.z()), textureArea.fromTo),
+                    new Quad.Vertex(new Vector3f(from.x(), from.y(), from.z()), textureArea.to),
+                    new Quad.Vertex(new Vector3f(from.x(), to.y(), from.z()), textureArea.toFrom),
+                    new Quad.Vertex(new Vector3f(to.x(), to.y(), from.z()), textureArea.from)
                 };
                 case SOUTH -> new Quad.Vertex[]{
-                    new Quad.Vertex(new Vector3f(from.x(), from.y(), to.z()), textureArea.from),
-                    new Quad.Vertex(new Vector3f(to.x(), from.y(), to.z()), textureArea.toFrom),
-                    new Quad.Vertex(new Vector3f(to.x(), to.y(), to.z()), textureArea.to),
-                    new Quad.Vertex(new Vector3f(from.x(), to.y(), to.z()), textureArea.fromTo)
+                    new Quad.Vertex(new Vector3f(from.x(), from.y(), to.z()), textureArea.fromTo),
+                    new Quad.Vertex(new Vector3f(to.x(), from.y(), to.z()), textureArea.to),
+                    new Quad.Vertex(new Vector3f(to.x(), to.y(), to.z()), textureArea.toFrom),
+                    new Quad.Vertex(new Vector3f(from.x(), to.y(), to.z()), textureArea.from)
                 };
                 case WEST -> new Quad.Vertex[]{
-                    new Quad.Vertex(new Vector3f(from.x(), from.y(), from.z()), textureArea.from),
-                    new Quad.Vertex(new Vector3f(from.x(), from.y(), to.z()), textureArea.toFrom),
-                    new Quad.Vertex(new Vector3f(from.x(), to.y(), to.z()), textureArea.to),
-                    new Quad.Vertex(new Vector3f(from.x(), to.y(), from.z()), textureArea.fromTo)
+                    new Quad.Vertex(new Vector3f(from.x(), from.y(), from.z()), textureArea.fromTo),
+                    new Quad.Vertex(new Vector3f(from.x(), from.y(), to.z()), textureArea.to),
+                    new Quad.Vertex(new Vector3f(from.x(), to.y(), to.z()), textureArea.toFrom),
+                    new Quad.Vertex(new Vector3f(from.x(), to.y(), from.z()), textureArea.from)
                 };
                 case EAST -> new Quad.Vertex[]{
-                    new Quad.Vertex(new Vector3f(to.x(), from.y(), to.z()), textureArea.from),
-                    new Quad.Vertex(new Vector3f(to.x(), from.y(), from.z()), textureArea.toFrom),
-                    new Quad.Vertex(new Vector3f(to.x(), to.y(), from.z()), textureArea.to),
-                    new Quad.Vertex(new Vector3f(to.x(), to.y(), to.z()), textureArea.fromTo)
+                    new Quad.Vertex(new Vector3f(to.x(), from.y(), to.z()), textureArea.fromTo),
+                    new Quad.Vertex(new Vector3f(to.x(), from.y(), from.z()), textureArea.to),
+                    new Quad.Vertex(new Vector3f(to.x(), to.y(), from.z()), textureArea.toFrom),
+                    new Quad.Vertex(new Vector3f(to.x(), to.y(), to.z()), textureArea.from)
                 };
             };
         }

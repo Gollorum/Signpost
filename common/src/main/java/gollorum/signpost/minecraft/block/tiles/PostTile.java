@@ -7,10 +7,13 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
+import gollorum.signpost.WaystoneHandle;
+import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.blockpartdata.types.*;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.config.IConfig;
 import gollorum.signpost.minecraft.data.PostData;
+import gollorum.signpost.minecraft.data.WaystoneHandleData;
 import gollorum.signpost.minecraft.items.Wrench;
 import gollorum.signpost.minecraft.utils.SideUtils;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
@@ -27,8 +30,12 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.*;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -111,6 +118,8 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     private ItemStack drop;
     private Optional<PlayerHandle> owner = Optional.empty();
 
+    private final List<Runnable> toDoOnceLevelIsSet = new ArrayList<>();
+
     public PostTile(PostBlock.ModelType modelType, ItemStack drop, BlockPos pos, BlockState state) {
         super(type, pos, state);
         this.modelType = modelType;
@@ -127,13 +136,20 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     }
     public UUID addPart(UUID identifier, BlockPartInstance part, ItemStack cost, PlayerHandle player, boolean shouldNotify){
         parts.put(identifier, part);
-        part.blockPart().attachTo(this);
-        if(shouldNotify && hasLevel() && !getLevel().isClientSide()) sendToTracing(() -> new PartAddedEvent.Packet(
-            new TilePartInfo(this, identifier),
-            part,
-            cost,
-            player
-        ));
+        Runnable toDo = () -> {
+            part.blockPart().attachTo(this);
+            if (shouldNotify && hasLevel() && !getLevel().isClientSide()) sendToTracing(() -> new PartAddedEvent.Packet(
+                new TilePartInfo(this, identifier),
+                part,
+                cost,
+                player
+            ));
+        };
+        if(hasLevel()) {
+            toDo.run();
+        } else {
+            toDoOnceLevelIsSet.add(toDo);
+        }
         return identifier;
     }
 
@@ -237,6 +253,26 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         parts = compound.read("Parts", PARTS_CODEC).orElseGet(ConcurrentHashMap::new);
         drop = compound.read("Drop", ItemStackSerializer.CODEC.codec()).orElse(ItemStack.EMPTY);
         owner = compound.read("Owner", OptionalCompoundSerializer.from(PlayerHandle.CODEC)).flatMap(it -> it);
+        Runnable init = () -> {
+            for(BlockPartInstance part : parts.values()) {
+                part.blockPart().attachTo(this);
+            }
+        };
+        if(hasLevel()) {
+            init.run();
+        } else {
+            toDoOnceLevelIsSet.add(init);
+        }
+    }
+
+    @Override
+    protected void collectImplicitComponents(DataComponentMap.Builder components) {
+        super.collectImplicitComponents(components);
+        components.set(PostData.TYPE, new PostData(parts));
+        getWaystonePart().ifPresent(waystone -> {
+            waystone.getHandle().ifPresent(h -> waystone.initialize(getLevel(), getBlockPos()));
+            waystone.getName().ifPresent(n -> components.set(DataComponents.CUSTOM_NAME, Component.literal(n)));
+        });
     }
 
     public void readData(PostData data) {
@@ -266,6 +302,9 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
                 if(hasChanged) level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 2);
             });
         }
+
+        toDoOnceLevelIsSet.forEach(Runnable::run);
+        toDoOnceLevelIsSet.clear();
     }
 
     @Override
@@ -296,21 +335,24 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         PacketHandler.getInstance().sendToTracing(this, t);
     }
 
-    public Collection<ItemStack> getDrops() {
-        List<ItemStack> ret = parts.values().stream().flatMap(p -> (Stream<ItemStack>) p.blockPart().getDrops(this).stream())
-            .collect(Collectors.toList());
-        return ret;
-    }
-
     public void setSignpostOwner(Optional<PlayerHandle> owner) {
         this.owner = owner;
     }
 
     public Optional<PlayerHandle> getSignpostOwner() { return owner; }
 
-    public Optional<PlayerHandle> getWaystoneOwner() {
+    public Optional<WaystoneBlockPart> getWaystonePart() {
         return getParts().stream().filter(p -> p.blockPart() instanceof WaystoneBlockPart).findFirst()
-            .flatMap(p -> ((WaystoneBlockPart) p.blockPart()).getWaystoneOwner());
+            .map(p -> (WaystoneBlockPart) p.blockPart());
+    }
+
+    public Optional<PlayerHandle> getWaystoneOwner() {
+        return getWaystonePart().flatMap(WaystoneBlockPart::getWaystoneOwner);
+    }
+
+    @Override
+    public void setWaystoneOwner(Optional<PlayerHandle> owner) {
+        getWaystonePart().ifPresent(part -> part.setWaystoneOwner(owner));
     }
 
     public static boolean isAngleTool(Item item) {
@@ -433,11 +475,13 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
                     PostTile.class,
                     tile -> {
                         BlockPartInstance oldPart = tile.removePart(message.info.identifier);
-                        if(oldPart != null && context instanceof PacketHandler.Context.Server serverContext && !serverContext.sender().isCreative() && message.shouldDropItem){
-                            for(ItemStack item : (Collection<ItemStack>) oldPart.blockPart().getDrops(tile)) {
-                                if(!serverContext.sender().getInventory().add(item))
-                                    if(tile.getLevel() instanceof ServerLevel) {
-                                        ServerLevel serverWorld = (ServerLevel) tile.getLevel();
+                        if (oldPart != null
+                            && context instanceof PacketHandler.Context.Server(ServerPlayer sender)
+                            && !sender.isCreative() && message.shouldDropItem
+                        ) {
+                            for(ItemStack item : ((BlockPart<?>) oldPart.blockPart()).getDrops()) {
+                                if(!sender.getInventory().add(item))
+                                    if(tile.getLevel() instanceof ServerLevel serverWorld) {
                                         BlockPos pos = message.info.pos;
                                         ItemEntity itementity = new ItemEntity(
                                             serverWorld,

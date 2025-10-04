@@ -1,7 +1,7 @@
 package gollorum.signpost.registry;
 
 import gollorum.signpost.Signpost;
-import gollorum.signpost.minecraft.storage.loot.RegisteredWaystoneLootDataFunction;
+import gollorum.signpost.minecraft.loot.RegisteredWaystoneLootDataFunction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.neoforged.bus.api.IEventBus;

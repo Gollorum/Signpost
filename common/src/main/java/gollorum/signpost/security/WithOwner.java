@@ -12,6 +12,7 @@ public interface WithOwner {
 
 	public interface OfWaystone extends WithOwner {
 		Optional<PlayerHandle> getWaystoneOwner();
+        void setWaystoneOwner(Optional<PlayerHandle> owner);
 	}
 
 }

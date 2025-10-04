@@ -45,7 +45,7 @@ public class TextureResource {
         "textures/gui/edit.png", new TextureSize(15, 15), new TextureSize(15, 30)
     );
 
-    public static final Texture waystoneTextureLocation = new Texture(ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "texture/block/waystone"));
+    public static final Texture waystoneTextureLocation = new Texture(ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/waystone"));
 
     public final ResourceLocation location;
     public final TextureSize size;

@@ -1,6 +1,6 @@
 package gollorum.signpost.registry;
 
-import gollorum.signpost.minecraft.storage.loot.ILootItemConditionRegistry;
+import gollorum.signpost.minecraft.loot.ILootItemConditionRegistry;
 import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
 
 public class LootItemConditionRegistryImpl implements ILootItemConditionRegistry {

@@ -1,6 +1,5 @@
 package gollorum.signpost.registry;
 
-import gollorum.signpost.block.PostItemImpl;
 import gollorum.signpost.minecraft.block.*;
 import gollorum.signpost.minecraft.items.*;
 import gollorum.signpost.utils.Tuple;
@@ -51,7 +50,7 @@ public class ItemRegistry {
     private static DeferredItem<Item> registerPostItem(PostBlock.Variant postVariant) {
         return REGISTER.register(
             postVariant.registryName,
-            () -> new PostItemImpl(
+            () -> new PostItem(
                 postVariant.getBlock(),
                 new Item.Properties()
                     .setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(MOD_ID, postVariant.registryName)))

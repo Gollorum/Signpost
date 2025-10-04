@@ -1,6 +1,6 @@
 {
-    "model": {
-        "type": "minecraft:model",
-        "model": "signpost:item/brush"
-    }
+  "model": {
+    "type": "minecraft:model",
+    "model": "signpost:item/brush"
+  }
 }

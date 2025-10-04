@@ -5,7 +5,6 @@ import gollorum.signpost.interactions.Interactable;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.utils.Texture;
 import gollorum.signpost.security.WithOwner;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.player.Player;
@@ -29,7 +28,7 @@ public interface BlockPart<T extends BlockPart<T>> extends Interactable {
 
     boolean hasThePermissionToEdit(WithOwner tile, @Nullable Player player);
 
-    Collection<ItemStack> getDrops(PostTile tile);
+    Collection<ItemStack> getDrops();
 
     default void attachTo(PostTile tile) {}
     default void removeFrom(PostTile tile) {}

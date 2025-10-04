@@ -5,7 +5,6 @@ import gollorum.signpost.Signpost;
 import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.WaystoneBlock;
-import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.gui.PaintPostGui;
 import gollorum.signpost.minecraft.gui.RequestWaystoneGui;
 import gollorum.signpost.minecraft.gui.SignGui;
@@ -144,7 +143,7 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
     public boolean hasThePermissionToEdit(WithOwner owner, Player player) { return true; }
 
     @Override
-    public Collection<ItemStack> getDrops(PostTile tile) {
+    public Collection<ItemStack> getDrops() {
         return Collections.emptySet();
     }
 

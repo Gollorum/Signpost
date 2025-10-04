@@ -31,6 +31,7 @@
                   "function": "minecraft:copy_components",
                   "include": [
                     "signpost:waystone_data",
+                    "minecraft:custom_name",
                     "signpost:post_data"
                   ],
                   "source": "block_entity"
@@ -41,6 +42,35 @@
             {
               "type": "minecraft:item",
               "name": "signpost:post_brown_mushroom"
+            }
+          ]
+        }
+      ],
+      "rolls": 1.0
+    },
+    {
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "signpost:post_data",
+          "conditions": [
+            {
+              "condition": "minecraft:inverted",
+              "term": {
+                "condition": "minecraft:match_tool",
+                "predicate": {
+                  "predicates": {
+                    "minecraft:enchantments": [
+                      {
+                        "enchantments": "minecraft:silk_touch",
+                        "levels": {
+                          "min": 1
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
             }
           ]
         }

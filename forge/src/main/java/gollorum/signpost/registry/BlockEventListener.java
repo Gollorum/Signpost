@@ -1,6 +1,5 @@
 package gollorum.signpost.registry;
 
-import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.blockpartdata.types.PostBlockPart;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
@@ -11,7 +10,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -46,7 +44,7 @@ public class BlockEventListener {
                         ServerLevel world = (ServerLevel) event.getLevel();
                         if (!event.getPlayer().isCreative()) {
                             BlockPos pos = tile.getBlockPos();
-                            for (ItemStack item : (Collection<ItemStack>) traceResult.get().part.blockPart().getDrops(postTile)) {
+                            for (ItemStack item : (Collection<ItemStack>) traceResult.get().part.blockPart().getDrops()) {
                                 ItemEntity itementity = new ItemEntity(
                                     world,
                                     pos.getX() + world.getRandom().nextFloat() * 0.5 + 0.25,
@@ -61,10 +59,6 @@ public class BlockEventListener {
                     }
                 });
             } else postTile.onDestroy();
-        }
-
-        if(event.getLevel() instanceof ServerLevel) {
-            WaystoneTile.onRemoved((ServerLevel) event.getLevel(), event.getPos());
         }
     }
 

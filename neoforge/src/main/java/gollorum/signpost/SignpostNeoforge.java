@@ -4,6 +4,8 @@ import gollorum.signpost.compat.Compat;
 import gollorum.signpost.compat.ExternalWaystoneLibrary;
 import gollorum.signpost.config.Config;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.loot.LootEntries;
+import gollorum.signpost.minecraft.rendering.PostItemRenderer;
 import gollorum.signpost.minecraft.rendering.PostRenderer;
 import gollorum.signpost.minecraft.worldgen.JigsawDeserializers;
 import gollorum.signpost.networking.NeoForgePacketHandler;
@@ -25,6 +27,8 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterSpecialModelRendererEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
@@ -84,13 +88,19 @@ public class SignpostNeoforge {
         }
 
         @SubscribeEvent
-        public void doClientStuff(final FMLClientSetupEvent event) {
-            BlockEntityRenderers.register(PostTile.getBlockEntityType(), PostRenderer::new);
+        public void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
+            event.registerBlockEntityRenderer(PostTile.getBlockEntityType(), PostRenderer::new);
+        }
+
+        @SubscribeEvent
+        public void registerSpecialModelRenderers(RegisterSpecialModelRendererEvent event) {
+            event.register(PostItemRenderer.Unbaked.NAME, PostItemRenderer.Unbaked.MAP_CODEC);
         }
 
         @SubscribeEvent
         public void registerStuff(RegisterEvent event) {
             JigsawDeserializers.register((loc, elem) -> event.register(Registries.STRUCTURE_POOL_ELEMENT, loc, () -> elem));
+            LootEntries.register((loc, elem) -> event.register(Registries.LOOT_POOL_ENTRY_TYPE, loc, () -> elem));
         }
 
     }
@@ -153,5 +163,4 @@ public class SignpostNeoforge {
             WaystoneLibrary.initializeClient();
         }
     }
-
 }

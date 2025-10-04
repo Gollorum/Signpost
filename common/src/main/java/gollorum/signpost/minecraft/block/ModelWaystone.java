@@ -1,5 +1,8 @@
 package gollorum.signpost.minecraft.block;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
 import net.minecraft.core.BlockPos;
@@ -33,13 +36,15 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
-public abstract class ModelWaystone extends BaseEntityBlock implements SimpleWaterloggedBlock {
+public class ModelWaystone extends BaseEntityBlock implements SimpleWaterloggedBlock {
 
 	public static final BooleanProperty Waterlogged = BlockStateProperties.WATERLOGGED;
 	public static final EnumProperty<Direction> Facing = BlockStateProperties.HORIZONTAL_FACING;
@@ -99,7 +104,7 @@ public abstract class ModelWaystone extends BaseEntityBlock implements SimpleWat
 
 	public final Variant variant;
 
-	protected ModelWaystone(Variant variant) {
+	public ModelWaystone(Variant variant) {
 		this(variant, Properties.of()
 			.mapColor(MapColor.STONE)
 			.instrument(NoteBlockInstrument.BASEDRUM)
@@ -111,7 +116,7 @@ public abstract class ModelWaystone extends BaseEntityBlock implements SimpleWat
 		);
 	}
 
-	protected ModelWaystone(Variant variant, Properties properties) {
+    public ModelWaystone(Variant variant, Properties properties) {
 		super(properties);
 		this.variant = variant;
 		this.registerDefaultState(this.defaultBlockState().setValue(Waterlogged, false).setValue(Facing, Direction.NORTH));
@@ -199,7 +204,22 @@ public abstract class ModelWaystone extends BaseEntityBlock implements SimpleWat
 
 	@Override
 	protected ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) {
-		return WaystoneBlock.fillClonedItemStack(super.getCloneItemStack(level, pos, state, includeData), level, pos);
+        var itemStack = super.getCloneItemStack(level, pos, state, includeData);
+        if (includeData)
+            WaystoneBlock.fillClonedItemStack(itemStack, level, pos);
+        return itemStack;
 	}
 
+    @Override
+    protected @NotNull MapCodec<? extends BaseEntityBlock> codec() {
+        return RecordCodecBuilder.mapCodec((builder) -> builder.group(
+            propertiesCodec(),
+            Codec.STRING.fieldOf("variant").forGetter(block -> ((ModelWaystone)block).variant.name)
+        ).apply(builder, (properties, variantName) ->
+            ModelWaystone.variants.stream().filter(v -> Objects.equals(v.name, variantName)).findAny().orElseThrow().createBlock(v -> new ModelWaystone(
+                v,
+                properties
+            ))
+        ));
+    }
 }

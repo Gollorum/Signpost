@@ -15,7 +15,7 @@ import static gollorum.signpost.Signpost.MOD_ID;
 
 public class BlockRegistry {
 
-    public static final WaystoneBlock Waystone = WaystoneBlockImpl.createInstance();
+    public static final WaystoneBlock Waystone = WaystoneBlock.createInstance();
     public static final WaystoneGeneratorBlock WaystoneGenerator = WaystoneGeneratorBlock.getInstance();
 
     public static void register(){

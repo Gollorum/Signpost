@@ -17,19 +17,24 @@ import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public class WaystoneLibraryStorage extends SavedData {
 
-    public final Map<WaystoneHandle.Vanilla, WaystoneLibrary.WaystoneEntry> allWaystones;
-    public final Map<PlayerHandle, Set<WaystoneHandle.Vanilla>> playerMemory;
+    public final HashMap<WaystoneHandle.Vanilla, WaystoneLibrary.WaystoneEntry> allWaystones;
+    public final HashMap<PlayerHandle, HashSet<WaystoneHandle.Vanilla>> playerMemory;
     public final VillageWaystone villageWaystones;
 
-    public WaystoneLibraryStorage(Map<WaystoneHandle.Vanilla, WaystoneLibrary.WaystoneEntry> allWaystones, Map<PlayerHandle, Set<WaystoneHandle.Vanilla>> playerMemory, VillageWaystone villageWaystones) {
-        this.allWaystones = allWaystones;
-        this.playerMemory = playerMemory;
+    public WaystoneLibraryStorage(Map<WaystoneHandle.Vanilla, WaystoneLibrary.WaystoneEntry> allWaystones, Map<PlayerHandle, HashSet<WaystoneHandle.Vanilla>> playerMemory, VillageWaystone villageWaystones) {
+        this.allWaystones = allWaystones instanceof HashMap<WaystoneHandle.Vanilla, WaystoneLibrary.WaystoneEntry> hm
+            ? hm
+            : new HashMap<>(allWaystones);
+        this.playerMemory = playerMemory instanceof HashMap<PlayerHandle, HashSet<WaystoneHandle.Vanilla>> hm
+            ? hm
+            : new HashMap<>(playerMemory);
         this.villageWaystones = villageWaystones;
     }
 
@@ -47,12 +52,12 @@ public class WaystoneLibraryStorage extends SavedData {
                 .map(entry -> Pair.of(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList()));
 
-    private static final Codec<Map<PlayerHandle, Set<WaystoneHandle.Vanilla>>> PLAYER_MEMORY_CODEC =
+    private static final Codec<Map<PlayerHandle, HashSet<WaystoneHandle.Vanilla>>> PLAYER_MEMORY_CODEC =
         Codec.mapPair(
             PlayerHandle.CODEC.fieldOf("Player"),
             WaystoneHandle.Vanilla.CODEC.codec().listOf().fieldOf("DiscoveredWaystones")
         ).codec().listOf().xmap(
-            list -> list.stream().collect(Collectors.toMap(Pair::getFirst, entry -> Set.copyOf(entry.getSecond()))),
+            list -> list.stream().collect(Collectors.toMap(Pair::getFirst, entry -> new HashSet<>(entry.getSecond()))),
             map -> map.entrySet().stream()
                 .map(entry -> Pair.of(entry.getKey(), entry.getValue().stream().toList()))
                 .collect(Collectors.toList()));

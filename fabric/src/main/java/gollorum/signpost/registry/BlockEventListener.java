@@ -55,7 +55,7 @@ public class BlockEventListener {
                         ServerLevel world = (ServerLevel) event.getLevel();
                         if (!event.getPlayer().isCreative()) {
                             BlockPos pos = tile.getBlockPos();
-                            for (ItemStack item : (Collection<ItemStack>) traceResult.get().part.blockPart().getDrops(postTile)) {
+                            for (ItemStack item : (Collection<ItemStack>) traceResult.get().part.blockPart().getDrops()) {
                                 ItemEntity itementity = new ItemEntity(
                                     world,
                                     pos.getX() + world.getRandom().nextFloat() * 0.5 + 0.25,
@@ -70,15 +70,6 @@ public class BlockEventListener {
                     }
                 });
             } else postTile.onDestroy();
-        }
-        if(!event.isCanceled() && block instanceof WithCountRestriction) {
-            BlockRestrictions.Type restrictionType = ((WithCountRestriction)block).getBlockRestrictionType();
-            restrictionType.tryGetOwner.apply(tile).ifPresent(owner ->
-                BlockRestrictions.getInstance().incrementRemaining(restrictionType, owner));
-
-            if(event.getLevel() instanceof ServerLevel) {
-                WaystoneTile.onRemoved((ServerLevel) event.getLevel(), event.getPos());
-            }
         }
     }
 

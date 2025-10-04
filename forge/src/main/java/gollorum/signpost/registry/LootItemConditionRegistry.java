@@ -1,7 +1,7 @@
 package gollorum.signpost.registry;
 
 import gollorum.signpost.Signpost;
-import gollorum.signpost.minecraft.storage.loot.PermissionCheck;
+import gollorum.signpost.minecraft.loot.PermissionCheck;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
 import net.minecraftforge.eventbus.api.IEventBus;

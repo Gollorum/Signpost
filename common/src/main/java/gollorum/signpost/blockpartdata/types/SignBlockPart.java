@@ -324,22 +324,8 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
     }
 
     @Override
-    public Collection<ItemStack> getDrops(PostTile tile) {
+    public Collection<ItemStack> getDrops() {
         return Collections.singleton(coreData.itemToDropOnBreak);
-    }
-
-    private void dropOn(Level world, BlockPos pos) {
-        if(!coreData.itemToDropOnBreak.isEmpty() && !world.isClientSide()) {
-            ItemEntity itementity = new ItemEntity(
-                world,
-                pos.getX() + world.getRandom().nextFloat() * 0.5 + 0.25,
-                pos.getY() + world.getRandom().nextFloat() * 0.5 + 0.25,
-                pos.getZ() + world.getRandom().nextFloat() * 0.5 + 0.25,
-                coreData.itemToDropOnBreak
-            );
-            itementity.setDefaultPickUpDelay();
-            world.addFreshEntity(itementity);
-        }
     }
 
     public AngleProvider getAngle() {

@@ -1,12 +1,11 @@
 package gollorum.signpost.registry;
 
 import gollorum.signpost.Signpost;
-import gollorum.signpost.minecraft.storage.loot.RegisteredWaystoneLootDataFunction;
+import gollorum.signpost.minecraft.loot.RegisteredWaystoneLootDataFunction;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
-import net.minecraft.world.level.storage.loot.providers.nbt.LootNbtProviderType;
 
 public class LootProviderRegistry {
 

@@ -3,10 +3,12 @@ package gollorum.signpost;
 import gollorum.signpost.compat.Compat;
 import gollorum.signpost.compat.ExternalWaystoneLibrary;
 import gollorum.signpost.config.Config;
+import gollorum.signpost.minecraft.block.PostBlock;
+import gollorum.signpost.minecraft.loot.LootEntries;
+import gollorum.signpost.minecraft.rendering.PostItemRenderer;
 import gollorum.signpost.networking.ForgePacketHandler;
 import gollorum.signpost.registry.BlockEventListener;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
-import gollorum.signpost.data.DataGeneration;
 import gollorum.signpost.minecraft.rendering.PostRenderer;
 import gollorum.signpost.minecraft.worldgen.JigsawDeserializers;
 import gollorum.signpost.registry.WaystoneDiscoveryEventListener;
@@ -14,7 +16,6 @@ import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.registry.*;
 import gollorum.signpost.utils.Delay;
 import gollorum.signpost.worldgen.Villages;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -23,6 +24,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.client.event.CreateSpecialBlockRendererEvent;
+import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.LevelEvent;
@@ -31,7 +34,6 @@ import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.RegisterEvent;
@@ -56,7 +58,6 @@ public class SignpostForge {
         DataComponentsRegistry.register(modBus);
         RecipeRegistry.register(modBus);
         TileEntityRegistry.register(modBus);
-        DataGeneration.register(modBus);
         BlockEventListener.register(forgeBus);
         CreativeModeTabRegistry.register(modBus);
         WaystoneDiscoveryEventListener.register(forgeBus);
@@ -88,13 +89,14 @@ public class SignpostForge {
         }
 
         @SubscribeEvent
-        public void doClientStuff(final FMLClientSetupEvent event) {
-            BlockEntityRenderers.register(PostTile.getBlockEntityType(), PostRenderer::new);
+        public void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
+            event.registerBlockEntityRenderer(PostTile.getBlockEntityType(), PostRenderer::new);
         }
 
         @SubscribeEvent
         public void registerStuff(RegisterEvent event) {
             JigsawDeserializers.register((loc, elem) -> event.register(Registries.STRUCTURE_POOL_ELEMENT, loc, () -> elem));
+            LootEntries.register((loc, elem) -> event.register(Registries.LOOT_POOL_ENTRY_TYPE, loc, () -> elem));
         }
 
     }
@@ -129,6 +131,13 @@ public class SignpostForge {
         @SubscribeEvent
         public void onServerStopped(ServerStoppedEvent event) {
             serverSetter.accept(null);
+        }
+
+        // TODO: This doesn't work
+        @SubscribeEvent
+        public void registerSpecialModelRenderers(CreateSpecialBlockRendererEvent event) {
+            for (var variant : PostBlock.AllVariants)
+                event.register(variant.getBlock(), new PostItemRenderer.Unbaked(variant.type));
         }
 
     }

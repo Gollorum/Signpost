@@ -1,6 +1,8 @@
 package gollorum.signpost.minecraft.block;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blockpartdata.types.PostBlockPart;
@@ -17,6 +19,7 @@ import gollorum.signpost.utils.IDelay;
 import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.core.*;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -39,6 +42,7 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -54,12 +58,13 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.apache.commons.lang3.function.TriFunction;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
 
-public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
+public final class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
     @Override
     public boolean hasDynamicShape() {
         return true;
@@ -315,7 +320,7 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
         public Variant(Properties properties, ModelType type, String registryName, RequiredTool tool) {
             this.registryName = REGISTRY_NAME + "_" + registryName;
             this.properties = properties
-                .setId(ResourceKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, registryName)));
+                .setId(ResourceKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, this.registryName)));
             this.type = type;
             this.tool = tool;
         }
@@ -359,7 +364,7 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
     public final ModelType type;
     public final Variant variant;
 
-    protected PostBlock(Properties properties, ModelType type, Variant variant) {
+    public PostBlock(Properties properties, ModelType type, Variant variant) {
         super(properties.noOcclusion());
         this.type = type;
         this.variant = variant;
@@ -369,7 +374,7 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
     @Override
     public void setPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack currentStack) {
         super.setPlacedBy(world, pos, state, placer, currentStack);
-        ItemStack stack = currentStack.copy();
+        ItemStack stack = currentStack.copy(); // stack might be changed in the delay (set block -> block no longer in inventory)
         IDelay.forFrames(6, world.isClientSide(), () ->
             TileEntityUtils.delayUntilTileEntityExists(world, pos, PostTile.getBlockEntityType(), tile -> {
                 tile.setSignpostOwner(Optional.of(PlayerHandle.from(placer)));
@@ -379,6 +384,7 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
                     if(customData != null) {
                         tile.readData(customData);
                         shouldAddNewSign = false;
+                        tile.getWaystonePart().ifPresent(waystone -> WaystoneBlock.registerOwnerAndSeeIfHasName(tile, world, pos, placer, stack));
                     } else {
                         tile.addPart(
                             new BlockPartInstance(new PostBlockPart(type.postTexture), Vector3.ZERO),
@@ -400,26 +406,6 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
                         );
                 }
             }, 100, Optional.of(() -> Signpost.LOGGER.error("Could not initialize placed signpost: BlockEntity never appeared."))));
-    }
-
-    private void dropPartItems(PostTile tile, Level world, BlockPos pos) {
-        NonNullList<ItemStack> drops = NonNullList.create();
-        drops.addAll(tile.getDrops());
-
-        Containers.dropContents(
-            world,
-            pos,
-            drops
-        );
-    }
-
-    @Override
-    public void playerDestroy(Level world, Player player, BlockPos pos, BlockState state, @Nullable BlockEntity tile, ItemStack item) {
-        var silkTouchHolder = world.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.SILK_TOUCH);
-        if(!player.isCreative() && tile instanceof PostTile && EnchantmentHelper.getItemEnchantmentLevel(silkTouchHolder, item) == 0) {
-            dropPartItems((PostTile) tile, world, pos);
-        }
-        super.playerDestroy(world, player, pos, state, tile, item);
     }
 
     @SuppressWarnings("deprecation")
@@ -520,6 +506,26 @@ public abstract class PostBlock extends BaseEntityBlock implements SimpleWaterlo
     public BlockState mirror(BlockState state, Mirror mirrorIn) {
         if(!state.hasProperty(Facing)) return state;
         return state.setValue(Facing, state.getValue(Facing).getOpposite());
+    }
+
+    @Override
+    protected ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) {
+        ItemStack ret = super.getCloneItemStack(level,  pos, state, includeData);
+        if (!includeData) return ret;
+        level.getBlockEntity(pos, PostTile.getBlockEntityType()).ifPresent(tile -> {
+            var data = new PostData(tile.parts());
+            ret.applyComponents(DataComponentPatch.builder().set(PostData.TYPE, data).build());
+        });
+        return ret;
+    }
+
+    @Override
+    protected @NotNull MapCodec<? extends BaseEntityBlock> codec() {
+        return RecordCodecBuilder.mapCodec((builder) -> builder.group(
+            Codec.STRING.fieldOf("variant").forGetter(block -> ((PostBlock)block).type.name)
+        ).apply(builder, variantName ->
+            AllVariants.stream().filter(v -> Objects.equals(v.type.name, variantName)).findAny().orElseThrow().createBlock(PostBlock::new)
+        ));
     }
 
 }

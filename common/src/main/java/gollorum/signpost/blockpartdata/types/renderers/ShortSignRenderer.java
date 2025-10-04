@@ -57,7 +57,6 @@ public class ShortSignRenderer extends SignRenderer<SmallShortSignBlockPart> {
 						.flatMap(s -> s.stream().skip(new Random().nextInt(s.size())).findFirst());
 				if(overrideName.isPresent()) text = overrideName.get();
 			}
-			matrix.mulPose(new Quaternionf(new AxisAngle4d(Math.PI, new Vector3f(0, 0, 1))));
 			float scale = FONT_SIZE_VOXELS * FontToVoxelSize;
 			float MAX_WIDTH_FRAC = fontRenderer.width(text) * scale / MAXIMUM_TEXT_WIDTH;
 			scale /= Math.max(1, MAX_WIDTH_FRAC);
