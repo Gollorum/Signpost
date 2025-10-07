@@ -13,7 +13,6 @@ import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.registry.*;
 import gollorum.signpost.utils.Delay;
 import gollorum.signpost.worldgen.Villages;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -25,7 +24,6 @@ import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterSpecialModelRendererEvent;
@@ -90,11 +88,6 @@ public class SignpostNeoforge {
         @SubscribeEvent
         public void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
             event.registerBlockEntityRenderer(PostTile.getBlockEntityType(), PostRenderer::new);
-        }
-
-        @SubscribeEvent
-        public void registerSpecialModelRenderers(RegisterSpecialModelRendererEvent event) {
-            event.register(PostItemRenderer.Unbaked.NAME, PostItemRenderer.Unbaked.MAP_CODEC);
         }
 
         @SubscribeEvent

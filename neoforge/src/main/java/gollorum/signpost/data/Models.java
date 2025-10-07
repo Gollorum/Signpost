@@ -4,7 +4,6 @@ import gollorum.signpost.Signpost;
 import gollorum.signpost.data.blocks.GeneratorModel;
 import gollorum.signpost.data.blocks.PostModel;
 import gollorum.signpost.data.blocks.WaystoneModel;
-import gollorum.signpost.minecraft.block.ModelWaystone;
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.ModelProvider;

@@ -182,14 +182,6 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         .reduce((b1, b2) -> Shapes.join(b1, b2, BooleanOp.OR)).orElse(Shapes.empty());
     }
 
-//    @Override
-//    public AABB getRenderBoundingBox() {
-//        VoxelShape shape = getBounds();
-//        return shape.isEmpty()
-//            ? new AABB(getBlockPos())
-//            : shape.bounds().move(getBlockPos());
-//    }
-
     public Optional<TraceResult> trace(Entity player){
         Vec3 head = player.position();
         head = head.add(0, player.getEyeHeight(), 0);
@@ -253,6 +245,8 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         parts = compound.read("Parts", PARTS_CODEC).orElseGet(ConcurrentHashMap::new);
         drop = compound.read("Drop", ItemStackSerializer.CODEC.codec()).orElse(ItemStack.EMPTY);
         owner = compound.read("Owner", OptionalCompoundSerializer.from(PlayerHandle.CODEC)).flatMap(it -> it);
+        if (parts.isEmpty())
+            parts.put(UUID.randomUUID(), new BlockPartInstance(new PostBlockPart(modelType.postTexture), Vector3.ZERO));
         Runnable init = () -> {
             for(BlockPartInstance part : parts.values()) {
                 part.blockPart().attachTo(this);
@@ -270,7 +264,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         super.collectImplicitComponents(components);
         components.set(PostData.TYPE, new PostData(parts));
         getWaystonePart().ifPresent(waystone -> {
-            waystone.getHandle().ifPresent(h -> waystone.initialize(getLevel(), getBlockPos()));
+            waystone.getHandle().ifPresent(h -> components.set(WaystoneHandleData.TYPE, new WaystoneHandleData(h)));
             waystone.getName().ifPresent(n -> components.set(DataComponents.CUSTOM_NAME, Component.literal(n)));
         });
     }

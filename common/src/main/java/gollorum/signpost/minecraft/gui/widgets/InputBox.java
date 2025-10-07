@@ -29,7 +29,15 @@ public class InputBox extends EditBox implements WithMutableX {//, Ticking {
         boolean shouldDropShadow,
         double zOffset
     ) {
-        this(new Font(((IConfigurableFont) configFont).getFonts(), ((IConfigurableFont) configFont).getFilterFishyGlyphs()), true, inputFieldRect, shouldDropShadow, zOffset);
+        this(
+            new Font(((IConfigurableFont) configFont).getFonts(),
+                ((IConfigurableFont) configFont).getFilterFishyGlyphs()),
+            true,
+            inputFieldRect,
+            shouldDropShadow,
+            zOffset,
+            500
+        );
     }
 
     private InputBox(
@@ -37,7 +45,8 @@ public class InputBox extends EditBox implements WithMutableX {//, Ticking {
         boolean iCopiedThatFontIPromise,
         Rect inputFieldRect,
         boolean shouldDropShadow,
-        double zOffset
+        double zOffset,
+        int maxStringLength
     ) {
         super(
             copyFont,
@@ -49,6 +58,7 @@ public class InputBox extends EditBox implements WithMutableX {//, Ticking {
         if(!shouldDropShadow) configFont.setShouldProhibitShadows(true);
         this.shouldDropShadow = shouldDropShadow;
         this.zOffset = zOffset;
+        this.setMaxLength(maxStringLength);
     }
 
 //    @Override

@@ -77,19 +77,7 @@ public class Teleport {
                     player.sendSystemMessage(Component.translatable(LangKeys.differentDimension));
                     return;
                 }
-//                sender.changeDimension(world, new ITeleporter() {});
             }
-//            var teleporter = new ITeleporter() {
-//                @Override
-//                public @Nullable PortalInfo getPortalInfo(Entity entity, ServerLevel destWorld, Function<ServerLevel, PortalInfo> defaultPortalInfo) {
-//                    return new PortalInfo(
-//                        location.asVec3(),
-//                        Vec3.ZERO,
-//                        yaw.degrees(),
-//                        pitch.degrees()
-//                    );
-//                }
-//            };
             Entity toTeleport = player;
             if(IConfig.getInstance().getServer().teleport().allowVehicle()) {
                 while(toTeleport.isPassenger()) toTeleport = toTeleport.getVehicle();
@@ -130,7 +118,7 @@ public class Teleport {
             playStepSounds.set(countdown -> {
                 float volume = countdown / (float) steps;
                 playStepSound.accept(oldWorld, oldPos, volume);
-                if(countdown > 1) IDelay.onServerForFrames(15, () -> playStepSounds.get().accept(countdown - 1));
+                if(countdown > 1) IDelay.onServerForFrames(10, () -> playStepSounds.get().accept(countdown - 1));
             });
             playStepSounds.get().accept(steps);
         });

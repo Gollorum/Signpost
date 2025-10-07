@@ -26,6 +26,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.client.event.CreateSpecialBlockRendererEvent;
 import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.LevelEvent;
@@ -131,13 +132,6 @@ public class SignpostForge {
         @SubscribeEvent
         public void onServerStopped(ServerStoppedEvent event) {
             serverSetter.accept(null);
-        }
-
-        // TODO: This doesn't work
-        @SubscribeEvent
-        public void registerSpecialModelRenderers(CreateSpecialBlockRendererEvent event) {
-            for (var variant : PostBlock.AllVariants)
-                event.register(variant.getBlock(), new PostItemRenderer.Unbaked(variant.type));
         }
 
     }

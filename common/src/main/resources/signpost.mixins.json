@@ -14,7 +14,8 @@
     "ColorableButton",
     "ConfigurableFont",
     "LevelRendererAccessor",
-    "ScreenAccessor"
+    "ScreenAccessor",
+    "SpecialModelRendererInjector"
   ],
   "server": [
   ],
