@@ -436,7 +436,7 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new PostTile(type, new ItemStack(this), pos, state);
+        return new PostTile(type, pos, state);
     }
 
     @Override

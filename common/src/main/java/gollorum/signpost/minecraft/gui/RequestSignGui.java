@@ -81,7 +81,7 @@ public class RequestSignGui implements PacketHandler.Event.ForClient<RequestSign
 		) {
 			TileEntityUtils.delayUntilTileEntityExistsAt(
 				message.loc, PostTile.class,
-				tile -> SignGui.display(tile, message.modelType, message.localHitPos, message.itemToDropOnBreak),
+				tile -> SignGui.display(tile, message.modelType, message.localHitPos, Optional.of(message.itemToDropOnBreak)),
 				100,
 				true,
 				Optional.of(() -> Signpost.LOGGER.error("Tried to open sign gui for a new block, but the tile was missing."))

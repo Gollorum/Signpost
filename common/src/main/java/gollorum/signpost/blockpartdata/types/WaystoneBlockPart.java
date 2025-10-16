@@ -1,5 +1,6 @@
 package gollorum.signpost.blockpartdata.types;
 
+import com.mojang.serialization.Codec;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneHandle;
@@ -17,7 +18,7 @@ import gollorum.signpost.utils.math.geometry.AABB;
 import gollorum.signpost.utils.math.geometry.Intersectable;
 import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import gollorum.signpost.utils.serialization.OptionalCompoundSerializer;
+import gollorum.signpost.utils.serialization.OptionalSerializerV1;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.world.entity.player.Player;
@@ -45,8 +46,10 @@ public class WaystoneBlockPart implements BlockPart<WaystoneBlockPart>, WithOwne
 
 	public static final BlockPartMetadata<WaystoneBlockPart> METADATA = new BlockPartMetadata<>(
 		"Waystone",
-		OptionalCompoundSerializer.from(PlayerHandle.CODEC).fieldOf("owner")
-			.xmap(WaystoneBlockPart::new, w -> w.owner),
+        version -> (version < 2
+            ? OptionalSerializerV1.of(PlayerHandle.CODEC).fieldOf("owner")
+            : PlayerHandle.CODEC.optionalFieldOf("owner")
+        ).xmap(WaystoneBlockPart::new, w -> w.owner),
 		ByteBufCodecs.optional(PlayerHandle.STREAM_CODEC)
 			.map(WaystoneBlockPart::new, w -> w.owner)
 			.mapStream(it -> it),

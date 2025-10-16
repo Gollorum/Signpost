@@ -1,6 +1,7 @@
 package gollorum.signpost.utils.math;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -74,9 +75,9 @@ public final class Angle {
         return Float.hashCode(radians);
     }
 
-    public static final Codec<Angle> CODEC = RecordCodecBuilder.create(i -> i.group(
-        com.mojang.serialization.Codec.FLOAT.fieldOf("Radians").forGetter(Angle::radians)
-    ).apply(i, Angle::new));
+    public static final MapCodec<Angle> MAP_CODEC = Codec.FLOAT.fieldOf("Radians").xmap(Angle::fromRadians, Angle::radians);
+
+    public static final Codec<Angle> CODEC = MAP_CODEC.codec();
 
     public static final StreamCodec<ByteBuf, Angle> STREAM_CODEC = ByteBufCodecs.FLOAT.map(
         Angle::fromRadians,

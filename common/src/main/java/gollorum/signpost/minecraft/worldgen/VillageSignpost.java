@@ -143,7 +143,7 @@ public class VillageSignpost {
 					new AngleProvider.WaystoneTarget(rotation), new NameProvider.WaystoneTarget(targetData.name()), shouldFlip(facing, rotation),
 					generatorPart.getMainTexture(), generatorPart.getSecondaryTexture(),
 					overlayFor(world, tilePos).or(generatorPart::getOverlay), generatorPart.getColor(), Optional.of(target._2()),
-					ItemStack.EMPTY, tile.modelType, false, false
+                    Optional.empty(), tile.modelType, false, false
 				),
 				new Vector3(0, y, 0)
 			),
@@ -179,7 +179,7 @@ public class VillageSignpost {
 					new AngleProvider.WaystoneTarget(rotation), new NameProvider.WaystoneTarget(targetData.name()), shouldFlip,
 					generatorPart.getMainTexture(), generatorPart.getSecondaryTexture(),
 					overlay, generatorPart.getColor(), Optional.of(target._2()),
-					ItemStack.EMPTY, tile.modelType, false, false
+                    Optional.empty(), tile.modelType, false, false
 				),
 				new Vector3(0, y, 0)
 			),
@@ -210,7 +210,7 @@ public class VillageSignpost {
 						new AngleProvider.WaystoneTarget(secondRotation), new NameProvider.WaystoneTarget(secondTargetData.name()), shouldSecondFlip,
 						generatorPart.getMainTexture(), generatorPart.getSecondaryTexture(),
 						overlay, generatorPart.getColor(), Optional.of(secondTargetHandle),
-						ItemStack.EMPTY, tile.modelType, false, false
+                        Optional.empty(), tile.modelType, false, false
 					),
 					new Vector3(0, y, 0)
 				),

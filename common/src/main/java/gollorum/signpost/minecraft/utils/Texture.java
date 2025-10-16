@@ -3,7 +3,7 @@ package gollorum.signpost.minecraft.utils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.utils.Tint;
-import gollorum.signpost.utils.serialization.OptionalCompoundSerializer;
+import gollorum.signpost.utils.serialization.OptionalSerializerV1;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
@@ -29,10 +29,23 @@ public record Texture(ResourceLocation location, ResourceLocation atlasLocation,
         return new Material(atlasLocation, location);
     }
 
-    public static final Codec<Texture> CODEC = RecordCodecBuilder.create(i -> i.group(
+    public static Codec<Texture> codec(int version) {
+        return switch (version) {
+            case 1 -> CODEC_V1;
+            case 2 -> CODEC_V2;
+            default -> throw new IllegalArgumentException("Unsupported version: " + version);
+        };
+    }
+
+    public static final Codec<Texture> CODEC_V1 = RecordCodecBuilder.create(i -> i.group(
         ResourceLocation.CODEC.fieldOf("ResourceLocation").forGetter(Texture::location),
-        ResourceLocation.CODEC.optionalFieldOf("AtlasLocation").forGetter(t -> Optional.of(t.atlasLocation)),
-        OptionalCompoundSerializer.from(Tint.Serialization.CODEC).fieldOf("Tint").forGetter(Texture::tint)
+        OptionalSerializerV1.of(Tint.Serialization.CODEC).fieldOf("Tint").forGetter(Texture::tint)
+    ).apply(i, (loc, tint) -> new Texture(loc, Optional.empty(), tint)));
+
+    public static final Codec<Texture> CODEC_V2 = RecordCodecBuilder.create(i -> i.group(
+        ResourceLocation.CODEC.fieldOf("ResourceLocation").forGetter(Texture::location),
+        Codec.optionalField("AtlasLocation", ResourceLocation.CODEC, true).forGetter(t -> Optional.of(t.atlasLocation)),
+        Codec.optionalField("Tint", Tint.Serialization.CODEC, true).forGetter(Texture::tint)
     ).apply(i, Texture::new));
 
     public static final StreamCodec<ByteBuf, Texture> STREAM_CODEC = StreamCodec.composite(

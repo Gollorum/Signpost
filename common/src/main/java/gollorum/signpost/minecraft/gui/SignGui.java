@@ -77,7 +77,7 @@ public class SignGui extends ExtendedScreen {
     private TextDisplay rotationLabel;
     private AngleInputBox rotationInputField;
 
-    private final ItemStack itemToDropOnBreak;
+    private final Optional<ItemStack> itemToDropOnBreak;
 
     private final Consumer<WaystoneUpdatedEvent> waystoneUpdateListener = event -> {
         WaystoneEntry newEntry = new WaystoneEntry(event.name, event.name, event.handle, event.location.block().blockPos());
@@ -141,7 +141,7 @@ public class SignGui extends ExtendedScreen {
 
     private TextDisplay noWaystonesInfo;
 
-    public static void display(PostTile tile, PostBlock.ModelType modelType, Vector3 localHitPos, ItemStack itemToDropOnBreak) {
+    public static void display(PostTile tile, PostBlock.ModelType modelType, Vector3 localHitPos, Optional<ItemStack> itemToDropOnBreak) {
         Minecraft.getInstance().setScreen(new SignGui(tile, modelType, localHitPos, itemToDropOnBreak));
     }
 
@@ -150,7 +150,7 @@ public class SignGui extends ExtendedScreen {
             Minecraft.getInstance().setScreen(new SignGui(tile, oldSign, oldOffset, oldTilePartInfo));
     }
 
-    public SignGui(PostTile tile, PostBlock.ModelType modelType, Vector3 localHitPos, ItemStack itemToDropOnBreak) {
+    public SignGui(PostTile tile, PostBlock.ModelType modelType, Vector3 localHitPos, Optional<ItemStack> itemToDropOnBreak) {
         super(Component.translatable(LangKeys.signGuiTitle));
         this.tile = tile;
         this.modelType = modelType;
@@ -714,7 +714,7 @@ public class SignGui extends ExtendedScreen {
         addRenderableOnly(newSignHint);
         GuiItemRenderer ir = new GuiItemRenderer(
             new Rect(newSignHint.rect.at(Rect.XAlignment.Right, Rect.YAlignment.Center), newSignItemSize, newSignItemSize, Rect.XAlignment.Left, Rect.YAlignment.Center),
-            itemToDropOnBreak
+            ItemStack.EMPTY
         );
         addRenderableOnly(ir);
         AtomicReference<Runnable> cycleItem = new AtomicReference<>();
@@ -1078,7 +1078,7 @@ public class SignGui extends ExtendedScreen {
                     PacketHandler.getInstance().sendToServer(new PostTile.PartAddedEvent.Packet(
                         tilePartInfo,
                         new BlockPartInstance(data, new Vector3(0, localHitPos.y() > 0.5f ? 0.75f : 0.25f, 0)),
-                        itemToDropOnBreak, PlayerHandle.from(minecraft().player)
+                        itemToDropOnBreak.orElse(ItemStack.EMPTY), PlayerHandle.from(minecraft().player)
                     ));
                 }
             }
@@ -1107,7 +1107,7 @@ public class SignGui extends ExtendedScreen {
                     PacketHandler.getInstance().sendToServer(new PostTile.PartAddedEvent.Packet(
                         tilePartInfo,
                         new BlockPartInstance(data, new Vector3(0, localHitPos.y() > 0.5f ? 0.75f : 0.25f, 0)),
-                        itemToDropOnBreak, PlayerHandle.from(minecraft().player)
+                        itemToDropOnBreak.orElse(ItemStack.EMPTY), PlayerHandle.from(minecraft().player)
                     ));
                 }
             }
@@ -1141,7 +1141,7 @@ public class SignGui extends ExtendedScreen {
                     PacketHandler.getInstance().sendToServer(new PostTile.PartAddedEvent.Packet(
                         tilePartInfo,
                         new BlockPartInstance(data, new Vector3(0, 0.5f, 0)),
-                        itemToDropOnBreak, PlayerHandle.from(minecraft().player)
+                        itemToDropOnBreak.orElse(ItemStack.EMPTY), PlayerHandle.from(minecraft().player)
                     ));
                 }
             }

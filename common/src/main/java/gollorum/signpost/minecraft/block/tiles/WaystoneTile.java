@@ -1,6 +1,7 @@
 package gollorum.signpost.minecraft.block.tiles;
 
 import com.mojang.datafixers.types.Type;
+import com.mojang.serialization.Codec;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.WaystoneLibrary;
@@ -104,7 +105,7 @@ public class WaystoneTile extends BlockEntity implements WithOwner.OfWaystone, W
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        owner = tag.read(PlayerHandle.CODEC.optionalFieldOf("Owner")).flatMap(it -> it);
+        owner = tag.read(Codec.optionalField("Owner", PlayerHandle.CODEC, true)).flatMap(it -> it);
     }
 
     @Override

@@ -175,9 +175,9 @@ public record Vector3(float x, float y, float z) {
     }
 
     public static final Codec<Vector3> CODEC = RecordCodecBuilder.create(i -> i.group(
-        Codec.FLOAT.fieldOf("x").forGetter(Vector3::x),
-        Codec.FLOAT.fieldOf("y").forGetter(Vector3::y),
-        Codec.FLOAT.fieldOf("z").forGetter(Vector3::z)
+        Codec.FLOAT.fieldOf("X").forGetter(Vector3::x),
+        Codec.FLOAT.fieldOf("Y").forGetter(Vector3::y),
+        Codec.FLOAT.fieldOf("Z").forGetter(Vector3::z)
     ).apply(i, Vector3::new));
 
     public static final StreamCodec<ByteBuf, Vector3> STREAM_CODEC = StreamCodec.composite(

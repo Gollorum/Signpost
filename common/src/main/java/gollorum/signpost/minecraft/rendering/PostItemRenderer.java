@@ -43,7 +43,7 @@ public class PostItemRenderer implements SpecialModelRenderer<PostData> {
             parts.put(UUID.randomUUID(), new BlockPartInstance(new PostBlockPart(fallbackType.postTexture), Vector3.ZERO));
             parts.put(UUID.randomUUID(), new BlockPartInstance(new SmallWideSignBlockPart(
                 new AngleProvider.Literal(Angle.fromDegrees(180)), new NameProvider.Literal(""), true, fallbackType.mainTexture, fallbackType.secondaryTexture,
-                Optional.empty(), Colors.white, Optional.empty(), ItemStack.EMPTY, fallbackType, false, false
+                Optional.empty(), Colors.white, Optional.empty(), Optional.empty(), fallbackType, false, false
                 ),
                 new Vector3(0, 0.75f, 0)));
             data = new PostData(parts);
@@ -61,7 +61,7 @@ public class PostItemRenderer implements SpecialModelRenderer<PostData> {
             parts.add(new BlockPartInstance(new PostBlockPart(fallbackType.postTexture), Vector3.ZERO));
             parts.add(new BlockPartInstance(new SmallWideSignBlockPart(
                 new AngleProvider.Literal(Angle.fromDegrees(180)), new NameProvider.Literal(""), true, fallbackType.mainTexture, fallbackType.secondaryTexture,
-                    Optional.empty(), Colors.white, Optional.empty(), ItemStack.EMPTY, fallbackType, false, false
+                    Optional.empty(), Colors.white, Optional.empty(), Optional.empty(), fallbackType, false, false
                 ),
                 new Vector3(0, 0.75f, 0)));
         }

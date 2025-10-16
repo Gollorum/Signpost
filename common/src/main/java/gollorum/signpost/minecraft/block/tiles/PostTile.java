@@ -1,14 +1,10 @@
 package gollorum.signpost.minecraft.block.tiles;
 
 import com.mojang.datafixers.types.Type;
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
-import gollorum.signpost.WaystoneHandle;
-import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.blockpartdata.types.*;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.config.IConfig;
@@ -30,7 +26,6 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.UUIDUtil;
-import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.*;
@@ -62,8 +57,6 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithOwner.OfWaystone, WaystoneContainer {
 
@@ -76,7 +69,6 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         return PostTile.type = Services.BLOCK_ENTITY_TYPE_FACTORY.create(
             (pos, state) -> new PostTile(
                 PostBlock.ModelType.Oak,
-                ItemStack.EMPTY,
                 pos, state
             ),
             PostBlock.getAllBlocks(),
@@ -115,15 +107,13 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     }
 
     public final PostBlock.ModelType modelType;
-    private ItemStack drop;
     private Optional<PlayerHandle> owner = Optional.empty();
 
     private final List<Runnable> toDoOnceLevelIsSet = new ArrayList<>();
 
-    public PostTile(PostBlock.ModelType modelType, ItemStack drop, BlockPos pos, BlockState state) {
+    public PostTile(PostBlock.ModelType modelType, BlockPos pos, BlockState state) {
         super(type, pos, state);
         this.modelType = modelType;
-        this.drop = drop;
     }
 
     public UUID addPart(BlockPartInstance part, ItemStack cost, PlayerHandle player){ return addPart(UUID.randomUUID(), part, cost, player); }
@@ -200,30 +190,6 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         return closestTrace.map(trace -> new TraceResult(parts.get(trace.getA()), trace.getA(), ray.atDistance(trace.getB()), ray));
     }
 
-    public static final Codec<Map<UUID, BlockPartInstance>> PARTS_CODEC = Codec.dispatchedMap(
-        Codec.STRING.xmap(partsMetadata::get, BlockPartMetadata::identifier),
-        meta -> RecordCodecBuilder.<Pair<UUID, BlockPartInstance>>create(i -> i.group(
-                ((MapCodec<BlockPart>)meta.codec()).forGetter(pair -> pair.getSecond().blockPart()),
-                Vector3.CODEC.fieldOf("Offset").forGetter(pair -> pair.getSecond().offset()),
-                UUIDUtil.CODEC.fieldOf("PartId").forGetter(Pair::getFirst)
-            ).apply(i, (blockPart, offset, uuid) -> Pair.of(uuid, new BlockPartInstance(blockPart, offset)))
-        ).listOf()).xmap(
-            partsByMeta -> partsByMeta.values().stream()
-                .flatMap(Collection::stream)
-                .collect(Collectors.toConcurrentMap(Pair::getFirst, Pair::getSecond)),
-            parts -> parts.entrySet().stream()
-                .map(e -> Pair.of(e.getKey(), e.getValue()))
-                .collect(Collectors.groupingBy(p -> p.getSecond().blockPart().getMeta()))
-        );
-
-    public static final Codec<Map<BlockPartMetadata, List<BlockPartInstance>>> PARTS_CODEC_NO_ID = Codec.dispatchedMap(
-        Codec.STRING.xmap(partsMetadata::get, BlockPartMetadata::identifier),
-        meta -> RecordCodecBuilder.<BlockPartInstance>create(i -> i.group(
-                ((MapCodec<BlockPart>)meta.codec()).forGetter(BlockPartInstance::blockPart),
-                Vector3.CODEC.fieldOf("Offset").forGetter(BlockPartInstance::offset)
-            ).apply(i, BlockPartInstance::new)
-        ).listOf());
-
     @Override
     public void saveAdditional(CompoundTag compound, HolderLookup.Provider provider) {
         super.saveAdditional(compound, provider);
@@ -231,9 +197,8 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     }
 
     private void writeSelf(CompoundTag compound) {
-        compound.store("Parts", PARTS_CODEC, parts);
-        compound.store("Drop", ItemStackSerializer.CODEC.codec(), drop);
-        compound.store("Owner", OptionalCompoundSerializer.from(PlayerHandle.CODEC), owner);
+        compound.store(PostData.CODEC, new PostData(parts));
+        compound.store(Codec.optionalField("Owner", PlayerHandle.CODEC, true), owner);
     }
 
     @Override
@@ -242,9 +207,10 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     }
 
     private void readSelf(CompoundTag compound, HolderLookup.Provider provider) {
-        parts = compound.read("Parts", PARTS_CODEC).orElseGet(ConcurrentHashMap::new);
-        drop = compound.read("Drop", ItemStackSerializer.CODEC.codec()).orElse(ItemStack.EMPTY);
-        owner = compound.read("Owner", OptionalCompoundSerializer.from(PlayerHandle.CODEC)).flatMap(it -> it);
+        parts = compound.read(PostData.CODEC)
+            .map(d -> new ConcurrentHashMap(d.parts()))
+            .orElseGet(ConcurrentHashMap::new);
+        owner = compound.read(Codec.optionalField("Owner", PlayerHandle.CODEC, true)).flatMap(it -> it);
         if (parts.isEmpty())
             parts.put(UUID.randomUUID(), new BlockPartInstance(new PostBlockPart(modelType.postTexture), Vector3.ZERO));
         Runnable init = () -> {

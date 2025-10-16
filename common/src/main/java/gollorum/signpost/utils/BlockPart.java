@@ -15,9 +15,12 @@ import java.util.Collection;
 
 public interface BlockPart<T extends BlockPart<T>> extends Interactable {
 
-    MapCodec<BlockPart> CODEC = BlockPartMetadata.CODEC.<BlockPart>dispatchMap(
-        BlockPart::getMeta,
-        BlockPartMetadata::codec);
+    static MapCodec<BlockPart> codec(int version) {
+        return BlockPartMetadata.CODEC.<BlockPart>dispatchMap(
+            BlockPart::getMeta,
+            bpm -> (MapCodec<? extends BlockPart>) bpm.codec().apply(version)
+        );
+    }
 
     StreamCodec<RegistryFriendlyByteBuf, BlockPart> STREAM_CODEC = BlockPartMetadata.STREAM_CODEC.<BlockPart>dispatch(
         BlockPart::getMeta,

@@ -27,8 +27,8 @@ public class SmallShortSignBlockPart extends SignBlockPart<SmallShortSignBlockPa
 
     public static final BlockPartMetadata<SmallShortSignBlockPart> METADATA = new BlockPartMetadata<>(
         "small_short_sign",
-        RecordCodecBuilder.mapCodec(i -> i.group(
-            CoreData.CODEC.fieldOf("CoreData").forGetter(sign -> sign.coreData),
+        version -> RecordCodecBuilder.mapCodec(i -> i.group(
+            CoreData.codec(version).fieldOf("CoreData").forGetter(sign -> sign.coreData),
             NameProvider.CODEC.fieldOf("Text").forGetter(sign -> sign.text)
         ).apply(i, SmallShortSignBlockPart::new)),
         StreamCodec.composite(
@@ -58,7 +58,7 @@ public class SmallShortSignBlockPart extends SignBlockPart<SmallShortSignBlockPa
         Optional<Overlay> overlay,
         int color,
         Optional<WaystoneHandle> destination,
-        ItemStack itemToDropOnBreak,
+        Optional<ItemStack> itemToDropOnBreak,
         PostBlock.ModelType modelType,
         boolean isLocked,
         boolean isMarkedForGeneration

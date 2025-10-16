@@ -7,22 +7,24 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
+import java.util.function.Function;
+
 public record BlockPartMetadata<T extends BlockPart<T>>(
     String identifier,
-    MapCodec<T> codec,
+    Function<Integer, MapCodec<T>> codec,
     StreamCodec<RegistryFriendlyByteBuf, T> streamCodec,
     Class<T> targetClass
 ) {
 
     public static final Codec<BlockPartMetadata> CODEC = Codec.STRING.xmap(
-        PostTile.partsMetadata::get,
+        key -> PostTile.partsMetadata.get(key),
         BlockPartMetadata::identifier
     );
 
     public static final StreamCodec<RegistryFriendlyByteBuf, BlockPartMetadata> STREAM_CODEC = ByteBufCodecs.STRING_UTF8
         .<RegistryFriendlyByteBuf>mapStream(it -> it)
         .map(
-            PostTile.partsMetadata::get,
+            key -> PostTile.partsMetadata.get(key),
             BlockPartMetadata::identifier
         );
 

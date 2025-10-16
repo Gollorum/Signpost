@@ -27,8 +27,8 @@ public class LargeSignBlockPart extends SignBlockPart<LargeSignBlockPart> {
 
     public static final BlockPartMetadata<LargeSignBlockPart> METADATA = new BlockPartMetadata<>(
         "large_sign",
-        RecordCodecBuilder.mapCodec(i -> i.group(
-            CoreData.CODEC.fieldOf("CoreData").forGetter(sign -> sign.coreData),
+        version -> RecordCodecBuilder.mapCodec(i -> i.group(
+            CoreData.codec(version).fieldOf("CoreData").forGetter(sign -> sign.coreData),
             NameProvider.CODEC.fieldOf("Text0").forGetter(sign -> sign.text[0]),
             NameProvider.CODEC.fieldOf("Text1").forGetter(sign -> sign.text[1]),
             NameProvider.CODEC.fieldOf("Text2").forGetter(sign -> sign.text[2]),
@@ -75,7 +75,7 @@ public class LargeSignBlockPart extends SignBlockPart<LargeSignBlockPart> {
         Optional<Overlay> overlay,
         int color,
         Optional<WaystoneHandle> destination,
-        ItemStack itemToDropOnBreak,
+        Optional<ItemStack> itemToDropOnBreak,
         PostBlock.ModelType modelType,
         boolean isLocked,
         boolean isMarkedForGeneration

@@ -44,7 +44,7 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
 
     public static final BlockPartMetadata<PostBlockPart> METADATA = new BlockPartMetadata<>(
         "Post",
-        Texture.CODEC.fieldOf("texture").xmap(PostBlockPart::new, PostBlockPart::getTexture),
+        version -> Texture.codec(version).fieldOf("texture").xmap(PostBlockPart::new, PostBlockPart::getTexture),
         Texture.STREAM_CODEC.<RegistryFriendlyByteBuf>mapStream(it -> it).map(PostBlockPart::new, PostBlockPart::getTexture),
         PostBlockPart.class
     );
@@ -103,7 +103,7 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
                 info.tile,
                 PostBlock.ModelType.from(info.player.getItemInHand(info.hand).getItem(), info.player.registryAccess()).get(),
                 info.traceResult.hitPos,
-                new ItemStack(heldItem.getItem(), 1)
+                Optional.of(new ItemStack(heldItem.getItem(), 1))
             );
         }
         return InteractionResult.Accepted;

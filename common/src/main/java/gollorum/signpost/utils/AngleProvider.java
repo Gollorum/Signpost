@@ -1,6 +1,7 @@
 package gollorum.signpost.utils;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.utils.math.Angle;
 import io.netty.buffer.ByteBuf;
@@ -19,6 +20,12 @@ public interface AngleProvider {
         public static final StreamCodec<ByteBuf, Literal> STREAM_CODEC = Angle.STREAM_CODEC
             .map(Literal::new, Literal::angle);
 
+        public static final MapCodec<AngleProvider> MAP_CODEC =
+            Angle.CODEC.fieldOf("angle").xmap(
+                Literal::new,
+                AngleProvider::get
+            );
+
         @Override
         public Angle get() { return angle; }
 
@@ -29,6 +36,12 @@ public interface AngleProvider {
     public static final class WaystoneTarget implements AngleProvider {
         public static final StreamCodec<ByteBuf, WaystoneTarget> STREAM_CODEC = Angle.STREAM_CODEC
             .map(WaystoneTarget::new, WaystoneTarget::get);
+
+        public static final MapCodec<AngleProvider> MAP_CODEC =
+            Angle.CODEC.fieldOf("cachedAngle").xmap(
+                WaystoneTarget::new,
+                AngleProvider::get
+            );
 
         private Angle cachedAngle;
         public void setCachedAngle(Angle cachedAngle) { this.cachedAngle = cachedAngle; }
@@ -44,18 +57,14 @@ public interface AngleProvider {
         public String getTypeTag() { return "waystone"; }
     }
 
-    public static final Codec<AngleProvider> CODEC = RecordCodecBuilder.create(i -> i.group(
-        com.mojang.serialization.Codec.STRING.fieldOf("type").forGetter(AngleProvider::getTypeTag),
-        Angle.CODEC.optionalFieldOf("angle").forGetter(a -> a instanceof Literal(Angle angle) ? Optional.of(angle) : Optional.empty()),
-        Angle.CODEC.optionalFieldOf("cachedAngle").forGetter(a -> a instanceof WaystoneTarget w ? Optional.of(w.get()) : Optional.empty()),
-        com.mojang.serialization.Codec.FLOAT.optionalFieldOf("Radians").forGetter(a -> Optional.empty())
-    ).apply(i, (type, literal, waystone, legacyLiteral) ->
-        switch (type) {
-            case "literal" -> new Literal(literal.get());
-            case "waystone" -> new WaystoneTarget(waystone.get());
-            default -> new Literal(Angle.fromRadians(legacyLiteral.get()));
+    public static final MapCodec<AngleProvider> MAP_CODEC = Codec.STRING.dispatchMap(
+        "type", AngleProvider::getTypeTag,
+        type -> switch (type) {
+            case "literal" -> Literal.MAP_CODEC;
+            case "waystone" -> WaystoneTarget.MAP_CODEC;
+            default -> Angle.MAP_CODEC.xmap(Literal::new, AngleProvider::get);
         }
-    ));
+    );
 
     public static final StreamCodec<ByteBuf, AngleProvider> STREAM_CODEC =
         ByteBufCodecs.STRING_UTF8.dispatch(AngleProvider::getTypeTag,

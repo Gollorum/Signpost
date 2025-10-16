@@ -1,6 +1,7 @@
 package gollorum.signpost.blockpartdata.types;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.*;
 import gollorum.signpost.blockpartdata.Overlay;
@@ -25,18 +26,16 @@ import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.TransformedBox;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.ItemStackSerializer;
-import gollorum.signpost.utils.serialization.OptionalCompoundSerializer;
+import gollorum.signpost.utils.serialization.OptionalSerializerV1;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
@@ -55,7 +54,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
         public int color;
         public Optional<WaystoneHandle> destination;
         public PostBlock.ModelType modelType;
-        public ItemStack itemToDropOnBreak;
+        public Optional<ItemStack> itemToDropOnBreak;
         public boolean isLocked;
 
         // If true, the sign will not be rendered unless the config option is active
@@ -71,7 +70,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
             int color,
             Optional<WaystoneHandle> destination,
             PostBlock.ModelType modelType,
-            ItemStack itemToDropOnBreak,
+            Optional<ItemStack> itemToDropOnBreak,
             boolean isLocked,
             boolean isMarkedForGeneration
         ) {
@@ -94,19 +93,33 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
             );
         }
 
-        public static final Codec<CoreData> CODEC = RecordCodecBuilder.create(i -> i.group(
-            AngleProvider.CODEC.fieldOf("Angle").forGetter(coreData -> coreData.angleProvider),
-            Codec.BOOL.fieldOf("Flip").forGetter(coreData -> coreData.flip),
-            Texture.CODEC.fieldOf("Texture").forGetter(coreData -> coreData.mainTexture),
-            Texture.CODEC.fieldOf("TextureDark").forGetter(coreData -> coreData.secondaryTexture),
-            OptionalCompoundSerializer.from(Overlay.CODEC).fieldOf("Overlay").forGetter(coreData -> coreData.overlay),
-            Codec.INT.fieldOf("Color").forGetter(coreData -> coreData.color),
-            WaystoneHandle.MAP_CODEC.codec().optionalFieldOf("Destination").forGetter(coreData -> coreData.destination),
-            PostBlock.ModelType.CODEC.fieldOf("ModelType").forGetter(coreData -> coreData.modelType),
-            ItemStackSerializer.CODEC.fieldOf("ItemToDropOnBreak").forGetter(coreData -> coreData.itemToDropOnBreak),
-            Codec.BOOL.fieldOf("IsLocked").forGetter(coreData -> coreData.isLocked),
-            Codec.BOOL.fieldOf("IsMarkedForGeneration").forGetter(coreData -> coreData.isMarkedForGeneration)
-        ).apply(i, CoreData::new));
+        public static Codec<CoreData> codec(int version) {
+            var optionalOverlayCodec = version < 2
+                ? OptionalSerializerV1.of(Overlay.CODEC).fieldOf("Overlay")
+                : Codec.optionalField("Overlay", Overlay.CODEC, true);
+            var optionalDestinationCodec = version < 2
+                ? Codec.BOOL.<Optional<WaystoneHandle>>dispatch(
+                    "IsPresent",
+                    Optional::isPresent,
+                    isPresent -> isPresent
+                        ? WaystoneHandle.MAP_CODEC.xmap(Optional::of, Optional::get)
+                        : MapCodec.unit(Optional.empty())
+                ).fieldOf("Destination")
+                : WaystoneHandle.MAP_CODEC.codec().optionalFieldOf("Destination");
+            return RecordCodecBuilder.create(i -> i.group(
+                AngleProvider.MAP_CODEC.fieldOf("Angle").forGetter(coreData -> coreData.angleProvider),
+                Codec.BOOL.fieldOf("Flip").forGetter(coreData -> coreData.flip),
+                Texture.codec(version).fieldOf("Texture").forGetter(coreData -> coreData.mainTexture),
+                Texture.codec(version).fieldOf("TextureDark").forGetter(coreData -> coreData.secondaryTexture),
+                optionalOverlayCodec.forGetter(coreData -> coreData.overlay),
+                Codec.INT.fieldOf("Color").forGetter(coreData -> coreData.color),
+                optionalDestinationCodec.forGetter(coreData -> coreData.destination),
+                PostBlock.ModelType.CODEC.fieldOf("ModelType").forGetter(coreData -> coreData.modelType),
+                Codec.optionalField("ItemToDropOnBreak", ItemStackSerializer.CODEC.codec(), true).forGetter(coreData -> coreData.itemToDropOnBreak),
+                Codec.BOOL.fieldOf("IsLocked").forGetter(coreData -> coreData.isLocked),
+                Codec.BOOL.fieldOf("IsMarkedForGeneration").forGetter(coreData -> coreData.isMarkedForGeneration)
+            ).apply(i, CoreData::new));
+        }
 
         public static final StreamCodec<RegistryFriendlyByteBuf, CoreData> STREAM_CODEC = StreamCodec.composite(
             AngleProvider.STREAM_CODEC, coreData -> coreData.angleProvider,
@@ -120,7 +133,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
             ),
             ByteBufCodecs.optional(WaystoneHandle.STREAM_CODEC), coreData -> coreData.destination,
             PostBlock.ModelType.STREAM_CODEC, coreData -> coreData.modelType,
-            ItemStack.OPTIONAL_STREAM_CODEC, coreData -> coreData.itemToDropOnBreak,
+            ByteBufCodecs.optional(ItemStack.OPTIONAL_STREAM_CODEC), coreData -> coreData.itemToDropOnBreak,
             ByteBufCodecs.BOOL, coreData -> coreData.isLocked,
             ByteBufCodecs.BOOL, coreData -> coreData.isMarkedForGeneration,
             (angleProvider, flip, txts, overlayAndColor, destination, modelType, itemToDropOnBreak, isLocked, isMarkedForGeneration) ->
@@ -189,7 +202,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
         coreData.destination = destination;
     }
 
-    public void setItemToDropOnBreak(ItemStack itemToDropOnBreak) {
+    public void setItemToDropOnBreak(Optional<ItemStack> itemToDropOnBreak) {
         coreData.itemToDropOnBreak = itemToDropOnBreak;
     }
 
@@ -197,7 +210,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
         coreData.modelType = modelType;
     }
 
-    public ItemStack getItemToDropOnBreak() { return coreData.itemToDropOnBreak; }
+    public Optional<ItemStack> getItemToDropOnBreak() { return coreData.itemToDropOnBreak; }
 
     public boolean isFlipped() { return coreData.flip; }
 
@@ -325,7 +338,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
 
     @Override
     public Collection<ItemStack> getDrops() {
-        return Collections.singleton(coreData.itemToDropOnBreak);
+        return coreData.itemToDropOnBreak.stream().toList();
     }
 
     public AngleProvider getAngle() {
