@@ -39,7 +39,7 @@ public record Texture(ResourceLocation location, ResourceLocation atlasLocation,
 
     public static final Codec<Texture> CODEC_V1 = RecordCodecBuilder.create(i -> i.group(
         ResourceLocation.CODEC.fieldOf("ResourceLocation").forGetter(Texture::location),
-        OptionalSerializerV1.of(Tint.Serialization.CODEC).fieldOf("Tint").forGetter(Texture::tint)
+        OptionalSerializerV1.of(Tint.Serialization.CODEC).codec().fieldOf("Tint").forGetter(Texture::tint)
     ).apply(i, (loc, tint) -> new Texture(loc, Optional.empty(), tint)));
 
     public static final Codec<Texture> CODEC_V2 = RecordCodecBuilder.create(i -> i.group(

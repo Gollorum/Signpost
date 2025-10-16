@@ -23,7 +23,7 @@ public record BlockPartInstance(BlockPart blockPart, Vector3 offset) {
     }
 
     public static final Codec<BlockPartInstance> CODEC_V2 = RecordCodecBuilder.create(i -> i.group(
-        BlockPart.codec(2).forGetter(BlockPartInstance::blockPart),
+        BlockPart.CODEC_V2.forGetter(BlockPartInstance::blockPart),
         Vector3.CODEC.fieldOf("Offset").forGetter(BlockPartInstance::offset)
     ).apply(i, BlockPartInstance::new));
 

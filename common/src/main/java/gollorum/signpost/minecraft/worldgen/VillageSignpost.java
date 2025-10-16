@@ -247,7 +247,7 @@ public class VillageSignpost {
 
 	private static boolean shouldFlip(Direction facing, Angle signRotation) {
 		float degrees = signRotation.add(Angle.fromDegrees(facing.toYRot())).normalized().degrees();
-		return degrees < -90 || degrees > 90;
+		return degrees > -90 && degrees < 90;
 	}
 
 	private static Optional<Overlay> overlayFor(ServerLevel world, BlockPos pos) {
