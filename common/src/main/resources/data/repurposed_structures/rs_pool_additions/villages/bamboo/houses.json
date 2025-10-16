@@ -1,12 +1,12 @@
 {
-  "name": "repurposed_structures:villages/birch/houses",
-  "fallback": "repurposed_structures:villages/birch/terminators",
+  "target_pool": "repurposed_structures:villages/bamboo/houses",
+  "fallback": "repurposed_structures:villages/bamboo/terminators",
   "elements": [
     {
       "weight": 3,
       "element": {
-        "location": "signpost:village/birch/signpost",
-        "processors": "repurposed_structures:villages/birch/path_randomizer",
+        "location": "signpost:village/bamboo/signpost",
+        "processors": "repurposed_structures:villages/bamboo/path_randomizer",
         "projection": "terrain_matching",
         "element_type": "minecraft:legacy_single_pool_element"
       },
@@ -16,7 +16,7 @@
       "weight": 1,
       "element": {
         "location": "signpost:village/common/waystone",
-        "processors": "repurposed_structures:villages/birch/path_randomizer",
+        "processors": "repurposed_structures:villages/bamboo/path_randomizer",
         "projection": "rigid",
         "element_type": "minecraft:legacy_single_pool_element"
       },

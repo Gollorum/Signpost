@@ -23,6 +23,11 @@ neoForge {
         client {
             client()
         }
+        clientWithMods {
+            client() // same setup as normal client
+            ideName = "runClient with Mods (${project.path})"
+            gameDirectory = project.file('run_with_mods')
+        }
         data {
             clientData()
 
@@ -47,6 +52,17 @@ sourceSets.main.resources.srcDirs (
     '../common/src/generated/resources',
     'src/generated/resources'
 )
+
+repositories {
+    maven {
+        url "https://nexus.resourcefulbees.com/repository/telepathicgrunt/"
+    }
+}
+
+dependencies {
+    compileOnly "com.telepathicgrunt:RepurposedStructures:7.5.19+1.21.5-neoforge"
+}
+
 idea {
     module {
         downloadSources = true

@@ -1,12 +1,12 @@
 {
-  "name": "repurposed_structures:villages/dark_forest/houses",
-  "fallback": "repurposed_structures:villages/dark_forest/terminators",
+  "target_pool": "repurposed_structures:villages/giant_taiga/houses",
+  "fallback": "repurposed_structures:villages/giant_taiga/terminators",
   "elements": [
     {
       "weight": 3,
       "element": {
-        "location": "signpost:village/dark_forest/signpost",
-        "processors": "repurposed_structures:villages/dark_forest/path_randomizer",
+        "location": "signpost:village/giant_taiga/signpost",
+        "processors": "repurposed_structures:villages/giant_taiga/path_randomizer",
         "projection": "terrain_matching",
         "element_type": "minecraft:legacy_single_pool_element"
       },
@@ -16,7 +16,7 @@
       "weight": 1,
       "element": {
         "location": "signpost:village/common/waystone",
-        "processors": "repurposed_structures:villages/dark_forest/path_randomizer",
+        "processors": "repurposed_structures:villages/giant_taiga/path_randomizer",
         "projection": "rigid",
         "element_type": "minecraft:legacy_single_pool_element"
       },

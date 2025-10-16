@@ -15,8 +15,8 @@ public class Compat {
 //        if(Services.PLATFORM.isModLoaded.isLoaded(Compat.AntiqueAtlasId))
 //            AntiqueAtlasAdapter.register();
 
-//        if(Services.PLATFORM.isModLoaded(Compat.RepurposedStructuresId))
-//            RepurposedStructuresAdapter.register();
+        if(Services.PLATFORM.isModLoaded(Compat.RepurposedStructuresId))
+            RepurposedStructuresAdapter.register();
     }
 
 }

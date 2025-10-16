@@ -1,12 +1,12 @@
 {
-  "name": "repurposed_structures:villages/mountains/houses",
-  "fallback": "repurposed_structures:villages/mountains/terminators",
+  "target_pool": "repurposed_structures:villages/oak/houses",
+  "fallback": "repurposed_structures:villages/oak/terminators",
   "elements": [
     {
       "weight": 3,
       "element": {
-        "location": "signpost:village/mountains/signpost",
-        "processors": "repurposed_structures:villages/mountains/path_randomizer",
+        "location": "signpost:village/plains/signpost",
+        "processors": "repurposed_structures:villages/oak/path_randomizer",
         "projection": "terrain_matching",
         "element_type": "minecraft:legacy_single_pool_element"
       },
@@ -15,8 +15,8 @@
     {
       "weight": 1,
       "element": {
-        "location": "signpost:village/mountains/waystone",
-        "processors": "repurposed_structures:villages/mountains/path_randomizer",
+        "location": "signpost:village/common/waystone",
+        "processors": "repurposed_structures:villages/oak/path_randomizer",
         "projection": "rigid",
         "element_type": "minecraft:legacy_single_pool_element"
       },

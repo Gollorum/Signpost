@@ -21,6 +21,7 @@ build
 # other
 eclipse
 run
+run_with_mods
 runs
 
 **/.cache/
