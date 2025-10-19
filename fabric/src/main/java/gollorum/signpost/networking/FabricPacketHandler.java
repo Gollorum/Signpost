@@ -2,19 +2,16 @@ package gollorum.signpost.networking;
 
 import gollorum.signpost.Signpost;
 import gollorum.signpost.utils.Tuple;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlerEvent;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
-import net.neoforged.neoforge.network.registration.IPayloadRegistrar;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,78 +19,77 @@ import java.util.function.Supplier;
 
 public class FabricPacketHandler extends PacketHandler {
 
-    private IPayloadRegistrar registrar;
     private final Map<Class<?>, Tuple<Event<?>, ResourceLocation>> events = new HashMap<>();
 
-    public static void initialize(IEventBus bus) {
-        bus.register(FabricPacketHandler.class);
+    public static void initialize() {
         instance = new FabricPacketHandler();
-    }
-
-    @SubscribeEvent
-    public static void register(final RegisterPayloadHandlerEvent event) {
-        final IPayloadRegistrar registrar = event.registrar(Signpost.MOD_ID);
-        ((FabricPacketHandler) instance).registrar = registrar;
         instance.init();
     }
 
     @Override
     public <T> void register(Event<T> event, ResourceLocation id){
         events.put(event.getMessageClass(), new Tuple<>(event, id));
-        registrar.common(id, buffer -> {
-            var message = event.decode(buffer, );
-            return new Payload<>(id, event, message);
-        }, FabricPacketHandler::handle);
+        var type = new CustomPacketPayload.Type<Payload<T>>(id);
+        PayloadTypeRegistry.playC2S().register(
+            type,
+            event.codec().map(
+                message -> new Payload<T>(type, event, message),
+                payload -> payload.message
+            )
+        );
+
+        // TODO: Is that legal on servers?
+        ClientPlayNetworking.registerGlobalReceiver(type, FabricPacketHandler::handleOnClient);
+        ServerPlayNetworking.registerGlobalReceiver(type, FabricPacketHandler::handleOnServer);
     }
 
-    private static <T> void handle(Payload<T> payload, IPayloadContext context) {
-        context.workHandler().submitAsync(() ->
-            payload.event.handle(payload.message, context.flow().isClientbound()
-                ? context.player()
-                    .<Context>map(Context.ClientFromClient::new)
-                    .orElseGet(Context.Client::new)
-                : new Context.Server((ServerPlayer) context.player().get())));
+    private static <T> void handleOnClient(Payload<T> payload, ClientPlayNetworking.Context context) {
+        payload.event.handle(payload.message, new Context.Client());
+    }
+    private static <T> void handleOnServer(Payload<T> payload, ServerPlayNetworking.Context context) {
+        payload.event.handle(payload.message, new Context.Server(context.player()));
     }
 
     private <T> Payload<T> toPayload(T message) {
         var tuple = events.get(message.getClass());
-        return new Payload<>(tuple._2(), (Event<T>) tuple._1(), message);
+        return new Payload<>(new CustomPacketPayload.Type<>(tuple._2()), (Event<T>) tuple._1(), message);
     }
 
     @Override
     public <T> void sendToServer(T message) {
-        PacketDistributor.SERVER.noArg().send(toPayload(message));
+        ClientPlayNetworking.send(toPayload(message));
     }
 
     @Override
     public <T> void sendToPlayer(ServerPlayer target, T message) {
-        PacketDistributor.PLAYER.with(target).send(toPayload(message));
+        ServerPlayNetworking.send(target, toPayload(message));
     }
 
     @Override
     public <T> void sendToTracing(ServerLevel world, BlockPos pos, Supplier<T> t) {
         if(world == null) Signpost.LOGGER.warn("No world to notify mutation");
         else if(pos == null) Signpost.LOGGER.warn("No position to notify mutation");
-        else PacketDistributor.TRACKING_CHUNK.with(world.getChunkAt(pos)).send(toPayload(t.get()));
+        else {
+            var payload = toPayload(t.get());
+            for(ServerPlayer player : world.getChunkSource().chunkMap.getPlayers(new ChunkPos(pos), false)) {
+                ServerPlayNetworking.send(player, payload);
+            }
+        }
     }
 
     @Override
     public <T> void sendToTracing(BlockEntity tile, Supplier<T> t) {
-        sendToTracing(tile.getLevel(), tile.getBlockPos(), t);
+        sendToTracing((ServerLevel) tile.getLevel(), tile.getBlockPos(), t);
     }
 
     @Override
     public <T> void sendToAll(T message) {
-        PacketDistributor.ALL.noArg().send(toPayload(message));
+        assert Signpost.getServerType().isServer;
+        Signpost.getServerInstance().getPlayerList().broadcastAll(
+            ServerPlayNetworking.createS2CPacket(toPayload(message))
+        );
     }
 
-    private record Payload<T>(ResourceLocation id, Event<T> event, T message) implements CustomPacketPayload {
-
-        @Override
-        public void write(FriendlyByteBuf buffer) {
-            event.encode(buffer, message, );
-        }
-
-    }
+    private record Payload<T>(Type<Payload<T>> type, PacketHandler.Event<T> event, T message) implements CustomPacketPayload { }
 
 }

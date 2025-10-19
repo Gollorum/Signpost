@@ -4,6 +4,7 @@ import gollorum.signpost.compat.Compat;
 import gollorum.signpost.compat.ExternalWaystoneLibrary;
 import gollorum.signpost.config.Config;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.loot.LootEntries;
 import gollorum.signpost.minecraft.rendering.PostRenderer;
 import gollorum.signpost.minecraft.worldgen.JigsawDeserializers;
 import gollorum.signpost.networking.FabricPacketHandler;
@@ -20,7 +21,11 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -44,13 +49,8 @@ public class SignpostFabric implements ModInitializer {
         RecipeRegistry.register();
         TileEntityRegistry.register();
         CreativeModeTabRegistry.register();
-        LootProviderRegistry.register();
-        LootItemConditionRegistry.register();
-        MiscRegistry.register();
-        JigsawDeserializers.register();
-
         WaystoneDiscoveryEventListener.register();
-        BlockEventListener.register();
+
         FabricPacketHandler.initialize();
         PacketHandler.onInitializeDo(e -> {
             PacketHandler.getInstance().register(new JoinServerEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "join_server"));
@@ -58,7 +58,17 @@ public class SignpostFabric implements ModInitializer {
         });
 
         Delay.INSTANCE.register();
+
         Config.INSTANCE.register();
+
+        LootProviderRegistry.register();
+        LootItemConditionRegistry.register();
+
+        MiscRegistry.register();
+        JigsawDeserializers.register((loc, elem) ->
+            Registry.register(BuiltInRegistries.STRUCTURE_POOL_ELEMENT, loc, elem));
+        LootEntries.register((loc, elem) ->
+            Registry.register(BuiltInRegistries.LOOT_POOL_ENTRY_TYPE, loc, elem));
 
         Compat.register();
 
@@ -68,6 +78,7 @@ public class SignpostFabric implements ModInitializer {
 //                AntiqueAtlasAdapter.registerNetworkPacket();
 
         var events = new FabricEvents();
+
         ServerLifecycleEvents.SERVER_STARTING.register(events::serverAboutToStart);
         ServerLifecycleEvents.SERVER_STOPPED.register(events::onServerStopped);
         ServerPlayConnectionEvents.JOIN.register(events::joinServer);
@@ -86,8 +97,6 @@ public class SignpostFabric implements ModInitializer {
 
         public void serverAboutToStart(MinecraftServer server) {
             serverSetter.accept(server);
-            WaystoneLibrary.initialize();
-            BlockRestrictions.initialize();
 //            VillageRegistry.register(e);
             Villages.instance.initialize(server.registryAccess());
             new WaystoneDiscoveryEventListener().initialize();
@@ -97,7 +106,7 @@ public class SignpostFabric implements ModInitializer {
             if(Signpost.getServerInstance().isDedicatedServer())
                 PacketHandler.getInstance().sendToPlayer(
                     handler.getPlayer(),
-                    new JoinServerEvent.Package()
+                    JoinServerEvent.Package.INSTANCE
                 );
         }
 
@@ -107,34 +116,33 @@ public class SignpostFabric implements ModInitializer {
 
         public void onWorldLoad(MinecraftServer server, ServerLevel world) {
             if(world.dimension().equals(Level.OVERWORLD)) {
-                if(!WaystoneLibrary.getInstance().hasStorageBeenSetup())
-                    WaystoneLibrary.getInstance().setupStorage(world);
-                if(!BlockRestrictions.getInstance().hasStorageBeenSetup())
-                    BlockRestrictions.getInstance().setupStorage(world);
+                WaystoneLibrary.initializeServer(world);
             }
         }
     }
 
     private static final class JoinServerEvent implements PacketHandler.Event<JoinServerEvent.Package> {
 
-        public static final class Package {}
+        public static final class Package {
+
+            public static final Package INSTANCE = new Package();
+
+            public static final StreamCodec<RegistryFriendlyByteBuf, Package> CODEC = StreamCodec.unit(INSTANCE);
+        }
+
+        @Override
+        public StreamCodec<RegistryFriendlyByteBuf, Package> codec() {
+            return Package.CODEC;
+        }
 
         @Override
         public Class<Package> getMessageClass() { return Package.class; }
 
         @Override
-        public void encode(RegistryFriendlyByteBuf buffer, Package message) { }
-
-        @Override
-        public Package decode(RegistryFriendlyByteBuf buffer) { return new Package(); }
-
-        @Override
         public void handle(
             Package message, PacketHandler.Context context
         ) {
-            WaystoneLibrary.initialize();
+            WaystoneLibrary.initializeClient();
         }
-
     }
-
 }

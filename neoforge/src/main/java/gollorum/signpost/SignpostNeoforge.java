@@ -53,7 +53,6 @@ public class SignpostNeoforge {
         DataComponentsRegistry.register(modBus);
         RecipeRegistry.register(modBus);
         TileEntityRegistry.register(modBus);
-        BlockEventListener.register(forgeBus);
         CreativeModeTabRegistry.register(modBus);
         WaystoneDiscoveryEventListener.register(forgeBus);
 
