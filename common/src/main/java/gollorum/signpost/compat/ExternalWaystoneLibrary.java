@@ -1,12 +1,9 @@
 package gollorum.signpost.compat;
 
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import gollorum.signpost.WaystoneHandle;
 import gollorum.signpost.utils.EventDispatcher;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.player.Player;
@@ -34,12 +31,16 @@ public class ExternalWaystoneLibrary {
     private final List<Adapter> adapters = new ArrayList<>();
 
     public Optional<MapCodec<? extends WaystoneHandle>> getCodec(String type) {
-        for(Adapter adapter : adapters) if(adapter.typeTag().equals(type)) return Optional.of(adapter.getCodec());
+        for(Adapter adapter : adapters)
+            if(adapter.typeTag().equals(type))
+                return Optional.of(adapter.getCodec());
         return Optional.empty();
     }
 
     public Optional<StreamCodec<ByteBuf, ? extends WaystoneHandle>> getStreamCodec(String type) {
-        for(Adapter adapter : adapters) if(adapter.typeTag().equals(type)) return Optional.of(adapter.getStreamCodec());
+        for(Adapter adapter : adapters)
+            if(adapter.typeTag().equals(type))
+                return Optional.of(adapter.getStreamCodec());
         return Optional.empty();
     }
 

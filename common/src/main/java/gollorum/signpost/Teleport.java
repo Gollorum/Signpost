@@ -85,7 +85,7 @@ public class Teleport {
             Entity toTeleport = player;
             if(IConfig.getInstance().getServer().teleport().allowVehicle()) {
                 while(toTeleport.isPassenger()) toTeleport = toTeleport.getVehicle();
-            }
+            } else toTeleport.unRide();
             TeleportNode.create(toTeleport).teleportWithChildren(world, location, yaw, pitch);
 
             final int steps = 6;

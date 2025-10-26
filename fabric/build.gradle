@@ -7,9 +7,12 @@ repositories {
     maven { url "https://maven.terraformersmc.com/releases/" }
 
     maven {
-        name = "FelNull Maven"
-        url = "https://maven.felnull.dev"
+        url = uri("https://maven.twelveiterations.com/repository/maven-public/")
+        content {
+            includeGroup "net.blay09.mods"
+        }
     }
+
 }
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
@@ -26,6 +29,8 @@ dependencies {
     }
     modApi "com.terraformersmc:modmenu:14.0.0-rc.2"
 
+    modCompileOnly "net.blay09.mods:balm-fabric:21.5.25+1.21.5"
+    modCompileOnly "net.blay09.mods:waystones-fabric:21.5.11+1.21.5"
 }
 
 loom {
@@ -43,11 +48,23 @@ loom {
             ideConfigGenerated(true)
             runDir('runs/client')
         }
+        clientWithMods {
+            client()
+            setConfigName('Fabric Client With Mods')
+            ideConfigGenerated(true)
+            runDir('runs/client_with_mods')
+        }
         server {
             server()
             setConfigName('Fabric Server')
             ideConfigGenerated(true)
             runDir('runs/server')
+        }
+        serverWithMods {
+            server()
+            setConfigName('Fabric Server With Mods')
+            ideConfigGenerated(true)
+            runDir('runs/server_with_mods')
         }
     }
 }

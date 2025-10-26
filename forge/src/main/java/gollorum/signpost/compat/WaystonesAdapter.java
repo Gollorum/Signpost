@@ -85,7 +85,7 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
 
     @Override
     public MapCodec<? extends WaystoneHandle> getCodec() {
-        return ExternalWaystone.Handle.MAP_CODEC;
+        return Handle.CODEC;
     }
 
     @Override
@@ -171,7 +171,7 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
 
     public static final class RequestEvent implements PacketHandler.Event.ForServer<RequestEvent> {
         public static final RequestEvent INSTANCE = new RequestEvent();
-        
+
         @Override
         public StreamCodec<RegistryFriendlyByteBuf, RequestEvent> codec() {
             return StreamCodec.unit(RequestEvent.INSTANCE);
