@@ -44,10 +44,32 @@ minecraft {
             }
         }
 
+        client {
+            workingDirectory file('runs/client_with_mods')
+            ideaModule "${rootProject.name}.${project.name}.main"
+            taskName 'Client With Mods'
+            mods {
+                modClientRun {
+                    source sourceSets.main
+                }
+            }
+        }
+
         server {
             workingDirectory file('runs/server')
             ideaModule "${rootProject.name}.${project.name}.main"
             taskName 'Server'
+            mods {
+                modServerRun {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        server {
+            workingDirectory file('runs/server_with_mods')
+            ideaModule "${rootProject.name}.${project.name}.main"
+            taskName 'Server With Mods'
             mods {
                 modServerRun {
                     source sourceSets.main
@@ -76,11 +98,10 @@ sourceSets.main.resources.srcDirs (
 
 repositories {
     maven {
-        url 'https://www.cursemaven.com'
-        // FG4: It's recommended to uncomment the following block
-        // content {
-        //     includeGroup "curse.maven"
-        // }
+        url "https://maven.twelveiterations.com/repository/maven-public/"
+        content {
+            includeGroup "net.blay09.mods"
+        }
     }
 }
 
@@ -91,8 +112,8 @@ dependencies {
     // Forge's hack fix
     implementation('net.sf.jopt-simple:jopt-simple:5.0.4') { version { strictly '5.0.4' } }
 
-    compileOnly "curse.maven:balm-531761:6588903"
-    compileOnly "curse.maven:waystones-245755:6596138"
+    compileOnly "net.blay09.mods:balm-forge:21.5.25+1.21.5"
+    compileOnly "net.blay09.mods:waystones-forge:21.5.11+1.21.5"
 //    compileOnly fg.deobf("curse.maven:repurposed-structures-368293:5150178")
 }
 

@@ -40,6 +40,11 @@ neoForge {
         server {
             server()
         }
+        serverWithMods {
+            server()
+            ideName = "runServer with Mods (${project.path})"
+            gameDirectory = project.file('run_with_mods')
+        }
     }
     mods {
         "${mod_id}" {
@@ -57,10 +62,19 @@ repositories {
     maven {
         url "https://nexus.resourcefulbees.com/repository/telepathicgrunt/"
     }
+    maven {
+        url "https://maven.twelveiterations.com/repository/maven-public/"
+        content {
+            includeGroup "net.blay09.mods"
+        }
+    }
 }
 
 dependencies {
     compileOnly "com.telepathicgrunt:RepurposedStructures:7.5.19+1.21.5-neoforge"
+
+    compileOnly "net.blay09.mods:balm-neoforge:21.5.25+1.21.5"
+    compileOnly "net.blay09.mods:waystones-neoforge:21.5.11+1.21.5"
 }
 
 idea {
