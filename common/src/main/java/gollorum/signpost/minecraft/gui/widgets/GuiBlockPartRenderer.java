@@ -74,7 +74,8 @@ public class GuiBlockPartRenderer extends AbstractWidget {
                             ms,
                             buffer,
                             LightTexture.FULL_BRIGHT,
-                            OverlayTexture.NO_OVERLAY
+                            OverlayTexture.NO_OVERLAY,
+                            t -> RenderType.cutout()
                         );
                     });
                 }

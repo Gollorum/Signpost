@@ -5,12 +5,15 @@ import gollorum.signpost.Signpost;
 import gollorum.signpost.blockpartdata.types.renderers.*;
 import gollorum.signpost.utils.BlockPart;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 public abstract class BlockPartRenderer<T extends BlockPart<T>> {
 
@@ -41,7 +44,8 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
         PoseStack blockToView,
         MultiBufferSource buffer,
         int combinedLights,
-        int combinedOverlay
+        int combinedOverlay,
+        Function<ResourceLocation, RenderType> renderTypeFactory
     ) {
         Optional<BlockPartRenderer<T>> renderer = BlockPartRenderer.getFor((Class<T>) part.getClass());
         if(renderer.isPresent()) {
@@ -52,7 +56,8 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
                 blockToView,
                 buffer,
                 combinedLights,
-                combinedOverlay
+                combinedOverlay,
+                renderTypeFactory
             );
         } else {
             Signpost.LOGGER.error("Block part renderer was not found for " + part.getClass());
@@ -66,7 +71,8 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
         PoseStack blockToView,
         MultiBufferSource buffer,
         int combinedLights,
-        int combinedOverlay
+        int combinedOverlay,
+        Function<ResourceLocation, RenderType> renderTypeFactory
     );
 
 }

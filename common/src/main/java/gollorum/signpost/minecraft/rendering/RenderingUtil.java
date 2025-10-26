@@ -21,20 +21,6 @@ import java.util.function.Function;
 
 public class RenderingUtil {
 
-    public static final ModelPart EMPTY_MODEL;
-    public static final PartDefinition EMPTY_PART;
-    static {
-
-        var meshDefinition = new MeshDefinition();
-        EMPTY_PART = meshDefinition.getRoot();
-        EMPTY_PART.addOrReplaceChild(
-            "waystone",
-            CubeListBuilder.create(),
-            PartPose.ZERO
-        );
-        EMPTY_MODEL = EMPTY_PART.bake(0,0);
-    }
-
     public static void render(
         PoseStack blockToView,
         TexturedModel model,

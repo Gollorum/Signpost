@@ -11,7 +11,10 @@ import gollorum.signpost.minecraft.rendering.TexturedModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
+
+import java.util.function.Function;
 
 public class WaystoneRenderer extends BlockPartRenderer<WaystoneBlockPart> {
 
@@ -24,8 +27,9 @@ public class WaystoneRenderer extends BlockPartRenderer<WaystoneBlockPart> {
 		PoseStack blockToView,
 		MultiBufferSource buffer,
 		int combinedLights,
-		int combinedOverlay
-	) {
+		int combinedOverlay,
+        Function<ResourceLocation, RenderType> renderTypeFactory
+    ) {
 		RenderingUtil.render(
 			blockToView,
 			new TexturedModel(
@@ -36,8 +40,7 @@ public class WaystoneRenderer extends BlockPartRenderer<WaystoneBlockPart> {
 			buffer,
 			combinedLights,
 			combinedOverlay,
-			RenderType::entitySolid
+            renderTypeFactory
 		);
 	}
-
 }

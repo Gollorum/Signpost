@@ -14,10 +14,12 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import org.joml.*;
 
 import java.lang.Math;
+import java.util.function.Function;
 
 public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPartRenderer<T> {
 
@@ -33,7 +35,8 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
         PoseStack blockToView,
         MultiBufferSource buffer,
         int combinedLights,
-        int combinedOverlay
+        int combinedOverlay,
+        Function<ResourceLocation, RenderType> renderTypeFactory
     ) {
         if(sign.isMarkedForGeneration() && !IConfig.IServer.getInstance().worldGen().debugMode()) return;
         RenderingUtil.wrapInMatrixEntry(blockToView, () -> {
@@ -53,7 +56,7 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
                 buffer,
                 combinedLights,
                 combinedOverlay,
-                RenderType::entitySolid
+                renderTypeFactory
             );
             RenderingUtil.render(
                 blockToView,
@@ -65,7 +68,7 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
                 buffer,
                 combinedLights,
                 combinedOverlay,
-                RenderType::entitySolid
+                renderTypeFactory
             );
             sign.getOverlay().ifPresent(o -> {
                 RenderingUtil.render(
@@ -78,7 +81,7 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
                     buffer,
                     combinedLights,
                     combinedOverlay,
-                    RenderType::entityCutout
+                    renderTypeFactory
                 );
             });
         });

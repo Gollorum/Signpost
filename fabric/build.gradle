@@ -22,11 +22,8 @@ dependencies {
     }
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
-    // AutoConfig and Cloth Config for config serialization and GUI
 
-    modApi("me.shedaniel.cloth:cloth-config-fabric:18.0.145") {
-        exclude(group: "net.fabricmc.fabric-api")
-    }
+    modApi "me.shedaniel.cloth:cloth-config-fabric:${cloth_config_version}"
     modApi "com.terraformersmc:modmenu:14.0.0-rc.2"
 
     modCompileOnly "net.blay09.mods:balm-fabric:21.5.25+1.21.5"

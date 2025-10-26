@@ -8,6 +8,7 @@ import gollorum.signpost.mixin.LevelRendererAccessor;
 import gollorum.signpost.utils.BlockPartInstance;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
@@ -60,7 +61,8 @@ public class PostRenderer implements BlockEntityRenderer<PostTile> {
                         matrixStack,
                         shouldUseOriginalBuffer || partsBeingBroken.contains(now) ? buffer : Minecraft.getInstance().renderBuffers().bufferSource(),
                         combinedLight,
-                        combinedOverlay
+                        combinedOverlay,
+                        t -> RenderType.cutout()
                     );
                 });
             }

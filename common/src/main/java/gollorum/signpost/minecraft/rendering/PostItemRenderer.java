@@ -19,6 +19,7 @@ import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -92,7 +93,10 @@ public class PostItemRenderer implements SpecialModelRenderer<PostData> {
                         poseStack,
                         bufferSource,
                         packedLight,
-                        packedOverlay
+                        packedOverlay,
+                        displayContext == ItemDisplayContext.GUI
+                            ? RenderType::entityCutout
+                            : t -> RenderType.cutout()
                     );
                 });
             }
