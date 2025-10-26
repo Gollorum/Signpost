@@ -31,15 +31,19 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.apache.logging.log4j.util.TriConsumer;
 
+import java.lang.ref.Reference;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -82,32 +86,7 @@ public class Teleport {
             if(IConfig.getInstance().getServer().teleport().allowVehicle()) {
                 while(toTeleport.isPassenger()) toTeleport = toTeleport.getVehicle();
             }
-            teleportWithChildren(toTeleport, world, location, yaw, pitch);
-//            if (IConfig.getInstance().getServer().teleport().allowVehicle() && player.isPassenger()) {
-//                Entity vehicle = player.getVehicle();
-//                while(vehicle.isPassenger()) vehicle = vehicle.getVehicle();
-//                if (!vehicle.level().dimensionType().equals(world.dimensionType())) {
-//                    changeDimensionWithChildren(vehicle, world, portalInfo);
-//                } else {
-//                    var leashedMobs = findLeashedMobs(player);
-//                    vehicle.teleportTo(world, location.x, location.y, location.z, RelativeMovement.ALL, yaw.degrees(), pitch.degrees());
-//    //                    changeDimensionWithChildren(vehicle, world, portalInfo);
-////                    vehicle.setYRot(yaw.degrees());
-////                    vehicle.setXRot(pitch.degrees());
-////                    vehicle.teleportTo(location.x, location.y, location.z);
-//                    if(IConfig.getInstance().getServer().teleport().allowLead())
-//                        teleportLeadedAnimals(player, leashedMobs, world, portalInfo);
-//                    else unleash(leashedMobs);
-//                }
-//            } else {
-//                var leashedMobs = findLeashedMobs(player);
-//                player.teleportTo(world, location.x, location.y, location.z, yaw.degrees(), pitch.degrees());
-//
-//                if(IConfig.getInstance().getServer().teleport().allowLead())
-//                    teleportLeadedAnimals(player, leashedMobs, world, portalInfo);
-//                else unleash(leashedMobs);
-//
-//            }
+            TeleportNode.create(toTeleport).teleportWithChildren(world, location, yaw, pitch);
 
             final int steps = 6;
             TriConsumer<Level, BlockPos, Float> playStepSound = (soundWorld, pos, volume) -> {
@@ -124,65 +103,66 @@ public class Teleport {
         });
     }
 
-    private static <T extends Entity> T teleportWithChildren(T entity, ServerLevel level, Vector3 pos, Angle yaw, Angle pitch) {
-        var passengers = List.copyOf(entity.getPassengers());
+    private record TeleportNode(Entity entity, List<TeleportNode> passengers, List<TeleportNode> leashed) {
 
-        var leashed = findLeashedMobs(entity);
+        public static TeleportNode create(Entity entity) {
+            var passengers = entity.getPassengers().stream()
+                .map(TeleportNode::create)
+                .toList();
+            var leashed = findLeashedMobs(entity).stream()
+                .map(TeleportNode::create)
+                .toList();
+            return new TeleportNode(entity, passengers, leashed);
+        }
 
-        var changesDimension = entity.level() != level;
+        public AtomicReference<Either<Consumer<Entity>, Entity>> teleportWithChildren(ServerLevel level, Vector3 pos, Angle yaw, Angle pitch) {
+            var changesDimension = !entity.level().dimension().equals(level.dimension());
 
-        if(entity instanceof ServerPlayer)
-            entity.teleportTo(level, pos.x(), pos.y(), pos.z(), Set.of(), yaw.degrees(), pitch.degrees(), true);
-        else if (changesDimension) {
-            entity.unRide();
-            Entity newCopy = entity.getType().create(level, EntitySpawnReason.DIMENSION_TRAVEL);
-            if (newCopy == null) {
-                return entity;
+            var doAfter = new AtomicReference<Either<Consumer<Entity>, Entity>>();
+            entity.teleport(new TeleportTransition(level, pos.asVec3(), Vec3.ZERO, yaw.degrees(), pitch.degrees(), Set.of(), entity2 -> {
+                var da = doAfter.get();
+                if (da != null && da.isLeft()) da.leftOrThrow().accept(entity2);
+                doAfter.set(Either.right(entity2));
+                if(IConfig.getInstance().getServer().teleport().allowLead())
+                    teleportLeadedAnimals(entity2, leashed, level, pos, yaw, pitch);
+                else unleash();
+
+                for(var p : passengers) {
+                    Consumer<Entity> next = p2 -> {
+                        if(changesDimension || p.entity instanceof ServerPlayer)
+                            IDelay.onServerForFrames(5, () -> p2.startRiding(entity2, true));
+                        else entity2.positionRider(p2);
+                    };
+                    var result = p.teleportWithChildren(level, pos, yaw, pitch);
+                    if (result.get() != null && result.get().isRight())
+                        next.accept(result.get().rightOrThrow());
+                    else result.set(Either.left(next));
+                }
+            }));
+            return doAfter;
+        }
+
+        private static void teleportLeadedAnimals(Entity player, List<TeleportNode> leashed, ServerLevel level, Vector3 pos, Angle yaw, Angle pitch) {
+            for(var mob : leashed) {
+                Consumer<Entity> releash = mob2 -> ((Mob)mob2).setLeashedTo(player, true);
+                var result = mob.teleportWithChildren(level, pos, yaw, pitch);
+                if (result.get() != null && result.get().isRight())
+                    releash.accept(result.get().rightOrThrow());
+                else result.set(Either.left(releash));
             }
-            newCopy.restoreFrom(entity);
-            newCopy.moveOrInterpolateTo(pos.asVec3(), yaw.degrees(), pitch.degrees());
-            newCopy.setYHeadRot(yaw.degrees());
-            entity.setRemoved(Entity.RemovalReason.CHANGED_DIMENSION);
-            level.addDuringTeleport(newCopy);
-            entity = (T) newCopy;
-        } else {
-            entity.moveOrInterpolateTo(pos.asVec3(), yaw.degrees(), pitch.degrees());
-            entity.setYHeadRot(yaw.degrees());
         }
 
-        var entity2 = entity;
-
-        if(IConfig.getInstance().getServer().teleport().allowLead())
-            teleportLeadedAnimals(entity2, leashed, level, pos, yaw, pitch);
-        else unleash(leashed);
-
-        for(var p : passengers) {
-            var p2 = teleportWithChildren(p, level, pos, yaw, pitch);
-            if(changesDimension || p instanceof ServerPlayer) IDelay.onServerForFrames(5, () -> p2.startRiding(entity2, true));
-            else entity2.positionRider(p2);
+        private void unleash() {
+            for(var l : leashed)
+                if (l.entity instanceof Leashable leashable)
+                    leashable.dropLeash();
         }
-        return entity2;
+
     }
 
     private static List<Mob> findLeashedMobs(Entity player) {
         var searchBox = new AABB(player.blockPosition()).inflate(7.0d);
-        return player.level().getEntitiesOfClass(Mob.class, searchBox, mob -> mob.getLeashHolder() == player);
-    }
-
-    private static void teleportLeadedAnimals(Entity player, List<Mob> leashed, ServerLevel level, Vector3 pos, Angle yaw, Angle pitch) {
-        for(Mob mob : leashed) {
-            if(level != mob.level())
-                mob = teleportWithChildren(mob, level, pos, yaw, pitch);
-            else {
-                mob.teleportTo(level, pos.x(), pos.y(), pos.z(), Set.of(), yaw.degrees(), pitch.degrees(), true);
-            }
-            var mob2 = mob;
-            IDelay.onServerForFrames(5, () -> mob2.setLeashedTo(player, true));
-        }
-    }
-
-    private static void unleash(List<Mob> leashed) {
-        for(Mob mob : leashed) mob.dropLeash();
+        return player.level().getEntitiesOfClass(Mob.class, searchBox, mob -> player.equals(mob.getLeashHolder()));
     }
 
     public static void requestOnClient(
