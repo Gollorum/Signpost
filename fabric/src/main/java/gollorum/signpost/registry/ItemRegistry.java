@@ -1,11 +1,12 @@
 package gollorum.signpost.registry;
 
-import gollorum.signpost.block.PostItemImpl;
 import gollorum.signpost.minecraft.block.*;
 import gollorum.signpost.minecraft.items.*;
 import gollorum.signpost.utils.Tuple;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -17,13 +18,21 @@ import static gollorum.signpost.Signpost.MOD_ID;
 
 public class ItemRegistry {
 
-    public static final WaystoneItem WAYSTONE_ITEM = new WaystoneItem(WaystoneBlock.getInstance(), new Item.Properties());
+    public static final WaystoneItem WAYSTONE_ITEM = new WaystoneItem(
+        WaystoneBlock.getInstance(),
+        new Item.Properties()
+            .setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(MOD_ID, WaystoneBlock.REGISTRY_NAME)))
+    );
 
     public static final List<Tuple<ModelWaystone.Variant, Item>> ModelWaystoneItems = new ArrayList<>();
 
     public static final List<Item> POSTS_ITEMS = new ArrayList<>();
 
-    public static final Item WaystoneGeneratorItem = new BlockItem(BlockRegistry.WaystoneGenerator, new Item.Properties());
+    public static final Item WaystoneGeneratorItem = new BlockItem(
+        BlockRegistry.WaystoneGenerator,
+        new Item.Properties()
+            .setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(MOD_ID, WaystoneGeneratorBlock.REGISTRY_NAME)))
+    );
 
     public static final Item WRENCH = new Wrench();
 
@@ -36,9 +45,24 @@ public class ItemRegistry {
         for(var variant : ModelWaystone.variants)
             ModelWaystoneItems.add(Tuple.of(
                 variant,
-                Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(MOD_ID, variant.registryName), new WaystoneItem(variant.getBlock(), new Item.Properties()))));
+                Registry.register(
+                    BuiltInRegistries.ITEM,
+                    ResourceLocation.fromNamespaceAndPath(MOD_ID, variant.registryName),
+                    new WaystoneItem(
+                        variant.getBlock(),
+                        new Item.Properties()
+                            .setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(MOD_ID, variant.registryName)))))
+            ));
         for(var variant : PostBlock.AllVariants)
-            POSTS_ITEMS.add(Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(MOD_ID, variant.registryName), new PostItemImpl(variant.getBlock(), new Item.Properties())));
+            POSTS_ITEMS.add(Registry.register(
+                BuiltInRegistries.ITEM,
+                ResourceLocation.fromNamespaceAndPath(MOD_ID, variant.registryName),
+                new PostItem(
+                    variant.getBlock(),
+                    new Item.Properties()
+                        .setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(MOD_ID, variant.registryName)))
+                )
+            ));
         Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(MOD_ID, WaystoneGeneratorBlock.REGISTRY_NAME), WaystoneGeneratorItem);
         Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(MOD_ID, Wrench.registryName), WRENCH);
         Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(MOD_ID, Brush.registryName), BRUSH);

@@ -46,7 +46,6 @@ import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
 
 public class WaystoneBlock extends BaseEntityBlock {
@@ -132,13 +131,11 @@ public class WaystoneBlock extends BaseEntityBlock {
         builder.add(FACING);
     }
 
-    @Nullable
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         return defaultBlockState().setValue(FACING, context.getHorizontalDirection());
     }
 
-    @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new WaystoneTile(pos, state);

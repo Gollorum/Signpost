@@ -3,27 +3,22 @@ package gollorum.signpost;
 import gollorum.signpost.compat.Compat;
 import gollorum.signpost.compat.ExternalWaystoneLibrary;
 import gollorum.signpost.config.Config;
-import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.loot.LootEntries;
-import gollorum.signpost.minecraft.rendering.PostRenderer;
 import gollorum.signpost.minecraft.worldgen.JigsawDeserializers;
 import gollorum.signpost.networking.FabricPacketHandler;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.registry.*;
 import gollorum.signpost.utils.Delay;
 import gollorum.signpost.worldgen.Villages;
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+import me.shedaniel.autoconfig.AutoConfig;
+import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
@@ -39,19 +34,20 @@ public class SignpostFabric implements ModInitializer {
     private final Consumer<MinecraftServer> serverSetter;
 
     public SignpostFabric() {
-        serverSetter = Signpost.init(Config.INSTANCE, Delay.INSTANCE);
+        AutoConfig.register(Config.class, GsonConfigSerializer::new);
+        serverSetter = Signpost.init(Config::get, Delay.INSTANCE);
     }
 
     @Override
     public void onInitialize() {
         BlockRegistry.register();
         ItemRegistry.register();
+        DataComponentsRegistry.register();
         RecipeRegistry.register();
         TileEntityRegistry.register();
         CreativeModeTabRegistry.register();
         WaystoneDiscoveryEventListener.register();
 
-        FabricPacketHandler.initialize();
         PacketHandler.onInitializeDo(e -> {
             PacketHandler.getInstance().register(new JoinServerEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "join_server"));
             return true;
@@ -59,12 +55,9 @@ public class SignpostFabric implements ModInitializer {
 
         Delay.INSTANCE.register();
 
-        Config.INSTANCE.register();
-
         LootProviderRegistry.register();
-        LootItemConditionRegistry.register();
+        LootItemConditionRegistryImpl.register();
 
-        MiscRegistry.register();
         JigsawDeserializers.register((loc, elem) ->
             Registry.register(BuiltInRegistries.STRUCTURE_POOL_ELEMENT, loc, elem));
         LootEntries.register((loc, elem) ->
@@ -83,14 +76,8 @@ public class SignpostFabric implements ModInitializer {
         ServerLifecycleEvents.SERVER_STOPPED.register(events::onServerStopped);
         ServerPlayConnectionEvents.JOIN.register(events::joinServer);
         ServerWorldEvents.LOAD.register(events::onWorldLoad);
-    }
-
-    @Environment(EnvType.CLIENT)
-    private static class SignpostFabricClient implements ClientModInitializer {
-        @Override
-        public void onInitializeClient() {
-            BlockEntityRenderers.register(PostTile.getBlockEntityType(), PostRenderer::new);
-        }
+        CommandRegistry.register();
+        ArgumentTypeInfosInjector.register();
     }
 
     private class FabricEvents {

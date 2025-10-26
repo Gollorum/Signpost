@@ -38,7 +38,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.item.ItemStack;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -125,13 +124,11 @@ public class SignGui extends ExtendedScreen {
     private GuiModelRenderer largeSignRenderer;
     private GuiModelRenderer currentSignRenderer;
 
-    @Nullable
     private InputBox currentSignInputBox;
     private ColorInputBox colorInputBox;
 
     private Optional<WaystoneEntry> lastWaystone = Optional.empty();
 
-    @Nullable
     private AngleSelectionEntry waystoneRotationEntry;
 
     private Optional<Overlay> selectedOverlay;

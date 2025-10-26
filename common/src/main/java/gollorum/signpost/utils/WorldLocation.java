@@ -11,13 +11,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
 
 public record WorldLocation(BlockPos blockPos, Either<Level, ResourceLocation> world) {
 
-    public static Optional<WorldLocation> from(@Nullable BlockEntity tile) {
+    public static Optional<WorldLocation> from(BlockEntity tile) {
         return tile != null && tile.hasLevel()
             ? Optional.of(new WorldLocation(tile.getBlockPos(), tile.getLevel()))
             : Optional.empty();

@@ -8,7 +8,7 @@ import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
 import java.util.HashSet;
 import java.util.Set;
 
-import static net.neoforged.fml.common.Mod.EventBusSubscriber.Bus.MOD;
+//import static net.neoforged.fml.common.Mod.EventBusSubscriber.Bus.MOD;
 
 //@Mod.EventBusSubscriber(value = Dist.CLIENT, modid = Signpost.MOD_ID, bus = MOD)
 public class ResourceRegistry {

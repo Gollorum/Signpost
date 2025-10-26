@@ -10,20 +10,18 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.UUID;
 
-public record PlayerHandle(@Nonnull UUID id) {
+public record PlayerHandle(UUID id) {
 
 	public static final PlayerHandle Invalid = new PlayerHandle((LivingEntity) null);
 
-    public PlayerHandle(@Nullable Entity player) {
+    public PlayerHandle(Entity player) {
         this(player == null ? Util.NIL_UUID : player.getUUID());
     }
 
-    public static PlayerHandle from(@Nullable Entity player) {
+    public static PlayerHandle from(Entity player) {
         return new PlayerHandle(player);
     }
 

@@ -8,7 +8,6 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
-import javax.annotation.Nullable;
 
 public abstract class ExtendedScreen extends Screen {
 
@@ -33,7 +32,7 @@ public abstract class ExtendedScreen extends Screen {
 	}
 
 	@Override
-	public void setFocused(@Nullable GuiEventListener listener) {
+	public void setFocused(GuiEventListener listener) {
 		if(getFocused() != listener && getFocused() instanceof AbstractWidget oldListener) {
 			if(oldListener.isFocused()) oldListener.setFocused(false);
 		}

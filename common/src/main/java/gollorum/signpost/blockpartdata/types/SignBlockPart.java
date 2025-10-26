@@ -37,7 +37,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -222,7 +221,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
 
     public boolean isMarkedForGeneration() { return coreData.isMarkedForGeneration; }
 
-    public boolean hasThePermissionToEdit(WithOwner tile, @Nullable Player player) {
+    public boolean hasThePermissionToEdit(WithOwner tile, Player player) {
         return !(tile instanceof WithOwner.OfSignpost) || !coreData.isLocked || player == null
             || ((WithOwner.OfSignpost)tile).getSignpostOwner().map(o -> o.id().equals(player.getUUID())).orElse(true)
             || player.hasPermissions(IConfig.IServer.getInstance().permissions().editLockedSignCommandPermissionLevel());

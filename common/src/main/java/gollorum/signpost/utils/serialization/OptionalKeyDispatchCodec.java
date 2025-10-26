@@ -50,14 +50,14 @@ public class OptionalKeyDispatchCodec<K, V> extends KeyDispatchCodec<K, V> {
         }
 
         @Override
-        public @Nullable T get(String key) {
+        public T get(String key) {
             return key.equals(typeKey)
                 ? encodedDefaultKey
                 : original.get(key);
         }
 
         @Override
-        public @Nullable T get(T key) {
+        public T get(T key) {
             var k = ops.getStringValue(key);
             return k.isSuccess() && k.getOrThrow().equals(typeKey)
                 ? encodedDefaultKey

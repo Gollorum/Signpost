@@ -21,7 +21,7 @@ public class FluidTextureProvider implements IFluidTextureProvider {
     }
 
     @Override
-    public @Nullable ResourceLocation getOverlayTexture(Fluid fluid) {
+    public ResourceLocation getOverlayTexture(Fluid fluid) {
         return IClientFluidTypeExtensions.of(fluid).getOverlayTexture();
     }
 

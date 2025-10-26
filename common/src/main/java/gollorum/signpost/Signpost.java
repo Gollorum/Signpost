@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class Signpost {
 
@@ -18,8 +19,8 @@ public class Signpost {
     private static MinecraftServer serverInstance;
     public static MinecraftServer getServerInstance() { return serverInstance; }
 
-    private static IConfig config;
-    public static IConfig getConfig() { return config; }
+    private static Supplier<IConfig> config;
+    public static IConfig getConfig() { return config.get(); }
 
     private static IDelay delay;
     public static IDelay getDelay() { return delay; }
@@ -33,6 +34,10 @@ public class Signpost {
     }
 
     public static Consumer<MinecraftServer> init(IConfig config, IDelay delay) {
+        return init(() -> config, delay);
+    }
+
+    public static Consumer<MinecraftServer> init(Supplier<IConfig> config, IDelay delay) {
         Signpost.config = config;
         Signpost.delay = delay;
         return server -> serverInstance = server;

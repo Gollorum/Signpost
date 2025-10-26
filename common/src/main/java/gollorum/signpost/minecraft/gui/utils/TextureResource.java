@@ -12,6 +12,8 @@ public class TextureResource {
     public static final int shortOverlaySize = 32;
     public static final int largeOverlaySize = 32;
 
+    public static final ResourceLocation blockAtlas = ResourceLocation.withDefaultNamespace("textures/atlas/blocks.png");
+
     public static final TextureResource waystoneNameField = new TextureResource(
         "textures/gui/base_gui.png", new TextureSize(50, 11)
     );

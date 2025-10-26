@@ -15,8 +15,7 @@ public interface IFluidTextureProvider {
     }
 
     ResourceLocation getStillTexture(Fluid fluid);
-    ResourceLocation getFlowingTexture(Fluid fluid);
-    @Nullable ResourceLocation getOverlayTexture(Fluid fluid);
+    ResourceLocation getFlowingTexture(Fluid fluid); ResourceLocation getOverlayTexture(Fluid fluid);
 
     int getTintColor(FluidState fluid, BlockAndTintGetter level, BlockPos pos);
 

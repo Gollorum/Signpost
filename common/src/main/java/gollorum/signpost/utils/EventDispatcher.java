@@ -1,8 +1,6 @@
 package gollorum.signpost.utils;
 
-import javax.annotation.Nonnull;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -41,13 +39,13 @@ public interface EventDispatcher<Event> {
         }
     }
 
-    boolean addListener(@Nonnull Listener<Event> listener);
-    default boolean addListener(@Nonnull Consumer<Event> listener) {
+    boolean addListener(Listener<Event> listener);
+    default boolean addListener(Consumer<Event> listener) {
         return addListener(new ConsumerWrapper<>(listener));
     }
 
-    boolean removeListener(@Nonnull Listener<Event> listener);
-    default boolean removeListener(@Nonnull Consumer<Event> listener) {
+    boolean removeListener(Listener<Event> listener);
+    default boolean removeListener(Consumer<Event> listener) {
         return removeListener(new ConsumerWrapper<>(listener));
     }
 
@@ -55,9 +53,9 @@ public interface EventDispatcher<Event> {
 
         protected final Set<Listener<Event>> listeners = new HashSet<>();
 
-        public boolean addListener(@Nonnull Listener<Event> listener) { return listeners.add(listener); }
+        public boolean addListener(Listener<Event> listener) { return listeners.add(listener); }
 
-        public boolean removeListener(@Nonnull Listener<Event> listener) { return listeners.remove(listener); }
+        public boolean removeListener(Listener<Event> listener) { return listeners.remove(listener); }
 
         protected void dispatch(Event event, Set<Listener<Event>> listeners, boolean clearAfterwards) {
             listeners.forEach(listener -> {

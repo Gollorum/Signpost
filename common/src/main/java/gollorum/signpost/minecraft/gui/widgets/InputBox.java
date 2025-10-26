@@ -1,13 +1,17 @@
 package gollorum.signpost.minecraft.gui.widgets;
 
-import gollorum.signpost.minecraft.gui.utils.IConfigurableFont;
 import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.minecraft.gui.utils.WithMutableX;
+import gollorum.signpost.mixin.GuiGraphicsMixin;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.util.FormattedCharSequence;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +21,7 @@ public class InputBox extends EditBox implements WithMutableX {//, Ticking {
 
     private boolean shouldDropShadow;
 
-    private final IConfigurableFont configFont;
+    private final Font configFont;
 
     private final List<Function<Integer, Boolean>> keyCodeConsumers = new ArrayList<>();
 
@@ -30,9 +34,7 @@ public class InputBox extends EditBox implements WithMutableX {//, Ticking {
         double zOffset
     ) {
         this(
-            new Font(((IConfigurableFont) configFont).getFonts(),
-                ((IConfigurableFont) configFont).getFilterFishyGlyphs()),
-            true,
+            configFont,
             inputFieldRect,
             shouldDropShadow,
             zOffset,
@@ -42,7 +44,6 @@ public class InputBox extends EditBox implements WithMutableX {//, Ticking {
 
     private InputBox(
         Font copyFont,
-        boolean iCopiedThatFontIPromise,
         Rect inputFieldRect,
         boolean shouldDropShadow,
         double zOffset,
@@ -54,8 +55,7 @@ public class InputBox extends EditBox implements WithMutableX {//, Ticking {
             inputFieldRect.width, inputFieldRect.height,
             Component.literal("")
         );
-        this.configFont = (IConfigurableFont) copyFont;
-        if(!shouldDropShadow) configFont.setShouldProhibitShadows(true);
+        this.configFont = copyFont;
         this.shouldDropShadow = shouldDropShadow;
         this.zOffset = zOffset;
         this.setMaxLength(maxStringLength);
@@ -72,7 +72,6 @@ public class InputBox extends EditBox implements WithMutableX {//, Ticking {
 
     public void setShouldDropShadow(boolean shouldDropShadow) {
         this.shouldDropShadow = shouldDropShadow;
-        configFont.setShouldProhibitShadows(!shouldDropShadow);
     }
 
     @Override
@@ -94,10 +93,12 @@ public class InputBox extends EditBox implements WithMutableX {//, Ticking {
 
     @Override
     public void renderWidget(GuiGraphics graphics, int p_94161_, int p_94162_, float p_94163_) {
+        if (!shouldDropShadow)
+            graphics = new NoShadowGuiGraphics(graphics);
         graphics.pose().pushPose();
         graphics.pose().translate(0, 0, zOffset);
         if(isHovered && !isBordered()) {
-            int fromY = getY() + (((Font)configFont).lineHeight - height) / 2;
+            int fromY = getY() + (configFont.lineHeight - height) / 2;
             graphics.fill(RenderType.guiOverlay(), getX(), fromY, getX() + width, fromY + height, 0x40ffffff);
         }
         super.renderWidget(graphics, p_94161_, p_94162_, p_94163_);
@@ -123,5 +124,32 @@ public class InputBox extends EditBox implements WithMutableX {//, Ticking {
     @Override
     public void setXPos(int x) {
         setX(x);
+    }
+
+    private class NoShadowGuiGraphics extends GuiGraphics {
+
+        public NoShadowGuiGraphics(GuiGraphics original) {
+            super(Minecraft.getInstance(), ((GuiGraphicsMixin)original).getBufferSource());
+        }
+
+        @Override
+        public int drawString(Font font, @Nullable String text, int x, int y, int color) {
+            return super.drawString(font, text, x, y, color, false);
+        }
+
+        @Override
+        public int drawString(Font font, FormattedCharSequence text, int x, int y, int color) {
+            return super.drawString(font, text, x, y, color, false);
+        }
+
+        @Override
+        public int drawString(Font font, Component text, int x, int y, int color) {
+            return super.drawString(font, text, x, y, color, false);
+        }
+
+        @Override
+        public void drawWordWrap(Font font, FormattedText text, int x, int y, int lineWidth, int color) {
+            super.drawWordWrap(font, text, x, y, lineWidth, color, false);
+        }
     }
 }

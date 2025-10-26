@@ -1,7 +1,19 @@
 {
   "variants": {
-    "": {
+    "facing=east": {
+      "model": "signpost:block/waystone_model_ygnar",
+      "y": 270
+    },
+    "facing=north": {
+      "model": "signpost:block/waystone_model_ygnar",
+      "y": 180
+    },
+    "facing=south": {
       "model": "signpost:block/waystone_model_ygnar"
+    },
+    "facing=west": {
+      "model": "signpost:block/waystone_model_ygnar",
+      "y": 90
     }
   }
 }

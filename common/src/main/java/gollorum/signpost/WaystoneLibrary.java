@@ -28,7 +28,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -168,7 +167,7 @@ public class WaystoneLibrary {
         PacketHandler.getInstance().sendToServer(new WaystoneUpdatedEventEvent.Packet(WaystoneUpdatedEvent.fromUpdated(location, newName, isLocked, WaystoneHandle.Vanilla.NIL)));
     }
 
-    public Optional<String> update(String newName, WaystoneLocationData location, @Nullable Player editingPlayer, boolean isLocked) {
+    public Optional<String> update(String newName, WaystoneLocationData location, Player editingPlayer, boolean isLocked) {
         assert Signpost.getServerType().isServer && location.block().world().match(w -> (w instanceof ServerLevel), i -> true);
         WaystoneHandle.Vanilla[] oldWaystones = data.allWaystones
             .entrySet()
@@ -244,7 +243,7 @@ public class WaystoneLibrary {
         } else return true;
     }
 
-    private boolean validateNameDoesNotExist(String newName, @Nullable Player editingPlayer) {
+    private boolean validateNameDoesNotExist(String newName, Player editingPlayer) {
         if(data.allWaystones.values().stream().anyMatch(entry -> entry.name.equals(newName))) {
             if(editingPlayer != null)
                 editingPlayer.displayClientMessage(Component.translatable(LangKeys.duplicateWaystoneName, newName), true);

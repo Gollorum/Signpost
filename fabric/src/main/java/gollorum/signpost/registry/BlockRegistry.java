@@ -1,8 +1,5 @@
 package gollorum.signpost.registry;
 
-import gollorum.signpost.block.ModelWaystoneImpl;
-import gollorum.signpost.block.PostBlockImpl;
-import gollorum.signpost.block.WaystoneBlockImpl;
 import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.WaystoneBlock;
@@ -21,9 +18,9 @@ public class BlockRegistry {
     public static void register(){
         Registry.register(BuiltInRegistries.BLOCK, ResourceLocation.fromNamespaceAndPath(MOD_ID, WaystoneBlock.REGISTRY_NAME), Waystone);
         for(var variant : ModelWaystone.variants)
-            Registry.register(BuiltInRegistries.BLOCK, ResourceLocation.fromNamespaceAndPath(MOD_ID, variant.registryName), variant.createBlock(ModelWaystoneImpl::new));
+            Registry.register(BuiltInRegistries.BLOCK, ResourceLocation.fromNamespaceAndPath(MOD_ID, variant.registryName), variant.createBlock(ModelWaystone::new));
         for(var variant : PostBlock.AllVariants)
-            Registry.register(BuiltInRegistries.BLOCK, ResourceLocation.fromNamespaceAndPath(MOD_ID, variant.registryName), variant.createBlock(PostBlockImpl::new));
+            Registry.register(BuiltInRegistries.BLOCK, ResourceLocation.fromNamespaceAndPath(MOD_ID, variant.registryName), variant.createBlock(PostBlock::new));
         Registry.register(BuiltInRegistries.BLOCK, ResourceLocation.fromNamespaceAndPath(MOD_ID, WaystoneGeneratorBlock.REGISTRY_NAME), WaystoneGenerator);
     }
 }

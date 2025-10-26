@@ -5,7 +5,6 @@ import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.config.IWorldGenConfig;
 import net.minecraftforge.common.ForgeConfigSpec;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -32,7 +31,6 @@ public class WorldGenConfig implements IWorldGenConfig {
     private final Naming naming;
     public Naming naming() { return getFinalValue(d -> d.naming); }
 
-    @Nullable
     private final ForgeConfigSpec.BooleanValue overrideDefaults;
 
     private final boolean isServer;

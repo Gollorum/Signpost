@@ -16,7 +16,12 @@
     "environment": "*",
     "entrypoints": {
         "main": [
-          "gollorum.signpost.SignpostFabric"
+            "gollorum.signpost.SignpostFabric"
+        ],
+        "client": [ "gollorum.signpost.SignpostFabricClient" ],
+        "server": [ "gollorum.signpost.SignpostFabricDedicatedServer" ],
+        "modmenu": [
+            "gollorum.signpost.config.ModMenuIntegration"
         ]
     },
     "mixins": [

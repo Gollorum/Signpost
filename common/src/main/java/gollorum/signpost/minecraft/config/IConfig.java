@@ -1,7 +1,6 @@
 package gollorum.signpost.minecraft.config;
 
 import gollorum.signpost.Signpost;
-import gollorum.signpost.platform.Services;
 
 import java.util.List;
 
@@ -31,16 +30,13 @@ public interface IConfig {
 
         static ICommon getInstance() { return Signpost.getConfig().getCommon(); }
 
-        IWorldGenConfig worldGenDefaults();
-	}
+    }
 
     interface IClient {
 
         static IClient getInstance() { return Signpost.getConfig().getClient(); }
 
         boolean enableConfirmationScreen();
-		boolean enableWaystoneLimitNotifications();
-		boolean enableSignpostLimitNotifications();
 	}
 
 }

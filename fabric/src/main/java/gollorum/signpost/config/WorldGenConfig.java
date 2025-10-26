@@ -1,148 +1,83 @@
 package gollorum.signpost.config;
 
-import com.google.common.collect.Lists;
-import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.config.IWorldGenConfig;
-import net.neoforged.neoforge.common.ModConfigSpec;
+import me.shedaniel.autoconfig.ConfigData;
+import me.shedaniel.autoconfig.annotation.ConfigEntry;
 
-import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-public class WorldGenConfig implements IWorldGenConfig {
+public class WorldGenConfig implements ConfigData, IWorldGenConfig {
+    @ConfigEntry.Gui.Tooltip
+    public boolean isVillageGenerationEnabled = true;
+    @ConfigEntry.Gui.Tooltip
+    public boolean villagesOnlyTargetVillages = true;
+    @ConfigEntry.Gui.Tooltip
+    public int maxSignpostsPerVillage = 2;
+    @ConfigEntry.Gui.Tooltip(count = 2)
+    public List<String> allowedVillageWaystones = Arrays.asList(
+        "simple_0", "simple_1", "simple_2", "detailed_0", "detailed_1"
+    );
+    @ConfigEntry.Gui.Tooltip(count = 2)
+    public boolean debugMode = false;
+    @ConfigEntry.Gui.Tooltip(count = 2)
+    @ConfigEntry.Gui.CollapsibleObject
+    public Naming naming = new Naming();
 
-    private final ModConfigSpec.BooleanValue isVillageGenerationEnabled;
-    public boolean isVillageGenerationEnabled() { return getFinalValue(d -> d.isVillageGenerationEnabled).get(); }
-
-    private final ModConfigSpec.BooleanValue villagesOnlyTargetVillages;
-    public boolean villagesOnlyTargetVillages() { return getFinalValue(d -> d.villagesOnlyTargetVillages).get(); }
-
-    private final ModConfigSpec.IntValue maxSignpostsPerVillage;
-    public int maxSignpostsPerVillage() { return getFinalValue(d -> d.maxSignpostsPerVillage).get(); }
-
-    private final ModConfigSpec.ConfigValue<List<? extends String>> allowedVillageWaystones;
-    public List<? extends String> allowedVillageWaystones() { return getFinalValue(d -> d.allowedVillageWaystones).get(); }
-
-    private final ModConfigSpec.BooleanValue debugMode;
-    public boolean debugMode() { return getFinalValue(d -> d.debugMode).get(); }
-
-    private final Naming naming;
-    public Naming naming() { return getFinalValue(d -> d.naming); }
-
-    @Nullable
-    private final ModConfigSpec.BooleanValue overrideDefaults;
-
-    private final boolean isServer;
-
-    private <T> Supplier<T> defaults(T defaultVal, Function<WorldGenConfig, ModConfigSpec.ConfigValue<T>> factory) {
-        return isServer ? () -> factory.apply(Config.INSTANCE.Common.worldGenDefaults).get() : () -> defaultVal;
+    @Override
+    public boolean isVillageGenerationEnabled() {
+        return isVillageGenerationEnabled;
     }
 
-    private <T> T getFinalValue(Function<WorldGenConfig, T> factory) {
-        return factory.apply(isServer && overrideDefaults != null && overrideDefaults.get()
-            ? this
-            : Config.INSTANCE.Common.worldGenDefaults
+    @Override
+    public boolean villagesOnlyTargetVillages() {
+        return villagesOnlyTargetVillages;
+    }
+
+    @Override
+    public int maxSignpostsPerVillage() {
+        return maxSignpostsPerVillage;
+    }
+
+    @Override
+    public List<? extends String> allowedVillageWaystones() {
+        return allowedVillageWaystones;
+    }
+
+    @Override
+    public boolean debugMode() {
+        return debugMode;
+    }
+
+    @Override
+    public INaming naming() {
+        return naming;
+    }
+
+    public static class Naming implements ConfigData, INaming {
+        public List<String> villageNamePrefixes = Arrays.asList(
+            "ak", "dev", "dol ", "ed", "il", "og", "por", "rov", "tek ", "tar", "tol ", "ves", ""
         );
-    }
-
-    WorldGenConfig(ModConfigSpec.Builder builder, boolean isServer) {
-        this.isServer = isServer;
-        overrideDefaults = isServer
-            ? builder.comment("Enables this [world_gen] section. If false, the COMMON config values will be used")
-            .define("override_defaults", true)
-            : null;
-
-        isVillageGenerationEnabled = builder.comment("Enables the generation of signposts and waystones in villages")
-            .define("enable_generation", defaults(true, d -> d.isVillageGenerationEnabled));
-
-        villagesOnlyTargetVillages = builder.comment("Defines whether village signposts can have any waystones as" +
-                " destination or just the ones generated in other villages")
-            .define("only_target_other_villages", defaults(true, d -> d.villagesOnlyTargetVillages));
-
-        maxSignpostsPerVillage = builder.comment("The maximum number of signposts that can spawn in one village. " +
-                "Will be ignored for 'Repurposed Structures' villages, use data packs for that.")
-            .defineInRange("max_signposts_per_village", defaults(2, d -> d.maxSignpostsPerVillage), 0, Integer.MAX_VALUE);
-
-        allowedVillageWaystones = builder.comment(
-            "Decide what waystone models are generated in villages",
-            "You can look up the model names at https://www.curseforge.com/minecraft/mc-mods/signpost/pages/waystone-models"
-        ).defineList(
-            "allowed_waystone_models",
-            defaults(
-                Stream.of(ModelWaystone.simple_0, ModelWaystone.simple_1, ModelWaystone.simple_2, ModelWaystone.detailed_0, ModelWaystone.detailed_1)
-                    .map(v -> v.name).collect(Collectors.toList()),
-                d -> d.allowedVillageWaystones),
-            n -> n instanceof String &&
-                ModelWaystone.variants.contains(new ModelWaystone.Variant((String) n, null, null, 0
-                )));
-
-        debugMode = builder.comment(
-            "Disables generator blocks/signs being replaced with actual ones and makes them visible. " +
-                "Only enable this if you want to design structures with auto generated waystones / sign posts"
-        ).define("debug_mode", defaults(false, d -> d.debugMode));
-
-        builder.push("naming");
-        naming = new Naming(builder);
-        builder.pop();
-    }
-
-    public class Naming implements IWorldGenConfig.INaming {
-
-        public final ModConfigSpec.ConfigValue<List<? extends String>> villageNamePrefixes;
-        public final ModConfigSpec.ConfigValue<List<? extends String>> villageNameInfixes;
-        public final ModConfigSpec.ConfigValue<List<? extends String>> villageNamePostfixes;
+        public List<String> villageNameInfixes = Arrays.asList(
+            "do ", "en", "go", "na", "nah ", "ker", "ol", "ora", "ra", "rem", "ro"
+        );
+        public List<String> villageNamePostfixes = Arrays.asList(
+            "ar", "blo", "bo", "bro", "do", "dra", "er", "ker", "lia", "tek"
+        );
 
         @Override
-        public List<? extends String> villageNamePrefixes() { return villageNamePrefixes.get(); }
-        @Override
-        public List<? extends String> villageNameInfixes() { return villageNameInfixes.get(); }
-        @Override
-        public List<? extends String> villageNamePostfixes() { return villageNamePostfixes.get(); }
-
-        private static final List<String> genericNamePrefixes = Lists.newArrayList("ak", "dev", "dol ", "ed", "il", "og", "por", "rov", "tek ", "tar", "tol ", "ves", "");
-        private static final List<String> genericNameInfixes = Lists.newArrayList("do ", "en", "go", "na", "nah ", "ker", "ol", "ora", "ra", "rem", "ro");
-        private static final List<String> genericNamePostfixes = Lists.newArrayList("ar", "blo", "bo", "bro", "do", "dra", "er", "ker", "lia", "tek");
-
-        private static final List<String> germanNamePrefixes = Lists.newArrayList("", "", "", "", "klein", "gro\u00df", "nieder", "ober", "bad ", "hinter", "neu ");
-        private static final List<String> germanNameInfixes = Lists.newArrayList("", "sege", "m\u00fchl", "s\u00e4ngers", "bach", "stein", "holz", "w\u00fcrz", "h\u00f6ch", "wolfs", "katz", "hunds", "lauter", "hildes", "heides", "ochsen", "ochs", "k\u00f6nigs", "neu", "schafs", "rotten", "ger", "schweins", "frank", "hexen", "münch", "ber", "see", "freuden");
-        private static final List<String> germanNamePostfixes = Lists.newArrayList("heim", "stadt", "stedt", "berg", "tal", "hausen", "dorf", "ingen", "burg", "furt", "haven", "feld", "felde", "br\u00fcck", "br\u00fccken", "kirch", "horn", "brunn", "loch", "fluch", "en", "beck", "end", "walde", "wind", "garten", "ach", "au", "hofen");
-
-        private static final List<String> englishNamePrefixes = Lists.newArrayList("", "", "", "", "", "", "", "", "", "", "", "little ", "grand ", "St ", "new ");
-        private static final List<String> englishNameInfixes = Lists.newArrayList("black", "bow", "long", "cal", "glen", "elk", "taylors", "man", "spring", "cats", "brad", "leakes", "singers", "thorn", "lake", "burn", "chip", "brace", "raven", "middle");
-        private static final List<String> englishNamePostfixes = Lists.newArrayList("ville", "bridge", "ham", " island", "cester", "water", "town", " creek", " valley", "view", "bury", "burgh", "ington", "field", "dale", " port", "worth", "sey", "don", "pool", "wood", "ley", "ford", " hill", "gate");
-
-        Naming(ModConfigSpec.Builder builder) {
-            villageNamePrefixes = builder.comment("The names of waystones generated in villages will consist of a prefix, an infix and a postfix, each randomly selected from these lists.",
-                "e.g.: If \"tol \", \"ker\" and \"dra\" are selected, the name will be \"Tol Kerdra\"",
-                "Here are some language-specific examples:",
-                "english:",
-                "village_name_prefixes = [\"" + String.join("\", \"", englishNamePrefixes) + "\"]",
-                "village_name_infixes = [\"" + String.join("\", \"", englishNameInfixes) + "\"]",
-                "village_name_postfixes = [\"" + String.join("\", \"", englishNamePostfixes) + "\"]",
-                "german:",
-                "village_name_prefixes = [\"" + String.join("\", \"", germanNamePrefixes) + "\"]",
-                "village_name_infixes = [\"" + String.join("\", \"", germanNameInfixes) + "\"]",
-                "village_name_postfixes = [\"" + String.join("\", \"", germanNamePostfixes) + "\"]"
-            ).defineList(
-                "village_name_prefixes",
-                defaults(genericNamePrefixes, d -> d.naming.villageNamePrefixes),
-                x -> x instanceof String
-            );
-            villageNameInfixes = builder.defineList(
-                "village_name_infixes",
-                defaults(genericNameInfixes, d -> d.naming.villageNameInfixes),
-                x -> x instanceof String
-            );
-            villageNamePostfixes = builder.defineList(
-                "village_name_postfixes",
-                defaults(genericNamePostfixes, d -> d.naming.villageNamePostfixes),
-                x -> x instanceof String
-            );
+        public List<? extends String> villageNamePrefixes() {
+            return villageNamePrefixes;
         }
 
-    }
+        @Override
+        public List<? extends String> villageNameInfixes() {
+            return villageNameInfixes;
+        }
 
+        @Override
+        public List<? extends String> villageNamePostfixes() {
+            return villageNamePostfixes;
+        }
+    }
 }

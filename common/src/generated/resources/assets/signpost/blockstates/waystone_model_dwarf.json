@@ -1,7 +1,19 @@
 {
   "variants": {
-    "": {
+    "facing=east": {
+      "model": "signpost:block/waystone_model_dwarf",
+      "y": 270
+    },
+    "facing=north": {
+      "model": "signpost:block/waystone_model_dwarf",
+      "y": 180
+    },
+    "facing=south": {
       "model": "signpost:block/waystone_model_dwarf"
+    },
+    "facing=west": {
+      "model": "signpost:block/waystone_model_dwarf",
+      "y": 90
     }
   }
 }

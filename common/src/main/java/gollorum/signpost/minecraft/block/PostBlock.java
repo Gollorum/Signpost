@@ -60,7 +60,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.apache.commons.lang3.function.TriFunction;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
 
@@ -372,7 +371,7 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
     }
 
     @Override
-    public void setPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack currentStack) {
+    public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack currentStack) {
         super.setPlacedBy(world, pos, state, placer, currentStack);
         ItemStack stack = currentStack.copy(); // stack might be changed in the delay (set block -> block no longer in inventory)
         IDelay.forFrames(6, world.isClientSide(), () ->
@@ -433,7 +432,6 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
         return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
     }
 
-    @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new PostTile(type, pos, state);

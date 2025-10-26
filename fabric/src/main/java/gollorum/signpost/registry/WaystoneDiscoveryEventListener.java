@@ -25,7 +25,8 @@ public class WaystoneDiscoveryEventListener implements IWaystoneDiscoveryEventLi
     }
 
     private static void onTick(ServerLevel level) {
-        var allEntries = VillageWaystone.getAllEntriesByChunk(false);
+        var waystoneLibrary = WaystoneLibrary.getInstance();
+        var allEntries = waystoneLibrary.getVillageWaystones().getAllEntriesByChunk(waystoneLibrary, false);
         for(var player : level.players()) {
             var chunkRadius = 1 + (discoveryDistance >> 4);
             var playerChunk = player.chunkPosition();
@@ -36,14 +37,14 @@ public class WaystoneDiscoveryEventListener implements IWaystoneDiscoveryEventLi
                         level.dimension().location()
                     );
                     var handle = allEntries.get(key);
-                    if(handle != null && !WaystoneLibrary.getInstance().isDiscovered(new PlayerHandle(player), handle)) {
-                        Optional<WaystoneData> dataOption = WaystoneLibrary.getInstance().getData(handle);
+                    if(handle != null && !waystoneLibrary.isDiscovered(new PlayerHandle(player), handle)) {
+                        Optional<WaystoneData> dataOption = waystoneLibrary.getData(handle);
                         dataOption.ifPresent(data -> {
-                            if(WaystoneLibrary.getInstance().addDiscovered(new PlayerHandle(player), handle)) {
+                            if(waystoneLibrary.addDiscovered(new PlayerHandle(player), handle)) {
                                 player.sendSystemMessage(
                                     Component.translatable(
                                         LangKeys.discovered,
-                                        TextComponents.waystone(player, data.name)
+                                        TextComponents.waystone(player, data.name())
                                     ));
                             }
                         });

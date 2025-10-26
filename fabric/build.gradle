@@ -2,6 +2,15 @@ plugins {
     id 'multiloader-loader'
     id 'fabric-loom'
 }
+repositories {
+    maven { url "https://maven.shedaniel.me/" }
+    maven { url "https://maven.terraformersmc.com/releases/" }
+
+    maven {
+        name = "FelNull Maven"
+        url = "https://maven.felnull.dev"
+    }
+}
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
     mappings loom.layered {
@@ -10,6 +19,13 @@ dependencies {
     }
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
+    // AutoConfig and Cloth Config for config serialization and GUI
+
+    modApi("me.shedaniel.cloth:cloth-config-fabric:18.0.145") {
+        exclude(group: "net.fabricmc.fabric-api")
+    }
+    modApi "com.terraformersmc:modmenu:14.0.0-rc.2"
+
 }
 
 loom {
@@ -35,3 +51,7 @@ loom {
         }
     }
 }
+sourceSets.main.resources.srcDirs(
+        '../common/src/generated/resources',
+        'src/generated/resources'
+)

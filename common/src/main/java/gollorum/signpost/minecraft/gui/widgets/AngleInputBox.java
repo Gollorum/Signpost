@@ -5,7 +5,6 @@ import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.utils.math.Angle;
 import net.minecraft.client.gui.Font;
 
-import javax.annotation.Nullable;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -54,7 +53,7 @@ public class AngleInputBox extends InputBox {
     public Angle getCurrentAngle() { return Angle.fromDegrees(currentResult); }
 
     @Override
-    public void setResponder(@Nullable Consumer<String> responder) {
+    public void setResponder(Consumer<String> responder) {
         super.setResponder(value -> {
             currentResult = getResult();
             if(responder != null) {
@@ -64,11 +63,11 @@ public class AngleInputBox extends InputBox {
     }
 
     @Override
-    public void setFilter(@Nullable Predicate<String> filter) {
+    public void setFilter(Predicate<String> filter) {
         super.setFilter(value -> isValidValue(value) && (filter == null || filter.test(value)));
     }
 
-    public void setAngleResponder(@Nullable Consumer<Angle> responder) {
+    public void setAngleResponder(Consumer<Angle> responder) {
         setResponder(responder == null ? null : value -> responder.accept(Angle.fromDegrees(currentResult)));
     }
 

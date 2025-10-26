@@ -32,13 +32,13 @@ public class PermissionConfig implements IPermissionConfig {
     public int pickUnownedWaystonePermissionLevel() { return pickUnownedWaystonePermissionLevel.get(); }
 
     public PermissionConfig(ForgeConfigSpec.Builder builder) {
-        teleportPermissionLevel = builder.define("teleport_command_permission_level", 3);
-        discoverPermissionLevel = builder.define("discover_command_permission_level", 3);
-        listPermissionLevel = builder.define("list_command_permission_level", 3);
+        teleportPermissionLevel = builder.define("teleport_command_permission_level", 2);
+        discoverPermissionLevel = builder.define("discover_command_permission_level", 2);
+        listPermissionLevel = builder.define("list_command_permission_level", 2);
 
         pickUnownedWaystonePermissionLevel = builder
             .comment("Defines who (except the owner) can move a waystone by picking it / destroying it with silk touch")
-            .define("pick_unowned_waystone_permission_level", 3);
+            .define("pick_unowned_waystone_permission_level", 0);
 
         editLockedWaystoneCommandPermissionLevel = builder.define("edit_locked_waystones_permission_level", 3);
         editLockedSignCommandPermissionLevel = builder.define("edit_locked_signs_permission_level", 3);

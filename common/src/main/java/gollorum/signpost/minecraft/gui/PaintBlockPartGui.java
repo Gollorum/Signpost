@@ -19,7 +19,6 @@ import gollorum.signpost.utils.Tint;
 import gollorum.signpost.utils.Tuple;
 import gollorum.signpost.utils.math.Angle;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -53,7 +52,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Extended
         this.tile = tile;
         this.part = part;
         this.displayPart = displayPart;
-        atlasSpriteGetter = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS);
+        atlasSpriteGetter = Minecraft.getInstance().getTextureAtlas(TextureResource.blockAtlas);
         oldSprite = Tuple.of(oldTexture.toMaterial().sprite(), oldTexture.tint());
         this.identifier = identifier;
     }

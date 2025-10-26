@@ -2,7 +2,6 @@ package gollorum.signpost.networking;
 
 import gollorum.signpost.Signpost;
 import gollorum.signpost.utils.Tuple;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;
@@ -20,10 +19,15 @@ import java.util.function.Supplier;
 public class FabricPacketHandler extends PacketHandler {
 
     private final Map<Class<?>, Tuple<Event<?>, ResourceLocation>> events = new HashMap<>();
+    private final boolean isClient;
 
-    public static void initialize() {
-        instance = new FabricPacketHandler();
+    public static void initialize(boolean isClient) {
+        instance = new FabricPacketHandler(isClient);
         instance.init();
+    }
+
+    private FabricPacketHandler(boolean isClient) {
+        this.isClient = isClient;
     }
 
     @Override
@@ -37,13 +41,20 @@ public class FabricPacketHandler extends PacketHandler {
                 payload -> payload.message
             )
         );
+        PayloadTypeRegistry.playS2C().register(
+            type,
+            event.codec().map(
+                message -> new Payload<T>(type, event, message),
+                payload -> payload.message
+            )
+        );
 
-        // TODO: Is that legal on servers?
-        ClientPlayNetworking.registerGlobalReceiver(type, FabricPacketHandler::handleOnClient);
+        if (isClient)
+            net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.registerGlobalReceiver(type, FabricPacketHandler::handleOnClient);
         ServerPlayNetworking.registerGlobalReceiver(type, FabricPacketHandler::handleOnServer);
     }
 
-    private static <T> void handleOnClient(Payload<T> payload, ClientPlayNetworking.Context context) {
+    private static <T> void handleOnClient(Payload<T> payload, net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.Context context) {
         payload.event.handle(payload.message, new Context.Client());
     }
     private static <T> void handleOnServer(Payload<T> payload, ServerPlayNetworking.Context context) {
@@ -57,7 +68,7 @@ public class FabricPacketHandler extends PacketHandler {
 
     @Override
     public <T> void sendToServer(T message) {
-        ClientPlayNetworking.send(toPayload(message));
+        net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(toPayload(message));
     }
 
     @Override

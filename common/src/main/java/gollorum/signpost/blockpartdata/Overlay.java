@@ -6,11 +6,11 @@ import gollorum.signpost.blockpartdata.types.LargeSignBlockPart;
 import gollorum.signpost.blockpartdata.types.SignBlockPart;
 import gollorum.signpost.blockpartdata.types.SmallShortSignBlockPart;
 import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
+import gollorum.signpost.minecraft.gui.utils.TextureResource;
 import gollorum.signpost.minecraft.utils.tints.FoliageTint;
 import gollorum.signpost.minecraft.utils.tints.GrassTint;
 import gollorum.signpost.utils.Tint;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -40,7 +40,7 @@ public abstract class Overlay {
     // TODO DS: :
     public Material materialFor(Class<? extends SignBlockPart> signClass) {
         return new Material(
-            TextureAtlas.LOCATION_BLOCKS,
+            TextureResource.blockAtlas,
             textureFor(signClass)
         );
     }

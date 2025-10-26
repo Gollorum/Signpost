@@ -80,7 +80,7 @@ public class Config implements IConfig {
             teleport = new TeleportConfig(builder);
             builder.pop();
             allowedWaystones = builder.comment("You can define which waystone models are enabled.",
-                    "Disabled types are still in the game but cannot be crafted and disappear from the creative menu.",
+                    "Disabled types are still in the game but disappear from the creative menu. Use data packs to remove the stonecutter recipes as well.",
                     "The available variants are: " +
                         ModelWaystone.variants.stream()
                             .map(v -> "\"" + v.name + "\"")
@@ -109,9 +109,6 @@ public class Config implements IConfig {
 
         public final WorldGenConfig worldGenDefaults;
 
-        @Override
-        public IWorldGenConfig worldGenDefaults() { return worldGenDefaults; }
-
         public Common(ForgeConfigSpec.Builder builder) {
             builder.push("world_gen_defaults");
             worldGenDefaults = new WorldGenConfig(builder, false);
@@ -124,17 +121,9 @@ public class Config implements IConfig {
     public static class Client implements IClient {
 
         private final ForgeConfigSpec.BooleanValue enableConfirmationScreen;
-        private final ForgeConfigSpec.BooleanValue enableWaystoneLimitNotifications;
-        private final ForgeConfigSpec.BooleanValue enableSignpostLimitNotifications;
 
         @Override
         public boolean enableConfirmationScreen() { return enableConfirmationScreen.get(); }
-
-        @Override
-        public boolean enableWaystoneLimitNotifications() { return enableWaystoneLimitNotifications.get(); }
-
-        @Override
-        public boolean enableSignpostLimitNotifications() { return enableSignpostLimitNotifications.get(); }
 
         public Client(ForgeConfigSpec.Builder builder) {
             builder.push("teleport");
@@ -146,12 +135,6 @@ public class Config implements IConfig {
                     "CAUTION 2: The only way to edit a sign with destination is through this screen.",
                     "This should probably never be turned off. Why did I make it an option? No idea."
                 ).define("enable_confirmation_screen", true);
-            enableWaystoneLimitNotifications = builder
-                .comment("Choose whether you want to receive a notification on how many waystones you have left to place (if it is limited by the server).")
-                .define("enable_waystone_limit_notifications", true);
-            enableSignpostLimitNotifications = builder
-                .comment("Choose whether you want to receive a notification on how many signposts you have left to place (if it is limited by the server).")
-                .define("enable_signpost_limit_notifications", true);
             builder.pop();
         }
 

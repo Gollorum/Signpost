@@ -38,7 +38,6 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -142,7 +141,6 @@ public class ModelWaystone extends BaseEntityBlock implements SimpleWaterloggedB
 		builder.add(Waterlogged).add(Facing);
 	}
 
-	@Nullable
 	@Override
 	public BlockState getStateForPlacement(BlockPlaceContext context) {
 		return defaultBlockState().setValue(Facing, context.getHorizontalDirection());
@@ -160,7 +158,6 @@ public class ModelWaystone extends BaseEntityBlock implements SimpleWaterloggedB
 		return state.setValue(Facing, state.getValue(Facing).getOpposite());
 	}
 
-	@Nullable
 	@Override
 	public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
 		return new WaystoneTile(pos, state);

@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -22,6 +23,7 @@ public interface StructureTemplatePoolAccessor {
     @Accessor
     List<Pair<StructurePoolElement, Integer>> getRawTemplates();
 
+    @Mutable
     @Accessor("rawTemplates")
     void setRawTemplates(List<Pair<StructurePoolElement, Integer>> rawTemplates);
 

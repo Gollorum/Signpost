@@ -1,6 +1,5 @@
 package gollorum.signpost.utils;
 
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 
 import java.util.ArrayList;
@@ -112,7 +111,10 @@ public class Delay implements IDelay {
 
     public void register() {
         ServerTickEvents.START_SERVER_TICK.register(this::onServerTick);
-        ClientTickEvents.START_CLIENT_TICK.register(this::onClientTick);
+    }
+
+    public void registerClient() {
+        net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.START_CLIENT_TICK.register(this::onClientTick);
     }
 
     void onServerTick(net.minecraft.server.MinecraftServer minecraftServer) {

@@ -56,7 +56,6 @@ public class WaystoneGeneratorBlock extends BaseEntityBlock {
             .mapColor(MapColor.WOOD));
     }
 
-    @Nullable
     @Override
     public BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
         return new WaystoneGeneratorEntity(pos, state);
@@ -67,7 +66,6 @@ public class WaystoneGeneratorBlock extends BaseEntityBlock {
         builder.add(Facing);
     }
 
-    @javax.annotation.Nullable
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         return defaultBlockState().setValue(Facing, context.getHorizontalDirection());

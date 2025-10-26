@@ -10,7 +10,6 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 
 public interface BlockPart<T extends BlockPart<T>> extends Interactable {
@@ -31,7 +30,7 @@ public interface BlockPart<T extends BlockPart<T>> extends Interactable {
 
     BlockPartMetadata<T> getMeta();
 
-    boolean hasThePermissionToEdit(WithOwner tile, @Nullable Player player);
+    boolean hasThePermissionToEdit(WithOwner tile, Player player);
 
     Collection<ItemStack> getDrops();
 

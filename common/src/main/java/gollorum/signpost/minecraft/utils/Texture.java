@@ -2,10 +2,10 @@ package gollorum.signpost.minecraft.utils;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import gollorum.signpost.minecraft.gui.utils.TextureResource;
 import gollorum.signpost.utils.Tint;
 import gollorum.signpost.utils.serialization.OptionalSerializerV1;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -17,7 +17,7 @@ public record Texture(ResourceLocation location, ResourceLocation atlasLocation,
     public Texture(ResourceLocation location) { this(location, Optional.empty(), Optional.empty()); }
 
     private Texture(ResourceLocation location, Optional<ResourceLocation> atlasLocation, Optional<Tint> tint) {
-        this(location, atlasLocation.orElse(TextureAtlas.LOCATION_BLOCKS), tint);
+        this(location, atlasLocation.orElse(TextureResource.blockAtlas), tint);
     }
 
     @Override

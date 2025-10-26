@@ -9,7 +9,6 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderType;
 
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -37,7 +36,7 @@ public class ColorInputBox extends InputBox {
     }
 
     @Override
-    public void setFilter(@Nullable Predicate<String> filter) {
+    public void setFilter(Predicate<String> filter) {
         super.setFilter(text -> isValidColor(text) && (filter == null || filter.test(text)));
     }
 
@@ -59,7 +58,7 @@ public class ColorInputBox extends InputBox {
     public int getCurrentColor() { return currentResult; }
 
     @Override
-    public void setResponder(@Nullable Consumer<String> responder) {
+    public void setResponder(Consumer<String> responder) {
         super.setResponder(text -> {
             currentResult = getResult();
             if(responder != null) {
@@ -86,7 +85,7 @@ public class ColorInputBox extends InputBox {
         super.renderWidget(graphics, mouseX, mouseY, partialTicks);
     }
 
-    public void setColorResponder(@Nullable Consumer<Integer> responder) {
+    public void setColorResponder(Consumer<Integer> responder) {
         setResponder(text -> {
             if(responder != null) responder.accept(currentResult);
         });

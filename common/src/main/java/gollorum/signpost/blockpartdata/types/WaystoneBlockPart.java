@@ -25,7 +25,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
@@ -101,7 +100,7 @@ public class WaystoneBlockPart implements BlockPart<WaystoneBlockPart>, WithOwne
 	public BlockPartMetadata<WaystoneBlockPart> getMeta() { return METADATA; }
 
     @Override
-	public boolean hasThePermissionToEdit(WithOwner tile, @Nullable Player player) { return true; }
+	public boolean hasThePermissionToEdit(WithOwner tile, Player player) { return true; }
 
 	@Override
 	public Collection<ItemStack> getDrops() {

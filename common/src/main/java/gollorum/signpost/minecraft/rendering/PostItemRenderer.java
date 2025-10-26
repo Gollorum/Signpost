@@ -24,7 +24,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
-import javax.annotation.Nullable;
 import java.util.*;
 
 public class PostItemRenderer implements SpecialModelRenderer<PostData> {
@@ -35,7 +34,6 @@ public class PostItemRenderer implements SpecialModelRenderer<PostData> {
         this.fallbackType = fallbackType;
     }
 
-    @Nullable
     public PostData extractArgument(ItemStack itemStack) {
         var data = itemStack.get(PostData.TYPE);
         if (data == null) {
@@ -52,7 +50,7 @@ public class PostItemRenderer implements SpecialModelRenderer<PostData> {
     }
 
     @Override
-    public void render(@Nullable PostData data, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean hasFoilType) {
+    public void render(PostData data, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean hasFoilType) {
         List<BlockPartInstance> parts;
         if (data != null) {
             parts = new ArrayList<>(data.parts().values());
