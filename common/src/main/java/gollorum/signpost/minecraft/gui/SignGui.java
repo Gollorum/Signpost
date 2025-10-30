@@ -29,6 +29,7 @@ import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.*;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.language.I18n;
@@ -47,7 +48,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class SignGui extends ExtendedScreen {
+public class SignGui extends Screen {
 
     private enum SignType {
         Wide, Short, Large
@@ -407,8 +408,7 @@ public class SignGui extends ExtendedScreen {
             entry -> {
                 waystoneInputBox.setValue(entry.entryName);
                 waystoneDropdown.hideList();
-            },
-            false);
+            });
         waystoneDropdown.setEntries(waystoneDropdownEntry);
         Rect waystoneInputRect = new Rect(
             new Point(waystoneDropdown.getX() - 10, waystoneDropdown.getY() + waystoneDropdown.getHeight() / 2),
@@ -461,8 +461,7 @@ public class SignGui extends ExtendedScreen {
             entry -> {
                 rotationInputField.setValue(entry.angleToString());
                 angleDropDown.hideList();
-            },
-            false
+            }
         );
         angleDropDown.setEntries(new HashSet<>());
         angleDropDown.addEntry(angleEntryForPlayer());
@@ -686,7 +685,7 @@ public class SignGui extends ExtendedScreen {
                         ? Optional.ofNullable(n.get(id))
                             .map(e -> Tuple.of(e._1(), e._1(), e._2().block().blockPos()))
                         : Optional.empty());
-            }, Optional.of(PlayerHandle.from(minecraft().player)), true);
+            }, Optional.of(PlayerHandle.from(minecraft.player)), true);
             ExternalWaystoneLibrary.getInstance().requestKnownWaystones(n -> {
                 List<WaystoneEntry> entries = n.stream().map(w -> new WaystoneEntry(
                     w.name() + " " + w.handle().modMark(),
@@ -1027,12 +1026,12 @@ public class SignGui extends ExtendedScreen {
                 oldTilePartInfo.get(), true
             ));
         else Signpost.LOGGER.error("Tried to remove a sign, but the necessary information was missing.");
-        minecraft().setScreen(null);
+        minecraft.setScreen(null);
     }
 
     private void done() {
         apply(asValidWaystone(waystoneInputBox.getValue()).map(w -> w.handle));
-        minecraft().setScreen(null);
+        minecraft.setScreen(null);
         isClosed = true;
     }
 
@@ -1075,7 +1074,7 @@ public class SignGui extends ExtendedScreen {
                     PacketHandler.getInstance().sendToServer(new PostTile.PartAddedEvent.Packet(
                         tilePartInfo,
                         new BlockPartInstance(data, new Vector3(0, localHitPos.y() > 0.5f ? 0.75f : 0.25f, 0)),
-                        itemToDropOnBreak.orElse(ItemStack.EMPTY), PlayerHandle.from(minecraft().player)
+                        itemToDropOnBreak.orElse(ItemStack.EMPTY), PlayerHandle.from(minecraft.player)
                     ));
                 }
             }
@@ -1104,7 +1103,7 @@ public class SignGui extends ExtendedScreen {
                     PacketHandler.getInstance().sendToServer(new PostTile.PartAddedEvent.Packet(
                         tilePartInfo,
                         new BlockPartInstance(data, new Vector3(0, localHitPos.y() > 0.5f ? 0.75f : 0.25f, 0)),
-                        itemToDropOnBreak.orElse(ItemStack.EMPTY), PlayerHandle.from(minecraft().player)
+                        itemToDropOnBreak.orElse(ItemStack.EMPTY), PlayerHandle.from(minecraft.player)
                     ));
                 }
             }
@@ -1138,7 +1137,7 @@ public class SignGui extends ExtendedScreen {
                     PacketHandler.getInstance().sendToServer(new PostTile.PartAddedEvent.Packet(
                         tilePartInfo,
                         new BlockPartInstance(data, new Vector3(0, 0.5f, 0)),
-                        itemToDropOnBreak.orElse(ItemStack.EMPTY), PlayerHandle.from(minecraft().player)
+                        itemToDropOnBreak.orElse(ItemStack.EMPTY), PlayerHandle.from(minecraft.player)
                     ));
                 }
             }
@@ -1154,8 +1153,8 @@ public class SignGui extends ExtendedScreen {
     private AngleSelectionEntry angleEntryForPlayer() {
         AtomicReference<Angle> angleWhenFlipped = new AtomicReference<>(Angle.fromDegrees(404));
         AtomicReference<Angle> angleWhenNotFlipped = new AtomicReference<>(Angle.fromDegrees(404));
-        IDelay.onClientUntil(() -> minecraft() != null && minecraft().player != null, () -> {
-            angleWhenFlipped.set(Angle.fromDegrees(-minecraft().player.getYRot()).normalized());
+        IDelay.onClientUntil(() -> minecraft != null && minecraft.player != null, () -> {
+            angleWhenFlipped.set(Angle.fromDegrees(-minecraft.player.getYRot()).normalized());
             angleWhenNotFlipped.set(angleWhenFlipped.get().add(Angle.fromRadians((float) Math.PI)).normalized());
 
             if(!oldSign.isPresent() && rotationInputField.getCurrentAngle().equals(Angle.ZERO)) {

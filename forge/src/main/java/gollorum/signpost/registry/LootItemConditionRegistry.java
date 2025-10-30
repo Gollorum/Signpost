@@ -4,7 +4,7 @@ import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.loot.PermissionCheck;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
-import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.bus.BusGroup;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
 
@@ -16,7 +16,7 @@ public class LootItemConditionRegistry {
     public static final RegistryObject<LootItemConditionType> permissionCheck =
         Register.register("permission_check", PermissionCheck::createConditionType);
 
-    public static void register(IEventBus bus){
+    public static void register(BusGroup bus){
         Register.register(bus);
     }
 }

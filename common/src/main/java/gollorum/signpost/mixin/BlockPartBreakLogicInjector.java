@@ -43,7 +43,7 @@ public abstract class BlockPartBreakLogicInjector {
                     // that the entity update packet arrives **before** the entity has been reconstructed, which
                     // leaves an empty, and thus invisible, post. To fix that, we manually send another update
                     // one frame later.
-                    PacketHandler.getInstance().sendToTracing(tile, () -> new PostTile.UpdateAllPartsEvent.Packet(tile.getUpdateTag(level.registryAccess()), WorldLocation.from(tile).get()));
+                    PacketHandler.getInstance().sendToTracing(tile, () -> PostTile.UpdateAllPartsEvent.Packet.from(tile.getUpdateTag(level.registryAccess()), WorldLocation.from(tile).get()));
 
                     postTile.removePart(traceResult.get().id);
                     if (level instanceof ServerLevel) {

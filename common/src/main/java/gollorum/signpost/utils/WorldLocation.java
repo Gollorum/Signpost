@@ -18,27 +18,28 @@ public record WorldLocation(BlockPos blockPos, Either<Level, ResourceLocation> w
 
     public static Optional<WorldLocation> from(BlockEntity tile) {
         return tile != null && tile.hasLevel()
-            ? Optional.of(new WorldLocation(tile.getBlockPos(), tile.getLevel()))
+            ? Optional.of(WorldLocation.from(tile.getBlockPos(), tile.getLevel()))
             : Optional.empty();
     }
 
-
-    public WorldLocation(BlockPos blockPos, Either<Level, ResourceLocation> world) {
-        this.blockPos = blockPos;
-        this.world = world.mapRight(loc -> loc.getPath().equals("") ? Level.OVERWORLD.location() : loc);
+    public static WorldLocation from(BlockPos blockPos, Either<Level, ResourceLocation> world) {
+        return new WorldLocation(
+            blockPos,
+            world.mapRight(loc -> loc.getPath().equals("") ? Level.OVERWORLD.location() : loc)
+        );
     }
 
-    public WorldLocation(BlockPos blockPos, Level world) {
-        this(blockPos, Either.left(world));
+    public static WorldLocation from(BlockPos blockPos, Level world) {
+        return from(blockPos, Either.left(world));
     }
 
-    public WorldLocation(BlockPos blockPos, ResourceLocation dimensionKeyLocation) {
-        this(blockPos, Either.right(dimensionKeyLocation));
+    public static WorldLocation from(BlockPos blockPos, ResourceLocation dimensionKeyLocation) {
+        return from(blockPos, Either.right(dimensionKeyLocation));
     }
 
     public WorldLocation withoutExplicitLevel() {
         if(world.isLeft()) {
-            return new WorldLocation(blockPos, Either.right(world.leftOrThrow().dimension().location()));
+            return WorldLocation.from(blockPos, Either.right(world.leftOrThrow().dimension().location()));
         } else {
             return this;
         }
@@ -70,12 +71,12 @@ public record WorldLocation(BlockPos blockPos, Either<Level, ResourceLocation> w
     public static final Codec<WorldLocation> CODEC = RecordCodecBuilder.create(i -> i.group(
         BlockPosSerializer.CODEC.fieldOf("Pos").forGetter(WorldLocation::blockPos),
         WorldSerializer.MAP_CODEC.fieldOf("Level").forGetter(WorldLocation::world)
-    ).apply(i, WorldLocation::new));
+    ).apply(i, WorldLocation::from));
 
     public static final StreamCodec<ByteBuf, WorldLocation> STREAM_CODEC = StreamCodec.composite(
         BlockPos.STREAM_CODEC, WorldLocation::blockPos,
         WorldSerializer.STREAM_CODEC, WorldLocation::world,
-        WorldLocation::new
+        WorldLocation::from
     );
 
 }

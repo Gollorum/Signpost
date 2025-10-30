@@ -31,7 +31,7 @@ public final class RegisteredWaystoneLootDataFunction implements LootItemFunctio
         BlockEntity blockEntity = context.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
         if(blockEntity instanceof WaystoneTile waystoneTile) {
             Optional<WaystoneHandle.Vanilla> handle = waystoneTile.getHandle()
-                .or(() -> WaystoneLibrary.getInstance().getHandleByLocation(new WorldLocation(waystoneTile.getBlockPos(), waystoneTile.getLevel())));
+                .or(() -> WaystoneLibrary.getInstance().getHandleByLocation(WorldLocation.from(waystoneTile.getBlockPos(), waystoneTile.getLevel())));
             handle.ifPresent(h -> itemStack.set(WaystoneHandleData.TYPE, new WaystoneHandleData(h)));
             waystoneTile.getName()
                 .or(() -> handle.flatMap(h -> WaystoneLibrary.getInstance().getData(h).map(WaystoneData::name)))

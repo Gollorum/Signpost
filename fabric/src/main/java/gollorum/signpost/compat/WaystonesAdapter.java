@@ -42,11 +42,13 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
     public static void register() {
         instance = new WaystonesAdapter();
         ExternalWaystoneLibrary.onInitialize().addListener(ex -> { ex.registerAdapter(instance); });
-        PacketHandler.onInitializeDo(packetHandler -> {
-            packetHandler.register(RequestEvent.INSTANCE, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "waystones_adapter_request"));
-            packetHandler.register(new ReplyEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "waystones_adapter_reply"));
-            return true;
-        });
+    }
+
+    public static Map<ResourceLocation, PacketHandler.Event<?>> getEvents() {
+        var map = new HashMap<ResourceLocation, PacketHandler.Event<?>>();
+        map.put(ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "waystones_adapter_request"), WaystonesAdapter.RequestEvent.INSTANCE);
+        map.put(ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "waystones_adapter_reply"), new WaystonesAdapter.ReplyEvent());
+        return map;
     }
 
     private final EventDispatcher.Impl.WithPublicDispatch<Collection<ExternalWaystone>> onReply = new EventDispatcher.Impl.WithPublicDispatch<>();
@@ -102,7 +104,7 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
 
         @Override
         public WaystoneLocationData loc() {
-            WorldLocation blockPos = new WorldLocation(wrapped.getPos(), wrapped.getDimension().location());
+            WorldLocation blockPos = WorldLocation.from(wrapped.getPos(), wrapped.getDimension().location());
             return new WaystoneLocationData(blockPos, Vector3.fromBlockPos(blockPos.blockPos().relative(spawnInDirection(blockPos))));
         }
 

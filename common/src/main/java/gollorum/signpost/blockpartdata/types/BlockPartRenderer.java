@@ -4,8 +4,10 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blockpartdata.types.renderers.*;
 import gollorum.signpost.utils.BlockPart;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
@@ -17,16 +19,19 @@ import java.util.function.Function;
 
 public abstract class BlockPartRenderer<T extends BlockPart<T>> {
 
-    private static final Map<Class<? extends BlockPart>, BlockPartRenderer<? extends BlockPart>> renderers
+    private static final Map<Class<?>, BlockPartRenderer<?>> renderers
         = new ConcurrentHashMap<>();
 
     public static <T extends BlockPart<T>> void register(Class<T> blockPartClass, BlockPartRenderer<T> renderer) {
         renderers.put(blockPartClass, renderer);
     }
 
-    public static <T extends BlockPart<T>> Optional<BlockPartRenderer<T>> getFor(Class<T> blockPartClass) {
-        return Optional.ofNullable(renderers.get(blockPartClass))
-            .map(renderer -> (BlockPartRenderer<T>) renderer);
+    @SuppressWarnings("unchecked")
+    private static <T extends BlockPart<T>> Optional<BlockPartRenderer<T>> getFor(Class<T> blockPartClass) {
+        var renderer = renderers.get(blockPartClass);
+        return renderer == null
+            ? Optional.empty()
+            : Optional.of((BlockPartRenderer<T>) renderer);
     }
 
     static {
@@ -37,15 +42,18 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
         register(WaystoneBlockPart.class, new WaystoneRenderer());
     }
 
+    @SuppressWarnings("unchecked")
     public static <T extends BlockPart<T>> void renderDynamic(
         T part,
         Level level,
         BlockPos pos,
         PoseStack blockToView,
-        MultiBufferSource buffer,
+        SubmitNodeCollector nodeCollector,
+        MaterialSet materials,
         int combinedLights,
         int combinedOverlay,
-        Function<ResourceLocation, RenderType> renderTypeFactory
+        Function<ResourceLocation, RenderType> renderTypeFactory,
+        ModelFeatureRenderer.CrumblingOverlay crumblingOverlay
     ) {
         Optional<BlockPartRenderer<T>> renderer = BlockPartRenderer.getFor((Class<T>) part.getClass());
         if(renderer.isPresent()) {
@@ -54,10 +62,12 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
                 level,
                 pos,
                 blockToView,
-                buffer,
+                nodeCollector,
+                materials,
                 combinedLights,
                 combinedOverlay,
-                renderTypeFactory
+                renderTypeFactory,
+                crumblingOverlay
             );
         } else {
             Signpost.LOGGER.error("Block part renderer was not found for " + part.getClass());
@@ -69,10 +79,11 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
         Level level,
         BlockPos blockPos,
         PoseStack blockToView,
-        MultiBufferSource buffer,
-        int combinedLights,
+        SubmitNodeCollector nodeCollector,
+        MaterialSet materials, int combinedLights,
         int combinedOverlay,
-        Function<ResourceLocation, RenderType> renderTypeFactory
+        Function<ResourceLocation, RenderType> renderTypeFactory,
+        ModelFeatureRenderer.CrumblingOverlay crumblingOverlay
     );
 
 }

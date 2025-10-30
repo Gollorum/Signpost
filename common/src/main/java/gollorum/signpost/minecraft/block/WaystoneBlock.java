@@ -109,7 +109,7 @@ public class WaystoneBlock extends BaseEntityBlock {
 
     public static void onRightClick(Level world, BlockPos pos, Player player) {
         if(!world.isClientSide() && player instanceof ServerPlayer)
-            openGuiIfHasPermission((ServerPlayer) player, new WorldLocation(pos, world));
+            openGuiIfHasPermission((ServerPlayer) player, WorldLocation.from(pos, world));
     }
 
     private static void discover(ServerPlayer player, WaystoneData data) {
@@ -155,7 +155,7 @@ public class WaystoneBlock extends BaseEntityBlock {
                 if (!hasName && placer instanceof ServerPlayer sp)
                     PacketHandler.getInstance().sendToPlayer(
                         sp,
-                        new RequestWaystoneGui.Package(new WorldLocation(pos, world), Optional.empty())
+                        new RequestWaystoneGui.Package(WorldLocation.from(pos, world), Optional.empty())
                     );
             }, 100, Optional.empty()));
     }
@@ -170,7 +170,7 @@ public class WaystoneBlock extends BaseEntityBlock {
         if (tileEntity instanceof WithOwner.OfWaystone waystoneTile)
             waystoneTile.setWaystoneOwner(Optional.of(PlayerHandle.from(placer)));
         if (placer instanceof ServerPlayer sp) {
-            WorldLocation worldLocation = new WorldLocation(pos, world);
+            WorldLocation worldLocation = WorldLocation.from(pos, world);
             boolean wasRegistered = getCustomName(stack).map(name -> {
                 WaystoneLocationData locationData = new WaystoneLocationData(worldLocation, Vector3.fromVec3d(placer.position()));
                 var handleTag = stack.get(WaystoneHandleData.TYPE);

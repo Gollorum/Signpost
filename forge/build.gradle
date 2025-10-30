@@ -1,5 +1,6 @@
 plugins {
     id 'multiloader-loader'
+    id 'idea'
     id 'net.minecraftforge.gradle' version '[6.0.24,6.2)'
     id 'org.spongepowered.mixin' version '0.7-SNAPSHOT'
 }
@@ -33,6 +34,7 @@ minecraft {
     }
 
     runs {
+
         client {
             workingDirectory file('runs/client')
             ideaModule "${rootProject.name}.${project.name}.main"
@@ -44,10 +46,10 @@ minecraft {
             }
         }
 
-        client {
+        clientWithMods {
             workingDirectory file('runs/client_with_mods')
             ideaModule "${rootProject.name}.${project.name}.main"
-            taskName 'Client With Mods'
+            taskName 'ClientWithMods'
             mods {
                 modClientRun {
                     source sourceSets.main
@@ -66,10 +68,10 @@ minecraft {
             }
         }
 
-        server {
+        serverWithMods {
             workingDirectory file('runs/server_with_mods')
             ideaModule "${rootProject.name}.${project.name}.main"
-            taskName 'Server With Mods'
+            taskName 'ServerWithMods'
             mods {
                 modServerRun {
                     source sourceSets.main
@@ -107,14 +109,14 @@ repositories {
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-    annotationProcessor("org.spongepowered:mixin:0.8.5-SNAPSHOT:processor")
+    annotationProcessor "org.spongepowered:mixin:0.8.5-SNAPSHOT:processor"
+    annotationProcessor 'net.minecraftforge:eventbus-validator:7.0-beta.7'
 
     // Forge's hack fix
     implementation('net.sf.jopt-simple:jopt-simple:5.0.4') { version { strictly '5.0.4' } }
 
-    compileOnly "net.blay09.mods:balm-forge:21.5.25+1.21.5"
-    compileOnly "net.blay09.mods:waystones-forge:21.5.11+1.21.5"
-//    compileOnly fg.deobf("curse.maven:repurposed-structures-368293:5150178")
+    compileOnly "net.blay09.mods:balm-forge:21.10.4+1.21.10"
+    compileOnly "net.blay09.mods:waystones-forge:21.10.1+1.21.10"
 }
 
 publishing {

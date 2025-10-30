@@ -4,12 +4,17 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.blockpartdata.types.SmallShortSignBlockPart;
+import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.models.ShortSignModel;
 import gollorum.signpost.minecraft.models.modelGeneration.QuadModel;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.utils.math.MathUtils;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.util.FormattedCharSequence;
 import org.joml.AxisAngle4d;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -44,12 +49,12 @@ public class ShortSignRenderer extends SignRenderer<SmallShortSignBlockPart> {
 	}
 
 	@Override
-	protected void renderText(SmallShortSignBlockPart sign, PoseStack matrix, Font fontRenderer, MultiBufferSource buffer, int combinedLights) {
-		renderText(true, sign, matrix, fontRenderer, buffer, combinedLights);
-		renderText(false, sign, matrix, fontRenderer, buffer, combinedLights);
+	protected void renderText(SmallShortSignBlockPart sign, PoseStack matrix, Font fontRenderer, SubmitNodeCollector nodeCollector, int combinedLights) {
+		renderText(true, sign, matrix, fontRenderer, nodeCollector, combinedLights);
+		renderText(false, sign, matrix, fontRenderer, nodeCollector, combinedLights);
 	}
 
-	private void renderText(boolean isFlipped, SmallShortSignBlockPart sign, PoseStack matrix, Font fontRenderer, MultiBufferSource buffer, int combinedLights) {
+	private void renderText(boolean isFlipped, SmallShortSignBlockPart sign, PoseStack matrix, Font fontRenderer, SubmitNodeCollector nodeCollector, int combinedLights) {
 		RenderingUtil.wrapInMatrixEntry(matrix, () -> {
 			var text = sign.getText().get();
 			if(sign.isMarkedForGeneration()) {
@@ -68,7 +73,17 @@ public class ShortSignRenderer extends SignRenderer<SmallShortSignBlockPart> {
 				-scale * 4 * TEXT_RATIO,
 				-0.505 * VoxelSize);
 			matrix.scale(scale, scale * TEXT_RATIO, scale);
-			fontRenderer.drawInBatch(text, 0, 0, sign.getColor(), false, matrix.last().pose(), buffer, Font.DisplayMode.NORMAL, 0, combinedLights);
+
+            nodeCollector.submitText(
+                matrix, 0, 0,
+                Component.literal(text).getVisualOrderText(),
+                false,
+                Font.DisplayMode.POLYGON_OFFSET,
+                combinedLights,
+                Colors.withAlpha(sign.getColor(), 0xff),
+                0,
+                0
+            );
 		});
 	}
 

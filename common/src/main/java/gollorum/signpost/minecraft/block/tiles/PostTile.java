@@ -37,6 +37,7 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.entity.Entity;
@@ -47,6 +48,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -190,26 +195,26 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     }
 
     @Override
-    public void saveAdditional(CompoundTag compound, HolderLookup.Provider provider) {
-        super.saveAdditional(compound, provider);
-        writeSelf(compound);
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        writeSelf(output);
     }
 
-    private void writeSelf(CompoundTag compound) {
-        compound.store(PostData.CODEC, new PostData(parts));
-        compound.store(Codec.optionalField("Owner", PlayerHandle.CODEC, true), owner);
+    private void writeSelf(ValueOutput output) {
+        output.store(PostData.CODEC, new PostData(parts));
+        output.store(Codec.optionalField("Owner", PlayerHandle.CODEC, true), owner);
     }
 
     @Override
-    public void loadAdditional(CompoundTag compound, HolderLookup.Provider provider) {
-        readSelf(compound, provider);
+    protected void loadAdditional(ValueInput input) {
+        readSelf(input);
     }
 
-    private void readSelf(CompoundTag compound, HolderLookup.Provider provider) {
-        parts = compound.read(PostData.CODEC)
+    private void readSelf(ValueInput input) {
+        parts = input.read(PostData.CODEC)
             .map(d -> new ConcurrentHashMap(d.parts()))
             .orElseGet(ConcurrentHashMap::new);
-        owner = compound.read(Codec.optionalField("Owner", PlayerHandle.CODEC, true)).flatMap(it -> it);
+        owner = input.read(Codec.optionalField("Owner", PlayerHandle.CODEC, true)).flatMap(it -> it);
         if (parts.isEmpty())
             parts.put(UUID.randomUUID(), new BlockPartInstance(new PostBlockPart(modelType.postTexture), Vector3.ZERO));
         Runnable init = () -> {
@@ -268,9 +273,9 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
 
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider provider) {
-        CompoundTag ret = super.getUpdateTag(provider);
-        writeSelf(ret);
-        return ret;
+        var output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, provider);
+        writeSelf(output);
+        return output.buildResult();
     }
 
     @Override
@@ -429,7 +434,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
             boolean isClient = context instanceof PacketHandler.Context.Client;
             TileEntityUtils.findWorld(message.info.dimensionKey, isClient).ifPresent(level ->
                 TileEntityUtils.delayUntilTileEntityExistsAt(
-                    new WorldLocation(message.info.pos, level),
+                    WorldLocation.from(message.info.pos, level),
                     PostTile.class,
                     tile -> {
                         BlockPartInstance oldPart = tile.removePart(message.info.identifier);
@@ -496,7 +501,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
             boolean isServer = context instanceof PacketHandler.Context.Server;
             TileEntityUtils.findWorld(message.info.dimensionKey, !isServer).ifPresent(level ->
                 TileEntityUtils.delayUntilTileEntityExistsAt(
-                    new WorldLocation(message.info.pos, level),
+                    WorldLocation.from(message.info.pos, level),
                     PostTile.class,
                     tile -> {
                         var oldPart = tile.parts.get(message.info.identifier);
@@ -522,9 +527,11 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     public static class UpdateAllPartsEvent implements PacketHandler.Event<UpdateAllPartsEvent.Packet> {
 
         public record Packet(CompoundTag tag, WorldLocation location) {
-            public Packet(CompoundTag tag, WorldLocation location) {
-                this.tag = tag;
-                this.location = location.withoutExplicitLevel();
+            public static Packet from(CompoundTag tag, WorldLocation location) {
+                return new Packet(
+                    tag,
+                    location.withoutExplicitLevel()
+                );
             }
 
             public static final StreamCodec<RegistryFriendlyByteBuf, Packet> STREAM_CODEC = StreamCodec.composite(
@@ -550,7 +557,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
                 TileEntityUtils.delayUntilTileEntityExistsAt(
                     message.location,
                     PostTile.getBlockEntityType(),
-                    tile -> tile.loadWithComponents(message.tag, context.getHolderLookupProvider()),
+                    tile -> tile.loadWithComponents(TagValueInput.create(ProblemReporter.DISCARDING, context.getHolderLookupProvider(), message.tag)),
                     20,
                     true,
                     Optional.empty()

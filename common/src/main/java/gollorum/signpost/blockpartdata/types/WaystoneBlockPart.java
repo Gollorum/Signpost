@@ -63,7 +63,7 @@ public class WaystoneBlockPart implements BlockPart<WaystoneBlockPart>, WithOwne
     public void initialize(Level level, BlockPos position) {
         if (updateListener != null) return; // already initialized
 
-        var location = new WorldLocation(position, level);
+        var location = WorldLocation.from(position, level);
         updateListener = event -> {
             if (location.equals(event.location.block())) {
                 name = Optional.of(event.name);

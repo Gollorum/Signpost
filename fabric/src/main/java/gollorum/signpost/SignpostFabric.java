@@ -48,11 +48,6 @@ public class SignpostFabric implements ModInitializer {
         CreativeModeTabRegistry.register();
         WaystoneDiscoveryEventListener.register();
 
-        PacketHandler.onInitializeDo(e -> {
-            PacketHandler.getInstance().register(new JoinServerEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "join_server"));
-            return true;
-        });
-
         Delay.INSTANCE.register();
 
         LootProviderRegistry.register();
@@ -66,7 +61,6 @@ public class SignpostFabric implements ModInitializer {
         Compat.register();
 
         ExternalWaystoneLibrary.initialize();
-        WaystoneLibrary.registerNetworkPackets();
 //            if(ModList.get().isLoaded(Compat.AntiqueAtlasId))
 //                AntiqueAtlasAdapter.registerNetworkPacket();
 
@@ -108,7 +102,7 @@ public class SignpostFabric implements ModInitializer {
         }
     }
 
-    private static final class JoinServerEvent implements PacketHandler.Event<JoinServerEvent.Package> {
+    public static final class JoinServerEvent implements PacketHandler.Event<JoinServerEvent.Package> {
 
         public static final class Package {
 

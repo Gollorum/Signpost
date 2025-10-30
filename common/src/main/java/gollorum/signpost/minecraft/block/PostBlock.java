@@ -396,8 +396,8 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
                     if(shouldAddNewSign)
                         PacketHandler.getInstance().sendToPlayer(
                             (ServerPlayer) placer,
-                            new RequestSignGui.ForNewSign.Package(
-                                new WorldLocation(pos, world),
+                            RequestSignGui.ForNewSign.Package.from(
+                                WorldLocation.from(pos, world),
                                 tile.modelType,
                                 new Vector3(0, 1, 0),
                                 ItemStack.EMPTY

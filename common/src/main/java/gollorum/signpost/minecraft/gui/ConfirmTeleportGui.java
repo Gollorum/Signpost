@@ -14,12 +14,13 @@ import gollorum.signpost.utils.Either;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class ConfirmTeleportGui extends ExtendedScreen {
+public class ConfirmTeleportGui extends Screen {
 
 	public static class SignInfo {
 		public final PostTile tile;
@@ -158,7 +159,7 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 		);
 		signInfo.ifPresent(info -> {
 			Rect editRect = new Rect(new Point(width / 2, editButtonTop.get()), TextureResource.edit.size, Rect.XAlignment.Center, Rect.YAlignment.Top);
-			if(info.sign.hasThePermissionToEdit(info.tile, minecraft().player)) {
+			if(info.sign.hasThePermissionToEdit(info.tile, minecraft.player)) {
 				addRenderableWidget(new SignpostImageButton(
                     TextureResource.edit,
 					editRect,
@@ -169,15 +170,15 @@ public class ConfirmTeleportGui extends ExtendedScreen {
 	}
 
 	private void confirm() {
-		minecraft().setScreen(null);
+		minecraft.setScreen(null);
 		data.consume(
-			langKey -> minecraft().player.displayClientMessage(Component.translatable(langKey), true),
+			langKey -> minecraft.player.displayClientMessage(Component.translatable(langKey), true),
 			data -> PacketHandler.getInstance().sendToServer(new Teleport.Request.Package(data.waystoneName(), data.handle()))
 		);
 	}
 
 	private void cancel() {
-		minecraft().setScreen(null);
+		minecraft.setScreen(null);
 	}
 
 }

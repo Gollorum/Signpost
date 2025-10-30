@@ -3,7 +3,7 @@ package gollorum.signpost.registry;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.crafting.CutWaystoneRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.bus.BusGroup;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -19,7 +19,7 @@ public class RecipeRegistry {
 			CutWaystoneRecipe.Serializer::new
 		);
 
-	public static void register(IEventBus bus){
+	public static void register(BusGroup bus){
 		Register.register(bus);
 	}
 

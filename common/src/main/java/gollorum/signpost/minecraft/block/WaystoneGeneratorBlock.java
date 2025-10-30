@@ -151,7 +151,7 @@ public class WaystoneGeneratorBlock extends BaseEntityBlock {
     }
 
     private static WaystoneLocationData locationDataFor(BlockPos pos, ServerLevel world, Direction facing) {
-		return new WaystoneLocationData(new WorldLocation(pos, world.getLevel()), spawnPosFor(world, pos, facing));
+		return new WaystoneLocationData(WorldLocation.from(pos, world.getLevel()), spawnPosFor(world, pos, facing));
 	}
 
     private static Vector3 spawnPosFor(ServerLevel world, BlockPos waystonePos, Direction facing) {

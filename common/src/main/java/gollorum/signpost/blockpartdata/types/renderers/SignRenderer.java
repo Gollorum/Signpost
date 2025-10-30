@@ -11,8 +11,10 @@ import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.minecraft.rendering.TexturedModel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
@@ -33,10 +35,11 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
         Level level,
         BlockPos pos,
         PoseStack blockToView,
-        MultiBufferSource buffer,
-        int combinedLights,
+        SubmitNodeCollector nodeCollector,
+        MaterialSet materials, int combinedLights,
         int combinedOverlay,
-        Function<ResourceLocation, RenderType> renderTypeFactory
+        Function<ResourceLocation, RenderType> renderTypeFactory,
+        ModelFeatureRenderer.CrumblingOverlay crumblingOverlay
     ) {
         if(sign.isMarkedForGeneration() && !IConfig.IServer.getInstance().worldGen().debugMode()) return;
         RenderingUtil.wrapInMatrixEntry(blockToView, () -> {
@@ -44,7 +47,7 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
             blockToView.mulPose(rotation);
             RenderingUtil.wrapInMatrixEntry(blockToView, () -> {
                 blockToView.mulPose(new Quaternionf(new AxisAngle4f((float) Math.PI, sign.isFlipped() ? new Vector3f(0, 0, 1) : new Vector3f(1, 0, 0))));
-                renderText(sign, blockToView, Minecraft.getInstance().font, buffer, combinedLights);
+                renderText(sign, blockToView, Minecraft.getInstance().font, nodeCollector, combinedLights);
             });
             RenderingUtil.render(
                 blockToView,
@@ -53,10 +56,11 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
                     sign.getMainTexture().toMaterial(),
                     sign.getMainTexture().tint().map(t -> t.getColorAt(level, pos)).orElse(Colors.white)
                 ),
-                buffer,
-                combinedLights,
+                nodeCollector,
+                materials, combinedLights,
                 combinedOverlay,
-                renderTypeFactory
+                renderTypeFactory,
+                crumblingOverlay
             );
             RenderingUtil.render(
                 blockToView,
@@ -65,10 +69,11 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
                     sign.getSecondaryTexture().toMaterial(),
                     sign.getSecondaryTexture().tint().map(t -> t.getColorAt(level, pos)).orElse(Colors.white)
                 ),
-                buffer,
-                combinedLights,
+                nodeCollector,
+                materials, combinedLights,
                 combinedOverlay,
-                renderTypeFactory
+                renderTypeFactory,
+                crumblingOverlay
             );
             sign.getOverlay().ifPresent(o -> {
                 RenderingUtil.render(
@@ -78,15 +83,16 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
                         o.materialFor(sign.getClass()),
                         o.tint.map(t -> t.getColorAt(level, pos)).orElse(Colors.white)
                     ),
-                    buffer,
-                    combinedLights,
+                    nodeCollector,
+                    materials, combinedLights,
                     combinedOverlay,
-                    renderTypeFactory
+                    renderTypeFactory,
+                    crumblingOverlay
                 );
             });
         });
     }
 
-    protected abstract void renderText(T sign, PoseStack matrix, Font fontRenderer, MultiBufferSource buffer, int combinedLights);
+    protected abstract void renderText(T sign, PoseStack matrix, Font fontRenderer, SubmitNodeCollector nodeCollector, int combinedLights);
 
 }

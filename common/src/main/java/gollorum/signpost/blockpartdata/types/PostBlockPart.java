@@ -26,6 +26,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BrushItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
@@ -89,7 +90,7 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
                 if(info.player instanceof ServerPlayer)
                     PacketHandler.getInstance().sendToPlayer(
                         (ServerPlayer) info.player,
-                        new RequestWaystoneGui.Package(new WorldLocation(info.tile.getBlockPos(), info.player.level()), Optional.empty())
+                        new RequestWaystoneGui.Package(WorldLocation.from(info.tile.getBlockPos(), info.player.level()), Optional.empty())
                     );
                 else Signpost.LOGGER.error("Tried to ask sender to open the waystone GUI, but it was a " + info.player.getClass().getName());
             }
@@ -131,7 +132,7 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
     private static boolean isBrush(ItemStack itemStack) {
         if(itemStack == null || itemStack.getCount() < 1) return false;
         Item item = itemStack.getItem();
-        return item instanceof Brush;
+        return item instanceof Brush || item instanceof BrushItem;
     }
 
     @Override

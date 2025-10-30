@@ -20,7 +20,7 @@ import java.util.function.Consumer;
 public class TileEntityUtils {
 
     public static <T extends BlockEntity> void delayUntilTileEntityExists(LevelAccessor world, BlockPos pos, BlockEntityType<T> c, Consumer<T> action, int timeout, Optional<Runnable> onTimeOut) {
-        IDelay.untilIsPresent(() -> world.getBlockEntity(pos, c), action, timeout, world.isClientSide(), onTimeOut);
+        IDelay.<T>untilIsPresent(() -> world.<T>getBlockEntity(pos, c), action, timeout, world.isClientSide(), onTimeOut);
     }
 
     public static <T extends BlockEntity> Optional<T> findTileEntity(ResourceLocation dimensionKeyLocation, boolean isRemote, BlockPos blockPos, BlockEntityType<T> c){
@@ -57,11 +57,11 @@ public class TileEntityUtils {
     }
 
     public static <T> void delayUntilTileEntityExistsAt(WorldLocation location, Class<T> c, Consumer<T> action, int timeout, boolean onClient, Optional<Runnable> onTimeOut) {
-        IDelay.untilIsPresent(() -> findTileEntityAt(location, c, onClient), action, timeout, onClient, onTimeOut);
+        IDelay.<T>untilIsPresent(() -> TileEntityUtils.<T>findTileEntityAt(location, c, onClient), action, timeout, onClient, onTimeOut);
     }
 
     public static <T extends BlockEntity> void delayUntilTileEntityExistsAt(WorldLocation location, BlockEntityType<T> c, Consumer<T> action, int timeout, boolean onClient, Optional<Runnable> onTimeOut) {
-        IDelay.untilIsPresent(() -> findTileEntityAt(location, c, onClient), action, timeout, onClient, onTimeOut);
+        IDelay.<T>untilIsPresent(() -> TileEntityUtils.<T>findTileEntityAt(location, c, onClient), action, timeout, onClient, onTimeOut);
     }
 
     public static <T extends BlockEntity> Optional<T> findTileEntityClient(ResourceLocation dimensionKeyLocation, BlockPos pos, BlockEntityType<T> c){

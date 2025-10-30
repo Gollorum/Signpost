@@ -7,7 +7,7 @@ import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.minecraft.gui.utils.TextureResource;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 
 import java.util.Collections;
 import java.util.function.Consumer;
@@ -55,7 +55,7 @@ public class ColorInputBox extends InputBox {
         return Integer.parseInt(getValue().substring(1), 16);
     }
 
-    public int getCurrentColor() { return currentResult; }
+    public int getCurrentColor() { return Colors.withAlpha(currentResult, 0xff); }
 
     @Override
     public void setResponder(Consumer<String> responder) {
@@ -69,25 +69,21 @@ public class ColorInputBox extends InputBox {
 
     @Override
     public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        graphics.drawSpecial(bufferSource -> {
-            RenderType rendertype = RenderType.guiTextured(TextureResource.paintBackground.location);
-            int red = Colors.getRed(currentResult);
-            int green = Colors.getGreen(currentResult);
-            int blue = Colors.getBlue(currentResult);
-            var x = getX();
-            var y = getY();
-            VertexConsumer vertexconsumer = bufferSource.getBuffer(rendertype);
-            vertexconsumer.addVertex(x - height, y + height, 0).setUv(0, 1).setColor(red, green, blue, 255);
-            vertexconsumer.addVertex(x, y + height, 0).setUv(1, 1).setColor(red, green, blue, 255);
-            vertexconsumer.addVertex(x, y, 0).setUv(1, 0).setColor(red, green, blue, 255);
-            vertexconsumer.addVertex(x - height, y, 0).setUv(0, 0).setColor(red, green, blue, 255);
-        });
+        graphics.blit(
+            RenderPipelines.GUI_TEXTURED,
+            TextureResource.paintBackground.location,
+            getX() - height, getY(),
+            0, 0,
+            height, height,
+            TextureResource.paintBackground.size.width, TextureResource.paintBackground.size.height,
+            getCurrentColor()
+        );
         super.renderWidget(graphics, mouseX, mouseY, partialTicks);
     }
 
     public void setColorResponder(Consumer<Integer> responder) {
         setResponder(text -> {
-            if(responder != null) responder.accept(currentResult);
+            if(responder != null) responder.accept(getCurrentColor());
         });
     }
 

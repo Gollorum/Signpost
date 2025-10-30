@@ -4,14 +4,15 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.blockpartdata.Overlay;
 import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
+import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.models.WideSignModel;
 import gollorum.signpost.minecraft.models.modelGeneration.QuadModel;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.MultiBufferSource;
-import org.joml.AxisAngle4d;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.util.FormattedCharSequence;
 
 import java.util.Optional;
 import java.util.Random;
@@ -44,7 +45,7 @@ public class WideSignRenderer extends SignRenderer<SmallWideSignBlockPart> {
 	}
 
 	@Override
-	protected void renderText(SmallWideSignBlockPart sign, PoseStack matrix, Font fontRenderer, MultiBufferSource buffer, int combinedLights) {
+	protected void renderText(SmallWideSignBlockPart sign, PoseStack matrix, Font fontRenderer, SubmitNodeCollector nodeCollector, int combinedLights) {
 		RenderingUtil.wrapInMatrixEntry(matrix, () -> {
 			var text = sign.getText().get();
 			if(sign.isMarkedForGeneration()) {
@@ -66,7 +67,17 @@ public class WideSignRenderer extends SignRenderer<SmallWideSignBlockPart> {
 				-scale * 4 * TEXT_RATIO,
 				-3.005 * VoxelSize);
 			matrix.scale(scale, scale * TEXT_RATIO, scale);
-			fontRenderer.drawInBatch(text, 0, 0, sign.getColor(), false, matrix.last().pose(), buffer, Font.DisplayMode.NORMAL, 0, combinedLights);
+
+            nodeCollector.submitText(
+                matrix, 0, 0,
+                Component.literal(text).getVisualOrderText(),
+                false,
+                Font.DisplayMode.POLYGON_OFFSET,
+                combinedLights,
+                Colors.withAlpha(sign.getColor(), 0xff),
+                0,
+                0
+            );
 		});
 	}
 

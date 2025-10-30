@@ -17,22 +17,33 @@ import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.AngleProvider;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.geom.EntityModelSet;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
+import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import org.joml.Vector3f;
 
 import java.util.*;
 
 public class PostItemRenderer implements SpecialModelRenderer<PostData> {
 
     private final PostBlock.ModelType fallbackType;
+    private final MaterialSet materials;
 
-    public PostItemRenderer(PostBlock.ModelType fallbackType) {
+    public PostItemRenderer(PostBlock.ModelType fallbackType, MaterialSet materials) {
         this.fallbackType = fallbackType;
+        this.materials = materials;
+    }
+
+    @Override
+    public void getExtents(Set<Vector3f> set) {
+        set.add(new Vector3f(-1, 0, -1));
+        set.add(new Vector3f(-1, 0, 1));
+        set.add(new Vector3f(1, 0, 1));
+        set.add(new Vector3f(1, 0, -1));
     }
 
     public PostData extractArgument(ItemStack itemStack) {
@@ -51,7 +62,7 @@ public class PostItemRenderer implements SpecialModelRenderer<PostData> {
     }
 
     @Override
-    public void render(PostData data, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean hasFoilType) {
+    public void submit(PostData data, ItemDisplayContext displayContext, PoseStack poseStack, SubmitNodeCollector nodeCollector, int packedLight, int packedOverlay, boolean hasFoil, int outlineColor) {
         List<BlockPartInstance> parts;
         if (data != null) {
             parts = new ArrayList<>(data.parts().values());
@@ -91,17 +102,17 @@ public class PostItemRenderer implements SpecialModelRenderer<PostData> {
                         Minecraft.getInstance().level,
                         Minecraft.getInstance().player.blockPosition(),
                         poseStack,
-                        bufferSource,
+                        nodeCollector,
+                        materials,
                         packedLight,
                         packedOverlay,
                         displayContext == ItemDisplayContext.GUI
-                            ? RenderType::entityCutout
-                            : t -> RenderType.cutout()
+                            ? t -> RenderType.solid()
+                            : RenderType::entityCutout,
+                        null
                     );
                 });
             }
-
-            if(bufferSource instanceof MultiBufferSource.BufferSource) ((MultiBufferSource.BufferSource) bufferSource).endBatch();
         });
     }
 
@@ -116,8 +127,8 @@ public class PostItemRenderer implements SpecialModelRenderer<PostData> {
         );
 
         @Override
-        public SpecialModelRenderer<?> bake(EntityModelSet modelSet) {
-            return new PostItemRenderer(this.fallbackType);
+        public SpecialModelRenderer<?> bake(BakingContext context) {
+            return new PostItemRenderer(this.fallbackType, context.materials());
         }
 
         @Override

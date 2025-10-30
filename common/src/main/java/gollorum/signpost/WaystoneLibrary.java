@@ -92,23 +92,6 @@ public class WaystoneLibrary {
 
     public final EventDispatcher<WaystoneUpdatedEvent> updateEventDispatcher = _updateEventDispatcher;
 
-    public static void registerNetworkPackets() {
-        PacketHandler.onInitializeDo(packetHandler -> {
-            packetHandler.register(new RequestAllWaystoneNamesEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "request_all_waystone_names"));
-            packetHandler.register(new DeliverAllWaystoneNamesEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "deliver_all_waystone_names"));
-            packetHandler.register(new RequestAllWaystonesEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "request_all_waystones"));
-            packetHandler.register(new DeliverAllWaystonesEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "deliver_all_waystones"));
-            packetHandler.register(new WaystoneUpdatedEventEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "waystone_updated_event"));
-            packetHandler.register(new RequestWaystoneLocationEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "request_waystone_location"));
-            packetHandler.register(new DeliverWaystoneLocationEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "deliver_waystone_location"));
-            packetHandler.register(new RequestWaystoneAtLocationEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "request_waystone_at_location"));
-            packetHandler.register(new DeliverWaystoneAtLocationEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "deliver_waystone_at_location"));
-            packetHandler.register(new DeliverIdEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "deliver_id"));
-            packetHandler.register(new RequestIdEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "request_id"));
-            return true;
-        });
-    }
-
     public WaystoneLocationData getLocationData(WaystoneHandle.Vanilla waystoneId) {
         assert Signpost.getServerType().isServer;
         return data.allWaystones.get(waystoneId).locationData;
@@ -352,7 +335,7 @@ public class WaystoneLibrary {
                     return true;
                 } else return false;
             });
-            PacketHandler.getInstance().sendToServer(new RequestWaystoneAtLocationEvent.Packet(location));
+            PacketHandler.getInstance().sendToServer(RequestWaystoneAtLocationEvent.Packet.from(location));
         } else onReply.accept(tryGetWaystoneDataAt(location));
     }
 
@@ -489,7 +472,7 @@ public class WaystoneLibrary {
         data.setDirty();
     }
 
-    private static final class RequestAllWaystoneNamesEvent implements PacketHandler.Event.ForServer<RequestAllWaystoneNamesEvent.Packet> {
+    public static final class RequestAllWaystoneNamesEvent implements PacketHandler.Event.ForServer<RequestAllWaystoneNamesEvent.Packet> {
 
         public record Packet(Optional<PlayerHandle> onlyKnownBy) {
 
@@ -517,7 +500,7 @@ public class WaystoneLibrary {
 
     }
 
-    private static final class DeliverAllWaystoneNamesEvent implements PacketHandler.Event<DeliverAllWaystoneNamesEvent.Packet> {
+    public static final class DeliverAllWaystoneNamesEvent implements PacketHandler.Event<DeliverAllWaystoneNamesEvent.Packet> {
 
         public static final record Packet(Map<WaystoneHandle.Vanilla, String> names) {
             public static final StreamCodec<RegistryFriendlyByteBuf, Packet> STREAM_CODEC = ByteBufCodecs.<RegistryFriendlyByteBuf, WaystoneHandle.Vanilla, String, Map<WaystoneHandle.Vanilla, String>>map(
@@ -544,7 +527,7 @@ public class WaystoneLibrary {
         }
     }
 
-    private static final class RequestAllWaystonesEvent implements PacketHandler.Event.ForServer<RequestAllWaystonesEvent.Packet> {
+    public static final class RequestAllWaystonesEvent implements PacketHandler.Event.ForServer<RequestAllWaystonesEvent.Packet> {
 
         public record Packet(Optional<PlayerHandle> onlyKnownBy) {
             public static final StreamCodec<RegistryFriendlyByteBuf, Packet> STREAM_CODEC = StreamCodec.composite(
@@ -571,7 +554,7 @@ public class WaystoneLibrary {
 
     }
 
-    private static final class DeliverAllWaystonesEvent implements PacketHandler.Event<DeliverAllWaystonesEvent.Packet> {
+    public static final class DeliverAllWaystonesEvent implements PacketHandler.Event<DeliverAllWaystonesEvent.Packet> {
 
         public static final record Packet(Map<WaystoneHandle.Vanilla, Tuple<String, WaystoneLocationData>> data) {
             public static final StreamCodec<RegistryFriendlyByteBuf, Packet> STREAM_CODEC = ByteBufCodecs.<RegistryFriendlyByteBuf, WaystoneHandle.Vanilla, Tuple<String, WaystoneLocationData>, Map<WaystoneHandle.Vanilla, Tuple<String, WaystoneLocationData>>>map(
@@ -595,7 +578,7 @@ public class WaystoneLibrary {
         }
     }
 
-    private static final class WaystoneUpdatedEventEvent implements PacketHandler.Event<WaystoneUpdatedEventEvent.Packet> {
+    public static final class WaystoneUpdatedEventEvent implements PacketHandler.Event<WaystoneUpdatedEventEvent.Packet> {
 
         public static final record Packet(WaystoneUpdatedEvent event) {
             public static final StreamCodec<RegistryFriendlyByteBuf, Packet> STREAM_CODEC =
@@ -640,11 +623,11 @@ public class WaystoneLibrary {
 
     }
 
-    private static final class RequestWaystoneAtLocationEvent implements PacketHandler.Event.ForServer<RequestWaystoneAtLocationEvent.Packet> {
+    public static final class RequestWaystoneAtLocationEvent implements PacketHandler.Event.ForServer<RequestWaystoneAtLocationEvent.Packet> {
 
         public record Packet(WorldLocation waystoneLocation) {
-            public Packet(WorldLocation waystoneLocation) {
-                this.waystoneLocation = waystoneLocation.withoutExplicitLevel();
+            public static Packet from(WorldLocation waystoneLocation) {
+                return new Packet(waystoneLocation.withoutExplicitLevel());
             }
             
             public static final StreamCodec<RegistryFriendlyByteBuf, Packet> STREAM_CODEC = WorldLocation.STREAM_CODEC
@@ -667,7 +650,7 @@ public class WaystoneLibrary {
             Optional<WaystoneData> dataAt = getInstance().tryGetWaystoneDataAt(message.waystoneLocation);
             PacketHandler.getInstance().sendToPlayer(
                 context.sender(),
-                new DeliverWaystoneAtLocationEvent.Packet(
+                DeliverWaystoneAtLocationEvent.Packet.from(
                     message.waystoneLocation,
                     dataAt
                 ));
@@ -675,12 +658,14 @@ public class WaystoneLibrary {
 
     }
 
-    private static final class DeliverWaystoneAtLocationEvent implements PacketHandler.Event<DeliverWaystoneAtLocationEvent.Packet> {
+    public static final class DeliverWaystoneAtLocationEvent implements PacketHandler.Event<DeliverWaystoneAtLocationEvent.Packet> {
 
         private record Packet(WorldLocation waystoneLocation, Optional<WaystoneData> data) {
-            private Packet(WorldLocation waystoneLocation, Optional<WaystoneData> data) {
-                this.waystoneLocation = waystoneLocation.withoutExplicitLevel();
-                this.data = data.map(WaystoneData::withoutExplicitLevel);
+            private static Packet from(WorldLocation waystoneLocation, Optional<WaystoneData> data) {
+                return new Packet(
+                    waystoneLocation.withoutExplicitLevel(),
+                    data.map(WaystoneData::withoutExplicitLevel)
+                );
             }
             
             public static final StreamCodec<RegistryFriendlyByteBuf, Packet> STREAM_CODEC = StreamCodec.composite(
@@ -705,7 +690,7 @@ public class WaystoneLibrary {
 
     }
 
-    private static final class RequestWaystoneLocationEvent implements PacketHandler.Event.ForServer<RequestWaystoneLocationEvent.Packet> {
+    public static final class RequestWaystoneLocationEvent implements PacketHandler.Event.ForServer<RequestWaystoneLocationEvent.Packet> {
 
         public record Packet(String name) {
             public static final StreamCodec<RegistryFriendlyByteBuf, Packet> STREAM_CODEC = ByteBufCodecs.STRING_UTF8
@@ -728,7 +713,7 @@ public class WaystoneLibrary {
             Optional<WaystoneLocationData> dataAt = getInstance().getByName(message.name).map(e -> e.getValue().locationData);
             PacketHandler.getInstance().sendToPlayer(
                 context.sender(),
-                new DeliverWaystoneLocationEvent.Packet(
+                DeliverWaystoneLocationEvent.Packet.from(
                     message.name,
                     dataAt
                 ));
@@ -736,12 +721,14 @@ public class WaystoneLibrary {
 
     }
 
-    private static final class DeliverWaystoneLocationEvent implements PacketHandler.Event<DeliverWaystoneLocationEvent.Packet> {
+    public static final class DeliverWaystoneLocationEvent implements PacketHandler.Event<DeliverWaystoneLocationEvent.Packet> {
 
         private record Packet(String name, Optional<WaystoneLocationData> data) {
-            private Packet(String name, Optional<WaystoneLocationData> data) {
-                this.name = name;
-                this.data = data.map(WaystoneLocationData::withoutExplicitLevel);
+            private static Packet from(String name, Optional<WaystoneLocationData> data) {
+                return new Packet(
+                    name,
+                    data.map(WaystoneLocationData::withoutExplicitLevel)
+                );
             }
             public static final StreamCodec<RegistryFriendlyByteBuf, Packet> STREAM_CODEC = StreamCodec.composite(
                 ByteBufCodecs.STRING_UTF8, Packet::name,
@@ -765,7 +752,7 @@ public class WaystoneLibrary {
 
     }
 
-    private static final class RequestIdEvent implements PacketHandler.Event.ForServer<RequestIdEvent.Packet> {
+    public static final class RequestIdEvent implements PacketHandler.Event.ForServer<RequestIdEvent.Packet> {
 
         public record Packet(String name) {
             public static final StreamCodec<RegistryFriendlyByteBuf, Packet> STREAM_CODEC = ByteBufCodecs.STRING_UTF8
@@ -792,7 +779,7 @@ public class WaystoneLibrary {
 
     }
 
-    private static final class DeliverIdEvent implements PacketHandler.Event<DeliverIdEvent.Packet> {
+    public static final class DeliverIdEvent implements PacketHandler.Event<DeliverIdEvent.Packet> {
 
         private record Packet(Optional<WaystoneHandle.Vanilla> waystone) {
             public static final StreamCodec<RegistryFriendlyByteBuf, Packet> STREAM_CODEC = ByteBufCodecs.optional(WaystoneHandle.Vanilla.STREAM_CODEC)

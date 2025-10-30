@@ -5,6 +5,8 @@ import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.WaystoneBlock;
+import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
 import gollorum.signpost.minecraft.data.PostData;
 import gollorum.signpost.minecraft.data.WaystoneHandleData;
 import gollorum.signpost.minecraft.loot.PostBlockPartDropLoot;
@@ -25,6 +27,7 @@ import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.data.loot.packs.VanillaLootTableProvider;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.block.Block;
@@ -78,7 +81,7 @@ public class LootTables extends LootTableProvider {
             .withPool(LootPool.lootPool()
                 .setRolls(ConstantValue.exactly(1))
                 .add(LootItem.lootTableItem(block)
-                    .apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY)
+                    .apply(CopyComponentsFunction.copyComponentsFromBlockEntity(new ContextKey<WaystoneTile>(ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, WaystoneTile.REGISTRY_NAME)))
                         .include(WaystoneHandleData.TYPE)
                         .include(DataComponents.CUSTOM_NAME)
                     ).when(includeDataCondition)
@@ -90,7 +93,7 @@ public class LootTables extends LootTableProvider {
             .withPool(LootPool.lootPool()
                 .setRolls(ConstantValue.exactly(1))
                 .add(LootItem.lootTableItem(variant.getBlock())
-                    .apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY)
+                    .apply(CopyComponentsFunction.copyComponentsFromBlockEntity(new ContextKey<PostTile>(ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, PostTile.REGISTRY_NAME)))
                         .include(WaystoneHandleData.TYPE)
                         .include(DataComponents.CUSTOM_NAME)
                         .include(PostData.TYPE))

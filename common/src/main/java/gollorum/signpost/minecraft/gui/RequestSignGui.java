@@ -52,11 +52,13 @@ public class RequestSignGui implements PacketHandler.Event.ForClient<RequestSign
 	public static class ForNewSign implements PacketHandler.Event.ForClient<ForNewSign.Package> {
 
 		public record Package(WorldLocation loc, PostBlock.ModelType modelType, Vector3 localHitPos, ItemStack itemToDropOnBreak) {
-			public Package(WorldLocation loc, PostBlock.ModelType modelType, Vector3 localHitPos, ItemStack itemToDropOnBreak) {
-				this.loc = loc.withoutExplicitLevel();
-				this.modelType = modelType;
-				this.localHitPos = localHitPos;
-				this.itemToDropOnBreak = itemToDropOnBreak;
+			public static Package from(WorldLocation loc, PostBlock.ModelType modelType, Vector3 localHitPos, ItemStack itemToDropOnBreak) {
+                return new Package(
+                    loc.withoutExplicitLevel(),
+                    modelType,
+                    localHitPos,
+                    itemToDropOnBreak
+                );
 			}
 			public static final StreamCodec<RegistryFriendlyByteBuf, Package> STREAM_CODEC = StreamCodec.composite(
 				WorldLocation.STREAM_CODEC, Package::loc,

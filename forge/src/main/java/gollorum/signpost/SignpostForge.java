@@ -16,25 +16,27 @@ import gollorum.signpost.worldgen.Villages;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
+import net.minecraftforge.eventbus.api.bus.BusGroup;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.RegisterEvent;
 
+import java.lang.invoke.MethodHandles;
 import java.util.function.Consumer;
+
+import static net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus.FORGE;
+import static net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus.MOD;
 
 @Mod(Signpost.MOD_ID)
 public class SignpostForge {
@@ -44,10 +46,10 @@ public class SignpostForge {
     public SignpostForge(FMLJavaModLoadingContext context) {
         serverSetter = Signpost.init(Config.INSTANCE, Delay.INSTANCE);
 
-        IEventBus forgeBus = MinecraftForge.EVENT_BUS;
-        IEventBus modBus = context.getModEventBus();
-        forgeBus.register(new ForgeEvents());
-        modBus.register(new ModBusEvents());
+        var forgeBus = BusGroup.DEFAULT;
+        var modBus = context.getModBusGroup();
+        ModBusEvents.register(modBus);
+        forgeBus.register(MethodHandles.lookup(), new ForgeEvents());
 
         BlockRegistry.register(modBus);
         ItemRegistry.register(modBus);
@@ -57,7 +59,7 @@ public class SignpostForge {
         CreativeModeTabRegistry.register(modBus);
         WaystoneDiscoveryEventListener.register(forgeBus);
 
-        forgeBus.register(Delay.INSTANCE);
+        forgeBus.register(MethodHandles.lookup(), Delay.INSTANCE);
 
         Config.INSTANCE.register(context);
 
@@ -68,28 +70,27 @@ public class SignpostForge {
 
         Compat.register();
     }
+
     private static class ModBusEvents {
 
-        @SubscribeEvent
-        public void setup(final FMLCommonSetupEvent event) {
+        public static void register(BusGroup busGroup) {
+            FMLCommonSetupEvent.getBus(busGroup).addListener(ModBusEvents::setup);
+            EntityRenderersEvent.RegisterRenderers.BUS.addListener(ModBusEvents::registerEntityRenderers);
+            RegisterEvent.getBus(busGroup).addListener(ModBusEvents::registerStuff);
+        }
+
+        public static void setup(final FMLCommonSetupEvent event) {
             ForgePacketHandler.initialize();
-            PacketHandler.onInitializeDo(packetHandler -> {
-                packetHandler.register(new JoinServerEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "join_server"));
-                return true;
-            });
             ExternalWaystoneLibrary.initialize();
-            WaystoneLibrary.registerNetworkPackets();
 //            if(ModList.get().isLoaded(Compat.AntiqueAtlasId))
 //                AntiqueAtlasAdapter.registerNetworkPacket();
         }
 
-        @SubscribeEvent
-        public void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
             event.registerBlockEntityRenderer(PostTile.getBlockEntityType(), PostRenderer::new);
         }
 
-        @SubscribeEvent
-        public void registerStuff(RegisterEvent event) {
+        public static void registerStuff(RegisterEvent event) {
             JigsawDeserializers.register((loc, elem) -> event.register(Registries.STRUCTURE_POOL_ELEMENT, loc, () -> elem));
             LootEntries.register((loc, elem) -> event.register(Registries.LOOT_POOL_ENTRY_TYPE, loc, () -> elem));
         }
@@ -108,7 +109,7 @@ public class SignpostForge {
 
         @SubscribeEvent
         public void joinServer(PlayerEvent.PlayerLoggedInEvent e) {
-            if(!e.getEntity().level().isClientSide && Signpost.getServerInstance().isDedicatedServer())
+            if(!e.getEntity().level().isClientSide() && Signpost.getServerInstance().isDedicatedServer())
                 PacketHandler.getInstance().sendToPlayer(
                     (ServerPlayer) e.getEntity(),
                     JoinServerEvent.Package.INSTANCE
@@ -130,7 +131,7 @@ public class SignpostForge {
 
     }
 
-    private static final class JoinServerEvent implements PacketHandler.Event<JoinServerEvent.Package> {
+    public static final class JoinServerEvent implements PacketHandler.Event<JoinServerEvent.Package> {
 
         public static final class Package {
 

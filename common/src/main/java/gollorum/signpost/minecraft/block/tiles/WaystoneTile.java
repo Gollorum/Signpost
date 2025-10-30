@@ -26,6 +26,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -74,7 +76,7 @@ public class WaystoneTile extends BlockEntity implements WithOwner.OfWaystone, W
     public void setLevel(Level level) {
         super.setLevel(level);
         IDelay.forFrames(10, level.isClientSide(), () -> {
-            WaystoneLibrary.getInstance().requestWaystoneAt(new WorldLocation(getBlockPos(), level),
+            WaystoneLibrary.getInstance().requestWaystoneAt(WorldLocation.from(getBlockPos(), level),
                 data -> {
                     handle = data.map(WaystoneData::handle);
                     name = data.map(WaystoneData::name);
@@ -85,7 +87,7 @@ public class WaystoneTile extends BlockEntity implements WithOwner.OfWaystone, W
     }
 
     public static void onRemoved(ServerLevel world, BlockPos pos) {
-        WaystoneLibrary.getInstance().removeAt(new WorldLocation(pos, world), PlayerHandle.Invalid);
+        WaystoneLibrary.getInstance().removeAt(WorldLocation.from(pos, world), PlayerHandle.Invalid);
     }
 
     @Override
@@ -98,14 +100,13 @@ public class WaystoneTile extends BlockEntity implements WithOwner.OfWaystone, W
     }
 
     @Override
-    public void saveAdditional(CompoundTag compound, HolderLookup.Provider registries) {
-        compound.store(PlayerHandle.CODEC.optionalFieldOf("Owner"), owner);
+    public void saveAdditional(ValueOutput output) {
+        output.store(PlayerHandle.CODEC.optionalFieldOf("Owner"), owner);
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        owner = tag.read(Codec.optionalField("Owner", PlayerHandle.CODEC, true)).flatMap(it -> it);
+    protected void loadAdditional(ValueInput input) {
+        owner = input.read(Codec.optionalField("Owner", PlayerHandle.CODEC, true)).flatMap(it -> it);
     }
 
     @Override

@@ -8,7 +8,7 @@ import gollorum.signpost.minecraft.commands.ListWaystones;
 import gollorum.signpost.minecraft.commands.Teleport;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import static net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus.FORGE;

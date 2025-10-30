@@ -39,7 +39,7 @@ public class WaystoneDiscoveryEventListener implements IWaystoneDiscoveryEventLi
         if(!WaystoneLibrary.hasInstance()) return;
         VillageWaystone.ChunkEntryKey key = new VillageWaystone.ChunkEntryKey(
             event.getPos(),
-            event.getPlayer().serverLevel().dimension().location()
+            event.getPlayer().level().dimension().location()
         );
         var lib = WaystoneLibrary.getInstance();
         Map<VillageWaystone.ChunkEntryKey, WaystoneHandle.Vanilla> allEntries = lib.getVillageWaystones().getAllEntriesByChunk(lib, true);
@@ -62,7 +62,7 @@ public class WaystoneDiscoveryEventListener implements IWaystoneDiscoveryEventLi
         WaystoneHandle.Vanilla handle = lib.getVillageWaystones().getAllEntriesByChunk(lib, false).get(
             new VillageWaystone.ChunkEntryKey(
                 event.getPos(),
-                event.getPlayer().serverLevel().dimension().location()
+                event.getPlayer().level().dimension().location()
             )
         );
         if(handle == null) return;
@@ -94,7 +94,7 @@ public class WaystoneDiscoveryEventListener implements IWaystoneDiscoveryEventLi
     public void registerNew(WaystoneHandle.Vanilla handle, ServerLevel world, BlockPos pos) {
         Signpost.getServerInstance().getPlayerList().getPlayers().forEach(
             player -> {
-                if(player.serverLevel().equals(world) && player.blockPosition().closerThan(pos, 100))
+                if(player.level().equals(world) && player.blockPosition().closerThan(pos, 100))
                     trackedPlayers.computeIfAbsent(player, p -> PlatformDependent.newConcurrentHashMap())
                         .putIfAbsent(handle, pos);
             }

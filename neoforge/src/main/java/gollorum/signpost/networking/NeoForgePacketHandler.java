@@ -1,7 +1,9 @@
 package gollorum.signpost.networking;
 
 import gollorum.signpost.Signpost;
-import gollorum.signpost.utils.Tuple;
+import gollorum.signpost.SignpostNeoforge;
+import gollorum.signpost.compat.Compat;
+import gollorum.signpost.compat.WaystonesAdapter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
@@ -9,37 +11,40 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Supplier;
 
 public class NeoForgePacketHandler extends PacketHandler {
 
-    private PayloadRegistrar registrar;
-    private final Map<Class<?>, Tuple<Event<?>, ResourceLocation>> events = new HashMap<>();
-
     public static void initialize(IEventBus bus) {
-        bus.register(NeoForgePacketHandler.class);
         instance = new NeoForgePacketHandler();
+        instance.init();
+        instance.register(new SignpostNeoforge.JoinServerEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "join_server"));
+        for (var entry : Compat.getEvents().entrySet()) {
+            instance.register(entry.getValue(), entry.getKey());
+        }
+        bus.register(NeoForgePacketHandler.class);
     }
 
     @SubscribeEvent
     public static void register(final RegisterPayloadHandlersEvent event) {
-        final PayloadRegistrar registrar = event.registrar(Signpost.MOD_ID);
-        ((NeoForgePacketHandler) instance).registrar = registrar;
-        instance.init();
+        PayloadRegistrar registrar = event.registrar(Signpost.MOD_ID);
+
+        for (var tuple : instance.events.values()) {
+            ((NeoForgePacketHandler) instance).registerCommon(tuple._1(), tuple._2(), registrar);
+        }
+
     }
 
-    @Override
-    public <T> void register(Event<T> event, ResourceLocation id){
-        events.put(event.getMessageClass(), new Tuple<>(event, id));
+    private <T> void registerCommon(Event<T> event, ResourceLocation id, PayloadRegistrar registrar) {
         var type = new CustomPacketPayload.Type<Payload<T>>(id);
         registrar.playBidirectional(
             type,
@@ -47,15 +52,26 @@ public class NeoForgePacketHandler extends PacketHandler {
                 message -> new Payload<T>(type, event, message),
                 payload -> payload.message
             ),
-            NeoForgePacketHandler::handle
-        );
+            (payload, context) -> context.enqueueWork(() ->
+                payload.event.handle(payload.message, new Context.Server((ServerPlayer) context.player()))
+            ));
     }
 
-    private static <T> void handle(Payload<T> payload, IPayloadContext context) {
-        context.enqueueWork(() ->
-            payload.event.handle(payload.message, context.flow().isClientbound()
-                ? new Context.Client()
-                : new Context.Server((ServerPlayer) context.player())));
+//    @OnlyIn(Dist.CLIENT)
+    @SubscribeEvent
+    public static void register(net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent event) {
+        for (var tuple : instance.events.values()) {
+            ((NeoForgePacketHandler) instance).registerClient(tuple._2(), event);
+        }
+    }
+
+    private <T> void registerClient(ResourceLocation id, net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent registrar) {
+        registrar.register(
+            new CustomPacketPayload.Type<Payload<T>>(id),
+            (payload, context) -> context.enqueueWork(() ->
+                payload.event.handle(payload.message, new Context.Client())
+            )
+        );
     }
 
     private <T> Payload<T> toPayload(T message) {
@@ -65,7 +81,7 @@ public class NeoForgePacketHandler extends PacketHandler {
 
     @Override
     public <T> void sendToServer(T message) {
-        PacketDistributor.sendToServer(toPayload(message));
+        ClientPacketDistributor.sendToServer(toPayload(message));
     }
 
     @Override

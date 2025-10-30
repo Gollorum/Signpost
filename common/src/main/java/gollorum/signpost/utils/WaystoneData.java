@@ -22,7 +22,7 @@ public record WaystoneData(WaystoneHandle.Vanilla handle, String name, WaystoneL
                 handle,
                 name,
                 new WaystoneLocationData(
-                    new WorldLocation(location.block().blockPos(), Either.right(location.block().world().leftOrThrow().dimension().location())),
+                    WorldLocation.from(location.block().blockPos(), Either.right(location.block().world().leftOrThrow().dimension().location())),
                     location.spawn()),
                 isLocked);
         } else {

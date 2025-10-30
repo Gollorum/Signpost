@@ -1,6 +1,8 @@
 package gollorum.signpost.networking;
 
 import gollorum.signpost.Signpost;
+import gollorum.signpost.SignpostForge;
+import gollorum.signpost.compat.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -9,9 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.network.CustomPayloadEvent;
-import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.network.*;
 
 import java.util.function.BiConsumer;
@@ -29,16 +29,23 @@ public class ForgePacketHandler extends PacketHandler {
             .simpleChannel();
         instance = new ForgePacketHandler();
         instance.init();
+        instance.register(new SignpostForge.JoinServerEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "join_server"));
+        for (var entry : Compat.getEvents().entrySet()) {
+            instance.register(entry.getValue(), entry.getKey());
+        }
+
+        for (var entry : instance.events.values()) {
+            ((ForgePacketHandler) instance).register(entry._1());
+        }
     }
 
     public ForgePacketHandler() { super(); }
 
-    @Override
-    public <T> void register(Event<T> event, ResourceLocation id){
+    private <T> void register(Event<T> event){
         register(event.getMessageClass(), event.codec(), event::handle);
     }
 
-    public <T> void register(
+    private <T> void register(
         Class<T> messageClass,
         StreamCodec<RegistryFriendlyByteBuf, T> codec,
         BiConsumer<T, Context> handle
@@ -53,8 +60,7 @@ public class ForgePacketHandler extends PacketHandler {
         return (message, context) -> {
             context.enqueueWork(() -> {
                 if(context.getConnection().getReceiving() == PacketFlow.CLIENTBOUND)
-                    DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> handle.accept(message,
-                        new Context.Client()));
+                    handle.accept(message, new Context.Client());
                 else handle.accept(message, new Context.Server(context.getSender()));
             });
             context.setPacketHandled(true);

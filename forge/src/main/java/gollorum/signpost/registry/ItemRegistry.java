@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.bus.BusGroup;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -55,7 +55,7 @@ public class ItemRegistry {
             () -> new WaystoneItem(variant.getBlock(), new Item.Properties())));
     }
 
-    public static void register(IEventBus bus){
+    public static void register(BusGroup bus){
         REGISTER.register(bus);
     }
 }

@@ -8,8 +8,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.bus.BusGroup;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
 
@@ -17,9 +16,9 @@ import static gollorum.signpost.Signpost.MOD_ID;
 
 public class CreativeModeTabRegistry {
 
-    public static void register(IEventBus bus) {
-        bus.register(CreativeModeTabRegistry.class);
+    public static void register(BusGroup bus) {
         Register.register(bus);
+        BuildCreativeModeTabContentsEvent.BUS.addListener(CreativeModeTabRegistry::onBuildCreativeModeContents);
     }
 
     private static final DeferredRegister<CreativeModeTab> Register = DeferredRegister.create(BuiltInRegistries.CREATIVE_MODE_TAB.key(), MOD_ID);
@@ -39,7 +38,6 @@ public class CreativeModeTabRegistry {
         .build()
     );
 
-    @SubscribeEvent
     public static void onBuildCreativeModeContents(BuildCreativeModeTabContentsEvent event) {
         if(event.getTabKey() == CreativeModeTabs.OP_BLOCKS) {
             event.accept(ItemRegistry.WaystoneGeneratorItem);

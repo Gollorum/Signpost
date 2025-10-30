@@ -57,10 +57,6 @@ public class SignpostNeoforge {
         WaystoneDiscoveryEventListener.register(forgeBus);
 
         NeoForgePacketHandler.initialize(modBus);
-        PacketHandler.onInitializeDo(e -> {
-            PacketHandler.getInstance().register(new JoinServerEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "join_server"));
-            return true;
-        });
 
         forgeBus.register(Delay.INSTANCE);
 
@@ -79,7 +75,6 @@ public class SignpostNeoforge {
         @SubscribeEvent
         public void setup(final FMLCommonSetupEvent event) {
             ExternalWaystoneLibrary.initialize();
-            WaystoneLibrary.registerNetworkPackets();
 //            if(ModList.get().isLoaded(Compat.AntiqueAtlasId))
 //                AntiqueAtlasAdapter.registerNetworkPacket();
         }
@@ -109,7 +104,7 @@ public class SignpostNeoforge {
 
         @SubscribeEvent
         public void joinServer(PlayerEvent.PlayerLoggedInEvent e) {
-            if(!e.getEntity().level().isClientSide && Signpost.getServerInstance().isDedicatedServer())
+            if(!e.getEntity().level().isClientSide() && Signpost.getServerInstance().isDedicatedServer())
                 PacketHandler.getInstance().sendToPlayer(
                     (ServerPlayer) e.getEntity(),
                     JoinServerEvent.Package.INSTANCE
@@ -131,7 +126,7 @@ public class SignpostNeoforge {
 
     }
 
-    private static final class JoinServerEvent implements PacketHandler.Event<JoinServerEvent.Package> {
+    public static final class JoinServerEvent implements PacketHandler.Event<JoinServerEvent.Package> {
 
         public static final class Package {
 

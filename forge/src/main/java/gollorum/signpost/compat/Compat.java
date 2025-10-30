@@ -1,6 +1,11 @@
 package gollorum.signpost.compat;
 
+import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.platform.Services;
+import net.minecraft.resources.ResourceLocation;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Compat {
 
@@ -17,6 +22,14 @@ public class Compat {
 
 //        if(Services.PLATFORM.isModLoaded(Compat.RepurposedStructuresId))
 //            RepurposedStructuresAdapter.register();
+    }
+
+    public static Map<ResourceLocation, PacketHandler.Event<?>> getEvents() {
+        var map = new HashMap<ResourceLocation, PacketHandler.Event<?>>();
+        if(Services.PLATFORM.isModLoaded(Compat.WaystonesId))
+            map.putAll(WaystonesAdapter.getEvents());
+
+        return map;
     }
 
 }

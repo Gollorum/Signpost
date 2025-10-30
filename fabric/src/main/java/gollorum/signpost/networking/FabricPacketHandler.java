@@ -1,7 +1,8 @@
 package gollorum.signpost.networking;
 
 import gollorum.signpost.Signpost;
-import gollorum.signpost.utils.Tuple;
+import gollorum.signpost.SignpostFabric;
+import gollorum.signpost.compat.Compat;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;
@@ -12,27 +13,30 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Supplier;
 
 public class FabricPacketHandler extends PacketHandler {
 
-    private final Map<Class<?>, Tuple<Event<?>, ResourceLocation>> events = new HashMap<>();
     private final boolean isClient;
 
     public static void initialize(boolean isClient) {
         instance = new FabricPacketHandler(isClient);
         instance.init();
+        instance.register(new SignpostFabric.JoinServerEvent(), net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "join_server"));
+        for (var entry : Compat.getEvents().entrySet()) {
+            instance.register(entry.getValue(), entry.getKey());
+        }
+
+        for (var tuple : instance.events.values()) {
+            ((FabricPacketHandler) instance).actuallyRegister(tuple._1(), tuple._2());
+        }
     }
 
     private FabricPacketHandler(boolean isClient) {
         this.isClient = isClient;
     }
 
-    @Override
-    public <T> void register(Event<T> event, ResourceLocation id){
-        events.put(event.getMessageClass(), new Tuple<>(event, id));
+    private <T> void actuallyRegister(Event<T> event, ResourceLocation id) {
         var type = new CustomPacketPayload.Type<Payload<T>>(id);
         PayloadTypeRegistry.playC2S().register(
             type,

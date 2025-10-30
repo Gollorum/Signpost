@@ -18,10 +18,10 @@ public abstract class Either<Left, Right> {
     public static <Left, Right> Either<Left, Right> right(Right right) { return new RightImpl<>(right); }
 
     public static <Left, Right> Either<Left, Right> leftIfPresent(Optional<Left> left, Supplier<Right> right) {
-        return left.map(Either::<Left, Right>left).orElseGet(() -> right(right.get()));
+        return left.map(Either::<Left, Right>left).orElseGet(() -> Either.<Left, Right>right(right.get()));
     }
     public static <Left, Right> Either<Left, Right> rightIfPresent(Optional<Right> right, Supplier<Left> left) {
-        return right.map(Either::<Left, Right>right).orElseGet(() -> left(left.get()));
+        return right.map(Either::<Left, Right>right).orElseGet(() -> Either.<Left, Right>left(left.get()));
     }
 
     public static <Left, Right> Either<Left, Right> fromMojangEither(com.mojang.datafixers.util.Either<Left, Right> mojangEither) {

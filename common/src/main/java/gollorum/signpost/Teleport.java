@@ -16,13 +16,13 @@ import gollorum.signpost.utils.WaystoneHandleUtils;
 import gollorum.signpost.utils.WaystoneLocationData;
 import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
-import gollorum.signpost.utils.serialization.ComponentCodec;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
@@ -30,7 +30,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
@@ -43,7 +42,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.apache.logging.log4j.util.TriConsumer;
 
-import java.lang.ref.Reference;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -130,7 +128,7 @@ public class Teleport {
                 for(var p : passengers) {
                     Consumer<Entity> next = p2 -> {
                         if(changesDimension || p.entity instanceof ServerPlayer)
-                            IDelay.onServerForFrames(5, () -> p2.startRiding(entity2, true));
+                            IDelay.onServerForFrames(5, () -> p2.startRiding(entity2, true, true));
                         else entity2.positionRider(p2);
                     };
                     var result = p.teleportWithChildren(level, pos, yaw, pitch);
@@ -173,7 +171,7 @@ public class Teleport {
     }
 
     public static ItemStack getCost(ServerPlayer player, Vector3 from, Vector3 to) {
-        var item = player.server.registryAccess().lookup(Registries.ITEM).flatMap(
+        var item = player.registryAccess().lookup(Registries.ITEM).flatMap(
             registry -> registry.get(ResourceKey.create(Registries.ITEM, ResourceLocation.parse(IConfig.getInstance().getServer().teleport().costItem())))
         ).map(Holder.Reference::value).orElse(null);
         if(item == null || item.equals(Items.AIR) || player.isCreative() || player.isSpectator()) return ItemStack.EMPTY;
@@ -257,7 +255,7 @@ public class Teleport {
                 public static final StreamCodec<RegistryFriendlyByteBuf, Info> STREAM_CODEC = StreamCodec.composite(
                     ByteBufCodecs.INT, Info::maxDistance,
                     ByteBufCodecs.INT, Info::distance,
-                    ByteBufCodecs.optional(ComponentCodec.instance), Info::cannotTeleportBecause,
+                    ComponentSerialization.OPTIONAL_STREAM_CODEC, Info::cannotTeleportBecause,
                     ByteBufCodecs.STRING_UTF8, Info::waystoneName,
                     ItemStack.OPTIONAL_STREAM_CODEC, Info::cost,
                     ByteBufCodecs.optional(WaystoneHandle.STREAM_CODEC), Info::handle,

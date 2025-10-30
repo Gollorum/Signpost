@@ -7,7 +7,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.FormattedCharSequence;
@@ -57,6 +58,7 @@ public class InputBox extends EditBox implements WithMutableX {//, Ticking {
         );
         this.configFont = copyFont;
         this.shouldDropShadow = shouldDropShadow;
+        setTextShadow(shouldDropShadow);
         this.zOffset = zOffset;
         this.setMaxLength(maxStringLength);
     }
@@ -66,20 +68,12 @@ public class InputBox extends EditBox implements WithMutableX {//, Ticking {
 //        super.tick();
 //    }
 
-    public boolean shouldDropShadow() {
-        return shouldDropShadow;
-    }
-
-    public void setShouldDropShadow(boolean shouldDropShadow) {
-        this.shouldDropShadow = shouldDropShadow;
-    }
-
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyEvent event) {
         for(Function<Integer, Boolean> consumer : keyCodeConsumers) {
-            if(consumer.apply(keyCode)) return true;
+            if(consumer.apply(event.key())) return true;
         }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(event);
     }
 
     public void addKeyCodeListener(int keyCode, Runnable action) {
@@ -95,14 +89,14 @@ public class InputBox extends EditBox implements WithMutableX {//, Ticking {
     public void renderWidget(GuiGraphics graphics, int p_94161_, int p_94162_, float p_94163_) {
         if (!shouldDropShadow)
             graphics = new NoShadowGuiGraphics(graphics);
-        graphics.pose().pushPose();
-        graphics.pose().translate(0, 0, zOffset);
+//        graphics.pose().pushMatrix();
+//        graphics.pose().translate(0, 0, zOffset);
         if(isHovered && !isBordered()) {
             int fromY = getY() + (configFont.lineHeight - height) / 2;
-            graphics.fill(RenderType.guiOverlay(), getX(), fromY, getX() + width, fromY + height, 0x40ffffff);
+            graphics.fill(RenderPipelines.GUI, getX(), fromY, getX() + width, fromY + height, 0x40ffffff);
         }
         super.renderWidget(graphics, p_94161_, p_94162_, p_94163_);
-        graphics.pose().popPose();
+//        graphics.pose().popMatrix();
     }
 
     @Override
@@ -129,27 +123,27 @@ public class InputBox extends EditBox implements WithMutableX {//, Ticking {
     private class NoShadowGuiGraphics extends GuiGraphics {
 
         public NoShadowGuiGraphics(GuiGraphics original) {
-            super(Minecraft.getInstance(), ((GuiGraphicsMixin)original).getBufferSource());
+            super(Minecraft.getInstance(), ((GuiGraphicsMixin)original).getGuiRenderState());
         }
 
         @Override
-        public int drawString(Font font, @Nullable String text, int x, int y, int color) {
-            return super.drawString(font, text, x, y, color, false);
+        public void drawString(Font font, @Nullable String text, int x, int y, int color) {
+            super.drawString(font, text, x, y, color, false);
         }
 
         @Override
-        public int drawString(Font font, FormattedCharSequence text, int x, int y, int color) {
-            return super.drawString(font, text, x, y, color, false);
+        public void drawString(Font font, FormattedCharSequence text, int x, int y, int color) {
+            super.drawString(font, text, x, y, color, false);
         }
 
         @Override
-        public int drawString(Font font, Component text, int x, int y, int color) {
-            return super.drawString(font, text, x, y, color, false);
+        public void drawString(Font font, Component text, int x, int y, int color) {
+            super.drawString(font, text, x, y, color, false);
         }
 
         @Override
         public void drawWordWrap(Font font, FormattedText text, int x, int y, int lineWidth, int color) {
-            super.drawWordWrap(font, text, x, y, lineWidth, color, false);
+            drawWordWrap(font, text, x, y, lineWidth, color, false);
         }
     }
 }

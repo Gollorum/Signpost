@@ -1,7 +1,7 @@
 package gollorum.signpost.utils;
 
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -111,7 +111,7 @@ public class Delay implements IDelay {
     }
 
     @SubscribeEvent
-    void onServerTick(TickEvent.ServerTickEvent event) {
+    public void onServerTick(TickEvent.ServerTickEvent.Post event) {
         Task[] tasks = serverTasks.toArray(new Task[0]);
         serverTasks.clear();
         for(Task task: tasks) {
@@ -121,7 +121,7 @@ public class Delay implements IDelay {
     }
 
     @SubscribeEvent
-    void onClientTick(TickEvent.ClientTickEvent event) {
+    public void onClientTick(TickEvent.ClientTickEvent.Post event) {
         Task[] tasks = clientTasks.toArray(new Task[0]);
         clientTasks.clear();
         for(Task task: tasks) {
