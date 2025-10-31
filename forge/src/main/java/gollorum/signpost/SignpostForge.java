@@ -35,9 +35,6 @@ import net.minecraftforge.registries.RegisterEvent;
 import java.lang.invoke.MethodHandles;
 import java.util.function.Consumer;
 
-import static net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus.FORGE;
-import static net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus.MOD;
-
 @Mod(Signpost.MOD_ID)
 public class SignpostForge {
 
@@ -63,7 +60,6 @@ public class SignpostForge {
 
         Config.INSTANCE.register(context);
 
-        LootProviderRegistry.register(modBus);
         LootItemConditionRegistry.register(modBus);
 
         MiscRegistry.register(modBus);

@@ -5,7 +5,6 @@ import gollorum.signpost.compat.ExternalWaystoneLibrary;
 import gollorum.signpost.config.Config;
 import gollorum.signpost.minecraft.loot.LootEntries;
 import gollorum.signpost.minecraft.worldgen.JigsawDeserializers;
-import gollorum.signpost.networking.FabricPacketHandler;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.registry.*;
 import gollorum.signpost.utils.Delay;
@@ -21,7 +20,6 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
@@ -50,7 +48,6 @@ public class SignpostFabric implements ModInitializer {
 
         Delay.INSTANCE.register();
 
-        LootProviderRegistry.register();
         LootItemConditionRegistryImpl.register();
 
         JigsawDeserializers.register((loc, elem) ->

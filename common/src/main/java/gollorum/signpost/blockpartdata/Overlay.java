@@ -36,14 +36,7 @@ public abstract class Overlay {
         this.id = id;
     }
 
-    public abstract ResourceLocation textureFor(Class<? extends SignBlockPart> signClass);
-    // TODO DS: :
-    public Material materialFor(Class<? extends SignBlockPart> signClass) {
-        return new Material(
-            TextureResource.blockAtlas,
-            textureFor(signClass)
-        );
-    }
+    public abstract Material materialFor(Class<? extends SignBlockPart> signClass);
 
     private static <T> T logErrorAndReturn(String error, T t) {
         Signpost.LOGGER.error(error);
@@ -52,53 +45,59 @@ public abstract class Overlay {
 
     public static final Overlay Gras = new Overlay(Optional.of(GrassTint.INSTANCE), "gras") {
         @Override
-        public ResourceLocation textureFor(Class<? extends SignBlockPart> signClass) {
-            return signClass.equals(SmallWideSignBlockPart.class)
+        public Material materialFor(Class<? extends SignBlockPart> signClass) {
+            return new Material(
+                TextureResource.blockAtlas,
+                signClass.equals(SmallWideSignBlockPart.class)
                 ? ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/sign_overlay_grass")
                 : signClass.equals(SmallShortSignBlockPart.class)
                 ? ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/sign_overlay_grass_short")
                 : signClass.equals(LargeSignBlockPart.class)
                 ? ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/sign_overlay_grass_large")
-                : logErrorAndReturn("Sign class " + signClass + " is not supported by " + this, textureFor(SmallWideSignBlockPart.class));
+                : logErrorAndReturn("Sign class " + signClass + " is not supported by " + this, materialFor(SmallWideSignBlockPart.class).texture()));
         }
     };
 
     public static final Overlay Vine = new Overlay(Optional.of(FoliageTint.INSTANCE), "vine") {
         @Override
-        public ResourceLocation textureFor(Class<? extends SignBlockPart> signClass) {
-            return signClass.equals(SmallWideSignBlockPart.class)
+        public Material materialFor(Class<? extends SignBlockPart> signClass) {
+            return new Material(
+                TextureResource.blockAtlas,
+                signClass.equals(SmallWideSignBlockPart.class)
                 ? ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/sign_overlay_vine")
                 : signClass.equals(SmallShortSignBlockPart.class)
                 ? ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/sign_overlay_vine_short")
                 : signClass.equals(LargeSignBlockPart.class)
                 ? ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/sign_overlay_vine_large")
-                : logErrorAndReturn("Sign class " + signClass + " is not supported by " + this, textureFor(SmallWideSignBlockPart.class));
+                : logErrorAndReturn("Sign class " + signClass + " is not supported by " + this, materialFor(SmallWideSignBlockPart.class).texture()));
         }
     };
 
     public static final Overlay Snow = new Overlay(Optional.empty(), "snow") {
         @Override
-        public ResourceLocation textureFor(Class<? extends SignBlockPart> signClass) {
-            return signClass.equals(SmallWideSignBlockPart.class)
+        public Material materialFor(Class<? extends SignBlockPart> signClass) {
+            return new Material(
+                TextureResource.blockAtlas,signClass.equals(SmallWideSignBlockPart.class)
                 ? ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/sign_overlay_snow")
                 : signClass.equals(SmallShortSignBlockPart.class)
                 ? ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/sign_overlay_snow_short")
                 : signClass.equals(LargeSignBlockPart.class)
                 ? ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/sign_overlay_snow_large")
-                : logErrorAndReturn("Sign class " + signClass + " is not supported by " + this, textureFor(SmallWideSignBlockPart.class));
+                : logErrorAndReturn("Sign class " + signClass + " is not supported by " + this, materialFor(SmallWideSignBlockPart.class).texture()));
         }
     };
 
     public static final Overlay Mycelium = new Overlay(Optional.empty(), "mycelium") {
         @Override
-        public ResourceLocation textureFor(Class<? extends SignBlockPart> signClass) {
-            return signClass.equals(SmallWideSignBlockPart.class)
+        public Material materialFor(Class<? extends SignBlockPart> signClass) {
+            return new Material(
+                TextureResource.blockAtlas,signClass.equals(SmallWideSignBlockPart.class)
                 ? ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/sign_overlay_mycelium")
                 : signClass.equals(SmallShortSignBlockPart.class)
                 ? ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/sign_overlay_mycelium_short")
                 : signClass.equals(LargeSignBlockPart.class)
                 ? ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/sign_overlay_mycelium_large")
-                : logErrorAndReturn("Sign class " + signClass + " is not supported by " + this, textureFor(SmallWideSignBlockPart.class));
+                : logErrorAndReturn("Sign class " + signClass + " is not supported by " + this, materialFor(SmallWideSignBlockPart.class).texture()));
         }
     };
 

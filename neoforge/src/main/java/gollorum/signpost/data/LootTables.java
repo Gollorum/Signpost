@@ -11,7 +11,6 @@ import gollorum.signpost.minecraft.data.PostData;
 import gollorum.signpost.minecraft.data.WaystoneHandleData;
 import gollorum.signpost.minecraft.loot.PostBlockPartDropLoot;
 import gollorum.signpost.minecraft.loot.PermissionCheck;
-import gollorum.signpost.minecraft.loot.RegisteredWaystoneLootDataFunction;
 import net.minecraft.advancements.critereon.DataComponentMatchers;
 import net.minecraft.advancements.critereon.EnchantmentPredicate;
 import net.minecraft.advancements.critereon.ItemPredicate;
