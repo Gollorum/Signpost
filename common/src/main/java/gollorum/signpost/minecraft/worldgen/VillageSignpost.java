@@ -255,10 +255,10 @@ public class VillageSignpost {
 		Holder<Biome> biomeHolder = world.getBiome(pos);
 		Biome biome = biomeHolder.value();
 		var featureRegistry = world.getServer().registryAccess().lookup(Registries.PLACED_FEATURE);
-		boolean isJungle = featureRegistry.isPresent() && biome.getGenerationSettings().features().stream().flatMap(HolderSet::stream)
-			.anyMatch(f -> f.value().equals(featureRegistry.get().get(VegetationPlacements.TREES_JUNGLE)));
-		boolean isMushroomMeadow = featureRegistry.isPresent() && biome.getGenerationSettings().features().stream().flatMap(HolderSet::stream)
-			.anyMatch(f -> f.value().equals(featureRegistry.get().get(VegetationPlacements.MUSHROOM_ISLAND_VEGETATION)));
+        var jungleTrees = featureRegistry.flatMap(r -> r.get(VegetationPlacements.TREES_JUNGLE));
+        var mush = featureRegistry.flatMap(r -> r.get(VegetationPlacements.MUSHROOM_ISLAND_VEGETATION));
+		boolean isJungle = jungleTrees.isPresent() && biome.getGenerationSettings().hasFeature(jungleTrees.get().value());
+		boolean isMushroomMeadow = mush.isPresent() && biome.getGenerationSettings().hasFeature(mush.get().value());
         if(isMushroomMeadow) return Optional.of(Overlay.Mycelium);
 		if(biome.shouldSnow(world, pos)
 			|| biome.getPrecipitationAt(pos, world.getSeaLevel()) == Biome.Precipitation.SNOW) return Optional.of(Overlay.Snow);
