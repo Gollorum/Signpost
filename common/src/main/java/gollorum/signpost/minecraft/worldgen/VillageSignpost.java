@@ -24,6 +24,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.Biomes;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -256,6 +257,9 @@ public class VillageSignpost {
 		var featureRegistry = world.getServer().registryAccess().lookup(Registries.PLACED_FEATURE);
 		boolean isJungle = featureRegistry.isPresent() && biome.getGenerationSettings().features().stream().flatMap(HolderSet::stream)
 			.anyMatch(f -> f.value().equals(featureRegistry.get().get(VegetationPlacements.TREES_JUNGLE)));
+		boolean isMushroomMeadow = featureRegistry.isPresent() && biome.getGenerationSettings().features().stream().flatMap(HolderSet::stream)
+			.anyMatch(f -> f.value().equals(featureRegistry.get().get(VegetationPlacements.MUSHROOM_ISLAND_VEGETATION)));
+        if(isMushroomMeadow) return Optional.of(Overlay.Mycelium);
 		if(biome.shouldSnow(world, pos)
 			|| biome.getPrecipitationAt(pos, world.getSeaLevel()) == Biome.Precipitation.SNOW) return Optional.of(Overlay.Snow);
 		else if (isJungle) return Optional.of(Overlay.Vine);

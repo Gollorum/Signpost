@@ -89,10 +89,24 @@ public abstract class Overlay {
         }
     };
 
+    public static final Overlay Mycelium = new Overlay(Optional.empty(), "mycelium") {
+        @Override
+        public ResourceLocation textureFor(Class<? extends SignBlockPart> signClass) {
+            return signClass.equals(SmallWideSignBlockPart.class)
+                ? ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/sign_overlay_mycelium")
+                : signClass.equals(SmallShortSignBlockPart.class)
+                ? ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/sign_overlay_mycelium_short")
+                : signClass.equals(LargeSignBlockPart.class)
+                ? ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/sign_overlay_mycelium_large")
+                : logErrorAndReturn("Sign class " + signClass + " is not supported by " + this, textureFor(SmallWideSignBlockPart.class));
+        }
+    };
+
     static {
         register(Gras);
         register(Vine);
         register(Snow);
+        register(Mycelium);
     }
 
     public static final Codec<Overlay> CODEC = Codec.STRING.xmap(
