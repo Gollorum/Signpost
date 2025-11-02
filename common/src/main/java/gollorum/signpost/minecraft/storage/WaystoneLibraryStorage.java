@@ -54,7 +54,7 @@ public class WaystoneLibraryStorage extends SavedData {
 
     private static final Codec<Map<PlayerHandle, HashSet<WaystoneHandle.Vanilla>>> PLAYER_MEMORY_CODEC =
         Codec.mapPair(
-            PlayerHandle.CODEC.fieldOf("Player"),
+            PlayerHandle.DIRECT_CODEC.fieldOf("Player"),
             WaystoneHandle.Vanilla.CODEC.codec().listOf().fieldOf("DiscoveredWaystones")
         ).codec().listOf().xmap(
             list -> list.stream().collect(Collectors.toMap(Pair::getFirst, entry -> new HashSet<>(entry.getSecond()))),

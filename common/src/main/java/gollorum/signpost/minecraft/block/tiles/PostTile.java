@@ -202,7 +202,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
 
     private void writeSelf(ValueOutput output) {
         output.store(PostData.CODEC, new PostData(parts));
-        output.store(Codec.optionalField("Owner", PlayerHandle.CODEC, true), owner);
+        output.store(Codec.optionalField("Owner", PlayerHandle.DIRECT_CODEC, true), owner);
     }
 
     @Override
@@ -214,7 +214,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         parts = input.read(PostData.CODEC)
             .map(d -> new ConcurrentHashMap(d.parts()))
             .orElseGet(ConcurrentHashMap::new);
-        owner = input.read(Codec.optionalField("Owner", PlayerHandle.CODEC, true)).flatMap(it -> it);
+        owner = input.read(Codec.optionalField("Owner", PlayerHandle.DIRECT_CODEC, true)).flatMap(it -> it);
         if (parts.isEmpty())
             parts.put(UUID.randomUUID(), new BlockPartInstance(new PostBlockPart(modelType.postTexture), Vector3.ZERO));
         Runnable init = () -> {

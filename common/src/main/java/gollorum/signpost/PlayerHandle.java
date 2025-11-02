@@ -42,9 +42,11 @@ public record PlayerHandle(UUID id) {
         return Signpost.getServerInstance().getPlayerList().getPlayer(id);
     }
 
-    public static final Codec<PlayerHandle> CODEC = RecordCodecBuilder.create(i -> i.group(
+    public static final Codec<PlayerHandle> WRAPPED_CODEC = RecordCodecBuilder.create(i -> i.group(
         UUIDUtil.CODEC.fieldOf("Id").forGetter(PlayerHandle::id)
     ).apply(i, PlayerHandle::new));
+
+    public static final Codec<PlayerHandle> DIRECT_CODEC = UUIDUtil.CODEC.xmap(PlayerHandle::new, PlayerHandle::id);
 
     public static final StreamCodec<ByteBuf, PlayerHandle> STREAM_CODEC = StreamCodec.composite(
         UUIDUtil.STREAM_CODEC,

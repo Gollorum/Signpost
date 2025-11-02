@@ -1,6 +1,5 @@
 package gollorum.signpost.blockpartdata.types;
 
-import com.mojang.serialization.Codec;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneHandle;
@@ -46,8 +45,8 @@ public class WaystoneBlockPart implements BlockPart<WaystoneBlockPart>, WithOwne
 	public static final BlockPartMetadata<WaystoneBlockPart> METADATA = new BlockPartMetadata<>(
 		"Waystone",
         version -> (version < 2
-            ? OptionalSerializerV1.of(PlayerHandle.CODEC).fieldOf("owner")
-            : PlayerHandle.CODEC.optionalFieldOf("owner")
+            ? OptionalSerializerV1.of(PlayerHandle.WRAPPED_CODEC).fieldOf("owner")
+            : PlayerHandle.DIRECT_CODEC.optionalFieldOf("owner")
         ).xmap(WaystoneBlockPart::new, w -> w.owner),
 		ByteBufCodecs.optional(PlayerHandle.STREAM_CODEC)
 			.map(WaystoneBlockPart::new, w -> w.owner)

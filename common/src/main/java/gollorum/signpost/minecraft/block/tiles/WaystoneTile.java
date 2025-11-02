@@ -101,12 +101,12 @@ public class WaystoneTile extends BlockEntity implements WithOwner.OfWaystone, W
 
     @Override
     public void saveAdditional(ValueOutput output) {
-        output.store(PlayerHandle.CODEC.optionalFieldOf("Owner"), owner);
+        output.store(PlayerHandle.DIRECT_CODEC.optionalFieldOf("Owner"), owner);
     }
 
     @Override
     protected void loadAdditional(ValueInput input) {
-        owner = input.read(Codec.optionalField("Owner", PlayerHandle.CODEC, true)).flatMap(it -> it);
+        owner = input.read(Codec.optionalField("Owner", PlayerHandle.DIRECT_CODEC, true)).flatMap(it -> it);
     }
 
     @Override

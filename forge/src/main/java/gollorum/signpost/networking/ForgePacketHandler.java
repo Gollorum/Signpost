@@ -13,6 +13,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.event.network.CustomPayloadEvent;
 import net.minecraftforge.network.*;
+import net.minecraftforge.network.simple.SimpleFlow;
 
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
@@ -34,26 +35,26 @@ public class ForgePacketHandler extends PacketHandler {
             instance.register(entry.getValue(), entry.getKey());
         }
 
+        var flow = channel.protocol(NetworkProtocol.PLAY).bidirectional();
         for (var entry : instance.events.values()) {
-            ((ForgePacketHandler) instance).register(entry._1());
+            ((ForgePacketHandler) instance).register(entry._1(), flow);
         }
+        channel.build();
     }
 
     public ForgePacketHandler() { super(); }
 
-    private <T> void register(Event<T> event){
-        register(event.getMessageClass(), event.codec(), event::handle);
+    private <T> void register(Event<T> event, SimpleFlow<RegistryFriendlyByteBuf, Object> flow) {
+        register(event.getMessageClass(), event.codec(), event::handle, flow);
     }
 
     private <T> void register(
         Class<T> messageClass,
         StreamCodec<RegistryFriendlyByteBuf, T> codec,
-        BiConsumer<T, Context> handle
-    ){
-        channel.messageBuilder(messageClass, NetworkProtocol.PLAY)
-            .codec(codec)
-            .consumerMainThread(handle(handle))
-            .add();
+        BiConsumer<T, Context> handle,
+        SimpleFlow<RegistryFriendlyByteBuf, Object> flow
+    ) {
+        flow.add(messageClass, codec, handle(handle));
     }
 
     private static <T> BiConsumer<T, CustomPayloadEvent.Context> handle(BiConsumer<T, Context> handle) {
