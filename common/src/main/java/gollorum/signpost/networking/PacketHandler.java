@@ -17,8 +17,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 
 public abstract class PacketHandler {
@@ -43,7 +42,8 @@ public abstract class PacketHandler {
         }
     }
 
-    protected final Map<Class<?>, Tuple<Event<?>, ResourceLocation>> events = new HashMap<>();
+    protected final List<Tuple<Event<?>, ResourceLocation>> events = new ArrayList<>();
+    protected final Map<Class<?>, Tuple<Event<?>, ResourceLocation>> eventMap = new HashMap<>();
 
     protected void init() {
         register(new PostTile.PartAddedEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "part_added"));
@@ -69,7 +69,8 @@ public abstract class PacketHandler {
     }
 
     public final <T> void register(Event<T> event, ResourceLocation id) {
-        events.put(event.getMessageClass(), new Tuple<>(event, id));
+        events.add(new Tuple<>(event, id));
+        eventMap.put(event.getMessageClass(), new Tuple<>(event, id));
     }
 
     public abstract <T> void sendToServer(T message);

@@ -38,7 +38,7 @@ public class NeoForgePacketHandler extends PacketHandler {
     public static void register(final RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar(Signpost.MOD_ID);
 
-        for (var tuple : instance.events.values()) {
+        for (var tuple : instance.events) {
             ((NeoForgePacketHandler) instance).registerCommon(tuple._1(), tuple._2(), registrar);
         }
 
@@ -60,7 +60,7 @@ public class NeoForgePacketHandler extends PacketHandler {
 //    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     public static void register(net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent event) {
-        for (var tuple : instance.events.values()) {
+        for (var tuple : instance.events) {
             ((NeoForgePacketHandler) instance).registerClient(tuple._2(), event);
         }
     }
@@ -75,7 +75,7 @@ public class NeoForgePacketHandler extends PacketHandler {
     }
 
     private <T> Payload<T> toPayload(T message) {
-        var tuple = events.get(message.getClass());
+        var tuple = eventMap.get(message.getClass());
         return new Payload<>(new CustomPacketPayload.Type<>(tuple._2()), (Event<T>) tuple._1(), message);
     }
 

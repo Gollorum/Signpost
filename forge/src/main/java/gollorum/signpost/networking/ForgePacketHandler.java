@@ -36,7 +36,7 @@ public class ForgePacketHandler extends PacketHandler {
         }
 
         var flow = channel.protocol(NetworkProtocol.PLAY).bidirectional();
-        for (var entry : instance.events.values()) {
+        for (var entry : instance.events) {
             ((ForgePacketHandler) instance).register(entry._1(), flow);
         }
         channel.build();

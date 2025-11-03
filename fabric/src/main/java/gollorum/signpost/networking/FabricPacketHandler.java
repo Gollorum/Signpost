@@ -27,7 +27,7 @@ public class FabricPacketHandler extends PacketHandler {
             instance.register(entry.getValue(), entry.getKey());
         }
 
-        for (var tuple : instance.events.values()) {
+        for (var tuple : instance.events) {
             ((FabricPacketHandler) instance).actuallyRegister(tuple._1(), tuple._2());
         }
     }
@@ -66,7 +66,7 @@ public class FabricPacketHandler extends PacketHandler {
     }
 
     private <T> Payload<T> toPayload(T message) {
-        var tuple = events.get(message.getClass());
+        var tuple = eventMap.get(message.getClass());
         return new Payload<>(new CustomPacketPayload.Type<>(tuple._2()), (Event<T>) tuple._1(), message);
     }
 
