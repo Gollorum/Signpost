@@ -8,6 +8,7 @@ import gollorum.signpost.Signpost;
 import gollorum.signpost.blockpartdata.types.*;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.config.IConfig;
+import gollorum.signpost.minecraft.data.ModelTypeRegistry;
 import gollorum.signpost.minecraft.data.PostData;
 import gollorum.signpost.minecraft.data.WaystoneHandleData;
 import gollorum.signpost.minecraft.items.Wrench;
@@ -23,9 +24,7 @@ import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.*;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.Util;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.UUIDUtil;
+import net.minecraft.core.*;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.*;
@@ -34,6 +33,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -71,11 +71,8 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         assert type == null;
         Type<?> type = Util.fetchChoiceType(References.BLOCK_ENTITY, REGISTRY_NAME);
         return PostTile.type = Services.BLOCK_ENTITY_TYPE_FACTORY.create(
-            (pos, state) -> new PostTile(
-                PostBlock.ModelType.Oak,
-                pos, state
-            ),
-            PostBlock.getAllBlocks(),
+            PostTile::new,
+            PostBlock.all().toArray(PostBlock[]::new),
             type
         );
     }
@@ -110,14 +107,22 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         }
     }
 
-    public final PostBlock.ModelType modelType;
+    private ResourceKey<PostBlock.ModelType> modelTypeKey = null;
+    public ResourceKey<PostBlock.ModelType> modelTypeKey() {
+        return modelTypeKey;
+    }
+
+    private PostBlock.ModelType modelType = null;
+    public PostBlock.ModelType modelType() {
+        return modelType;
+    }
+
     private Optional<PlayerHandle> owner = Optional.empty();
 
     private final List<Runnable> toDoOnceLevelIsSet = new ArrayList<>();
 
-    public PostTile(PostBlock.ModelType modelType, BlockPos pos, BlockState state) {
+    public PostTile(BlockPos pos, BlockState state) {
         super(type, pos, state);
-        this.modelType = modelType;
     }
 
     public UUID addPart(BlockPartInstance part, ItemStack cost, PlayerHandle player){ return addPart(UUID.randomUUID(), part, cost, player); }
@@ -201,7 +206,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     }
 
     private void writeSelf(ValueOutput output) {
-        output.store(PostData.CODEC, new PostData(parts));
+        output.store(PostData.CODEC, new PostData(modelTypeKey, parts));
         output.store(Codec.optionalField("Owner", PlayerHandle.DIRECT_CODEC, true), owner);
     }
 
@@ -210,17 +215,26 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         readSelf(input);
     }
 
+    public PostBlock.MaterialType getBlockMaterialType() {
+        return ((PostBlock)getLevel().getBlockState(getBlockPos()).getBlock()).materialType;
+    }
+
     private void readSelf(ValueInput input) {
-        parts = input.read(PostData.CODEC)
+        var data = input.read(PostData.CODEC);
+        modelTypeKey = data.map(PostData::modelType).orElseThrow();
+        parts = data
             .map(d -> new ConcurrentHashMap(d.parts()))
             .orElseGet(ConcurrentHashMap::new);
         owner = input.read(Codec.optionalField("Owner", PlayerHandle.DIRECT_CODEC, true)).flatMap(it -> it);
         if (parts.isEmpty())
-            parts.put(UUID.randomUUID(), new BlockPartInstance(new PostBlockPart(modelType.postTexture), Vector3.ZERO));
+            parts.put(UUID.randomUUID(), new BlockPartInstance(new PostBlockPart(modelType.postTexture()), Vector3.ZERO));
+
         Runnable init = () -> {
             for(BlockPartInstance part : parts.values()) {
                 part.blockPart().attachTo(this);
             }
+            IDelay.forFrames(1, getLevel().isClientSide(), () ->
+                modelType = ModelTypeRegistry.getOrFallbackModelType(getLevel().registryAccess(), modelTypeKey, this::getBlockMaterialType));
         };
         if(hasLevel()) {
             init.run();
@@ -232,14 +246,17 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     @Override
     protected void collectImplicitComponents(DataComponentMap.Builder components) {
         super.collectImplicitComponents(components);
-        components.set(PostData.TYPE, new PostData(parts));
+        PostBlock.ModelType.applyTo(modelTypeKey, components);
+        components.set(PostData.TYPE, new PostData(modelTypeKey, parts));
         getWaystonePart().ifPresent(waystone -> {
             waystone.getHandle().ifPresent(h -> components.set(WaystoneHandleData.TYPE, new WaystoneHandleData(h)));
             waystone.getName().ifPresent(n -> components.set(DataComponents.CUSTOM_NAME, Component.literal(n)));
         });
     }
 
-    public void readData(PostData data) {
+    public void readData(PostData data, HolderLookup.Provider registryAccess, PostBlock.MaterialType materialType) {
+        modelTypeKey = data.modelType();
+        modelType = ModelTypeRegistry.getOrFallbackModelType(registryAccess, modelTypeKey, () -> materialType);
         parts.clear();
         for(Map.Entry<UUID, BlockPartInstance> entry : data.parts().entrySet()) {
             addPart(

@@ -9,6 +9,7 @@ import gollorum.signpost.blockpartdata.types.PostBlockPart;
 import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
 import gollorum.signpost.blockpartdata.types.BlockPartRenderer;
 import gollorum.signpost.minecraft.block.PostBlock;
+import gollorum.signpost.minecraft.data.ModelTypeRegistry;
 import gollorum.signpost.minecraft.data.PostData;
 import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.utils.BlockPartInstance;
@@ -21,6 +22,8 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -30,11 +33,11 @@ import java.util.*;
 
 public class PostItemRenderer implements SpecialModelRenderer<PostData> {
 
-    private final PostBlock.ModelType fallbackType;
+    private final PostBlock.MaterialType materialType;
     private final MaterialSet materials;
 
-    public PostItemRenderer(PostBlock.ModelType fallbackType, MaterialSet materials) {
-        this.fallbackType = fallbackType;
+    public PostItemRenderer(PostBlock.MaterialType materialType, MaterialSet materials) {
+        this.materialType = materialType;
         this.materials = materials;
     }
 
@@ -47,31 +50,23 @@ public class PostItemRenderer implements SpecialModelRenderer<PostData> {
     }
 
     public PostData extractArgument(ItemStack itemStack) {
-        var data = itemStack.get(PostData.TYPE);
-        if (data == null) {
-            var parts = new HashMap<UUID, BlockPartInstance>();
-            parts.put(UUID.randomUUID(), new BlockPartInstance(new PostBlockPart(fallbackType.postTexture), Vector3.ZERO));
-            parts.put(UUID.randomUUID(), new BlockPartInstance(new SmallWideSignBlockPart(
-                new AngleProvider.Literal(Angle.fromDegrees(180)), new NameProvider.Literal(""), true, fallbackType.mainTexture, fallbackType.secondaryTexture,
-                Optional.empty(), Colors.white, Optional.empty(), Optional.empty(), fallbackType, false, false
-                ),
-                new Vector3(0, 0.75f, 0)));
-            data = new PostData(parts);
-        }
-        return data;
+        return itemStack.get(PostData.TYPE);
     }
 
     @Override
     public void submit(PostData data, ItemDisplayContext displayContext, PoseStack poseStack, SubmitNodeCollector nodeCollector, int packedLight, int packedOverlay, boolean hasFoil, int outlineColor) {
         List<BlockPartInstance> parts;
-        if (data != null) {
+        if (data != null && !data.parts().isEmpty()) {
             parts = new ArrayList<>(data.parts().values());
         } else {
             parts = new ArrayList<>();
-            parts.add(new BlockPartInstance(new PostBlockPart(fallbackType.postTexture), Vector3.ZERO));
+            var type = Optional.ofNullable(data)
+                .map(d -> ModelTypeRegistry.getOrFallbackModelType(Minecraft.getInstance().getSingleplayerServer().registryAccess(), data.modelType(), () -> materialType))
+                .orElseGet(() -> ModelTypeRegistry.fallbackModelType(materialType));
+            parts.add(new BlockPartInstance(new PostBlockPart(type.postTexture()), Vector3.ZERO));
             parts.add(new BlockPartInstance(new SmallWideSignBlockPart(
-                new AngleProvider.Literal(Angle.fromDegrees(180)), new NameProvider.Literal(""), true, fallbackType.mainTexture, fallbackType.secondaryTexture,
-                    Optional.empty(), Colors.white, Optional.empty(), Optional.empty(), fallbackType, false, false
+                new AngleProvider.Literal(Angle.fromDegrees(180)), new NameProvider.Literal(""), true, type.mainTexture(), type.secondaryTexture(),
+                    Optional.empty(), Colors.white, Optional.empty(), Optional.empty(), ResourceKey.create(ModelTypeRegistry.REGISTRY_KEY, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "fallback")), false, false
                 ),
                 new Vector3(0, 0.75f, 0)));
         }
@@ -116,19 +111,19 @@ public class PostItemRenderer implements SpecialModelRenderer<PostData> {
         });
     }
 
-    public record Unbaked(PostBlock.ModelType fallbackType) implements SpecialModelRenderer.Unbaked {
+    public record Unbaked(PostBlock.MaterialType materialType) implements SpecialModelRenderer.Unbaked {
 
         public static final ResourceLocation NAME = ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "post_item");
 
         public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
             instance.group(
-                PostBlock.ModelType.CODEC.fieldOf("fallback").forGetter(Unbaked::fallbackType)
+                PostBlock.MaterialType.CODEC.fieldOf("fallback").forGetter(Unbaked::materialType)
             ).apply(instance, Unbaked::new)
         );
 
         @Override
         public SpecialModelRenderer<?> bake(BakingContext context) {
-            return new PostItemRenderer(this.fallbackType, context.materials());
+            return new PostItemRenderer(this.materialType, context.materials());
         }
 
         @Override

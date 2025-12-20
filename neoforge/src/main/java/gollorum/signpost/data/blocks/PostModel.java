@@ -5,39 +5,34 @@ import gollorum.signpost.minecraft.rendering.PostItemRenderer;
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.model.ItemModelUtils;
+import net.minecraft.core.HolderOwner;
+import net.minecraft.core.HolderSet;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Blocks;
 
 public class PostModel {
 
     public static void register(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
-        for (var variant : PostBlock.AllVariants) {
-            blockModels.createParticleOnlyBlock(variant.getBlock(), switch (variant.type.name) {
-                case "acacia" -> Blocks.ACACIA_LOG;
-                case "birch" -> Blocks.BIRCH_LOG;
-                case "iron" -> Blocks.IRON_BLOCK;
-                case "jungle" -> Blocks.JUNGLE_LOG;
-                case "oak" -> Blocks.OAK_LOG;
-                case "darkoak" -> Blocks.DARK_OAK_LOG;
-                case "spruce" -> Blocks.SPRUCE_LOG;
-                case "mangrove" -> Blocks.MANGROVE_LOG;
-                case "bamboo" -> Blocks.BAMBOO_BLOCK;
-                case "cherry" -> Blocks.CHERRY_LOG;
-                case "stone" -> Blocks.STONE;
-                case "red_mushroom" -> Blocks.RED_MUSHROOM_BLOCK;
-                case "brown_mushroom" -> Blocks.BROWN_MUSHROOM_BLOCK;
-                case "warped" -> Blocks.WARPED_STEM;
-                case "crimson" -> Blocks.CRIMSON_STEM;
-                case "sandstone" -> Blocks.SANDSTONE;
-                default -> throw new IllegalStateException("Unexpected value: " + variant.type.name);
+        for (var variant : PostBlock.MaterialType.values()) {
+            blockModels.createParticleOnlyBlock(variant.getBlock(), switch (variant) {
+                case PostBlock.MaterialType.Wood -> Blocks.OAK_LOG;
+                case PostBlock.MaterialType.Stone -> Blocks.STONE;
+                case PostBlock.MaterialType.Mushroom -> Blocks.RED_MUSHROOM_BLOCK;
+                case PostBlock.MaterialType.Metal -> Blocks.IRON_BLOCK;
             });
             itemModels.itemModelOutput.accept(
                 variant.getBlock().asItem(),
                 ItemModelUtils.specialModel(
                     ResourceLocation.withDefaultNamespace("block/cube_all"),
-                    new PostItemRenderer.Unbaked(variant.type)
+                    new PostItemRenderer.Unbaked(variant)
                 )
             );
         }
     }
+
+    private static <T> HolderSet.Named<T> fakeNamedHolder(TagKey<T> tagKey) {
+        return HolderSet.emptyNamed(new HolderOwner<>() {}, tagKey);
+    }
+
 }

@@ -11,7 +11,7 @@ public class PostItem extends BlockItem {
 
     public PostItem(PostBlock block, Properties properties) {
         super(block, properties
-            .setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, block.variant.registryName))));
+            .setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, block.materialType.blockRegistryName))));
     }
 
 }

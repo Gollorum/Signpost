@@ -3,7 +3,9 @@ package gollorum.signpost;
 import gollorum.signpost.compat.Compat;
 import gollorum.signpost.compat.ExternalWaystoneLibrary;
 import gollorum.signpost.config.Config;
+import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.data.ModelTypeRegistry;
 import gollorum.signpost.minecraft.loot.LootEntries;
 import gollorum.signpost.minecraft.rendering.PostRenderer;
 import gollorum.signpost.minecraft.worldgen.JigsawDeserializers;
@@ -15,6 +17,7 @@ import gollorum.signpost.worldgen.Villages;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -25,11 +28,15 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import net.neoforged.neoforge.registries.DataPackRegistryEvent;
+import net.neoforged.neoforge.registries.NewRegistryEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
+import net.neoforged.neoforge.registries.RegistryBuilder;
 
 import java.util.function.Consumer;
 
@@ -40,10 +47,11 @@ public class SignpostNeoforge {
 
     public SignpostNeoforge(IEventBus modBus) {
         serverSetter = Signpost.init(Config.INSTANCE, Delay.INSTANCE);
-
         IEventBus forgeBus = NeoForge.EVENT_BUS;
         forgeBus.register(new ForgeEvents());
         modBus.register(new ModBusEvents());
+
+//        SignpostDataFixers.create();
 
         BlockRegistry.register(modBus);
         ItemRegistry.register(modBus);
@@ -86,6 +94,14 @@ public class SignpostNeoforge {
             LootEntries.register((loc, elem) -> event.register(Registries.LOOT_POOL_ENTRY_TYPE, loc, () -> elem));
         }
 
+        @SubscribeEvent
+        public void registerDataPackRegistries(DataPackRegistryEvent.NewRegistry event) {
+            event.dataPackRegistry(
+                ModelTypeRegistry.REGISTRY_KEY,
+                PostBlock.ModelType.CODEC,
+                PostBlock.ModelType.CODEC
+            );
+        }
     }
 
     private class ForgeEvents {

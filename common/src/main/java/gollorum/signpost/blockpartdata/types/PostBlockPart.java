@@ -22,8 +22,10 @@ import gollorum.signpost.utils.math.geometry.AABB;
 import gollorum.signpost.utils.math.geometry.Intersectable;
 import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.Vector3;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BrushItem;
@@ -71,7 +73,8 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
     public InteractionResult interact(InteractionInfo info) {
         ItemStack heldItem = info.player.getItemInHand(info.hand);
         PlayerHandle playerHandle = PlayerHandle.from(info.player);
-        if(isValidSign(heldItem, info.player.registryAccess())) return attachSign(info, heldItem);
+        var modelType = modelTypeForSignItem(heldItem, info.player.registryAccess());
+        if(modelType.isPresent()) return attachSign(info, modelType.get(), new ItemStack(heldItem.getItem(), 1));
         else if(isWaystone(heldItem)) return attachWaystone(info, heldItem, playerHandle);
         else if(isBrush(heldItem)) return paint(info);
         else return InteractionResult.Ignored;
@@ -98,13 +101,13 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
         } else return InteractionResult.Ignored;
     }
 
-    private InteractionResult attachSign(InteractionInfo info, ItemStack heldItem) {
+    private InteractionResult attachSign(InteractionInfo info, ResourceKey<PostBlock.ModelType> modelType, ItemStack itemToDropOnBreak) {
         if (info.isRemote && info.tile.getParts().stream().filter(i -> i.blockPart() instanceof SignBlockPart).count() < maxSignCount) {
             SignGui.display(
                 info.tile,
-                PostBlock.ModelType.from(info.player.getItemInHand(info.hand).getItem(), info.player.registryAccess()).get(),
+                modelType,
                 info.traceResult.hitPos,
-                Optional.of(new ItemStack(heldItem.getItem(), 1))
+                Optional.of(itemToDropOnBreak)
             );
         }
         return InteractionResult.Accepted;
@@ -117,10 +120,10 @@ public class PostBlockPart implements BlockPart<PostBlockPart> {
         return InteractionResult.Accepted;
     }
 
-    private static boolean isValidSign(ItemStack itemStack, HolderLookup.Provider registryAccess) {
-        if(itemStack == null || itemStack.getCount() < 1) return false;
+    private static Optional<ResourceKey<PostBlock.ModelType>> modelTypeForSignItem(ItemStack itemStack, HolderLookup.Provider registryAccess) {
+        if(itemStack == null || itemStack.getCount() < 1) return Optional.empty();
         Item item = itemStack.getItem();
-        return PostBlock.ModelType.from(item, registryAccess).isPresent();
+        return PostBlock.ModelType.from(item, registryAccess);
     }
 
     private static boolean isWaystone(ItemStack itemStack) {

@@ -14,6 +14,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static gollorum.signpost.Signpost.MOD_ID;
@@ -30,7 +31,7 @@ public class ItemRegistry {
         ModelWaystone.variants.stream().map(ItemRegistry::registerModelWaystoneItem).toList();
 
     public static final List<RegistryObject<Item>> POSTS_ITEMS =
-        PostBlock.AllVariants.stream().map(ItemRegistry::registerPostItem).toList();
+        Arrays.stream(PostBlock.MaterialType.values()).map(ItemRegistry::registerPostItem).toList();
 
     public static final RegistryObject<Item> WaystoneGeneratorItem =
         REGISTER.register(WaystoneGeneratorBlock.REGISTRY_NAME,
@@ -43,9 +44,9 @@ public class ItemRegistry {
 
     public static final RegistryObject<Item> GENERATION_WAND = REGISTER.register(GenerationWand.registryName, GenerationWand::new);
 
-    private static RegistryObject<Item> registerPostItem(PostBlock.Variant postVariant){
+    private static RegistryObject<Item> registerPostItem(PostBlock.MaterialType postVariant){
         return REGISTER.register(
-            postVariant.registryName,
+            postVariant.blockRegistryName,
             () -> new PostItem(postVariant.getBlock(), new Item.Properties()));
     }
 

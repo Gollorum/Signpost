@@ -9,37 +9,38 @@ import gollorum.signpost.blockpartdata.types.PostBlockPart;
 import gollorum.signpost.interactions.Interactable;
 import gollorum.signpost.interactions.InteractionInfo;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.data.ModelTypeRegistry;
 import gollorum.signpost.minecraft.data.PostData;
 import gollorum.signpost.minecraft.gui.RequestSignGui;
 import gollorum.signpost.minecraft.utils.Texture;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.BlockPartInstance;
-import gollorum.signpost.utils.IDelay;
 import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.math.geometry.Vector3;
+import gollorum.signpost.utils.serialization.StreamCodecUtils;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.core.*;
+import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.RegistryFixedCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.ItemTags;
-import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
@@ -57,11 +58,10 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.apache.commons.lang3.function.TriFunction;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.function.Function;
+import java.util.stream.Stream;
 
 public final class PostBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
     @Override
@@ -70,263 +70,105 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
     }
 
     public static final EnumProperty<Direction> Facing = BlockStateProperties.HORIZONTAL_FACING;
-    public static class ModelType {
 
-        private static final Map<String, ModelType> allTypes = new HashMap<>();
-
-        public static final Codec<ModelType> CODEC = Codec.STRING.xmap(
-            allTypes::get,
-            type -> type.name
-        );
-
-        public static void register(ModelType modelType, String name) {
-            if (name.length() < 3 || name.length() > 30) {
-                throw new IllegalArgumentException("ModelType name must be between 3 and 30 characters");
-            }
-            allTypes.put(name, modelType);
-        }
-        public static void register(ModelType modelType) { register(modelType, modelType.name); }
-        public static Optional<ModelType> getByName(String name, boolean logErrorIfNotPresent) {
-            if (allTypes.containsKey(name)) return Optional.of(allTypes.get(name));
-            else {
-                if(logErrorIfNotPresent) Signpost.LOGGER.error("Tried to get invalid model type " + name);
-                return Optional.empty();
-            }
+    public static record ModelType(
+        MaterialType materialType,
+        Ingredient addSignIngredient,
+        Texture postTexture,
+        Texture mainTexture,
+        Texture secondaryTexture
+    ) {
+        public ItemStack getItemStack(ResourceKey<ModelType> key, int count) {
+            var item = new ItemStack(materialType.getBlock(), count);
+            item.applyComponents(applyTo(key, DataComponentPatch.builder()).build());
+            return item;
         }
 
-        public static final ModelType Acacia = new ModelType("acacia",
-            ResourceLocation.parse("acacia_log"),
-            ResourceLocation.parse("stripped_acacia_log"),
-            ResourceLocation.parse("acacia_log"),
-            r -> Ingredient.of(Items.ACACIA_SIGN),
-            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.ACACIA_LOGS)),
-            r -> Ingredient.of(Items.ACACIA_SIGN)
-        );
-        public static final ModelType Birch = new ModelType("birch",
-            ResourceLocation.parse("birch_log"),
-            ResourceLocation.parse("stripped_birch_log"),
-            ResourceLocation.parse("birch_log"),
-            r -> Ingredient.of(Items.BIRCH_SIGN),
-            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.BIRCH_LOGS)),
-            r -> Ingredient.of(Items.BIRCH_SIGN)
-        );
-        public static final ModelType Iron = new ModelType("iron",
-            ResourceLocation.parse("iron_block"),
-            ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "iron"),
-            ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "iron_dark"),
-            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.SIGNS)),
-            r -> Ingredient.of(Items.IRON_INGOT),
-            r -> Ingredient.of(Items.IRON_INGOT)
-        );
-        public static final ModelType Jungle = new ModelType("jungle",
-            ResourceLocation.parse("jungle_log"),
-            ResourceLocation.parse("stripped_jungle_log"),
-            ResourceLocation.parse("jungle_log"),
-            r -> Ingredient.of(Items.JUNGLE_SIGN),
-            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.JUNGLE_LOGS)),
-            r -> Ingredient.of(Items.JUNGLE_SIGN)
-        );
-        public static final ModelType Oak = new ModelType("oak",
-            ResourceLocation.parse("oak_log"),
-            ResourceLocation.parse("stripped_oak_log"),
-            ResourceLocation.parse("oak_log"),
-            r -> Ingredient.of(Items.OAK_SIGN),
-            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.OAK_LOGS)),
-            r -> Ingredient.of(Items.OAK_SIGN)
-        );
-        public static final ModelType DarkOak = new ModelType("darkoak",
-            ResourceLocation.parse("dark_oak_log"),
-            ResourceLocation.parse("stripped_dark_oak_log"),
-            ResourceLocation.parse("dark_oak_log"),
-            r -> Ingredient.of(Items.DARK_OAK_SIGN),
-            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.DARK_OAK_LOGS)),
-            r -> Ingredient.of(Items.DARK_OAK_SIGN)
-        );
-        public static final ModelType Spruce = new ModelType("spruce",
-            ResourceLocation.parse("spruce_log"),
-            ResourceLocation.parse("stripped_spruce_log"),
-            ResourceLocation.parse("spruce_log"),
-            r -> Ingredient.of(Items.SPRUCE_SIGN),
-            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.SPRUCE_LOGS)),
-            r -> Ingredient.of(Items.SPRUCE_SIGN)
-        );
-        public static final ModelType Mangrove = new ModelType("mangrove",
-            ResourceLocation.parse("mangrove_log"),
-            ResourceLocation.parse("stripped_mangrove_log"),
-            ResourceLocation.parse("mangrove_log"),
-            r -> Ingredient.of(Items.MANGROVE_SIGN),
-            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.MANGROVE_LOGS)),
-            r -> Ingredient.of(Items.MANGROVE_SIGN)
-        );
-        public static final ModelType Bamboo = new ModelType("bamboo",
-            ResourceLocation.parse("bamboo_block"),
-            ResourceLocation.parse("stripped_bamboo_block"),
-            ResourceLocation.parse("bamboo_block"),
-            r -> Ingredient.of(Items.BAMBOO_SIGN),
-            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.BAMBOO_BLOCKS)),
-            r -> Ingredient.of(Items.BAMBOO_SIGN)
-        );
-        public static final ModelType Cherry = new ModelType("cherry",
-            ResourceLocation.parse("cherry_log"),
-            ResourceLocation.parse("stripped_cherry_log"),
-            ResourceLocation.parse("cherry_log"),
-            r -> Ingredient.of(Items.CHERRY_SIGN),
-            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.CHERRY_LOGS)),
-            r -> Ingredient.of(Items.CHERRY_SIGN)
-        );
-        public static final ModelType Stone = new ModelType("stone",
-            ResourceLocation.parse("stone"),
-            ResourceLocation.parse("stone"),
-            ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "stone_dark"),
-            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.SIGNS)),
-            r -> Ingredient.of(Items.STONE),
-            r -> Ingredient.of(Items.STONE)
-        );
-        public static final ModelType RedMushroom = new ModelType("red_mushroom",
-            ResourceLocation.parse("red_mushroom_block"),
-            ResourceLocation.parse("mushroom_stem"),
-            ResourceLocation.parse("red_mushroom_block"),
-            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.SIGNS)),
-            r -> Ingredient.of(Items.RED_MUSHROOM_BLOCK),
-            r -> Ingredient.of(Items.RED_MUSHROOM)
-        );
-        public static final ModelType BrownMushroom = new ModelType("brown_mushroom",
-            ResourceLocation.parse("brown_mushroom_block"),
-            ResourceLocation.parse("mushroom_stem"),
-            ResourceLocation.parse("brown_mushroom_block"),
-            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.SIGNS)),
-            r -> Ingredient.of(Items.BROWN_MUSHROOM_BLOCK),
-            r -> Ingredient.of(Items.BROWN_MUSHROOM)
-        );
-        public static final ModelType Warped = new ModelType("warped",
-            ResourceLocation.parse("warped_stem"),
-            ResourceLocation.parse("stripped_warped_stem"),
-            ResourceLocation.parse("warped_stem"),
-            r -> Ingredient.of(Items.WARPED_SIGN),
-            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.WARPED_STEMS)),
-            r -> Ingredient.of(Items.WARPED_SIGN)
-        );
-        public static final ModelType Crimson = new ModelType("crimson",
-            ResourceLocation.parse("crimson_stem"),
-            ResourceLocation.parse("stripped_crimson_stem"),
-            ResourceLocation.parse("crimson_stem"),
-            r -> Ingredient.of(Items.CRIMSON_SIGN),
-            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.CRIMSON_STEMS)),
-            r -> Ingredient.of(Items.CRIMSON_SIGN)
-        );
-        private static final Ingredient sandstone =
-            Ingredient.of(Blocks.SANDSTONE, Blocks.CUT_SANDSTONE, Blocks.CHISELED_SANDSTONE, Blocks.SMOOTH_SANDSTONE);
-        public static final ModelType Sandstone = new ModelType("sandstone",
-            ResourceLocation.parse("sandstone"),
-            ResourceLocation.parse("stripped_jungle_log"),
-            ResourceLocation.parse("sandstone_bottom"),
-            r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.SIGNS)),
-            r -> sandstone,
-            r -> sandstone
-        );
-
-        public static Optional<ModelType> from(Item signItem, HolderLookup.Provider registryAccess) {
-            return allTypes.values().stream()
-                .filter(t -> t.addSignIngredient.apply(registryAccess).test(new ItemStack(signItem)))
-                .findFirst();
+        public static DataComponentPatch.Builder applyTo(ResourceKey<ModelType> holder, DataComponentPatch.Builder patchBuilder) {
+            patchBuilder.set(PostData.TYPE, new PostData(holder, Map.of()));
+            patchBuilder.set(DataComponents.ITEM_NAME, Component.translatable("item.signpost." + getLangRegistryName(holder.location())));
+            return patchBuilder;
         }
 
-        static {
-            register(Acacia);
-            register(Birch);
-            register(Iron);
-            register(Stone);
-            register(Jungle);
-            register(Oak);
-            register(DarkOak);
-            register(Spruce);
-            register(Mangrove);
-            register(Bamboo);
-            register(Cherry);
-            register(Warped);
-            register(Crimson);
-            register(Sandstone);
-            register(BrownMushroom);
-            register(RedMushroom);
+        public static DataComponentMap.Builder applyTo(ResourceKey<ModelType> holder, DataComponentMap.Builder builder) {
+            builder.set(PostData.TYPE, new PostData(holder, Map.of()));
+            builder.set(DataComponents.ITEM_NAME, Component.translatable("item.signpost." + getLangRegistryName(holder.location())));
+            return builder;
         }
 
-        public final String name;
-        public final Texture postTexture;
-        public final Texture mainTexture;
-        public final Texture secondaryTexture;
-        public final Function<HolderLookup.Provider, Ingredient> signIngredient;
-        public final Function<HolderLookup.Provider, Ingredient> baseIngredient;
-        public final Function<HolderLookup.Provider, Ingredient> addSignIngredient;
-
-        ModelType(
-            String name, ResourceLocation postTexture, ResourceLocation mainTexture, ResourceLocation secondaryTexture,
-            Function<HolderLookup.Provider, Ingredient> signIngredient, Function<HolderLookup.Provider, Ingredient> baseIngredient, Function<HolderLookup.Provider, Ingredient> addSignIngredient) {
-            this(name, expand(postTexture), expand(mainTexture), expand(secondaryTexture), signIngredient, baseIngredient, addSignIngredient);
+        public static Optional<ResourceKey<ModelType>> from(Item signItem, HolderLookup.Provider registryAccess) {
+            return ModelTypeRegistry.getAllModelTypeHolders(registryAccess)
+                .filter(t -> t.value().addSignIngredient.test(new ItemStack(signItem)))
+                .findFirst()
+                .map(h -> h.unwrapKey().get());
         }
 
-
-        public ModelType(String name, Texture postTexture, Texture mainTexture, Texture secondaryTexture, Function<HolderLookup.Provider, Ingredient> signIngredient, Function<HolderLookup.Provider, Ingredient> baseIngredient, Function<HolderLookup.Provider, Ingredient> addSignIngredient) {
-            this.name = name;
-            this.postTexture = postTexture;
-            this.mainTexture = mainTexture;
-            this.secondaryTexture = secondaryTexture;
-            this.signIngredient = signIngredient;
-            this.baseIngredient = baseIngredient;
-            this.addSignIngredient = addSignIngredient;
+        private static String getLangRegistryName(ResourceLocation id) {
+            return REGISTRY_NAME + "." + id.getNamespace() + "." + id.getPath();
         }
 
-        private static Texture expand(ResourceLocation loc){
-            return new Texture(ResourceLocation.fromNamespaceAndPath(
-                loc.getNamespace(),
-                loc.getPath().startsWith("block/") ? loc.getPath() : "block/"+loc.getPath()
-            ));
-        }
-
-        private static final StreamCodec<RegistryFriendlyByteBuf, Function<HolderLookup.Provider, Ingredient>> ingredientGetterStreamCodec = StreamCodec.of(
-            (buffer, i) -> Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, i.apply(buffer.registryAccess())),
-            buffer -> {
-                Ingredient ingredient = Ingredient.CONTENTS_STREAM_CODEC.decode(buffer);
-                return (r) -> ingredient;
-            }
-        );
         public static final StreamCodec<RegistryFriendlyByteBuf, ModelType> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.STRING_UTF8, mt -> mt.name,
-            Texture.STREAM_CODEC, mt -> mt.postTexture,
-            Texture.STREAM_CODEC, mt -> mt.mainTexture,
-            Texture.STREAM_CODEC, mt -> mt.secondaryTexture,
-            ingredientGetterStreamCodec, mt -> mt.signIngredient,
-            ingredientGetterStreamCodec, mt -> mt.baseIngredient,
-            ingredientGetterStreamCodec, mt -> mt.addSignIngredient,
+            MaterialType.STREAM_CODEC, ModelType::materialType,
+            Ingredient.CONTENTS_STREAM_CODEC, ModelType::addSignIngredient,
+            Texture.STREAM_CODEC, ModelType::postTexture,
+            Texture.STREAM_CODEC, ModelType::mainTexture,
+            Texture.STREAM_CODEC, ModelType::secondaryTexture,
             ModelType::new
         );
 
+        public static final Codec<ModelType> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            MaterialType.CODEC.fieldOf("materialType").forGetter(ModelType::materialType),
+            Ingredient.CODEC.fieldOf("addSignIngredient").forGetter(ModelType::addSignIngredient),
+            Texture.CODEC_V2.fieldOf("postTexture").forGetter(ModelType::postTexture),
+            Texture.CODEC_V2.fieldOf("mainTexture").forGetter(ModelType::mainTexture),
+            Texture.CODEC_V2.fieldOf("secondaryTexture").forGetter(ModelType::secondaryTexture)
+        ).apply(instance, ModelType::new));
+
+        public static final Codec<Holder<ModelType>> HOLDER_CODEC = RegistryFixedCodec.create(ModelTypeRegistry.REGISTRY_KEY);
     }
 
     private static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
-    public static class Variant {
+    public static final String REGISTRY_NAME = "post";
 
-        public static enum RequiredTool {
-            Axe, Pickaxe
-        }
+    public final MaterialType materialType;
 
-        private PostBlock block = null;
-        public final String registryName;
+    public static enum RequiredTool {
+        Axe, Pickaxe
+    }
+
+    public enum MaterialType {
+        Wood(PropertiesUtil.wood(PropertiesUtil.WoodType.Oak), RequiredTool.Axe, "wood"),
+        Stone(PropertiesUtil.STONE, RequiredTool.Pickaxe, "stone"),
+        Metal(PropertiesUtil.IRON, RequiredTool.Pickaxe, "metal"),
+        Mushroom(PropertiesUtil.mushroom(MapColor.DIRT), RequiredTool.Axe, "mushroom");
+
+        public static final StreamCodec<ByteBuf, MaterialType> STREAM_CODEC = ByteBufCodecs.STRING_UTF8
+            .map(
+                name -> Arrays.stream(values())
+                    .filter(mt -> mt.id.equals(name))
+                    .findAny()
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid MaterialType name: " + name)),
+                mt -> mt.id
+            );
+
+        public static final Codec<MaterialType> CODEC = Codec.STRING.xmap(
+            name -> Arrays.stream(values())
+                .filter(mt -> mt.id.equals(name))
+                .findAny()
+                .orElseThrow(() -> new IllegalArgumentException("Invalid MaterialType name: " + name)),
+            mt -> mt.id
+        );
+
         public final Properties properties;
-        public final ModelType type;
         public final RequiredTool tool;
+        public final String id;
+        public final String blockRegistryName;
+        private PostBlock block;
 
-        public Variant(Properties properties, ModelType type, String registryName, RequiredTool tool) {
-            this.registryName = REGISTRY_NAME + "_" + registryName;
-            this.properties = properties
-                .setId(ResourceKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, this.registryName)));
-            this.type = type;
-            this.tool = tool;
-        }
-
-        public PostBlock createBlock(TriFunction<Properties, ModelType, Variant, PostBlock> factory) {
+        public PostBlock createBlock() {
             assert block == null;
-            return block = factory.apply(properties, type, this);
+            return block = new PostBlock(this);
         }
 
         public PostBlock getBlock() {
@@ -334,39 +176,23 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
             return block;
         }
 
+        MaterialType(Properties properties, RequiredTool tool, String registryName) {
+            this.id = registryName;
+            this.blockRegistryName = REGISTRY_NAME + "_" + registryName;
+            this.properties = properties
+                .setId(ResourceKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, blockRegistryName)));
+            this.tool = tool;
+        }
     }
 
-    public static final String REGISTRY_NAME = "post";
-
-    public static final Variant STONE = new Variant(PropertiesUtil.STONE, ModelType.Stone, "stone", Variant.RequiredTool.Pickaxe);
-    public static final Variant IRON = new Variant(PropertiesUtil.IRON, ModelType.Iron, "iron", Variant.RequiredTool.Pickaxe);
-    public static final Variant OAK = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Oak), ModelType.Oak, "oak", Variant.RequiredTool.Axe);
-    public static final Variant DARK_OAK = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.DarkOak), ModelType.DarkOak, "dark_oak", Variant.RequiredTool.Axe);
-    public static final Variant SPRUCE = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Spruce), ModelType.Spruce, "spruce", Variant.RequiredTool.Axe);
-    public static final Variant BIRCH = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Birch), ModelType.Birch, "birch", Variant.RequiredTool.Axe);
-    public static final Variant JUNGLE = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Jungle), ModelType.Jungle, "jungle", Variant.RequiredTool.Axe);
-    public static final Variant ACACIA = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Acacia), ModelType.Acacia, "acacia", Variant.RequiredTool.Axe);
-    public static final Variant MANGROVE = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Mangrove), ModelType.Mangrove, "mangrove", Variant.RequiredTool.Axe);
-    public static final Variant BAMBOO = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Bamboo), ModelType.Bamboo, "bamboo", Variant.RequiredTool.Axe);
-    public static final Variant CHERRY = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Cherry), ModelType.Cherry, "cherry", Variant.RequiredTool.Axe);
-    public static final Variant WARPED = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Warped), ModelType.Warped, "warped", Variant.RequiredTool.Axe);
-    public static final Variant CRIMSON = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Crimson), ModelType.Crimson, "crimson", Variant.RequiredTool.Axe);
-    public static final Variant SANDSTONE = new Variant(PropertiesUtil.STONE, ModelType.Sandstone, "sandstone", Variant.RequiredTool.Pickaxe);
-    public static final Variant BROWN_MUSHROOM = new Variant(PropertiesUtil.mushroom(MapColor.DIRT), ModelType.BrownMushroom, "brown_mushroom", Variant.RequiredTool.Axe);
-    public static final Variant RED_MUSHROOM = new Variant(PropertiesUtil.mushroom(MapColor.COLOR_RED), ModelType.RedMushroom, "red_mushroom", Variant.RequiredTool.Axe);
-
-    public static final List<Variant> AllVariants = Arrays.asList(OAK, BIRCH, SPRUCE, JUNGLE, DARK_OAK, ACACIA, MANGROVE, BAMBOO, CHERRY, STONE, IRON, WARPED, CRIMSON, SANDSTONE, BROWN_MUSHROOM, RED_MUSHROOM);
-    public static Block[] getAllBlocks() {
-        return AllVariants.stream().map(Variant::getBlock).toArray(Block[]::new);
+    public static final Stream<PostBlock> all() {
+        return Arrays.stream(MaterialType.values())
+            .map(MaterialType::getBlock);
     }
 
-    public final ModelType type;
-    public final Variant variant;
-
-    public PostBlock(Properties properties, ModelType type, Variant variant) {
-        super(properties.noOcclusion());
-        this.type = type;
-        this.variant = variant;
+    public PostBlock(MaterialType type) {
+        super(type.properties.noOcclusion());
+        this.materialType = type;
         this.registerDefaultState(this.defaultBlockState().setValue(WATERLOGGED, false));
     }
 
@@ -374,37 +200,44 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
     public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack currentStack) {
         super.setPlacedBy(world, pos, state, placer, currentStack);
         ItemStack stack = currentStack.copy(); // stack might be changed in the delay (set block -> block no longer in inventory)
-        IDelay.forFrames(6, world.isClientSide(), () ->
-            TileEntityUtils.delayUntilTileEntityExists(world, pos, PostTile.getBlockEntityType(), tile -> {
-                tile.setSignpostOwner(Optional.of(PlayerHandle.from(placer)));
-                boolean shouldAddNewSign = placer instanceof ServerPlayer;
-                if (!world.isClientSide()) {
-                    var customData = stack.get(PostData.TYPE);
-                    if(customData != null) {
-                        tile.readData(customData);
-                        shouldAddNewSign = false;
-                        tile.getWaystonePart().ifPresent(waystone -> WaystoneBlock.registerOwnerAndSeeIfHasName(tile, world, pos, placer, stack));
-                    } else {
-                        tile.addPart(
-                            new BlockPartInstance(new PostBlockPart(type.postTexture), Vector3.ZERO),
-                            ItemStack.EMPTY,
-                            PlayerHandle.from(placer)
-                        );
-                    }
-                    tile.setChanged();
-                    world.sendBlockUpdated(pos, state, state, 3);
-                    if(shouldAddNewSign)
-                        PacketHandler.getInstance().sendToPlayer(
-                            (ServerPlayer) placer,
-                            RequestSignGui.ForNewSign.Package.from(
-                                WorldLocation.from(pos, world),
-                                tile.modelType,
-                                new Vector3(0, 1, 0),
-                                ItemStack.EMPTY
-                            )
-                        );
+        TileEntityUtils.delayUntilTileEntityExists(world, pos, PostTile.getBlockEntityType(), tile -> {
+            tile.setSignpostOwner(Optional.of(PlayerHandle.from(placer)));
+            boolean shouldAddNewSign = placer instanceof ServerPlayer;
+            if (!world.isClientSide()) {
+                var data = stack.get(PostData.TYPE);
+                if (data == null) {
+                    data = new PostData(switch (materialType) {
+                        case Wood -> ResourceKey.create(ModelTypeRegistry.REGISTRY_KEY, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "oak"));
+                        case Stone -> ResourceKey.create(ModelTypeRegistry.REGISTRY_KEY, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "stone"));
+                        case Metal -> ResourceKey.create(ModelTypeRegistry.REGISTRY_KEY, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "iron"));
+                        case Mushroom -> ResourceKey.create(ModelTypeRegistry.REGISTRY_KEY, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "mushroom"));
+                    }, Map.of());
                 }
-            }, 100, Optional.of(() -> Signpost.LOGGER.error("Could not initialize placed signpost: BlockEntity never appeared."))));
+                tile.readData(data, world.registryAccess(), materialType);
+                if (data.parts().isEmpty()){
+                    tile.addPart(
+                        new BlockPartInstance(new PostBlockPart(tile.modelType().postTexture), Vector3.ZERO),
+                        ItemStack.EMPTY,
+                        PlayerHandle.from(placer)
+                    );
+                } else {
+                    shouldAddNewSign = false;
+                    tile.getWaystonePart().ifPresent(waystone -> WaystoneBlock.registerOwnerAndSeeIfHasName(tile, world, pos, placer, stack));
+                }
+                tile.setChanged();
+                world.sendBlockUpdated(pos, state, state, 3);
+                if(shouldAddNewSign)
+                    PacketHandler.getInstance().sendToPlayer(
+                        (ServerPlayer) placer,
+                        RequestSignGui.ForNewSign.Package.from(
+                            WorldLocation.from(pos, world),
+                            tile.modelTypeKey(),
+                            new Vector3(0, 1, 0),
+                            ItemStack.EMPTY
+                        )
+                    );
+            }
+        }, 100, Optional.of(() -> Signpost.LOGGER.error("Could not initialize placed signpost: BlockEntity never appeared.")));
     }
 
     @SuppressWarnings("deprecation")
@@ -434,7 +267,7 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
 
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new PostTile(type, pos, state);
+        return new PostTile(pos, state);
     }
 
     @Override
@@ -509,10 +342,13 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
     @Override
     protected ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) {
         ItemStack ret = super.getCloneItemStack(level,  pos, state, includeData);
-        if (!includeData) return ret;
-        level.getBlockEntity(pos, PostTile.getBlockEntityType()).ifPresent(tile -> {
-            var data = new PostData(tile.parts());
-            ret.applyComponents(DataComponentPatch.builder().set(PostData.TYPE, data).build());
+        var tileOpt = level.getBlockEntity(pos, PostTile.getBlockEntityType());
+        tileOpt.ifPresent(tile -> {
+            var patchBuilder = DataComponentPatch.builder();
+            ModelType.applyTo(tile.modelTypeKey(), patchBuilder);
+            if (includeData)
+                patchBuilder.set(PostData.TYPE, new PostData(tile.modelTypeKey(), tile.parts()));
+            ret.applyComponents(patchBuilder.build());
         });
         return ret;
     }
@@ -520,9 +356,9 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
     @Override
     protected @NotNull MapCodec<? extends BaseEntityBlock> codec() {
         return RecordCodecBuilder.mapCodec((builder) -> builder.group(
-            Codec.STRING.fieldOf("variant").forGetter(block -> ((PostBlock)block).type.name)
+            Codec.STRING.fieldOf("materialType").forGetter(block -> ((PostBlock)block).materialType.id)
         ).apply(builder, variantName ->
-            AllVariants.stream().filter(v -> Objects.equals(v.type.name, variantName)).findAny().orElseThrow().createBlock(PostBlock::new)
+            all().filter(v -> Objects.equals(v.materialType.id, variantName)).findAny().orElseThrow()
         ));
     }
 

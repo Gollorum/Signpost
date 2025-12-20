@@ -12,6 +12,7 @@ import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.events.WaystoneRenamedEvent;
 import gollorum.signpost.events.WaystoneUpdatedEvent;
+import gollorum.signpost.minecraft.data.ModelTypeRegistry;
 import gollorum.signpost.minecraft.gui.utils.*;
 import gollorum.signpost.minecraft.gui.widgets.*;
 import gollorum.signpost.minecraft.models.LargeSignModel;
@@ -30,13 +31,12 @@ import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.*;
@@ -105,6 +105,7 @@ public class SignGui extends Screen {
     private final PostTile tile;
     private final ItemStack itemStack;
 
+    private final ResourceKey<PostBlock.ModelType> modelTypeKey;
     private final PostBlock.ModelType modelType;
     private final Vector3 localHitPos;
 
@@ -139,7 +140,7 @@ public class SignGui extends Screen {
 
     private TextDisplay noWaystonesInfo;
 
-    public static void display(PostTile tile, PostBlock.ModelType modelType, Vector3 localHitPos, Optional<ItemStack> itemToDropOnBreak) {
+    public static void display(PostTile tile, ResourceKey<PostBlock.ModelType> modelType, Vector3 localHitPos, Optional<ItemStack> itemToDropOnBreak) {
         Minecraft.getInstance().setScreen(new SignGui(tile, modelType, localHitPos, itemToDropOnBreak));
     }
 
@@ -148,25 +149,23 @@ public class SignGui extends Screen {
             Minecraft.getInstance().setScreen(new SignGui(tile, oldSign, oldOffset, oldTilePartInfo));
     }
 
-    public SignGui(PostTile tile, PostBlock.ModelType modelType, Vector3 localHitPos, Optional<ItemStack> itemToDropOnBreak) {
-        super(Component.translatable(LangKeys.signGuiTitle));
-        this.tile = tile;
-        this.modelType = modelType;
-        this.localHitPos = localHitPos;
-        this.itemToDropOnBreak = itemToDropOnBreak;
-        oldSign = Optional.empty();
-        oldTilePartInfo = Optional.empty();
-        itemStack = new ItemStack(tile.getBlockState().getBlock().asItem());
+    public SignGui(PostTile tile, ResourceKey<PostBlock.ModelType> modelType, Vector3 localHitPos, Optional<ItemStack> itemToDropOnBreak) {
+        this(tile, modelType, Optional.empty(), localHitPos, Optional.empty(), itemToDropOnBreak);
     }
 
     public SignGui(PostTile tile, SignBlockPart oldSign, Vector3 oldOffset, PostTile.TilePartInfo oldTilePartInfo) {
+        this(tile, oldSign.getModelType(), Optional.of(oldSign), oldOffset, Optional.of(oldTilePartInfo), oldSign.getItemToDropOnBreak());
+    }
+
+    private SignGui(PostTile tile, ResourceKey<PostBlock.ModelType> modelTypeKey, Optional<SignBlockPart> oldSign, Vector3 localHitPos, Optional<PostTile.TilePartInfo> oldTilePartInfo, Optional<ItemStack> itemToDropOnBreak) {
         super(Component.translatable(LangKeys.signGuiTitle));
         this.tile = tile;
-        this.modelType = oldSign.getModelType();
-        this.localHitPos = oldOffset;
-        this.itemToDropOnBreak = oldSign.getItemToDropOnBreak();
-        this.oldSign = Optional.of(oldSign);
-        this.oldTilePartInfo = Optional.of(oldTilePartInfo);
+        this.modelTypeKey = modelTypeKey;
+        this.modelType = ModelTypeRegistry.getOrFallbackModelType(tile.getLevel().registryAccess(), modelTypeKey, tile::getBlockMaterialType);
+        this.localHitPos = localHitPos;
+        this.itemToDropOnBreak = itemToDropOnBreak;
+        this.oldSign = oldSign;
+        this.oldTilePartInfo = oldTilePartInfo;
         itemStack = new ItemStack(tile.getBlockState().getBlock().asItem());
     }
 
@@ -229,9 +228,9 @@ public class SignGui extends Screen {
         var postTexture = tile.getParts().stream()
             .filter(p -> p.blockPart() instanceof PostBlockPart)
             .map(p -> ((PostBlockPart) p.blockPart()).getTexture())
-            .findFirst().orElse(tile.modelType.postTexture);
-        var mainTexture = oldSign.map(SignBlockPart::getMainTexture).orElse(modelType.mainTexture);
-        var secondaryTexture = oldSign.map(SignBlockPart::getSecondaryTexture).orElse(modelType.secondaryTexture);
+            .findFirst().orElse(modelType.postTexture());
+        var mainTexture = oldSign.map(SignBlockPart::getMainTexture).orElse(modelType.mainTexture());
+        var secondaryTexture = oldSign.map(SignBlockPart::getSecondaryTexture).orElse(modelType.secondaryTexture());
 
         FlippableModel postModel = FlippableModel.fromSymmetric(
             new TexturedModel[]{new TexturedModel(
@@ -717,12 +716,13 @@ public class SignGui extends Screen {
         AtomicInteger cycleItemIndex = new AtomicInteger(0);
         AtomicInteger cycleItemIngredientIndex = new AtomicInteger(0);
         AtomicLong nextCycleAt = new AtomicLong(System.currentTimeMillis());
+        var allModelTypes = ModelTypeRegistry.getAllModelTypes(minecraft.getSingleplayerServer().registryAccess()).toList();
         cycleItem.set(() -> {
             if(isClosed) return;
-            var options = PostBlock.AllVariants.get(cycleItemIndex.get()).type.addSignIngredient.apply(Minecraft.getInstance().level.registryAccess()).items().toList();
+            var options = allModelTypes.get(cycleItemIndex.get()).addSignIngredient().items().toList();
             ir.setItemStack(new ItemStack(options.get(cycleItemIngredientIndex.get()).value()));
             if(cycleItemIngredientIndex.get() >= options.size() - 1) {
-                cycleItemIndex.set((cycleItemIndex.get() + 1) % PostBlock.AllVariants.size());
+                cycleItemIndex.set((cycleItemIndex.get() + 1) % allModelTypes.size());
                 cycleItemIngredientIndex.set(0);
             } else cycleItemIngredientIndex.incrementAndGet();
             nextCycleAt.set(nextCycleAt.get() + (options.size() < 2 ? 1500 : (options.size() == 2 ? 1000 : 500)));
@@ -1038,11 +1038,10 @@ public class SignGui extends Screen {
     private void apply(Optional<WaystoneHandle> destinationId) {
         PostTile.TilePartInfo tilePartInfo = oldTilePartInfo.orElseGet(() ->
             new PostTile.TilePartInfo(tile.getLevel().dimension().location(), tile.getBlockPos(), UUID.randomUUID()));
-        var registries = tile.getLevel().registryAccess();
         BlockPart data;
         boolean isLocked = lockButton.isLocked();
-        var mainTex = oldSign.map(SignBlockPart::getMainTexture).orElse(modelType.mainTexture);
-        var secondaryTex = oldSign.map(SignBlockPart::getSecondaryTexture).orElse(modelType.secondaryTexture);
+        var mainTex = oldSign.map(SignBlockPart::getMainTexture).orElse(modelType.mainTexture());
+        var secondaryTex = oldSign.map(SignBlockPart::getSecondaryTexture).orElse(modelType.secondaryTexture());
         AngleProvider angle = destinationId.flatMap(destination -> isCurrentAnglePointingAtWaystone()
             ? Optional.<AngleProvider>of(new AngleProvider.WaystoneTarget(rotationInputField.getCurrentAngle()))
             : Optional.empty()
@@ -1059,7 +1058,7 @@ public class SignGui extends Screen {
                     colorInputBox.getCurrentColor(),
                     destinationId,
                     itemToDropOnBreak,
-                    modelType,
+                    modelTypeKey,
                     isLocked,
                     oldSign.map(SignBlockPart::isMarkedForGeneration).orElse(false)
                 );
@@ -1089,7 +1088,7 @@ public class SignGui extends Screen {
                     colorInputBox.getCurrentColor(),
                     destinationId,
                     itemToDropOnBreak,
-                    modelType,
+                    modelTypeKey,
                     isLocked,
                     oldSign.map(SignBlockPart::isMarkedForGeneration).orElse(false)
                 );
@@ -1123,7 +1122,7 @@ public class SignGui extends Screen {
                     colorInputBox.getCurrentColor(),
                     destinationId,
                     itemToDropOnBreak,
-                    modelType,
+                    modelTypeKey,
                     isLocked,
                     oldSign.map(SignBlockPart::isMarkedForGeneration).orElse(false)
                 );

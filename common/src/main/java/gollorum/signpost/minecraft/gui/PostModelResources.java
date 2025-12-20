@@ -6,12 +6,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class PostModelResources {
 
-    public static final String texturePost = "post";
-    public static final String textureSign = "texture";
-    public static final ResourceLocation mainTextureMarker = PostBlock.ModelType.Oak.mainTexture.location();
     public static final String secondaryTexture = "secondary_texture";
-
-    public static final ResourceLocation previewLocation = ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/post_preview");
 
     public static final ResourceLocation postLocation = ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/post_only");
 
