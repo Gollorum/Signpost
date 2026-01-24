@@ -11,18 +11,22 @@ public class PropertiesUtil {
         Oak, DarkOak, Spruce, Birch, Jungle, Acacia, Mangrove, Bamboo, Cherry, Warped, Crimson
     }
 
-    public static Block.Properties STONE = Block.Properties.of()
-        .mapColor(MapColor.STONE)
-        .instrument(NoteBlockInstrument.BASEDRUM)
-        .strength(1.5F, 6.0F)
-        .requiresCorrectToolForDrops();
+    public static Block.Properties stone() {
+        return Block.Properties.of()
+            .mapColor(MapColor.STONE)
+            .instrument(NoteBlockInstrument.BASEDRUM)
+            .strength(1.5F, 6.0F)
+            .requiresCorrectToolForDrops();
+    }
 
-    public static Block.Properties IRON = Block.Properties.of()
-        .mapColor(MapColor.METAL)
-        .instrument(NoteBlockInstrument.IRON_XYLOPHONE)
-        .requiresCorrectToolForDrops()
-        .strength(5.0F, 6.0F)
-        .sound(SoundType.METAL);
+    public static Block.Properties iron() {
+        return Block.Properties.of()
+            .mapColor(MapColor.METAL)
+            .instrument(NoteBlockInstrument.IRON_XYLOPHONE)
+            .requiresCorrectToolForDrops()
+            .strength(5.0F, 6.0F)
+            .sound(SoundType.METAL);
+    }
 
     private static Block.Properties wood(MapColor color){
         return Block.Properties.of()

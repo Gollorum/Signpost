@@ -338,8 +338,8 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
 
     public static final String REGISTRY_NAME = "post";
 
-    public static final Variant STONE = new Variant(PropertiesUtil.STONE, ModelType.Stone, "stone", Variant.RequiredTool.Pickaxe);
-    public static final Variant IRON = new Variant(PropertiesUtil.IRON, ModelType.Iron, "iron", Variant.RequiredTool.Pickaxe);
+    public static final Variant STONE = new Variant(PropertiesUtil.stone(), ModelType.Stone, "stone", Variant.RequiredTool.Pickaxe);
+    public static final Variant IRON = new Variant(PropertiesUtil.iron(), ModelType.Iron, "iron", Variant.RequiredTool.Pickaxe);
     public static final Variant OAK = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Oak), ModelType.Oak, "oak", Variant.RequiredTool.Axe);
     public static final Variant DARK_OAK = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.DarkOak), ModelType.DarkOak, "dark_oak", Variant.RequiredTool.Axe);
     public static final Variant SPRUCE = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Spruce), ModelType.Spruce, "spruce", Variant.RequiredTool.Axe);
@@ -351,7 +351,7 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
     public static final Variant CHERRY = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Cherry), ModelType.Cherry, "cherry", Variant.RequiredTool.Axe);
     public static final Variant WARPED = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Warped), ModelType.Warped, "warped", Variant.RequiredTool.Axe);
     public static final Variant CRIMSON = new Variant(PropertiesUtil.wood(PropertiesUtil.WoodType.Crimson), ModelType.Crimson, "crimson", Variant.RequiredTool.Axe);
-    public static final Variant SANDSTONE = new Variant(PropertiesUtil.STONE, ModelType.Sandstone, "sandstone", Variant.RequiredTool.Pickaxe);
+    public static final Variant SANDSTONE = new Variant(PropertiesUtil.stone(), ModelType.Sandstone, "sandstone", Variant.RequiredTool.Pickaxe);
     public static final Variant BROWN_MUSHROOM = new Variant(PropertiesUtil.mushroom(MapColor.DIRT), ModelType.BrownMushroom, "brown_mushroom", Variant.RequiredTool.Axe);
     public static final Variant RED_MUSHROOM = new Variant(PropertiesUtil.mushroom(MapColor.COLOR_RED), ModelType.RedMushroom, "red_mushroom", Variant.RequiredTool.Axe);
 
