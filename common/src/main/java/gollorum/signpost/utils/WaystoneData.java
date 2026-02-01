@@ -22,7 +22,7 @@ public record WaystoneData(WaystoneHandle.Vanilla handle, String name, WaystoneL
                 handle,
                 name,
                 new WaystoneLocationData(
-                    WorldLocation.from(location.block().blockPos(), Either.right(location.block().world().leftOrThrow().dimension().location())),
+                    WorldLocation.from(location.block().blockPos(), Either.right(location.block().world().leftOrThrow().dimension().identifier())),
                     location.spawn()),
                 isLocked);
         } else {
@@ -41,7 +41,7 @@ public record WaystoneData(WaystoneHandle.Vanilla handle, String name, WaystoneL
     }
 
     public static boolean hasSecurityPermissions(Player player, WaystoneLocationData locationData) {
-        return player.hasPermissions(IConfig.IServer.getInstance().permissions().editLockedWaystoneCommandPermissionLevel())
+        return player.permissions().hasPermission(IConfig.IServer.getInstance().permissions().editLockedWaystoneCommandPermission())
             || TileEntityUtils.toWorld(locationData.block().world(), !(player instanceof ServerPlayer))
                 .map(w -> w.getBlockEntity(locationData.block().blockPos()))
                 .flatMap(tile -> tile instanceof WithOwner.OfWaystone ? ((WithOwner.OfWaystone)tile).getWaystoneOwner() : Optional.empty())

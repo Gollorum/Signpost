@@ -2,7 +2,7 @@ package gollorum.signpost.compat;
 
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.platform.Services;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,8 +24,8 @@ public class Compat {
 //            RepurposedStructuresAdapter.register();
     }
 
-    public static Map<ResourceLocation, PacketHandler.Event<?>> getEvents() {
-        var map = new HashMap<ResourceLocation, PacketHandler.Event<?>>();
+    public static Map<Identifier, PacketHandler.Event<?>> getEvents() {
+        var map = new HashMap<Identifier, PacketHandler.Event<?>>();
         if(Services.PLATFORM.isModLoaded(Compat.WaystonesId))
             map.putAll(WaystonesAdapter.getEvents());
 

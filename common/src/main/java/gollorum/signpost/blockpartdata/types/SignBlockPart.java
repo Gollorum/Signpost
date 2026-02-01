@@ -224,7 +224,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
     public boolean hasThePermissionToEdit(WithOwner tile, Player player) {
         return !(tile instanceof WithOwner.OfSignpost) || !coreData.isLocked || player == null
             || ((WithOwner.OfSignpost)tile).getSignpostOwner().map(o -> o.id().equals(player.getUUID())).orElse(true)
-            || player.hasPermissions(IConfig.IServer.getInstance().permissions().editLockedSignCommandPermissionLevel());
+            || player.permissions().hasPermission(IConfig.IServer.getInstance().permissions().editLockedSignCommandPermission());
     }
 
     private void setTextures(Texture texture, Texture textureDark) {

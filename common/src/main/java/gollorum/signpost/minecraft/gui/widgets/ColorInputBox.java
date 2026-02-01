@@ -1,6 +1,5 @@
 package gollorum.signpost.minecraft.gui.widgets;
 
-import com.mojang.blaze3d.vertex.*;
 import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.utils.Rect;
@@ -23,8 +22,7 @@ public class ColorInputBox extends InputBox {
                 new Point(inputFieldRect.point.x + inputFieldRect.height, inputFieldRect.point.y),
                 inputFieldRect.width - inputFieldRect.height, inputFieldRect.height
             ),
-            true,
-            zOffset
+            true
         );
         setFilter(null);
         setResponder(null);

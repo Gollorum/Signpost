@@ -5,7 +5,7 @@ import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.UseOnContext;
@@ -16,7 +16,7 @@ public class Brush extends Item {
 
     public Brush() {
         super(new Properties()
-            .setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, registryName)))
+            .setId(ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, registryName)))
             .stacksTo(1));
     }
 

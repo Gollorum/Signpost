@@ -71,10 +71,15 @@ repositories {
 }
 
 dependencies {
-    compileOnly "com.telepathicgrunt:RepurposedStructures:7.5.22+1.21.9-neoforge"
+    compileOnly "com.telepathicgrunt:RepurposedStructures:7.6.0+1.21.11-neoforge"
 
-    compileOnly "net.blay09.mods:balm-neoforge:21.10.3+1.21.10"
-    compileOnly "net.blay09.mods:waystones-neoforge:21.10.1+1.21.10"
+//    compileOnly "net.blay09.mods:balm-neoforge:21.11.2"
+    compileOnly ('net.blay09.mods:waystones-neoforge:21.11.4') {
+        capabilities {
+            // Select the MC-specific capability that the published variants provide
+            requireCapability "net.blay09.mods:waystones-neoforge-1.21.11:21.11.4"
+        }
+    }
 }
 
 idea {

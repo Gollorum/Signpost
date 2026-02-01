@@ -16,7 +16,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.ProcessorLists;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
@@ -47,12 +47,12 @@ public class Villages {
 			this.isCommonGround = isCommonGround;
 		}
 
-		public ResourceLocation getSignpostStructureResourceLocation(String structureName) {
-			return ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "village/" + name + "/" + structureName);
+		public Identifier getSignpostStructureResourceLocation(String structureName) {
+			return Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "village/" + name + "/" + structureName);
 		}
 
-		public ResourceLocation getWaystoneStructureResourceLocation(String structureName) {
-			return ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "village/" + (isCommonGround ? "common" : name) + "/" + structureName);
+		public Identifier getWaystoneStructureResourceLocation(String structureName) {
+			return Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "village/" + (isCommonGround ? "common" : name) + "/" + structureName);
 		}
 	}
 
@@ -126,16 +126,16 @@ public class Villages {
 		);
 	}
 
-	private static ResourceLocation getVillagePool(VillageType villageType) {
-		return ResourceLocation.parse("village/" + villageType.name + "/houses");
+	private static Identifier getVillagePool(VillageType villageType) {
+		return Identifier.parse("village/" + villageType.name + "/houses");
 	}
 
-	private static ResourceLocation getZombieVillagePool(VillageType villageType) {
-		return ResourceLocation.parse("village/" + villageType.name + "/zombie/houses");
+	private static Identifier getZombieVillagePool(VillageType villageType) {
+		return Identifier.parse("village/" + villageType.name + "/zombie/houses");
 	}
 
 	private void addToPool(
-		Collection<Tuple<SinglePoolElement, Integer>> houses, ResourceLocation poolKey,
+		Collection<Tuple<SinglePoolElement, Integer>> houses, Identifier poolKey,
 		Registry<StructureTemplatePool> registry
 	) {
 		var key = ResourceKey.create(Registries.TEMPLATE_POOL, poolKey);

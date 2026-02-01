@@ -5,7 +5,7 @@ import gollorum.signpost.minecraft.items.*;
 import gollorum.signpost.utils.Tuple;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.neoforged.bus.api.IEventBus;
@@ -25,7 +25,7 @@ public class ItemRegistry {
             () -> new WaystoneItem(
                 WaystoneBlock.getInstance(),
                 new Item.Properties()
-                    .setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(MOD_ID, WaystoneBlock.REGISTRY_NAME)))));
+                    .setId(ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID, WaystoneBlock.REGISTRY_NAME)))));
 
     public static final List<Tuple<ModelWaystone.Variant, DeferredItem<Item>>> ModelWaystoneItems =
         ModelWaystone.variants.stream().map(ItemRegistry::registerModelWaystoneItem).toList();
@@ -38,7 +38,7 @@ public class ItemRegistry {
             () -> new BlockItem(
                 BlockRegistry.WaystoneGenerator.get(),
                 new Item.Properties()
-                    .setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(MOD_ID, WaystoneGeneratorBlock.REGISTRY_NAME)))
+                    .setId(ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID, WaystoneGeneratorBlock.REGISTRY_NAME)))
             ));
 
     public static final DeferredItem<Item> WRENCH = REGISTER.register(Wrench.registryName, Wrench::new);
@@ -53,7 +53,7 @@ public class ItemRegistry {
             () -> new PostItem(
                 postVariant.getBlock(),
                 new Item.Properties()
-                    .setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(MOD_ID, postVariant.registryName)))
+                    .setId(ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID, postVariant.registryName)))
             ));
     }
 
@@ -63,7 +63,7 @@ public class ItemRegistry {
             () -> new WaystoneItem(
                 variant.getBlock(),
                 new Item.Properties()
-                    .setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(MOD_ID, variant.registryName))))));
+                    .setId(ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID, variant.registryName))))));
     }
 
     public static void register(IEventBus bus){

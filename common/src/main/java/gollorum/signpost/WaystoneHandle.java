@@ -1,18 +1,15 @@
 package gollorum.signpost;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.compat.ExternalWaystoneLibrary;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.Util;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.Util;
 
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 
 public interface WaystoneHandle {

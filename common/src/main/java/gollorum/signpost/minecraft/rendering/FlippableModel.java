@@ -2,7 +2,7 @@ package gollorum.signpost.minecraft.rendering;
 
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class FlippableModel {
 
@@ -24,26 +24,26 @@ public class FlippableModel {
 		return new FlippableModel(models, models);
 	}
 
-//	public static FlippableModel loadFrom(ResourceLocation modelLocation, ResourceLocation modelLocationFlipped, ResourceLocation texture) {
+//	public static FlippableModel loadFrom(Identifier modelLocation, Identifier modelLocationFlipped, Identifier texture) {
 //		return new FlippableModel(
 //			RenderingUtil.loadModel(modelLocation, texture, RenderingUtil.IdentityModelState),
 //			RenderingUtil.loadModel(modelLocationFlipped, texture, RenderingUtil.IdentityModelState)
 //		);
 //	}
 //
-//	public static FlippableModel loadFrom(ResourceLocation modelLocation, ResourceLocation modelLocationFlipped, ResourceLocation mainTexture, ResourceLocation secondaryTexture) {
+//	public static FlippableModel loadFrom(Identifier modelLocation, Identifier modelLocationFlipped, Identifier mainTexture, Identifier secondaryTexture) {
 //		return new FlippableModel(
 //			RenderingUtil.loadModel(modelLocation, mainTexture, secondaryTexture, RenderingUtil.IdentityModelState),
 //			RenderingUtil.loadModel(modelLocationFlipped, mainTexture, secondaryTexture, RenderingUtil.IdentityModelState)
 //		);
 //	}
 //
-//	public static FlippableModel loadSymmetrical(ResourceLocation modelLocation, ResourceLocation texture) {
+//	public static FlippableModel loadSymmetrical(Identifier modelLocation, Identifier texture) {
 //		TintedModel model = RenderingUtil.loadModel(modelLocation, texture, RenderingUtil.IdentityModelState);
 //		return new FlippableModel(model, model);
 //	}
 //
-//	public static FlippableModel loadSymmetrical(ResourceLocation modelLocation, ResourceLocation mainTexture, ResourceLocation secondaryTexture) {
+//	public static FlippableModel loadSymmetrical(Identifier modelLocation, Identifier mainTexture, Identifier secondaryTexture) {
 //		TintedModel model = RenderingUtil.loadModel(modelLocation, mainTexture, secondaryTexture, RenderingUtil.IdentityModelState);
 //		return new FlippableModel(model, model);
 //	}

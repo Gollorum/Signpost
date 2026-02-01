@@ -5,7 +5,7 @@ import gollorum.signpost.minecraft.rendering.PostItemRenderer;
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.model.ItemModelUtils;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Blocks;
 
 public class PostModel {
@@ -34,7 +34,7 @@ public class PostModel {
             itemModels.itemModelOutput.accept(
                 variant.getBlock().asItem(),
                 ItemModelUtils.specialModel(
-                    ResourceLocation.withDefaultNamespace("block/cube_all"),
+                    Identifier.withDefaultNamespace("block/cube_all"),
                     new PostItemRenderer.Unbaked(variant.type)
                 )
             );

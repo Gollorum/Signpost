@@ -26,7 +26,7 @@ import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -172,7 +172,7 @@ public class Teleport {
 
     public static ItemStack getCost(ServerPlayer player, Vector3 from, Vector3 to) {
         var item = player.registryAccess().lookup(Registries.ITEM).flatMap(
-            registry -> registry.get(ResourceKey.create(Registries.ITEM, ResourceLocation.parse(IConfig.getInstance().getServer().teleport().costItem())))
+            registry -> registry.get(ResourceKey.create(Registries.ITEM, Identifier.parse(IConfig.getInstance().getServer().teleport().costItem())))
         ).map(Holder.Reference::value).orElse(null);
         if(item == null || item.equals(Items.AIR) || player.isCreative() || player.isSpectator()) return ItemStack.EMPTY;
         int distancePerPayment = IConfig.getInstance().getServer().teleport().distancePerPayment();

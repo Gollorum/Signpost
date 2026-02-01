@@ -2,7 +2,7 @@ package gollorum.signpost.compat;
 
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.platform.Services;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,12 +20,12 @@ public class Compat {
 //        if(Services.PLATFORM.isModLoaded.isLoaded(Compat.AntiqueAtlasId))
 //            AntiqueAtlasAdapter.register();
 
-//        if(Services.PLATFORM.isModLoaded(Compat.RepurposedStructuresId))
-//            RepurposedStructuresAdapter.register();
+        if(Services.PLATFORM.isModLoaded(Compat.RepurposedStructuresId))
+            RepurposedStructuresAdapter.register();
     }
 
-    public static Map<ResourceLocation, PacketHandler.Event<?>> getEvents() {
-        var map = new HashMap<ResourceLocation, PacketHandler.Event<?>>();
+    public static Map<Identifier, PacketHandler.Event<?>> getEvents() {
+        var map = new HashMap<Identifier, PacketHandler.Event<?>>();
         if(Services.PLATFORM.isModLoaded(Compat.WaystonesId))
             map.putAll(WaystonesAdapter.getEvents());
 

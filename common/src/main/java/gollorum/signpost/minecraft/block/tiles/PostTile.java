@@ -22,7 +22,7 @@ import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.*;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.UUIDUtil;
@@ -34,7 +34,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ProblemReporter;
@@ -327,30 +327,30 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     }
 
     public static class TilePartInfo {
-        public final ResourceLocation dimensionKey;
+        public final Identifier dimensionKey;
         public final BlockPos pos;
         public final UUID identifier;
 
         public TilePartInfo(BlockEntity tile, UUID identifier) {
-            this.dimensionKey = tile.getLevel().dimension().location();
+            this.dimensionKey = tile.getLevel().dimension().identifier();
             this.pos = tile.getBlockPos();
             this.identifier = identifier;
         }
 
-        public TilePartInfo(ResourceLocation dimensionKey, BlockPos pos, UUID identifier) {
+        public TilePartInfo(Identifier dimensionKey, BlockPos pos, UUID identifier) {
             this.dimensionKey = dimensionKey;
             this.pos = pos;
             this.identifier = identifier;
         }
 
         public static final Codec<TilePartInfo> CODEC = RecordCodecBuilder.create(i -> i.group(
-            ResourceLocation.CODEC.fieldOf("Dimension").forGetter(t -> t.dimensionKey),
+            Identifier.CODEC.fieldOf("Dimension").forGetter(t -> t.dimensionKey),
             BlockPosSerializer.CODEC.fieldOf("Pos").forGetter(t -> t.pos),
             UUIDUtil.CODEC.fieldOf("Id").forGetter(t -> t.identifier)
         ).apply(i, TilePartInfo::new));
 
         public static final StreamCodec<ByteBuf, TilePartInfo> STREAM_CODEC = StreamCodec.composite(
-            ResourceLocation.STREAM_CODEC, t -> t.dimensionKey,
+            Identifier.STREAM_CODEC, t -> t.dimensionKey,
             BlockPos.STREAM_CODEC, t -> t.pos,
             UUIDUtil.STREAM_CODEC, t -> t.identifier,
             TilePartInfo::new

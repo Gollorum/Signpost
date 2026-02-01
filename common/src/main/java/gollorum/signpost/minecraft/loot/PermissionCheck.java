@@ -46,7 +46,7 @@ public final class PermissionCheck implements LootItemCondition {
     public boolean test(LootContext lootContext) {
         if(!lootContext.hasParameter(LootContextParams.LAST_DAMAGE_PLAYER)) return true;
         Player thisEntity = lootContext.getParameter(LootContextParams.LAST_DAMAGE_PLAYER);
-        if(thisEntity.hasPermissions(IConfig.IServer.getInstance().permissions().pickUnownedWaystonePermissionLevel())) return true;
+        if(thisEntity.permissions().hasPermission(IConfig.IServer.getInstance().permissions().pickUnownedWaystonePermission())) return true;
 
         if(!lootContext.hasParameter(LootContextParams.BLOCK_ENTITY)) return false;
         BlockEntity blockEntity = lootContext.getParameter(LootContextParams.BLOCK_ENTITY);

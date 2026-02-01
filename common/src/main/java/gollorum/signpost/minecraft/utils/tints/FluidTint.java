@@ -9,7 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.material.Fluid;
 
@@ -28,12 +28,12 @@ public record FluidTint(Fluid fluid) implements Tint {
         return BuiltInRegistries.FLUID;
     }
 
-    public static final MapCodec<FluidTint> CODEC = Codec.STRING.fieldOf("ResourceLocation").xmap(
-        s -> new FluidTint(getFluidRegistry().get(ResourceLocation.parse(s)).get().value()),
+    public static final MapCodec<FluidTint> CODEC = Codec.STRING.fieldOf("Identifier").xmap(
+        s -> new FluidTint(getFluidRegistry().get(Identifier.parse(s)).get().value()),
         t -> getFluidRegistry().getKey(t.fluid).toString()
     );
 
-    public static final StreamCodec<ByteBuf, FluidTint> STREAM_CODEC = ResourceLocation.STREAM_CODEC.map(
+    public static final StreamCodec<ByteBuf, FluidTint> STREAM_CODEC = Identifier.STREAM_CODEC.map(
         rl -> new FluidTint(getFluidRegistry().getValue(rl)),
         t -> getFluidRegistry().getKey(t.fluid)
     );

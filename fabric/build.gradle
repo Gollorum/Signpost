@@ -13,6 +13,14 @@ repositories {
         }
     }
 
+    maven {
+        url "https://nexus.resourcefulbees.com/repository/telepathicgrunt/"
+    }
+
+    maven {
+        url "https://api.modrinth.com/maven/"
+    }
+
 }
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
@@ -24,10 +32,17 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
 
     modApi "me.shedaniel.cloth:cloth-config-fabric:${cloth_config_version}"
-    modApi "com.terraformersmc:modmenu:16.0.0-rc.1"
+    modApi "com.terraformersmc:modmenu:17.0.0-alpha.1"
 
-    modCompileOnly "net.blay09.mods:balm-fabric:21.10.1+1.21.10"
-    modCompileOnly "net.blay09.mods:waystones-fabric:21.10.1+1.21.10"
+    // RepurposedStructures: pin to a Loom 1.13-compatible build.
+    modCompileOnly "com.telepathicgrunt:RepurposedStructures:7.5.22+1.21.9-fabric"
+
+    modCompileOnly("net.blay09.mods:waystones-fabric:21.11.2") {
+        capabilities {
+            // Select the MC-specific capability that the published variants provide
+            requireCapability "net.blay09.mods:waystones-fabric-1.21.11:21.11.2"
+        }
+    }
 }
 
 loom {
@@ -69,3 +84,29 @@ sourceSets.main.resources.srcDirs(
         '../common/src/generated/resources',
         'src/generated/resources'
 )
+
+// Implement mcgradleconventions loader attribute
+def loaderAttribute = Attribute.of('io.github.mcgradleconventions.loader', String)
+['apiElements', 'runtimeElements', 'sourcesElements', 'javadocElements', 'includeInternal', 'modCompileClasspath'].each { variant ->
+    configurations.named("$variant") {
+        attributes {
+            attribute(loaderAttribute, 'fabric')
+        }
+    }
+}
+sourceSets.configureEach {
+    [it.compileClasspathConfigurationName, it.runtimeClasspathConfigurationName].each { variant->
+        configurations.named("$variant") {
+            attributes {
+                attribute(loaderAttribute, 'fabric')
+            }
+        }
+    }
+}
+loom.remapConfigurations.configureEach {
+    configurations.named(it.name) {
+        attributes {
+            attribute(loaderAttribute, 'fabric')
+        }
+    }
+}

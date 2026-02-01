@@ -12,7 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -42,33 +42,33 @@ public abstract class PacketHandler {
         }
     }
 
-    protected final List<Tuple<Event<?>, ResourceLocation>> events = new ArrayList<>();
-    protected final Map<Class<?>, Tuple<Event<?>, ResourceLocation>> eventMap = new HashMap<>();
+    protected final List<Tuple<Event<?>, Identifier>> events = new ArrayList<>();
+    protected final Map<Class<?>, Tuple<Event<?>, Identifier>> eventMap = new HashMap<>();
 
     protected void init() {
-        register(new PostTile.PartAddedEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "part_added"));
-        register(new PostTile.PartMutatedEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "part_mutated"));
-        register(new PostTile.PartRemovedEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "part_removed"));
-        register(new PostTile.UpdateAllPartsEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "update_all_parts"));
-        register(new Teleport.Request(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "teleport_request"));
-        register(new Teleport.RequestGui(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "teleport_request_gui"));
-        register(new RequestSignGui(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "request_sign_gui"));
-        register(new RequestSignGui.ForNewSign(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "request_sign_gui_for_new_sign"));
-        register(new RequestWaystoneGui(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "request_waystone_gui"));
-        register(new WaystoneLibrary.RequestAllWaystoneNamesEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "request_all_waystone_names"));
-        register(new WaystoneLibrary.DeliverAllWaystoneNamesEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "deliver_all_waystone_names"));
-        register(new WaystoneLibrary.RequestAllWaystonesEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "request_all_waystones"));
-        register(new WaystoneLibrary.DeliverAllWaystonesEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "deliver_all_waystones"));
-        register(new WaystoneLibrary.WaystoneUpdatedEventEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "waystone_updated_event"));
-        register(new WaystoneLibrary.RequestWaystoneLocationEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "request_waystone_location"));
-        register(new WaystoneLibrary.DeliverWaystoneLocationEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "deliver_waystone_location"));
-        register(new WaystoneLibrary.RequestWaystoneAtLocationEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "request_waystone_at_location"));
-        register(new WaystoneLibrary.DeliverWaystoneAtLocationEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "deliver_waystone_at_location"));
-        register(new WaystoneLibrary.DeliverIdEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "deliver_id"));
-        register(new WaystoneLibrary.RequestIdEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "request_id"));
+        register(new PostTile.PartAddedEvent(), Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "part_added"));
+        register(new PostTile.PartMutatedEvent(), Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "part_mutated"));
+        register(new PostTile.PartRemovedEvent(), Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "part_removed"));
+        register(new PostTile.UpdateAllPartsEvent(), Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "update_all_parts"));
+        register(new Teleport.Request(), Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "teleport_request"));
+        register(new Teleport.RequestGui(), Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "teleport_request_gui"));
+        register(new RequestSignGui(), Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "request_sign_gui"));
+        register(new RequestSignGui.ForNewSign(), Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "request_sign_gui_for_new_sign"));
+        register(new RequestWaystoneGui(), Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "request_waystone_gui"));
+        register(new WaystoneLibrary.RequestAllWaystoneNamesEvent(), Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "request_all_waystone_names"));
+        register(new WaystoneLibrary.DeliverAllWaystoneNamesEvent(), Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "deliver_all_waystone_names"));
+        register(new WaystoneLibrary.RequestAllWaystonesEvent(), Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "request_all_waystones"));
+        register(new WaystoneLibrary.DeliverAllWaystonesEvent(), Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "deliver_all_waystones"));
+        register(new WaystoneLibrary.WaystoneUpdatedEventEvent(), Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "waystone_updated_event"));
+        register(new WaystoneLibrary.RequestWaystoneLocationEvent(), Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "request_waystone_location"));
+        register(new WaystoneLibrary.DeliverWaystoneLocationEvent(), Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "deliver_waystone_location"));
+        register(new WaystoneLibrary.RequestWaystoneAtLocationEvent(), Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "request_waystone_at_location"));
+        register(new WaystoneLibrary.DeliverWaystoneAtLocationEvent(), Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "deliver_waystone_at_location"));
+        register(new WaystoneLibrary.DeliverIdEvent(), Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "deliver_id"));
+        register(new WaystoneLibrary.RequestIdEvent(), Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "request_id"));
     }
 
-    public final <T> void register(Event<T> event, ResourceLocation id) {
+    public final <T> void register(Event<T> event, Identifier id) {
         events.add(new Tuple<>(event, id));
         eventMap.put(event.getMessageClass(), new Tuple<>(event, id));
     }

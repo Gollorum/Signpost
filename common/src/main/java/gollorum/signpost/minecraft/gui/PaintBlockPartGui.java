@@ -21,7 +21,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.BucketItem;
@@ -54,7 +54,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Screen {
         this.identifier = identifier;
     }
     
-    protected Either<TextureAtlasSprite, Material> spriteFrom(ResourceLocation loc)  {
+    protected Either<TextureAtlasSprite, Material> spriteFrom(Identifier loc)  {
         return Either.right(new Material(TextureResource.blockAtlas, loc));
     }
 
@@ -131,7 +131,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Screen {
     private List<Tuple<Either<TextureAtlasSprite, Material>, Optional<Tint>>> allSpritesFor(BucketItem item) {
         var fluidTint = new FluidTint(((BucketAccessor)item).getContent());
         var ret = new ArrayList<Tuple<Either<TextureAtlasSprite, Material>, Optional<Tint>>>(3);
-        ResourceLocation loc = null;
+        Identifier loc = null;
         var fluidTextureProvider = IFluidTextureProvider.getInstance();
         if((loc = fluidTextureProvider.getFlowingTexture(fluidTint.fluid())) != null)
             ret.add(Tuple.of(spriteFrom(loc), Optional.of(fluidTint)));

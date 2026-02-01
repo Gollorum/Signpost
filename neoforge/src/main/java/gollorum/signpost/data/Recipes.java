@@ -13,7 +13,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.*;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 
@@ -81,7 +81,7 @@ public class Recipes extends RecipeProvider {
                 v.getBlock(),
                 1
             ).unlockedBy("has_waystone", has(ItemTags.WaystoneTag))
-                .save(output, ResourceKey.create(Registries.RECIPE, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "cut_into_" + v.name)));
+                .save(output, ResourceKey.create(Registries.RECIPE, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "cut_into_" + v.name)));
         }
         new SingleItemRecipeBuilder(
             RecipeCategory.DECORATIONS,
@@ -90,7 +90,7 @@ public class Recipes extends RecipeProvider {
             WaystoneBlock.getInstance(),
             1
         ).unlockedBy("has_waystone", has(ItemTags.WaystoneTag))
-            .save(output, ResourceKey.create(Registries.RECIPE, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "cut_into_full_block")));
+            .save(output, ResourceKey.create(Registries.RECIPE, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "cut_into_full_block")));
     }
 
     public void registerWrench() {

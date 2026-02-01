@@ -16,7 +16,8 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
@@ -82,7 +83,7 @@ public class GuiBlockPartRenderer extends AbstractWidget {
                         Minecraft.getInstance().getAtlasManager(),
                         LightTexture.FULL_BRIGHT,
                         OverlayTexture.NO_OVERLAY,
-                        t -> RenderType.cutout(),
+                        t -> RenderTypes.cutoutMovingBlock(),
                         null
                     );
                 });

@@ -10,7 +10,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -24,12 +24,12 @@ public class WaystoneItem extends BlockItem {
 
     public WaystoneItem(WaystoneBlock waystone, Properties properties) {
         super(waystone, properties
-            .setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, WaystoneBlock.REGISTRY_NAME))));
+            .setId(ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, WaystoneBlock.REGISTRY_NAME))));
     }
 
     public WaystoneItem(ModelWaystone waystone, Properties properties) {
         super(waystone, properties
-            .setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, waystone.variant.registryName))));
+            .setId(ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, waystone.variant.registryName))));
     }
 
     @Override

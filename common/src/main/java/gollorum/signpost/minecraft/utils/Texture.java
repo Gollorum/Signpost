@@ -9,14 +9,14 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.Optional;
 
-public record Texture(ResourceLocation location, ResourceLocation atlasLocation, Optional<Tint> tint){
-    public Texture(ResourceLocation location) { this(location, Optional.empty(), Optional.empty()); }
+public record Texture(Identifier identifier, Identifier atlasLocation, Optional<Tint> tint){
+    public Texture(Identifier location) { this(location, Optional.empty(), Optional.empty()); }
 
-    private Texture(ResourceLocation location, Optional<ResourceLocation> atlasLocation, Optional<Tint> tint) {
+    private Texture(Identifier location, Optional<Identifier> atlasLocation, Optional<Tint> tint) {
         this(location, atlasLocation.orElse(TextureResource.blockAtlas), tint);
     }
 
@@ -26,7 +26,7 @@ public record Texture(ResourceLocation location, ResourceLocation atlasLocation,
     }
 
     public Material toMaterial() {
-        return new Material(atlasLocation, location);
+        return new Material(atlasLocation, identifier);
     }
 
     public static Codec<Texture> codec(int version) {
@@ -38,19 +38,19 @@ public record Texture(ResourceLocation location, ResourceLocation atlasLocation,
     }
 
     public static final Codec<Texture> CODEC_V1 = RecordCodecBuilder.create(i -> i.group(
-        ResourceLocation.CODEC.fieldOf("ResourceLocation").forGetter(Texture::location),
+        Identifier.CODEC.fieldOf("Identifier").forGetter(Texture::identifier),
         OptionalSerializerV1.of(Tint.Serialization.CODEC).codec().fieldOf("Tint").forGetter(Texture::tint)
     ).apply(i, (loc, tint) -> new Texture(loc, Optional.empty(), tint)));
 
     public static final Codec<Texture> CODEC_V2 = RecordCodecBuilder.create(i -> i.group(
-        ResourceLocation.CODEC.fieldOf("ResourceLocation").forGetter(Texture::location),
-        Codec.optionalField("AtlasLocation", ResourceLocation.CODEC, true).forGetter(t -> Optional.of(t.atlasLocation)),
+        Identifier.CODEC.fieldOf("Identifier").forGetter(Texture::identifier),
+        Codec.optionalField("AtlasLocation", Identifier.CODEC, true).forGetter(t -> Optional.of(t.atlasLocation)),
         Codec.optionalField("Tint", Tint.Serialization.CODEC, true).forGetter(Texture::tint)
     ).apply(i, Texture::new));
 
     public static final StreamCodec<ByteBuf, Texture> STREAM_CODEC = StreamCodec.composite(
-        ResourceLocation.STREAM_CODEC, Texture::location,
-        ResourceLocation.STREAM_CODEC, Texture::atlasLocation,
+        Identifier.STREAM_CODEC, Texture::identifier,
+        Identifier.STREAM_CODEC, Texture::atlasLocation,
         ByteBufCodecs.optional(Tint.Serialization.STREAM_CODEC), Texture::tint,
         Texture::new
     );

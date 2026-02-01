@@ -18,13 +18,13 @@ import net.minecraft.client.data.models.model.TexturedModel;
 import net.minecraft.client.renderer.block.model.BlockModelDefinition;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 
 public class WaystoneModel {
 
     public static void register(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
-        var waystoneTexture = TextureResource.waystoneTextureLocation.location();
+        var waystoneTexture = TextureResource.waystoneTextureLocation.identifier();
         blockModels.createTrivialBlock(
             BlockRegistry.WaystoneBlock.get(),
             TexturedModel.createDefault(
@@ -35,7 +35,7 @@ public class WaystoneModel {
         // Only generate blockstate files for ModelWaystone variants, no block models
         for (var variant : ModelWaystone.variants) {
             var model = BlockModelGenerators.plainModel(
-                ResourceLocation.fromNamespaceAndPath(
+                Identifier.fromNamespaceAndPath(
                     Signpost.MOD_ID,
                     "block/" + variant.registryName));
             var foo = MultiVariantGenerator.dispatch(variant.getBlock())

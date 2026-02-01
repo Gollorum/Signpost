@@ -21,7 +21,7 @@ public class OptionalKeyDispatchCodec<K, V> extends KeyDispatchCodec<K, V> {
         final Codec<K> keyCodec,
         final Function<? super K, ? extends MapCodec<? extends V>> codec
     ) {
-        super(typeKey, keyCodec, type.andThen(DataResult::success), codec.andThen(DataResult::success));
+        super(keyCodec.fieldOf(typeKey), type.andThen(DataResult::success), codec.andThen(DataResult::success));
         this.defaultKey = defaultKey;
         this.typeKey = typeKey;
         this.keyCodec = keyCodec;

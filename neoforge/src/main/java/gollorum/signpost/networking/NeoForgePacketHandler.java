@@ -6,7 +6,7 @@ import gollorum.signpost.compat.Compat;
 import gollorum.signpost.compat.WaystonesAdapter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
@@ -27,7 +27,7 @@ public class NeoForgePacketHandler extends PacketHandler {
     public static void initialize(IEventBus bus) {
         instance = new NeoForgePacketHandler();
         instance.init();
-        instance.register(new SignpostNeoforge.JoinServerEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "join_server"));
+        instance.register(new SignpostNeoforge.JoinServerEvent(), Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "join_server"));
         for (var entry : Compat.getEvents().entrySet()) {
             instance.register(entry.getValue(), entry.getKey());
         }
@@ -44,7 +44,7 @@ public class NeoForgePacketHandler extends PacketHandler {
 
     }
 
-    private <T> void registerCommon(Event<T> event, ResourceLocation id, PayloadRegistrar registrar) {
+    private <T> void registerCommon(Event<T> event, Identifier id, PayloadRegistrar registrar) {
         var type = new CustomPacketPayload.Type<Payload<T>>(id);
         registrar.playBidirectional(
             type,
@@ -65,7 +65,7 @@ public class NeoForgePacketHandler extends PacketHandler {
         }
     }
 
-    private <T> void registerClient(ResourceLocation id, net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent registrar) {
+    private <T> void registerClient(Identifier id, net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent registrar) {
         registrar.register(
             new CustomPacketPayload.Type<Payload<T>>(id),
             (payload, context) -> context.enqueueWork(() ->

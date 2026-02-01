@@ -4,12 +4,12 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blockpartdata.types.renderers.*;
 import gollorum.signpost.utils.BlockPart;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 
 import java.util.Map;
@@ -52,7 +52,7 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
         MaterialSet materials,
         int combinedLights,
         int combinedOverlay,
-        Function<ResourceLocation, RenderType> renderTypeFactory,
+        Function<Identifier, RenderType> renderTypeFactory,
         ModelFeatureRenderer.CrumblingOverlay crumblingOverlay
     ) {
         Optional<BlockPartRenderer<T>> renderer = BlockPartRenderer.getFor((Class<T>) part.getClass());
@@ -82,7 +82,7 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
         SubmitNodeCollector nodeCollector,
         MaterialSet materials, int combinedLights,
         int combinedOverlay,
-        Function<ResourceLocation, RenderType> renderTypeFactory,
+        Function<Identifier, RenderType> renderTypeFactory,
         ModelFeatureRenderer.CrumblingOverlay crumblingOverlay
     );
 

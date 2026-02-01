@@ -6,7 +6,7 @@ import gollorum.signpost.minecraft.items.*;
 import gollorum.signpost.utils.Tuple;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.eventbus.api.bus.BusGroup;
@@ -35,7 +35,7 @@ public class ItemRegistry {
     public static final RegistryObject<Item> WaystoneGeneratorItem =
         REGISTER.register(WaystoneGeneratorBlock.REGISTRY_NAME,
             () -> new BlockItem(BlockRegistry.WaystoneGenerator.get(), new Item.Properties()
-                .setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, WaystoneGeneratorBlock.REGISTRY_NAME)))));
+                .setId(ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, WaystoneGeneratorBlock.REGISTRY_NAME)))));
 
     public static final RegistryObject<Item> WRENCH = REGISTER.register(Wrench.registryName, Wrench::new);
 

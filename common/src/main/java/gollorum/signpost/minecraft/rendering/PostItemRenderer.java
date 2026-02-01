@@ -17,16 +17,19 @@ import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.AngleProvider;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.resources.model.MaterialSet;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 public class PostItemRenderer implements SpecialModelRenderer<PostData> {
 
@@ -39,11 +42,11 @@ public class PostItemRenderer implements SpecialModelRenderer<PostData> {
     }
 
     @Override
-    public void getExtents(Set<Vector3f> set) {
-        set.add(new Vector3f(-1, 0, -1));
-        set.add(new Vector3f(-1, 0, 1));
-        set.add(new Vector3f(1, 0, 1));
-        set.add(new Vector3f(1, 0, -1));
+    public void getExtents(Consumer<Vector3fc> consumer) {
+        consumer.accept(new Vector3f(-1, 0, -1));
+        consumer.accept(new Vector3f(-1, 0, 1));
+        consumer.accept(new Vector3f(1, 0, 1));
+        consumer.accept(new Vector3f(1, 0, -1));
     }
 
     public PostData extractArgument(ItemStack itemStack) {
@@ -107,8 +110,8 @@ public class PostItemRenderer implements SpecialModelRenderer<PostData> {
                         packedLight,
                         packedOverlay,
                         displayContext == ItemDisplayContext.GUI
-                            ? t -> RenderType.solid()
-                            : RenderType::entityCutout,
+                            ? t -> RenderTypes.solidMovingBlock()
+                            : RenderTypes::entityCutout,
                         null
                     );
                 });
@@ -118,7 +121,7 @@ public class PostItemRenderer implements SpecialModelRenderer<PostData> {
 
     public record Unbaked(PostBlock.ModelType fallbackType) implements SpecialModelRenderer.Unbaked {
 
-        public static final ResourceLocation NAME = ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "post_item");
+        public static final Identifier NAME = Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "post_item");
 
         public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
             instance.group(

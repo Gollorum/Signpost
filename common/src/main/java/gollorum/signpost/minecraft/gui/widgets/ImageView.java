@@ -5,7 +5,7 @@ import gollorum.signpost.minecraft.gui.utils.TextureResource;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
 
 public class ImageView implements Renderable {
 

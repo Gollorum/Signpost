@@ -19,7 +19,7 @@ public class Teleport {
 
 	public static ArgumentBuilder<CommandSourceStack, ?> register() {
 		return Commands.literal("teleport")
-			.requires(source -> source.hasPermission(IConfig.IServer.getInstance().permissions().teleportPermissionLevel()))
+			.requires(source -> source.permissions().hasPermission(IConfig.IServer.getInstance().permissions().teleportPermission()))
 			.then(Commands.argument("waystone", new WaystoneArgument())
 				.executes(context -> execute(
 					context.getArgument("waystone", String.class),

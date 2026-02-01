@@ -2,7 +2,7 @@ package gollorum.signpost.minecraft.gui.utils;
 
 import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.utils.Texture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class TextureResource {
 
@@ -12,7 +12,7 @@ public class TextureResource {
     public static final int shortOverlaySize = 32;
     public static final int largeOverlaySize = 32;
 
-    public static final ResourceLocation blockAtlas = ResourceLocation.withDefaultNamespace("textures/atlas/blocks.png");
+    public static final Identifier blockAtlas = Identifier.withDefaultNamespace("textures/atlas/blocks.png");
 
     public static final TextureResource waystoneNameField = new TextureResource(
         "textures/gui/base_gui.png", new TextureSize(50, 11)
@@ -39,7 +39,7 @@ public class TextureResource {
     );
 
     public static final TextureResource itemBackground = new TextureResource(
-        ResourceLocation.withDefaultNamespace("textures/gui/widgets.png"), new TextureSize(22, 22),
+        Identifier.withDefaultNamespace("textures/gui/widgets.png"), new TextureSize(22, 22),
         new TextureSize(256, 256), new TextureSize(60, 23)
     );
 
@@ -47,21 +47,21 @@ public class TextureResource {
         "textures/gui/edit.png", new TextureSize(15, 15), new TextureSize(15, 30)
     );
 
-    public static final Texture waystoneTextureLocation = new Texture(ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/waystone"));
+    public static final Texture waystoneTextureLocation = new Texture(Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "block/waystone"));
 
-    public final ResourceLocation location;
+    public final Identifier location;
     public final TextureSize size;
     public final TextureSize fileSize;
     public final TextureSize offset;
 
-    public TextureResource(ResourceLocation location, TextureSize size, TextureSize fileSize) {
+    public TextureResource(Identifier location, TextureSize size, TextureSize fileSize) {
         this.location = location;
         this.size = size;
         this.fileSize = fileSize;
         offset = TextureSize.zero;
     }
 
-    public TextureResource(ResourceLocation location, TextureSize size, TextureSize fileSize, TextureSize offset) {
+    public TextureResource(Identifier location, TextureSize size, TextureSize fileSize, TextureSize offset) {
         this.location = location;
         this.size = size;
         this.fileSize = fileSize;
@@ -69,10 +69,10 @@ public class TextureResource {
     }
 
     public TextureResource(String relativeLocation, TextureSize size, TextureSize fileSize) {
-        this(ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, relativeLocation), size, fileSize);
+        this(Identifier.fromNamespaceAndPath(Signpost.MOD_ID, relativeLocation), size, fileSize);
     }
 
-    public TextureResource(ResourceLocation location, TextureSize size) {
+    public TextureResource(Identifier location, TextureSize size) {
         this(location, size, size);
     }
 

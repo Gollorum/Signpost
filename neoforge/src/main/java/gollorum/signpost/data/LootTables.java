@@ -11,10 +11,10 @@ import gollorum.signpost.minecraft.data.PostData;
 import gollorum.signpost.minecraft.data.WaystoneHandleData;
 import gollorum.signpost.minecraft.loot.PostBlockPartDropLoot;
 import gollorum.signpost.minecraft.loot.PermissionCheck;
-import net.minecraft.advancements.critereon.DataComponentMatchers;
-import net.minecraft.advancements.critereon.EnchantmentPredicate;
-import net.minecraft.advancements.critereon.ItemPredicate;
-import net.minecraft.advancements.critereon.MinMaxBounds;
+import net.minecraft.advancements.criterion.DataComponentMatchers;
+import net.minecraft.advancements.criterion.EnchantmentPredicate;
+import net.minecraft.advancements.criterion.ItemPredicate;
+import net.minecraft.advancements.criterion.MinMaxBounds;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.component.predicates.DataComponentPredicates;
@@ -25,7 +25,7 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.data.loot.packs.VanillaLootTableProvider;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -61,16 +61,16 @@ public class LootTables extends LootTableProvider {
     private void generateBlockLootTables(HolderLookup.Provider registryAccess, BiConsumer<ResourceKey<LootTable>, LootTable.Builder> builder) {
         for(PostBlock.Variant variant : PostBlock.AllVariants)
             builder.accept(
-                ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "blocks/" + BuiltInRegistries.BLOCK.getKey(variant.getBlock()).getPath())),
+                ResourceKey.create(Registries.LOOT_TABLE, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "blocks/" + BuiltInRegistries.BLOCK.getKey(variant.getBlock()).getPath())),
                 mkPostLootTable(registryAccess, variant)
             );
 
         builder.accept(
-            ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "blocks/" + BuiltInRegistries.BLOCK.getKey(WaystoneBlock.getInstance()).getPath())),
+            ResourceKey.create(Registries.LOOT_TABLE, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "blocks/" + BuiltInRegistries.BLOCK.getKey(WaystoneBlock.getInstance()).getPath())),
             mkWaystoneLootTable(registryAccess, WaystoneBlock.getInstance()));
         for(ModelWaystone.Variant variant : ModelWaystone.variants)
             builder.accept(
-                ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "blocks/" + BuiltInRegistries.BLOCK.getKey(variant.getBlock()).getPath())),
+                ResourceKey.create(Registries.LOOT_TABLE, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "blocks/" + BuiltInRegistries.BLOCK.getKey(variant.getBlock()).getPath())),
                 mkWaystoneLootTable(registryAccess, variant.getBlock()));
     }
 
@@ -80,7 +80,7 @@ public class LootTables extends LootTableProvider {
             .withPool(LootPool.lootPool()
                 .setRolls(ConstantValue.exactly(1))
                 .add(LootItem.lootTableItem(block)
-                    .apply(CopyComponentsFunction.copyComponentsFromBlockEntity(new ContextKey<WaystoneTile>(ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, WaystoneTile.REGISTRY_NAME)))
+                    .apply(CopyComponentsFunction.copyComponentsFromBlockEntity(new ContextKey<WaystoneTile>(Identifier.fromNamespaceAndPath(Signpost.MOD_ID, WaystoneTile.REGISTRY_NAME)))
                         .include(WaystoneHandleData.TYPE)
                         .include(DataComponents.CUSTOM_NAME)
                     ).when(includeDataCondition)
@@ -92,7 +92,7 @@ public class LootTables extends LootTableProvider {
             .withPool(LootPool.lootPool()
                 .setRolls(ConstantValue.exactly(1))
                 .add(LootItem.lootTableItem(variant.getBlock())
-                    .apply(CopyComponentsFunction.copyComponentsFromBlockEntity(new ContextKey<PostTile>(ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, PostTile.REGISTRY_NAME)))
+                    .apply(CopyComponentsFunction.copyComponentsFromBlockEntity(new ContextKey<PostTile>(Identifier.fromNamespaceAndPath(Signpost.MOD_ID, PostTile.REGISTRY_NAME)))
                         .include(WaystoneHandleData.TYPE)
                         .include(DataComponents.CUSTOM_NAME)
                         .include(PostData.TYPE))

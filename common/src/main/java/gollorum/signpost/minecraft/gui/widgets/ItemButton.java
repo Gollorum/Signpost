@@ -40,9 +40,7 @@ public class ItemButton extends Button {
     }
 
     @Override
-    public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        super.renderWidget(graphics, mouseX, mouseY, partialTicks);
-
+    protected void renderContents(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         int xTL = getX() + (width - itemModelWidth) / 2;
         int yTL = getY() + (height - itemModelHeight) / 2;
         graphics.renderItem(stack, xTL, yTL);

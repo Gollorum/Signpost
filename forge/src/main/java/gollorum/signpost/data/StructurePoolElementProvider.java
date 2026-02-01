@@ -9,7 +9,7 @@ import gollorum.signpost.Signpost;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,11 +27,11 @@ public abstract class StructurePoolElementProvider implements DataProvider {
         this.pathProvider = output.createPathProvider(PackOutput.Target.DATA_PACK, "structures");
     }
 
-    protected abstract void buildElements(BiConsumer<StructurePoolElement, ResourceLocation> registerElement);
+    protected abstract void buildElements(BiConsumer<StructurePoolElement, Identifier> registerElement);
 
     @Override
     public @NotNull CompletableFuture<?> run(CachedOutput output) {
-        Set<ResourceLocation> set = Sets.newHashSet();
+        Set<Identifier> set = Sets.newHashSet();
         List<CompletableFuture<?>> list = new ArrayList<>();
 
         buildElements((elem, id) -> {

@@ -8,12 +8,12 @@ import gollorum.signpost.minecraft.gui.utils.TextureResource;
 import gollorum.signpost.minecraft.models.WaystoneInPostModel;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.minecraft.rendering.TexturedModel;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 
 import java.util.function.Function;
@@ -30,7 +30,7 @@ public class WaystoneRenderer extends BlockPartRenderer<WaystoneBlockPart> {
         SubmitNodeCollector nodeCollector,
         MaterialSet materials, int combinedLights,
         int combinedOverlay,
-        Function<ResourceLocation, RenderType> renderTypeFactory,
+        Function<Identifier, RenderType> renderTypeFactory,
         ModelFeatureRenderer.CrumblingOverlay crumblingOverlay
     ) {
 		RenderingUtil.render(

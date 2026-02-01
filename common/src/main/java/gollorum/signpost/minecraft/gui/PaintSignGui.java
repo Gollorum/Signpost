@@ -29,7 +29,7 @@ public class PaintSignGui<T extends SignBlockPart<T>> extends PaintBlockPartGui<
     public PaintSignGui(PostTile tile, T sign, UUID identifier) {
         super(tile, sign, sign.copy(), identifier, sign.getMainTexture());
         oldMainSprite = oldSprite;
-        oldSecSprite = Tuple.of(spriteFrom(sign.getSecondaryTexture().location()), sign.getSecondaryTexture().tint());
+        oldSecSprite = Tuple.of(spriteFrom(sign.getSecondaryTexture().identifier()), sign.getSecondaryTexture().tint());
         isTargetingMainTexture = true;
     }
 

@@ -2,7 +2,7 @@ package gollorum.signpost.client;
 
 import gollorum.signpost.minecraft.gui.utils.IFluidTextureProvider;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
@@ -11,17 +11,17 @@ import org.jetbrains.annotations.Nullable;
 
 public class FluidTextureProvider implements IFluidTextureProvider {
     @Override
-    public ResourceLocation getStillTexture(Fluid fluid) {
+    public Identifier getStillTexture(Fluid fluid) {
         return IClientFluidTypeExtensions.of(fluid).getStillTexture();
     }
 
     @Override
-    public ResourceLocation getFlowingTexture(Fluid fluid) {
+    public Identifier getFlowingTexture(Fluid fluid) {
         return IClientFluidTypeExtensions.of(fluid).getFlowingTexture();
     }
 
     @Override
-    public ResourceLocation getOverlayTexture(Fluid fluid) {
+    public Identifier getOverlayTexture(Fluid fluid) {
         return IClientFluidTypeExtensions.of(fluid).getOverlayTexture();
     }
 

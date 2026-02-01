@@ -25,7 +25,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.Containers;
@@ -95,121 +95,121 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
         }
 
         public static final ModelType Acacia = new ModelType("acacia",
-            ResourceLocation.parse("acacia_log"),
-            ResourceLocation.parse("stripped_acacia_log"),
-            ResourceLocation.parse("acacia_log"),
+            Identifier.parse("acacia_log"),
+            Identifier.parse("stripped_acacia_log"),
+            Identifier.parse("acacia_log"),
             r -> Ingredient.of(Items.ACACIA_SIGN),
             r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.ACACIA_LOGS)),
             r -> Ingredient.of(Items.ACACIA_SIGN)
         );
         public static final ModelType Birch = new ModelType("birch",
-            ResourceLocation.parse("birch_log"),
-            ResourceLocation.parse("stripped_birch_log"),
-            ResourceLocation.parse("birch_log"),
+            Identifier.parse("birch_log"),
+            Identifier.parse("stripped_birch_log"),
+            Identifier.parse("birch_log"),
             r -> Ingredient.of(Items.BIRCH_SIGN),
             r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.BIRCH_LOGS)),
             r -> Ingredient.of(Items.BIRCH_SIGN)
         );
         public static final ModelType Iron = new ModelType("iron",
-            ResourceLocation.parse("iron_block"),
-            ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "iron"),
-            ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "iron_dark"),
+            Identifier.parse("iron_block"),
+            Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "iron"),
+            Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "iron_dark"),
             r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.SIGNS)),
             r -> Ingredient.of(Items.IRON_INGOT),
             r -> Ingredient.of(Items.IRON_INGOT)
         );
         public static final ModelType Jungle = new ModelType("jungle",
-            ResourceLocation.parse("jungle_log"),
-            ResourceLocation.parse("stripped_jungle_log"),
-            ResourceLocation.parse("jungle_log"),
+            Identifier.parse("jungle_log"),
+            Identifier.parse("stripped_jungle_log"),
+            Identifier.parse("jungle_log"),
             r -> Ingredient.of(Items.JUNGLE_SIGN),
             r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.JUNGLE_LOGS)),
             r -> Ingredient.of(Items.JUNGLE_SIGN)
         );
         public static final ModelType Oak = new ModelType("oak",
-            ResourceLocation.parse("oak_log"),
-            ResourceLocation.parse("stripped_oak_log"),
-            ResourceLocation.parse("oak_log"),
+            Identifier.parse("oak_log"),
+            Identifier.parse("stripped_oak_log"),
+            Identifier.parse("oak_log"),
             r -> Ingredient.of(Items.OAK_SIGN),
             r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.OAK_LOGS)),
             r -> Ingredient.of(Items.OAK_SIGN)
         );
         public static final ModelType DarkOak = new ModelType("darkoak",
-            ResourceLocation.parse("dark_oak_log"),
-            ResourceLocation.parse("stripped_dark_oak_log"),
-            ResourceLocation.parse("dark_oak_log"),
+            Identifier.parse("dark_oak_log"),
+            Identifier.parse("stripped_dark_oak_log"),
+            Identifier.parse("dark_oak_log"),
             r -> Ingredient.of(Items.DARK_OAK_SIGN),
             r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.DARK_OAK_LOGS)),
             r -> Ingredient.of(Items.DARK_OAK_SIGN)
         );
         public static final ModelType Spruce = new ModelType("spruce",
-            ResourceLocation.parse("spruce_log"),
-            ResourceLocation.parse("stripped_spruce_log"),
-            ResourceLocation.parse("spruce_log"),
+            Identifier.parse("spruce_log"),
+            Identifier.parse("stripped_spruce_log"),
+            Identifier.parse("spruce_log"),
             r -> Ingredient.of(Items.SPRUCE_SIGN),
             r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.SPRUCE_LOGS)),
             r -> Ingredient.of(Items.SPRUCE_SIGN)
         );
         public static final ModelType Mangrove = new ModelType("mangrove",
-            ResourceLocation.parse("mangrove_log"),
-            ResourceLocation.parse("stripped_mangrove_log"),
-            ResourceLocation.parse("mangrove_log"),
+            Identifier.parse("mangrove_log"),
+            Identifier.parse("stripped_mangrove_log"),
+            Identifier.parse("mangrove_log"),
             r -> Ingredient.of(Items.MANGROVE_SIGN),
             r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.MANGROVE_LOGS)),
             r -> Ingredient.of(Items.MANGROVE_SIGN)
         );
         public static final ModelType Bamboo = new ModelType("bamboo",
-            ResourceLocation.parse("bamboo_block"),
-            ResourceLocation.parse("stripped_bamboo_block"),
-            ResourceLocation.parse("bamboo_block"),
+            Identifier.parse("bamboo_block"),
+            Identifier.parse("stripped_bamboo_block"),
+            Identifier.parse("bamboo_block"),
             r -> Ingredient.of(Items.BAMBOO_SIGN),
             r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.BAMBOO_BLOCKS)),
             r -> Ingredient.of(Items.BAMBOO_SIGN)
         );
         public static final ModelType Cherry = new ModelType("cherry",
-            ResourceLocation.parse("cherry_log"),
-            ResourceLocation.parse("stripped_cherry_log"),
-            ResourceLocation.parse("cherry_log"),
+            Identifier.parse("cherry_log"),
+            Identifier.parse("stripped_cherry_log"),
+            Identifier.parse("cherry_log"),
             r -> Ingredient.of(Items.CHERRY_SIGN),
             r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.CHERRY_LOGS)),
             r -> Ingredient.of(Items.CHERRY_SIGN)
         );
         public static final ModelType Stone = new ModelType("stone",
-            ResourceLocation.parse("stone"),
-            ResourceLocation.parse("stone"),
-            ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "stone_dark"),
+            Identifier.parse("stone"),
+            Identifier.parse("stone"),
+            Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "stone_dark"),
             r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.SIGNS)),
             r -> Ingredient.of(Items.STONE),
             r -> Ingredient.of(Items.STONE)
         );
         public static final ModelType RedMushroom = new ModelType("red_mushroom",
-            ResourceLocation.parse("red_mushroom_block"),
-            ResourceLocation.parse("mushroom_stem"),
-            ResourceLocation.parse("red_mushroom_block"),
+            Identifier.parse("red_mushroom_block"),
+            Identifier.parse("mushroom_stem"),
+            Identifier.parse("red_mushroom_block"),
             r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.SIGNS)),
             r -> Ingredient.of(Items.RED_MUSHROOM_BLOCK),
             r -> Ingredient.of(Items.RED_MUSHROOM)
         );
         public static final ModelType BrownMushroom = new ModelType("brown_mushroom",
-            ResourceLocation.parse("brown_mushroom_block"),
-            ResourceLocation.parse("mushroom_stem"),
-            ResourceLocation.parse("brown_mushroom_block"),
+            Identifier.parse("brown_mushroom_block"),
+            Identifier.parse("mushroom_stem"),
+            Identifier.parse("brown_mushroom_block"),
             r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.SIGNS)),
             r -> Ingredient.of(Items.BROWN_MUSHROOM_BLOCK),
             r -> Ingredient.of(Items.BROWN_MUSHROOM)
         );
         public static final ModelType Warped = new ModelType("warped",
-            ResourceLocation.parse("warped_stem"),
-            ResourceLocation.parse("stripped_warped_stem"),
-            ResourceLocation.parse("warped_stem"),
+            Identifier.parse("warped_stem"),
+            Identifier.parse("stripped_warped_stem"),
+            Identifier.parse("warped_stem"),
             r -> Ingredient.of(Items.WARPED_SIGN),
             r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.WARPED_STEMS)),
             r -> Ingredient.of(Items.WARPED_SIGN)
         );
         public static final ModelType Crimson = new ModelType("crimson",
-            ResourceLocation.parse("crimson_stem"),
-            ResourceLocation.parse("stripped_crimson_stem"),
-            ResourceLocation.parse("crimson_stem"),
+            Identifier.parse("crimson_stem"),
+            Identifier.parse("stripped_crimson_stem"),
+            Identifier.parse("crimson_stem"),
             r -> Ingredient.of(Items.CRIMSON_SIGN),
             r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.CRIMSON_STEMS)),
             r -> Ingredient.of(Items.CRIMSON_SIGN)
@@ -217,9 +217,9 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
         private static final Ingredient sandstone =
             Ingredient.of(Blocks.SANDSTONE, Blocks.CUT_SANDSTONE, Blocks.CHISELED_SANDSTONE, Blocks.SMOOTH_SANDSTONE);
         public static final ModelType Sandstone = new ModelType("sandstone",
-            ResourceLocation.parse("sandstone"),
-            ResourceLocation.parse("stripped_jungle_log"),
-            ResourceLocation.parse("sandstone_bottom"),
+            Identifier.parse("sandstone"),
+            Identifier.parse("stripped_jungle_log"),
+            Identifier.parse("sandstone_bottom"),
             r -> Ingredient.of(r.lookupOrThrow(Registries.ITEM).getOrThrow(ItemTags.SIGNS)),
             r -> sandstone,
             r -> sandstone
@@ -259,7 +259,7 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
         public final Function<HolderLookup.Provider, Ingredient> addSignIngredient;
 
         ModelType(
-            String name, ResourceLocation postTexture, ResourceLocation mainTexture, ResourceLocation secondaryTexture,
+            String name, Identifier postTexture, Identifier mainTexture, Identifier secondaryTexture,
             Function<HolderLookup.Provider, Ingredient> signIngredient, Function<HolderLookup.Provider, Ingredient> baseIngredient, Function<HolderLookup.Provider, Ingredient> addSignIngredient) {
             this(name, expand(postTexture), expand(mainTexture), expand(secondaryTexture), signIngredient, baseIngredient, addSignIngredient);
         }
@@ -275,8 +275,8 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
             this.addSignIngredient = addSignIngredient;
         }
 
-        private static Texture expand(ResourceLocation loc){
-            return new Texture(ResourceLocation.fromNamespaceAndPath(
+        private static Texture expand(Identifier loc){
+            return new Texture(Identifier.fromNamespaceAndPath(
                 loc.getNamespace(),
                 loc.getPath().startsWith("block/") ? loc.getPath() : "block/"+loc.getPath()
             ));
@@ -319,7 +319,7 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
         public Variant(Properties properties, ModelType type, String registryName, RequiredTool tool) {
             this.registryName = REGISTRY_NAME + "_" + registryName;
             this.properties = properties
-                .setId(ResourceKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, this.registryName)));
+                .setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, this.registryName)));
             this.type = type;
             this.tool = tool;
         }

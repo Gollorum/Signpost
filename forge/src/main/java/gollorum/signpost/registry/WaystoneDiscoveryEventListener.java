@@ -40,7 +40,7 @@ public class WaystoneDiscoveryEventListener implements IWaystoneDiscoveryEventLi
         if(!WaystoneLibrary.hasInstance()) return;
         VillageWaystone.ChunkEntryKey key = new VillageWaystone.ChunkEntryKey(
             event.getPos(),
-            event.getPlayer().level().dimension().location()
+            event.getPlayer().level().dimension().identifier()
         );
         var lib = WaystoneLibrary.getInstance();
         Map<VillageWaystone.ChunkEntryKey, WaystoneHandle.Vanilla> allEntries = lib.getVillageWaystones().getAllEntriesByChunk(lib, true);
@@ -63,7 +63,7 @@ public class WaystoneDiscoveryEventListener implements IWaystoneDiscoveryEventLi
         WaystoneHandle.Vanilla handle = lib.getVillageWaystones().getAllEntriesByChunk(lib, false).get(
             new VillageWaystone.ChunkEntryKey(
                 event.getPos(),
-                event.getPlayer().level().dimension().location()
+                event.getPlayer().level().dimension().identifier()
             )
         );
         if(handle == null) return;

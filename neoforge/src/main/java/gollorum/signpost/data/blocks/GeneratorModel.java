@@ -16,7 +16,7 @@ public class GeneratorModel {
             BlockRegistry.WaystoneGenerator.get(),
 
             TexturedModel.createDefault(
-                block -> new TextureMapping().put(TextureSlot.ALL, TextureResource.waystoneTextureLocation.location()),
+                block -> new TextureMapping().put(TextureSlot.ALL, TextureResource.waystoneTextureLocation.identifier()),
                 ModelTemplates.CUBE_ALL
             )
         );

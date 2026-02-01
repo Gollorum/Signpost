@@ -34,7 +34,7 @@ public class WaystoneDiscoveryEventListener implements IWaystoneDiscoveryEventLi
                 for(var z = -chunkRadius; z <= chunkRadius; z++) {
                     var key = new VillageWaystone.ChunkEntryKey(
                         new ChunkPos(playerChunk.x + x, playerChunk.z + z),
-                        level.dimension().location()
+                        level.dimension().identifier()
                     );
                     var handle = allEntries.get(key);
                     if(handle != null && !waystoneLibrary.isDiscovered(new PlayerHandle(player), handle)) {

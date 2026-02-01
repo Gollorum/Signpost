@@ -30,11 +30,8 @@ import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.item.ItemStack;
@@ -366,10 +363,9 @@ public class SignGui extends Screen {
                 b -> done()
             ).bounds(getCenterX() + centerGap / 2, doneRect.point.y, buttonsWidth, doneRect.height).build();
             Button removeSignButton = Button.builder(
-                Component.translatable(LangKeys.removeSign),
+                Component.translatable(LangKeys.removeSign).withColor(Colors.invalid),
                 b -> removeSign()
             ).bounds(getCenterX() - centerGap / 2 - buttonsWidth, doneRect.point.y, buttonsWidth, doneRect.height).build();
-            ((IColorableButton)removeSignButton).signpost$overrideColor(Colors.invalid);
             addRenderableWidget(removeSignButton);
         } else {
             doneButton = Button.builder(
@@ -486,12 +482,11 @@ public class SignGui extends Screen {
         addRenderableOnly(postRenderer);
         Point modelRectTop = modelRect.at(Rect.XAlignment.Center, Rect.YAlignment.Top);
 
-        final int inputBoxesZOffset = 100;
         Rect wideInputRect = new Rect(
             modelRectTop.add(-7 * inputSignsScale, 2 * inputSignsScale),
             modelRectTop.add(11 * inputSignsScale, 6 * inputSignsScale)
         );
-        wideSignInputBox = new InputBox(font, wideInputRect, false, inputBoxesZOffset);
+        wideSignInputBox = new InputBox(font, wideInputRect, false);
         wideSignInputBox.setBordered(false);
         wideSignInputBox.setTextColor(Colors.black);
         widgetsToFlip.add(new FlippableAtPivot(wideSignInputBox, modelRectTop.x));
@@ -506,7 +501,7 @@ public class SignGui extends Screen {
             modelRectTop.add(3 * inputSignsScale, 2 * inputSignsScale),
             modelRectTop.add(14 * inputSignsScale, 6 * inputSignsScale)
         );
-        shortSignInputBox = new InputBox(font, shortInputRect, false, inputBoxesZOffset);
+        shortSignInputBox = new InputBox(font, shortInputRect, false);
         shortSignInputBox.setBordered(false);
         shortSignInputBox.setTextColor(Colors.black);
         widgetsToFlip.add(new FlippableAtPivot(shortSignInputBox, modelRectTop.x));
@@ -521,19 +516,19 @@ public class SignGui extends Screen {
             modelRectTop.add(-7 * inputSignsScale, 3 * inputSignsScale),
             modelRectTop.add(9 * inputSignsScale, 14 * inputSignsScale))
             .withHeight(height -> height / 4 - 1);
-        InputBox firstLarge = new InputBox(font, largeInputRect, false, inputBoxesZOffset);
+        InputBox firstLarge = new InputBox(font, largeInputRect, false);
         firstLarge.setBordered(false);
         firstLarge.setTextColor(Colors.black);
         largeInputRect = largeInputRect.withPoint(p -> p.withY(Math.round(modelRectTop.y + (13 - 3 * 2.5f) * inputSignsScale)));
-        InputBox secondLarge = new InputBox(font, largeInputRect, false, inputBoxesZOffset);
+        InputBox secondLarge = new InputBox(font, largeInputRect, false);
         secondLarge.setBordered(false);
         secondLarge.setTextColor(Colors.black);
         largeInputRect = largeInputRect.withPoint(p -> p.withY(Math.round(modelRectTop.y + (13 - 2 * 2.5f) * inputSignsScale)));
-        InputBox thirdLarge = new InputBox(font, largeInputRect, false, inputBoxesZOffset);
+        InputBox thirdLarge = new InputBox(font, largeInputRect, false);
         thirdLarge.setBordered(false);
         thirdLarge.setTextColor(Colors.black);
         largeInputRect = largeInputRect.withPoint(p -> p.withY(Math.round(modelRectTop.y + (13 - 1 * 2.5f) * inputSignsScale)));
-        InputBox fourthLarge = new InputBox(font, largeInputRect, false, inputBoxesZOffset);
+        InputBox fourthLarge = new InputBox(font, largeInputRect, false);
         fourthLarge.setBordered(false);
         fourthLarge.setTextColor(Colors.black);
         firstLarge.addKeyCodeListener(KeyCodes.Down, () -> setInitialFocus(secondLarge));
@@ -717,9 +712,10 @@ public class SignGui extends Screen {
         AtomicInteger cycleItemIndex = new AtomicInteger(0);
         AtomicInteger cycleItemIngredientIndex = new AtomicInteger(0);
         AtomicLong nextCycleAt = new AtomicLong(System.currentTimeMillis());
+        var registryAccess = this.minecraft.player.registryAccess();
         cycleItem.set(() -> {
             if(isClosed) return;
-            var options = PostBlock.AllVariants.get(cycleItemIndex.get()).type.addSignIngredient.apply(Minecraft.getInstance().level.registryAccess()).items().toList();
+            var options = PostBlock.AllVariants.get(cycleItemIndex.get()).type.addSignIngredient.apply(registryAccess).items().toList();
             ir.setItemStack(new ItemStack(options.get(cycleItemIngredientIndex.get()).value()));
             if(cycleItemIngredientIndex.get() >= options.size() - 1) {
                 cycleItemIndex.set((cycleItemIndex.get() + 1) % PostBlock.AllVariants.size());
@@ -770,16 +766,16 @@ public class SignGui extends Screen {
             angleDropDown.removeEntry(waystoneRotationEntry);
         }
         Optional<WaystoneEntry> validWaystone = asValidWaystone(waystoneName);
-        if(waystoneName.equals("") || validWaystone.isPresent()) {
+        if(waystoneName.isEmpty() || validWaystone.isPresent()) {
             waystoneInputBox.setTextColor(Colors.valid);
             waystoneInputBox.setTextColorUneditable(Colors.validInactive);
             waystoneDropdown.setFilter(name -> true);
             if(currentSignInputBox != null
                 && lastWaystone.map(lw ->
                     lw.displayName.equals(currentSignInputBox.getValue()))
-                        .orElse(currentSignInputBox.getValue().equals("")))
+                        .orElse(currentSignInputBox.getValue().isEmpty()))
                 currentSignInputBox.setValue(validWaystone.map(e -> e.displayName).orElse(waystoneName));
-            if(!waystoneName.equals("")) {
+            if(!waystoneName.isEmpty()) {
                 waystoneRotationEntry = angleEntryForWaystone(validWaystone.get());
                 angleDropDown.addEntry(waystoneRotationEntry);
                 if(shouldOverrideRotation)
@@ -793,7 +789,7 @@ public class SignGui extends Screen {
             if(currentSignInputBox != null
                 && lastWaystone.map(lw ->
                     lw.displayName.equals(currentSignInputBox.getValue()))
-                        .orElse(currentSignInputBox.getValue().equals("")))
+                        .orElse(currentSignInputBox.getValue().isEmpty()))
                 currentSignInputBox.setValue("");
         }
     }
@@ -803,7 +799,7 @@ public class SignGui extends Screen {
     }
 
     private boolean isCurrentAnglePointingAtWaystone() {
-        return (!oldSign.isPresent() && (rotationInputField.getCurrentAngle().equals(Angle.ZERO))
+        return (oldSign.isEmpty() && (rotationInputField.getCurrentAngle().equals(Angle.ZERO))
             || lastWaystone.map(lw -> rotationInputField.getCurrentAngle().isNearly(angleEntryForWaystone(lw).angleGetter.get(), Angle.fromDegrees(1)))
                 .orElse(false));
     }
@@ -835,7 +831,7 @@ public class SignGui extends Screen {
             texture,
             rect,
 //            (int) (index * texture.size.width * scale), 0, (int) (texture.size.height * scale),
-//            texture.location,
+//            texture.identifier,
 //            (int) (texture.fileSize.width * scale), (int) (texture.fileSize.height * scale),
             b -> onClick.run()
         );
@@ -1037,7 +1033,7 @@ public class SignGui extends Screen {
 
     private void apply(Optional<WaystoneHandle> destinationId) {
         PostTile.TilePartInfo tilePartInfo = oldTilePartInfo.orElseGet(() ->
-            new PostTile.TilePartInfo(tile.getLevel().dimension().location(), tile.getBlockPos(), UUID.randomUUID()));
+            new PostTile.TilePartInfo(tile.getLevel().dimension().identifier(), tile.getBlockPos(), UUID.randomUUID()));
         var registries = tile.getLevel().registryAccess();
         BlockPart data;
         boolean isLocked = lockButton.isLocked();

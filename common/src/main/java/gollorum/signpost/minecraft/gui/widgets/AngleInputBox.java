@@ -21,7 +21,7 @@ public class AngleInputBox extends InputBox {
                 new Point(inputFieldRect.point.x + inputFieldRect.height, inputFieldRect.point.y),
                 inputFieldRect.width - inputFieldRect.height, inputFieldRect.height
             ),
-            true, zOffset
+            true
         );
         setFilter(null);
         setValue("0" + degreeSign);

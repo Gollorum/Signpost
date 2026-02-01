@@ -1,6 +1,8 @@
 package gollorum.signpost.minecraft.rendering;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
@@ -29,7 +31,7 @@ public record Text3dElementRenderState(Matrix4f pose, TextRenderable renderable,
 
     @Override
     public TextureSetup textureSetup() {
-        return TextureSetup.singleTextureWithLightmap(this.renderable.textureView());
+        return TextureSetup.singleTextureWithLightmap(this.renderable.textureView(), RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST));
     }
 
     @Override
@@ -69,7 +71,7 @@ public record Text3dElementRenderState(Matrix4f pose, TextRenderable renderable,
             Minecraft minecraft = Minecraft.getInstance();
             TextureManager texturemanager = minecraft.getTextureManager();
             GpuTextureView gputextureview = texturemanager.getTexture(Sheets.GUI_SHEET).getTextureView();
-            return TextureSetup.singleTextureWithLightmap(gputextureview);
+            return TextureSetup.singleTextureWithLightmap(gputextureview, RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST));
         }
 
         @Override

@@ -7,16 +7,15 @@ import gollorum.signpost.minecraft.models.modelGeneration.QuadModel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.client.resources.model.ModelBakery;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.joml.*;
 
 import java.lang.Math;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class RenderingUtil {
@@ -28,7 +27,7 @@ public class RenderingUtil {
         MaterialSet materials,
         int combinedLights,
         int combinedOverlay,
-        Function<ResourceLocation, RenderType> renderTypeFactory,
+        Function<Identifier, RenderType> renderTypeFactory,
         ModelFeatureRenderer.CrumblingOverlay crumblingOverlay
     ) {
         var renderType = model.texture().renderType(renderTypeFactory);

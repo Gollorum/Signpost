@@ -7,7 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.PacketFlow;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -25,12 +25,12 @@ public class ForgePacketHandler extends PacketHandler {
 
     public static void initialize() {
         channel = ChannelBuilder
-            .named(ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "main"))
+            .named(Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "main"))
             .acceptedVersions(Channel.VersionTest.exact(PROTOCOL_VERSION))
             .simpleChannel();
         instance = new ForgePacketHandler();
         instance.init();
-        instance.register(new SignpostForge.JoinServerEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "join_server"));
+        instance.register(new SignpostForge.JoinServerEvent(), Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "join_server"));
         for (var entry : Compat.getEvents().entrySet()) {
             instance.register(entry.getValue(), entry.getKey());
         }

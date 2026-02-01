@@ -12,7 +12,7 @@ import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
@@ -136,10 +136,8 @@ public class DropDownSelection<EntryType> extends ImageButton {
     }
 
     @Override
-    public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        graphics.pose().pushMatrix();
-//        graphics.pose().translate(0, 0, 100);
-        super.renderWidget(graphics, mouseX, mouseY, partialTicks);
+    public void renderContents(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+        super.renderContents(graphics, mouseX, mouseY, partialTicks);
         int yTexStart = this.isHovered ? texture.size.height : 0;
         int xTexStart = this.isListVisible ? texture.size.width : 0;
 
@@ -151,7 +149,6 @@ public class DropDownSelection<EntryType> extends ImageButton {
             texture.fileSize.height, texture.fileSize.width
         );
         if(isListVisible) list.render(graphics, mouseX, mouseY, partialTicks);
-        graphics.pose().popMatrix();
     }
 
     public class List extends ObjectSelectionList<List.Entry> {

@@ -7,7 +7,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.minecraft.config.IConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
@@ -42,7 +42,7 @@ public class SignpostJigsawPiece extends LegacySinglePoolElement {
     public final boolean isZombie;
 
     public SignpostJigsawPiece(
-        ResourceLocation location,
+        Identifier location,
         Holder<StructureProcessorList> structureProcessorListSupplier,
         StructureTemplatePool.Projection placementBehaviour,
         Optional<LiquidSettings> liquidSettings,
@@ -52,7 +52,7 @@ public class SignpostJigsawPiece extends LegacySinglePoolElement {
     }
 
     public SignpostJigsawPiece(
-        Either<ResourceLocation, StructureTemplate> template,
+        Either<Identifier, StructureTemplate> template,
         Holder<StructureProcessorList> structureProcessorListSupplier,
         StructureTemplatePool.Projection placementBehaviour,
         Optional<LiquidSettings> liquidSettings,

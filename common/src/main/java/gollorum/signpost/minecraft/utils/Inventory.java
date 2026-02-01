@@ -1,7 +1,7 @@
 package gollorum.signpost.minecraft.utils;
 
 import gollorum.signpost.Signpost;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;

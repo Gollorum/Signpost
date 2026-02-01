@@ -2,12 +2,9 @@ package gollorum.signpost.minecraft.rendering;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.minecraft.gui.utils.TextureResource;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.font.TextRenderable;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.gui.render.GuiRenderer;
-import net.minecraft.client.gui.render.state.GlyphRenderState;
 import net.minecraft.client.gui.render.state.GuiRenderState;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
@@ -16,13 +13,13 @@ import net.minecraft.client.renderer.block.MovingBlockRenderState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.HitboxesRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.level.block.state.BlockState;
@@ -50,11 +47,6 @@ public class GuiFakeCollector implements SubmitNodeCollector {
     }
 
     @Override
-    public void submitHitbox(PoseStack poseStack, EntityRenderState entityRenderState, HitboxesRenderState hitboxesRenderState) {
-        throw new RuntimeException("Not supported");
-    }
-
-    @Override
     public void submitShadow(PoseStack poseStack, float v, List<EntityRenderState.ShadowPiece> list) {
         throw new RuntimeException("Not supported");
     }
@@ -67,10 +59,10 @@ public class GuiFakeCollector implements SubmitNodeCollector {
     @Override
     public void submitText(PoseStack poseStack, float x, float y, FormattedCharSequence text, boolean dropShadow, Font.DisplayMode displayMode, int packedLight, int color, int backgroundColor, int outlineColor) {
         var pose = poseStack.last().copy().pose();
-        Font.PreparedText preparedText = font.prepareText(text, x, y, color, dropShadow, backgroundColor);
+        Font.PreparedText preparedText = font.prepareText(text, x, y, color, dropShadow, true, backgroundColor);
         preparedText.visit(new Font.GlyphVisitor() {
             @Override
-            public void acceptGlyph(TextRenderable renderable) {
+            public void acceptGlyph(TextRenderable.Styled renderable) {
                 this.accept(renderable);
             }
 
@@ -130,7 +122,7 @@ public class GuiFakeCollector implements SubmitNodeCollector {
         submitCustomGeometry(poseStack, renderType, customGeometryRenderer, TextureResource.blockAtlas);
     }
 
-    public void submitCustomGeometry(PoseStack poseStack, RenderType renderType, CustomGeometryRenderer customGeometryRenderer, ResourceLocation atlasLocation) {
+    public void submitCustomGeometry(PoseStack poseStack, RenderType renderType, CustomGeometryRenderer customGeometryRenderer, Identifier atlasLocation) {
         var pose = poseStack.last().copy();
         renderState.submitGuiElement(new ModelElementRenderState(rect, atlasLocation, renderType.pipeline(), vertexConsumer ->
             customGeometryRenderer.render(

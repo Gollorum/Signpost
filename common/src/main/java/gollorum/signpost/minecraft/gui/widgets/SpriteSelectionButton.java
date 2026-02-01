@@ -39,7 +39,7 @@ public class SpriteSelectionButton extends AbstractButton {
     }
 
     @Override
-    public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+    protected void renderContents(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         var sprite = material.leftOr(graphics::getSprite);
         var contents = sprite.contents();
         if(contents.width() > contents.height())
