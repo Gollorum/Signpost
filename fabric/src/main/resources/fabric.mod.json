@@ -8,8 +8,8 @@
         "${mod_author}"
     ],
     "contact": {
-        "homepage": "https://fabricmc.net/",
-        "sources": "https://github.com/FabricMC/fabric-example-mod"
+        "homepage": "https://github.com/Gollorum/Signpost",
+        "sources": "https://github.com/Gollorum/Signpost"
     },
     "license": "${license}",
     "icon": "${mod_id}.png",
@@ -33,10 +33,10 @@
         "fabric-api": "*",
         "cloth-config": ">=${cloth_config_version}",
         "minecraft": "${minecraft_version}",
-        "java": ">=17"
+        "java": ">=21"
     },
     "suggests": {
-        "another-mod": "*"
+        "waystones": "*",
+        "repurposed_structures": "*"
     }
 }
-  

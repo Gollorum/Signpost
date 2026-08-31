@@ -22,11 +22,15 @@ neoForge {
         }
         client {
             client()
+            // -PsignpostQuickPlay=<saveName> makes the client boot straight into that save.
+            // Set only by the full-runtime-test harness; normal dev runs are unaffected.
+            if (project.hasProperty('signpostQuickPlay')) programArguments.addAll('--quickPlaySingleplayer', project.signpostQuickPlay)
         }
         clientWithMods {
             client() // same setup as normal client
             ideName = "runClient with Mods (${project.path})"
             gameDirectory = project.file('run_with_mods')
+            if (project.hasProperty('signpostQuickPlay')) programArguments.addAll('--quickPlaySingleplayer', project.signpostQuickPlay)
         }
         data {
             clientData()
@@ -71,15 +75,8 @@ repositories {
 }
 
 dependencies {
-    compileOnly "com.telepathicgrunt:RepurposedStructures:7.6.0+1.21.11-neoforge"
-
-//    compileOnly "net.blay09.mods:balm-neoforge:21.11.2"
-    compileOnly ('net.blay09.mods:waystones-neoforge:21.11.4') {
-        capabilities {
-            // Select the MC-specific capability that the published variants provide
-            requireCapability "net.blay09.mods:waystones-neoforge-1.21.11:21.11.4"
-        }
-    }
+    compileOnly "com.telepathicgrunt:RepurposedStructures:${repurposed_structures_neoforge_version}"
+    compileOnly "net.blay09.mods:waystones-neoforge:${waystones_version}"
 }
 
 idea {

@@ -4,9 +4,6 @@ plugins {
     id 'net.minecraftforge.gradle' version '[6.0.47,6.2)'
     id 'org.spongepowered.mixin' version '0.7-SNAPSHOT'
 }
-base {
-    archivesName = "${mod_name}-forge-${minecraft_version}"
-}
 mixin {
     config("${mod_id}.mixins.json")
     config("${mod_id}.forge.mixins.json")
@@ -39,6 +36,9 @@ minecraft {
             workingDirectory file('runs/client')
             ideaModule "${rootProject.name}.${project.name}.main"
             taskName 'Client'
+            // -PsignpostQuickPlay=<saveName> makes the client boot straight into that save.
+            // Set only by the full-runtime-test harness; normal dev runs are unaffected.
+            if (project.hasProperty('signpostQuickPlay')) args('--quickPlaySingleplayer', project.signpostQuickPlay)
             mods {
                 modClientRun {
                     source sourceSets.main
@@ -50,6 +50,14 @@ minecraft {
             workingDirectory file('runs/client_with_mods')
             ideaModule "${rootProject.name}.${project.name}.main"
             taskName 'ClientWithMods'
+            // ForgeGradle merges the userdev run template (main class + launch target) only
+            // into runs literally named client/server/data. A custom-named run gets neither,
+            // and fails with "No main class specified and classpath is not an executable jar".
+            // These values mirror the 'client'/'server' templates in forge's userdev config.json.
+            main 'net.minecraftforge.bootstrap.ForgeBootstrap'
+            args '--gameDir', '.', '--launchTarget', 'forge_userdev_client',
+                 '--version', 'MOD_DEV', '--assetIndex', '{asset_index}', '--assetsDir', '{assets_root}'
+            if (project.hasProperty('signpostQuickPlay')) args('--quickPlaySingleplayer', project.signpostQuickPlay)
             mods {
                 modClientRun {
                     source sourceSets.main
@@ -72,6 +80,8 @@ minecraft {
             workingDirectory file('runs/server_with_mods')
             ideaModule "${rootProject.name}.${project.name}.main"
             taskName 'ServerWithMods'
+            main 'net.minecraftforge.bootstrap.ForgeBootstrap'
+            args '--gameDir', '.', '--launchTarget', 'forge_userdev_server'
             mods {
                 modServerRun {
                     source sourceSets.main
@@ -99,11 +109,13 @@ sourceSets.main.resources.srcDirs (
 )
 
 repositories {
+    // Waystones (and its Balm library).
+    // Note: Repurposed Structures has no Forge build past 1.20.1, so there is no
+    // repository for it here and gollorum.signpost.compat.RepurposedStructuresAdapter
+    // stays disabled on this loader.
     maven {
         url "https://maven.twelveiterations.com/repository/maven-public/"
-        content {
-            includeGroup "net.blay09.mods"
-        }
+        content { includeGroup "net.blay09.mods" }
     }
 }
 
@@ -115,8 +127,7 @@ dependencies {
     // Forge's hack fix
     implementation('net.sf.jopt-simple:jopt-simple:5.0.4') { version { strictly '5.0.4' } }
 
-//    compileOnly "net.blay09.mods:balm-forge:21.11.2"
-    compileOnly "net.blay09.mods:waystones-forge:21.11.4"
+    compileOnly "net.blay09.mods:waystones-forge:${waystones_version}"
 }
 
 publishing {

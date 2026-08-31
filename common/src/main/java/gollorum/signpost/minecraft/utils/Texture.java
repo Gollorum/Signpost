@@ -38,12 +38,12 @@ public record Texture(Identifier identifier, Identifier atlasLocation, Optional<
     }
 
     public static final Codec<Texture> CODEC_V1 = RecordCodecBuilder.create(i -> i.group(
-        Identifier.CODEC.fieldOf("Identifier").forGetter(Texture::identifier),
+        Identifier.CODEC.fieldOf("ResourceLocation").forGetter(Texture::identifier),
         OptionalSerializerV1.of(Tint.Serialization.CODEC).codec().fieldOf("Tint").forGetter(Texture::tint)
     ).apply(i, (loc, tint) -> new Texture(loc, Optional.empty(), tint)));
 
     public static final Codec<Texture> CODEC_V2 = RecordCodecBuilder.create(i -> i.group(
-        Identifier.CODEC.fieldOf("Identifier").forGetter(Texture::identifier),
+        Identifier.CODEC.fieldOf("ResourceLocation").forGetter(Texture::identifier),
         Codec.optionalField("AtlasLocation", Identifier.CODEC, true).forGetter(t -> Optional.of(t.atlasLocation)),
         Codec.optionalField("Tint", Tint.Serialization.CODEC, true).forGetter(Texture::tint)
     ).apply(i, Texture::new));

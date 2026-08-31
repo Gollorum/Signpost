@@ -3,24 +3,26 @@ plugins {
     id 'fabric-loom'
 }
 repositories {
-    maven { url "https://maven.shedaniel.me/" }
-    maven { url "https://maven.terraformersmc.com/releases/" }
-
+    // Cloth Config
+    maven {
+        url "https://maven.shedaniel.me/"
+        content { includeGroupAndSubgroups "me.shedaniel" }
+    }
+    // Mod Menu
+    maven {
+        url "https://maven.terraformersmc.com/releases/"
+        content { includeGroup "com.terraformersmc" }
+    }
+    // Waystones (and its Balm library)
     maven {
         url "https://maven.twelveiterations.com/repository/maven-public/"
-        content {
-            includeGroup "net.blay09.mods"
-        }
+        content { includeGroup "net.blay09.mods" }
     }
-
+    // Repurposed Structures
     maven {
         url "https://nexus.resourcefulbees.com/repository/telepathicgrunt/"
+        content { includeGroup "com.telepathicgrunt" }
     }
-
-    maven {
-        url "https://api.modrinth.com/maven/"
-    }
-
 }
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
@@ -32,17 +34,14 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
 
     modApi "me.shedaniel.cloth:cloth-config-fabric:${cloth_config_version}"
-    modApi "com.terraformersmc:modmenu:17.0.0-alpha.1"
+    modApi "com.terraformersmc:modmenu:${modmenu_version}"
 
-    // RepurposedStructures: pin to a Loom 1.13-compatible build.
-    modCompileOnly "com.telepathicgrunt:RepurposedStructures:7.5.22+1.21.9-fabric"
-
-    modCompileOnly("net.blay09.mods:waystones-fabric:21.11.2") {
-        capabilities {
-            // Select the MC-specific capability that the published variants provide
-            requireCapability "net.blay09.mods:waystones-fabric-1.21.11:21.11.2"
-        }
+    modCompileOnly("com.telepathicgrunt:RepurposedStructures:${repurposed_structures_fabric_version}") {
+        // RS declares MidnightLib and a second (maven.modrinth) Mod Menu as transitive
+        // mod dependencies. We only compile against RSConditionsRegistry, so keep them out.
+        transitive = false
     }
+    modCompileOnly "net.blay09.mods:waystones-fabric:${waystones_version}"
 }
 
 loom {
@@ -51,6 +50,7 @@ loom {
         accessWidenerPath.set(aw)
     }
     mixin {
+        useLegacyMixinAp = true
         defaultRefmapName.set("${mod_id}.refmap.json")
     }
     runs {
@@ -59,12 +59,16 @@ loom {
             setConfigName('Fabric Client')
             ideConfigGenerated(true)
             runDir('runs/client')
+            // -PsignpostQuickPlay=<saveName> makes the client boot straight into that save.
+            // Set only by the full-runtime-test harness; normal dev runs are unaffected.
+            if (project.hasProperty('signpostQuickPlay')) programArgs('--quickPlaySingleplayer', project.signpostQuickPlay)
         }
         clientWithMods {
             client()
             setConfigName('Fabric Client With Mods')
             ideConfigGenerated(true)
             runDir('runs/client_with_mods')
+            if (project.hasProperty('signpostQuickPlay')) programArgs('--quickPlaySingleplayer', project.signpostQuickPlay)
         }
         server {
             server()
@@ -84,29 +88,3 @@ sourceSets.main.resources.srcDirs(
         '../common/src/generated/resources',
         'src/generated/resources'
 )
-
-// Implement mcgradleconventions loader attribute
-def loaderAttribute = Attribute.of('io.github.mcgradleconventions.loader', String)
-['apiElements', 'runtimeElements', 'sourcesElements', 'javadocElements', 'includeInternal', 'modCompileClasspath'].each { variant ->
-    configurations.named("$variant") {
-        attributes {
-            attribute(loaderAttribute, 'fabric')
-        }
-    }
-}
-sourceSets.configureEach {
-    [it.compileClasspathConfigurationName, it.runtimeClasspathConfigurationName].each { variant->
-        configurations.named("$variant") {
-            attributes {
-                attribute(loaderAttribute, 'fabric')
-            }
-        }
-    }
-}
-loom.remapConfigurations.configureEach {
-    configurations.named(it.name) {
-        attributes {
-            attribute(loaderAttribute, 'fabric')
-        }
-    }
-}

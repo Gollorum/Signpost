@@ -28,7 +28,7 @@ public record FluidTint(Fluid fluid) implements Tint {
         return BuiltInRegistries.FLUID;
     }
 
-    public static final MapCodec<FluidTint> CODEC = Codec.STRING.fieldOf("Identifier").xmap(
+    public static final MapCodec<FluidTint> CODEC = Codec.STRING.fieldOf("ResourceLocation").xmap(
         s -> new FluidTint(getFluidRegistry().get(Identifier.parse(s)).get().value()),
         t -> getFluidRegistry().getKey(t.fluid).toString()
     );

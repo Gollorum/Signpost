@@ -1,6 +1,8 @@
 plugins {
-    // see https://fabricmc.net/develop/ for new versions
-    id 'fabric-loom' version '1.13-SNAPSHOT' apply false
+    // see https://fabricmc.net/develop/ for new versions.
+    // Loom 1.14+ requires Gradle 9, which ForgeGradle 6 does not support, so the
+    // 1.13 line is the newest usable here. Pinned to a release rather than 1.13-SNAPSHOT.
+    id 'fabric-loom' version '1.13.6' apply false
     // see https://projects.neoforged.net/neoforged/moddevgradle for new versions
-    id 'net.neoforged.moddev' version '2.0.123' apply false
+    id 'net.neoforged.moddev' version '2.0.144' apply false
 }

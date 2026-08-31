@@ -34,7 +34,7 @@ public class VillageWaystone {
         public static final Codec<ChunkEntryKey> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.INT.fieldOf("x").forGetter(c -> c.chunkPos.x),
             Codec.INT.fieldOf("z").forGetter(c -> c.chunkPos.z),
-            Identifier.CODEC.fieldOf("Identifier").forGetter(ChunkEntryKey::dimensionKey)
+            Identifier.CODEC.fieldOf("ResourceLocation").forGetter(ChunkEntryKey::dimensionKey)
         ).apply(i, (x, z, recloc) -> new ChunkEntryKey(new ChunkPos(x, z), recloc)));
 
     }

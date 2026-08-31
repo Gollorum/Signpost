@@ -3,6 +3,8 @@ plugins {
     id 'maven-publish'
 }
 
+group = group_id
+
 base {
     archivesName = "${mod_id}-${project.name}-${minecraft_version}"
 }
@@ -91,6 +93,10 @@ processResources {
             'fabric_version'               : fabric_version,
             'fabric_loader_version'        : fabric_loader_version,
             'cloth_config_version'         : cloth_config_version,
+            'modmenu_version'              : modmenu_version,
+            'waystones_version'            : waystones_version,
+            'repurposed_structures_fabric_version'   : repurposed_structures_fabric_version,
+            'repurposed_structures_neoforge_version' : repurposed_structures_neoforge_version,
             'mod_name'                     : mod_name,
             'mod_author'                   : mod_author,
             'mod_id'                       : mod_id,
@@ -98,8 +104,8 @@ processResources {
             'description'                  : project.description,
             'neoforge_version'             : neoforge_version,
             'neoforge_loader_version_range': neoforge_loader_version_range,
-            "forge_version": forge_version,
-            "forge_loader_version_range": forge_loader_version_range,
+            'forge_version'                : forge_version,
+            'forge_loader_version_range'   : forge_loader_version_range,
             'credits'                      : credits,
             'java_version'                 : java_version
     ]
@@ -127,8 +133,13 @@ publishing {
         }
     }
     repositories {
-        maven {
-            url System.getenv('local_maven_url')
+        // Only declare the local maven target when it is actually configured,
+        // otherwise the repository is defined with a null url.
+        var localMavenUrl = System.getenv('local_maven_url')
+        if (localMavenUrl != null && !localMavenUrl.isBlank()) {
+            maven {
+                url localMavenUrl
+            }
         }
     }
 }

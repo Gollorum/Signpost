@@ -25,3 +25,9 @@ run_with_mods
 runs
 
 **/.cache/
+
+# Runtime-test save corpus. These are full Minecraft worlds (tens to hundreds of MB),
+# so they are kept out of git and populated locally - one per released version.
+# See testsaves/README.md.
+testsaves/*
+!testsaves/README.md
