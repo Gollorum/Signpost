@@ -3,6 +3,8 @@ package gollorum.signpost;
 import gollorum.signpost.compat.Compat;
 import gollorum.signpost.compat.ExternalWaystoneLibrary;
 import gollorum.signpost.config.Config;
+import gollorum.signpost.minecraft.block.PostBlock;
+import gollorum.signpost.minecraft.data.ModelTypeRegistry;
 import gollorum.signpost.minecraft.loot.LootEntries;
 import gollorum.signpost.minecraft.worldgen.JigsawDeserializers;
 import gollorum.signpost.networking.PacketHandler;
@@ -13,6 +15,7 @@ import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.registry.DynamicRegistries;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -38,6 +41,8 @@ public class SignpostFabric implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        DynamicRegistries.registerSynced(ModelTypeRegistry.REGISTRY_KEY, PostBlock.ModelType.CODEC);
+
         BlockRegistry.register();
         ItemRegistry.register();
         DataComponentsRegistry.register();

@@ -62,9 +62,11 @@ public class PostItemRenderer implements SpecialModelRenderer<PostData> {
             parts = new ArrayList<>(data.parts().values());
         } else {
             parts = new ArrayList<>();
-            var type = Optional.ofNullable(data)
-                .map(d -> ModelTypeRegistry.getOrFallbackModelType(Minecraft.getInstance().getSingleplayerServer().registryAccess(), data.modelType(), () -> materialType))
-                .orElseGet(() -> ModelTypeRegistry.fallbackModelType(materialType));
+            var level = Minecraft.getInstance().level;
+            var type = data == null || level == null
+                ? ModelTypeRegistry.fallbackModelType(materialType)
+                : ModelTypeRegistry.getOrFallbackModelType(
+                    level.registryAccess(), data.modelType().orElse(null), () -> materialType);
             parts.add(new BlockPartInstance(new PostBlockPart(type.postTexture()), Vector3.ZERO));
             parts.add(new BlockPartInstance(new SmallWideSignBlockPart(
                 new AngleProvider.Literal(Angle.fromDegrees(180)), new NameProvider.Literal(""), true, type.mainTexture(), type.secondaryTexture(),

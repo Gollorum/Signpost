@@ -1,14 +1,19 @@
 package gollorum.signpost.minecraft.data;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.utils.Texture;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Ingredient;
+import io.netty.buffer.ByteBuf;
 
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -16,8 +21,34 @@ import java.util.stream.Stream;
 public class ModelTypeRegistry {
 
     public static final ResourceKey<Registry<PostBlock.ModelType>> REGISTRY_KEY = ResourceKey.createRegistryKey(
-        ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "post_model_types")
+        Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "post_model_types")
     );
+
+    /**
+     * The codec for a model type reference stored inside a sign part.
+     *
+     * <p>Signposts written before 2.04 name the model type as a bare {@code "spruce"} rather than as an id.
+     * {@link Identifier}'s own codec would read that as {@code minecraft:spruce}, so this one completes a
+     * namespace-less name with Signpost's namespace instead of Minecraft's. Writing always emits the full id.
+     */
+    public static final Codec<ResourceKey<PostBlock.ModelType>> KEY_CODEC = Codec.STRING.comapFlatMap(
+        name -> {
+            try {
+                return DataResult.success(ResourceKey.create(REGISTRY_KEY, name.indexOf(':') < 0
+                    ? Identifier.fromNamespaceAndPath(Signpost.MOD_ID, name)
+                    : Identifier.parse(name)));
+            } catch (Exception e) {
+                return DataResult.error(() -> "Not a valid post model type: " + name);
+            }
+        },
+        key -> key.identifier().toString()
+    );
+
+    public static final StreamCodec<ByteBuf, ResourceKey<PostBlock.ModelType>> KEY_STREAM_CODEC =
+        ByteBufCodecs.STRING_UTF8.map(
+            name -> ResourceKey.create(REGISTRY_KEY, Identifier.parse(name)),
+            key -> key.identifier().toString()
+        );
 
     public static Stream<PostBlock.ModelType> getAllModelTypes(HolderLookup.Provider registryAccess) {
         return registryAccess.lookupOrThrow(REGISTRY_KEY).listElements().map(Holder.Reference::value);
@@ -30,33 +61,33 @@ public class ModelTypeRegistry {
     public static final PostBlock.ModelType WOOD_FALLBACK = new PostBlock.ModelType(
         PostBlock.MaterialType.Wood,
         Ingredient.of(net.minecraft.world.item.Items.OAK_SIGN),
-        new Texture(ResourceLocation.parse("block/oak_log")),
-        new Texture(ResourceLocation.parse("block/stripped_oak_log")),
-        new Texture(ResourceLocation.parse("block/oak_log"))
+        new Texture(Identifier.parse("block/oak_log")),
+        new Texture(Identifier.parse("block/stripped_oak_log")),
+        new Texture(Identifier.parse("block/oak_log"))
     );
 
     public static final PostBlock.ModelType STONE_FALLBACK = new PostBlock.ModelType(
         PostBlock.MaterialType.Stone,
         Ingredient.of(net.minecraft.world.item.Items.STONE),
-        new Texture(ResourceLocation.parse("block/stone")),
-        new Texture(ResourceLocation.parse("block/stone")),
-        new Texture(ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/stone_dark"))
+        new Texture(Identifier.parse("block/stone")),
+        new Texture(Identifier.parse("block/stone")),
+        new Texture(Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "block/stone_dark"))
     );
 
     public static final PostBlock.ModelType METAL_FALLBACK = new PostBlock.ModelType(
         PostBlock.MaterialType.Metal,
         Ingredient.of(net.minecraft.world.item.Items.IRON_INGOT),
-        new Texture(ResourceLocation.parse("block/iron_block")),
-        new Texture(ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/iron")),
-        new Texture(ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "block/iron_dark"))
+        new Texture(Identifier.parse("block/iron_block")),
+        new Texture(Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "block/iron")),
+        new Texture(Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "block/iron_dark"))
     );
 
     public static final PostBlock.ModelType MUSHROOM_FALLBACK = new PostBlock.ModelType(
         PostBlock.MaterialType.Mushroom,
         Ingredient.of(net.minecraft.world.item.Items.RED_MUSHROOM),
-        new Texture(ResourceLocation.parse("block/red_mushroom_block")),
-        new Texture(ResourceLocation.parse("block/mushroom_stem")),
-        new Texture(ResourceLocation.parse("block/red_mushroom_block"))
+        new Texture(Identifier.parse("block/red_mushroom_block")),
+        new Texture(Identifier.parse("block/mushroom_stem")),
+        new Texture(Identifier.parse("block/red_mushroom_block"))
     );
 
     public static PostBlock.ModelType getOrFallbackModelType(
@@ -64,7 +95,14 @@ public class ModelTypeRegistry {
         ResourceKey<PostBlock.ModelType> key,
         Supplier<PostBlock.MaterialType> materialType
     ) {
-        return registryAccess.lookupOrThrow(REGISTRY_KEY).get(key).map(Holder::value).orElseGet(() -> fallbackModelType(materialType.get()));
+        if (key != null) {
+            var lookup = registryAccess.lookup(REGISTRY_KEY);
+            if (lookup.isPresent()) {
+                var found = lookup.get().get(key);
+                if (found.isPresent()) return found.get().value();
+            }
+        }
+        return fallbackModelType(materialType.get());
     }
 
     public static PostBlock.ModelType fallbackModelType(

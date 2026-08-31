@@ -34,6 +34,14 @@ public class ItemRegistry {
     public static final List<DeferredItem<Item>> POSTS_ITEMS =
         Arrays.stream(PostBlock.MaterialType.values()).map(ItemRegistry::registerPostItem).toList();
 
+    /** See {@link PostBlock.LegacyVariant} - registered only so that saves written before 2.04 still load. */
+    public static final List<DeferredItem<Item>> LEGACY_POSTS_ITEMS =
+        PostBlock.LegacyVariants.stream()
+            .<DeferredItem<Item>>map(variant -> REGISTER.register(
+                variant.registryName,
+                () -> new PostItem(variant.getBlock(), new Item.Properties())))
+            .toList();
+
     public static final DeferredItem<Item> WaystoneGeneratorItem =
         REGISTER.register(WaystoneGeneratorBlock.REGISTRY_NAME,
             () -> new BlockItem(
@@ -51,11 +59,7 @@ public class ItemRegistry {
     private static DeferredItem<Item> registerPostItem(PostBlock.MaterialType postVariant) {
         return REGISTER.register(
             postVariant.blockRegistryName,
-            () -> new PostItem(
-                postVariant.getBlock(),
-                new Item.Properties()
-                    .setId(ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID, postVariant.blockRegistryName)))
-            ));
+            () -> new PostItem(postVariant.getBlock(), new Item.Properties()));
     }
 
     private static Tuple<ModelWaystone.Variant, DeferredItem<Item>> registerModelWaystoneItem(ModelWaystone.Variant variant){

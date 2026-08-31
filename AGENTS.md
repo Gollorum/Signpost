@@ -141,6 +141,26 @@ data components, packet codecs, `utils/serialization/`, or the waystone storage 
 `minecraft/storage/WaystoneLibraryStorage.java` **must** be checked by loading a pre-existing save,
 not just a freshly created one. A new world hides exactly the migration bugs that matter.
 
+#### The pre-2.04 post blocks must stay registered
+
+Up to 2.03.x every post type was its own block and item (`signpost:post_oak`, `post_spruce`, ...).
+They are now four material blocks (`post_wood`, `post_stone`, `post_metal`, `post_mushroom`) with
+the type held in the block entity and in the `signpost:post_data` component. The old ids are still
+registered as `PostBlock.LegacyVariant`s, and **that is not dead weight**: a block id missing from
+the registry does not merely disappear from a loaded chunk, it shifts the whole section palette and
+scrambles the blocks around it. `PostTile` rewrites a legacy block to its material block one tick
+after the chunk loads, so a world sheds them the first time it is opened - but the village structure
+templates in `data/signpost/structure/village/*/signpost.nbt` still place the old ids, so the
+registrations cannot be dropped until those are regenerated.
+
+Three formats meet in the same on-disk shape and all three have to keep working:
+
+- `PostData` with no `ModelType` field (everything before 2.04). Resolved from the block or item it
+  came from - `PostBlock.defaultModelType()`.
+- A sign part's `CoreData.ModelType` as a bare `"spruce"` rather than an id. `ModelTypeRegistry
+  .KEY_CODEC` completes a namespace-less name with `signpost:`, not with `minecraft:`.
+- `PostData` data version 1, which the village templates are still written in.
+
 #### Codec field names are on-disk data
 
 `fieldOf("...")` strings are persisted NBT keys. **Never let them follow a class rename.** The
@@ -164,7 +184,9 @@ than useless. Check provenance first:
 - The server log prints the writing version on load (`signpost (version 2.03.0 -> 2.03.1)`), which
   tells you which build produced the save.
 - **`1.21-dynamic-post-types` is an experimental branch with deliberately broken compatibility and
-  is not merged into `1.21`.** Never treat its format as something to support.
+  is not merged into `1.21`.** Never treat its format as something to support. What *is* supported is
+  the merged form of it (post types moved into the `signpost:post_model_types` datapack registry),
+  which reads pre-2.04 saves through the compatibility path described below.
 
 ### Stopping the server afterwards
 

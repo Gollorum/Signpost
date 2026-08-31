@@ -45,6 +45,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -72,7 +73,9 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         Type<?> type = Util.fetchChoiceType(References.BLOCK_ENTITY, REGISTRY_NAME);
         return PostTile.type = Services.BLOCK_ENTITY_TYPE_FACTORY.create(
             PostTile::new,
-            PostBlock.all().toArray(PostBlock[]::new),
+            // The legacy blocks have to count as valid too, or the block entities in a pre-2.04 save are
+            // rejected before anything gets the chance to migrate them.
+            PostBlock.allIncludingLegacy().toArray(PostBlock[]::new),
             type
         );
     }
@@ -109,12 +112,16 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
 
     private ResourceKey<PostBlock.ModelType> modelTypeKey = null;
     public ResourceKey<PostBlock.ModelType> modelTypeKey() {
+        if (modelTypeKey == null) modelTypeKey = postBlock().defaultModelType();
         return modelTypeKey;
     }
 
     private PostBlock.ModelType modelType = null;
     public PostBlock.ModelType modelType() {
-        return modelType;
+        if (modelType == null && hasLevel())
+            modelType = ModelTypeRegistry.getOrFallbackModelType(
+                getLevel().registryAccess(), modelTypeKey(), this::getBlockMaterialType);
+        return modelType != null ? modelType : ModelTypeRegistry.fallbackModelType(getBlockMaterialType());
     }
 
     private Optional<PlayerHandle> owner = Optional.empty();
@@ -206,7 +213,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     }
 
     private void writeSelf(ValueOutput output) {
-        output.store(PostData.CODEC, new PostData(modelTypeKey, parts));
+        output.store(PostData.CODEC, new PostData(Optional.of(modelTypeKey()), parts));
         output.store(Codec.optionalField("Owner", PlayerHandle.DIRECT_CODEC, true), owner);
     }
 
@@ -215,26 +222,36 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         readSelf(input);
     }
 
+    /**
+     * The block this tile belongs to. Read from the tile's own state rather than from the level, so that it is
+     * available while the tile is still being deserialized.
+     */
+    private PostBlock postBlock() {
+        return getBlockState().getBlock() instanceof PostBlock post ? post : PostBlock.MaterialType.Wood.getBlock();
+    }
+
     public PostBlock.MaterialType getBlockMaterialType() {
-        return ((PostBlock)getLevel().getBlockState(getBlockPos()).getBlock()).materialType;
+        return postBlock().materialType;
     }
 
     private void readSelf(ValueInput input) {
         var data = input.read(PostData.CODEC);
-        modelTypeKey = data.map(PostData::modelType).orElseThrow();
+        // Data written before 2.04 names no model type: back then the block id was the model type, which is
+        // what the block falls back to. See PostBlock.LegacyVariant.
+        modelTypeKey = data.flatMap(PostData::modelType).orElseGet(() -> postBlock().defaultModelType());
+        modelType = null;
         parts = data
             .map(d -> new ConcurrentHashMap(d.parts()))
             .orElseGet(ConcurrentHashMap::new);
         owner = input.read(Codec.optionalField("Owner", PlayerHandle.DIRECT_CODEC, true)).flatMap(it -> it);
-        if (parts.isEmpty())
-            parts.put(UUID.randomUUID(), new BlockPartInstance(new PostBlockPart(modelType.postTexture()), Vector3.ZERO));
 
         Runnable init = () -> {
+            // Needs the level, because that is what resolves the model type against the datapack registry.
+            if (parts.isEmpty())
+                parts.put(UUID.randomUUID(), new BlockPartInstance(new PostBlockPart(modelType().postTexture()), Vector3.ZERO));
             for(BlockPartInstance part : parts.values()) {
                 part.blockPart().attachTo(this);
             }
-            IDelay.forFrames(1, getLevel().isClientSide(), () ->
-                modelType = ModelTypeRegistry.getOrFallbackModelType(getLevel().registryAccess(), modelTypeKey, this::getBlockMaterialType));
         };
         if(hasLevel()) {
             init.run();
@@ -246,17 +263,17 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     @Override
     protected void collectImplicitComponents(DataComponentMap.Builder components) {
         super.collectImplicitComponents(components);
-        PostBlock.ModelType.applyTo(modelTypeKey, components);
-        components.set(PostData.TYPE, new PostData(modelTypeKey, parts));
+        PostBlock.ModelType.applyTo(modelTypeKey(), components);
+        components.set(PostData.TYPE, new PostData(Optional.of(modelTypeKey()), parts));
         getWaystonePart().ifPresent(waystone -> {
             waystone.getHandle().ifPresent(h -> components.set(WaystoneHandleData.TYPE, new WaystoneHandleData(h)));
             waystone.getName().ifPresent(n -> components.set(DataComponents.CUSTOM_NAME, Component.literal(n)));
         });
     }
 
-    public void readData(PostData data, HolderLookup.Provider registryAccess, PostBlock.MaterialType materialType) {
-        modelTypeKey = data.modelType();
-        modelType = ModelTypeRegistry.getOrFallbackModelType(registryAccess, modelTypeKey, () -> materialType);
+    public void readData(PostData data, HolderLookup.Provider registryAccess, ResourceKey<PostBlock.ModelType> fallbackModelType) {
+        modelTypeKey = data.modelType().orElse(fallbackModelType);
+        modelType = ModelTypeRegistry.getOrFallbackModelType(registryAccess, modelTypeKey, this::getBlockMaterialType);
         parts.clear();
         for(Map.Entry<UUID, BlockPartInstance> entry : data.parts().entrySet()) {
             addPart(
@@ -267,12 +284,50 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
             );
         }
     }
+    /**
+     * Replaces a pre-2.04 post block with the {@link PostBlock.MaterialType} block that supersedes it, keeping
+     * everything this tile holds. Runs once, a tick after the chunk was loaded, so that a world only ever
+     * carries the legacy ids until the first time it is opened by this version.
+     *
+     * <p>The parts are moved over rather than re-attached: their listeners key off the block position, which
+     * does not change, and attaching them a second time would register those listeners twice.
+     */
+    private void migrateLegacyBlock(ServerLevel level) {
+        if (isRemoved()) return;
+        var pos = getBlockPos();
+        var oldState = level.getBlockState(pos);
+        if (!(oldState.getBlock() instanceof PostBlock oldBlock) || !oldBlock.isLegacy()) return;
+
+        var newState = oldBlock.materialType.getBlock().defaultBlockState()
+            .setValue(PostBlock.Facing, oldState.getValue(PostBlock.Facing))
+            .setValue(PostBlock.WATERLOGGED, oldState.getValue(PostBlock.WATERLOGGED));
+        var migratedParts = parts;
+        var migratedOwner = owner;
+        var migratedModelType = modelTypeKey();
+
+        level.setBlock(pos, newState, Block.UPDATE_ALL);
+        if (level.getBlockEntity(pos) instanceof PostTile migrated) {
+            migrated.modelTypeKey = migratedModelType;
+            migrated.modelType = null;
+            migrated.parts = migratedParts;
+            migrated.owner = migratedOwner;
+            migrated.setChanged();
+            level.sendBlockUpdated(pos, newState, newState, Block.UPDATE_ALL);
+        } else Signpost.LOGGER.error(
+            "Failed to migrate the signpost at {} from {} to {}: no block entity was created for the new block.",
+            pos, oldState.getBlock(), newState.getBlock());
+    }
+
     @Override
     public void setLevel(Level level) {
         super.setLevel(level);
 
+        if(level instanceof ServerLevel migrationLevel && postBlock().isLegacy())
+            IDelay.forFrames(1, false, () -> migrateLegacyBlock(migrationLevel));
+
         if(!IConfig.IServer.getInstance().worldGen().debugMode() && level instanceof ServerLevel serverLevel) {
             IDelay.forFrames(1, false, () -> {
+                if (isRemoved()) return; // superseded by migrateLegacyBlock; the new tile runs this itself
                 boolean hasChanged = false;
                 for(var e : parts.entrySet().stream().sorted((e1, e2) -> Float.compare(e2.getValue().offset().y(), e1.getValue().offset().y())).toList()) {
                     if (e.getValue().blockPart() instanceof SignBlockPart<?> sign

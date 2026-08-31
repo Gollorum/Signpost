@@ -33,6 +33,14 @@ public class ItemRegistry {
     public static final List<RegistryObject<Item>> POSTS_ITEMS =
         Arrays.stream(PostBlock.MaterialType.values()).map(ItemRegistry::registerPostItem).toList();
 
+    /** See {@link PostBlock.LegacyVariant} - registered only so that saves written before 2.04 still load. */
+    public static final List<RegistryObject<Item>> LEGACY_POSTS_ITEMS =
+        PostBlock.LegacyVariants.stream()
+            .<RegistryObject<Item>>map(variant -> REGISTER.register(
+                variant.registryName,
+                () -> new PostItem(variant.getBlock(), new Item.Properties())))
+            .toList();
+
     public static final RegistryObject<Item> WaystoneGeneratorItem =
         REGISTER.register(WaystoneGeneratorBlock.REGISTRY_NAME,
             () -> new BlockItem(BlockRegistry.WaystoneGenerator.get(), new Item.Properties()

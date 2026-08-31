@@ -117,7 +117,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
                 optionalOverlayCodec.forGetter(coreData -> coreData.overlay),
                 Codec.INT.fieldOf("Color").forGetter(coreData -> coreData.color),
                 optionalDestinationCodec.forGetter(coreData -> coreData.destination),
-                ResourceKey.codec(ModelTypeRegistry.REGISTRY_KEY).fieldOf("ModelType").forGetter(coreData -> coreData.modelType),
+                ModelTypeRegistry.KEY_CODEC.fieldOf("ModelType").forGetter(coreData -> coreData.modelType),
                 Codec.optionalField("ItemToDropOnBreak", ItemStackSerializer.CODEC.codec(), true).forGetter(coreData -> coreData.itemToDropOnBreak),
                 Codec.BOOL.fieldOf("IsLocked").forGetter(coreData -> coreData.isLocked),
                 Codec.BOOL.fieldOf("IsMarkedForGeneration").forGetter(coreData -> coreData.isMarkedForGeneration)
@@ -135,7 +135,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
                 coreData.color
             ),
             ByteBufCodecs.optional(WaystoneHandle.STREAM_CODEC), coreData -> coreData.destination,
-            ResourceKey.streamCodec(ModelTypeRegistry.REGISTRY_KEY), coreData -> coreData.modelType,
+            ModelTypeRegistry.KEY_STREAM_CODEC, coreData -> coreData.modelType,
             ByteBufCodecs.optional(ItemStack.OPTIONAL_STREAM_CODEC), coreData -> coreData.itemToDropOnBreak,
             ByteBufCodecs.BOOL, coreData -> coreData.isLocked,
             ByteBufCodecs.BOOL, coreData -> coreData.isMarkedForGeneration,

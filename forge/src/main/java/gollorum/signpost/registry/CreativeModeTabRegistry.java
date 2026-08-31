@@ -31,7 +31,7 @@ public class CreativeModeTabRegistry {
         .displayItems((params, output) -> {
             output.accept(ItemRegistry.BRUSH.get());
             output.accept(ItemRegistry.WRENCH.get());
-            for(var post : ModelTypeRegistry.getAllModelTypeHolders(Signpost.getServerInstance().registryAccess()).toList())
+            for(var post : ModelTypeRegistry.getAllModelTypeHolders(params.holders()).toList())
                 output.accept(post.value().getItemStack(post.unwrapKey().orElseThrow(), 1));
             output.accept(ItemRegistry.WAYSTONE_ITEM.get());
             for(var modelWaystone : ItemRegistry.ModelWaystoneItems)

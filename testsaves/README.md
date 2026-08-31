@@ -118,7 +118,9 @@ Before trusting a new corpus entry:
    code. A corpus entry that has never passed cannot tell you anything.
 
 Related: the branch `1.21-dynamic-post-types` deliberately broke compatibility and is not
-merged into `1.21`. Never build a corpus entry from it.
+merged into `1.21`. Never build a corpus entry from it. Its merged form does read old saves - see
+"The pre-2.04 post blocks must stay registered" in `AGENTS.md` - but a corpus entry still has to
+come from a published release, and that branch never was one.
 
 ## Covering auto-generated village signposts
 

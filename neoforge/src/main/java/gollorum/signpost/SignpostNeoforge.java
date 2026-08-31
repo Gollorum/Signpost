@@ -17,7 +17,7 @@ import gollorum.signpost.worldgen.Villages;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -50,8 +50,6 @@ public class SignpostNeoforge {
         IEventBus forgeBus = NeoForge.EVENT_BUS;
         forgeBus.register(new ForgeEvents());
         modBus.register(new ModBusEvents());
-
-//        SignpostDataFixers.create();
 
         BlockRegistry.register(modBus);
         ItemRegistry.register(modBus);

@@ -8,8 +8,6 @@ import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.utils.BlockPartMetadata;
 import gollorum.signpost.utils.serialization.OptionalKeyDispatchCodec;
-import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.resources.ResourceKey;
@@ -19,7 +17,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-public record PostData(ResourceKey<PostBlock.ModelType> modelType, Map<UUID, BlockPartInstance> parts) {
+/**
+ * The persisted contents of a signpost: which model type it is drawn as, and the parts stuck to it.
+ *
+ * <p>{@code ModelType} is optional, and stays optional. Everything Signpost wrote before 2.04 has the model
+ * type baked into the block or item id instead, so data version 2 exists on disk in both shapes and the field
+ * simply is not there in the older one. Whoever reads a {@code PostData} without one resolves it from the
+ * block or item it came from - see {@code PostBlock.defaultModelType}.
+ */
+public record PostData(Optional<ResourceKey<PostBlock.ModelType>> modelType, Map<UUID, BlockPartInstance> parts) {
 
     public static final MapCodec<PostData> CODEC_V1 = Codec.dispatchedMap(
         BlockPartMetadata.CODEC,
@@ -32,7 +38,7 @@ public record PostData(ResourceKey<PostBlock.ModelType> modelType, Map<UUID, Blo
                     newMap.put(pair.getSecond().orElse(UUID.randomUUID()), pair.getFirst());
                 }
             }
-            return new PostData(null, newMap); // TODO PREMERGE
+            return new PostData(Optional.empty(), newMap);
         },
         postData -> {
             var newMap = new java.util.HashMap<BlockPartMetadata, List<Pair<BlockPartInstance, Optional<UUID>>>>();
@@ -52,7 +58,7 @@ public record PostData(ResourceKey<PostBlock.ModelType> modelType, Map<UUID, Blo
 
     public static final MapCodec<PostData> CODEC_V2 = RecordCodecBuilder.mapCodec(instance ->
             instance.group(
-                ResourceKey.codec(ModelTypeRegistry.REGISTRY_KEY).fieldOf("ModelType").forGetter(PostData::modelType),
+                ResourceKey.codec(ModelTypeRegistry.REGISTRY_KEY).optionalFieldOf("ModelType").forGetter(PostData::modelType),
                 PARTS_MAP_CODEC.fieldOf("Parts").forGetter(PostData::parts)
             ).apply(instance, PostData::new)
         );

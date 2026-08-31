@@ -60,11 +60,11 @@ public class LootTables extends LootTableProvider {
 
 
     private void generateBlockLootTables(HolderLookup.Provider registryAccess, BiConsumer<ResourceKey<LootTable>, LootTable.Builder> builder) {
-        for(PostBlock.MaterialType variant : PostBlock.MaterialType.values())
+        PostBlock.allIncludingLegacy().forEach(block ->
             builder.accept(
-                ResourceKey.create(Registries.LOOT_TABLE, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "blocks/" + BuiltInRegistries.BLOCK.getKey(variant.getBlock()).getPath())),
-                mkPostLootTable(registryAccess, variant)
-            );
+                ResourceKey.create(Registries.LOOT_TABLE, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "blocks/" + BuiltInRegistries.BLOCK.getKey(block).getPath())),
+                mkPostLootTable(registryAccess, block)
+            ));
 
         builder.accept(
             ResourceKey.create(Registries.LOOT_TABLE, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "blocks/" + BuiltInRegistries.BLOCK.getKey(WaystoneBlock.getInstance()).getPath())),
@@ -81,24 +81,26 @@ public class LootTables extends LootTableProvider {
             .withPool(LootPool.lootPool()
                 .setRolls(ConstantValue.exactly(1))
                 .add(LootItem.lootTableItem(block)
-                    .apply(CopyComponentsFunction.copyComponentsFromBlockEntity(new ContextKey<WaystoneTile>(Identifier.fromNamespaceAndPath(Signpost.MOD_ID, WaystoneTile.REGISTRY_NAME)))
+                    .apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY)
                         .include(WaystoneHandleData.TYPE)
                         .include(DataComponents.CUSTOM_NAME)
                     ).when(includeDataCondition)
                     .otherwise(LootItem.lootTableItem(block))));
     }
 
-    private LootTable.Builder mkPostLootTable(HolderLookup.Provider registryAccess, PostBlock.MaterialType variant) {
+    private LootTable.Builder mkPostLootTable(HolderLookup.Provider registryAccess, PostBlock block) {
+        // Always drops the material block, so that breaking a not-yet-migrated legacy post yields a current item.
+        var drop = block.materialType.getBlock();
         return LootTable.lootTable()
             .withPool(LootPool.lootPool()
                 .setRolls(ConstantValue.exactly(1))
-                .add(LootItem.lootTableItem(variant.getBlock())
-                    .apply(CopyComponentsFunction.copyComponentsFromBlockEntity(new ContextKey<PostTile>(Identifier.fromNamespaceAndPath(Signpost.MOD_ID, PostTile.REGISTRY_NAME)))
+                .add(LootItem.lootTableItem(drop)
+                    .apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY)
                         .include(WaystoneHandleData.TYPE)
                         .include(DataComponents.CUSTOM_NAME)
                         .include(PostData.TYPE))
                     .when(hasSilkTouch(registryAccess))
-                    .otherwise(LootItem.lootTableItem(variant.getBlock()))))
+                    .otherwise(LootItem.lootTableItem(drop))))
             .withPool(LootPool.lootPool()
                 .setRolls(ConstantValue.exactly(1))
                 .add(PostBlockPartDropLoot.createBuilder()
