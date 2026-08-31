@@ -13,7 +13,9 @@ import gollorum.signpost.utils.math.geometry.AABB;
 import gollorum.signpost.utils.math.geometry.Matrix4x4;
 import gollorum.signpost.utils.math.geometry.TransformedBox;
 import gollorum.signpost.utils.math.geometry.Vector3;
+import net.minecraft.core.Holder;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Optional;
@@ -76,7 +78,7 @@ public class LargeSignBlockPart extends SignBlockPart<LargeSignBlockPart> {
         int color,
         Optional<WaystoneHandle> destination,
         Optional<ItemStack> itemToDropOnBreak,
-        PostBlock.ModelType modelType,
+        ResourceKey<PostBlock.ModelType> modelType,
         boolean isLocked,
         boolean isMarkedForGeneration
     ) { this(

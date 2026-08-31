@@ -12,6 +12,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static gollorum.signpost.Signpost.MOD_ID;
@@ -31,7 +32,7 @@ public class ItemRegistry {
         ModelWaystone.variants.stream().map(ItemRegistry::registerModelWaystoneItem).toList();
 
     public static final List<DeferredItem<Item>> POSTS_ITEMS =
-        PostBlock.AllVariants.stream().map(ItemRegistry::registerPostItem).toList();
+        Arrays.stream(PostBlock.MaterialType.values()).map(ItemRegistry::registerPostItem).toList();
 
     public static final DeferredItem<Item> WaystoneGeneratorItem =
         REGISTER.register(WaystoneGeneratorBlock.REGISTRY_NAME,
@@ -47,13 +48,13 @@ public class ItemRegistry {
 
     public static final DeferredItem<Item> GENERATION_WAND = REGISTER.register(GenerationWand.registryName, GenerationWand::new);
 
-    private static DeferredItem<Item> registerPostItem(PostBlock.Variant postVariant) {
+    private static DeferredItem<Item> registerPostItem(PostBlock.MaterialType postVariant) {
         return REGISTER.register(
-            postVariant.registryName,
+            postVariant.blockRegistryName,
             () -> new PostItem(
                 postVariant.getBlock(),
                 new Item.Properties()
-                    .setId(ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID, postVariant.registryName)))
+                    .setId(ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID, postVariant.blockRegistryName)))
             ));
     }
 

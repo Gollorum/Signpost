@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "Signpost",
+  "key": {
+    "b": "minecraft:spruce_sign",
+    "s": "#minecraft:spruce_logs"
+  },
+  "pattern": [
+    "s",
+    "s",
+    "b"
+  ],
+  "result": {
+    "components": {
+      "minecraft:item_name": {
+        "translate": "item.signpost.post.signpost.spruce"
+      },
+      "signpost:post_data": {
+        "DataVersion": 2,
+        "ModelType": "signpost:spruce",
+        "Parts": {}
+      }
+    },
+    "count": 2,
+    "id": "signpost:post_wood"
+  }
+}

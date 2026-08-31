@@ -9,6 +9,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static gollorum.signpost.Signpost.MOD_ID;
@@ -26,10 +27,10 @@ public class BlockRegistry {
         ModelWaystone.variants.stream().map(BlockRegistry::registerModelWaystone).toList();
 
     public static final List<RegistryObject<PostBlock>> PostBlocks =
-        PostBlock.AllVariants.stream().map(BlockRegistry::registerPostBlock).toList();
+        Arrays.stream(PostBlock.MaterialType.values()).map(BlockRegistry::registerPostBlock).toList();
 
-    private static RegistryObject<PostBlock> registerPostBlock(PostBlock.Variant variant) {
-        return Register.register(variant.registryName, () -> variant.createBlock(PostBlock::new));
+    private static RegistryObject<PostBlock> registerPostBlock(PostBlock.MaterialType variant) {
+        return Register.register(variant.blockRegistryName, variant::createBlock);
     }
 
     private static RegistryObject<ModelWaystone> registerModelWaystone(ModelWaystone.Variant variant) {

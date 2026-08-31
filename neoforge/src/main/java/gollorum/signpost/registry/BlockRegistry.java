@@ -8,6 +8,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static gollorum.signpost.Signpost.MOD_ID;
@@ -24,10 +25,10 @@ public class BlockRegistry {
         ModelWaystone.variants.stream().map(BlockRegistry::registerModelWaystone).toList();
 
     public static final List<DeferredBlock<PostBlock>> PostBlocks =
-        PostBlock.AllVariants.stream().map(BlockRegistry::registerPostBlock).toList();
+        Arrays.stream(PostBlock.MaterialType.values()).map(BlockRegistry::registerPostBlock).toList();
 
-    private static DeferredBlock<PostBlock> registerPostBlock(PostBlock.Variant variant) {
-        return Register.register(variant.registryName, () -> variant.createBlock(PostBlock::new));
+    private static DeferredBlock<PostBlock> registerPostBlock(PostBlock.MaterialType variant) {
+        return Register.register(variant.blockRegistryName, variant::createBlock);
     }
 
     private static DeferredBlock<ModelWaystone> registerModelWaystone(ModelWaystone.Variant variant) {

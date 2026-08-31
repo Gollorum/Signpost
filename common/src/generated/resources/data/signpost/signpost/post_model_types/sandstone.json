@@ -1,0 +1,16 @@
+{
+  "addSignIngredient": "#minecraft:signs",
+  "mainTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/stripped_jungle_log"
+  },
+  "materialType": "stone",
+  "postTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/sandstone"
+  },
+  "secondaryTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/sandstone_bottom"
+  }
+}

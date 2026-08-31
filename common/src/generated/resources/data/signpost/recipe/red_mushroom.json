@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "Signpost",
+  "key": {
+    "b": "minecraft:red_mushroom",
+    "s": "minecraft:red_mushroom_block"
+  },
+  "pattern": [
+    "s",
+    "s",
+    "b"
+  ],
+  "result": {
+    "components": {
+      "minecraft:item_name": {
+        "translate": "item.signpost.post.signpost.red_mushroom"
+      },
+      "signpost:post_data": {
+        "DataVersion": 2,
+        "ModelType": "signpost:red_mushroom",
+        "Parts": {}
+      }
+    },
+    "count": 2,
+    "id": "signpost:post_mushroom"
+  }
+}

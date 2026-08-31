@@ -3,6 +3,8 @@ package gollorum.signpost;
 import gollorum.signpost.compat.Compat;
 import gollorum.signpost.compat.ExternalWaystoneLibrary;
 import gollorum.signpost.config.Config;
+import gollorum.signpost.minecraft.block.PostBlock;
+import gollorum.signpost.minecraft.data.ModelTypeRegistry;
 import gollorum.signpost.minecraft.loot.LootEntries;
 import gollorum.signpost.networking.ForgePacketHandler;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
@@ -13,6 +15,7 @@ import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.registry.*;
 import gollorum.signpost.utils.Delay;
 import gollorum.signpost.worldgen.Villages;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -21,6 +24,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
@@ -30,7 +34,10 @@ import net.minecraftforge.eventbus.api.bus.BusGroup;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.registries.DataPackRegistryEvent;
+import net.minecraftforge.registries.NewRegistryEvent;
 import net.minecraftforge.registries.RegisterEvent;
+import net.minecraftforge.registries.RegistryBuilder;
 
 import java.lang.invoke.MethodHandles;
 import java.util.function.Consumer;
@@ -73,6 +80,7 @@ public class SignpostForge {
             FMLCommonSetupEvent.getBus(busGroup).addListener(ModBusEvents::setup);
             EntityRenderersEvent.RegisterRenderers.BUS.addListener(ModBusEvents::registerEntityRenderers);
             RegisterEvent.getBus(busGroup).addListener(ModBusEvents::registerStuff);
+            DataPackRegistryEvent.NewRegistry.BUS.addListener(ModBusEvents::registerDataPackRegistries);
         }
 
         public static void setup(final FMLCommonSetupEvent event) {
@@ -91,6 +99,14 @@ public class SignpostForge {
             LootEntries.register((loc, elem) -> event.register(Registries.LOOT_POOL_ENTRY_TYPE, loc, () -> elem));
         }
 
+
+        public static void registerDataPackRegistries(DataPackRegistryEvent.NewRegistry event) {
+            event.dataPackRegistry(
+                ModelTypeRegistry.REGISTRY_KEY,
+                PostBlock.ModelType.CODEC,
+                PostBlock.ModelType.CODEC
+            );
+        }
     }
 
     private class ForgeEvents {

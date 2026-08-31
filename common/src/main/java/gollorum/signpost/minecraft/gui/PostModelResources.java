@@ -6,12 +6,7 @@ import net.minecraft.resources.Identifier;
 
 public class PostModelResources {
 
-    public static final String texturePost = "post";
-    public static final String textureSign = "texture";
-    public static final Identifier mainTextureMarker = PostBlock.ModelType.Oak.mainTexture.identifier();
     public static final String secondaryTexture = "secondary_texture";
-
-    public static final Identifier previewLocation = Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "block/post_preview");
 
     public static final Identifier postLocation = Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "block/post_only");
 

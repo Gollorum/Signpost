@@ -1,0 +1,16 @@
+{
+  "addSignIngredient": "minecraft:dark_oak_sign",
+  "mainTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/stripped_dark_oak_log"
+  },
+  "materialType": "wood",
+  "postTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/dark_oak_log"
+  },
+  "secondaryTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/dark_oak_log"
+  }
+}

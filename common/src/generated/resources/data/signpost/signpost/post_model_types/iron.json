@@ -1,0 +1,16 @@
+{
+  "addSignIngredient": "#minecraft:signs",
+  "mainTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "signpost:block/iron"
+  },
+  "materialType": "metal",
+  "postTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/iron_block"
+  },
+  "secondaryTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "signpost:block/iron_dark"
+  }
+}
