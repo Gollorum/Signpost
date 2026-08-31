@@ -119,8 +119,12 @@ Before trusting a new corpus entry:
 
 Related: the branch `1.21-dynamic-post-types` deliberately broke compatibility and is not
 merged into `1.21`. Never build a corpus entry from it. Its merged form does read old saves - see
-"The pre-2.04 post blocks must stay registered" in `AGENTS.md` - but a corpus entry still has to
-come from a published release, and that branch never was one.
+"Post types are data, and the pre-2.04 ids are migrated by a DataFixer" in `AGENTS.md` - but a
+corpus entry still has to come from a published release, and that branch never was one.
+
+That migration is also the reason a **1.21.10** corpus entry stays valuable after 1.21.11 ships: the
+post ids are renamed by a DataFixer, which only runs when the save's Minecraft data version is behind
+the current one. A save written by a future 1.21.11 release exercises no part of it.
 
 ## Covering auto-generated village signposts
 

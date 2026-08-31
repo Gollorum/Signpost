@@ -4,6 +4,7 @@
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",
     "ResourceLocation": "minecraft:block/stripped_birch_log"
   },
+  "mapColor": "sand",
   "materialType": "wood",
   "postTexture": {
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",

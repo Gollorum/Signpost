@@ -4,6 +4,7 @@
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",
     "ResourceLocation": "minecraft:block/stripped_jungle_log"
   },
+  "mapColor": "dirt",
   "materialType": "wood",
   "postTexture": {
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",

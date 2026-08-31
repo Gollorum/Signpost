@@ -4,6 +4,7 @@
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",
     "ResourceLocation": "minecraft:block/stripped_acacia_log"
   },
+  "mapColor": "color_orange",
   "materialType": "wood",
   "postTexture": {
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",

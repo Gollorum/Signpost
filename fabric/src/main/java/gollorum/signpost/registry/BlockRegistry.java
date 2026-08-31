@@ -22,9 +22,6 @@ public class BlockRegistry {
             Registry.register(BuiltInRegistries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID, variant.registryName), variant.createBlock(ModelWaystone::new));
         for(var materialType : PostBlock.MaterialType.values())
             Registry.register(BuiltInRegistries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID, materialType.blockRegistryName), materialType.createBlock());
-        // See PostBlock.LegacyVariant - registered only so that saves written before 2.04 still load.
-        for(var variant : PostBlock.LegacyVariants)
-            Registry.register(BuiltInRegistries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID, variant.registryName), variant.createBlock());
         Registry.register(BuiltInRegistries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID, WaystoneGeneratorBlock.REGISTRY_NAME), WaystoneGenerator);
     }
 }

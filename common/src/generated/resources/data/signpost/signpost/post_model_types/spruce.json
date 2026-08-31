@@ -4,6 +4,7 @@
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",
     "ResourceLocation": "minecraft:block/stripped_spruce_log"
   },
+  "mapColor": "podzol",
   "materialType": "wood",
   "postTexture": {
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",

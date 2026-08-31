@@ -5,6 +5,7 @@ import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.WaystoneBlock;
 import gollorum.signpost.minecraft.crafting.CutWaystoneRecipe;
+import gollorum.signpost.migration.LegacyPostTypes;
 import gollorum.signpost.minecraft.data.PostData;
 import gollorum.signpost.registry.ItemRegistry;
 import net.minecraft.core.HolderLookup;
@@ -60,7 +61,7 @@ public class Recipes extends RecipeProvider {
                 .unlockedBy("has_signpost", has(ItemTags.SignpostTag))
                 .unlockedBy("has_waystone", has(WaystoneBlock.getInstance()))
                 .group("Signpost")
-                .save(output, ResourceKey.create(Registries.RECIPE, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, variant.name())));
+                .save(output, ResourceKey.create(Registries.RECIPE, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, LegacyPostTypes.recipeIdFor(variant.name()))));
         }
     }
 

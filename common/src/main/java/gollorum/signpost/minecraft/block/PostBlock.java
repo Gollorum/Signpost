@@ -12,8 +12,8 @@ import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.data.ModelTypeRegistry;
 import gollorum.signpost.minecraft.data.PostData;
 import gollorum.signpost.minecraft.gui.RequestSignGui;
-import gollorum.signpost.minecraft.items.PostItem;
 import gollorum.signpost.minecraft.utils.Texture;
+import gollorum.signpost.utils.serialization.MapColorSerializer;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.BlockPartInstance;
@@ -78,8 +78,18 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
         Ingredient addSignIngredient,
         Texture postTexture,
         Texture mainTexture,
-        Texture secondaryTexture
+        Texture secondaryTexture,
+        Optional<MapColor> mapColor
     ) {
+        /**
+         * The colour this post shows up as on a map. It is the one thing that used to differ between the post
+         * blocks of a single material and cannot live in {@link Properties}, which is fixed per block - so the
+         * model type carries it and {@code MapColorInjector} hands it to Minecraft per position.
+         */
+        public MapColor mapColorOrDefault() {
+            return mapColor.orElse(materialType.defaultMapColor);
+        }
+
         public ItemStack getItemStack(ResourceKey<ModelType> key, int count) {
             var item = new ItemStack(materialType.getBlock(), count);
             item.applyComponents(applyTo(key, DataComponentPatch.builder()).build());
@@ -105,6 +115,10 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
                 .map(h -> h.unwrapKey().get());
         }
 
+        public static String langKeyFor(String namespace, String path) {
+            return "item." + Signpost.MOD_ID + "." + REGISTRY_NAME + "." + namespace + "." + path;
+        }
+
         private static String getLangRegistryName(Identifier id) {
             return REGISTRY_NAME + "." + id.getNamespace() + "." + id.getPath();
         }
@@ -115,6 +129,7 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
             Texture.STREAM_CODEC, ModelType::postTexture,
             Texture.STREAM_CODEC, ModelType::mainTexture,
             Texture.STREAM_CODEC, ModelType::secondaryTexture,
+            ByteBufCodecs.optional(MapColorSerializer.STREAM_CODEC), ModelType::mapColor,
             ModelType::new
         );
 
@@ -123,7 +138,8 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
             Ingredient.CODEC.fieldOf("addSignIngredient").forGetter(ModelType::addSignIngredient),
             Texture.CODEC_V2.fieldOf("postTexture").forGetter(ModelType::postTexture),
             Texture.CODEC_V2.fieldOf("mainTexture").forGetter(ModelType::mainTexture),
-            Texture.CODEC_V2.fieldOf("secondaryTexture").forGetter(ModelType::secondaryTexture)
+            Texture.CODEC_V2.fieldOf("secondaryTexture").forGetter(ModelType::secondaryTexture),
+            MapColorSerializer.CODEC.optionalFieldOf("mapColor").forGetter(ModelType::mapColor)
         ).apply(instance, ModelType::new));
 
         public static final Codec<Holder<ModelType>> HOLDER_CODEC = RegistryFixedCodec.create(ModelTypeRegistry.REGISTRY_KEY);
@@ -136,10 +152,10 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
     }
 
     public enum MaterialType {
-        Wood(() -> PropertiesUtil.wood(PropertiesUtil.WoodType.Oak), RequiredTool.Axe, "wood", "oak"),
-        Stone(PropertiesUtil::stone, RequiredTool.Pickaxe, "stone", "stone"),
-        Metal(PropertiesUtil::iron, RequiredTool.Pickaxe, "metal", "iron"),
-        Mushroom(() -> PropertiesUtil.mushroom(MapColor.COLOR_RED), RequiredTool.Axe, "mushroom", "red_mushroom");
+        Wood(() -> PropertiesUtil.wood(PropertiesUtil.WoodType.Oak), RequiredTool.Axe, "wood", "oak", MapColor.WOOD),
+        Stone(PropertiesUtil::stone, RequiredTool.Pickaxe, "stone", "stone", MapColor.STONE),
+        Metal(PropertiesUtil::iron, RequiredTool.Pickaxe, "metal", "iron", MapColor.METAL),
+        Mushroom(() -> PropertiesUtil.mushroom(MapColor.COLOR_RED), RequiredTool.Axe, "mushroom", "red_mushroom", MapColor.COLOR_RED);
 
         public static final StreamCodec<ByteBuf, MaterialType> STREAM_CODEC = ByteBufCodecs.STRING_UTF8
             .map(MaterialType::byId, mt -> mt.id);
@@ -157,6 +173,7 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
         public final RequiredTool tool;
         public final String id;
         public final String blockRegistryName;
+        public final MapColor defaultMapColor;
         private final String defaultModelTypeName;
         private PostBlock block;
 
@@ -166,8 +183,7 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
                 propertiesFactory.get()
                     .setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, blockRegistryName))),
                 blockRegistryName,
-                this,
-                Optional.empty()
+                this
             );
         }
 
@@ -184,12 +200,13 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
             return modelTypeKey(defaultModelTypeName);
         }
 
-        MaterialType(Supplier<Properties> propertiesFactory, RequiredTool tool, String registryName, String defaultModelTypeName) {
+        MaterialType(Supplier<Properties> propertiesFactory, RequiredTool tool, String registryName, String defaultModelTypeName, MapColor defaultMapColor) {
             this.id = registryName;
             this.blockRegistryName = REGISTRY_NAME + "_" + registryName;
             this.propertiesFactory = propertiesFactory;
             this.tool = tool;
             this.defaultModelTypeName = defaultModelTypeName;
+            this.defaultMapColor = defaultMapColor;
         }
     }
 
@@ -197,107 +214,19 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
         return ResourceKey.create(ModelTypeRegistry.REGISTRY_KEY, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, path));
     }
 
-    /**
-     * A block id Signpost registered back when every post type was its own block.
-     *
-     * <p>Worlds written by those versions carry these ids in their chunk palettes and in item stacks, so they
-     * have to stay resolvable: a block id that no longer exists shifts the whole section palette and scrambles
-     * the chunk around it. They behave exactly like the {@link MaterialType} block they map to; the only extra
-     * thing they carry is the model type that used to be baked into the block, which is what {@link PostTile}
-     * falls back to for block entity data that predates the {@code ModelType} field.
-     *
-     * <p>{@link PostTile} rewrites them to their {@link MaterialType} block on load, so one load of a world is
-     * enough to make them disappear from it. Nothing places them any more (see {@link #getStateForPlacement}),
-     * and they appear in no creative tab and in no recipe.
-     */
-    public static final class LegacyVariant {
-        public final String registryName;
-        public final MaterialType materialType;
-        public final String modelTypeName;
-        private final Supplier<Properties> propertiesFactory;
-        private PostBlock block;
-
-        private LegacyVariant(String registryName, MaterialType materialType, String modelTypeName, Supplier<Properties> propertiesFactory) {
-            this.registryName = REGISTRY_NAME + "_" + registryName;
-            this.materialType = materialType;
-            this.modelTypeName = modelTypeName;
-            this.propertiesFactory = propertiesFactory;
-        }
-
-        public ResourceKey<ModelType> modelType() { return modelTypeKey(modelTypeName); }
-
-        public PostBlock createBlock() {
-            assert block == null;
-            return block = new PostBlock(
-                propertiesFactory.get()
-                    .setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, registryName))),
-                registryName,
-                materialType,
-                Optional.of(modelType())
-            );
-        }
-
-        public PostBlock getBlock() {
-            assert block != null;
-            return block;
-        }
-    }
-
-    private static LegacyVariant legacyWood(String registryName, String modelTypeName, PropertiesUtil.WoodType woodType) {
-        return new LegacyVariant(registryName, MaterialType.Wood, modelTypeName, () -> PropertiesUtil.wood(woodType));
-    }
-
-    /**
-     * Every post block Signpost registered up to 2.03.x, minus {@code post_stone}: that id is reused as the
-     * {@link MaterialType#Stone} block and its old model type is that material's default, so it needs no
-     * translation.
-     */
-    public static final List<LegacyVariant> LegacyVariants = List.of(
-        legacyWood("oak", "oak", PropertiesUtil.WoodType.Oak),
-        legacyWood("birch", "birch", PropertiesUtil.WoodType.Birch),
-        legacyWood("spruce", "spruce", PropertiesUtil.WoodType.Spruce),
-        legacyWood("jungle", "jungle", PropertiesUtil.WoodType.Jungle),
-        legacyWood("dark_oak", "darkoak", PropertiesUtil.WoodType.DarkOak),
-        legacyWood("acacia", "acacia", PropertiesUtil.WoodType.Acacia),
-        legacyWood("mangrove", "mangrove", PropertiesUtil.WoodType.Mangrove),
-        legacyWood("bamboo", "bamboo", PropertiesUtil.WoodType.Bamboo),
-        legacyWood("cherry", "cherry", PropertiesUtil.WoodType.Cherry),
-        legacyWood("warped", "warped", PropertiesUtil.WoodType.Warped),
-        legacyWood("crimson", "crimson", PropertiesUtil.WoodType.Crimson),
-        new LegacyVariant("iron", MaterialType.Metal, "iron", PropertiesUtil::iron),
-        new LegacyVariant("sandstone", MaterialType.Stone, "sandstone", PropertiesUtil::stone),
-        new LegacyVariant("brown_mushroom", MaterialType.Mushroom, "brown_mushroom", () -> PropertiesUtil.mushroom(MapColor.DIRT)),
-        new LegacyVariant("red_mushroom", MaterialType.Mushroom, "red_mushroom", () -> PropertiesUtil.mushroom(MapColor.COLOR_RED))
-    );
-
     public static Stream<PostBlock> all() {
         return Arrays.stream(MaterialType.values())
             .map(MaterialType::getBlock);
     }
 
-    /** Every registered post block, the {@link LegacyVariant} ones included. */
-    public static Stream<PostBlock> allIncludingLegacy() {
-        return Stream.concat(all(), LegacyVariants.stream().map(LegacyVariant::getBlock));
-    }
-
     public final MaterialType materialType;
     public final String registryName;
-    private final Optional<ResourceKey<ModelType>> legacyModelType;
 
-    public PostBlock(Properties properties, String registryName, MaterialType materialType, Optional<ResourceKey<ModelType>> legacyModelType) {
+    public PostBlock(Properties properties, String registryName, MaterialType materialType) {
         super(properties.noOcclusion());
         this.registryName = registryName;
         this.materialType = materialType;
-        this.legacyModelType = legacyModelType;
         this.registerDefaultState(this.defaultBlockState().setValue(WATERLOGGED, false));
-    }
-
-    /** True for the block ids that only exist so that saves written before 2.04 keep loading. */
-    public boolean isLegacy() { return legacyModelType.isPresent(); }
-
-    /** The model type to assume for data that does not name one itself. */
-    public ResourceKey<ModelType> defaultModelType() {
-        return legacyModelType.orElseGet(materialType::defaultModelType);
     }
 
     @Override
@@ -310,11 +239,7 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
             if (!world.isClientSide()) {
                 var data = stack.get(PostData.TYPE);
                 if (data == null) data = new PostData(Optional.empty(), Map.of());
-                tile.readData(
-                    data,
-                    world.registryAccess(),
-                    data.modelType().orElseGet(() -> modelTypeOf(stack.getItem()))
-                );
+                tile.readData(data, world.registryAccess(), materialType.defaultModelType());
                 if (data.parts().isEmpty()){
                     tile.addPart(
                         new BlockPartInstance(new PostBlockPart(tile.modelType().postTexture()), Vector3.ZERO),
@@ -339,17 +264,6 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
                     );
             }
         }, 100, Optional.of(() -> Signpost.LOGGER.error("Could not initialize placed signpost: BlockEntity never appeared.")));
-    }
-
-    /**
-     * The model type a stack without a {@link PostData} component stands for. Only stacks written before 2.04
-     * are like that, and for those the item id is the whole of the information - which is what the legacy
-     * blocks carry.
-     */
-    private ResourceKey<ModelType> modelTypeOf(Item item) {
-        return item instanceof PostItem postItem && postItem.getBlock() instanceof PostBlock postBlock
-            ? postBlock.defaultModelType()
-            : defaultModelType();
     }
 
     @SuppressWarnings("deprecation")
@@ -429,8 +343,6 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         var res = super.getStateForPlacement(context);
         if(res == null) res = defaultBlockState();
-        // A legacy id must never enter the world again, so place its material's block instead.
-        if(isLegacy()) res = materialType.getBlock().defaultBlockState();
         return res
             .setValue(Facing, context.getHorizontalDirection())
             .setValue(WATERLOGGED, context.getLevel().getFluidState(context.getClickedPos()).getType() == Fluids.WATER);
@@ -470,14 +382,9 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
     @Override
     protected @NotNull MapCodec<? extends BaseEntityBlock> codec() {
         return RecordCodecBuilder.mapCodec((builder) -> builder.group(
-            Codec.STRING.fieldOf("materialType").forGetter(block -> ((PostBlock)block).materialType.id),
-            Codec.STRING.optionalFieldOf("legacyModelType").forGetter(block -> ((PostBlock)block).legacyModelType.map(k -> k.identifier().getPath()))
-        ).apply(builder, (materialTypeId, legacyModelTypeName) ->
-            allIncludingLegacy()
-                .filter(v -> Objects.equals(v.materialType.id, materialTypeId)
-                    && Objects.equals(v.legacyModelType.map(k -> k.identifier().getPath()), legacyModelTypeName))
-                .findAny()
-                .orElseThrow()
+            Codec.STRING.fieldOf("materialType").forGetter(block -> ((PostBlock)block).materialType.id)
+        ).apply(builder, materialTypeId ->
+            all().filter(v -> Objects.equals(v.materialType.id, materialTypeId)).findAny().orElseThrow()
         ));
     }
 

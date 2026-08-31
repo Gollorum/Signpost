@@ -32,6 +32,6 @@ public class ItemTags extends IntrinsicHolderTagsProvider<Item> {
             .add(WaystoneBlock.getInstance().asItem());
 
         this.tag(SignpostTag)
-            .add(PostBlock.allIncludingLegacy().map(Block::asItem).toArray(Item[]::new));
+            .add(PostBlock.all().map(Block::asItem).toArray(Item[]::new));
     }
 }

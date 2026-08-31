@@ -4,6 +4,7 @@
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",
     "ResourceLocation": "minecraft:block/stripped_cherry_log"
   },
+  "mapColor": "terracotta_white",
   "materialType": "wood",
   "postTexture": {
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",

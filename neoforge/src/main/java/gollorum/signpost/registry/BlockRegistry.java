@@ -27,12 +27,6 @@ public class BlockRegistry {
     public static final List<DeferredBlock<PostBlock>> PostBlocks =
         Arrays.stream(PostBlock.MaterialType.values()).map(BlockRegistry::registerPostBlock).toList();
 
-    /** See {@link PostBlock.LegacyVariant} - registered only so that saves written before 2.04 still load. */
-    public static final List<DeferredBlock<PostBlock>> LegacyPostBlocks =
-        PostBlock.LegacyVariants.stream()
-            .map(variant -> Register.register(variant.registryName, variant::createBlock))
-            .toList();
-
     private static DeferredBlock<PostBlock> registerPostBlock(PostBlock.MaterialType variant) {
         return Register.register(variant.blockRegistryName, variant::createBlock);
     }

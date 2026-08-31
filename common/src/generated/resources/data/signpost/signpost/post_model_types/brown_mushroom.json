@@ -4,6 +4,7 @@
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",
     "ResourceLocation": "minecraft:block/mushroom_stem"
   },
+  "mapColor": "dirt",
   "materialType": "mushroom",
   "postTexture": {
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",

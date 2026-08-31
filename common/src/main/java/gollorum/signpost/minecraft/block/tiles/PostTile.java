@@ -45,7 +45,6 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -73,9 +72,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         Type<?> type = Util.fetchChoiceType(References.BLOCK_ENTITY, REGISTRY_NAME);
         return PostTile.type = Services.BLOCK_ENTITY_TYPE_FACTORY.create(
             PostTile::new,
-            // The legacy blocks have to count as valid too, or the block entities in a pre-2.04 save are
-            // rejected before anything gets the chance to migrate them.
-            PostBlock.allIncludingLegacy().toArray(PostBlock[]::new),
+            PostBlock.all().toArray(PostBlock[]::new),
             type
         );
     }
@@ -112,8 +109,34 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
 
     private ResourceKey<PostBlock.ModelType> modelTypeKey = null;
     public ResourceKey<PostBlock.ModelType> modelTypeKey() {
-        if (modelTypeKey == null) modelTypeKey = postBlock().defaultModelType();
-        return modelTypeKey;
+        if (modelTypeKey != null) return modelTypeKey;
+        var derived = deriveModelType();
+        // Only settle on it once the datapack registry is reachable, so that a lookup that happened to run
+        // before the level was set does not freeze in the material default.
+        if (hasLevel()) modelTypeKey = derived;
+        return derived;
+    }
+
+    /**
+     * Works out which model type a post is when its data does not say - which is the case for everything
+     * written before 2.04, where the block id was the model type and the data fixer has since renamed it away.
+     *
+     * <p>Nothing visible depends on this: every part already stores its own textures, so an old signpost looks
+     * the same either way. What it decides is which type the post counts as for later edits - the default
+     * textures of the next sign added to it, and the item it is picked up as.
+     */
+    private ResourceKey<PostBlock.ModelType> deriveModelType() {
+        for (var part : parts.values())
+            if (part.blockPart() instanceof SignBlockPart<?> sign)
+                return sign.getModelType();
+        if (hasLevel())
+            for (var part : parts.values())
+                if (part.blockPart() instanceof PostBlockPart post) {
+                    var match = ModelTypeRegistry.findByPostTexture(
+                        getLevel().registryAccess(), post.getTexture(), getBlockMaterialType());
+                    if (match.isPresent()) return match.get();
+                }
+        return getBlockMaterialType().defaultModelType();
     }
 
     private PostBlock.ModelType modelType = null;
@@ -236,9 +259,8 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
 
     private void readSelf(ValueInput input) {
         var data = input.read(PostData.CODEC);
-        // Data written before 2.04 names no model type: back then the block id was the model type, which is
-        // what the block falls back to. See PostBlock.LegacyVariant.
-        modelTypeKey = data.flatMap(PostData::modelType).orElseGet(() -> postBlock().defaultModelType());
+        // Absent for everything written before 2.04; deriveModelType() works it out from the parts instead.
+        modelTypeKey = data.flatMap(PostData::modelType).orElse(null);
         modelType = null;
         parts = data
             .map(d -> new ConcurrentHashMap(d.parts()))
@@ -284,50 +306,12 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
             );
         }
     }
-    /**
-     * Replaces a pre-2.04 post block with the {@link PostBlock.MaterialType} block that supersedes it, keeping
-     * everything this tile holds. Runs once, a tick after the chunk was loaded, so that a world only ever
-     * carries the legacy ids until the first time it is opened by this version.
-     *
-     * <p>The parts are moved over rather than re-attached: their listeners key off the block position, which
-     * does not change, and attaching them a second time would register those listeners twice.
-     */
-    private void migrateLegacyBlock(ServerLevel level) {
-        if (isRemoved()) return;
-        var pos = getBlockPos();
-        var oldState = level.getBlockState(pos);
-        if (!(oldState.getBlock() instanceof PostBlock oldBlock) || !oldBlock.isLegacy()) return;
-
-        var newState = oldBlock.materialType.getBlock().defaultBlockState()
-            .setValue(PostBlock.Facing, oldState.getValue(PostBlock.Facing))
-            .setValue(PostBlock.WATERLOGGED, oldState.getValue(PostBlock.WATERLOGGED));
-        var migratedParts = parts;
-        var migratedOwner = owner;
-        var migratedModelType = modelTypeKey();
-
-        level.setBlock(pos, newState, Block.UPDATE_ALL);
-        if (level.getBlockEntity(pos) instanceof PostTile migrated) {
-            migrated.modelTypeKey = migratedModelType;
-            migrated.modelType = null;
-            migrated.parts = migratedParts;
-            migrated.owner = migratedOwner;
-            migrated.setChanged();
-            level.sendBlockUpdated(pos, newState, newState, Block.UPDATE_ALL);
-        } else Signpost.LOGGER.error(
-            "Failed to migrate the signpost at {} from {} to {}: no block entity was created for the new block.",
-            pos, oldState.getBlock(), newState.getBlock());
-    }
-
     @Override
     public void setLevel(Level level) {
         super.setLevel(level);
 
-        if(level instanceof ServerLevel migrationLevel && postBlock().isLegacy())
-            IDelay.forFrames(1, false, () -> migrateLegacyBlock(migrationLevel));
-
         if(!IConfig.IServer.getInstance().worldGen().debugMode() && level instanceof ServerLevel serverLevel) {
             IDelay.forFrames(1, false, () -> {
-                if (isRemoved()) return; // superseded by migrateLegacyBlock; the new tile runs this itself
                 boolean hasChanged = false;
                 for(var e : parts.entrySet().stream().sorted((e1, e2) -> Float.compare(e2.getValue().offset().y(), e1.getValue().offset().y())).toList()) {
                     if (e.getValue().blockPart() instanceof SignBlockPart<?> sign

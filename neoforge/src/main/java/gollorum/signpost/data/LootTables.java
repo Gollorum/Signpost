@@ -60,7 +60,7 @@ public class LootTables extends LootTableProvider {
 
 
     private void generateBlockLootTables(HolderLookup.Provider registryAccess, BiConsumer<ResourceKey<LootTable>, LootTable.Builder> builder) {
-        PostBlock.allIncludingLegacy().forEach(block ->
+        PostBlock.all().forEach(block ->
             builder.accept(
                 ResourceKey.create(Registries.LOOT_TABLE, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "blocks/" + BuiltInRegistries.BLOCK.getKey(block).getPath())),
                 mkPostLootTable(registryAccess, block)
@@ -89,7 +89,6 @@ public class LootTables extends LootTableProvider {
     }
 
     private LootTable.Builder mkPostLootTable(HolderLookup.Provider registryAccess, PostBlock block) {
-        // Always drops the material block, so that breaking a not-yet-migrated legacy post yields a current item.
         var drop = block.materialType.getBlock();
         return LootTable.lootTable()
             .withPool(LootPool.lootPool()

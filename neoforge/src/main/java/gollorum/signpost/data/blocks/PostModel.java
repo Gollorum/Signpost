@@ -14,9 +14,7 @@ import net.minecraft.world.level.block.Blocks;
 public class PostModel {
 
     public static void register(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
-        // The legacy blocks are included: they are still registered, and a registered block without a
-        // blockstate definition is an error at resource load time even though nothing ever renders it.
-        PostBlock.allIncludingLegacy().forEach(block -> {
+        PostBlock.all().forEach(block -> {
             blockModels.createParticleOnlyBlock(block, switch (block.materialType) {
                 case PostBlock.MaterialType.Wood -> Blocks.OAK_LOG;
                 case PostBlock.MaterialType.Stone -> Blocks.STONE;

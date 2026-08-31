@@ -30,13 +30,13 @@ public class BlockTags extends BlockTagsProvider {
             .add(WaystoneBlock.getInstance());
 
         this.tag(SignpostTag)
-            .add(PostBlock.allIncludingLegacy().toArray(Block[]::new));
+            .add(PostBlock.all().toArray(Block[]::new));
         this.tag(net.minecraft.tags.BlockTags.MINEABLE_WITH_AXE)
-            .add(PostBlock.allIncludingLegacy()
+            .add(PostBlock.all()
                 .filter(v -> v.materialType.tool == PostBlock.RequiredTool.Axe)
                 .toArray(Block[]::new));
         this.tag(net.minecraft.tags.BlockTags.MINEABLE_WITH_PICKAXE)
-            .add(PostBlock.allIncludingLegacy()
+            .add(PostBlock.all()
                 .filter(v -> v.materialType.tool == PostBlock.RequiredTool.Pickaxe)
                 .toArray(Block[]::new))
             .add(ModelWaystone.variants.stream().map(ModelWaystone.Variant::getBlock).toArray(Block[]::new))

@@ -15,6 +15,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.crafting.Ingredient;
 import io.netty.buffer.ByteBuf;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -50,6 +51,24 @@ public class ModelTypeRegistry {
             key -> key.identifier().toString()
         );
 
+    /**
+     * Finds the model type a post part's texture belongs to, which is how the type of a signpost written
+     * before 2.04 is recovered when it carries no sign to read it off. Restricted to the material the block
+     * already is, so a texture shared with another material cannot pull the post across.
+     */
+    public static Optional<ResourceKey<PostBlock.ModelType>> findByPostTexture(
+        HolderLookup.Provider registryAccess,
+        Texture postTexture,
+        PostBlock.MaterialType materialType
+    ) {
+        return registryAccess.lookup(REGISTRY_KEY).stream()
+            .flatMap(HolderLookup::listElements)
+            .filter(holder -> holder.value().materialType() == materialType
+                && holder.value().postTexture().identifier().equals(postTexture.identifier()))
+            .findFirst()
+            .flatMap(Holder.Reference::unwrapKey);
+    }
+
     public static Stream<PostBlock.ModelType> getAllModelTypes(HolderLookup.Provider registryAccess) {
         return registryAccess.lookupOrThrow(REGISTRY_KEY).listElements().map(Holder.Reference::value);
     }
@@ -63,7 +82,8 @@ public class ModelTypeRegistry {
         Ingredient.of(net.minecraft.world.item.Items.OAK_SIGN),
         new Texture(Identifier.parse("block/oak_log")),
         new Texture(Identifier.parse("block/stripped_oak_log")),
-        new Texture(Identifier.parse("block/oak_log"))
+        new Texture(Identifier.parse("block/oak_log")),
+        Optional.empty()
     );
 
     public static final PostBlock.ModelType STONE_FALLBACK = new PostBlock.ModelType(
@@ -71,7 +91,8 @@ public class ModelTypeRegistry {
         Ingredient.of(net.minecraft.world.item.Items.STONE),
         new Texture(Identifier.parse("block/stone")),
         new Texture(Identifier.parse("block/stone")),
-        new Texture(Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "block/stone_dark"))
+        new Texture(Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "block/stone_dark")),
+        Optional.empty()
     );
 
     public static final PostBlock.ModelType METAL_FALLBACK = new PostBlock.ModelType(
@@ -79,7 +100,8 @@ public class ModelTypeRegistry {
         Ingredient.of(net.minecraft.world.item.Items.IRON_INGOT),
         new Texture(Identifier.parse("block/iron_block")),
         new Texture(Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "block/iron")),
-        new Texture(Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "block/iron_dark"))
+        new Texture(Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "block/iron_dark")),
+        Optional.empty()
     );
 
     public static final PostBlock.ModelType MUSHROOM_FALLBACK = new PostBlock.ModelType(
@@ -87,7 +109,8 @@ public class ModelTypeRegistry {
         Ingredient.of(net.minecraft.world.item.Items.RED_MUSHROOM),
         new Texture(Identifier.parse("block/red_mushroom_block")),
         new Texture(Identifier.parse("block/mushroom_stem")),
-        new Texture(Identifier.parse("block/red_mushroom_block"))
+        new Texture(Identifier.parse("block/red_mushroom_block")),
+        Optional.empty()
     );
 
     public static PostBlock.ModelType getOrFallbackModelType(

@@ -141,25 +141,53 @@ data components, packet codecs, `utils/serialization/`, or the waystone storage 
 `minecraft/storage/WaystoneLibraryStorage.java` **must** be checked by loading a pre-existing save,
 not just a freshly created one. A new world hides exactly the migration bugs that matter.
 
-#### The pre-2.04 post blocks must stay registered
+#### Post types are data, and the pre-2.04 ids are migrated by a DataFixer
 
 Up to 2.03.x every post type was its own block and item (`signpost:post_oak`, `post_spruce`, ...).
-They are now four material blocks (`post_wood`, `post_stone`, `post_metal`, `post_mushroom`) with
-the type held in the block entity and in the `signpost:post_data` component. The old ids are still
-registered as `PostBlock.LegacyVariant`s, and **that is not dead weight**: a block id missing from
-the registry does not merely disappear from a loaded chunk, it shifts the whole section palette and
-scrambles the blocks around it. `PostTile` rewrites a legacy block to its material block one tick
-after the chunk loads, so a world sheds them the first time it is opened - but the village structure
-templates in `data/signpost/structure/village/*/signpost.nbt` still place the old ids, so the
-registrations cannot be dropped until those are regenerated.
+They are now four material blocks - `post_wood`, `post_stone`, `post_metal`, `post_mushroom` - with the
+type held in the block entity and in the `signpost:post_data` component, and the types themselves
+living in the `signpost:post_model_types` datapack registry. `post_stone` is the one id that carries
+over unchanged; the other fifteen are gone from the registry entirely.
 
-Three formats meet in the same on-disk shape and all three have to keep working:
+They are translated away by `migration/SignpostDataFixes`, which
+`mixin/DataFixersInjector` appends to Minecraft's own fixer chain. **Read this before touching it:**
 
-- `PostData` with no `ModelType` field (everything before 2.04). Resolved from the block or item it
-  came from - `PostBlock.defaultModelType()`.
+- **A DataFixer only runs when the save's *Minecraft* data version is behind the current one.** That
+  is why this works: Signpost never shipped for 1.21.11, so every world that can contain the old ids
+  was written by an older Minecraft and goes through the chain. The same trick is **not** available
+  for a format change made within a Minecraft version that Signpost has already shipped for - there
+  the fixer is simply never invoked, whatever you register. Plan such a change around a Minecraft
+  upgrade, or migrate at load time in the block entity instead.
+- The schema is registered at `SharedConstants.getCurrentVersion().dataVersion()`, not at a pinned
+  4671. `DataFixerBuilder.addSchema` parents each schema onto the last one added, so a pinned older
+  version would get the wrong parent once Minecraft adds schemas past it. Following the current
+  version means the fixes re-run on every later Minecraft upgrade; both are idempotent, so that is
+  harmless, and it keeps them working for saves that skip a version.
+- A block id missing from the registry does not merely disappear from a loaded chunk - it shifts the
+  section palette and scrambles the blocks around it. The rename map is the only thing standing
+  between an old save and that, so do not drop entries from `migration/LegacyPostTypes`.
+
+Four shapes of old data meet in the current code and all four have to keep working:
+
+- `PostData` with no `ModelType` field (everything before 2.04). `PostTile.deriveModelType()` works it
+  out from the parts - a sign part names its model type outright, and failing that the post part's
+  texture is matched against the registry. Nothing visible rides on it: every part stores its own
+  textures, so the derived type only decides what later edits default to.
 - A sign part's `CoreData.ModelType` as a bare `"spruce"` rather than an id. `ModelTypeRegistry
   .KEY_CODEC` completes a namespace-less name with `signpost:`, not with `minecraft:`.
-- `PostData` data version 1, which the village templates are still written in.
+- `PostData` data version 1, which the village structure templates are still written in.
+- Item stacks whose id was the type. `migration/PostItemStackFix` writes the type into the components
+  before renaming, so a stockpiled spruce post stays a spruce post.
+
+Two things deliberately did **not** move with the rename, because they are player data:
+
+- **Recipe ids.** The recipe book stores them, so the spruce post's recipe is still
+  `signpost:post_spruce` - see `LegacyPostTypes.recipeIdFor`. Only `darkoak` would otherwise have
+  drifted, its block having been `post_dark_oak` while its model type is `darkoak`.
+- **Map colour.** It is the one block property that differed between post types of the same material
+  and cannot live in `Block.Properties`, which is fixed per block. It moved into the model type, and
+  `mixin/MapColorInjector` answers `getMapColor` from the block entity so no existing signpost
+  changes colour on a map.
 
 #### Codec field names are on-disk data
 

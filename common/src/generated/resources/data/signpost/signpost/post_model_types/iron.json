@@ -4,6 +4,7 @@
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",
     "ResourceLocation": "signpost:block/iron"
   },
+  "mapColor": "metal",
   "materialType": "metal",
   "postTexture": {
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",

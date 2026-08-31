@@ -2,8 +2,6 @@
   "values": [
     "signpost:post_stone",
     "signpost:post_metal",
-    "signpost:post_iron",
-    "signpost:post_sandstone",
     "signpost:waystone_model_simple_0",
     "signpost:waystone_model_simple_1",
     "signpost:waystone_model_simple_2",

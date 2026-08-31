@@ -19,6 +19,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.material.MapColor;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -63,6 +64,30 @@ public class PostModelTypes implements DataProvider {
         return "Signpost Post Model Types";
     }
 
+    /**
+     * What each built-in type used to draw as on a map, back when it was its own block with its own
+     * {@code Block.Properties}. Taken straight off the old PropertiesUtil values so that no existing signpost
+     * changes colour.
+     */
+    private static final Map<String, MapColor> mapColors = Map.ofEntries(
+        Map.entry("oak", MapColor.WOOD),
+        Map.entry("darkoak", MapColor.COLOR_BROWN),
+        Map.entry("spruce", MapColor.PODZOL),
+        Map.entry("birch", MapColor.SAND),
+        Map.entry("jungle", MapColor.DIRT),
+        Map.entry("acacia", MapColor.COLOR_ORANGE),
+        Map.entry("mangrove", MapColor.COLOR_RED),
+        Map.entry("bamboo", MapColor.COLOR_YELLOW),
+        Map.entry("cherry", MapColor.TERRACOTTA_WHITE),
+        Map.entry("warped", MapColor.WARPED_STEM),
+        Map.entry("crimson", MapColor.CRIMSON_STEM),
+        Map.entry("stone", MapColor.STONE),
+        Map.entry("sandstone", MapColor.STONE),
+        Map.entry("iron", MapColor.METAL),
+        Map.entry("red_mushroom", MapColor.COLOR_RED),
+        Map.entry("brown_mushroom", MapColor.DIRT)
+    );
+
     private static FakeHolder mkModelType(
         String name,
         Identifier postTexture, Identifier mainTexture, Identifier secondaryTexture,
@@ -72,7 +97,8 @@ public class PostModelTypes implements DataProvider {
         return new FakeHolder(name, 
             new PostBlock.ModelType(
                 materialType, signIngredient,
-                expand(postTexture), expand(mainTexture), expand(secondaryTexture)
+                expand(postTexture), expand(mainTexture), expand(secondaryTexture),
+                Optional.ofNullable(mapColors.get(name))
             ),
             baseIngredient,
             addSignIngredient

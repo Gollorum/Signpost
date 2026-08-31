@@ -28,8 +28,6 @@ public class ItemRegistry {
 
     public static final List<Item> POSTS_ITEMS = new ArrayList<>();
 
-    /** See {@link PostBlock.LegacyVariant} - registered only so that saves written before 2.04 still load. */
-    public static final List<Item> LEGACY_POSTS_ITEMS = new ArrayList<>();
 
     public static final Item WaystoneGeneratorItem = new BlockItem(
         BlockRegistry.WaystoneGenerator,
@@ -61,12 +59,6 @@ public class ItemRegistry {
                 BuiltInRegistries.ITEM,
                 Identifier.fromNamespaceAndPath(MOD_ID, materialType.blockRegistryName),
                 new PostItem(materialType.getBlock(), new Item.Properties())
-            ));
-        for(var variant : PostBlock.LegacyVariants)
-            LEGACY_POSTS_ITEMS.add(Registry.register(
-                BuiltInRegistries.ITEM,
-                Identifier.fromNamespaceAndPath(MOD_ID, variant.registryName),
-                new PostItem(variant.getBlock(), new Item.Properties())
             ));
         Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID, WaystoneGeneratorBlock.REGISTRY_NAME), WaystoneGeneratorItem);
         Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID, Wrench.registryName), WRENCH);
