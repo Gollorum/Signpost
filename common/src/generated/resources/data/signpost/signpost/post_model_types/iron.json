@@ -1,5 +1,5 @@
 {
-  "addSignIngredient": "#minecraft:signs",
+  "addSignIngredient": "minecraft:iron_ingot",
   "mainTexture": {
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",
     "ResourceLocation": "signpost:block/iron"

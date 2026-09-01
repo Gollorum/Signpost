@@ -4,7 +4,7 @@
   "group": "Signpost",
   "key": {
     "b": "minecraft:iron_ingot",
-    "s": "minecraft:iron_ingot"
+    "s": "#minecraft:signs"
   },
   "pattern": [
     "s",

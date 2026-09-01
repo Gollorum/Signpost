@@ -3,8 +3,8 @@
   "category": "misc",
   "group": "Signpost",
   "key": {
-    "b": "minecraft:cherry_sign",
-    "s": "#minecraft:cherry_logs"
+    "b": "#minecraft:cherry_logs",
+    "s": "minecraft:cherry_sign"
   },
   "pattern": [
     "s",

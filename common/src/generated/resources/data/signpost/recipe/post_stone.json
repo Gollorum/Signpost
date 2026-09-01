@@ -4,7 +4,7 @@
   "group": "Signpost",
   "key": {
     "b": "minecraft:stone",
-    "s": "minecraft:stone"
+    "s": "#minecraft:signs"
   },
   "pattern": [
     "s",

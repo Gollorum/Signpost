@@ -3,8 +3,8 @@
   "category": "misc",
   "group": "Signpost",
   "key": {
-    "b": "minecraft:jungle_sign",
-    "s": "#minecraft:jungle_logs"
+    "b": "#minecraft:jungle_logs",
+    "s": "minecraft:jungle_sign"
   },
   "pattern": [
     "s",

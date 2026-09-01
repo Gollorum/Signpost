@@ -3,8 +3,8 @@
   "category": "misc",
   "group": "Signpost",
   "key": {
-    "b": "minecraft:brown_mushroom",
-    "s": "minecraft:brown_mushroom_block"
+    "b": "minecraft:brown_mushroom_block",
+    "s": "#minecraft:signs"
   },
   "pattern": [
     "s",

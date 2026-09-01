@@ -3,8 +3,8 @@
   "category": "misc",
   "group": "Signpost",
   "key": {
-    "b": "minecraft:warped_sign",
-    "s": "#minecraft:warped_stems"
+    "b": "#minecraft:warped_stems",
+    "s": "minecraft:warped_sign"
   },
   "pattern": [
     "s",

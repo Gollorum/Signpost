@@ -1,5 +1,5 @@
 {
-  "addSignIngredient": "#minecraft:signs",
+  "addSignIngredient": "minecraft:red_mushroom",
   "mainTexture": {
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",
     "ResourceLocation": "minecraft:block/mushroom_stem"

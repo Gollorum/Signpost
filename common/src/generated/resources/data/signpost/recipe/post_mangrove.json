@@ -3,8 +3,8 @@
   "category": "misc",
   "group": "Signpost",
   "key": {
-    "b": "minecraft:mangrove_sign",
-    "s": "#minecraft:mangrove_logs"
+    "b": "#minecraft:mangrove_logs",
+    "s": "minecraft:mangrove_sign"
   },
   "pattern": [
     "s",

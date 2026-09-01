@@ -3,8 +3,8 @@
   "category": "misc",
   "group": "Signpost",
   "key": {
-    "b": "minecraft:crimson_sign",
-    "s": "#minecraft:crimson_stems"
+    "b": "#minecraft:crimson_stems",
+    "s": "minecraft:crimson_sign"
   },
   "pattern": [
     "s",

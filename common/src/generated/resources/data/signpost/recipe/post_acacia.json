@@ -3,8 +3,8 @@
   "category": "misc",
   "group": "Signpost",
   "key": {
-    "b": "minecraft:acacia_sign",
-    "s": "#minecraft:acacia_logs"
+    "b": "#minecraft:acacia_logs",
+    "s": "minecraft:acacia_sign"
   },
   "pattern": [
     "s",

@@ -96,12 +96,12 @@ public class PostModelTypes implements DataProvider {
     ) {
         return new FakeHolder(name, 
             new PostBlock.ModelType(
-                materialType, signIngredient,
+                materialType, addSignIngredient,
                 expand(postTexture), expand(mainTexture), expand(secondaryTexture),
                 Optional.ofNullable(mapColors.get(name))
             ),
-            baseIngredient,
-            addSignIngredient
+            signIngredient,
+            baseIngredient
         );
     }
 

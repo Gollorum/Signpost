@@ -153,8 +153,8 @@ They are translated away by `migration/SignpostDataFixes`, which
 `mixin/DataFixersInjector` appends to Minecraft's own fixer chain. **Read this before touching it:**
 
 - **A DataFixer only runs when the save's *Minecraft* data version is behind the current one.** That
-  is why this works: Signpost never shipped for 1.21.11, so every world that can contain the old ids
-  was written by an older Minecraft and goes through the chain. The same trick is **not** available
+  means this only works when Signpost never shipped for the targeted minecraft version, so every world
+  that can contain the old format was written by an older Minecraft and goes through the chain. The same trick is **not** available
   for a format change made within a Minecraft version that Signpost has already shipped for - there
   the fixer is simply never invoked, whatever you register. Plan such a change around a Minecraft
   upgrade, or migrate at load time in the block entity instead.
@@ -179,16 +179,6 @@ Four shapes of old data meet in the current code and all four have to keep worki
 - Item stacks whose id was the type. `migration/PostItemStackFix` writes the type into the components
   before renaming, so a stockpiled spruce post stays a spruce post.
 
-Two things deliberately did **not** move with the rename, because they are player data:
-
-- **Recipe ids.** The recipe book stores them, so the spruce post's recipe is still
-  `signpost:post_spruce` - see `LegacyPostTypes.recipeIdFor`. Only `darkoak` would otherwise have
-  drifted, its block having been `post_dark_oak` while its model type is `darkoak`.
-- **Map colour.** It is the one block property that differed between post types of the same material
-  and cannot live in `Block.Properties`, which is fixed per block. It moved into the model type, and
-  `mixin/MapColorInjector` answers `getMapColor` from the block entity so no existing signpost
-  changes colour on a map.
-
 #### Codec field names are on-disk data
 
 `fieldOf("...")` strings are persisted NBT keys. **Never let them follow a class rename.** The
@@ -211,10 +201,6 @@ than useless. Check provenance first:
   `gradle.properties` is not evidence of a release.
 - The server log prints the writing version on load (`signpost (version 2.03.0 -> 2.03.1)`), which
   tells you which build produced the save.
-- **`1.21-dynamic-post-types` is an experimental branch with deliberately broken compatibility and
-  is not merged into `1.21`.** Never treat its format as something to support. What *is* supported is
-  the merged form of it (post types moved into the `signpost:post_model_types` datapack registry),
-  which reads pre-2.04 saves through the compatibility path described below.
 
 ### Stopping the server afterwards
 

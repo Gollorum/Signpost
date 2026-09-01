@@ -3,8 +3,8 @@
   "category": "misc",
   "group": "Signpost",
   "key": {
-    "b": "minecraft:bamboo_sign",
-    "s": "#minecraft:bamboo_blocks"
+    "b": "#minecraft:bamboo_blocks",
+    "s": "minecraft:bamboo_sign"
   },
   "pattern": [
     "s",

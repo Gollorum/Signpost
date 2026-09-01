@@ -3,8 +3,8 @@
   "category": "misc",
   "group": "Signpost",
   "key": {
-    "b": "minecraft:oak_sign",
-    "s": "#minecraft:oak_logs"
+    "b": "#minecraft:oak_logs",
+    "s": "minecraft:oak_sign"
   },
   "pattern": [
     "s",

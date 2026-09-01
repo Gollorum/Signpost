@@ -3,8 +3,8 @@
   "category": "misc",
   "group": "Signpost",
   "key": {
-    "b": "minecraft:spruce_sign",
-    "s": "#minecraft:spruce_logs"
+    "b": "#minecraft:spruce_logs",
+    "s": "minecraft:spruce_sign"
   },
   "pattern": [
     "s",

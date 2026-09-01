@@ -3,8 +3,8 @@
   "category": "misc",
   "group": "Signpost",
   "key": {
-    "b": "minecraft:birch_sign",
-    "s": "#minecraft:birch_logs"
+    "b": "#minecraft:birch_logs",
+    "s": "minecraft:birch_sign"
   },
   "pattern": [
     "s",
