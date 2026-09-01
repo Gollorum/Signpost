@@ -1,0 +1,34 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "Signpost",
+  "key": {
+    "b": [
+      "minecraft:tuff",
+      "minecraft:polished_tuff",
+      "minecraft:tuff_bricks",
+      "minecraft:chiseled_tuff",
+      "minecraft:chiseled_tuff_bricks"
+    ],
+    "s": "#minecraft:signs"
+  },
+  "pattern": [
+    "s",
+    "s",
+    "b"
+  ],
+  "result": {
+    "components": {
+      "minecraft:item_name": {
+        "translate": "item.signpost.post.signpost.tuff"
+      },
+      "signpost:post_data": {
+        "DataVersion": 2,
+        "ModelType": "signpost:tuff",
+        "Parts": {}
+      }
+    },
+    "count": 2,
+    "id": "signpost:post_stone"
+  }
+}

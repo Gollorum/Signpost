@@ -1,0 +1,21 @@
+{
+  "addSignIngredient": [
+    "minecraft:prismarine",
+    "minecraft:prismarine_bricks",
+    "minecraft:dark_prismarine"
+  ],
+  "mainTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/prismarine_bricks"
+  },
+  "mapColor": "color_cyan",
+  "materialType": "stone",
+  "postTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/dark_prismarine"
+  },
+  "secondaryTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/dark_prismarine"
+  }
+}

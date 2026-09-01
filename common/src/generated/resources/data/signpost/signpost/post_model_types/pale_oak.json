@@ -1,0 +1,17 @@
+{
+  "addSignIngredient": "minecraft:pale_oak_sign",
+  "mainTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/stripped_pale_oak_log"
+  },
+  "mapColor": "quartz",
+  "materialType": "wood",
+  "postTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/pale_oak_log"
+  },
+  "secondaryTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/pale_oak_log"
+  }
+}

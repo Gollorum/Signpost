@@ -1,0 +1,23 @@
+{
+  "addSignIngredient": [
+    "minecraft:blackstone",
+    "minecraft:gilded_blackstone",
+    "minecraft:polished_blackstone",
+    "minecraft:chiseled_polished_blackstone",
+    "minecraft:polished_blackstone_bricks"
+  ],
+  "mainTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/polished_basalt_side"
+  },
+  "mapColor": "color_black",
+  "materialType": "stone",
+  "postTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/blackstone"
+  },
+  "secondaryTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/blackstone"
+  }
+}

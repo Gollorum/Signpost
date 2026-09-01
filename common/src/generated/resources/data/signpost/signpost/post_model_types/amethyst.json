@@ -1,0 +1,17 @@
+{
+  "addSignIngredient": "minecraft:amethyst_shard",
+  "mainTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/pearlescent_froglight_side"
+  },
+  "mapColor": "color_purple",
+  "materialType": "stone",
+  "postTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/amethyst_block"
+  },
+  "secondaryTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/amethyst_block"
+  }
+}

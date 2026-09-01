@@ -1,22 +1,20 @@
 {
   "addSignIngredient": [
-    "minecraft:sandstone",
-    "minecraft:cut_sandstone",
-    "minecraft:chiseled_sandstone",
-    "minecraft:smooth_sandstone"
+    "minecraft:andesite",
+    "minecraft:polished_andesite"
   ],
   "mainTexture": {
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",
-    "ResourceLocation": "minecraft:block/red_sandstone_bottom"
+    "ResourceLocation": "minecraft:block/polished_diorite"
   },
   "mapColor": "stone",
   "materialType": "stone",
   "postTexture": {
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",
-    "ResourceLocation": "minecraft:block/sandstone"
+    "ResourceLocation": "minecraft:block/andesite"
   },
   "secondaryTexture": {
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",
-    "ResourceLocation": "minecraft:block/sandstone_bottom"
+    "ResourceLocation": "minecraft:block/andesite"
   }
 }
