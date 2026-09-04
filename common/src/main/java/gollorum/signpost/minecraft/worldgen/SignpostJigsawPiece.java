@@ -20,16 +20,18 @@ import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.templatesystem.*;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 public class SignpostJigsawPiece extends LegacySinglePoolElement {
 
-    private static Map<BlockPos, Integer> signpostCountForVillage;
+    // Placement runs on the world generation executor, so several villages can be placed at once.
+    private static Map<BlockPos, AtomicInteger> signpostCountForVillage;
     public static void reset() {
-        signpostCountForVillage = new HashMap<>();
+        signpostCountForVillage = new ConcurrentHashMap<>();
     }
     public static final MapCodec<SignpostJigsawPiece> codec = RecordCodecBuilder.mapCodec((codecBuilder) ->
         codecBuilder.group(templateCodec(), processorsCodec(), projectionCodec(), overrideLiquidSettingsCodec(), isZombieCodec())
@@ -77,14 +79,19 @@ public class SignpostJigsawPiece extends LegacySinglePoolElement {
         boolean keepJigsaws
     ) {
         if(!IConfig.IServer.getInstance().worldGen().isVillageGenerationEnabled()) return false;
-        if(signpostCountForVillage.getOrDefault(villageLocation, 0) >= IConfig.IServer.getInstance().worldGen().maxSignpostsPerVillage())
+        AtomicInteger placed = signpostCountForVillage.computeIfAbsent(villageLocation, k -> new AtomicInteger());
+        int max = IConfig.IServer.getInstance().worldGen().maxSignpostsPerVillage();
+        // Claim a slot before placing, so that the limit holds even when villages are placed concurrently.
+        if(placed.incrementAndGet() > max) {
+            placed.decrementAndGet();
             return false;
+        }
         StructureTemplate template = this.template.map(templateManager::getOrCreate, Function.identity());
         StructurePlaceSettings placementSettings = this.getSettings(rotation, boundingBox, liquidSettings, keepJigsaws);
         if (template.placeInWorld(seedReader, pieceLocation, villageLocation, placementSettings, random, 18)) {
-            signpostCountForVillage.put(villageLocation, signpostCountForVillage.getOrDefault(villageLocation, 0) + 1);
             return true;
         } else {
+            placed.decrementAndGet();
             return false;
         }
     }

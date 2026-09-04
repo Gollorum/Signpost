@@ -24,6 +24,8 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProc
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 public class Villages {
@@ -31,48 +33,45 @@ public class Villages {
 	public static final Villages instance = new Villages();
 	private Villages() { /*VillagePools.bootstrap();*/ }
 
+	@SuppressWarnings("UnreachableCode") // it thinks the accessor mixin throws
 	private enum VillageType {
-		Desert("desert", instance.waystoneProcessorListDesert, false),
-		Plains("plains", instance.waystoneProcessorListPlains, true),
-		Savanna("savanna", instance.waystoneProcessorListSavanna, true),
-		Snowy("snowy", instance.waystoneProcessorListSnowyOrTaiga, true),
-		Taiga("taiga", instance.waystoneProcessorListSnowyOrTaiga, true);
+		Desert("desert", ProcessorListsAccessor.getEmpty()),
+		Plains("plains", ProcessorLists.STREET_PLAINS),
+		Savanna("savanna", ProcessorLists.STREET_SAVANNA),
+		Snowy("snowy", ProcessorLists.STREET_SNOWY_OR_TAIGA),
+		Taiga("taiga", ProcessorLists.STREET_SNOWY_OR_TAIGA);
 		public final String name;
-		public final Holder<StructureProcessorList> processorList;
-		public final boolean isCommonGround;
+		public final ResourceKey<StructureProcessorList> processorList;
 
-		VillageType(String name, Holder<StructureProcessorList> processorList, boolean isCommonGround) {
+		VillageType(String name, ResourceKey<StructureProcessorList> processorList) {
 			this.name = name;
 			this.processorList = processorList;
-			this.isCommonGround = isCommonGround;
 		}
 
 		public Identifier getSignpostStructureResourceLocation(String structureName) {
 			return Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "village/" + name + "/" + structureName);
 		}
-
-		public Identifier getWaystoneStructureResourceLocation(String structureName) {
-			return Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "village/" + (isCommonGround ? "common" : name) + "/" + structureName);
-		}
 	}
 
-	private Holder<StructureProcessorList> waystoneProcessorListDesert;
-	private Holder<StructureProcessorList> waystoneProcessorListPlains;
-	private Holder<StructureProcessorList> waystoneProcessorListSavanna;
-	private Holder<StructureProcessorList> waystoneProcessorListSnowyOrTaiga;
+	private static final Map<ResourceKey<StructureTemplatePool>, ResourceKey<StructureTemplatePool>> waystonePoolByVillagePool =
+		buildWaystonePools();
 
-	@SuppressWarnings("UnreachableCode") // it thinks the accessor mixin throws
-    private void registerProcessorLists(RegistryAccess registryAccess) {
-		var optionalReg = registryAccess.lookup(Registries.PROCESSOR_LIST);
-		if(optionalReg.isEmpty()) {
-			Signpost.LOGGER.error("Failed to initialize village generation: ProcessorList registry not found");
-			return;
+	private static Map<ResourceKey<StructureTemplatePool>, ResourceKey<StructureTemplatePool>> buildWaystonePools() {
+		var map = new HashMap<ResourceKey<StructureTemplatePool>, ResourceKey<StructureTemplatePool>>();
+		for(VillageType villageType : VillageType.values()) {
+			map.put(poolKey(getVillagePool(villageType)), poolKey(getWaystonePool(villageType, false)));
+			map.put(poolKey(getZombieVillagePool(villageType)), poolKey(getWaystonePool(villageType, true)));
 		}
-		var reg = optionalReg.get();
-		waystoneProcessorListDesert = reg.getOrThrow(ProcessorListsAccessor.getEmpty());
-		waystoneProcessorListPlains = reg.getOrThrow(ProcessorLists.STREET_PLAINS);
-		waystoneProcessorListSavanna = reg.getOrThrow(ProcessorLists.STREET_SAVANNA);
-		waystoneProcessorListSnowyOrTaiga = reg.getOrThrow(ProcessorLists.STREET_SNOWY_OR_TAIGA);
+		return Map.copyOf(map);
+	}
+
+	/**
+	 * The pool that holds nothing but this village type's waystone, if Signpost ships one for the given
+	 * vanilla house pool. Used by {@link gollorum.signpost.mixin.JigsawPlacementPlacerInjector} to make the
+	 * first house of every village a waystone.
+	 */
+	public static Optional<ResourceKey<StructureTemplatePool>> waystonePoolFor(ResourceKey<StructureTemplatePool> villagePool) {
+		return Optional.ofNullable(waystonePoolByVillagePool.get(villagePool));
 	}
 
 	public static void reset() {
@@ -83,37 +82,51 @@ public class Villages {
 	}
 
 	public void initialize(RegistryAccess registryAccess) {
-		registerProcessorLists(registryAccess);
-
-		var optionalReg = registryAccess.lookup(Registries.TEMPLATE_POOL);
-		if(optionalReg.isEmpty()) {
+		var optionalPools = registryAccess.lookup(Registries.TEMPLATE_POOL);
+		if(optionalPools.isEmpty()) {
 			Signpost.LOGGER.error("Failed to initialize village generation: TemplatePool registry not found");
 			return;
 		}
-		var reg = optionalReg.get();
+		var optionalProcessorLists = registryAccess.lookup(Registries.PROCESSOR_LIST);
+		if(optionalProcessorLists.isEmpty()) {
+			Signpost.LOGGER.error("Failed to initialize village generation: ProcessorList registry not found");
+			return;
+		}
+		var pools = optionalPools.get();
+		var processorLists = optionalProcessorLists.get();
 		for(VillageType villageType : VillageType.values()) {
-			registerFor(villageType, true, reg);
-			registerFor(villageType, false, reg);
+			registerFor(villageType, true, pools, processorLists);
+			registerFor(villageType, false, pools, processorLists);
 		}
 		reset();
 	}
 
-	private void registerFor(VillageType villageType, boolean isZombie, Registry<StructureTemplatePool> registry) {
+	/**
+	 * The waystone is not registered here - it is forced into every village by
+	 * {@link gollorum.signpost.mixin.JigsawPlacementPlacerInjector} instead, since a weighted entry among
+	 * the ~87 weight worth of vanilla houses would only rarely be picked.
+	 *
+	 * <p>Processor lists are resolved from the registry of the server that is starting, every time. They
+	 * must not be cached across servers: a {@link Holder} belongs to the registry it came from, and saving
+	 * a piece that holds a stale one fails with "is not valid in current registry set", which aborts the
+	 * write of the entire chunk.
+	 */
+	private void registerFor(
+		VillageType villageType, boolean isZombie,
+		Registry<StructureTemplatePool> pools, Registry<StructureProcessorList> processorLists
+	) {
+		Optional<? extends Holder<StructureProcessorList>> processors = processorLists.get(villageType.processorList);
+		if(processors.isEmpty()) {
+			Signpost.LOGGER.error("Tried to generate signposts in " + villageType.name
+				+ " villages, but their processor list " + villageType.processorList.identifier() + " was not found in the registry.");
+			return;
+		}
 		addToPool(
 			ImmutableList.of(
 				Tuple.of(
-					new WaystoneJigsawPiece(
-						villageType.getWaystoneStructureResourceLocation("waystone"),
-					    villageType.processorList,
-						StructureTemplatePool.Projection.RIGID,
-                        Optional.empty()
-					),
-					1
-				),
-				Tuple.of(
 					new SignpostJigsawPiece(
 						villageType.getSignpostStructureResourceLocation("signpost"),
-						villageType.processorList,
+						processors.get(),
 						StructureTemplatePool.Projection.TERRAIN_MATCHING,
                         Optional.of(LiquidSettings.APPLY_WATERLOGGING),
 						isZombie
@@ -122,7 +135,7 @@ public class Villages {
 				)
 			),
 			isZombie ? getZombieVillagePool(villageType) : getVillagePool(villageType),
-			registry
+			pools
 		);
 	}
 
@@ -134,14 +147,24 @@ public class Villages {
 		return Identifier.parse("village/" + villageType.name + "/zombie/houses");
 	}
 
+	private static Identifier getWaystonePool(VillageType villageType, boolean isZombie) {
+		return Identifier.fromNamespaceAndPath(
+			Signpost.MOD_ID,
+			"village/" + villageType.name + (isZombie ? "/zombie" : "") + "/waystones"
+		);
+	}
+
+	private static ResourceKey<StructureTemplatePool> poolKey(Identifier identifier) {
+		return ResourceKey.create(Registries.TEMPLATE_POOL, identifier);
+	}
+
 	private void addToPool(
-		Collection<Tuple<SinglePoolElement, Integer>> houses, Identifier poolKey,
+		Collection<Tuple<SinglePoolElement, Integer>> houses, Identifier poolId,
 		Registry<StructureTemplatePool> registry
 	) {
-		var key = ResourceKey.create(Registries.TEMPLATE_POOL, poolKey);
-		var pool = registry.getValue(key);
+		var pool = registry.getValue(poolKey(poolId));
 		if(pool == null) {
-			Signpost.LOGGER.error("Tried to add elements to village pool " + poolKey + ", but it was not found in the registry.");
+			Signpost.LOGGER.error("Tried to add elements to village pool " + poolId + ", but it was not found in the registry.");
 			return;
 		}
         var templatePool = (StructureTemplatePoolAccessor) pool;

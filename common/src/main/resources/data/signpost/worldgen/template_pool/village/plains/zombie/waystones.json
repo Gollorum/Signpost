@@ -1,0 +1,14 @@
+{
+  "fallback": "minecraft:village/plains/zombie/houses",
+  "elements": [
+    {
+      "weight": 1,
+      "element": {
+        "element_type": "signpost:waystone_pool_element",
+        "location": "signpost:village/common/waystone",
+        "processors": "minecraft:street_plains",
+        "projection": "rigid"
+      }
+    }
+  ]
+}
