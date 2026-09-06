@@ -1,0 +1,14 @@
+{
+  "fallback": "minecraft:village/desert/zombie/houses",
+  "elements": [
+    {
+      "weight": 1,
+      "element": {
+        "element_type": "signpost:waystone_pool_element",
+        "location": "signpost:village/desert/waystone",
+        "processors": "minecraft:empty",
+        "projection": "rigid"
+      }
+    }
+  ]
+}

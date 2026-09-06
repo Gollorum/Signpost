@@ -1,0 +1,17 @@
+{
+  "addSignIngredient": "minecraft:acacia_sign",
+  "mainTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/stripped_acacia_log"
+  },
+  "mapColor": "color_orange",
+  "materialType": "wood",
+  "postTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/acacia_log"
+  },
+  "secondaryTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/acacia_log"
+  }
+}

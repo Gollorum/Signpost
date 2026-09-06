@@ -90,6 +90,19 @@ While fixing errors:
   moved or renamed target fails at load, not at compile. Check each `@Mixin` class and each
   accessor field name against the new Minecraft sources
   (`common/build/moddev/artifacts/vanilla-<ver>-sources.jar`).
+- **Re-check `DataFixersInjector` by hand.** It injects into `DataFixers.addFixers`, which is
+  `private static` - Mojang keeps no promises about it, and `defaultRequire: 1` turns a moved
+  target into a load-time failure. Two assumptions have to still hold, and neither is a compile
+  error if it stops being true:
+  - `addFixers` still takes the `DataFixerBuilder` and still runs inside `DataFixers.<clinit>`
+    before `build()`. That is the last moment a fixer can be added.
+  - No vanilla schema is registered at the current data version. `SignpostDataFixes` uses
+    sub-version 1 precisely so it cannot collide, but check the new version's last
+    `builder.addSchema(...)` call anyway - a silent collision would replace a vanilla schema.
+
+  The fixes re-run on every upgrade, because a save from the previous version is still behind
+  the new data version. That is intended and safe: both are idempotent. See AGENTS.md,
+  *Post types are data, and the pre-2.04 ids are migrated by a DataFixer*.
 - **Keep the three loaders in step.** A new `Services` interface needs an implementation *and*
   a `META-INF/services` file in fabric, neoforge and forge. A missing provider throws at
   runtime, not at compile time.
@@ -135,8 +148,17 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .claude/skills/full-runtime-
 
 All 12 runs must pass. The corpus save must come from the **last release made on the previous
 Minecraft version** - after this upgrade, that is the release you were on before starting. A
-save two Minecraft versions back is not a valid test: the mod ships no DataFixers. Audit the
-corpus first (`audit-test-save.py`) and check `loaded on start: N of M` is not `0 of M`.
+save two Minecraft versions back is still not a valid test: the only DataFixers the mod ships
+cover the pre-2.04 post block and item ids, and nothing migrates its codecs across Minecraft
+versions. Audit the corpus first (`audit-test-save.py`) and check `loaded on start: N of M` is
+not `0 of M`.
+
+While the corpus predates 2.04, the run also exercises the post-id migration, and it is worth
+confirming rather than assuming: after a server run, the world it left behind should hold
+`signpost:post_wood` / `post_stone` / `post_metal` / `post_mushroom` in its chunk palettes and
+no `signpost:post_<wood type>` anywhere. If the injector stopped applying, the world loads
+without an error and the signposts simply turn into the wrong post type - so a clean log does
+not prove this one.
 
 ## Phase 7 - Report
 

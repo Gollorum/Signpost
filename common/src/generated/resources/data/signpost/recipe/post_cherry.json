@@ -12,7 +12,17 @@
     "b"
   ],
   "result": {
+    "components": {
+      "minecraft:item_name": {
+        "translate": "item.signpost.post.signpost.cherry"
+      },
+      "signpost:post_data": {
+        "DataVersion": 2,
+        "ModelType": "signpost:cherry",
+        "Parts": {}
+      }
+    },
     "count": 2,
-    "id": "signpost:post_cherry"
+    "id": "signpost:post_wood"
   }
 }

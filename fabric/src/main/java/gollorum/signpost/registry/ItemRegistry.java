@@ -28,6 +28,7 @@ public class ItemRegistry {
 
     public static final List<Item> POSTS_ITEMS = new ArrayList<>();
 
+
     public static final Item WaystoneGeneratorItem = new BlockItem(
         BlockRegistry.WaystoneGenerator,
         new Item.Properties()
@@ -53,15 +54,11 @@ public class ItemRegistry {
                         new Item.Properties()
                             .setId(ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID, variant.registryName)))))
             ));
-        for(var variant : PostBlock.AllVariants)
+        for(var materialType : PostBlock.MaterialType.values())
             POSTS_ITEMS.add(Registry.register(
                 BuiltInRegistries.ITEM,
-                Identifier.fromNamespaceAndPath(MOD_ID, variant.registryName),
-                new PostItem(
-                    variant.getBlock(),
-                    new Item.Properties()
-                        .setId(ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID, variant.registryName)))
-                )
+                Identifier.fromNamespaceAndPath(MOD_ID, materialType.blockRegistryName),
+                new PostItem(materialType.getBlock(), new Item.Properties())
             ));
         Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID, WaystoneGeneratorBlock.REGISTRY_NAME), WaystoneGeneratorItem);
         Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID, Wrench.registryName), WRENCH);

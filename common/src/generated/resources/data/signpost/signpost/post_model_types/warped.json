@@ -1,0 +1,17 @@
+{
+  "addSignIngredient": "minecraft:warped_sign",
+  "mainTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/stripped_warped_stem"
+  },
+  "mapColor": "warped_stem",
+  "materialType": "wood",
+  "postTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/warped_stem"
+  },
+  "secondaryTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/warped_stem"
+  }
+}

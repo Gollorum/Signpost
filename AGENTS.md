@@ -47,8 +47,9 @@ build fine either way; only `forge` depends on this.
   `runs/*_with_mods`) for testing against other mods - see
   [Testing against the real mods](#testing-against-the-real-mods).
 - Output jars land in `<loader>/build/libs/signpost-<loader>-<mc_version>-<version>.jar`.
-- There is no test suite and no CI. Verification is done by compiling and launching the game -
-  see [Runtime verification](#runtime-verification-required), which is mandatory, not optional.
+- There is no test suite and no CI. The routine check is a compile; launching the game is a
+  separate, deliberate step - see [Runtime verification](#runtime-verification), which is **not**
+  a routine check and is not run without being asked.
 
 ### Data generation
 
@@ -58,13 +59,29 @@ build fine either way; only `forge` depends on this.
 **Do not hand-edit anything under `common/src/generated/resources`** — change the providers in
 `neoforge/src/main/java/gollorum/signpost/data/` and re-run datagen.
 
-## Runtime verification (required)
+## Runtime verification
 
-**A green build proves almost nothing here. Always start the dedicated server and confirm it
-loads a world before reporting a change as done.**
+**Do not launch the game as a routine check.** A server or client run is slow, needs a real
+Minecraft process, and leaves a JVM behind that outlives the Gradle task. Start one **only** when:
 
-Minecraft's dedicated server does not ship the client-only classes, and nothing in the build
-catches a bad reference to them - `common` compiles against a merged client+server artifact, so
+- the user explicitly asks for a runtime test, **or**
+- you are immediately about to produce the final build or release artifacts of a change.
+
+Everything else - after an edit, after datagen, before reporting progress - is checked by
+compiling (`./gradlew :neoforge:compileJava`, or `:neoforge:runData` when a data provider changed).
+A green build proves less here than it does elsewhere, so when a change *would* warrant a runtime
+test and you have not been asked for one, **say so and let the user decide**. Never describe a
+change as verified at runtime when you only compiled it, and never launch the game to "make sure"
+on your own initiative.
+
+**If you start a server or client, you own stopping it.** Kill the game JVM and confirm the port
+is free in the *same* turn you started it, before you write your summary - see [Stopping the
+server afterwards](#stopping-the-server-afterwards). A leftover server keeps holding
+`world/session.lock` and port 25565 and breaks the next run, including the user's own.
+
+Why a run catches things a build cannot: Minecraft's dedicated server does not ship the
+client-only classes, and nothing in the build catches a bad reference to them - `common`
+compiles against a merged client+server artifact, so
 a `net.minecraft.client.*` reference in shared code compiles happily and only explodes as
 `NoClassDefFoundError` when the dedicated server touches that class. `PacketHandler.Context.Client`
 in `common/src/main/java/gollorum/signpost/networking/PacketHandler.java` reaches straight into
@@ -74,10 +91,10 @@ at load time, not at compile time.
 
 ### What to run
 
-This section is the **per-change** check. The **pre-release** gate is the full 12-run matrix
-(3 loaders x client/server x with/without other mods), which is automated as the
-`full-runtime-test` skill in `.claude/skills/full-runtime-test/` - run it immediately before
-producing the final build of a change, and at no other time unless asked.
+This section is the **per-change** check, for when one has been asked for. The **pre-release**
+gate is the full 12-run matrix (3 loaders x client/server x with/without other mods), which is
+automated as the `full-runtime-test` skill in `.claude/skills/full-runtime-test/` - run it
+immediately before producing the final build of a change, and at no other time unless asked.
 
 Run the server for **every loader you touched**, and for all three if you changed `common`.
 Note that the Forge task names differ - ForgeGradle uses the bare run name:
@@ -88,9 +105,15 @@ Note that the Forge task names differ - ForgeGradle uses the bare run name:
 | neoforge | `:neoforge:runServer` | `:neoforge:runServerWithMods` |
 | forge | `:forge:Server` | `:forge:ServerWithMods` |
 
+Run it in the background - the task never returns on its own, and **`echo stop | ./gradlew ...`
+does not stop it**, the run tasks do not forward stdin to the forked game:
+
 ```bash
 ./gradlew :neoforge:runServer --console=plain
 ```
+
+Watch `<loader>/run*/logs/latest.log` rather than the Gradle output, then kill the game JVM as
+described in [Stopping the server afterwards](#stopping-the-server-afterwards).
 
 Use the `*WithMods` variant whenever the change touches `compat/`, networking, or anything
 Waystones or Repurposed Structures interact with.
@@ -102,7 +125,9 @@ compatibility breakage. A freshly generated world proves nothing. The authoritat
 in `testsaves/<version>/world/` (gitignored, see `testsaves/README.md`); the worlds sitting in
 the run directories are dev scratch, and the full-runtime-test harness moves any it finds aside
 to `world.preserved-<timestamp>` the first time it plants a corpus save, rather than deleting
-them.
+them. **Do the same by hand** - `mv` the existing `world` to `world.preserved-<timestamp>` before
+copying a corpus save over it. Those scratch worlds are gitignored, so an `rm -rf` is
+unrecoverable.
 
 The run passes only if all of these hold:
 
@@ -141,6 +166,44 @@ data components, packet codecs, `utils/serialization/`, or the waystone storage 
 `minecraft/storage/WaystoneLibraryStorage.java` **must** be checked by loading a pre-existing save,
 not just a freshly created one. A new world hides exactly the migration bugs that matter.
 
+#### Post types are data, and the pre-2.04 ids are migrated by a DataFixer
+
+Up to 2.03.x every post type was its own block and item (`signpost:post_oak`, `post_spruce`, ...).
+They are now four material blocks - `post_wood`, `post_stone`, `post_metal`, `post_mushroom` - with the
+type held in the block entity and in the `signpost:post_data` component, and the types themselves
+living in the `signpost:post_model_types` datapack registry. `post_stone` is the one id that carries
+over unchanged; the other fifteen are gone from the registry entirely.
+
+They are translated away by `migration/SignpostDataFixes`, which
+`mixin/DataFixersInjector` appends to Minecraft's own fixer chain. **Read this before touching it:**
+
+- **A DataFixer only runs when the save's *Minecraft* data version is behind the current one.** That
+  means this only works when Signpost never shipped for the targeted minecraft version, so every world
+  that can contain the old format was written by an older Minecraft and goes through the chain. The same trick is **not** available
+  for a format change made within a Minecraft version that Signpost has already shipped for - there
+  the fixer is simply never invoked, whatever you register. Plan such a change around a Minecraft
+  upgrade, or migrate at load time in the block entity instead.
+- The schema is registered at `SharedConstants.getCurrentVersion().dataVersion()`, not at a pinned
+  4671. `DataFixerBuilder.addSchema` parents each schema onto the last one added, so a pinned older
+  version would get the wrong parent once Minecraft adds schemas past it. Following the current
+  version means the fixes re-run on every later Minecraft upgrade; both are idempotent, so that is
+  harmless, and it keeps them working for saves that skip a version.
+- A block id missing from the registry does not merely disappear from a loaded chunk - it shifts the
+  section palette and scrambles the blocks around it. The rename map is the only thing standing
+  between an old save and that, so do not drop entries from `migration/LegacyPostTypes`.
+
+Four shapes of old data meet in the current code and all four have to keep working:
+
+- `PostData` with no `ModelType` field (everything before 2.04). `PostTile.deriveModelType()` works it
+  out from the parts - a sign part names its model type outright, and failing that the post part's
+  texture is matched against the registry. Nothing visible rides on it: every part stores its own
+  textures, so the derived type only decides what later edits default to.
+- A sign part's `CoreData.ModelType` as a bare `"spruce"` rather than an id. `ModelTypeRegistry
+  .KEY_CODEC` completes a namespace-less name with `signpost:`, not with `minecraft:`.
+- `PostData` data version 1, which the village structure templates are still written in.
+- Item stacks whose id was the type. `migration/PostItemStackFix` writes the type into the components
+  before renaming, so a stockpiled spruce post stays a spruce post.
+
 #### Codec field names are on-disk data
 
 `fieldOf("...")` strings are persisted NBT keys. **Never let them follow a class rename.** The
@@ -163,10 +226,12 @@ than useless. Check provenance first:
   `gradle.properties` is not evidence of a release.
 - The server log prints the writing version on load (`signpost (version 2.03.0 -> 2.03.1)`), which
   tells you which build produced the save.
-- **`1.21-dynamic-post-types` is an experimental branch with deliberately broken compatibility and
-  is not merged into `1.21`.** Never treat its format as something to support.
 
 ### Stopping the server afterwards
+
+**A run is not finished until the game JVM is gone and port 25565 is free.** Do this before
+writing your summary, in the same turn - not "later", and not only when the run succeeded. This
+applies just as much to a crashed or abandoned run.
 
 The run task never returns on its own, and stopping it is fiddlier than it looks:
 
@@ -377,9 +442,9 @@ Forge-specific quirks:
   fully commented out on purpose.
 
 When changing `common`, keep the Forge sources consistent (new service files, registry entries,
-packet handler changes) and verify with `./gradlew :forge:build` followed by `./gradlew :forge:Server`
-(see [Runtime verification](#runtime-verification-required) - note Forge's run task is `Server`,
-not `runServer`).
+packet handler changes) and verify with `./gradlew :forge:build`. Forge is the loader most likely
+to need a runtime run on top of that - if one is called for, note its run task is `Server`, not
+`runServer` (see [Runtime verification](#runtime-verification) for when to run one at all).
 
 ## Conventions
 

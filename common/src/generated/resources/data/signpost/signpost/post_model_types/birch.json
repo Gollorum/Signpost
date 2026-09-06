@@ -1,0 +1,17 @@
+{
+  "addSignIngredient": "minecraft:birch_sign",
+  "mainTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/stripped_birch_log"
+  },
+  "mapColor": "sand",
+  "materialType": "wood",
+  "postTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/birch_log"
+  },
+  "secondaryTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/birch_log"
+  }
+}

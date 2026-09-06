@@ -11,7 +11,9 @@ import net.minecraft.data.tags.IntrinsicHolderTagsProvider;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
 
+import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 
 public class ItemTags extends IntrinsicHolderTagsProvider<Item> {
@@ -30,6 +32,6 @@ public class ItemTags extends IntrinsicHolderTagsProvider<Item> {
             .add(WaystoneBlock.getInstance().asItem());
 
         this.tag(SignpostTag)
-            .add(PostBlock.AllVariants.stream().map(i -> i.getBlock().asItem()).toArray(Item[]::new));
+            .add(PostBlock.all().map(Block::asItem).toArray(Item[]::new));
     }
 }

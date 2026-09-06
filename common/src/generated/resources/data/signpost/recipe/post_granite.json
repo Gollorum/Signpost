@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "Signpost",
+  "key": {
+    "b": [
+      "minecraft:granite",
+      "minecraft:polished_granite"
+    ],
+    "s": "#minecraft:signs"
+  },
+  "pattern": [
+    "s",
+    "s",
+    "b"
+  ],
+  "result": {
+    "components": {
+      "minecraft:item_name": {
+        "translate": "item.signpost.post.signpost.granite"
+      },
+      "signpost:post_data": {
+        "DataVersion": 2,
+        "ModelType": "signpost:granite",
+        "Parts": {}
+      }
+    },
+    "count": 2,
+    "id": "signpost:post_stone"
+  }
+}

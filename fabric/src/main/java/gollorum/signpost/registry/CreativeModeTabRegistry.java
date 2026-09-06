@@ -1,6 +1,8 @@
 package gollorum.signpost.registry;
 
+import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.config.IConfig;
+import gollorum.signpost.minecraft.data.ModelTypeRegistry;
 import gollorum.signpost.minecraft.utils.LangKeys;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
@@ -22,8 +24,8 @@ public class CreativeModeTabRegistry {
         .displayItems((params, output) -> {
             output.accept(ItemRegistry.BRUSH);
             output.accept(ItemRegistry.WRENCH);
-            for(var post : ItemRegistry.POSTS_ITEMS)
-                output.accept(post);
+            for(var post : ModelTypeRegistry.getAllModelTypeHolders(params.holders()).toList())
+                output.accept(post.value().getItemStack(post.unwrapKey().orElseThrow(), 1));
             output.accept(ItemRegistry.WAYSTONE_ITEM);
             for(var modelWaystone : ItemRegistry.ModelWaystoneItems)
                 if (IConfig.IServer.getInstance().allowedWaystones().contains(modelWaystone._1().name))

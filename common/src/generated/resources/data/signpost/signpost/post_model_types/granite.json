@@ -1,0 +1,20 @@
+{
+  "addSignIngredient": [
+    "minecraft:granite",
+    "minecraft:polished_granite"
+  ],
+  "mainTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/polished_diorite"
+  },
+  "mapColor": "dirt",
+  "materialType": "stone",
+  "postTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/granite"
+  },
+  "secondaryTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/granite"
+  }
+}

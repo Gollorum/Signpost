@@ -1,0 +1,17 @@
+{
+  "addSignIngredient": "minecraft:brown_mushroom",
+  "mainTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/mushroom_stem"
+  },
+  "mapColor": "dirt",
+  "materialType": "mushroom",
+  "postTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/brown_mushroom_block"
+  },
+  "secondaryTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/brown_mushroom_block"
+  }
+}

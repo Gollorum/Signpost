@@ -15,8 +15,9 @@ Run it in exactly two situations:
 
 Do **not** run it at any other point. It launches 12 Minecraft instances sequentially,
 takes a long time, and opens real client windows on the user's desktop. During ordinary
-development, verify with the single dedicated-server run described in AGENTS.md
-(*Runtime verification*) instead.
+development, verify by compiling. The single dedicated-server run described in AGENTS.md
+(*Runtime verification*) is itself not a routine check either - it is run when the user asks
+for it, or as the last step before a final build.
 
 If you are mid-task and unsure whether you are at "the final build" yet, you are not.
 

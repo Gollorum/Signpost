@@ -17,7 +17,17 @@
     "b"
   ],
   "result": {
+    "components": {
+      "minecraft:item_name": {
+        "translate": "item.signpost.post.signpost.sandstone"
+      },
+      "signpost:post_data": {
+        "DataVersion": 2,
+        "ModelType": "signpost:sandstone",
+        "Parts": {}
+      }
+    },
     "count": 2,
-    "id": "signpost:post_sandstone"
+    "id": "signpost:post_stone"
   }
 }

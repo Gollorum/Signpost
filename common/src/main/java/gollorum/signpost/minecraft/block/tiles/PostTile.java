@@ -8,6 +8,7 @@ import gollorum.signpost.Signpost;
 import gollorum.signpost.blockpartdata.types.*;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.config.IConfig;
+import gollorum.signpost.minecraft.data.ModelTypeRegistry;
 import gollorum.signpost.minecraft.data.PostData;
 import gollorum.signpost.minecraft.data.WaystoneHandleData;
 import gollorum.signpost.minecraft.items.Wrench;
@@ -23,9 +24,7 @@ import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.*;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.util.Util;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.UUIDUtil;
+import net.minecraft.core.*;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.*;
@@ -35,6 +34,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ProblemReporter;
@@ -71,11 +71,8 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         assert type == null;
         Type<?> type = Util.fetchChoiceType(References.BLOCK_ENTITY, REGISTRY_NAME);
         return PostTile.type = Services.BLOCK_ENTITY_TYPE_FACTORY.create(
-            (pos, state) -> new PostTile(
-                PostBlock.ModelType.Oak,
-                pos, state
-            ),
-            PostBlock.getAllBlocks(),
+            PostTile::new,
+            PostBlock.all().toArray(PostBlock[]::new),
             type
         );
     }
@@ -110,14 +107,52 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         }
     }
 
-    public final PostBlock.ModelType modelType;
+    private ResourceKey<PostBlock.ModelType> modelTypeKey = null;
+    public ResourceKey<PostBlock.ModelType> modelTypeKey() {
+        if (modelTypeKey != null) return modelTypeKey;
+        var derived = deriveModelType();
+        // Only settle on it once the datapack registry is reachable, so that a lookup that happened to run
+        // before the level was set does not freeze in the material default.
+        if (hasLevel()) modelTypeKey = derived;
+        return derived;
+    }
+
+    /**
+     * Works out which model type a post is when its data does not say - which is the case for everything
+     * written before 2.04, where the block id was the model type and the data fixer has since renamed it away.
+     *
+     * <p>Nothing visible depends on this: every part already stores its own textures, so an old signpost looks
+     * the same either way. What it decides is which type the post counts as for later edits - the default
+     * textures of the next sign added to it, and the item it is picked up as.
+     */
+    private ResourceKey<PostBlock.ModelType> deriveModelType() {
+        for (var part : parts.values())
+            if (part.blockPart() instanceof SignBlockPart<?> sign)
+                return sign.getModelType();
+        if (hasLevel())
+            for (var part : parts.values())
+                if (part.blockPart() instanceof PostBlockPart post) {
+                    var match = ModelTypeRegistry.findByPostTexture(
+                        getLevel().registryAccess(), post.getTexture(), getBlockMaterialType());
+                    if (match.isPresent()) return match.get();
+                }
+        return getBlockMaterialType().defaultModelType();
+    }
+
+    private PostBlock.ModelType modelType = null;
+    public PostBlock.ModelType modelType() {
+        if (modelType == null && hasLevel())
+            modelType = ModelTypeRegistry.getOrFallbackModelType(
+                getLevel().registryAccess(), modelTypeKey(), this::getBlockMaterialType);
+        return modelType != null ? modelType : ModelTypeRegistry.fallbackModelType(getBlockMaterialType());
+    }
+
     private Optional<PlayerHandle> owner = Optional.empty();
 
     private final List<Runnable> toDoOnceLevelIsSet = new ArrayList<>();
 
-    public PostTile(PostBlock.ModelType modelType, BlockPos pos, BlockState state) {
+    public PostTile(BlockPos pos, BlockState state) {
         super(type, pos, state);
-        this.modelType = modelType;
     }
 
     public UUID addPart(BlockPartInstance part, ItemStack cost, PlayerHandle player){ return addPart(UUID.randomUUID(), part, cost, player); }
@@ -201,7 +236,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     }
 
     private void writeSelf(ValueOutput output) {
-        output.store(PostData.CODEC, new PostData(parts));
+        output.store(PostData.CODEC, new PostData(Optional.of(modelTypeKey()), parts));
         output.store(Codec.optionalField("Owner", PlayerHandle.DIRECT_CODEC, true), owner);
     }
 
@@ -210,14 +245,32 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         readSelf(input);
     }
 
+    /**
+     * The block this tile belongs to. Read from the tile's own state rather than from the level, so that it is
+     * available while the tile is still being deserialized.
+     */
+    private PostBlock postBlock() {
+        return getBlockState().getBlock() instanceof PostBlock post ? post : PostBlock.MaterialType.Wood.getBlock();
+    }
+
+    public PostBlock.MaterialType getBlockMaterialType() {
+        return postBlock().materialType;
+    }
+
     private void readSelf(ValueInput input) {
-        parts = input.read(PostData.CODEC)
+        var data = input.read(PostData.CODEC);
+        // Absent for everything written before 2.04; deriveModelType() works it out from the parts instead.
+        modelTypeKey = data.flatMap(PostData::modelType).orElse(null);
+        modelType = null;
+        parts = data
             .map(d -> new ConcurrentHashMap(d.parts()))
             .orElseGet(ConcurrentHashMap::new);
         owner = input.read(Codec.optionalField("Owner", PlayerHandle.DIRECT_CODEC, true)).flatMap(it -> it);
-        if (parts.isEmpty())
-            parts.put(UUID.randomUUID(), new BlockPartInstance(new PostBlockPart(modelType.postTexture), Vector3.ZERO));
+
         Runnable init = () -> {
+            // Needs the level, because that is what resolves the model type against the datapack registry.
+            if (parts.isEmpty())
+                parts.put(UUID.randomUUID(), new BlockPartInstance(new PostBlockPart(modelType().postTexture()), Vector3.ZERO));
             for(BlockPartInstance part : parts.values()) {
                 part.blockPart().attachTo(this);
             }
@@ -232,14 +285,17 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     @Override
     protected void collectImplicitComponents(DataComponentMap.Builder components) {
         super.collectImplicitComponents(components);
-        components.set(PostData.TYPE, new PostData(parts));
+        PostBlock.ModelType.applyTo(modelTypeKey(), components);
+        components.set(PostData.TYPE, new PostData(Optional.of(modelTypeKey()), parts));
         getWaystonePart().ifPresent(waystone -> {
             waystone.getHandle().ifPresent(h -> components.set(WaystoneHandleData.TYPE, new WaystoneHandleData(h)));
             waystone.getName().ifPresent(n -> components.set(DataComponents.CUSTOM_NAME, Component.literal(n)));
         });
     }
 
-    public void readData(PostData data) {
+    public void readData(PostData data, HolderLookup.Provider registryAccess, ResourceKey<PostBlock.ModelType> fallbackModelType) {
+        modelTypeKey = data.modelType().orElse(fallbackModelType);
+        modelType = ModelTypeRegistry.getOrFallbackModelType(registryAccess, modelTypeKey, this::getBlockMaterialType);
         parts.clear();
         for(Map.Entry<UUID, BlockPartInstance> entry : data.parts().entrySet()) {
             addPart(

@@ -1,0 +1,22 @@
+{
+  "addSignIngredient": [
+    "minecraft:nether_bricks",
+    "minecraft:chiseled_nether_bricks",
+    "minecraft:cracked_nether_bricks",
+    "minecraft:red_nether_bricks"
+  ],
+  "mainTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/netherrack"
+  },
+  "mapColor": "nether",
+  "materialType": "stone",
+  "postTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/nether_bricks"
+  },
+  "secondaryTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/nether_bricks"
+  }
+}

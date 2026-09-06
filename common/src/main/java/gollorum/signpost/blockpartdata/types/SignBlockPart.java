@@ -11,6 +11,7 @@ import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.events.WaystoneUpdatedEvent;
 import gollorum.signpost.minecraft.config.IConfig;
+import gollorum.signpost.minecraft.data.ModelTypeRegistry;
 import gollorum.signpost.minecraft.gui.PaintSignGui;
 import gollorum.signpost.minecraft.gui.RequestSignGui;
 import gollorum.signpost.minecraft.items.Brush;
@@ -27,11 +28,14 @@ import gollorum.signpost.utils.math.geometry.TransformedBox;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.ItemStackSerializer;
 import gollorum.signpost.utils.serialization.OptionalSerializerV1;
+import gollorum.signpost.utils.serialization.StreamCodecUtils;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BrushItem;
@@ -52,7 +56,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
         public Optional<Overlay> overlay;
         public int color;
         public Optional<WaystoneHandle> destination;
-        public PostBlock.ModelType modelType;
+        public ResourceKey<PostBlock.ModelType> modelType;
         public Optional<ItemStack> itemToDropOnBreak;
         public boolean isLocked;
 
@@ -68,7 +72,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
             Optional<Overlay> overlay,
             int color,
             Optional<WaystoneHandle> destination,
-            PostBlock.ModelType modelType,
+            ResourceKey<PostBlock.ModelType> modelType,
             Optional<ItemStack> itemToDropOnBreak,
             boolean isLocked,
             boolean isMarkedForGeneration
@@ -113,7 +117,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
                 optionalOverlayCodec.forGetter(coreData -> coreData.overlay),
                 Codec.INT.fieldOf("Color").forGetter(coreData -> coreData.color),
                 optionalDestinationCodec.forGetter(coreData -> coreData.destination),
-                PostBlock.ModelType.CODEC.fieldOf("ModelType").forGetter(coreData -> coreData.modelType),
+                ModelTypeRegistry.KEY_CODEC.fieldOf("ModelType").forGetter(coreData -> coreData.modelType),
                 Codec.optionalField("ItemToDropOnBreak", ItemStackSerializer.CODEC.codec(), true).forGetter(coreData -> coreData.itemToDropOnBreak),
                 Codec.BOOL.fieldOf("IsLocked").forGetter(coreData -> coreData.isLocked),
                 Codec.BOOL.fieldOf("IsMarkedForGeneration").forGetter(coreData -> coreData.isMarkedForGeneration)
@@ -131,7 +135,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
                 coreData.color
             ),
             ByteBufCodecs.optional(WaystoneHandle.STREAM_CODEC), coreData -> coreData.destination,
-            PostBlock.ModelType.STREAM_CODEC, coreData -> coreData.modelType,
+            ModelTypeRegistry.KEY_STREAM_CODEC, coreData -> coreData.modelType,
             ByteBufCodecs.optional(ItemStack.OPTIONAL_STREAM_CODEC), coreData -> coreData.itemToDropOnBreak,
             ByteBufCodecs.BOOL, coreData -> coreData.isLocked,
             ByteBufCodecs.BOOL, coreData -> coreData.isMarkedForGeneration,
@@ -197,25 +201,13 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
         coreData.color = color;
     }
 
-    public void setDestination(Optional<WaystoneHandle> destination) {
-        coreData.destination = destination;
-    }
-
-    public void setItemToDropOnBreak(Optional<ItemStack> itemToDropOnBreak) {
-        coreData.itemToDropOnBreak = itemToDropOnBreak;
-    }
-
-    private void setModelType(PostBlock.ModelType modelType) {
-        coreData.modelType = modelType;
-    }
-
     public Optional<ItemStack> getItemToDropOnBreak() { return coreData.itemToDropOnBreak; }
 
     public boolean isFlipped() { return coreData.flip; }
 
     public int getColor() { return coreData.color; }
 
-    public PostBlock.ModelType getModelType() { return coreData.modelType; }
+    public ResourceKey<PostBlock.ModelType> getModelType() { return coreData.modelType; }
 
     public boolean isLocked() { return coreData.isLocked; }
 

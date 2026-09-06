@@ -4,14 +4,17 @@ import gollorum.signpost.Signpost;
 import gollorum.signpost.blockpartdata.types.SignBlockPart;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
+import gollorum.signpost.minecraft.data.ModelTypeRegistry;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.networking.PacketHandler;
 import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.utils.Tuple;
 import gollorum.signpost.utils.WorldLocation;
 import gollorum.signpost.utils.math.geometry.Vector3;
+import net.minecraft.core.Holder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Optional;
@@ -51,8 +54,8 @@ public class RequestSignGui implements PacketHandler.Event.ForClient<RequestSign
 
 	public static class ForNewSign implements PacketHandler.Event.ForClient<ForNewSign.Package> {
 
-		public record Package(WorldLocation loc, PostBlock.ModelType modelType, Vector3 localHitPos, ItemStack itemToDropOnBreak) {
-			public static Package from(WorldLocation loc, PostBlock.ModelType modelType, Vector3 localHitPos, ItemStack itemToDropOnBreak) {
+		public record Package(WorldLocation loc, ResourceKey<PostBlock.ModelType> modelType, Vector3 localHitPos, ItemStack itemToDropOnBreak) {
+			public static Package from(WorldLocation loc, ResourceKey<PostBlock.ModelType> modelType, Vector3 localHitPos, ItemStack itemToDropOnBreak) {
                 return new Package(
                     loc.withoutExplicitLevel(),
                     modelType,
@@ -62,7 +65,7 @@ public class RequestSignGui implements PacketHandler.Event.ForClient<RequestSign
 			}
 			public static final StreamCodec<RegistryFriendlyByteBuf, Package> STREAM_CODEC = StreamCodec.composite(
 				WorldLocation.STREAM_CODEC, Package::loc,
-				PostBlock.ModelType.STREAM_CODEC, Package::modelType,
+                ResourceKey.streamCodec(ModelTypeRegistry.REGISTRY_KEY), Package::modelType,
 				Vector3.STREAM_CODEC, Package::localHitPos,
 				ItemStack.OPTIONAL_STREAM_CODEC, Package::itemToDropOnBreak,
 				Package::new

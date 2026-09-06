@@ -7,7 +7,10 @@
   "mixins": [
     "BlockPartBreakLogicInjector",
     "BucketAccessor",
+    "DataFixersInjector",
+    "JigsawPlacementPlacerInjector",
     "LevelAccessor",
+    "MapColorInjector",
     "ProcessorListsAccessor",
     "StructureTemplatePoolAccessor"
   ],

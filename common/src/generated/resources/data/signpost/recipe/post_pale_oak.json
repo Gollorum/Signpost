@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "Signpost",
+  "key": {
+    "b": "#minecraft:pale_oak_logs",
+    "s": "minecraft:pale_oak_sign"
+  },
+  "pattern": [
+    "s",
+    "s",
+    "b"
+  ],
+  "result": {
+    "components": {
+      "minecraft:item_name": {
+        "translate": "item.signpost.post.signpost.pale_oak"
+      },
+      "signpost:post_data": {
+        "DataVersion": 2,
+        "ModelType": "signpost:pale_oak",
+        "Parts": {}
+      }
+    },
+    "count": 2,
+    "id": "signpost:post_wood"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "addSignIngredient": [
+    "minecraft:andesite",
+    "minecraft:polished_andesite"
+  ],
+  "mainTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/polished_diorite"
+  },
+  "mapColor": "stone",
+  "materialType": "stone",
+  "postTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/andesite"
+  },
+  "secondaryTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/andesite"
+  }
+}

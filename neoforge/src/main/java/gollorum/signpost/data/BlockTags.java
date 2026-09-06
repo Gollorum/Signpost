@@ -11,6 +11,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
 
+import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 
 public class BlockTags extends BlockTagsProvider {
@@ -29,16 +30,14 @@ public class BlockTags extends BlockTagsProvider {
             .add(WaystoneBlock.getInstance());
 
         this.tag(SignpostTag)
-            .add(PostBlock.AllVariants.stream().map(PostBlock.Variant::getBlock).toArray(Block[]::new));
+            .add(PostBlock.all().toArray(Block[]::new));
         this.tag(net.minecraft.tags.BlockTags.MINEABLE_WITH_AXE)
-            .add(PostBlock.AllVariants.stream()
-                .filter(v -> v.tool == PostBlock.Variant.RequiredTool.Axe)
-                .map(PostBlock.Variant::getBlock)
+            .add(PostBlock.all()
+                .filter(v -> v.materialType.tool == PostBlock.RequiredTool.Axe)
                 .toArray(Block[]::new));
         this.tag(net.minecraft.tags.BlockTags.MINEABLE_WITH_PICKAXE)
-            .add(PostBlock.AllVariants.stream()
-                .filter(v -> v.tool == PostBlock.Variant.RequiredTool.Pickaxe)
-                .map(PostBlock.Variant::getBlock)
+            .add(PostBlock.all()
+                .filter(v -> v.materialType.tool == PostBlock.RequiredTool.Pickaxe)
                 .toArray(Block[]::new))
             .add(ModelWaystone.variants.stream().map(ModelWaystone.Variant::getBlock).toArray(Block[]::new))
             .add(WaystoneBlock.getInstance());

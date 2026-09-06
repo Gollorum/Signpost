@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "Signpost",
+  "key": {
+    "b": "minecraft:amethyst_block",
+    "s": "#minecraft:signs"
+  },
+  "pattern": [
+    "s",
+    "s",
+    "b"
+  ],
+  "result": {
+    "components": {
+      "minecraft:item_name": {
+        "translate": "item.signpost.post.signpost.amethyst"
+      },
+      "signpost:post_data": {
+        "DataVersion": 2,
+        "ModelType": "signpost:amethyst",
+        "Parts": {}
+      }
+    },
+    "count": 2,
+    "id": "signpost:post_stone"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "addSignIngredient": [
+    "minecraft:diorite",
+    "minecraft:polished_diorite"
+  ],
+  "mainTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/stripped_pale_oak_log"
+  },
+  "mapColor": "quartz",
+  "materialType": "stone",
+  "postTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/diorite"
+  },
+  "secondaryTexture": {
+    "AtlasLocation": "minecraft:textures/atlas/blocks.png",
+    "ResourceLocation": "minecraft:block/diorite"
+  }
+}

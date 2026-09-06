@@ -5,18 +5,21 @@ import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.WaystoneBlock;
 import gollorum.signpost.minecraft.crafting.CutWaystoneRecipe;
+import gollorum.signpost.migration.LegacyPostTypes;
+import gollorum.signpost.minecraft.data.PostData;
 import gollorum.signpost.registry.ItemRegistry;
-import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.*;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public class Recipes extends RecipeProvider {
@@ -47,10 +50,10 @@ public class Recipes extends RecipeProvider {
 
 
     public void registerPosts() {
-        for(PostBlock.Variant variant : PostBlock.AllVariants) {
-            shaped(RecipeCategory.DECORATIONS, variant.getBlock(), 2)
-                .define('s', variant.type.signIngredient.apply(registries))
-                .define('b', variant.type.baseIngredient.apply(registries))
+        for(var variant : PostModelTypes.getAll(registries.lookupOrThrow(Registries.ITEM))) {
+            shaped(RecipeCategory.DECORATIONS, variant.value().getItemStack(variant.getKey(), 2))
+                .define('s', variant.signIngredient())
+                .define('b', variant.baseIngredient())
                 .pattern("s")
                 .pattern("s")
                 .pattern("b")
@@ -58,7 +61,7 @@ public class Recipes extends RecipeProvider {
                 .unlockedBy("has_signpost", has(ItemTags.SignpostTag))
                 .unlockedBy("has_waystone", has(WaystoneBlock.getInstance()))
                 .group("Signpost")
-                .save(output);
+                .save(output, ResourceKey.create(Registries.RECIPE, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, LegacyPostTypes.recipeIdFor(variant.name()))));
         }
     }
 

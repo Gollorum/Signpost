@@ -1,0 +1,14 @@
+{
+  "fallback": "minecraft:village/savanna/zombie/houses",
+  "elements": [
+    {
+      "weight": 1,
+      "element": {
+        "element_type": "signpost:waystone_pool_element",
+        "location": "signpost:village/common/waystone",
+        "processors": "minecraft:street_savanna",
+        "projection": "rigid"
+      }
+    }
+  ]
+}

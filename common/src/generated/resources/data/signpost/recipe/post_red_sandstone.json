@@ -1,0 +1,33 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "Signpost",
+  "key": {
+    "b": [
+      "minecraft:red_sandstone",
+      "minecraft:cut_red_sandstone",
+      "minecraft:chiseled_red_sandstone",
+      "minecraft:smooth_red_sandstone"
+    ],
+    "s": "#minecraft:signs"
+  },
+  "pattern": [
+    "s",
+    "s",
+    "b"
+  ],
+  "result": {
+    "components": {
+      "minecraft:item_name": {
+        "translate": "item.signpost.post.signpost.red_sandstone"
+      },
+      "signpost:post_data": {
+        "DataVersion": 2,
+        "ModelType": "signpost:red_sandstone",
+        "Parts": {}
+      }
+    },
+    "count": 2,
+    "id": "signpost:post_stone"
+  }
+}
