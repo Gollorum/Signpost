@@ -58,20 +58,8 @@
   "signpost.different_dimension": "Вы не можете путешествовать к дорожному камню в другом измерении.",
 
   "signpost.no_permission_to_edit_waystone": "У вас нет прав на редактирование дорожного камня.",
-  "signpost.no_permission_to_edit_signpost": "У вас нет прав на редактирование указателя.",
   "signpost.duplicate_waystone_id": "Дорожный камень с таким ID уже существует.",
   "signpost.duplicate_waystone_name": "Дорожный камень \"%s\" уже существует.",
-
-  "signpost.no_more_waystones": "У вас нет прав на размещение дорожного камня в этом месте.",
-  "signpost.no_more_signposts": "У вас нет прав на размещение указателя в этом месте.",
-  "signpost.waystones_left": "Вы можете разместить еще %d дорожных камней.",
-  "signpost.post.signposts_left": "Вы можете разместить еще %d указателей.",
-  "signpost.unlimited_waystones": "Количество дорожных камней, которые вы можете разместить, не ограничено.",
-  "signpost.unlimited_signposts": "Количество указателей, которые вы можете разместить, не ограничено.",
-  "signpost.waystones_left_other": "%s может разместить еще %d дорожных камней.",
-  "signpost.post.signposts_left_other": "%s может разместить еще %d указателей.",
-  "signpost.unlimited_waystones_other": "Количество дорожных камней, которое может разместить %s , не ограничено.",
-  "signpost.unlimited_signposts_other": "Количество указателей, которые %s может разместить, не ограничено.",
 
   "itemGroup.signpost": "Sign post",
 

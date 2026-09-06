@@ -50,19 +50,7 @@
     "signpost.different_dimension": "您无法前往不同维度的路标。",
   
     "signpost.no_permission_to_edit_waystone": "你没有权限编辑这个传送石碑。",
-    "signpost.no_permission_to_edit_signpost": "你没有权限编辑这个路标。",
-  
-    "signpost.no_more_waystones": "你没有权限放置更多传送石碑。",
-    "signpost.no_more_signposts": "你没有权限放置更多路标。",
-    "signpost.waystones_left": "你可以再放%d个传送石碑。",
-    "signpost.post.signposts_left": "你可以再放%d个路标。",
-    "signpost.unlimited_waystones": "你可以放置的传送石碑数量不受限制。",
-    "signpost.unlimited_signposts": "你可以放置的路标数量不受限制。",
-    "signpost.waystones_left_other": "%s可以再放置%d个传送石碑。",
-    "signpost.post.signposts_left_other": "%s可以再放置%d个路标。",
-    "signpost.unlimited_waystones_other": "%s可以放置的传送石碑数量不受限制。",
-    "signpost.unlimited_signposts_other": "%s可以放置的路标数量不受限制。",
-  
+
     "itemGroup.signpost": "路标",
   
     "signpost.no_teleport_waystones_mod": "你不能使用路标前往这个传送石碑，请用传送卷轴或类似物品。"

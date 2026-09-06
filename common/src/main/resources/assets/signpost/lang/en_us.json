@@ -70,20 +70,8 @@
     "signpost.different_dimension": "You cannot travel to a waystone in a different dimension.",
 
     "signpost.no_permission_to_edit_waystone": "You do not have permission to edit this waystone.",
-    "signpost.no_permission_to_edit_signpost": "You do not have permission to edit this signpost.",
     "signpost.duplicate_waystone_id": "A waystone with this ID already exists.",
     "signpost.duplicate_waystone_name": "A waystone \"%s\" already exists.",
-
-    "signpost.no_more_waystones": "You don't have permission to place more waystones.",
-    "signpost.no_more_signposts": "You don't have permission to place more signposts.",
-    "signpost.waystones_left": "You may place %d more waystones.",
-    "signpost.post.signposts_left": "You may place %d more signposts.",
-    "signpost.unlimited_waystones": "The amount of waystones you are allowed to place is not limited.",
-    "signpost.unlimited_signposts": "The amount of signposts you are allowed to place is not limited.",
-    "signpost.waystones_left_other": "%s may place %d more waystones.",
-    "signpost.post.signposts_left_other": "%s may place %d more signposts.",
-    "signpost.unlimited_waystones_other": "The amount of waystones %s is allowed to place is not limited.",
-    "signpost.unlimited_signposts_other": "The amount of signposts %s is allowed to place is not limited.",
 
     "itemGroup.signpost": "Signpost",
 
