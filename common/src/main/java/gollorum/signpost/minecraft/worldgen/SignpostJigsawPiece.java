@@ -22,16 +22,25 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 public class SignpostJigsawPiece extends LegacySinglePoolElement {
 
-    // Placement runs on the world generation executor, so several villages can be placed at once.
-    private static Map<BlockPos, AtomicInteger> signpostCountForVillage;
+    /**
+     * The signpost pieces already claimed in each village, keyed by the village's reference position.
+     *
+     * <p>Positions rather than a count, because {@code place} is called once per chunk the piece
+     * overlaps - see the note on {@link WaystoneJigsawPiece}. Counting calls would charge a signpost
+     * that straddles a chunk border two or three times against the per-village limit, and once the
+     * limit was reached the piece's remaining chunks would be refused, leaving it half built.
+     *
+     * <p>Placement runs on the world generation executor, so several villages can be placed at once.
+     */
+    private static Map<BlockPos, Set<BlockPos>> signpostPiecesForVillage;
     public static void reset() {
-        signpostCountForVillage = new ConcurrentHashMap<>();
+        signpostPiecesForVillage = new ConcurrentHashMap<>();
     }
     public static final MapCodec<SignpostJigsawPiece> codec = RecordCodecBuilder.mapCodec((codecBuilder) ->
         codecBuilder.group(templateCodec(), processorsCodec(), projectionCodec(), overrideLiquidSettingsCodec(), isZombieCodec())
@@ -79,19 +88,28 @@ public class SignpostJigsawPiece extends LegacySinglePoolElement {
         boolean keepJigsaws
     ) {
         if(!IConfig.IServer.getInstance().worldGen().isVillageGenerationEnabled()) return false;
-        AtomicInteger placed = signpostCountForVillage.computeIfAbsent(villageLocation, k -> new AtomicInteger());
+        Set<BlockPos> claimed = signpostPiecesForVillage.computeIfAbsent(
+            villageLocation, k -> ConcurrentHashMap.newKeySet());
         int max = IConfig.IServer.getInstance().worldGen().maxSignpostsPerVillage();
-        // Claim a slot before placing, so that the limit holds even when villages are placed concurrently.
-        if(placed.incrementAndGet() > max) {
-            placed.decrementAndGet();
-            return false;
+        // Claim a slot before placing, so that the limit holds even when villages are placed
+        // concurrently. A piece that already holds one is let through - that is this same piece
+        // coming back for another of its chunks, not a new signpost.
+        boolean isNewClaim;
+        synchronized (claimed) {
+            isNewClaim = !claimed.contains(pieceLocation);
+            if(isNewClaim) {
+                if(claimed.size() >= max) return false;
+                claimed.add(pieceLocation);
+            }
         }
         StructureTemplate template = this.template.map(templateManager::getOrCreate, Function.identity());
         StructurePlaceSettings placementSettings = this.getSettings(rotation, boundingBox, liquidSettings, keepJigsaws);
         if (template.placeInWorld(seedReader, pieceLocation, villageLocation, placementSettings, random, 18)) {
             return true;
         } else {
-            placed.decrementAndGet();
+            // Only release the slot if this call is the one that took it, so a later chunk failing
+            // cannot free a slot that earlier slices are already occupying in the ground.
+            if(isNewClaim) claimed.remove(pieceLocation);
             return false;
         }
     }
