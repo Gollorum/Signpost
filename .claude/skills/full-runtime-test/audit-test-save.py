@@ -129,6 +129,23 @@ CURRENT_LIB_REL = os.path.join('dimensions', 'minecraft', 'overworld', 'data',
                                'signpost', 'waystone_library.dat')
 
 
+def overworld_regions(world):
+    """
+    Region files of the overworld, in either layout.
+
+    26.1 gave every dimension its own folder, so the overworld's chunks moved from
+    <world>/region to <world>/dimensions/minecraft/overworld/region. Looking only in the old
+    place makes a 26.1-written save report zero signpost block entities - which reads as
+    "this corpus exercises nothing" when in fact the scan simply missed them.
+    """
+    for rel in (os.path.join('dimensions', 'minecraft', 'overworld', 'region'),
+                'region'):
+        found = glob.glob(os.path.join(world, rel, '*.mca'))
+        if found:
+            return found
+    return []
+
+
 def find_waystone_library(world):
     """The waystone library file in this world, whichever layout it uses, or None."""
     for rel in (CURRENT_LIB_REL, LEGACY_LIB_REL):
@@ -404,7 +421,7 @@ def audit(world, props):
     r.i('forced chunks  : %d' % len(forced))
 
     # --- block entities ---------------------------------------------------------------
-    regions = sorted(glob.glob(os.path.join(world, 'region', '*.mca')))
+    regions = sorted(overworld_regions(world))
     posts = waystones = generators = 0
     in_forced = 0
     for f in regions:
