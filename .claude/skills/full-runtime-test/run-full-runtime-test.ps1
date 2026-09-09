@@ -21,7 +21,9 @@
 #>
 [CmdletBinding()]
 param(
-    # Which testsaves/<version> to load. Defaults to the highest-sorting directory.
+    # Which corpus entry to load: '<signpost>/<minecraft>' (e.g. 2.04.0/1.21.11), or a
+    # bare '<signpost>' to take the highest Minecraft version under it. Defaults to the
+    # highest-sorting entry in the corpus.
     [string] $SaveVersion,
     # Substring filter on run ids, e.g. -Only fabric-server,forge
     [string[]] $Only = @(),
@@ -40,21 +42,21 @@ $QuickPlayName = 'signpost-runtime-test'
 
 # ---------------------------------------------------------------------------------------
 # The matrix. gameDir is relative to the repo root and must match the run configurations
-# in the loader build scripts. Note forge's tasks have no "run" prefix.
+# in the loader build scripts.
 # ---------------------------------------------------------------------------------------
 $Matrix = @(
     @{ id = 'fabric-server';        task = ':fabric:runServer';         gameDir = 'fabric/runs/server';           side = 'server' }
     @{ id = 'fabric-server-mods';   task = ':fabric:runServerWithMods'; gameDir = 'fabric/runs/server_with_mods'; side = 'server' }
     @{ id = 'neoforge-server';      task = ':neoforge:runServer';       gameDir = 'neoforge/run';                 side = 'server' }
     @{ id = 'neoforge-server-mods'; task = ':neoforge:runServerWithMods'; gameDir = 'neoforge/run_with_mods';     side = 'server' }
-    @{ id = 'forge-server';         task = ':forge:Server';             gameDir = 'forge/runs/server';            side = 'server' }
-    @{ id = 'forge-server-mods';    task = ':forge:ServerWithMods';     gameDir = 'forge/runs/server_with_mods';  side = 'server' }
+    @{ id = 'forge-server';         task = ':forge:runServer';          gameDir = 'forge/runs/server';            side = 'server' }
+    @{ id = 'forge-server-mods';    task = ':forge:runServerWithMods';  gameDir = 'forge/runs/server_with_mods';  side = 'server' }
     @{ id = 'fabric-client';        task = ':fabric:runClient';         gameDir = 'fabric/runs/client';           side = 'client' }
     @{ id = 'fabric-client-mods';   task = ':fabric:runClientWithMods'; gameDir = 'fabric/runs/client_with_mods'; side = 'client' }
     @{ id = 'neoforge-client';      task = ':neoforge:runClient';       gameDir = 'neoforge/run';                 side = 'client' }
     @{ id = 'neoforge-client-mods'; task = ':neoforge:runClientWithMods'; gameDir = 'neoforge/run_with_mods';     side = 'client' }
-    @{ id = 'forge-client';         task = ':forge:Client';             gameDir = 'forge/runs/client';            side = 'client' }
-    @{ id = 'forge-client-mods';    task = ':forge:ClientWithMods';     gameDir = 'forge/runs/client_with_mods';  side = 'client' }
+    @{ id = 'forge-client';         task = ':forge:runClient';          gameDir = 'forge/runs/client';            side = 'client' }
+    @{ id = 'forge-client-mods';    task = ':forge:runClientWithMods';  gameDir = 'forge/runs/client_with_mods';  side = 'client' }
 )
 
 # Lines that mean the run FAILED.
@@ -74,7 +76,15 @@ $FailPatterns = @(
     # game aborts, so the run sits until the client timeout instead of failing in seconds.
     'Some of your mods are incompatible',
     'Mod resolution encountered an incompatible mod set',
-    'ModResolutionException'
+    'ModResolutionException',
+    # The NeoForge/Forge equivalent. On a *client* these do not exit at all: FML paints its
+    # "Error loading mods" screen and waits for someone to click Quit Game, so without these
+    # patterns the run burns the full client timeout staring at a window. The title cannot be
+    # matched instead - that window is called "Minecraft: NeoForge Loading...", exactly like
+    # the normal startup window.
+    'Missing or unsupported mandatory dependencies',
+    'Failed to start FML',
+    'ModLoadingException'
 )
 
 # Lines that LOOK like failures but are known noise. Filtered out BEFORE the check above -
@@ -180,19 +190,55 @@ if (-not (Test-Path $SaveRoot)) {
     exit 2
 }
 
-if (-not $SaveVersion) {
-    $candidates = @(Get-ChildItem -Directory $SaveRoot -ErrorAction SilentlyContinue |
-                    Where-Object { Test-Path (Join-Path $_.FullName 'world') } |
-                    Sort-Object Name)
-    if ($candidates.Count -eq 0) {
-        Write-Host "No testsaves/<version>/world/ directory found under $SaveRoot" -ForegroundColor Red
-        Write-Host $corpusHelp -ForegroundColor Red
-        exit 2
+# Corpus ids are '<signpost>/<minecraft>', e.g. 2.04.0/1.21.11 - one Signpost release can
+# carry a save per Minecraft version, since a port breaks serialization as readily as a mod
+# release. The older flat testsaves/<signpost>/world is still accepted as an id of its own.
+function Get-CorpusEntries {
+    param([string] $Root)
+    $ids = @()
+    foreach ($sp in @(Get-ChildItem -Directory $Root -ErrorAction SilentlyContinue)) {
+        if (Test-Path (Join-Path $sp.FullName 'world')) { $ids += $sp.Name }
+        foreach ($mc in @(Get-ChildItem -Directory $sp.FullName -ErrorAction SilentlyContinue)) {
+            if (Test-Path (Join-Path $mc.FullName 'world')) { $ids += "$($sp.Name)/$($mc.Name)" }
+        }
     }
-    $SaveVersion = $candidates[-1].Name
+    return @($ids | Sort-Object { Get-VersionSortKey $_ })
 }
 
-$PristineWorld = Join-Path $SaveRoot "$SaveVersion\world"
+# Zero-pad numeric segments so 1.21.9 sorts before 1.21.10 and 26.1.2 after both. Plain
+# string sort gets both of those backwards, and the default entry is the highest one.
+function Get-VersionSortKey {
+    param([string] $Id)
+    return (($Id -split '[/.]') | ForEach-Object {
+        if ($_ -match '^\d+$') { $_.PadLeft(6, '0') } else { $_ }
+    }) -join '.'
+}
+
+$AllEntries = Get-CorpusEntries $SaveRoot
+if ($AllEntries.Count -eq 0) {
+    Write-Host "No testsaves/<signpost>/<minecraft>/world/ directory found under $SaveRoot" -ForegroundColor Red
+    Write-Host $corpusHelp -ForegroundColor Red
+    exit 2
+}
+
+if (-not $SaveVersion) {
+    $SaveVersion = $AllEntries[-1]
+} elseif ($AllEntries -notcontains $SaveVersion) {
+    # A bare Signpost version selects the highest Minecraft version recorded under it.
+    $nested = @($AllEntries | Where-Object { $_ -like "$SaveVersion/*" })
+    if ($nested.Count -gt 0) {
+        $SaveVersion = $nested[-1]
+    } else {
+        Write-Host "No corpus entry '$SaveVersion'. Available:" -ForegroundColor Red
+        $AllEntries | ForEach-Object { Write-Host "  $_" -ForegroundColor Red }
+        exit 2
+    }
+}
+
+# Build the path segment by segment; the id uses '/' regardless of platform separator.
+$EntryDir = $SaveRoot
+foreach ($seg in $SaveVersion.Split('/')) { $EntryDir = Join-Path $EntryDir $seg }
+$PristineWorld = Join-Path $EntryDir 'world'
 if (-not (Test-Path (Join-Path $PristineWorld 'level.dat'))) {
     Write-Host "testsaves/$SaveVersion/world/level.dat is missing - that is not a save folder." -ForegroundColor Red
     exit 2
@@ -211,18 +257,25 @@ if (Test-Path $auditScript) {
     $py = Get-Command python -ErrorAction SilentlyContinue
     if ($py) {
         Write-Head "Corpus audit"
-        & $py.Source $auditScript (Join-Path $SaveRoot $SaveVersion)
+        & $py.Source $auditScript $EntryDir
         if ($LASTEXITCODE -ne 0) {
             $global:LASTEXITCODE = 0
             Write-Host 'The corpus audit found a blocking problem. Fix the save before running the matrix.' -ForegroundColor Red
             exit 2
         }
         $global:LASTEXITCODE = 0
+        # How many waystones the corpus carries, to compare against after each server run.
+        # A clean startup does NOT prove the library survived: if it cannot be found or read,
+        # the game logs nothing and simply comes up with an empty one.
+        $CorpusWaystones = [int](& $py.Source $auditScript '--count-waystones' $PristineWorld)
+        $global:LASTEXITCODE = 0
+        Write-Host "  corpus carries $CorpusWaystones waystone(s); server runs must still have them afterwards"
     }
     else {
         Write-Host '  (python not on PATH - skipping the corpus audit)' -ForegroundColor DarkYellow
     }
 }
+if (-not (Test-Path variable:CorpusWaystones)) { $CorpusWaystones = -1 }
 
 $runs = @($Matrix)
 if ($ServersOnly) { $runs = @($runs | Where-Object { $_.side -eq 'server' }) }
@@ -244,6 +297,69 @@ if ($Only.Count -gt 0) {
 }
 if ($runs.Count -eq 0) { Write-Host 'No runs matched the filter.' -ForegroundColor Red; exit 2 }
 Write-Host "  runs        : $($runs.Count) of $($Matrix.Count)"
+
+# ---------------------------------------------------------------------------------------
+# Client runs need a save that is already at the current data version.
+#
+# A client asked to open an older world shows two modal screens - "Create a backup before
+# upgrading this world?" and then "Upgrading World Completed. Do you want to join the world
+# now?" - and sits on them forever. quickPlay does not skip them and vanilla offers no flag
+# that does: BackupConfirmScreen fires whenever LevelSummary#backupStatus says shouldBackup,
+# and since 26.1 introduced file fixing that is true for *every* pre-26.1 save, not just an
+# unusually old corpus.
+#
+# The dedicated server has no such prompt - it runs the FileFixerUpper headlessly. So one
+# server pass is used to produce an upgraded copy of the corpus, and the client runs are
+# planted from that. The server runs keep loading the pristine corpus, so the migration path
+# is still what they test; the clients test starting up and joining, which is their job.
+# ---------------------------------------------------------------------------------------
+function New-UpgradedSave {
+    $upgraded = Join-Path $OutDir 'upgraded-world'
+    if (Test-Path $upgraded) { return $upgraded }
+
+    Write-Head 'upgrade pass   [:neoforge:runServer]  (produces an upgraded save for the client runs)'
+    $gameDir = Join-Path $RepoRoot 'neoforge/run'
+    $log     = Join-Path $OutDir 'upgrade-pass.log'
+    Stop-GameJvms
+    if (-not (Wait-PortFree 25565)) { Write-Host '  FAIL - port 25565 still in use' -ForegroundColor Red; return $null }
+
+    New-Item -ItemType Directory -Force -Path $gameDir | Out-Null
+    Copy-PristineSave $PristineWorld (Join-Path $gameDir 'world')
+    Set-Content -Path (Join-Path $gameDir 'eula.txt') -Value 'eula=true' -Encoding ascii
+
+    $proc = Start-Process -FilePath (Join-Path $RepoRoot 'gradlew.bat') `
+                          -ArgumentList @(':neoforge:runServer', '--console=plain') `
+                          -WorkingDirectory $RepoRoot `
+                          -RedirectStandardOutput $log -RedirectStandardError "$log.err" `
+                          -PassThru -NoNewWindow
+    $deadline = (Get-Date).AddSeconds($ServerTimeoutSec)
+    $ok = $false
+    while ((Get-Date) -lt $deadline) {
+        Start-Sleep -Seconds 5
+        $text = (Get-Content $log -Raw -ErrorAction SilentlyContinue)
+        if ($text -and $text -match 'Done \(') { $ok = $true; break }
+        if ($text -and $text -match 'BUILD FAILED') { break }
+        if ($proc.HasExited) { break }
+    }
+    if ($proc -and -not $proc.HasExited) { Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue }
+    Stop-GameJvms
+    Wait-PortFree 25565 | Out-Null
+
+    if (-not $ok) {
+        Write-Host "  FAIL - upgrade pass did not load the save; see $log" -ForegroundColor Red
+        return $null
+    }
+    Copy-Item -Recurse -Force (Join-Path $gameDir 'world') $upgraded
+    Write-Host "  upgraded save ready -> $upgraded" -ForegroundColor Green
+    return $upgraded
+}
+
+$ClientWorld = $PristineWorld
+if (@($runs | Where-Object { $_.side -eq 'client' }).Count -gt 0) {
+    $u = New-UpgradedSave
+    if ($u) { $ClientWorld = $u }
+    else { Write-Host '  clients will be planted with the pristine save and may block on the upgrade prompt.' -ForegroundColor Yellow }
+}
 
 $results = @()
 
@@ -270,9 +386,12 @@ foreach ($r in $runs) {
             Set-Content -Path (Join-Path $gameDir 'eula.txt') -Value 'eula=true' -Encoding ascii
         }
         else {
-            Copy-PristineSave $PristineWorld (Join-Path $gameDir "saves\$QuickPlayName")
+            Copy-PristineSave $ClientWorld (Join-Path $gameDir "saves\$QuickPlayName")
         }
-        Write-Host "  planted save from testsaves/$SaveVersion"
+        $plantedFrom = if ($r.side -eq 'client' -and $ClientWorld -ne $PristineWorld) {
+            "testsaves/$SaveVersion (upgraded by the pre-pass)"
+        } else { "testsaves/$SaveVersion" }
+        Write-Host "  planted save from $plantedFrom"
 
         $gradleArgs = @($r.task, '--console=plain')
         if ($r.side -eq 'client') { $gradleArgs += "-PsignpostQuickPlay=$QuickPlayName" }
@@ -332,6 +451,21 @@ foreach ($r in $runs) {
     finally {
         if ($proc -and -not $proc.HasExited) { Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue }
         Stop-GameJvms
+    }
+
+    # The world a server run leaves behind must still hold the waystones the corpus had.
+    # This is the one failure a passing log cannot rule out - a library that failed to load,
+    # or was looked for in the wrong place, comes up empty and silent.
+    if ($verdict -eq 'PASS' -and $r.side -eq 'server' -and $CorpusWaystones -gt 0 -and $py) {
+        $after = [int](& $py.Source $auditScript '--count-waystones' (Join-Path $gameDir 'world'))
+        $global:LASTEXITCODE = 0
+        if ($after -lt $CorpusWaystones) {
+            $verdict = 'FAIL'
+            $reason  = "waystone library lost content: corpus had $CorpusWaystones, the world afterwards has $after"
+        }
+        else {
+            $reason = "$reason ($after waystones intact)"
+        }
     }
 
     $color = if ($verdict -eq 'PASS') { 'Green' } else { 'Red' }

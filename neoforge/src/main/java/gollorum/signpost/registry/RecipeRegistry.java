@@ -13,10 +13,10 @@ public class RecipeRegistry {
 	private static final DeferredRegister<RecipeSerializer<?>> Register =
 		DeferredRegister.create(Registries.RECIPE_SERIALIZER, Signpost.MOD_ID);
 
-	public static final DeferredHolder<RecipeSerializer<?>, CutWaystoneRecipe.Serializer> CutWaystoneSerializer =
+	public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<CutWaystoneRecipe>> CutWaystoneSerializer =
 		Register.register(
 			CutWaystoneRecipe.RegistryName,
-			CutWaystoneRecipe.Serializer::new
+			() -> CutWaystoneRecipe.SERIALIZER
 		);
 
 	public static void register(IEventBus bus){

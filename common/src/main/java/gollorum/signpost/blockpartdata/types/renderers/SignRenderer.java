@@ -14,10 +14,10 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.client.resources.model.sprite.SpriteGetter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.level.Level;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import org.joml.*;
 
 import java.lang.Math;
@@ -32,11 +32,11 @@ public abstract class SignRenderer<T extends SignBlockPart<T>> extends BlockPart
     @Override
     public void render(
         T sign,
-        Level level,
+        BlockAndTintGetter level,
         BlockPos pos,
         PoseStack blockToView,
         SubmitNodeCollector nodeCollector,
-        MaterialSet materials, int combinedLights,
+        SpriteGetter materials, int combinedLights,
         int combinedOverlay,
         Function<Identifier, RenderType> renderTypeFactory,
         ModelFeatureRenderer.CrumblingOverlay crumblingOverlay

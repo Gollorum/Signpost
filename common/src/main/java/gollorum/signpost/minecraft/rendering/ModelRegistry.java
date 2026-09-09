@@ -6,8 +6,8 @@ import gollorum.signpost.blockpartdata.types.SignBlockPart;
 import gollorum.signpost.blockpartdata.types.SmallShortSignBlockPart;
 import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
 import gollorum.signpost.minecraft.gui.PostModelResources;
-import net.minecraft.client.renderer.block.model.BlockModelPart;
-import net.minecraft.client.resources.model.ModelState;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+import net.minecraft.client.renderer.block.dispatch.ModelState;
 import net.minecraft.resources.Identifier;
 
 import java.util.Map;
@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ModelRegistry<M> {
 
-//	public static ModelRegistry<BlockModelPart> LargeBakedSign = new ModelRegistry<>(
+//	public static ModelRegistry<BlockStateModelPart> LargeBakedSign = new ModelRegistry<>(
 //		(mainTexture, secondaryTexture, modelState) -> RenderingUtil.loadModel(
 //			PostModelResources.largeLocation, mainTexture, secondaryTexture, modelState
 //		),
@@ -30,7 +30,7 @@ public class ModelRegistry<M> {
 //		LargeSignBlockPart.class
 //	);
 //
-//	public static ModelRegistry<BlockModelPart> WideBakedSign = new ModelRegistry<>(
+//	public static ModelRegistry<BlockStateModelPart> WideBakedSign = new ModelRegistry<>(
 //		(mainTexture, secondaryTexture, modelState) -> RenderingUtil.loadModel(
 //			PostModelResources.wideLocation, mainTexture, secondaryTexture, modelState
 //		),
@@ -46,7 +46,7 @@ public class ModelRegistry<M> {
 //		SmallWideSignBlockPart.class
 //	);
 //
-//	public static ModelRegistry<BlockModelPart> ShortBakedSign = new ModelRegistry<>(
+//	public static ModelRegistry<BlockStateModelPart> ShortBakedSign = new ModelRegistry<>(
 //		(mainTexture, secondaryTexture, modelState) -> RenderingUtil.loadModel(
 //			PostModelResources.shortLocation, mainTexture, secondaryTexture, modelState
 //		),

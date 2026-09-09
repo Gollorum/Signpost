@@ -32,8 +32,8 @@ public class VillageWaystone {
         }
 
         public static final Codec<ChunkEntryKey> CODEC = RecordCodecBuilder.create(i -> i.group(
-            Codec.INT.fieldOf("x").forGetter(c -> c.chunkPos.x),
-            Codec.INT.fieldOf("z").forGetter(c -> c.chunkPos.z),
+            Codec.INT.fieldOf("x").forGetter(c -> c.chunkPos.x()),
+            Codec.INT.fieldOf("z").forGetter(c -> c.chunkPos.z()),
             Identifier.CODEC.fieldOf("ResourceLocation").forGetter(ChunkEntryKey::dimensionKey)
         ).apply(i, (x, z, recloc) -> new ChunkEntryKey(new ChunkPos(x, z), recloc)));
 
@@ -78,7 +78,7 @@ public class VillageWaystone {
     }
     public void register(WaystoneLibrary waystoneLibrary, String name, BlockPos referencePos, ServerLevel world, BlockPos blockPos) {
         waystoneLibrary.getHandleByName(name).ifPresent(handle -> {
-			ChunkEntryKey key = new ChunkEntryKey(new ChunkPos(blockPos), world.dimension().identifier());
+			ChunkEntryKey key = new ChunkEntryKey(ChunkPos.containing(blockPos), world.dimension().identifier());
 			generatedWaystones.put(referencePos, handle);
 			generatedWaystonesByChunk.put(key, handle);
             allEntries.add(new Entry(handle, referencePos, key));

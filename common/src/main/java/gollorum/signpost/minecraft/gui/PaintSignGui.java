@@ -12,7 +12,7 @@ import gollorum.signpost.utils.Tuple;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.network.chat.Component;
 
 import java.util.Optional;
@@ -21,8 +21,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class PaintSignGui<T extends SignBlockPart<T>> extends PaintBlockPartGui<T> {
 
-    private final Tuple<Either<TextureAtlasSprite, Material>, Optional<Tint>> oldMainSprite;
-    private final Tuple<Either<TextureAtlasSprite, Material>, Optional<Tint>> oldSecSprite;
+    private final Tuple<Either<TextureAtlasSprite, SpriteId>, Optional<Tint>> oldMainSprite;
+    private final Tuple<Either<TextureAtlasSprite, SpriteId>, Optional<Tint>> oldSecSprite;
 
     private boolean isTargetingMainTexture;
 

@@ -172,7 +172,7 @@ public class ConfirmTeleportGui extends Screen {
 	private void confirm() {
 		minecraft.setScreen(null);
 		data.consume(
-			langKey -> minecraft.player.displayClientMessage(Component.translatable(langKey), true),
+			langKey -> minecraft.player.sendOverlayMessage(Component.translatable(langKey)),
 			data -> PacketHandler.getInstance().sendToServer(new Teleport.Request.Package(data.waystoneName(), data.handle()))
 		);
 	}

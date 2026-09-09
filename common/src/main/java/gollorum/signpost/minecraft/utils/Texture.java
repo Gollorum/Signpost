@@ -6,7 +6,7 @@ import gollorum.signpost.minecraft.gui.utils.TextureResource;
 import gollorum.signpost.utils.Tint;
 import gollorum.signpost.utils.serialization.OptionalSerializerV1;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
@@ -25,8 +25,8 @@ public record Texture(Identifier identifier, Identifier atlasLocation, Optional<
         return null;
     }
 
-    public Material toMaterial() {
-        return new Material(atlasLocation, identifier);
+    public SpriteId toMaterial() {
+        return new SpriteId(atlasLocation, identifier);
     }
 
     public static Codec<Texture> codec(int version) {

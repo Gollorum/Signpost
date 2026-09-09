@@ -4,8 +4,8 @@ import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.config.IConfig;
 import gollorum.signpost.minecraft.data.ModelTypeRegistry;
 import gollorum.signpost.minecraft.utils.LangKeys;
-import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
+import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTabOutput;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -35,10 +35,10 @@ public class CreativeModeTabRegistry {
 
     public static void register() {
         Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, Identifier.fromNamespaceAndPath(MOD_ID, "signpost"), _signpostTab);
-        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.OP_BLOCKS).register(CreativeModeTabRegistry::onBuildCreativeModeContents);
+        CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.OP_BLOCKS).register(CreativeModeTabRegistry::onBuildCreativeModeContents);
     }
 
-    public static void onBuildCreativeModeContents(FabricItemGroupEntries entries) {
+    public static void onBuildCreativeModeContents(FabricCreativeModeTabOutput entries) {
         entries.accept(ItemRegistry.WaystoneGeneratorItem);
         entries.accept(ItemRegistry.GENERATION_WAND);
     }

@@ -5,18 +5,19 @@ import gollorum.signpost.minecraft.gui.utils.TextureResource;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.font.TextRenderable;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.gui.render.state.GuiRenderState;
+import net.minecraft.client.renderer.state.gui.GuiRenderState;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.block.MovingBlockRenderState;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -72,7 +73,7 @@ public class GuiFakeCollector implements SubmitNodeCollector {
             }
 
             private void accept(TextRenderable renderable) {
-                renderState.submitGuiElement(new Text3dElementRenderState(pose, renderable, packedLight, rect));
+                renderState.addGuiElement(new Text3dElementRenderState(pose, renderable, packedLight, rect));
             }
         });
     }
@@ -98,22 +99,22 @@ public class GuiFakeCollector implements SubmitNodeCollector {
     }
 
     @Override
-    public void submitBlock(PoseStack poseStack, BlockState blockState, int i, int i1, int i2) {
-        throw new RuntimeException("Not supported");
-    }
-
-    @Override
     public void submitMovingBlock(PoseStack poseStack, MovingBlockRenderState movingBlockRenderState) {
         throw new RuntimeException("Not supported");
     }
 
     @Override
-    public void submitBlockModel(PoseStack poseStack, RenderType renderType, BlockStateModel blockStateModel, float v, float v1, float v2, int i, int i1, int i2) {
+    public void submitBlockModel(PoseStack poseStack, RenderType renderType, List<BlockStateModelPart> parts, int[] tintLayers, int lightCoords, int overlayCoords, int outlineColor) {
         throw new RuntimeException("Not supported");
     }
 
     @Override
-    public void submitItem(PoseStack poseStack, ItemDisplayContext itemDisplayContext, int i, int i1, int i2, int[] ints, List<BakedQuad> list, RenderType renderType, ItemStackRenderState.FoilType foilType) {
+    public void submitBreakingBlockModel(PoseStack poseStack, BlockStateModel blockStateModel, long seed, int progress) {
+        throw new RuntimeException("Not supported");
+    }
+
+    @Override
+    public void submitItem(PoseStack poseStack, ItemDisplayContext itemDisplayContext, int i, int i1, int i2, int[] ints, List<BakedQuad> list, ItemStackRenderState.FoilType foilType) {
         throw new RuntimeException("Not supported");
     }
 
@@ -124,7 +125,7 @@ public class GuiFakeCollector implements SubmitNodeCollector {
 
     public void submitCustomGeometry(PoseStack poseStack, RenderType renderType, CustomGeometryRenderer customGeometryRenderer, Identifier atlasLocation) {
         var pose = poseStack.last().copy();
-        renderState.submitGuiElement(new ModelElementRenderState(rect, atlasLocation, renderType.pipeline(), vertexConsumer ->
+        renderState.addGuiElement(new ModelElementRenderState(rect, atlasLocation, renderType.pipeline(), vertexConsumer ->
             customGeometryRenderer.render(
                 pose,
                 vertexConsumer

@@ -38,11 +38,11 @@ public class Inventory {
 		if(!player.hasInfiniteMaterials()) {
 			if(Inventory.tryConsume(player, itemStack))
 				onSuccess.accept(player);
-			else player.displayClientMessage(Component.translatable(
+			else player.sendSystemMessage(Component.translatable(
 				LangKeys.tooExpensive,
 				itemStack.getCount(),
 				Component.translatable(itemStack.getItem().getDescriptionId())
-			), false);
+			));
 		} else onSuccess.accept(player);
 	}
 

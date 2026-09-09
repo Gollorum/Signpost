@@ -10,12 +10,12 @@ import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.utils.math.Angle;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -52,7 +52,7 @@ public class GuiBlockPartRenderer extends AbstractWidget {
     private static int heightFor(float scale) { return (int)(scale * 1.5f); }
 
     @Override
-    public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+    public void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
         if(isHovered)
             graphics.fill(getX(), getY(), getX() + width, getY() + height, 0x20ffffff);
 
@@ -81,7 +81,7 @@ public class GuiBlockPartRenderer extends AbstractWidget {
                         ms,
                         new GuiFakeCollector(rect, renderState, font),
                         Minecraft.getInstance().getAtlasManager(),
-                        LightTexture.FULL_BRIGHT,
+                        LightCoordsUtil.FULL_BRIGHT,
                         OverlayTexture.NO_OVERLAY,
                         t -> RenderTypes.cutoutMovingBlock(),
                         null

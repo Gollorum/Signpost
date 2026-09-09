@@ -51,7 +51,7 @@ public class Recipes extends RecipeProvider {
 
     public void registerPosts() {
         for(var variant : PostModelTypes.getAll(registries.lookupOrThrow(Registries.ITEM))) {
-            shaped(RecipeCategory.DECORATIONS, variant.value().getItemStack(variant.getKey(), 2))
+            shaped(RecipeCategory.DECORATIONS, variant.value().getItemStackTemplate(variant.getKey(), 2))
                 .define('s', variant.signIngredient())
                 .define('b', variant.baseIngredient())
                 .pattern("s")

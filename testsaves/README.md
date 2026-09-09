@@ -10,13 +10,31 @@ folder — these copies stay authoritative.
 ```
 testsaves/
   2.03.0/
-    world/          <- a complete save folder: level.dat, region/, data/, entities/, ...
+    1.21.10/
+      world/        <- a complete save folder: level.dat, region/, data/, entities/, ...
+      SOURCE.txt
   2.04.0/
-    world/
+    1.21.11/
+      world/
+      SOURCE.txt
 ```
 
-The directory name is the **Signpost version that last wrote the save**. The harness picks
-the highest-sorting version by default; override with `-SaveVersion 2.03.0`.
+An entry is identified by **both** versions: `<signpost>/<minecraft>` — the Signpost
+version that last wrote the save, then the Minecraft version it was written on. Both are
+verified against `level.dat` by the audit, which warns if a folder name disagrees with
+what the save actually contains.
+
+The two axes are separate because they break things separately. A Signpost release can
+change the mod's own serialization; a Minecraft port changes the formats underneath it and
+runs vanilla's DataFixers over the world. Either can break loading on its own, so the
+current Signpost version paired with an older Minecraft version is a legitimate entry —
+it tests the port. Only an entry that matches *both* current versions tests nothing, and
+that is the one the audit rejects.
+
+The harness picks the highest-sorting entry by default. Override with a full id
+(`-SaveVersion 2.03.0/1.21.10`) or a bare Signpost version (`-SaveVersion 2.03.0`), which
+selects the highest Minecraft version recorded under it. Numeric segments are compared as
+numbers, so 1.21.9 sorts before 1.21.10.
 
 ## Why this is not in git
 
@@ -25,9 +43,9 @@ A real world is 16–250 MB (region files are ~95% of it), which would bloat the
 clone cannot run the test until the corpus is populated — the harness detects this and
 exits with instructions rather than silently passing.
 
-## Adding a save for a new release
+## Adding a save for a new release or a new Minecraft version
 
-Do this **once per release**, from the **published jar** — not from a tag you build
+Do this **once per released (Signpost, Minecraft) pair**, from the **published jar** — not from a tag you build
 yourself, and never from the working tree. Building the tag looks equivalent but is not:
 it cannot prove the jar matches what players actually run, and a save made from a
 "nearly released" tree is exactly the trap described below.
@@ -46,11 +64,12 @@ it cannot prove the jar matches what players actually run, and a save made from 
    pointing at that waystone. The GUI work is why this step is manual — `/setblock` places
    the block but leaves the block-entity data empty, which is the data that matters.
 6. Quit to title and exit **cleanly**, so the save is flushed and consistent.
-7. Copy the world folder to `testsaves/<version>/world/`.
-8. Write `testsaves/<version>/SOURCE.txt` (see below).
-9. Audit it: `python .claude/skills/full-runtime-test/audit-test-save.py testsaves/<version>`
+7. Copy the world folder to `testsaves/<signpost>/<minecraft>/world/`.
+8. Write `testsaves/<signpost>/<minecraft>/SOURCE.txt` (see below).
+9. Audit it: `python .claude/skills/full-runtime-test/audit-test-save.py testsaves/<signpost>`
+   (a Signpost-version directory audits every Minecraft entry under it).
 10. Prove it loads before trusting it:
-    `... run-full-runtime-test.ps1 -SaveVersion <version> -ServersOnly`
+    `... run-full-runtime-test.ps1 -SaveVersion <signpost>/<minecraft> -ServersOnly`
 
 ## SOURCE.txt
 
@@ -122,9 +141,20 @@ merged into `1.21`. Never build a corpus entry from it. Its merged form does rea
 "Post types are data, and the pre-2.04 ids are migrated by a DataFixer" in `AGENTS.md` - but a
 corpus entry still has to come from a published release, and that branch never was one.
 
-That migration is also the reason a **1.21.10** corpus entry stays valuable after 1.21.11 ships: the
-post ids are renamed by a DataFixer, which only runs when the save's Minecraft data version is behind
-the current one. A save written by a future 1.21.11 release exercises no part of it.
+That migration is also the reason an *older* corpus entry keeps some value: the post ids are
+renamed by a DataFixer, which only runs when the save's Minecraft data version is behind the
+current one, so a save written by a release on the current Minecraft version exercises no part of
+it. That is a reason to keep an old entry around, not a reason to skip the current one - the
+DataFixer covers the post ids and nothing else, so an old save still says nothing about whether
+the mod's own codecs survived the port.
+
+**26.1 added a second thing that only an old save can exercise.** `SavedDataType`'s id became an
+`Identifier`, which the game resolves as `data/<namespace>/<path>.dat` - so the waystone library
+moved from the flat `data/signpost_WaystoneLibrary.dat` that every pre-26.1 save has.
+`WaystoneLibraryStorage.migrateLegacyFile` copies it across on first load. A save written by
+26.1.2 or later already has the file in the new place and never touches that code path; only a
+pre-26.1 corpus entry proves the migration works. If it ever regresses the world still loads
+cleanly - it just comes up with no waystones - so check the waystone count, not just the log.
 
 ## Covering auto-generated village signposts
 

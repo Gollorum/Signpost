@@ -1,104 +1,71 @@
 plugins {
     id 'multiloader-loader'
     id 'idea'
-    id 'net.minecraftforge.gradle' version '[6.0.47,6.2)'
-    id 'org.spongepowered.mixin' version '0.7-SNAPSHOT'
+    // ForgeGradle 7 is the Gradle 9 line. FG6 refuses to apply on Gradle 9 outright
+    // ("Versions Gradle 9.0 and newer are not supported yet"), and its artifact is a
+    // different coordinate (net.minecraftforge:ForgeGradle) than FG7's
+    // (net.minecraftforge:forgegradle) - the plugin id is the same for both.
+    id 'net.minecraftforge.gradle' version '[7.0.29,8.0)'
 }
-mixin {
-    config("${mod_id}.mixins.json")
-    config("${mod_id}.forge.mixins.json")
-}
+
 jar {
     manifest {
+        // Forge finds our mixin configs through this manifest attribute rather than a
+        // [[mixins]] block. FG7 has no mixin Gradle plugin, so this is set by hand.
         attributes["MixinConfigs"] = "${mod_id}.mixins.json,${mod_id}.forge.mixins.json"
     }
 }
 
 minecraft {
-    mappings channel: 'official', version: minecraft_version
-
-    copyIdeResources = true //Calls processResources when in dev
-
-    reobf = false // Forge 1.20.6+ uses official mappings at runtime, so we shouldn't reobf from official to SRG
-
-    // Automatically enable forge AccessTransformers if the file exists
-    // This location is hardcoded in Forge and can not be changed.
-    // https://github.com/MinecraftForge/MinecraftForge/blob/be1698bb1554f9c8fa2f58e32b9ab70bc4385e60/fmlloader/src/main/java/net/minecraftforge/fml/loading/moddiscovery/ModFile.java#L123
-    // Forge still uses SRG names during compile time, so we cannot use the common AT's
-    def at = file('src/main/resources/META-INF/accesstransformer.cfg')
-    if (at.exists()) {
-        accessTransformer = at
-    }
+    // 26.x is deobfuscated, so there is no `mappings channel:` and nothing to reobf.
 
     runs {
+        configureEach {
+            systemProperty 'forge.enabledGameTestNamespaces', mod_id
+            // In a dev run the mod is loaded from build/classes, so the jar's MixinConfigs
+            // manifest attribute is never read and the configs have to be named on the command
+            // line instead. FG6 got this for free from the org.spongepowered.mixin Gradle
+            // plugin, which FG7 has no equivalent of. Without it every mixin silently does not
+            // apply, and the first accessor to be called throws - not a mixin error.
+            args "--mixin.config=${mod_id}.mixins.json",
+                 "--mixin.config=${mod_id}.forge.mixins.json"
+        }
 
-        client {
-            workingDirectory file('runs/client')
-            ideaModule "${rootProject.name}.${project.name}.main"
-            taskName 'Client'
+        register('client') {
+            workingDir = layout.projectDirectory.dir('runs/client')
             // -PsignpostQuickPlay=<saveName> makes the client boot straight into that save.
             // Set only by the full-runtime-test harness; normal dev runs are unaffected.
             if (project.hasProperty('signpostQuickPlay')) args('--quickPlaySingleplayer', project.signpostQuickPlay)
-            mods {
-                modClientRun {
-                    source sourceSets.main
-                }
-            }
         }
 
-        clientWithMods {
-            workingDirectory file('runs/client_with_mods')
-            ideaModule "${rootProject.name}.${project.name}.main"
-            taskName 'ClientWithMods'
+        register('clientWithMods') {
+            workingDir = layout.projectDirectory.dir('runs/client_with_mods')
             // ForgeGradle merges the userdev run template (main class + launch target) only
-            // into runs literally named client/server/data. A custom-named run gets neither,
-            // and fails with "No main class specified and classpath is not an executable jar".
-            // These values mirror the 'client'/'server' templates in forge's userdev config.json.
-            main 'net.minecraftforge.bootstrap.ForgeBootstrap'
+            // into runs whose name matches one in the userdev config.json - SlimeLauncherOptions
+            // looks the name up verbatim. A custom-named run gets neither, and fails with
+            // "No main class specified and classpath is not an executable jar".
+            // These values mirror the 'client' template in forge's userdev config.json.
+            mainClass = 'net.minecraftforge.bootstrap.ForgeBootstrap'
             args '--gameDir', '.', '--launchTarget', 'forge_userdev_client',
                  '--version', 'MOD_DEV', '--assetIndex', '{asset_index}', '--assetsDir', '{assets_root}'
             if (project.hasProperty('signpostQuickPlay')) args('--quickPlaySingleplayer', project.signpostQuickPlay)
-            mods {
-                modClientRun {
-                    source sourceSets.main
-                }
-            }
         }
 
-        server {
-            workingDirectory file('runs/server')
-            ideaModule "${rootProject.name}.${project.name}.main"
-            taskName 'Server'
-            mods {
-                modServerRun {
-                    source sourceSets.main
-                }
-            }
+        register('server') {
+            workingDir = layout.projectDirectory.dir('runs/server')
         }
 
-        serverWithMods {
-            workingDirectory file('runs/server_with_mods')
-            ideaModule "${rootProject.name}.${project.name}.main"
-            taskName 'ServerWithMods'
-            main 'net.minecraftforge.bootstrap.ForgeBootstrap'
+        register('serverWithMods') {
+            workingDir = layout.projectDirectory.dir('runs/server_with_mods')
+            mainClass = 'net.minecraftforge.bootstrap.ForgeBootstrap'
             args '--gameDir', '.', '--launchTarget', 'forge_userdev_server'
-            mods {
-                modServerRun {
-                    source sourceSets.main
-                }
-            }
         }
 
-        data {
-            workingDirectory file('runs/data')
-            ideaModule "${rootProject.name}.${project.name}.main"
-            args '--mod', mod_id, '--all', '--output', file('../common/src/generated/resources/'), '--existing', file('../common/src/main/resources/')
-            taskName 'Data'
-            mods {
-                modDataRun {
-                    source sourceSets.main
-                }
-            }
+        register('data') {
+            workingDir = layout.projectDirectory.dir('runs/data')
+            args '--mod', mod_id, '--all',
+                 '--output', file('../common/src/generated/resources/').absolutePath,
+                 '--existing', file('../common/src/main/resources/').absolutePath
         }
     }
 }
@@ -109,33 +76,23 @@ sourceSets.main.resources.srcDirs (
 )
 
 repositories {
-    // Waystones (and its Balm library).
-    // Note: Repurposed Structures has no Forge build past 1.20.1, so there is no
-    // repository for it here and gollorum.signpost.compat.RepurposedStructuresAdapter
-    // stays disabled on this loader.
-    maven {
-        url "https://maven.twelveiterations.com/repository/maven-public/"
-        content { includeGroup "net.blay09.mods" }
-    }
+    // Neither optional integration has a Forge build for 26.x: Repurposed Structures stopped at
+    // 1.20.1 and Waystones stopped at 21.11.9. So this subproject declares no integration
+    // repositories or dependencies, and both gollorum.signpost.compat.RepurposedStructuresAdapter
+    // and WaystonesAdapter stay disabled on this loader.
+    minecraft.mavenizer(it)
+    maven fg.forgeMaven
+    maven fg.minecraftLibsMaven
+    mavenCentral()
 }
 
 dependencies {
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-    annotationProcessor "org.spongepowered:mixin:0.8.5-SNAPSHOT:processor"
-    annotationProcessor 'net.minecraftforge:eventbus-validator:7.0-beta.7'
+    implementation minecraft.dependency("net.minecraftforge:forge:${minecraft_version}-${forge_version}")
+    // Version taken from forge's own userdev config.json for this build.
+    annotationProcessor 'net.minecraftforge:eventbus-validator:7.0.5'
 
     // Forge's hack fix
     implementation('net.sf.jopt-simple:jopt-simple:5.0.4') { version { strictly '5.0.4' } }
-
-    compileOnly "net.blay09.mods:waystones-forge:${waystones_version}"
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            fg.component(it)
-        }
-    }
 }
 
 sourceSets.each {

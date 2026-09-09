@@ -11,7 +11,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.world.level.block.Block;
 
 import java.util.Objects;
@@ -20,7 +20,11 @@ public record BlockColorTint(Block block, int tintIndex) implements Tint {
 
     @Override
     public int getColorAt(BlockAndTintGetter level, BlockPos pos) {
-        return net.minecraft.client.Minecraft.getInstance().getBlockColors().getColor(block.defaultBlockState(), level, pos, tintIndex);
+        // 26.1 replaced BlockColor/BlockColors#getColor with a list of BlockTintSources per
+        // block, indexed by the model's tintindex.
+        var state = block.defaultBlockState();
+        var source = net.minecraft.client.Minecraft.getInstance().getBlockColors().getTintSource(state, tintIndex);
+        return source == null ? -1 : source.colorInWorld(state, level, pos);
     }
 
     public static void register() {

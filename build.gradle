@@ -1,8 +1,9 @@
 plugins {
     // see https://fabricmc.net/develop/ for new versions.
-    // Loom 1.14+ requires Gradle 9, which ForgeGradle 6 does not support, so the
-    // 1.13 line is the newest usable here. Pinned to a release rather than 1.13-SNAPSHOT.
-    id 'fabric-loom' version '1.13.6' apply false
+    // The plugin id changed with Loom 1.15: 26.x ships deobfuscated, so the plain
+    // 'net.fabricmc.fabric-loom' is the non-remapping variant to use here
+    // ('net.fabricmc.fabric-loom-remap' is the one for 1.21.11 and older).
+    id 'net.fabricmc.fabric-loom' version '1.17.20' apply false
     // see https://projects.neoforged.net/neoforged/moddevgradle for new versions
-    id 'net.neoforged.moddev' version '2.0.144' apply false
+    id 'net.neoforged.moddev' version '2.0.146' apply false
 }

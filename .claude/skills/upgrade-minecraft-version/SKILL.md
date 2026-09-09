@@ -23,18 +23,27 @@ loader/API, Parchment, the three Gradle plugins, the Gradle version the newest L
 and every mod integration and dev-environment mod - each against what `gradle.properties`
 says today. Exit code 1 means it found a blocker.
 
-**Resolve the blockers with the user before editing anything.** The recurring one for this
-repo is the Gradle triangle:
+**Resolve the blockers with the user before editing anything.** When a loader or an
+integration has no build for the target yet, waiting, dropping the integration, and dropping a
+loader are all legitimate answers, but they are the user's to pick. See AGENTS.md, *Toolchain
+constraints*.
 
-> Loom >= 1.14 requires Gradle 9. ForgeGradle 6 requires Gradle 8. They cannot coexist.
+Two traps the probe cannot fully protect you from:
 
-So a Loom bump that needs Gradle 9 is a decision about whether the `forge` subproject
-survives, not a version bump. Same class of question when a loader or an integration has no
-build for the target yet: waiting, dropping the integration, and dropping a loader are all
-legitimate answers, but they are the user's to pick. See AGENTS.md, *Toolchain constraints*.
-
-Note Minecraft's versioning changed: after 1.21.11 come `26.1`, `26.2`, ... Do not assume a
-`1.x.y` shape anywhere.
+- **Probe the exact patch version, not the line.** Minecraft's versioning changed: after
+  1.21.11 come `26.1`, `26.1.1`, `26.1.2`, `26.2`. These are separate Minecraft versions with
+  separate NeoForm/NeoForge/Forge builds, and the probe's prefix matching will happily mix
+  them - it can report the newest NeoForge from `26.1.2` beside the newest Forge from bare
+  `26.1`. If the target the user names is a line rather than a version, run the probe again on
+  the newest patch in it and compare. Do not assume a `1.x.y` shape anywhere.
+- **A Gradle floor is not automatically fatal to `forge`.** Loom's newest line sets a Gradle
+  minimum; ForgeGradle 6 refuses to apply on Gradle 9 at all. But ForgeGradle **7** is the
+  Gradle 9 line, and it is published under a *different maven artifact* -
+  `net.minecraftforge:forgegradle` (lowercase) rather than `net.minecraftforge:ForgeGradle` -
+  behind the same `net.minecraftforge.gradle` plugin id. Check both coordinates before
+  concluding that Gradle 9 costs you the forge subproject. FG7's DSL differs substantially from
+  FG6's; the Forge MDK and https://github.com/MinecraftForge/MDKExamples (`*/fg7/`) are the
+  reference.
 
 ## Phase 1 - Read what actually changed
 
@@ -56,11 +65,14 @@ you add there must also be added to the `expandProps` map in
 `buildSrc/src/main/groovy/multiloader-common.gradle`.
 
 Work through: `minecraft_version`, `minecraft_version_range`, `neo_form_version`,
-`parchment_minecraft` / `parchment_version` (keep the previous MC version if the target has no
-**stable** Parchment - never pin a nightly), `neoforge_version`,
-`neoforge_loader_version_range`, `forge_version`, `forge_loader_version_range`,
-`fabric_version`, `fabric_loader_version`, `cloth_config_version`, `modmenu_version`,
-`waystones_version`, `repurposed_structures_*_version`, and `java_version`.
+`parchment_minecraft` / `parchment_version` if they still exist (keep the previous MC version
+if the target has no **stable** Parchment, never pin a nightly - and drop the layer entirely if
+Parchment has abandoned the line, as it has for 26.x, where vanilla ships deobfuscated with
+Mojang's own parameter names anyway), `neoforge_version`, `neoforge_loader_version_range`,
+`forge_version`, `forge_loader_version_range`, `fabric_version`, `fabric_loader_version`,
+`cloth_config_version`, `modmenu_version`, `waystones_fabric_version` /
+`waystones_neoforge_version`, `repurposed_structures_*_version`, `java_version`, and
+`java_bytecode_version`.
 
 Then the things outside `gradle.properties`:
 

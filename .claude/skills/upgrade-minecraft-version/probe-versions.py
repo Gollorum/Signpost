@@ -177,9 +177,17 @@ def main():
            if re.match(r'^\d+\.\d+\.\d+$', v)]
     row('net.neoforged.moddev', 'see build.gradle', newest(mdg))
 
-    fgl = [v for v in maven_versions('https://maven.minecraftforge.net/net/minecraftforge/gradle/ForgeGradle/maven-metadata.xml')
+    # ForgeGradle 7 is published under a DIFFERENT artifact than 6 - lowercase 'forgegradle',
+    # not 'ForgeGradle' - behind the same plugin id. Looking only at the old coordinate reports
+    # "6.0.54" forever and makes Gradle 9 look impossible for the forge subproject.
+    fg6 = [v for v in maven_versions('https://maven.minecraftforge.net/net/minecraftforge/gradle/ForgeGradle/maven-metadata.xml')
            if re.match(r'^\d+\.\d+\.\d+$', v)]
-    row('ForgeGradle', 'see forge/build.gradle', newest(fgl))
+    fg7 = [v for v in maven_versions('https://maven.minecraftforge.net/net/minecraftforge/forgegradle/maven-metadata.xml')
+           if re.match(r'^\d+\.\d+\.\d+$', v)]
+    fgl_newest = newest(fg7) or newest(fg6)
+    row('ForgeGradle', 'see forge/build.gradle', fgl_newest,
+        'artifact net.minecraftforge:forgegradle (7.x)' if newest(fg7)
+        else 'artifact net.minecraftforge:ForgeGradle (6.x)')
 
     # ---- Mod integrations and dev-env mods ------------------------------------------
     for label, proj, loader, prop in [
@@ -201,9 +209,9 @@ def main():
             notes.append('%s has no %s build yet - integration/dev-env coverage for it will be '
                          'missing until it ships.' % (label, mc))
 
-    # ---- Gradle: the constraint that decides whether this upgrade is possible at all
-    # Loom >= 1.14 requires Gradle 9; ForgeGradle 6 requires Gradle 8. They cannot coexist,
-    # so a Loom bump that needs Gradle 9 forces a decision about the forge subproject.
+    # ---- Gradle: Loom's floor, and whether ForgeGradle can meet it ------------------
+    # ForgeGradle 6 caps out at Gradle 8 and refuses to apply on 9; ForgeGradle 7 is the
+    # Gradle 9 line. So a Loom bump only threatens the forge subproject when no FG7 exists.
     wrapper = os.path.join(repo_root(), "gradle", "wrapper", "gradle-wrapper.properties")
     cur_gradle = None
     if os.path.exists(wrapper):
@@ -219,14 +227,20 @@ def main():
             have_major = int(cur_gradle.split(".")[0])
         except ValueError:
             need_major = have_major = 0
-        if need_major > have_major and has_forge:
+        fg_major = int(fgl_newest.split('.')[0]) if fgl_newest else 0
+        if need_major > have_major and has_forge and fg_major < 7:
             blockers.append(
-                "Loom %s requires Gradle %s but the wrapper is on %s, and ForgeGradle 6 (the "
-                "forge subproject) does not support Gradle %d. You cannot bump Loom and keep "
+                "Loom %s requires Gradle %s but the wrapper is on %s, and only ForgeGradle %s "
+                "exists - FG6 refuses to apply on Gradle %d. You cannot bump Loom and keep "
                 "forge in the same build. Decide before starting: pin the newest Loom that "
                 "still supports Gradle %d, or drop/park the forge subproject and move the "
                 "whole build to Gradle %d."
-                % (lm, loom_gradle, cur_gradle, need_major, have_major, need_major))
+                % (lm, loom_gradle, cur_gradle, fgl_newest, need_major, have_major, need_major))
+        elif need_major > have_major and has_forge:
+            notes.append("Gradle must go to %s for Loom %s; ForgeGradle %s supports Gradle 9, so "
+                         "the forge subproject comes along - bump its plugin to the 7.x range "
+                         "(the artifact is net.minecraftforge:forgegradle, lowercase)."
+                         % (loom_gradle, lm, fgl_newest))
         elif need_major > have_major:
             notes.append("Loom %s needs Gradle %s; bump the wrapper (no forge subproject is "
                          "present to block it)." % (lm, loom_gradle))

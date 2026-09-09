@@ -22,7 +22,7 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
-import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.client.resources.model.sprite.SpriteGetter;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -36,9 +36,9 @@ import java.util.function.Consumer;
 public class PostItemRenderer implements SpecialModelRenderer<PostData> {
 
     private final PostBlock.MaterialType materialType;
-    private final MaterialSet materials;
+    private final SpriteGetter materials;
 
-    public PostItemRenderer(PostBlock.MaterialType materialType, MaterialSet materials) {
+    public PostItemRenderer(PostBlock.MaterialType materialType, SpriteGetter materials) {
         this.materialType = materialType;
         this.materials = materials;
     }
@@ -55,8 +55,18 @@ public class PostItemRenderer implements SpecialModelRenderer<PostData> {
         return itemStack.get(PostData.TYPE);
     }
 
+    /**
+     * The context the item is currently being drawn in.
+     *
+     * <p>26.1 removed the {@link ItemDisplayContext} parameter from
+     * {@link SpecialModelRenderer#submit}; {@code ItemStackRenderStateInjector} puts it back for
+     * the duration of the submitting call. Only ever touched on the client render thread.
+     */
+    public static ItemDisplayContext currentDisplayContext = ItemDisplayContext.NONE;
+
     @Override
-    public void submit(PostData data, ItemDisplayContext displayContext, PoseStack poseStack, SubmitNodeCollector nodeCollector, int packedLight, int packedOverlay, boolean hasFoil, int outlineColor) {
+    public void submit(PostData data, PoseStack poseStack, SubmitNodeCollector nodeCollector, int packedLight, int packedOverlay, boolean hasFoil, int outlineColor) {
+        ItemDisplayContext displayContext = currentDisplayContext;
         List<BlockPartInstance> parts;
         if (data != null && !data.parts().isEmpty()) {
             parts = new ArrayList<>(data.parts().values());
@@ -115,7 +125,7 @@ public class PostItemRenderer implements SpecialModelRenderer<PostData> {
         });
     }
 
-    public record Unbaked(PostBlock.MaterialType materialType) implements SpecialModelRenderer.Unbaked {
+    public record Unbaked(PostBlock.MaterialType materialType) implements SpecialModelRenderer.Unbaked<PostData> {
 
         public static final Identifier NAME = Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "post_item");
 
@@ -126,12 +136,12 @@ public class PostItemRenderer implements SpecialModelRenderer<PostData> {
         );
 
         @Override
-        public SpecialModelRenderer<?> bake(BakingContext context) {
-            return new PostItemRenderer(this.materialType, context.materials());
+        public SpecialModelRenderer<PostData> bake(BakingContext context) {
+            return new PostItemRenderer(this.materialType, context.sprites());
         }
 
         @Override
-        public MapCodec<Unbaked> type() {
+        public MapCodec<? extends SpecialModelRenderer.Unbaked<PostData>> type() {
             return MAP_CODEC;
         }
     }

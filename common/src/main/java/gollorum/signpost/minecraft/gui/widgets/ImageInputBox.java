@@ -2,7 +2,7 @@ package gollorum.signpost.minecraft.gui.widgets;
 
 import gollorum.signpost.minecraft.gui.utils.*;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 
 public final class ImageInputBox extends InputBox implements Flippable {
@@ -48,7 +48,7 @@ public final class ImageInputBox extends InputBox implements Flippable {
     }
 
     @Override
-    public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+    public void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
         graphics.blit(RenderPipelines.GUI_TEXTURED,
             texture.location,
             backgroundRect.point.x, backgroundRect.point.y,
@@ -56,7 +56,7 @@ public final class ImageInputBox extends InputBox implements Flippable {
             backgroundRect.width, backgroundRect.height,
             isFlipped ? -backgroundRect.width : backgroundRect.width, backgroundRect.height);
 
-        super.renderWidget(graphics, mouseX, mouseY, partialTicks);
+        super.extractWidgetRenderState(graphics, mouseX, mouseY, partialTicks);
     }
 
     private boolean isFlipped = false;

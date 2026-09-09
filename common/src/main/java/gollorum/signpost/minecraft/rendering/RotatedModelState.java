@@ -2,7 +2,7 @@ package gollorum.signpost.minecraft.rendering;
 
 import com.mojang.math.Transformation;
 import gollorum.signpost.utils.math.Angle;
-import net.minecraft.client.resources.model.ModelState;
+import net.minecraft.client.renderer.block.dispatch.ModelState;
 import net.minecraft.core.Direction;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;

@@ -51,6 +51,7 @@ public class WaystoneLibrary {
     public static boolean hasInstance() { return instance != null; }
 
     public static void initializeServer(ServerLevel overworld) {
+        WaystoneLibraryStorage.migrateLegacyFile(overworld);
         var data = overworld.getDataStorage().computeIfAbsent(WaystoneLibraryStorage.TYPE);
         instance = new WaystoneLibrary(data);
         BlockPartWaystoneUpdateListener.getInstance().initialize();
@@ -167,7 +168,7 @@ public class WaystoneLibrary {
             WaystoneEntry oldEntry = data.allWaystones.get(oldWaystones[0]);
             if(editingPlayer != null && !oldEntry.hasThePermissionToEdit(editingPlayer)) {
                 // This should not happen unless a sender tries to hacc
-                editingPlayer.displayClientMessage(Component.translatable(LangKeys.noPermissionWaystone), false);
+                editingPlayer.sendSystemMessage(Component.translatable(LangKeys.noPermissionWaystone));
                 return Optional.empty();
             }
             if(editingPlayer != null && !gollorum.signpost.utils.WaystoneData.hasSecurityPermissions(editingPlayer, location))
@@ -221,7 +222,7 @@ public class WaystoneLibrary {
 
     private boolean validateHandleDoesNotExist(WaystoneHandle.Vanilla handle, Player editingPlayer) {
         if(data.allWaystones.containsKey(handle)) {
-            editingPlayer.displayClientMessage(Component.translatable(LangKeys.duplicateWaystoneId), false);
+            editingPlayer.sendSystemMessage(Component.translatable(LangKeys.duplicateWaystoneId));
             return false;
         } else return true;
     }
@@ -229,7 +230,7 @@ public class WaystoneLibrary {
     private boolean validateNameDoesNotExist(String newName, Player editingPlayer) {
         if(data.allWaystones.values().stream().anyMatch(entry -> entry.name.equals(newName))) {
             if(editingPlayer != null)
-                editingPlayer.displayClientMessage(Component.translatable(LangKeys.duplicateWaystoneName, newName), true);
+                editingPlayer.sendOverlayMessage(Component.translatable(LangKeys.duplicateWaystoneName, newName));
             else Signpost.LOGGER.error("Tried to automatically name a waystone \"" + newName + "\", which already existed.");
             return false;
         } else return true;

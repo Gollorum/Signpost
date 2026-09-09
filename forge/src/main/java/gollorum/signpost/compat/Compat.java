@@ -14,8 +14,9 @@ public class Compat {
     public static final String RepurposedStructuresId = "repurposed_structures";
 
     public static void register() {
-        if(Services.PLATFORM.isModLoaded(Compat.WaystonesId))
-            WaystonesAdapter.register();
+        // Waystones has no Forge build for 26.x, so WaystonesAdapter is commented out here.
+//        if(Services.PLATFORM.isModLoaded(Compat.WaystonesId))
+//            WaystonesAdapter.register();
 
 //        if(Services.PLATFORM.isModLoaded.isLoaded(Compat.AntiqueAtlasId))
 //            AntiqueAtlasAdapter.register();
@@ -26,8 +27,8 @@ public class Compat {
 
     public static Map<Identifier, PacketHandler.Event<?>> getEvents() {
         var map = new HashMap<Identifier, PacketHandler.Event<?>>();
-        if(Services.PLATFORM.isModLoaded(Compat.WaystonesId))
-            map.putAll(WaystonesAdapter.getEvents());
+//        if(Services.PLATFORM.isModLoaded(Compat.WaystonesId))
+//            map.putAll(WaystonesAdapter.getEvents());
 
         return map;
     }

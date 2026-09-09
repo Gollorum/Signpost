@@ -39,6 +39,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.BlockGetter;
@@ -88,6 +89,15 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
          */
         public MapColor mapColorOrDefault() {
             return mapColor.orElse(materialType.defaultMapColor);
+        }
+
+        /** The recipe-result form of {@link #getItemStack}; 26.1 builds recipe outputs from templates. */
+        public ItemStackTemplate getItemStackTemplate(ResourceKey<ModelType> key, int count) {
+            return new ItemStackTemplate(
+                materialType.getBlock().asItem().builtInRegistryHolder(),
+                count,
+                applyTo(key, DataComponentPatch.builder()).build()
+            );
         }
 
         public ItemStack getItemStack(ResourceKey<ModelType> key, int count) {

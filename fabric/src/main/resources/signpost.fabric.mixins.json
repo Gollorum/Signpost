@@ -2,8 +2,7 @@
   "required": true,
   "minVersion": "0.8",
   "package": "gollorum.signpost.mixin",
-  "refmap": "${mod_id}.refmap.json",
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_${java_bytecode_version}",
   "mixins": [
   ],
   "client": [

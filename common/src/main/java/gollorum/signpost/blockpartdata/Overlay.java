@@ -11,7 +11,7 @@ import gollorum.signpost.minecraft.utils.tints.FoliageTint;
 import gollorum.signpost.minecraft.utils.tints.GrassTint;
 import gollorum.signpost.utils.Tint;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
@@ -36,7 +36,7 @@ public abstract class Overlay {
         this.id = id;
     }
 
-    public abstract Material materialFor(Class<? extends SignBlockPart> signClass);
+    public abstract SpriteId materialFor(Class<? extends SignBlockPart> signClass);
 
     private static <T> T logErrorAndReturn(String error, T t) {
         Signpost.LOGGER.error(error);
@@ -45,8 +45,8 @@ public abstract class Overlay {
 
     public static final Overlay Gras = new Overlay(Optional.of(GrassTint.INSTANCE), "gras") {
         @Override
-        public Material materialFor(Class<? extends SignBlockPart> signClass) {
-            return new Material(
+        public SpriteId materialFor(Class<? extends SignBlockPart> signClass) {
+            return new SpriteId(
                 TextureResource.blockAtlas,
                 signClass.equals(SmallWideSignBlockPart.class)
                 ? Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "block/sign_overlay_grass")
@@ -60,8 +60,8 @@ public abstract class Overlay {
 
     public static final Overlay Vine = new Overlay(Optional.of(FoliageTint.INSTANCE), "vine") {
         @Override
-        public Material materialFor(Class<? extends SignBlockPart> signClass) {
-            return new Material(
+        public SpriteId materialFor(Class<? extends SignBlockPart> signClass) {
+            return new SpriteId(
                 TextureResource.blockAtlas,
                 signClass.equals(SmallWideSignBlockPart.class)
                 ? Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "block/sign_overlay_vine")
@@ -75,8 +75,8 @@ public abstract class Overlay {
 
     public static final Overlay Snow = new Overlay(Optional.empty(), "snow") {
         @Override
-        public Material materialFor(Class<? extends SignBlockPart> signClass) {
-            return new Material(
+        public SpriteId materialFor(Class<? extends SignBlockPart> signClass) {
+            return new SpriteId(
                 TextureResource.blockAtlas,signClass.equals(SmallWideSignBlockPart.class)
                 ? Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "block/sign_overlay_snow")
                 : signClass.equals(SmallShortSignBlockPart.class)
@@ -89,8 +89,8 @@ public abstract class Overlay {
 
     public static final Overlay Mycelium = new Overlay(Optional.empty(), "mycelium") {
         @Override
-        public Material materialFor(Class<? extends SignBlockPart> signClass) {
-            return new Material(
+        public SpriteId materialFor(Class<? extends SignBlockPart> signClass) {
+            return new SpriteId(
                 TextureResource.blockAtlas,signClass.equals(SmallWideSignBlockPart.class)
                 ? Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "block/sign_overlay_mycelium")
                 : signClass.equals(SmallShortSignBlockPart.class)

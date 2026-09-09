@@ -38,14 +38,14 @@ public class FabricPacketHandler extends PacketHandler {
 
     private <T> void actuallyRegister(Event<T> event, Identifier id) {
         var type = new CustomPacketPayload.Type<Payload<T>>(id);
-        PayloadTypeRegistry.playC2S().register(
+        PayloadTypeRegistry.serverboundPlay().register(
             type,
             event.codec().map(
                 message -> new Payload<T>(type, event, message),
                 payload -> payload.message
             )
         );
-        PayloadTypeRegistry.playS2C().register(
+        PayloadTypeRegistry.clientboundPlay().register(
             type,
             event.codec().map(
                 message -> new Payload<T>(type, event, message),
@@ -86,7 +86,7 @@ public class FabricPacketHandler extends PacketHandler {
         else if(pos == null) Signpost.LOGGER.warn("No position to notify mutation");
         else {
             var payload = toPayload(t.get());
-            for(ServerPlayer player : world.getChunkSource().chunkMap.getPlayers(new ChunkPos(pos), false)) {
+            for(ServerPlayer player : world.getChunkSource().chunkMap.getPlayers(ChunkPos.containing(pos), false)) {
                 ServerPlayNetworking.send(player, payload);
             }
         }
@@ -101,7 +101,7 @@ public class FabricPacketHandler extends PacketHandler {
     public <T> void sendToAll(T message) {
         assert Signpost.getServerType().isServer;
         Signpost.getServerInstance().getPlayerList().broadcastAll(
-            ServerPlayNetworking.createS2CPacket(toPayload(message))
+            ServerPlayNetworking.createClientboundPacket(toPayload(message))
         );
     }
 

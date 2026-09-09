@@ -21,7 +21,7 @@ public class WaystoneDiscoveryEventListener implements IWaystoneDiscoveryEventLi
     private static final int discoveryDistance = 8;
 
     public static void register() {
-        ServerTickEvents.START_WORLD_TICK.register(WaystoneDiscoveryEventListener::onTick);
+        ServerTickEvents.START_LEVEL_TICK.register(WaystoneDiscoveryEventListener::onTick);
     }
 
     private static void onTick(ServerLevel level) {
@@ -33,7 +33,7 @@ public class WaystoneDiscoveryEventListener implements IWaystoneDiscoveryEventLi
             for(var x = -chunkRadius; x <= chunkRadius; x++) {
                 for(var z = -chunkRadius; z <= chunkRadius; z++) {
                     var key = new VillageWaystone.ChunkEntryKey(
-                        new ChunkPos(playerChunk.x + x, playerChunk.z + z),
+                        new ChunkPos(playerChunk.x() + x, playerChunk.z() + z),
                         level.dimension().identifier()
                     );
                     var handle = allEntries.get(key);

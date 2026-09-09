@@ -11,7 +11,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
+import com.mojang.serialization.MapCodec;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -25,11 +25,11 @@ public final class PermissionCheck implements LootItemCondition {
         Type(String name) { this.name = name; }
     }
 
-    public static LootItemConditionType createConditionType() {
-        return new LootItemConditionType(Codec.STRING.fieldOf("type").flatXmap(
+    public static MapCodec<PermissionCheck> createConditionCodec() {
+        return Codec.STRING.fieldOf("type").flatXmap(
         str -> Arrays.stream(Type.values()).filter(t -> t.name.equals(str)).findFirst().map(PermissionCheck::new).map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Unknown permission check type: " + str)),
         check -> DataResult.success(check.type.name)
-    )); }
+    ); }
 
     private final Type type;
 
@@ -38,7 +38,7 @@ public final class PermissionCheck implements LootItemCondition {
     }
 
     @Override
-    public LootItemConditionType getType() {
+    public MapCodec<? extends LootItemCondition> codec() {
         return Services.LOOT_ITEM_CONDITION_REGISTRY.getPermissionCheck();
     }
 

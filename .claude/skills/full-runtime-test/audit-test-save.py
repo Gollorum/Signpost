@@ -120,8 +120,71 @@ def region_chunks(path):
 
 
 # --------------------------------------------------------------------------------------
+# Where the waystone library lives on disk. 26.1 turned SavedDataType's id into an
+# Identifier and gave every dimension its own folder, so the file moved from a flat
+# <world>/data/signpost_WaystoneLibrary.dat to a namespaced path under the overworld's
+# folder. A corpus can be written by either era, so both are accepted.
+LEGACY_LIB_REL  = os.path.join('data', 'signpost_WaystoneLibrary.dat')
+CURRENT_LIB_REL = os.path.join('dimensions', 'minecraft', 'overworld', 'data',
+                               'signpost', 'waystone_library.dat')
+
+
+def find_waystone_library(world):
+    """The waystone library file in this world, whichever layout it uses, or None."""
+    for rel in (CURRENT_LIB_REL, LEGACY_LIB_REL):
+        p = os.path.join(world, rel)
+        if os.path.exists(p):
+            return p
+    return None
+
+
+def count_waystones(world):
+    """Waystones in this world's library. -1 when there is no library at all."""
+    lib = find_waystone_library(world)
+    if lib is None:
+        return -1
+    try:
+        nbt = nbt_load(lib)
+        inner = nbt.get('data', nbt)
+        ways = inner.get('Waystones')
+        return len(ways) if isinstance(ways, list) else 0
+    except Exception:
+        return -1
+
+
 def repo_root():
     return os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..'))
+
+
+def corpus_root():
+    return os.path.join(repo_root(), 'testsaves')
+
+
+def corpus_worlds(root=None):
+    """Every save folder in the corpus, both layouts.
+
+    An entry is testsaves/<signpost>/<minecraft>/world - one Signpost release can have a
+    save per Minecraft version, because a port breaks serialization just as readily as a
+    mod release does. The older flat testsaves/<signpost>/world is still recognised so a
+    half-migrated corpus audits instead of silently reporting nothing.
+    """
+    root = root or corpus_root()
+    found = glob.glob(os.path.join(root, '*', 'world'))
+    found += glob.glob(os.path.join(root, '*', '*', 'world'))
+    return sorted(set(os.path.normpath(f) for f in found))
+
+
+def entry_id(entry_dir):
+    """'2.04.0/1.21.11' for a corpus entry, else the path as given."""
+    rel = os.path.relpath(entry_dir, corpus_root())
+    return entry_dir if rel.startswith('..') else rel.replace(os.sep, '/')
+
+
+def in_corpus(entry_dir):
+    rel = os.path.relpath(entry_dir, corpus_root())
+    if rel.startswith('..') or os.path.isabs(rel):
+        return False
+    return len(rel.split(os.sep)) in (1, 2)
 
 
 def current_props():
@@ -158,20 +221,27 @@ class Report:
 
 
 def _mc_gap(a, b):
-    """Rough distance between two Minecraft versions, e.g. 1.21.5 vs 1.21.11 -> 6."""
+    """Releases between two Minecraft versions, e.g. 1.21.5 vs 1.21.11 -> 6.
+
+    Returns None when the distance cannot be established. Minecraft changed numbering
+    schemes (1.21.11 was followed by 26.1), so versions from different schemes are not
+    comparable by arithmetic: 1.21.11 -> 26.1.2 is a single release, 1.20.1 -> 26.1.2 is
+    many, and nothing in the strings says which. Guessing "far apart" there produced a
+    warning telling you to use the very save you were already using.
+    """
     try:
         pa = [int(x) for x in a.split('.')]
         pb = [int(x) for x in b.split('.')]
-        if pa[:2] != pb[:2]:
-            return 99
-        return abs((pa[2] if len(pa) > 2 else 0) - (pb[2] if len(pb) > 2 else 0))
     except Exception:
-        return 99
+        return None
+    if pa[:2] != pb[:2]:
+        return None
+    return abs((pa[2] if len(pa) > 2 else 0) - (pb[2] if len(pb) > 2 else 0))
 
 
 def audit(world, props):
     r = Report()
-    name = os.path.relpath(world, repo_root())
+    name = entry_id(os.path.dirname(world)) or os.path.relpath(world, repo_root())
     print('=' * 78)
     print('AUDIT  %s' % name)
     print('=' * 78)
@@ -212,23 +282,34 @@ def audit(world, props):
     mc_now = props.get('minecraft_version')
 
     if sp_save and sp_now:
-        if sp_save == sp_now:
-            r.f('save was written by Signpost %s, which is the version in gradle.properties. '
-                'A corpus entry must come from an OLDER released build, otherwise it tests '
-                'nothing about compatibility.' % sp_save)
-        else:
+        if sp_save != sp_now:
             r.i('upgrade tested : %s -> %s' % (sp_save, sp_now))
+        elif mc_save and mc_now and mc_save != mc_now:
+            # Same mod version is fine as long as Minecraft moved. A port carries just as
+            # much serialization risk as a mod release - vanilla's own DataFixers rewrite
+            # the chunk and level formats underneath us - so this still tests something
+            # real, namely that the current build reads its own data across the port.
+            r.i('upgrade tested : Minecraft only (Signpost stays %s)' % sp_save)
+        else:
+            r.f('save was written by Signpost %s on Minecraft %s, which is exactly what '
+                'gradle.properties builds. Neither version moves across the load, so the '
+                'run proves nothing. Use an older Signpost build, or a save from the '
+                'Minecraft version you are porting from.' % (sp_save, mc_save or 'unknown'))
 
     if mc_save and mc_now and mc_save != mc_now:
         # A cross-version load is the point of the exercise, so this is not a warning by
         # itself. It only becomes one when the gap is wider than a single release, since
         # Signpost ships no DataFixers to carry its data across two ports.
         r.i('cross-version  : %s -> %s (the upgrade path under test)' % (mc_save, mc_now))
-        if _mc_gap(mc_save, mc_now) > 1:
-            r.w('the save is more than one Minecraft release behind %s. Signpost registers '
-                'no DataFixers, so its data is not migrated across that gap and a failure '
+        gap = _mc_gap(mc_save, mc_now)
+        if gap is None:
+            r.i('release gap    : not computable across the %s / %s numbering schemes - '
+                'check by hand that this is the release you mean to port from' % (mc_save, mc_now))
+        elif gap > 1:
+            r.w('the save is %d Minecraft releases behind %s. Signpost registers no '
+                'DataFixers, so its data is not migrated across that gap and a failure '
                 'here would say nothing about the current change. Use a save from the '
-                'release immediately before this one.' % mc_now)
+                'release immediately before this one.' % (gap, mc_now))
 
     # --- declared provenance ----------------------------------------------------------
     # level.dat records only a version *string*, and Signpost carried "2.03.0" for months
@@ -237,7 +318,20 @@ def audit(world, props):
     # tag). So authenticity cannot be inferred - it has to be recorded when the save is
     # made, from a published artifact.
     entry_dir = os.path.dirname(world)
-    in_corpus = os.path.basename(os.path.dirname(entry_dir)) == 'testsaves'
+    is_corpus = in_corpus(entry_dir)
+
+    # In the nested layout the folder names assert what the save is; level.dat knows the
+    # truth. Disagreement means the corpus is mislabelled, and a mislabelled entry is how
+    # you end up believing you tested a port you never tested.
+    rel = os.path.relpath(entry_dir, corpus_root()).split(os.sep)
+    if is_corpus and len(rel) == 2:
+        if mc_save and rel[1] != mc_save:
+            r.w('folder says Minecraft %s but level.dat says %s - rename the entry to '
+                'testsaves/%s/%s.' % (rel[1], mc_save, rel[0], mc_save))
+        if sp_save and rel[0] != sp_save:
+            r.w('folder says Signpost %s but level.dat says %s - rename the entry to '
+                'testsaves/%s/%s.' % (rel[0], sp_save, sp_save, rel[1]))
+
     src = os.path.join(entry_dir, 'SOURCE.txt')
     if os.path.exists(src):
         decl = {}
@@ -253,7 +347,7 @@ def audit(world, props):
         if sp_save and decl.get('released_version') and decl['released_version'] != sp_save:
             r.f('SOURCE.txt declares %s but level.dat says the save was written by %s.'
                 % (decl['released_version'], sp_save))
-    elif in_corpus:
+    elif is_corpus:
         r.f('no SOURCE.txt beside the save. A corpus entry must record which *published* '
             'artifact produced it - a version string in level.dat cannot distinguish a '
             'release from a dev build that carried the same version. See '
@@ -261,10 +355,11 @@ def audit(world, props):
 
     # --- mod content ------------------------------------------------------------------
     lib_waystones = 0
-    lib = os.path.join(world, 'data', 'signpost_WaystoneLibrary.dat')
-    if not os.path.exists(lib):
-        r.f('data/signpost_WaystoneLibrary.dat is missing - the save carries no Signpost '
-            'SavedData, which is the single most valuable thing this test exercises.')
+    lib = find_waystone_library(world)
+    if lib is None:
+        r.f('no Signpost waystone library in the save (looked for %s and %s) - it carries no '
+            'Signpost SavedData, which is the single most valuable thing this test exercises.'
+            % (LEGACY_LIB_REL, CURRENT_LIB_REL))
     else:
         try:
             lib_nbt = nbt_load(lib)
@@ -359,15 +454,26 @@ def audit(world, props):
 
 
 def main(argv):
+    # --count-waystones <world> prints just the number, for the harness to assert on after a
+    # run. A library that silently comes up empty is exactly the failure a clean startup hides.
+    if len(argv) > 2 and argv[1] == '--count-waystones':
+        print(count_waystones(os.path.abspath(argv[2])))
+        return 0
+
     props = current_props()
     targets = []
     if len(argv) > 1:
         for a in argv[1:]:
             a = os.path.abspath(a)
-            targets.append(os.path.join(a, 'world') if os.path.isdir(os.path.join(a, 'world')) else a)
+            if os.path.isdir(os.path.join(a, 'world')):
+                targets.append(os.path.join(a, 'world'))
+            else:
+                # A Signpost-version directory holding one entry per Minecraft version:
+                # audit all of them. This is what the harness passes for -SaveVersion 2.04.0.
+                nested = corpus_worlds(a)
+                targets.extend(nested if nested else [a])
     else:
-        root = os.path.join(repo_root(), 'testsaves')
-        targets = sorted(glob.glob(os.path.join(root, '*', 'world')))
+        targets = corpus_worlds()
         if not targets:
             print('No corpus entries found under testsaves/. See testsaves/README.md.')
             return 1

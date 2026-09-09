@@ -6,14 +6,15 @@ import gollorum.signpost.minecraft.loot.PermissionCheck;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
+import com.mojang.serialization.MapCodec;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class LootItemConditionRegistryImpl implements ILootItemConditionRegistry {
 
 
-    public static final LootItemConditionType permissionCheck = PermissionCheck.createConditionType();
+    public static final MapCodec<? extends LootItemCondition> permissionCheck = PermissionCheck.createConditionCodec();
 
-    public LootItemConditionType getPermissionCheck(){
+    public MapCodec<? extends LootItemCondition> getPermissionCheck(){
         return permissionCheck;
     }
 

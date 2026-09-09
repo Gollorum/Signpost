@@ -1,7 +1,7 @@
 package gollorum.signpost.minecraft.rendering;
 
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.resources.Identifier;
 
 public class FlippableModel {

@@ -1,3 +1,5 @@
+import org.gradle.api.attributes.java.TargetJvmVersion
+
 plugins {
     id 'java-library'
     id 'maven-publish'
@@ -7,6 +9,31 @@ group = group_id
 
 base {
     archivesName = "${mod_id}-${project.name}-${minecraft_version}"
+}
+
+tasks.withType(JavaCompile).configureEach {
+    // See java_bytecode_version in gradle.properties: Forge's mixin cannot read Java 25 class
+    // files, so the toolchain is 25 but the bytecode is older.
+    //
+    options.release = java_bytecode_version as Integer
+}
+
+// Lowering the bytecode version also lowers TARGET_JVM_VERSION on the resolvable
+// configurations, and dependency resolution then refuses the Java 25 artifacts the toolchain
+// actually needs:
+//   No matching variant of net.neoforged:neoform:26.1.2-1 ...
+//   Incompatible because this component declares a component, compatible with Java 25 and the
+//   consumer needed a component, compatible with Java 21
+// The two are independent - we consume Java 25 libraries and emit older bytecode - so the
+// attribute is put back to the toolchain version here.
+// Only the resolve-side configurations: stamping an attribute on the consumable ones would
+// make commonJava and commonResources ambiguous, since they share a capability.
+configurations.configureEach {
+    if (canBeResolved && !canBeConsumed) {
+        attributes {
+            attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, java_version as Integer)
+        }
+    }
 }
 
 java {
@@ -26,19 +53,6 @@ repositories {
             }
         }
         filter { includeGroupAndSubgroups('org.spongepowered') }
-    }
-    exclusiveContent {
-        forRepositories(
-                maven {
-                    name = 'ParchmentMC'
-                    url = 'https://maven.parchmentmc.org/'
-                },
-                maven {
-                    name = "NeoForge"
-                    url = 'https://maven.neoforged.net/releases'
-                }
-        )
-        filter { includeGroup('org.parchmentmc.data') }
     }
     maven {
         name = 'BlameJared'
@@ -94,7 +108,8 @@ processResources {
             'fabric_loader_version'        : fabric_loader_version,
             'cloth_config_version'         : cloth_config_version,
             'modmenu_version'              : modmenu_version,
-            'waystones_version'            : waystones_version,
+            'waystones_fabric_version'     : waystones_fabric_version,
+            'waystones_neoforge_version'   : waystones_neoforge_version,
             'repurposed_structures_fabric_version'   : repurposed_structures_fabric_version,
             'repurposed_structures_neoforge_version' : repurposed_structures_neoforge_version,
             'mod_name'                     : mod_name,
@@ -107,7 +122,8 @@ processResources {
             'forge_version'                : forge_version,
             'forge_loader_version_range'   : forge_loader_version_range,
             'credits'                      : credits,
-            'java_version'                 : java_version
+            'java_version'                 : java_version,
+            'java_bytecode_version'        : java_bytecode_version
     ]
 
     var jsonExpandProps = expandProps.collectEntries {

@@ -93,7 +93,7 @@ public class NeoForgePacketHandler extends PacketHandler {
     public <T> void sendToTracing(ServerLevel world, BlockPos pos, Supplier<T> t) {
         if(world == null) Signpost.LOGGER.warn("No world to notify mutation");
         else if(pos == null) Signpost.LOGGER.warn("No position to notify mutation");
-        else PacketDistributor.sendToPlayersTrackingChunk(world, new ChunkPos(pos), toPayload(t.get()));
+        else PacketDistributor.sendToPlayersTrackingChunk(world, ChunkPos.containing(pos), toPayload(t.get()));
     }
 
     @Override

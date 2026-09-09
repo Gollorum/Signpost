@@ -288,7 +288,7 @@ public class Teleport {
                         ? Optional.of(new ConfirmTeleportGui.SignInfo(tile, (SignBlockPart) part.blockPart(), info, part.offset())) : Optional.empty()
                     ))));
             else message.data.consume(
-                l -> Minecraft.getInstance().player.displayClientMessage(Component.translatable(l), true),
+                l -> Minecraft.getInstance().player.sendOverlayMessage(Component.translatable(l)),
                 r -> PacketHandler.getInstance().sendToServer(new Request.Package(r.waystoneName, r.handle))
             );
         }

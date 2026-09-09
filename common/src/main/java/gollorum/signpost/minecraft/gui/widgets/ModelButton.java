@@ -4,7 +4,7 @@ import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.minecraft.gui.utils.TextureResource;
 import gollorum.signpost.minecraft.rendering.FlippableModel;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.WidgetSprites;
@@ -65,10 +65,10 @@ public class ModelButton extends SignpostImageButton {
     }
 
     @Override
-    protected void renderContents(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        super.renderContents(graphics, mouseX, mouseY, partialTicks);
+    protected void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
+        super.extractContents(graphics, mouseX, mouseY, partialTicks);
         for(GuiModelRenderer model : modelRenderers) {
-            model.render(graphics, mouseX, mouseY, partialTicks);
+            model.extractRenderState(graphics, mouseX, mouseY, partialTicks);
         }
     }
 

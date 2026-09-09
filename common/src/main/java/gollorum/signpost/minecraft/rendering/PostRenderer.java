@@ -16,9 +16,9 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.client.resources.model.sprite.SpriteGetter;
 import net.minecraft.server.level.BlockDestructionProgress;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
@@ -35,10 +35,10 @@ public class PostRenderer implements BlockEntityRenderer<PostTile, PostRenderer.
 
     private static final double randomOffset = 0.001;
 
-    private final MaterialSet materials;
+    private final SpriteGetter materials;
 
     public PostRenderer(BlockEntityRendererProvider.Context ctx) {
-        materials = ctx.materials();
+        materials = ctx.sprites();
     }
 
     @Override
@@ -75,7 +75,7 @@ public class PostRenderer implements BlockEntityRenderer<PostTile, PostRenderer.
                         now.offset().z() + randomOffset * random.nextDouble());
                     BlockPartRenderer.renderDynamic(
                         now.blockPart(),
-                        renderState.tile.getLevel(),
+                        Minecraft.getInstance().level,
                         renderState.blockPos,
                         poseStack,
                         submitNodeCollector,

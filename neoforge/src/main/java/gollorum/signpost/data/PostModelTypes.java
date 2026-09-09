@@ -4,6 +4,7 @@ import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.data.ModelTypeRegistry;
 import gollorum.signpost.minecraft.utils.Texture;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
@@ -35,7 +36,7 @@ public class PostModelTypes implements DataProvider {
     }
 
     public static void run(BootstrapContext<PostBlock.ModelType> context) {
-        for (var modelType : getAll(context.registryLookup(Registries.ITEM).orElseThrow())) {
+        for (var modelType : getAll(context.lookup(Registries.ITEM))) {
             context.register(
                 modelType.getKey(),
                 modelType.value
@@ -151,7 +152,7 @@ public class PostModelTypes implements DataProvider {
         );
     }
 
-    public static List<FakeHolder> getAll(HolderLookup.RegistryLookup<Item> items) {
+    public static List<FakeHolder> getAll(HolderGetter<Item> items) {
         var ret = new ArrayList<FakeHolder>();
 
         ret.add(mkModelType("acacia",

@@ -9,9 +9,9 @@ import gollorum.signpost.minecraft.rendering.ModelElementRenderState;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.mixin.GuiGraphicsMixin;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Renderable;
-import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import org.joml.AxisAngle4d;
@@ -50,7 +50,7 @@ public class GuiModelRenderer implements Renderable, Flippable {
         this.isFlipped = isFlipped;
     }
 
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
         var renderState = ((GuiGraphicsMixin)graphics).getGuiRenderState();
         float scale = Math.min(width, height);
         PoseStack matrixStack = new PoseStack();
@@ -59,12 +59,12 @@ public class GuiModelRenderer implements Renderable, Flippable {
         if (isFlipped) matrixStack.mulPose(new Quaternionf(new AxisAngle4d(Math.PI, new Vector3f(0, 1, 0))));
         matrixStack.translate(modelSpaceXOffset, modelSpaceYOffset, 0);
         for (var moo : model.get(isFlipped))
-            renderState.submitGuiElement(new ModelElementRenderState(rect, moo.texture().atlasLocation(), RenderPipelines.CUTOUT_BLOCK, buffer -> {
+            renderState.addGuiElement(new ModelElementRenderState(rect, moo.texture().atlasLocation(), RenderPipelines.CUTOUT_BLOCK, buffer -> {
                 RenderingUtil.render(
                     matrixStack.last(),
                     moo.model(),
                     Minecraft.getInstance().getAtlasManager().get(moo.texture()).wrap(buffer),
-                    LightTexture.FULL_BRIGHT,
+                    LightCoordsUtil.FULL_BRIGHT,
                     OverlayTexture.NO_OVERLAY,
                     moo.tint(),
                     0f

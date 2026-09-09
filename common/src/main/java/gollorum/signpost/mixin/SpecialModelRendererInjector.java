@@ -18,7 +18,7 @@ public class SpecialModelRendererInjector {
 
     @Shadow
     @Final
-    private static ExtraCodecs.LateBoundIdMapper<Identifier, MapCodec<? extends SpecialModelRenderer.Unbaked>> ID_MAPPER;
+    private static ExtraCodecs.LateBoundIdMapper<Identifier, MapCodec<? extends SpecialModelRenderer.Unbaked<?>>> ID_MAPPER;
 
     @Inject(method = "bootstrap", at = @At("TAIL"))
     private static void registerCustomRenderers(CallbackInfo ci) {

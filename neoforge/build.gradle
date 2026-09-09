@@ -11,10 +11,6 @@ neoForge {
     if (at.exists()) {
         accessTransformers.from(at.absolutePath)
     }
-    parchment {
-        minecraftVersion = parchment_minecraft
-        mappingsVersion = parchment_version
-    }
     runs {
         configureEach {
             systemProperty('neoforge.enabledGameTestNamespaces', mod_id)
@@ -76,7 +72,7 @@ repositories {
 
 dependencies {
     compileOnly "com.telepathicgrunt:RepurposedStructures:${repurposed_structures_neoforge_version}"
-    compileOnly "net.blay09.mods:waystones-neoforge:${waystones_version}"
+    compileOnly "net.blay09.mods:waystones-neoforge:${waystones_neoforge_version}"
 }
 
 idea {

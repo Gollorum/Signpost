@@ -25,24 +25,32 @@ compiled once per loader, so a common-code change can break one loader and not a
 
 ## Build & run
 
-Always use the wrapper (`./gradlew` / `gradlew.bat`), Gradle 8.14.3, Java 21 toolchain.
+Always use the wrapper (`./gradlew` / `gradlew.bat`), Gradle 9.5.0, Java 25 toolchain.
 
 ```bash
 ./gradlew :neoforge:build
 ```
 
-**Do not enable the Gradle daemon or parallel execution.** `gradle.properties` pins
-`org.gradle.daemon=false` and `org.gradle.parallel=false` on purpose: ForgeGradle provisions
-the patched Minecraft artifact lazily during dependency resolution, and in a reused daemon
-(or under parallel execution) the project services it needs are already closed. The symptom
-is `IllegalStateException: project services has been closed`, followed by
-`Could not find net.minecraftforge:forge:...mapped_official...`. `neoforge` and `fabric`
-build fine either way; only `forge` depends on this.
+**The mod compiles to Java 21 bytecode on a Java 25 toolchain.** The game needs Java 25, but
+Forge bundles SpongePowered Mixin 0.8.7, whose highest compatibility level is `JAVA_21` - it
+refuses both a `"compatibilityLevel": "JAVA_25"` and any mixin class file newer than v65.
+Fabric and NeoForge bundle Fabric's mixin fork, which goes to `JAVA_25`. So
+`java_bytecode_version=21` in `gradle.properties` drives `options.release` and is expanded into
+the `compatibilityLevel` of all four `*.mixins.json`. Because lowering the bytecode version also
+lowers `TARGET_JVM_VERSION` - which makes dependency resolution reject NeoForm's Java 25 variant
+- `multiloader-common.gradle` puts that attribute back on the resolve-side configurations. Raise
+both once Forge ships a newer mixin.
+
+The daemon and parallel execution are fine now. ForgeGradle 6 could not tolerate them - it
+provisioned the patched Minecraft artifact lazily during dependency resolution and died with
+`project services has been closed` in a reused daemon - but ForgeGradle 7 provisions differently
+and `org.gradle.parallel=true` is set.
 
 - Full build of everything, all four subprojects: `./gradlew build`.
 - Run tasks exist for all three loaders and are also generated as IntelliJ run configs.
-  Fabric and NeoForge use `runClient` / `runServer`; **ForgeGradle names its tasks without the
-  `run` prefix**, so Forge's are `:forge:Client` and `:forge:Server`. Each has a
+  All three use `runClient` / `runServer` - ForgeGradle 7 dropped FG6's prefix-less naming, so
+  Forge's old `:forge:Client` / `:forge:Server` are now `:forge:runClient` / `:forge:runServer`.
+  Each has a
   `…WithMods` variant that uses a separate game directory (`run_with_mods` /
   `runs/*_with_mods`) for testing against other mods - see
   [Testing against the real mods](#testing-against-the-real-mods).
@@ -96,14 +104,13 @@ gate is the full 12-run matrix (3 loaders x client/server x with/without other m
 automated as the `full-runtime-test` skill in `.claude/skills/full-runtime-test/` - run it
 immediately before producing the final build of a change, and at no other time unless asked.
 
-Run the server for **every loader you touched**, and for all three if you changed `common`.
-Note that the Forge task names differ - ForgeGradle uses the bare run name:
+Run the server for **every loader you touched**, and for all three if you changed `common`:
 
 | Loader | Server | Server + other mods |
 | --- | --- | --- |
 | fabric | `:fabric:runServer` | `:fabric:runServerWithMods` |
 | neoforge | `:neoforge:runServer` | `:neoforge:runServerWithMods` |
-| forge | `:forge:Server` | `:forge:ServerWithMods` |
+| forge | `:forge:runServer` | `:forge:runServerWithMods` |
 
 Run it in the background - the task never returns on its own, and **`echo stop | ./gradlew ...`
 does not stop it**, the run tasks do not forward stdin to the forked game:
@@ -215,6 +222,18 @@ and silently drop the entire waystone library. The key stays `"ResourceLocation"
 type changed. Note the failure did **not** crash the server - it logged one ERROR line and carried
 on, which is precisely why the log must be read rather than just watching for a clean startup.
 
+#### The saved-data file path is on-disk data too
+
+26.1 changed `SavedDataType`'s id from a plain `String` to an `Identifier`, and
+`SavedDataStorage` resolves it as `data/<namespace>/<path>.dat` - the namespace directory is not
+optional, so **no `Identifier` can name the old flat `data/signpost_WaystoneLibrary.dat`** (and
+the old name is not even a legal path, having capitals in it). The library therefore had to move
+on disk. `WaystoneLibraryStorage.migrateLegacyFile`, called from `WaystoneLibrary.initializeServer`
+before the storage is queried, copies the old file to the new location once; it copies rather than
+moves, so an older version of the mod can still read the world. Without it every pre-26.1 world
+would come up with no waystones at all - and, exactly as with the codec keys above, it would do so
+*quietly*, since a missing saved-data file is not an error.
+
 #### Before "fixing" a compatibility break, establish what actually shipped
 
 Not every save on disk comes from a released build, and matching a never-released format is worse
@@ -322,12 +341,19 @@ the `processResources` block in `buildSrc/src/main/groovy/multiloader-common.gra
 > **Any new property added to `gradle.properties` must also be added to the `expandProps` map in
 > `multiloader-common.gradle`**, otherwise resource expansion fails.
 
-Current targets: Minecraft 1.21.11, Java 21, NeoForge 21.11.45, Fabric Loader 0.18.6 /
-Fabric API 0.141.6, Forge 61.2.1, Parchment 1.21.10.
+Current targets: Minecraft 26.1.2, Java 25 (21 bytecode), NeoForge 26.1.2.107, Fabric Loader
+0.19.5 / Fabric API 0.155.3, Forge 64.1.3. **No Parchment** - it has published nothing for the
+26.x line, and 26.1 ships deobfuscated vanilla carrying Mojang's own parameter names, so the
+layer has no purpose; the `parchment { }` blocks are gone from `common` and `neoforge`.
 
-Integration dependency versions live there too (`waystones_version`, `modmenu_version`,
-`cloth_config_version`, `repurposed_structures_fabric_version`,
-`repurposed_structures_neoforge_version`) so the loaders cannot drift apart. The build scripts
+Minecraft's versioning changed with 26.1: after 1.21.11 come `26.1`, `26.1.1`, `26.1.2`, `26.2`.
+Do not assume a `1.x.y` shape, and do not treat `26.1` as the whole line - `26.1.2` is a distinct
+Minecraft version with its own NeoForm, NeoForge and Forge builds.
+
+Integration dependency versions live there too (`waystones_fabric_version`,
+`waystones_neoforge_version`, `modmenu_version`, `cloth_config_version`,
+`repurposed_structures_fabric_version`, `repurposed_structures_neoforge_version`) so the loaders
+cannot drift apart. The build scripts
 reference them, never a literal version.
 
 `group` is set from `group_id` in `multiloader-common.gradle`. Without that assignment Gradle
@@ -346,17 +372,28 @@ for a target version and which blockers stand in the way, without changing anyth
 
 These pins are load-bearing and interlock; changing one breaks another:
 
-- **Gradle stays on 8.14.3** because ForgeGradle 6 needs it. The build already reports
-  "Deprecated Gradle features were used ... incompatible with Gradle 9.0".
-- **Loom is pinned to `1.13.6`** (a release, not the upstream template's `1.13-SNAPSHOT`).
-  Loom 1.14 and newer require Gradle 9, so 1.13.6 is the newest usable line here.
-- **Repurposed Structures on Fabric is pinned to `7.5.22+1.21.9-fabric`**, behind the current
-  release, because every RS Fabric build for 1.21.11 is published with Loom 1.14 and Loom
-  refuses to consume a mod built by a newer Loom (`Mod was built with a newer version of
-  Loom (1.14.10), you are using Loom (1.13.6)`). It is compile-only and only
-  `RSConditionsRegistry` is used, so the adapter still works against current RS at runtime.
-- Consequence: **dropping the Forge subproject is what unblocks Gradle 9, Loom 1.14+, and a
-  current RS-Fabric pin.** They cannot be done separately.
+- **Gradle 9.5.0 / Java 25.** Minecraft 26.1 requires Java 25, and Loom 1.17 requires Gradle
+  9.5. Both are floors, not preferences.
+- **ForgeGradle 7, not 6.** FG6 refuses to apply on Gradle 9 outright ("Found Gradle version
+  Gradle 9.5.0. Versions Gradle 9.0 and newer are not supported yet"), and it is published
+  under a *different* artifact (`net.minecraftforge:ForgeGradle`) than FG7
+  (`net.minecraftforge:forgegradle`) even though the plugin id `net.minecraftforge.gradle` is
+  the same. Looking only at the old coordinate makes FG7 invisible and Gradle 9 look like a
+  dead end for Forge - it is not.
+- **Loom's plugin id changed to `net.fabricmc.fabric-loom`** with Loom 1.15. 26.x ships
+  deobfuscated, so this - the non-remapping variant - is the right one;
+  `net.fabricmc.fabric-loom-remap` is for 1.21.11 and older. Because nothing is remapped, mod
+  dependencies use the plain `implementation`/`api`/`compileOnly` configurations rather than
+  `modImplementation` and friends, there is no `mappings` block, and no refmaps are generated -
+  which is why the old Repurposed-Structures-on-Fabric pin (Loom refusing a mod built by a newer
+  Loom) is gone and both RS builds now track the current release.
+- **Java 21 bytecode** - see [Build & run](#build--run). Forge's mixin cannot read v69 class
+  files.
+- **Forge dev runs need `--mixin.config` on the command line.** FG7 has no equivalent of FG6's
+  `org.spongepowered.mixin` Gradle plugin, and in a dev run the mod loads from `build/classes`,
+  so the jar's `MixinConfigs` manifest attribute is never read. Without those args every mixin
+  silently fails to apply and the first accessor called throws an `AssertionError` from its own
+  body - which looks nothing like a mixin problem.
 
 ## Optional mod integrations
 
@@ -365,11 +402,16 @@ All are `compileOnly` / `modCompileOnly` and guarded at runtime by
 
 | Integration | fabric | neoforge | forge |
 | --- | --- | --- | --- |
-| Waystones | yes | yes | yes |
+| Waystones | yes | yes | **no 26.x build exists** |
 | Repurposed Structures | yes | yes | **no build exists** |
 
-Waystones publishes all three loaders from the TwelveIterations maven, so its version is a
-single shared property. Repurposed Structures is versioned separately per loader and its last
+**The Forge subproject has no optional integrations at all on 26.x.** Waystones dropped Forge
+after 21.11.9, so `forge/.../compat/WaystonesAdapter.java` is commented out alongside
+`RepurposedStructuresAdapter`, together with the matching `Compat.register()` and
+`Compat.getEvents()` calls, and `forge/build.gradle` declares no integration repository or
+dependency at all. Because Waystones is no longer published for every loader, its version is two
+properties (`waystones_fabric_version`, `waystones_neoforge_version`) rather than one shared
+one. Repurposed Structures is versioned separately per loader and its last
 Forge build was for 1.20.1 — so `forge/.../compat/RepurposedStructuresAdapter.java` and the
 matching `Compat.register()` call are commented out there, and `forge/build.gradle` declares
 no RS repository or dependency. That asymmetry is intentional; do not "fix" it.
@@ -385,48 +427,59 @@ These directories are gitignored, so they are per-developer and must be populate
 
 | Run | Game directory | Installed |
 | --- | --- | --- |
-| fabric `clientWithMods` | `fabric/runs/client_with_mods/mods` | Balm, Waystones, Repurposed Structures, MidnightLib, Sodium, Iris |
-| fabric `serverWithMods` | `fabric/runs/server_with_mods/mods` | Balm, Waystones, Repurposed Structures, MidnightLib |
-| neoforge `clientWithMods` / `serverWithMods` | `neoforge/run_with_mods/mods` | Balm, Waystones, Repurposed Structures |
-| forge `clientWithMods` | `forge/runs/client_with_mods/mods` | Balm, Waystones |
-| forge `serverWithMods` | `forge/runs/server_with_mods/mods` | Balm, Waystones |
+| fabric `clientWithMods` | `fabric/runs/client_with_mods/mods` | Balm, Shogi, Waystones, Repurposed Structures, MidnightLib, Sodium, Iris |
+| fabric `serverWithMods` | `fabric/runs/server_with_mods/mods` | Balm, Shogi, Waystones, Repurposed Structures, MidnightLib |
+| neoforge `clientWithMods` / `serverWithMods` | `neoforge/run_with_mods/mods` | Balm, Shogi, Waystones, Repurposed Structures |
+| forge `clientWithMods` | `forge/runs/client_with_mods/mods` | Balm |
+| forge `serverWithMods` | `forge/runs/server_with_mods/mods` | Balm |
 
-Required chains when refreshing these, all downloadable from Modrinth: **Waystones needs Balm**
-(`>=21.11.3`), **RS on Fabric needs MidnightLib** (`>=1.5.7`), and **Iris needs Sodium** (`0.8.x`).
+Required chains when refreshing these, all downloadable from Modrinth: **Waystones needs both
+Balm and Shogi** (26.1.2.15 wants `balm >=26.1.2.12` and `shogi >=26.1.2.8`; Shogi is a second
+BlayTheNinth library that Waystones started requiring on 26.x, and it is easy to miss because
+nothing else references it), **RS on Fabric needs MidnightLib** (`>=1.5.7`), and **Iris needs
+Sodium** (`0.9.x`). Read the `depends` block of each jar you install rather than assuming the
+chain is the same as last time - these move.
 
 **Do not just take the newest of everything** - check each jar's `breaks` block, not only its
 `depends`. Sodium declares which Iris versions it breaks, and the newest pair is *mutually
-incompatible*: Sodium `0.8.13`/`0.8.14` break `iris <=1.10.7`, while `1.10.7` is the newest Iris
-for 1.21.11. Sodium `0.8.12` breaks only `iris <=1.10.6`, so **Iris 1.10.7 + Sodium 0.8.12** is
-the working pair. Fabric refuses to launch otherwise, with a modal error dialog that blocks the
-run until someone clicks Exit.
-Sodium and Iris are client-only. Forge has no Repurposed Structures build, so its folders only
-carry Balm and Waystones. Keep these jars on the same Minecraft version as `minecraft_version`;
+incompatible on 1.21.11, where Sodium had to be held back. On 26.1.2 the newest of each happens
+to agree - Sodium `0.9.1` breaks `iris <=1.11.1` and Iris `1.11.3` requires `sodium 0.9.x`, so
+**Iris 1.11.3 + Sodium 0.9.1** is the working pair - but that is luck, not a rule, so check again
+every time. Fabric refuses to launch on a bad pair, with a modal error dialog that blocks the run
+until someone clicks Exit.
+Sodium and Iris are client-only. Forge has neither Repurposed Structures nor (since 26.x)
+Waystones, so its folders carry Balm alone. Keep these jars on the same Minecraft version as `minecraft_version`;
 the plain `client`/`server` runs deliberately have empty `mods/` folders.
 
 ## Forge
 
 The upstream MultiLoader-Template dropped Forge, but this repo keeps the subproject alive and it
-still has to be maintained. It is wired up by hand: ForgeGradle (`net.minecraftforge.gradle`) plus
-the SpongePowered `mixin` Gradle plugin and explicit refmap/`MixinConfigs` manifest handling, instead
-of ModDevGradle/Loom.
+still has to be maintained. It is wired up by hand with ForgeGradle
+(`net.minecraftforge.gradle`), instead of ModDevGradle/Loom.
 
-It builds on 1.21.11 (Forge 61.2.1), but only because of three settings in `gradle.properties`
-that exist solely for it. If `forge` breaks, suspect the build environment before the Java sources:
+It builds on 26.1.2 (Forge 64.1.3) with **ForgeGradle 7**. FG6 cannot be used at all here: it
+refuses to apply on Gradle 9, and FG7 is published under a different artifact coordinate
+(`net.minecraftforge:forgegradle`, not `net.minecraftforge:ForgeGradle`) behind the same plugin
+id - so a version probe that only knows the old coordinate reports "6.0.54 is the newest" and
+makes Forge look unsalvageable. FG7 also retired both workarounds this subproject used to need:
+the daemon/parallel ban and `systemProp.net.minecraftforge.gradle.repo.sources.force`.
 
-1. `org.gradle.daemon=false` and `org.gradle.parallel=false` - see [Build & run](#build--run).
-2. `systemProp.net.minecraftforge.gradle.repo.sources.force=true`. ForgeGradle 6.0.54 cannot
-   assemble the patched Minecraft jar for Forge 1.21.11 from binaries: `MinecraftUserRepo.findRaw`
-   copies the binpatched jar and then adds the recompiled MCP inject classes over it, and for this
-   version both contain `mcp/client/Start.class`, so it dies with
-   `java.util.zip.ZipException: duplicate entry: mcp/client/Start.class`. Forcing FG down its
-   sources path decompiles and recompiles Forge instead, avoiding that merge. The first build is
-   slow (a full Forge decompile); afterwards it is cached in `forge/build/fg_cache`.
+Its DSL differs from FG6: no `mappings channel:`, no `reobf`, `accessTransformer = true` instead
+of a path, `runs { register('name') { ... } }` with `workingDir` and `mainClass`, repositories
+declared via `minecraft.mavenizer(it)` / `fg.forgeMaven` / `fg.minecraftLibsMaven`, and
+`implementation minecraft.dependency(...)` instead of a `minecraft` configuration. There is no
+publishing helper (`fg.component`) any more.
 
 Forge-specific quirks:
 
-- Its access transformer uses **SRG names** (`m_125977_`) while NeoForge's uses official names, so
-  the file cannot be shared.
+- **It has no access transformer.** The old one used SRG names (`m_125977_`), which do not exist
+  in deobfuscated 26.x, and every member it unlocked was for datagen this subproject does not do.
+  It was deleted rather than translated.
+- **Dev runs need `--mixin.config` passed explicitly**, since FG7 has no mixin Gradle plugin - see
+  [Toolchain constraints](#toolchain-constraints). It also means no refmap is produced, which is
+  correct: 26.x is deobfuscated and the `refmap` key is gone from all four mixin configs.
+- **Its mixin is the vanilla SpongePowered one (0.8.7), not Fabric's fork**, which is why the
+  whole mod targets Java 21 bytecode - see [Build & run](#build--run).
 - **Custom-named run configurations need `main` and `args` set by hand.** ForgeGradle merges the
   userdev run template (main class, `--launchTarget`, asset paths) only into runs literally named
   `client`, `server` or `data`. `clientWithMods` / `serverWithMods` match no template, so without
@@ -434,21 +487,22 @@ Forge-specific quirks:
   The values in `forge/build.gradle` mirror the templates in forge's userdev `config.json`; if a
   future Forge version changes them, copy the new ones from there.
 - The jar declares its mixin configs through the `MixinConfigs` manifest attribute rather than a
-  `[[mixins]]` block. It ships **no** `signpost.refmap.json` even though `signpost.mixins.json`
-  names one - that is long-standing and fine, since Forge runs on official mappings.
+  `[[mixins]]` block. That attribute is read from the built jar only; a dev run needs the
+  command-line args above.
 - `forge` registers **no** data providers (no `GatherDataEvent` listener), so its `data` run
   generates nothing and `data/StructurePoolElementProvider.java` is unused. Datagen is NeoForge's
-  job. `registry/VillageRegistry.java` and `compat/RepurposedStructuresAdapter.java` are
-  fully commented out on purpose.
+  job. `registry/VillageRegistry.java`, `compat/RepurposedStructuresAdapter.java` and (since
+  26.x) `compat/WaystonesAdapter.java` are fully commented out on purpose.
 
 When changing `common`, keep the Forge sources consistent (new service files, registry entries,
 packet handler changes) and verify with `./gradlew :forge:build`. Forge is the loader most likely
-to need a runtime run on top of that - if one is called for, note its run task is `Server`, not
-`runServer` (see [Runtime verification](#runtime-verification) for when to run one at all).
+to need a runtime run on top of that - its task is `:forge:runServer` (see
+[Runtime verification](#runtime-verification) for when to run one at all).
 
 ## Conventions
 
-- Java 21, 4-space indent, mod code under `gollorum.signpost.*`.
+- Java 25 toolchain compiling to Java 21 bytecode, 4-space indent, mod code under
+  `gollorum.signpost.*`.
 - `Signpost.LOGGER` (SLF4J) for logging; `Signpost.MOD_ID` for the namespace — build
   `Identifier`s via `Identifier.fromNamespaceAndPath(Signpost.MOD_ID, …)`.
 - `.gitattributes` enforces LF for `*.java`, but **CRLF for `*.gradle`** — keep that in mind when

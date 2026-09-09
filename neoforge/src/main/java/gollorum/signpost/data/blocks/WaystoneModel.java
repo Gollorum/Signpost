@@ -15,8 +15,8 @@ import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.client.data.models.model.TextureMapping;
 import net.minecraft.client.data.models.model.TextureSlot;
 import net.minecraft.client.data.models.model.TexturedModel;
-import net.minecraft.client.renderer.block.model.BlockModelDefinition;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.resources.model.sprite.Material;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
@@ -28,7 +28,7 @@ public class WaystoneModel {
         blockModels.createTrivialBlock(
             BlockRegistry.WaystoneBlock.get(),
             TexturedModel.createDefault(
-                block -> new TextureMapping().put(TextureSlot.ALL, waystoneTexture),
+                block -> new TextureMapping().put(TextureSlot.ALL, new Material(waystoneTexture)),
                 ModelTemplates.CUBE_ALL
             ));
 

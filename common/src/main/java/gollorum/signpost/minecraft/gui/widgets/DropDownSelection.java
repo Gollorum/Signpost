@@ -6,7 +6,7 @@ import gollorum.signpost.minecraft.gui.utils.*;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.WidgetSprites;
@@ -136,8 +136,8 @@ public class DropDownSelection<EntryType> extends ImageButton {
     }
 
     @Override
-    public void renderContents(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        super.renderContents(graphics, mouseX, mouseY, partialTicks);
+    public void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
+        super.extractContents(graphics, mouseX, mouseY, partialTicks);
         int yTexStart = this.isHovered ? texture.size.height : 0;
         int xTexStart = this.isListVisible ? texture.size.width : 0;
 
@@ -148,7 +148,7 @@ public class DropDownSelection<EntryType> extends ImageButton {
             this.width, this.height,
             texture.fileSize.height, texture.fileSize.width
         );
-        if(isListVisible) list.render(graphics, mouseX, mouseY, partialTicks);
+        if(isListVisible) list.extractRenderState(graphics, mouseX, mouseY, partialTicks);
     }
 
     public class List extends ObjectSelectionList<List.Entry> {
@@ -178,7 +178,7 @@ public class DropDownSelection<EntryType> extends ImageButton {
         }
 
 //        @Override
-//        protected void renderListItems(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+//        protected void renderListItems(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
 //            int itemCount = this.getItemCount();
 //            for(int i = 0; i < itemCount; ++i) {
 //                int rowTop = this.getRowTop(i);
@@ -210,7 +210,7 @@ public class DropDownSelection<EntryType> extends ImageButton {
             }
 
             @Override
-            public void renderContent(GuiGraphics graphics, int mouseX, int mouseY, boolean isHovering, float partialTick) {
+            public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean isHovering, float partialTick) {
                 int brightness = 255;
 //                if(this.isMouseOver(mouseX, mouseY))
 //                    brightness = (int) (brightness * 0.8f);

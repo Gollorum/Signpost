@@ -37,7 +37,7 @@ game. They just silently discard the player's data.
 
 ## Prerequisites
 
-The corpus at `testsaves/<version>/world/` must exist. It is gitignored, so a fresh clone
+The corpus at `testsaves/<signpost>/<minecraft>/world/` must exist. It is gitignored, so a fresh clone
 has none, and the harness will exit with code 2 and instructions rather than pass vacuously.
 See `testsaves/README.md` for how to populate it. **Never** point the corpus at a save
 produced by the current working tree — it must come from a released build, otherwise the
@@ -55,9 +55,12 @@ python .claude/skills/full-runtime-test/audit-test-save.py some/world # any save
 
 It prints the Minecraft version, the loader, the exact Signpost version from `level.dat`'s
 `fml` mod list, the number of waystones in the library and of `signpost:post` /
-`signpost:waystone` block entities, and the size. It **fails** a save that was written by
-the version currently in `gradle.properties` (that tests nothing), that has no Signpost
-content at all, or that is a corpus entry with no `SOURCE.txt`.
+`signpost:waystone` block entities, and the size. It **fails** a save that has no Signpost
+content at all, that is a corpus entry with no `SOURCE.txt`, or that moves *neither*
+version - same Signpost build **and** same Minecraft version as `gradle.properties`, which
+tests nothing. A save written by the current Signpost version is still usable when the
+Minecraft version differs: a port is exactly as likely to break serialization as a mod
+release, so that entry tests the version bump.
 
 The harness runs it automatically before the matrix and refuses to start on a failure, so a
 bad corpus costs seconds rather than an hour.
@@ -81,7 +84,7 @@ the full matrix:
 | --- | --- |
 | `-ServersOnly` | The 6 server runs only; opens no windows. |
 | `-Only fabric,forge-server` | Filter on run ids: an exact id selects just that run, anything else is a substring match. |
-| `-SaveVersion 2.03.0` | Load a specific corpus version (default: highest-sorting). |
+| `-SaveVersion 2.03.0/1.21.10` | Load a specific corpus entry. A bare `2.03.0` takes the highest Minecraft version under it; default is the highest-sorting entry. |
 | `-ServerTimeoutSec` / `-ClientTimeoutSec` | Defaults 420 / 600 seconds. |
 
 Run it in the background and watch for completion — a full matrix takes a while. It is

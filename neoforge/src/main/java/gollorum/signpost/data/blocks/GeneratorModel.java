@@ -8,6 +8,7 @@ import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.client.data.models.model.TextureMapping;
 import net.minecraft.client.data.models.model.TextureSlot;
 import net.minecraft.client.data.models.model.TexturedModel;
+import net.minecraft.client.resources.model.sprite.Material;
 
 public class GeneratorModel {
 
@@ -16,7 +17,7 @@ public class GeneratorModel {
             BlockRegistry.WaystoneGenerator.get(),
 
             TexturedModel.createDefault(
-                block -> new TextureMapping().put(TextureSlot.ALL, TextureResource.waystoneTextureLocation.identifier()),
+                block -> new TextureMapping().put(TextureSlot.ALL, new Material(TextureResource.waystoneTextureLocation.identifier())),
                 ModelTemplates.CUBE_ALL
             )
         );

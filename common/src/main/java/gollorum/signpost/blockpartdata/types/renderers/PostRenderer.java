@@ -10,10 +10,10 @@ import gollorum.signpost.minecraft.rendering.TexturedModel;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.client.resources.model.sprite.SpriteGetter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.level.Level;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
 
 import java.util.function.Function;
 
@@ -22,11 +22,11 @@ public class PostRenderer extends BlockPartRenderer<PostBlockPart> {
 	@Override
 	public void render(
         PostBlockPart post,
-        Level level,
+        BlockAndTintGetter level,
         BlockPos pos,
         PoseStack blockToView,
         SubmitNodeCollector nodeCollector,
-        MaterialSet materials,
+        SpriteGetter materials,
         int combinedLights,
         int combinedOverlay,
         Function<Identifier, RenderType> renderTypeFactory,

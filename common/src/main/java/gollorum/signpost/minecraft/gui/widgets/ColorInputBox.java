@@ -5,7 +5,7 @@ import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.minecraft.gui.utils.TextureResource;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 
 import java.util.Collections;
@@ -66,7 +66,7 @@ public class ColorInputBox extends InputBox {
     }
 
     @Override
-    public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+    public void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
         graphics.blit(
             RenderPipelines.GUI_TEXTURED,
             TextureResource.paintBackground.location,
@@ -76,7 +76,7 @@ public class ColorInputBox extends InputBox {
             TextureResource.paintBackground.size.width, TextureResource.paintBackground.size.height,
             getCurrentColor()
         );
-        super.renderWidget(graphics, mouseX, mouseY, partialTicks);
+        super.extractWidgetRenderState(graphics, mouseX, mouseY, partialTicks);
     }
 
     public void setColorResponder(Consumer<Integer> responder) {

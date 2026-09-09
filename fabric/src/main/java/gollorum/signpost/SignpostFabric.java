@@ -16,7 +16,7 @@ import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.registry.DynamicRegistries;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLevelEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.core.Registry;
@@ -71,7 +71,7 @@ public class SignpostFabric implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTING.register(events::serverAboutToStart);
         ServerLifecycleEvents.SERVER_STOPPED.register(events::onServerStopped);
         ServerPlayConnectionEvents.JOIN.register(events::joinServer);
-        ServerWorldEvents.LOAD.register(events::onWorldLoad);
+        ServerLevelEvents.LOAD.register(events::onWorldLoad);
         CommandRegistry.register();
         ArgumentTypeInfosInjector.register();
     }

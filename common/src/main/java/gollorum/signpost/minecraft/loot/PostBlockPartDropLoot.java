@@ -8,7 +8,7 @@ import gollorum.signpost.utils.BlockPart;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.entries.LootPoolEntryType;
+import net.minecraft.world.level.storage.loot.entries.LootPoolSingletonContainer;
 import net.minecraft.world.level.storage.loot.entries.LootPoolSingletonContainer;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
@@ -47,7 +47,7 @@ public class PostBlockPartDropLoot extends LootPoolSingletonContainer {
     }
 
     @Override
-    public LootPoolEntryType getType() {
+    public MapCodec<? extends LootPoolSingletonContainer> codec() {
         return LootEntries.POST_BLOCK_LOOT;
     }
 }

@@ -13,10 +13,10 @@ public class RecipeRegistry {
 	private static final DeferredRegister<RecipeSerializer<?>> Register =
 		DeferredRegister.create(ForgeRegistries.RECIPE_SERIALIZERS, Signpost.MOD_ID);
 
-	public static final RegistryObject<CutWaystoneRecipe.Serializer> CutWaystoneSerializer =
+	public static final RegistryObject<RecipeSerializer<CutWaystoneRecipe>> CutWaystoneSerializer =
 		Register.register(
 			CutWaystoneRecipe.RegistryName,
-			CutWaystoneRecipe.Serializer::new
+			() -> CutWaystoneRecipe.SERIALIZER
 		);
 
 	public static void register(BusGroup bus){

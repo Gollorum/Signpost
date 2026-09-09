@@ -6,11 +6,11 @@ import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.minecraft.models.modelGeneration.QuadModel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.client.resources.model.sprite.SpriteGetter;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.resources.Identifier;
 import org.joml.*;
@@ -24,7 +24,7 @@ public class RenderingUtil {
         PoseStack blockToView,
         TexturedModel model,
         SubmitNodeCollector nodeCollector,
-        MaterialSet materials,
+        SpriteGetter materials,
         int combinedLights,
         int combinedOverlay,
         Function<Identifier, RenderType> renderTypeFactory,
@@ -102,7 +102,7 @@ public class RenderingUtil {
         }
     }
 
-    public static void drawString(GuiGraphics graphics, Font fontRenderer, String text, Point point, Rect.XAlignment xAlignment, Rect.YAlignment yAlignment, int color, int maxWidth, boolean dropShadow) {
+    public static void drawString(GuiGraphicsExtractor graphics, Font fontRenderer, String text, Point point, Rect.XAlignment xAlignment, Rect.YAlignment yAlignment, int color, int maxWidth, boolean dropShadow) {
         int textWidth = fontRenderer.width(text);
         float scale = Math.min(1f, maxWidth / (float) textWidth);
         graphics.pose().pushMatrix();
@@ -111,7 +111,7 @@ public class RenderingUtil {
             Rect.yCoordinateFor(point.y, fontRenderer.lineHeight, yAlignment) + fontRenderer.lineHeight * 0.5f
         );
         if(scale < 1) graphics.pose().scale(scale, scale);
-        graphics.drawString(
+        graphics.text(
             fontRenderer,
             text,
             (maxWidth - Math.min(maxWidth, textWidth)) / 2,
