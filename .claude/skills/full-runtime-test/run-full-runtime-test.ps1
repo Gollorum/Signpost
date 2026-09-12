@@ -60,6 +60,13 @@ $Matrix = @(
 # Lines that mean the run FAILED.
 $FailPatterns = @(
     'Failed to parse saved data',
+    # AGENTS.md, "What counts as passing": no signpost entry at ERROR/FATAL. Some of the worst
+    # breakage never crashes anything - a codec that fails to decode a block entity logs one line
+    # and the game carries on with the data silently dropped, which without this pattern is
+    # indistinguishable from a clean run. A 2.02.0 save's overlays did exactly that. Fabric prints
+    # "(signpost)", NeoForge and Forge print "[signpost/]", hence the character classes.
+    '/ERROR\]\s*[\(\[]signpost[\)\]/]',
+    '/FATAL\]\s*[\(\[]signpost[\)\]/]',
     'NoClassDefFoundError',
     'ClassNotFoundException',
     'Mixin apply failed',

@@ -108,15 +108,32 @@ public abstract class Overlay {
         register(Mycelium);
     }
 
-    public static final Codec<Overlay> CODEC = Codec.STRING.xmap(
-        id -> {
-            if(!overlayRegistry.containsKey(id)) {
-                Signpost.LOGGER.error("Tried to read overlay with id " + id + ", but it was not registered.");
-                return Gras;
-            } else return overlayRegistry.get(id);
-        },
-        overlay -> overlay.id
-    );
+    private static Overlay byId(String id) {
+        if(!overlayRegistry.containsKey(id)) {
+            Signpost.LOGGER.error("Tried to read overlay with id " + id + ", but it was not registered.");
+            return Gras;
+        } else return overlayRegistry.get(id);
+    }
+
+    public static final Codec<Overlay> CODEC = Codec.STRING.xmap(Overlay::byId, overlay -> overlay.id);
+
+    /**
+     * Everything up to 2.02 wrote the overlay as a compound {@code {Id: "<id>"}}, not as a bare
+     * string - see {@code Overlay.SerializerImpl.write} at v2.02.0, which did
+     * {@code compound.putString("Id", overlay.id)}. Reading such a save with {@link #CODEC} fails
+     * with NbtOps' {@code "Not a string"}, and because the enclosing map codec keeps its partial
+     * result, the whole {@code large_sign} entry is dropped and the signpost comes back bare.
+     *
+     * <p>Only 2.03+ ever wrote the flat string, and 2.03 only ever shipped for 1.21.10+, so the
+     * compound shape is exactly the shape of every save this backport has to migrate. Nothing
+     * encodes version 1 any more - {@code PostData.CODEC} always writes version 2 - so this is a
+     * decode-only path. The village structure templates in
+     * {@code data/signpost/structure/village/} are version 1 on disk, but all sixteen of them
+     * carry {@code Overlay:{IsPresent:0b}} and so never reach the {@code Value} branch.
+     */
+    public static final Codec<Overlay> CODEC_V1 = Codec.STRING.fieldOf("Id")
+        .xmap(Overlay::byId, overlay -> overlay.id)
+        .codec();
 
     public static final StreamCodec<ByteBuf, Overlay> STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(
         id -> {

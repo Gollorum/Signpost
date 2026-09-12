@@ -212,10 +212,17 @@ def audit(world, props):
     mc_now = props.get('minecraft_version')
 
     if sp_save and sp_now:
-        if sp_save == sp_now:
+        if sp_save == sp_now and (not mc_save or not mc_now or mc_save == mc_now):
             r.f('save was written by Signpost %s, which is the version in gradle.properties. '
                 'A corpus entry must come from an OLDER released build, otherwise it tests '
                 'nothing about compatibility.' % sp_save)
+        elif sp_save == sp_now:
+            # Same mod version, different Minecraft version: one release ported across a
+            # Minecraft upgrade. Loading a save written by 2.04.0 on 1.21.1 with 2.04.0 on
+            # 1.21.11 tests exactly the thing a backport has to get right - that both trees
+            # describe the same bytes - so this is a meaningful corpus entry even though the
+            # version string did not move.
+            r.i('port tested    : Signpost %s, %s -> %s' % (sp_save, mc_save, mc_now))
         else:
             r.i('upgrade tested : %s -> %s' % (sp_save, sp_now))
 

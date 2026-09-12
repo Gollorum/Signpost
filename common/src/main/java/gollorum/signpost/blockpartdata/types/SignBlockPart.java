@@ -98,7 +98,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
 
         public static Codec<CoreData> codec(int version) {
             var optionalOverlayCodec = version < 2
-                ? OptionalSerializerV1.of(Overlay.CODEC).fieldOf("Overlay")
+                ? OptionalSerializerV1.of(Overlay.CODEC_V1).fieldOf("Overlay")
                 : Codec.optionalField("Overlay", Overlay.CODEC, true);
             var optionalDestinationCodec = version < 2
                 ? Codec.BOOL.<Optional<WaystoneHandle>>dispatch(
