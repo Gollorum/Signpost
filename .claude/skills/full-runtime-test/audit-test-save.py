@@ -252,14 +252,33 @@ def audit(world, props):
             m = re.match(r'\s*([A-Za-z_]+)\s*:\s*(.+?)\s*$', line)
             if m:
                 decl[m.group(1).lower()] = m.group(2)
-        need = [k for k in ('released_version', 'source_url') if not decl.get(k)]
-        if need:
-            r.w('SOURCE.txt is missing: %s' % ', '.join(need))
+        rv = (decl.get('released_version') or '').strip()
+        # A backport is the one case where the save legitimately comes from an UNRELEASED
+        # build: the branch under test is what has to prove it writes data the already-shipped
+        # newer versions can read, and there is no published artifact to make the save from.
+        # Such an entry declares `released_version: none` plus the commit it was built at, so
+        # the thing that cannot be recovered later - which code wrote these bytes - is on
+        # record. Everything else still has to name a published artifact.
+        if rv.lower() in ('none', 'unreleased', 'wip', ''):
+            commit = decl.get('source_commit')
+            if not commit:
+                r.f('SOURCE.txt declares no released_version, so it must record '
+                    'source_commit: <sha> instead - which build wrote the save is otherwise '
+                    'unrecoverable. See testsaves/README.md.')
+            else:
+                r.i('unreleased     : built at commit %s' % commit)
+                r.w('this entry was written by an UNRELEASED build, so it is evidence about '
+                    'that branch and nothing else. If a newer Minecraft version fails to load '
+                    'it, the branch that wrote it is what gets fixed and the save recreated - '
+                    'never the newer version, which has already shipped.')
         else:
-            r.i('declared source: %s from %s' % (decl['released_version'], decl['source_url']))
-        if sp_save and decl.get('released_version') and decl['released_version'] != sp_save:
-            r.f('SOURCE.txt declares %s but level.dat says the save was written by %s.'
-                % (decl['released_version'], sp_save))
+            if not decl.get('source_url'):
+                r.w('SOURCE.txt is missing: source_url')
+            else:
+                r.i('declared source: %s from %s' % (rv, decl['source_url']))
+            if sp_save and rv != sp_save:
+                r.f('SOURCE.txt declares %s but level.dat says the save was written by %s.'
+                    % (rv, sp_save))
     elif in_corpus:
         r.f('no SOURCE.txt beside the save. A corpus entry must record which *published* '
             'artifact produced it - a version string in level.dat cannot distinguish a '
@@ -306,11 +325,22 @@ def audit(world, props):
     cd = os.path.join(world, 'data', 'chunks.dat')
     if os.path.exists(cd):
         try:
-            tickets = (nbt_load(cd).get('data') or {}).get('tickets') or []
-            for t in tickets:
+            data = nbt_load(cd).get('data') or {}
+            # Two shapes on disk. 1.21.10+ writes a `tickets` list of compounds carrying
+            # chunk_pos. Older versions - 1.21.1 among them - write `Forced`, a long array of
+            # ChunkPos.asLong() values: x in the low 32 bits, z in the high 32, both signed.
+            # Reading only the newer shape reports "forced chunks: 0" for a save that force-loads
+            # plenty, which understates the coverage of every server run against it.
+            for t in (data.get('tickets') or []):
                 cp = t.get('chunk_pos') if isinstance(t, dict) else None
                 if isinstance(cp, list) and len(cp) == 2:
                     forced.add((cp[0], cp[1]))
+            for packed in (data.get('Forced') or []):
+                x = packed & 0xFFFFFFFF
+                z = (packed >> 32) & 0xFFFFFFFF
+                if x >= 0x80000000: x -= 0x100000000
+                if z >= 0x80000000: z -= 0x100000000
+                forced.add((x, z))
         except Exception as e:
             r.w('data/chunks.dat could not be parsed: %s' % e)
     r.i('forced chunks  : %d' % len(forced))
