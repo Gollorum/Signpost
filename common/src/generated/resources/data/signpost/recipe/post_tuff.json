@@ -4,13 +4,25 @@
   "group": "Signpost",
   "key": {
     "b": [
-      "minecraft:tuff",
-      "minecraft:polished_tuff",
-      "minecraft:tuff_bricks",
-      "minecraft:chiseled_tuff",
-      "minecraft:chiseled_tuff_bricks"
+      {
+        "item": "minecraft:tuff"
+      },
+      {
+        "item": "minecraft:polished_tuff"
+      },
+      {
+        "item": "minecraft:tuff_bricks"
+      },
+      {
+        "item": "minecraft:chiseled_tuff"
+      },
+      {
+        "item": "minecraft:chiseled_tuff_bricks"
+      }
     ],
-    "s": "#minecraft:signs"
+    "s": {
+      "tag": "minecraft:signs"
+    }
   },
   "pattern": [
     "s",
@@ -19,9 +31,7 @@
   ],
   "result": {
     "components": {
-      "minecraft:item_name": {
-        "translate": "item.signpost.post.signpost.tuff"
-      },
+      "minecraft:item_name": "{\"translate\":\"item.signpost.post.signpost.tuff\"}",
       "signpost:post_data": {
         "DataVersion": 2,
         "ModelType": "signpost:tuff",

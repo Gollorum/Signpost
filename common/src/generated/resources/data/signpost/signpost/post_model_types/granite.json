@@ -1,7 +1,11 @@
 {
   "addSignIngredient": [
-    "minecraft:granite",
-    "minecraft:polished_granite"
+    {
+      "item": "minecraft:granite"
+    },
+    {
+      "item": "minecraft:polished_granite"
+    }
   ],
   "mainTexture": {
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",

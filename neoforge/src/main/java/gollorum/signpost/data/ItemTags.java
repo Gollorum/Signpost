@@ -8,21 +8,22 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.IntrinsicHolderTagsProvider;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 
 public class ItemTags extends IntrinsicHolderTagsProvider<Item> {
 
-    public static final TagKey<Item> WaystoneTag = net.minecraft.tags.ItemTags.create(Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "waystone"));
-    public static final TagKey<Item> SignpostTag = net.minecraft.tags.ItemTags.create(Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "signpost"));
+    public static final TagKey<Item> WaystoneTag = net.minecraft.tags.ItemTags.create(ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "waystone"));
+    public static final TagKey<Item> SignpostTag = net.minecraft.tags.ItemTags.create(ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "signpost"));
 
-    public ItemTags(BlockTags blockTags, PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider) {
-        super(output, Registries.ITEM, lookupProvider, i -> i.builtInRegistryHolder().key());
+    public ItemTags(BlockTags blockTags, PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, ExistingFileHelper existingFileHelper) {
+        super(output, Registries.ITEM, lookupProvider, i -> i.builtInRegistryHolder().key(), Signpost.MOD_ID, existingFileHelper);
     }
 
     @Override

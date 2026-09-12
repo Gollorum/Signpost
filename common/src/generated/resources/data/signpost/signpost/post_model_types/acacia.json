@@ -1,5 +1,7 @@
 {
-  "addSignIngredient": "minecraft:acacia_sign",
+  "addSignIngredient": {
+    "item": "minecraft:acacia_sign"
+  },
   "mainTexture": {
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",
     "ResourceLocation": "minecraft:block/stripped_acacia_log"

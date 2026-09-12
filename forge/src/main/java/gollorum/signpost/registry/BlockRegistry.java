@@ -4,7 +4,7 @@ import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.WaystoneGeneratorBlock;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.eventbus.api.bus.BusGroup;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -40,7 +40,7 @@ public class BlockRegistry {
     public static final RegistryObject<WaystoneGeneratorBlock> WaystoneGenerator =
         Register.register(WaystoneGeneratorBlock.REGISTRY_NAME, WaystoneGeneratorBlock::getInstance);
 
-    public static void register(BusGroup bus){
+    public static void register(IEventBus bus){
         Register.register(bus);
     }
 }

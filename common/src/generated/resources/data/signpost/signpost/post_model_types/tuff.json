@@ -1,10 +1,20 @@
 {
   "addSignIngredient": [
-    "minecraft:tuff",
-    "minecraft:polished_tuff",
-    "minecraft:tuff_bricks",
-    "minecraft:chiseled_tuff",
-    "minecraft:chiseled_tuff_bricks"
+    {
+      "item": "minecraft:tuff"
+    },
+    {
+      "item": "minecraft:polished_tuff"
+    },
+    {
+      "item": "minecraft:tuff_bricks"
+    },
+    {
+      "item": "minecraft:chiseled_tuff"
+    },
+    {
+      "item": "minecraft:chiseled_tuff_bricks"
+    }
   ],
   "mainTexture": {
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",

@@ -1,5 +1,7 @@
 {
-  "addSignIngredient": "minecraft:spruce_sign",
+  "addSignIngredient": {
+    "item": "minecraft:spruce_sign"
+  },
   "mainTexture": {
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",
     "ResourceLocation": "minecraft:block/stripped_spruce_log"

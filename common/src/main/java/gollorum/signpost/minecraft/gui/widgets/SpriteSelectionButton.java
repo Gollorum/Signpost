@@ -6,8 +6,6 @@ import gollorum.signpost.utils.Either;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.input.InputWithModifiers;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.network.chat.Component;
@@ -39,24 +37,25 @@ public class SpriteSelectionButton extends AbstractButton {
     }
 
     @Override
-    protected void renderContents(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        var sprite = material.leftOr(graphics::getSprite);
+    public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+        var sprite = material.leftOr(Material::sprite);
         var contents = sprite.contents();
         if(contents.width() > contents.height())
             height = width * contents.height() / contents.width();
         else if (contents.width() < contents.height())
             width = height * contents.width() / contents.height();
-        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, this.getX(), this.getY(), this.width, this.height, tint);
+        graphics.blit(this.getX(), this.getY(), 0, this.width, this.height, sprite, 
+            Colors.getRed(tint) / 255f, Colors.getGreen(tint) / 255f, Colors.getBlue(tint) / 255f, Colors.getAlpha(tint) / 255f);
         int xMin = this.getX();
         int xMax = xMin + width;
         int yMin = this.getY();
         int yMax = yMin + height;
-        if(isHovered) graphics.fill(RenderPipelines.GUI, xMin, yMin, xMax, yMax, 0x50ffffff);
+        if(isHovered) graphics.fill(xMin, yMin, xMax, yMax, 0x50ffffff);
 
     }
 
     @Override
-    public void onPress(InputWithModifiers inputWithModifiers) {
+    public void onPress() {
         onPressed.accept(this);
     }
 

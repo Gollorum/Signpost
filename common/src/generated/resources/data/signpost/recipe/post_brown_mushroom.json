@@ -3,8 +3,12 @@
   "category": "misc",
   "group": "Signpost",
   "key": {
-    "b": "minecraft:brown_mushroom_block",
-    "s": "#minecraft:signs"
+    "b": {
+      "item": "minecraft:brown_mushroom_block"
+    },
+    "s": {
+      "tag": "minecraft:signs"
+    }
   },
   "pattern": [
     "s",
@@ -13,9 +17,7 @@
   ],
   "result": {
     "components": {
-      "minecraft:item_name": {
-        "translate": "item.signpost.post.signpost.brown_mushroom"
-      },
+      "minecraft:item_name": "{\"translate\":\"item.signpost.post.signpost.brown_mushroom\"}",
       "signpost:post_data": {
         "DataVersion": 2,
         "ModelType": "signpost:brown_mushroom",

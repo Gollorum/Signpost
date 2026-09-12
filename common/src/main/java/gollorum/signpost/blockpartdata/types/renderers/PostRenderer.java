@@ -7,12 +7,10 @@ import gollorum.signpost.minecraft.gui.utils.Colors;
 import gollorum.signpost.minecraft.models.PostModel;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.minecraft.rendering.TexturedModel;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 
 import java.util.function.Function;
@@ -25,12 +23,10 @@ public class PostRenderer extends BlockPartRenderer<PostBlockPart> {
         Level level,
         BlockPos pos,
         PoseStack blockToView,
-        SubmitNodeCollector nodeCollector,
-        MaterialSet materials,
+        MultiBufferSource buffer,
         int combinedLights,
         int combinedOverlay,
-        Function<Identifier, RenderType> renderTypeFactory,
-        ModelFeatureRenderer.CrumblingOverlay crumblingOverlay
+        Function<ResourceLocation, RenderType> renderTypeFactory
     ) {
 		RenderingUtil.render(
             blockToView,
@@ -39,12 +35,10 @@ public class PostRenderer extends BlockPartRenderer<PostBlockPart> {
 				post.getTexture().toMaterial(),
 				post.getTexture().tint().map(tint -> tint.getColorAt(level, pos)).orElse(Colors.white)
 			),
-            nodeCollector,
-            materials,
+            buffer,
             combinedLights,
             combinedOverlay,
-            renderTypeFactory,
-            crumblingOverlay
+            renderTypeFactory
         );
 	}
 

@@ -1,5 +1,7 @@
 {
-  "addSignIngredient": "minecraft:cherry_sign",
+  "addSignIngredient": {
+    "item": "minecraft:cherry_sign"
+  },
   "mainTexture": {
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",
     "ResourceLocation": "minecraft:block/stripped_cherry_log"

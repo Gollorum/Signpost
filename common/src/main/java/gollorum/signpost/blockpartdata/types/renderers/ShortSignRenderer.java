@@ -11,7 +11,6 @@ import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.utils.math.MathUtils;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
@@ -49,12 +48,12 @@ public class ShortSignRenderer extends SignRenderer<SmallShortSignBlockPart> {
 	}
 
 	@Override
-	protected void renderText(SmallShortSignBlockPart sign, PoseStack matrix, Font fontRenderer, SubmitNodeCollector nodeCollector, int combinedLights) {
-		renderText(true, sign, matrix, fontRenderer, nodeCollector, combinedLights);
-		renderText(false, sign, matrix, fontRenderer, nodeCollector, combinedLights);
+	protected void renderText(SmallShortSignBlockPart sign, PoseStack matrix, Font fontRenderer, MultiBufferSource buffer, int combinedLights) {
+		renderText(true, sign, matrix, fontRenderer, buffer, combinedLights);
+		renderText(false, sign, matrix, fontRenderer, buffer, combinedLights);
 	}
 
-	private void renderText(boolean isFlipped, SmallShortSignBlockPart sign, PoseStack matrix, Font fontRenderer, SubmitNodeCollector nodeCollector, int combinedLights) {
+	private void renderText(boolean isFlipped, SmallShortSignBlockPart sign, PoseStack matrix, Font fontRenderer, MultiBufferSource buffer, int combinedLights) {
 		RenderingUtil.wrapInMatrixEntry(matrix, () -> {
 			var text = sign.getText().get();
 			if(sign.isMarkedForGeneration()) {
@@ -74,15 +73,16 @@ public class ShortSignRenderer extends SignRenderer<SmallShortSignBlockPart> {
 				-0.505 * VoxelSize);
 			matrix.scale(scale, scale * TEXT_RATIO, scale);
 
-            nodeCollector.submitText(
-                matrix, 0, 0,
+            fontRenderer.drawInBatch(
                 Component.literal(text).getVisualOrderText(),
-                false,
-                Font.DisplayMode.POLYGON_OFFSET,
-                combinedLights,
+                0, 0,
                 Colors.withAlpha(sign.getColor(), 0xff),
+                false,
+                matrix.last().pose(),
+                buffer,
+                Font.DisplayMode.POLYGON_OFFSET,
                 0,
-                0
+                combinedLights
             );
 		});
 	}

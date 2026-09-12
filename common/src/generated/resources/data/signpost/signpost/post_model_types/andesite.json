@@ -1,7 +1,11 @@
 {
   "addSignIngredient": [
-    "minecraft:andesite",
-    "minecraft:polished_andesite"
+    {
+      "item": "minecraft:andesite"
+    },
+    {
+      "item": "minecraft:polished_andesite"
+    }
   ],
   "mainTexture": {
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",

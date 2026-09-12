@@ -8,7 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -23,13 +23,13 @@ public class TileEntityUtils {
         IDelay.<T>untilIsPresent(() -> world.<T>getBlockEntity(pos, c), action, timeout, world.isClientSide(), onTimeOut);
     }
 
-    public static <T extends BlockEntity> Optional<T> findTileEntity(Identifier dimensionKeyLocation, boolean isRemote, BlockPos blockPos, BlockEntityType<T> c){
+    public static <T extends BlockEntity> Optional<T> findTileEntity(ResourceLocation dimensionKeyLocation, boolean isRemote, BlockPos blockPos, BlockEntityType<T> c){
         return findWorld(dimensionKeyLocation, isRemote).flatMap(world -> world.getBlockEntity(blockPos, c));
     }
 
-    public static Optional<Level> findWorld(Identifier dimensionKeyLocation, boolean isClient) {
+    public static Optional<Level> findWorld(ResourceLocation dimensionKeyLocation, boolean isClient) {
         return isClient
-            ? (Minecraft.getInstance().level.dimension().identifier().equals(dimensionKeyLocation)
+            ? (Minecraft.getInstance().level.dimension().location().equals(dimensionKeyLocation)
                 ? Optional.of(Minecraft.getInstance().level)
                 : Optional.empty())
             : (Signpost.getServerType().isServer
@@ -38,7 +38,7 @@ public class TileEntityUtils {
                 : Optional.empty());
     }
 
-    public static Optional<Level> toWorld(Either<Level, Identifier> either, boolean onClient) {
+    public static Optional<Level> toWorld(Either<Level, ResourceLocation> either, boolean onClient) {
         return either.match(
             Optional::of,
             right -> findWorld(right, onClient)
@@ -64,8 +64,8 @@ public class TileEntityUtils {
         IDelay.<T>untilIsPresent(() -> TileEntityUtils.<T>findTileEntityAt(location, c, onClient), action, timeout, onClient, onTimeOut);
     }
 
-    public static <T extends BlockEntity> Optional<T> findTileEntityClient(Identifier dimensionKeyLocation, BlockPos pos, BlockEntityType<T> c){
-        return Minecraft.getInstance().level.dimension().identifier().equals(dimensionKeyLocation)
+    public static <T extends BlockEntity> Optional<T> findTileEntityClient(ResourceLocation dimensionKeyLocation, BlockPos pos, BlockEntityType<T> c){
+        return Minecraft.getInstance().level.dimension().location().equals(dimensionKeyLocation)
             ? Minecraft.getInstance().level.getBlockEntity(pos, c)
             : Optional.empty();
     }

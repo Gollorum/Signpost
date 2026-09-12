@@ -3,9 +3,7 @@ package gollorum.signpost.minecraft.gui.widgets;
 import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.blockpartdata.types.BlockPartRenderer;
 import gollorum.signpost.minecraft.gui.utils.Point;
-import gollorum.signpost.minecraft.rendering.GuiFakeCollector;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
-import gollorum.signpost.mixin.GuiGraphicsMixin;
 import gollorum.signpost.utils.BlockPartInstance;
 import gollorum.signpost.utils.math.Angle;
 import net.minecraft.client.Minecraft;
@@ -13,11 +11,8 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
@@ -59,8 +54,6 @@ public class GuiBlockPartRenderer extends AbstractWidget {
         long randomSeed = this.hashCode();
         RandomSource random = RandomSource.create(randomSeed);
         PoseStack ms = new PoseStack();
-        var renderState = ((GuiGraphicsMixin)graphics).getGuiRenderState();
-        var rect = new ScreenRectangle(getX(), getY(), width, height);
         RenderingUtil.wrapInMatrixEntry(ms, () -> {
             ms.translate(0, 0, 100);
             ms.translate(center.x, center.y, 0);
@@ -79,22 +72,21 @@ public class GuiBlockPartRenderer extends AbstractWidget {
                         Minecraft.getInstance().level,
                         Minecraft.getInstance().player.blockPosition(),
                         ms,
-                        new GuiFakeCollector(rect, renderState, font),
-                        Minecraft.getInstance().getAtlasManager(),
+                        graphics.bufferSource(),
                         LightTexture.FULL_BRIGHT,
                         OverlayTexture.NO_OVERLAY,
-                        t -> RenderTypes.cutoutMovingBlock(),
-                        null
+                        t -> RenderType.cutout()
                     );
                 });
             }
         });
+        graphics.flush();
     }
 
     @Override
-    protected void onDrag(MouseButtonEvent event, double mouseX, double mouseY) {
-        yaw = yaw.add(Angle.fromDegrees((float) (mouseX * 3)));
-        pitch = pitch.add(Angle.fromDegrees((float) (mouseY * 3)));
+    protected void onDrag(double mouseX, double mouseY, double dragX, double dragY) {
+        yaw = yaw.add(Angle.fromDegrees((float) (dragX * 3)));
+        pitch = pitch.add(Angle.fromDegrees((float) (dragY * 3)));
         pitch = Angle.fromDegrees(Math.clamp(pitch.degrees(), -90f, 90f));
     }
 

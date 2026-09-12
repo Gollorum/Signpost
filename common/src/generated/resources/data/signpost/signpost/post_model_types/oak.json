@@ -1,5 +1,7 @@
 {
-  "addSignIngredient": "minecraft:oak_sign",
+  "addSignIngredient": {
+    "item": "minecraft:oak_sign"
+  },
   "mainTexture": {
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",
     "ResourceLocation": "minecraft:block/stripped_oak_log"

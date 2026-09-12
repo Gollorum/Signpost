@@ -5,7 +5,7 @@ import gollorum.signpost.minecraft.block.WaystoneGeneratorBlock;
 import gollorum.signpost.minecraft.config.IConfig;
 import gollorum.signpost.platform.Services;
 import gollorum.signpost.utils.IDelay;
-import net.minecraft.util.Util;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.datafix.fixes.References;

@@ -1,5 +1,7 @@
 {
-  "addSignIngredient": "minecraft:stone",
+  "addSignIngredient": {
+    "item": "minecraft:stone"
+  },
   "mainTexture": {
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",
     "ResourceLocation": "minecraft:block/stone"

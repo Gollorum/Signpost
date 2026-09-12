@@ -4,11 +4,19 @@
   "group": "Signpost",
   "key": {
     "b": [
-      "minecraft:basalt",
-      "minecraft:polished_basalt",
-      "minecraft:smooth_basalt"
+      {
+        "item": "minecraft:basalt"
+      },
+      {
+        "item": "minecraft:polished_basalt"
+      },
+      {
+        "item": "minecraft:smooth_basalt"
+      }
     ],
-    "s": "#minecraft:signs"
+    "s": {
+      "tag": "minecraft:signs"
+    }
   },
   "pattern": [
     "s",
@@ -17,9 +25,7 @@
   ],
   "result": {
     "components": {
-      "minecraft:item_name": {
-        "translate": "item.signpost.post.signpost.basalt"
-      },
+      "minecraft:item_name": "{\"translate\":\"item.signpost.post.signpost.basalt\"}",
       "signpost:post_data": {
         "DataVersion": 2,
         "ModelType": "signpost:basalt",

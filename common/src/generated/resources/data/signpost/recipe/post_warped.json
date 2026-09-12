@@ -3,8 +3,12 @@
   "category": "misc",
   "group": "Signpost",
   "key": {
-    "b": "#minecraft:warped_stems",
-    "s": "minecraft:warped_sign"
+    "b": {
+      "tag": "minecraft:warped_stems"
+    },
+    "s": {
+      "item": "minecraft:warped_sign"
+    }
   },
   "pattern": [
     "s",
@@ -13,9 +17,7 @@
   ],
   "result": {
     "components": {
-      "minecraft:item_name": {
-        "translate": "item.signpost.post.signpost.warped"
-      },
+      "minecraft:item_name": "{\"translate\":\"item.signpost.post.signpost.warped\"}",
       "signpost:post_data": {
         "DataVersion": 2,
         "ModelType": "signpost:warped",

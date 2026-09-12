@@ -4,12 +4,22 @@
   "group": "Signpost",
   "key": {
     "b": [
-      "minecraft:red_sandstone",
-      "minecraft:cut_red_sandstone",
-      "minecraft:chiseled_red_sandstone",
-      "minecraft:smooth_red_sandstone"
+      {
+        "item": "minecraft:red_sandstone"
+      },
+      {
+        "item": "minecraft:cut_red_sandstone"
+      },
+      {
+        "item": "minecraft:chiseled_red_sandstone"
+      },
+      {
+        "item": "minecraft:smooth_red_sandstone"
+      }
     ],
-    "s": "#minecraft:signs"
+    "s": {
+      "tag": "minecraft:signs"
+    }
   },
   "pattern": [
     "s",
@@ -18,9 +28,7 @@
   ],
   "result": {
     "components": {
-      "minecraft:item_name": {
-        "translate": "item.signpost.post.signpost.red_sandstone"
-      },
+      "minecraft:item_name": "{\"translate\":\"item.signpost.post.signpost.red_sandstone\"}",
       "signpost:post_data": {
         "DataVersion": 2,
         "ModelType": "signpost:red_sandstone",

@@ -4,10 +4,16 @@
   "group": "Signpost",
   "key": {
     "b": [
-      "minecraft:diorite",
-      "minecraft:polished_diorite"
+      {
+        "item": "minecraft:diorite"
+      },
+      {
+        "item": "minecraft:polished_diorite"
+      }
     ],
-    "s": "#minecraft:signs"
+    "s": {
+      "tag": "minecraft:signs"
+    }
   },
   "pattern": [
     "s",
@@ -16,9 +22,7 @@
   ],
   "result": {
     "components": {
-      "minecraft:item_name": {
-        "translate": "item.signpost.post.signpost.diorite"
-      },
+      "minecraft:item_name": "{\"translate\":\"item.signpost.post.signpost.diorite\"}",
       "signpost:post_data": {
         "DataVersion": 2,
         "ModelType": "signpost:diorite",

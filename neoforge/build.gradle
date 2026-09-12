@@ -33,7 +33,8 @@ neoForge {
             if (project.hasProperty('signpostQuickPlay')) programArguments.addAll('--quickPlaySingleplayer', project.signpostQuickPlay)
         }
         data {
-            clientData()
+            // 1.21.1 has a single data run; the client/server datagen split arrived later.
+            data()
 
             // example of overriding the workingDirectory set in configureEach above, uncomment if you want to use it
             // gameDirectory = project.file('run-data')

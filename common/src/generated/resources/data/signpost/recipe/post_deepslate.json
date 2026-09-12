@@ -4,14 +4,28 @@
   "group": "Signpost",
   "key": {
     "b": [
-      "minecraft:deepslate",
-      "minecraft:cobbled_deepslate",
-      "minecraft:polished_deepslate",
-      "minecraft:deepslate_bricks",
-      "minecraft:deepslate_tiles",
-      "minecraft:chiseled_deepslate"
+      {
+        "item": "minecraft:deepslate"
+      },
+      {
+        "item": "minecraft:cobbled_deepslate"
+      },
+      {
+        "item": "minecraft:polished_deepslate"
+      },
+      {
+        "item": "minecraft:deepslate_bricks"
+      },
+      {
+        "item": "minecraft:deepslate_tiles"
+      },
+      {
+        "item": "minecraft:chiseled_deepslate"
+      }
     ],
-    "s": "#minecraft:signs"
+    "s": {
+      "tag": "minecraft:signs"
+    }
   },
   "pattern": [
     "s",
@@ -20,9 +34,7 @@
   ],
   "result": {
     "components": {
-      "minecraft:item_name": {
-        "translate": "item.signpost.post.signpost.deepslate"
-      },
+      "minecraft:item_name": "{\"translate\":\"item.signpost.post.signpost.deepslate\"}",
       "signpost:post_data": {
         "DataVersion": 2,
         "ModelType": "signpost:deepslate",

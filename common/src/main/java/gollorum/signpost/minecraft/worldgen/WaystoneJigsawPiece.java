@@ -7,7 +7,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.minecraft.config.IConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
@@ -37,7 +37,7 @@ public class WaystoneJigsawPiece extends LegacySinglePoolElement {
 		codecBuilder.group(templateCodec(), processorsCodec(), projectionCodec(), overrideLiquidSettingsCodec()).apply(codecBuilder, WaystoneJigsawPiece::new));
 
 	public WaystoneJigsawPiece(
-		Identifier location,
+		ResourceLocation location,
 		Holder<StructureProcessorList> structureProcessorListSupplier,
 		StructureTemplatePool.Projection placementBehaviour,
         Optional<LiquidSettings> liquidSettings
@@ -46,7 +46,7 @@ public class WaystoneJigsawPiece extends LegacySinglePoolElement {
 	}
 
 	public WaystoneJigsawPiece(
-		Either<Identifier, StructureTemplate> template,
+		Either<ResourceLocation, StructureTemplate> template,
 		Holder<StructureProcessorList> structureProcessorListSupplier,
 		StructureTemplatePool.Projection placementBehaviour,
         Optional<LiquidSettings> liquidSettings

@@ -16,7 +16,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.ProcessorLists;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
@@ -48,8 +48,8 @@ public class Villages {
 			this.processorList = processorList;
 		}
 
-		public Identifier getSignpostStructureResourceLocation(String structureName) {
-			return Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "village/" + name + "/" + structureName);
+		public ResourceLocation getSignpostStructureResourceLocation(String structureName) {
+			return ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "village/" + name + "/" + structureName);
 		}
 	}
 
@@ -82,12 +82,12 @@ public class Villages {
 	}
 
 	public void initialize(RegistryAccess registryAccess) {
-		var optionalPools = registryAccess.lookup(Registries.TEMPLATE_POOL);
+		var optionalPools = registryAccess.registry(Registries.TEMPLATE_POOL);
 		if(optionalPools.isEmpty()) {
 			Signpost.LOGGER.error("Failed to initialize village generation: TemplatePool registry not found");
 			return;
 		}
-		var optionalProcessorLists = registryAccess.lookup(Registries.PROCESSOR_LIST);
+		var optionalProcessorLists = registryAccess.registry(Registries.PROCESSOR_LIST);
 		if(optionalProcessorLists.isEmpty()) {
 			Signpost.LOGGER.error("Failed to initialize village generation: ProcessorList registry not found");
 			return;
@@ -115,10 +115,10 @@ public class Villages {
 		VillageType villageType, boolean isZombie,
 		Registry<StructureTemplatePool> pools, Registry<StructureProcessorList> processorLists
 	) {
-		Optional<? extends Holder<StructureProcessorList>> processors = processorLists.get(villageType.processorList);
+		Optional<? extends Holder<StructureProcessorList>> processors = processorLists.getHolder(villageType.processorList);
 		if(processors.isEmpty()) {
 			Signpost.LOGGER.error("Tried to generate signposts in " + villageType.name
-				+ " villages, but their processor list " + villageType.processorList.identifier() + " was not found in the registry.");
+				+ " villages, but their processor list " + villageType.processorList.location() + " was not found in the registry.");
 			return;
 		}
 		addToPool(
@@ -139,30 +139,30 @@ public class Villages {
 		);
 	}
 
-	private static Identifier getVillagePool(VillageType villageType) {
-		return Identifier.parse("village/" + villageType.name + "/houses");
+	private static ResourceLocation getVillagePool(VillageType villageType) {
+		return ResourceLocation.parse("village/" + villageType.name + "/houses");
 	}
 
-	private static Identifier getZombieVillagePool(VillageType villageType) {
-		return Identifier.parse("village/" + villageType.name + "/zombie/houses");
+	private static ResourceLocation getZombieVillagePool(VillageType villageType) {
+		return ResourceLocation.parse("village/" + villageType.name + "/zombie/houses");
 	}
 
-	private static Identifier getWaystonePool(VillageType villageType, boolean isZombie) {
-		return Identifier.fromNamespaceAndPath(
+	private static ResourceLocation getWaystonePool(VillageType villageType, boolean isZombie) {
+		return ResourceLocation.fromNamespaceAndPath(
 			Signpost.MOD_ID,
 			"village/" + villageType.name + (isZombie ? "/zombie" : "") + "/waystones"
 		);
 	}
 
-	private static ResourceKey<StructureTemplatePool> poolKey(Identifier identifier) {
+	private static ResourceKey<StructureTemplatePool> poolKey(ResourceLocation identifier) {
 		return ResourceKey.create(Registries.TEMPLATE_POOL, identifier);
 	}
 
 	private void addToPool(
-		Collection<Tuple<SinglePoolElement, Integer>> houses, Identifier poolId,
+		Collection<Tuple<SinglePoolElement, Integer>> houses, ResourceLocation poolId,
 		Registry<StructureTemplatePool> registry
 	) {
-		var pool = registry.getValue(poolKey(poolId));
+		var pool = registry.get(poolKey(poolId));
 		if(pool == null) {
 			Signpost.LOGGER.error("Tried to add elements to village pool " + poolId + ", but it was not found in the registry.");
 			return;

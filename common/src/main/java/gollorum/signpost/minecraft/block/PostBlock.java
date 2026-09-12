@@ -12,6 +12,7 @@ import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.data.ModelTypeRegistry;
 import gollorum.signpost.minecraft.data.PostData;
 import gollorum.signpost.minecraft.gui.RequestSignGui;
+import gollorum.signpost.minecraft.utils.InteractionResults;
 import gollorum.signpost.minecraft.utils.Texture;
 import gollorum.signpost.utils.serialization.MapColorSerializer;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
@@ -29,12 +30,13 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.resources.RegistryFixedCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -98,13 +100,13 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
 
         public static DataComponentPatch.Builder applyTo(ResourceKey<ModelType> holder, DataComponentPatch.Builder patchBuilder) {
             patchBuilder.set(PostData.TYPE, new PostData(Optional.of(holder), Map.of()));
-            patchBuilder.set(DataComponents.ITEM_NAME, Component.translatable("item.signpost." + getLangRegistryName(holder.identifier())));
+            patchBuilder.set(DataComponents.ITEM_NAME, Component.translatable("item.signpost." + getLangRegistryName(holder.location())));
             return patchBuilder;
         }
 
         public static DataComponentMap.Builder applyTo(ResourceKey<ModelType> holder, DataComponentMap.Builder builder) {
             builder.set(PostData.TYPE, new PostData(Optional.of(holder), Map.of()));
-            builder.set(DataComponents.ITEM_NAME, Component.translatable("item.signpost." + getLangRegistryName(holder.identifier())));
+            builder.set(DataComponents.ITEM_NAME, Component.translatable("item.signpost." + getLangRegistryName(holder.location())));
             return builder;
         }
 
@@ -119,7 +121,7 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
             return "item." + Signpost.MOD_ID + "." + REGISTRY_NAME + "." + namespace + "." + path;
         }
 
-        private static String getLangRegistryName(Identifier id) {
+        private static String getLangRegistryName(ResourceLocation id) {
             return REGISTRY_NAME + "." + id.getNamespace() + "." + id.getPath();
         }
 
@@ -180,8 +182,7 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
         public PostBlock createBlock() {
             assert block == null;
             return block = new PostBlock(
-                propertiesFactory.get()
-                    .setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, blockRegistryName))),
+                propertiesFactory.get(),
                 blockRegistryName,
                 this
             );
@@ -211,7 +212,7 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
     }
 
     public static ResourceKey<ModelType> modelTypeKey(String path) {
-        return ResourceKey.create(ModelTypeRegistry.REGISTRY_KEY, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, path));
+        return ResourceKey.create(ModelTypeRegistry.REGISTRY_KEY, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, path));
     }
 
     public static Stream<PostBlock> all() {
@@ -312,8 +313,8 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
     }
 
     @Override
-    protected InteractionResult useItemOn(ItemStack item, BlockState blockState, Level level, BlockPos blockPos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        return use(level, blockPos, player, hand);
+    protected ItemInteractionResult useItemOn(ItemStack item, BlockState blockState, Level level, BlockPos blockPos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+        return InteractionResults.forItem(use(level, blockPos, player, hand));
     }
 
     public InteractionResult use(Level world, BlockPos pos, Player player, InteractionHand hand) {
@@ -349,7 +350,7 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
     }
 
     @Override
-    protected boolean propagatesSkylightDown(BlockState state) {
+    public boolean propagatesSkylightDown(BlockState state, BlockGetter level, BlockPos pos) {
         return !state.getValue(WATERLOGGED);
     }
 
@@ -366,14 +367,13 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
     }
 
     @Override
-    protected ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) {
+    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
         ItemStack ret = new ItemStack(materialType.getBlock());
         var tileOpt = level.getBlockEntity(pos, PostTile.getBlockEntityType());
         tileOpt.ifPresent(tile -> {
             var patchBuilder = DataComponentPatch.builder();
             ModelType.applyTo(tile.modelTypeKey(), patchBuilder);
-            if (includeData)
-                patchBuilder.set(PostData.TYPE, new PostData(Optional.of(tile.modelTypeKey()), tile.parts()));
+            patchBuilder.set(PostData.TYPE, new PostData(Optional.of(tile.modelTypeKey()), tile.parts()));
             ret.applyComponents(patchBuilder.build());
         });
         return ret;

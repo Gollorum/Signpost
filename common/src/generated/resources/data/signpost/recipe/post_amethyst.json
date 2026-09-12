@@ -3,8 +3,12 @@
   "category": "misc",
   "group": "Signpost",
   "key": {
-    "b": "minecraft:amethyst_block",
-    "s": "#minecraft:signs"
+    "b": {
+      "item": "minecraft:amethyst_block"
+    },
+    "s": {
+      "tag": "minecraft:signs"
+    }
   },
   "pattern": [
     "s",
@@ -13,9 +17,7 @@
   ],
   "result": {
     "components": {
-      "minecraft:item_name": {
-        "translate": "item.signpost.post.signpost.amethyst"
-      },
+      "minecraft:item_name": "{\"translate\":\"item.signpost.post.signpost.amethyst\"}",
       "signpost:post_data": {
         "DataVersion": 2,
         "ModelType": "signpost:amethyst",

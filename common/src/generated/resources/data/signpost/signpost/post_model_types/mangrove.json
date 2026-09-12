@@ -1,5 +1,7 @@
 {
-  "addSignIngredient": "minecraft:mangrove_sign",
+  "addSignIngredient": {
+    "item": "minecraft:mangrove_sign"
+  },
   "mainTexture": {
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",
     "ResourceLocation": "minecraft:block/stripped_mangrove_log"

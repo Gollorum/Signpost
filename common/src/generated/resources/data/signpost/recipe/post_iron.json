@@ -3,8 +3,12 @@
   "category": "misc",
   "group": "Signpost",
   "key": {
-    "b": "minecraft:iron_ingot",
-    "s": "#minecraft:signs"
+    "b": {
+      "item": "minecraft:iron_ingot"
+    },
+    "s": {
+      "tag": "minecraft:signs"
+    }
   },
   "pattern": [
     "s",
@@ -13,9 +17,7 @@
   ],
   "result": {
     "components": {
-      "minecraft:item_name": {
-        "translate": "item.signpost.post.signpost.iron"
-      },
+      "minecraft:item_name": "{\"translate\":\"item.signpost.post.signpost.iron\"}",
       "signpost:post_data": {
         "DataVersion": 2,
         "ModelType": "signpost:iron",

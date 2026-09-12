@@ -6,8 +6,6 @@ import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.minecraft.gui.utils.TextureResource;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.network.chat.CommonComponents;
 
 public class SignpostImageButton extends Button {
@@ -45,13 +43,13 @@ public class SignpostImageButton extends Button {
     }
 
     @Override
-    protected void renderContents(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+    public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+        // 1.21.1's ten-argument blit takes the on-screen size before the uv offset.
         graphics.blit(
-            RenderPipelines.GUI_TEXTURED,
             background.location,
             this.getX(), this.getY(),
-            background.offset.width, background.offset.height + (this.isHoveredOrFocused() ? background.size.height : 0),
             this.width, this.height,
+            background.offset.width, background.offset.height + (this.isHoveredOrFocused() ? background.size.height : 0),
             background.size.width, background.size.height,
             background.fileSize.width, background.fileSize.height);
     }

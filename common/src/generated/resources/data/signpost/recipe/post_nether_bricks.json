@@ -4,12 +4,22 @@
   "group": "Signpost",
   "key": {
     "b": [
-      "minecraft:nether_bricks",
-      "minecraft:chiseled_nether_bricks",
-      "minecraft:cracked_nether_bricks",
-      "minecraft:red_nether_bricks"
+      {
+        "item": "minecraft:nether_bricks"
+      },
+      {
+        "item": "minecraft:chiseled_nether_bricks"
+      },
+      {
+        "item": "minecraft:cracked_nether_bricks"
+      },
+      {
+        "item": "minecraft:red_nether_bricks"
+      }
     ],
-    "s": "#minecraft:signs"
+    "s": {
+      "tag": "minecraft:signs"
+    }
   },
   "pattern": [
     "s",
@@ -18,9 +28,7 @@
   ],
   "result": {
     "components": {
-      "minecraft:item_name": {
-        "translate": "item.signpost.post.signpost.nether_bricks"
-      },
+      "minecraft:item_name": "{\"translate\":\"item.signpost.post.signpost.nether_bricks\"}",
       "signpost:post_data": {
         "DataVersion": 2,
         "ModelType": "signpost:nether_bricks",

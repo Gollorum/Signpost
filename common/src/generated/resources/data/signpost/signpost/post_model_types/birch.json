@@ -1,5 +1,7 @@
 {
-  "addSignIngredient": "minecraft:birch_sign",
+  "addSignIngredient": {
+    "item": "minecraft:birch_sign"
+  },
   "mainTexture": {
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",
     "ResourceLocation": "minecraft:block/stripped_birch_log"

@@ -1,6 +1,8 @@
 {
   "type": "minecraft:stonecutting",
-  "ingredient": "#signpost:waystone",
+  "ingredient": {
+    "tag": "signpost:waystone"
+  },
   "result": {
     "count": 1,
     "id": "signpost:waystone_model_simple_2"

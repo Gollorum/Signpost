@@ -20,7 +20,7 @@ import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.core.*;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.placement.VegetationPlacements;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.biome.Biome;
@@ -43,7 +43,7 @@ public class VillageSignpost {
 		BlockPos villageLocation = VillageGenUtils.getVillageLocationFor(level, pieceLocation, 512);
 		Random random = new Random(level.getSeed() ^ pieceLocation.asLong());
 		var blockedTargets = tile.getParts().stream().flatMap(p -> p.blockPart() instanceof SignBlockPart<?> sbb && !sbb.isMarkedForGeneration() ? sbb.getDestination().stream() : Stream.empty()).collect(Collectors.toSet());
-		Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> possibleTargets = fetchPossibleTargets(pieceLocation, villageLocation, level.dimension().identifier(), random, blockedTargets);
+		Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> possibleTargets = fetchPossibleTargets(pieceLocation, villageLocation, level.dimension().location(), random, blockedTargets);
 		if(possibleTargets.isEmpty())
 			return false;
 
@@ -59,7 +59,7 @@ public class VillageSignpost {
 		return true;
 	}
 
-	private static Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> fetchPossibleTargets(BlockPos pieceLocation, BlockPos villageLocation, Identifier dimension, Random random, Set<WaystoneHandle> blockedTargets) {
+	private static Queue<Tuple<BlockPos, WaystoneHandle.Vanilla>> fetchPossibleTargets(BlockPos pieceLocation, BlockPos villageLocation, ResourceLocation dimension, Random random, Set<WaystoneHandle> blockedTargets) {
 		return allWaystoneTargets(villageLocation, dimension)
 			.map(e -> new Tuple<>(e, (float) Math.sqrt(e._1().distSqr(pieceLocation)) * (0.5f + random.nextFloat())))
 			.sorted((e1, e2) -> Float.compare(e1._2(), e2._2()))
@@ -68,7 +68,7 @@ public class VillageSignpost {
 			.collect(Collectors.toCollection(LinkedList::new));
 	}
 
-	private static Stream<Tuple<BlockPos, WaystoneHandle.Vanilla>> allWaystoneTargets(BlockPos villageLocation, Identifier dimension) {
+	private static Stream<Tuple<BlockPos, WaystoneHandle.Vanilla>> allWaystoneTargets(BlockPos villageLocation, ResourceLocation dimension) {
 		Stream<Tuple<BlockPos, WaystoneHandle.Vanilla>> villageWaystones = villageWaystonesExceptSelf(villageLocation, dimension);
 		return (IConfig.IServer.getInstance().worldGen().villagesOnlyTargetVillages()
 			? villageWaystones
@@ -76,13 +76,13 @@ public class VillageSignpost {
 		).filter(e -> !(waystonesTargetedByVillage.containsKey(villageLocation)
 			&& waystonesTargetedByVillage.get(villageLocation).contains(e._2())));
 	}
-	private static Stream<Tuple<BlockPos, WaystoneHandle.Vanilla>> villageWaystonesExceptSelf(BlockPos villageLocation, Identifier dimension) {
+	private static Stream<Tuple<BlockPos, WaystoneHandle.Vanilla>> villageWaystonesExceptSelf(BlockPos villageLocation, ResourceLocation dimension) {
 		var lib = WaystoneLibrary.getInstance();
 		return lib.getVillageWaystones().getAllEntries(lib, dimension).stream()
 	        .filter(e -> !(e.getKey().equals(villageLocation)))
 	        .map(Tuple::from);
 	}
-	private static Stream<Tuple<BlockPos, WaystoneHandle.Vanilla>> nonVillageWaystones(Identifier dimension) {
+	private static Stream<Tuple<BlockPos, WaystoneHandle.Vanilla>> nonVillageWaystones(ResourceLocation dimension) {
 		var lib = WaystoneLibrary.getInstance();
 		return lib.getAllWaystoneInfo().stream()
 			.map(info -> new Tuple<>(info.locationData().block().blockPos(), info.handle()))
@@ -261,7 +261,7 @@ public class VillageSignpost {
 		boolean isMushroomMeadow = mush.isPresent() && biome.getGenerationSettings().hasFeature(mush.get().value());
         if(isMushroomMeadow) return Optional.of(Overlay.Mycelium);
 		if(biome.shouldSnow(world, pos)
-			|| biome.getPrecipitationAt(pos, world.getSeaLevel()) == Biome.Precipitation.SNOW) return Optional.of(Overlay.Snow);
+			|| biome.getPrecipitationAt(pos) == Biome.Precipitation.SNOW) return Optional.of(Overlay.Snow);
 		else if (isJungle) return Optional.of(Overlay.Vine);
 		else if (Services.BIOME_ACCESSOR.downfallIn(biome) > 0.85f) return Optional.of(Overlay.Gras);
 		else return Optional.empty();

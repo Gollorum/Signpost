@@ -124,9 +124,16 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
             ).apply(i, CoreData::new));
         }
 
+        /**
+         * 1.21.1's {@link StreamCodec#composite} only goes up to six components, so the nine fields are
+         * paired off with {@link Tuple#streamCodec}. That helper writes its two halves back to back, and
+         * only adjacent fields are grouped, so the bytes on the wire are exactly what nine separate
+         * components would have produced - the grouping is purely to satisfy the arity limit.
+         */
         public static final StreamCodec<RegistryFriendlyByteBuf, CoreData> STREAM_CODEC = StreamCodec.composite(
-            AngleProvider.STREAM_CODEC, coreData -> coreData.angleProvider,
-            ByteBufCodecs.BOOL, coreData -> coreData.flip,
+            Tuple.<RegistryFriendlyByteBuf, AngleProvider, Boolean>streamCodec(
+                AngleProvider.STREAM_CODEC, ByteBufCodecs.BOOL
+            ), coreData -> Tuple.of(coreData.angleProvider, coreData.flip),
             Tuple.streamCodec(Texture.STREAM_CODEC, Texture.STREAM_CODEC), coreData -> Tuple.of(
                 coreData.mainTexture, coreData.secondaryTexture
             ),
@@ -135,13 +142,18 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
                 coreData.color
             ),
             ByteBufCodecs.optional(WaystoneHandle.STREAM_CODEC), coreData -> coreData.destination,
-            ModelTypeRegistry.KEY_STREAM_CODEC, coreData -> coreData.modelType,
-            ByteBufCodecs.optional(ItemStack.OPTIONAL_STREAM_CODEC), coreData -> coreData.itemToDropOnBreak,
-            ByteBufCodecs.BOOL, coreData -> coreData.isLocked,
-            ByteBufCodecs.BOOL, coreData -> coreData.isMarkedForGeneration,
-            (angleProvider, flip, txts, overlayAndColor, destination, modelType, itemToDropOnBreak, isLocked, isMarkedForGeneration) ->
+            Tuple.<RegistryFriendlyByteBuf, ResourceKey<PostBlock.ModelType>, Optional<ItemStack>>streamCodec(
+                ModelTypeRegistry.KEY_STREAM_CODEC, ByteBufCodecs.optional(ItemStack.OPTIONAL_STREAM_CODEC)
+            ), coreData -> Tuple.of(coreData.modelType, coreData.itemToDropOnBreak),
+            Tuple.<RegistryFriendlyByteBuf, Boolean, Boolean>streamCodec(
+                ByteBufCodecs.BOOL, ByteBufCodecs.BOOL
+            ), coreData -> Tuple.of(coreData.isLocked, coreData.isMarkedForGeneration),
+            (angleAndFlip, txts, overlayAndColor, destination, modelTypeAndDrop, lockedAndGenerated) ->
                 new CoreData(
-                    angleProvider, flip, txts._1(), txts._2(), overlayAndColor._1(), overlayAndColor._2(), destination, modelType, itemToDropOnBreak, isLocked, isMarkedForGeneration
+                    angleAndFlip._1(), angleAndFlip._2(), txts._1(), txts._2(),
+                    overlayAndColor._1(), overlayAndColor._2(), destination,
+                    modelTypeAndDrop._1(), modelTypeAndDrop._2(),
+                    lockedAndGenerated._1(), lockedAndGenerated._2()
                 )
         );
     }
@@ -216,7 +228,7 @@ public abstract class SignBlockPart<Self extends SignBlockPart<Self>> implements
     public boolean hasThePermissionToEdit(WithOwner tile, Player player) {
         return !(tile instanceof WithOwner.OfSignpost) || !coreData.isLocked || player == null
             || ((WithOwner.OfSignpost)tile).getSignpostOwner().map(o -> o.id().equals(player.getUUID())).orElse(true)
-            || player.permissions().hasPermission(IConfig.IServer.getInstance().permissions().editLockedSignCommandPermission());
+            || player.hasPermissions(IConfig.IServer.getInstance().permissions().editLockedSignCommandPermissionLevel());
     }
 
     private void setTextures(Texture texture, Texture textureDark) {

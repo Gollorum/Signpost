@@ -4,13 +4,25 @@
   "group": "Signpost",
   "key": {
     "b": [
-      "minecraft:blackstone",
-      "minecraft:gilded_blackstone",
-      "minecraft:polished_blackstone",
-      "minecraft:chiseled_polished_blackstone",
-      "minecraft:polished_blackstone_bricks"
+      {
+        "item": "minecraft:blackstone"
+      },
+      {
+        "item": "minecraft:gilded_blackstone"
+      },
+      {
+        "item": "minecraft:polished_blackstone"
+      },
+      {
+        "item": "minecraft:chiseled_polished_blackstone"
+      },
+      {
+        "item": "minecraft:polished_blackstone_bricks"
+      }
     ],
-    "s": "#minecraft:signs"
+    "s": {
+      "tag": "minecraft:signs"
+    }
   },
   "pattern": [
     "s",
@@ -19,9 +31,7 @@
   ],
   "result": {
     "components": {
-      "minecraft:item_name": {
-        "translate": "item.signpost.post.signpost.blackstone"
-      },
+      "minecraft:item_name": "{\"translate\":\"item.signpost.post.signpost.blackstone\"}",
       "signpost:post_data": {
         "DataVersion": 2,
         "ModelType": "signpost:blackstone",

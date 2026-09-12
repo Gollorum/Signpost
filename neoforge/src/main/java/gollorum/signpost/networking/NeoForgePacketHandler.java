@@ -6,7 +6,7 @@ import gollorum.signpost.compat.Compat;
 import gollorum.signpost.compat.WaystonesAdapter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
@@ -15,8 +15,8 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.handling.DirectionalPayloadHandler;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
@@ -27,7 +27,7 @@ public class NeoForgePacketHandler extends PacketHandler {
     public static void initialize(IEventBus bus) {
         instance = new NeoForgePacketHandler();
         instance.init();
-        instance.register(new SignpostNeoforge.JoinServerEvent(), Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "join_server"));
+        instance.register(new SignpostNeoforge.JoinServerEvent(), ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "join_server"));
         for (var entry : Compat.getEvents().entrySet()) {
             instance.register(entry.getValue(), entry.getKey());
         }
@@ -44,7 +44,10 @@ public class NeoForgePacketHandler extends PacketHandler {
 
     }
 
-    private <T> void registerCommon(Event<T> event, Identifier id, PayloadRegistrar registrar) {
+    // NeoForge 21.1 has no separate client payload-handler event: one bidirectional registration takes
+    // both handlers, and DirectionalPayloadHandler picks by packet flow. The client branch is only ever
+    // invoked on a client, so Context.Client - which reaches into Minecraft - stays off the server.
+    private <T> void registerCommon(Event<T> event, ResourceLocation id, PayloadRegistrar registrar) {
         var type = new CustomPacketPayload.Type<Payload<T>>(id);
         registrar.playBidirectional(
             type,
@@ -52,26 +55,14 @@ public class NeoForgePacketHandler extends PacketHandler {
                 message -> new Payload<T>(type, event, message),
                 payload -> payload.message
             ),
-            (payload, context) -> context.enqueueWork(() ->
-                payload.event.handle(payload.message, new Context.Server((ServerPlayer) context.player()))
+            new DirectionalPayloadHandler<Payload<T>>(
+                (payload, context) -> context.enqueueWork(() ->
+                    payload.event.handle(payload.message, new Context.Client())
+                ),
+                (payload, context) -> context.enqueueWork(() ->
+                    payload.event.handle(payload.message, new Context.Server((ServerPlayer) context.player()))
+                )
             ));
-    }
-
-//    @OnlyIn(Dist.CLIENT)
-    @SubscribeEvent
-    public static void register(net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent event) {
-        for (var tuple : instance.events) {
-            ((NeoForgePacketHandler) instance).registerClient(tuple._2(), event);
-        }
-    }
-
-    private <T> void registerClient(Identifier id, net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent registrar) {
-        registrar.register(
-            new CustomPacketPayload.Type<Payload<T>>(id),
-            (payload, context) -> context.enqueueWork(() ->
-                payload.event.handle(payload.message, new Context.Client())
-            )
-        );
     }
 
     private <T> Payload<T> toPayload(T message) {
@@ -81,7 +72,7 @@ public class NeoForgePacketHandler extends PacketHandler {
 
     @Override
     public <T> void sendToServer(T message) {
-        ClientPacketDistributor.sendToServer(toPayload(message));
+        PacketDistributor.sendToServer(toPayload(message));
     }
 
     @Override

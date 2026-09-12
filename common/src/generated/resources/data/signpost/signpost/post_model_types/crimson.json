@@ -1,5 +1,7 @@
 {
-  "addSignIngredient": "minecraft:crimson_sign",
+  "addSignIngredient": {
+    "item": "minecraft:crimson_sign"
+  },
   "mainTexture": {
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",
     "ResourceLocation": "minecraft:block/stripped_crimson_stem"

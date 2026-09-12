@@ -16,8 +16,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.level.ChunkWatchEvent;
-import net.minecraftforge.eventbus.api.bus.BusGroup;
-import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Map;
@@ -28,7 +28,7 @@ public class WaystoneDiscoveryEventListener implements IWaystoneDiscoveryEventLi
 
     private static final int discoveryDistance = 8;
 
-    public static void register(BusGroup bus) { bus.register(MethodHandles.lookup(), WaystoneDiscoveryEventListener.class); }
+    public static void register(IEventBus bus) { bus.register(WaystoneDiscoveryEventListener.class); }
 
     private static ConcurrentMap<ServerPlayer, ConcurrentMap<WaystoneHandle.Vanilla, BlockPos>> trackedPlayers;
     public void initialize() {
@@ -40,7 +40,7 @@ public class WaystoneDiscoveryEventListener implements IWaystoneDiscoveryEventLi
         if(!WaystoneLibrary.hasInstance()) return;
         VillageWaystone.ChunkEntryKey key = new VillageWaystone.ChunkEntryKey(
             event.getPos(),
-            event.getPlayer().level().dimension().identifier()
+            event.getPlayer().level().dimension().location()
         );
         var lib = WaystoneLibrary.getInstance();
         Map<VillageWaystone.ChunkEntryKey, WaystoneHandle.Vanilla> allEntries = lib.getVillageWaystones().getAllEntriesByChunk(lib, true);
@@ -63,7 +63,7 @@ public class WaystoneDiscoveryEventListener implements IWaystoneDiscoveryEventLi
         WaystoneHandle.Vanilla handle = lib.getVillageWaystones().getAllEntriesByChunk(lib, false).get(
             new VillageWaystone.ChunkEntryKey(
                 event.getPos(),
-                event.getPlayer().level().dimension().identifier()
+                event.getPlayer().level().dimension().location()
             )
         );
         if(handle == null) return;

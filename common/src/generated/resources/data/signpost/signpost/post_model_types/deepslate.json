@@ -1,11 +1,23 @@
 {
   "addSignIngredient": [
-    "minecraft:deepslate",
-    "minecraft:cobbled_deepslate",
-    "minecraft:polished_deepslate",
-    "minecraft:deepslate_bricks",
-    "minecraft:deepslate_tiles",
-    "minecraft:chiseled_deepslate"
+    {
+      "item": "minecraft:deepslate"
+    },
+    {
+      "item": "minecraft:cobbled_deepslate"
+    },
+    {
+      "item": "minecraft:polished_deepslate"
+    },
+    {
+      "item": "minecraft:deepslate_bricks"
+    },
+    {
+      "item": "minecraft:deepslate_tiles"
+    },
+    {
+      "item": "minecraft:chiseled_deepslate"
+    }
   ],
   "mainTexture": {
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",

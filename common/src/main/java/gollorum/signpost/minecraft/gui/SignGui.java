@@ -483,11 +483,15 @@ public class SignGui extends Screen {
         addRenderableOnly(postRenderer);
         Point modelRectTop = modelRect.at(Rect.XAlignment.Center, Rect.YAlignment.Top);
 
+        // These six boxes are drawn on top of a GuiModelRenderer showing the sign itself. That model
+        // flushes early, so without an offset the batched text loses the depth test against it and is
+        // invisible - see InputBox.renderWidget.
+        final int inputBoxesZOffset = 100;
         Rect wideInputRect = new Rect(
             modelRectTop.add(-7 * inputSignsScale, 2 * inputSignsScale),
             modelRectTop.add(11 * inputSignsScale, 6 * inputSignsScale)
         );
-        wideSignInputBox = new InputBox(font, wideInputRect, false);
+        wideSignInputBox = new InputBox(font, wideInputRect, false, inputBoxesZOffset);
         wideSignInputBox.setBordered(false);
         wideSignInputBox.setTextColor(Colors.black);
         widgetsToFlip.add(new FlippableAtPivot(wideSignInputBox, modelRectTop.x));
@@ -502,7 +506,7 @@ public class SignGui extends Screen {
             modelRectTop.add(3 * inputSignsScale, 2 * inputSignsScale),
             modelRectTop.add(14 * inputSignsScale, 6 * inputSignsScale)
         );
-        shortSignInputBox = new InputBox(font, shortInputRect, false);
+        shortSignInputBox = new InputBox(font, shortInputRect, false, inputBoxesZOffset);
         shortSignInputBox.setBordered(false);
         shortSignInputBox.setTextColor(Colors.black);
         widgetsToFlip.add(new FlippableAtPivot(shortSignInputBox, modelRectTop.x));
@@ -517,19 +521,19 @@ public class SignGui extends Screen {
             modelRectTop.add(-7 * inputSignsScale, 3 * inputSignsScale),
             modelRectTop.add(9 * inputSignsScale, 14 * inputSignsScale))
             .withHeight(height -> height / 4 - 1);
-        InputBox firstLarge = new InputBox(font, largeInputRect, false);
+        InputBox firstLarge = new InputBox(font, largeInputRect, false, inputBoxesZOffset);
         firstLarge.setBordered(false);
         firstLarge.setTextColor(Colors.black);
         largeInputRect = largeInputRect.withPoint(p -> p.withY(Math.round(modelRectTop.y + (13 - 3 * 2.5f) * inputSignsScale)));
-        InputBox secondLarge = new InputBox(font, largeInputRect, false);
+        InputBox secondLarge = new InputBox(font, largeInputRect, false, inputBoxesZOffset);
         secondLarge.setBordered(false);
         secondLarge.setTextColor(Colors.black);
         largeInputRect = largeInputRect.withPoint(p -> p.withY(Math.round(modelRectTop.y + (13 - 2 * 2.5f) * inputSignsScale)));
-        InputBox thirdLarge = new InputBox(font, largeInputRect, false);
+        InputBox thirdLarge = new InputBox(font, largeInputRect, false, inputBoxesZOffset);
         thirdLarge.setBordered(false);
         thirdLarge.setTextColor(Colors.black);
         largeInputRect = largeInputRect.withPoint(p -> p.withY(Math.round(modelRectTop.y + (13 - 1 * 2.5f) * inputSignsScale)));
-        InputBox fourthLarge = new InputBox(font, largeInputRect, false);
+        InputBox fourthLarge = new InputBox(font, largeInputRect, false, inputBoxesZOffset);
         fourthLarge.setBordered(false);
         fourthLarge.setTextColor(Colors.black);
         firstLarge.addKeyCodeListener(KeyCodes.Down, () -> setInitialFocus(secondLarge));
@@ -716,8 +720,9 @@ public class SignGui extends Screen {
         var allModelTypes = ModelTypeRegistry.getAllModelTypes(this.minecraft.player.registryAccess()).toList();
         cycleItem.set(() -> {
             if(isClosed) return;
-            var options = allModelTypes.get(cycleItemIndex.get()).addSignIngredient().items().toList();
-            ir.setItemStack(new ItemStack(options.get(cycleItemIngredientIndex.get()).value()));
+            // 1.21.1's Ingredient exposes its options as ItemStacks rather than item holders.
+            var options = List.of(allModelTypes.get(cycleItemIndex.get()).addSignIngredient().getItems());
+            ir.setItemStack(options.get(cycleItemIngredientIndex.get()).copy());
             if(cycleItemIngredientIndex.get() >= options.size() - 1) {
                 cycleItemIndex.set((cycleItemIndex.get() + 1) % allModelTypes.size());
                 cycleItemIngredientIndex.set(0);
@@ -1034,7 +1039,7 @@ public class SignGui extends Screen {
 
     private void apply(Optional<WaystoneHandle> destinationId) {
         PostTile.TilePartInfo tilePartInfo = oldTilePartInfo.orElseGet(() ->
-            new PostTile.TilePartInfo(tile.getLevel().dimension().identifier(), tile.getBlockPos(), UUID.randomUUID()));
+            new PostTile.TilePartInfo(tile.getLevel().dimension().location(), tile.getBlockPos(), UUID.randomUUID()));
         BlockPart data;
         boolean isLocked = lockButton.isLocked();
         var mainTex = oldSign.map(SignBlockPart::getMainTexture).orElse(modelType.mainTexture());

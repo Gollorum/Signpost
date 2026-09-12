@@ -4,8 +4,6 @@ import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.minecraft.gui.utils.TextureResource;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
-import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.rendertype.RenderType;
 
 public class ImageView implements Renderable {
 
@@ -21,7 +19,6 @@ public class ImageView implements Renderable {
 	@Override
 	public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
 		graphics.blit(
-            RenderPipelines.GUI_TEXTURED,
             texture.location,
             rect.point.x, rect.point.y,
             texture.offset.width, texture.offset.height,

@@ -13,7 +13,7 @@ public record WaystoneLocationData(WorldLocation block, Vector3 spawn) {
 
     public WaystoneLocationData withoutExplicitLevel() {
         if (block.world().isLeft()) {
-            return new WaystoneLocationData(WorldLocation.from(block.blockPos(), Either.right(block.world().leftOrThrow().dimension().identifier())), spawn);
+            return new WaystoneLocationData(WorldLocation.from(block.blockPos(), Either.right(block.world().leftOrThrow().dimension().location())), spawn);
         } else {
             return this;
         }

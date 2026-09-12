@@ -2,8 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "e": "minecraft:ender_pearl",
-    "s": "minecraft:stone"
+    "e": {
+      "item": "minecraft:ender_pearl"
+    },
+    "s": {
+      "item": "minecraft:stone"
+    }
   },
   "pattern": [
     "sss",

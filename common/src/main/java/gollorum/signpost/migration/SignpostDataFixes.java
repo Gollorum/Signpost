@@ -24,7 +24,7 @@ public final class SignpostDataFixes {
         // Sub-version 1 rather than 0: it sorts after any schema Minecraft itself might one day register at
         // the current data version, and a duplicate key would silently replace that one.
         Schema schema = builder.addSchema(
-            SharedConstants.getCurrentVersion().dataVersion().version(), 1,
+            SharedConstants.getCurrentVersion().getDataVersion().getVersion(), 1,
             NamespacedSchema::new);
         builder.addFixer(BlockRenameFix.create(schema, "Signpost post block types", LegacyPostTypes::rename));
         builder.addFixer(new PostItemStackFix(schema));

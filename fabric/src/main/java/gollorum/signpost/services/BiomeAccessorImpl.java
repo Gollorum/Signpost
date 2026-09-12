@@ -14,7 +14,8 @@ public class BiomeAccessorImpl implements BiomeAccessor {
         if (encoded.result().isPresent()) {
             var nbt = encoded.result().get();
             if (nbt instanceof CompoundTag tag) {
-                return tag.getFloatOr("downfall", 0.0f);
+                // 1.21.1 CompoundTag.getFloat already yields 0 when the key is absent.
+                return tag.getFloat("downfall");
             }
         }
         return 0.0f;

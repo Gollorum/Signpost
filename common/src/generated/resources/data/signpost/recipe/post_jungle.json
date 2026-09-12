@@ -3,8 +3,12 @@
   "category": "misc",
   "group": "Signpost",
   "key": {
-    "b": "#minecraft:jungle_logs",
-    "s": "minecraft:jungle_sign"
+    "b": {
+      "tag": "minecraft:jungle_logs"
+    },
+    "s": {
+      "item": "minecraft:jungle_sign"
+    }
   },
   "pattern": [
     "s",
@@ -13,9 +17,7 @@
   ],
   "result": {
     "components": {
-      "minecraft:item_name": {
-        "translate": "item.signpost.post.signpost.jungle"
-      },
+      "minecraft:item_name": "{\"translate\":\"item.signpost.post.signpost.jungle\"}",
       "signpost:post_data": {
         "DataVersion": 2,
         "ModelType": "signpost:jungle",

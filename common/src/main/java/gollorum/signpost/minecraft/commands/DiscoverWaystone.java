@@ -21,7 +21,7 @@ public class DiscoverWaystone {
 
 	public static ArgumentBuilder<CommandSourceStack, ?> register() {
 		return Commands.literal("discover")
-			.requires(source -> source.permissions().hasPermission(IConfig.IServer.getInstance().permissions().discoverPermission()))
+			.requires(source -> source.hasPermission(IConfig.IServer.getInstance().permissions().discoverPermissionLevel()))
 			.then(Commands.argument("waystone", new WaystoneArgument())
 				.requires(source -> {
 					try {

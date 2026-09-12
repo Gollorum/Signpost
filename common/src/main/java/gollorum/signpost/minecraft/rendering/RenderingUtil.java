@@ -4,15 +4,11 @@ import com.mojang.blaze3d.vertex.*;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.minecraft.models.modelGeneration.QuadModel;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.*;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.resources.model.MaterialSet;
-import net.minecraft.client.resources.model.ModelBakery;
-import net.minecraft.resources.Identifier;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.resources.ResourceLocation;
 import org.joml.*;
 
 import java.lang.Math;
@@ -20,50 +16,30 @@ import java.util.function.Function;
 
 public class RenderingUtil {
 
+    /**
+     * 1.21.1 renders block entities immediately into a {@link MultiBufferSource} - there is no
+     * {@code SubmitNodeCollector}, no {@code MaterialSet} and no separate crumbling overlay pass.
+     * The breaking overlay is handled for us: {@code BlockEntityRenderDispatcher} hands the renderer
+     * a buffer source that is already wrapped in the destroy-progress decal generator, so writing to
+     * the buffer we were given is all that is needed.
+     */
     public static void render(
         PoseStack blockToView,
         TexturedModel model,
-        SubmitNodeCollector nodeCollector,
-        MaterialSet materials,
+        MultiBufferSource buffer,
         int combinedLights,
         int combinedOverlay,
-        Function<Identifier, RenderType> renderTypeFactory,
-        ModelFeatureRenderer.CrumblingOverlay crumblingOverlay
+        Function<ResourceLocation, RenderType> renderTypeFactory
     ) {
-        var renderType = model.texture().renderType(renderTypeFactory);
-        SubmitNodeCollector.CustomGeometryRenderer doRender = (pose, vertexConsumer) -> {
-            render(
-                pose,
-                model.model(),
-                materials.get(model.texture()).wrap(vertexConsumer),
-                combinedLights,
-                combinedOverlay,
-                model.tint(),
-                0f
-            );
-
-            if (crumblingOverlay != null && renderType.affectsCrumbling()) {
-                var crumblingTenderType = ModelBakery.DESTROY_TYPES.get(crumblingOverlay.progress());
-
-                    VertexConsumer vertexconsumer2 = new SheetedDecalTextureGenerator(
-                        Minecraft.getInstance().renderBuffers().crumblingBufferSource().getBuffer(crumblingTenderType),
-                        crumblingOverlay.cameraPose(),
-                        1f
-                    );
-                    render(
-                        pose,
-                        model.model(),
-                        materials.get(model.texture()).wrap(vertexconsumer2),
-                        combinedLights,
-                        combinedOverlay,
-                        model.tint(),
-                        0.001f
-                    );
-            }
-        };
-        if (nodeCollector instanceof GuiFakeCollector gfc)
-            gfc.submitCustomGeometry(blockToView, renderType, doRender, model.texture().atlasLocation());
-        else nodeCollector.submitCustomGeometry(blockToView, renderType, doRender);
+        render(
+            blockToView.last(),
+            model.model(),
+            model.texture().buffer(buffer, renderTypeFactory),
+            combinedLights,
+            combinedOverlay,
+            model.tint(),
+            0f
+        );
     }
 
     // copied from ModelPart.render, sort of
@@ -105,12 +81,13 @@ public class RenderingUtil {
     public static void drawString(GuiGraphics graphics, Font fontRenderer, String text, Point point, Rect.XAlignment xAlignment, Rect.YAlignment yAlignment, int color, int maxWidth, boolean dropShadow) {
         int textWidth = fontRenderer.width(text);
         float scale = Math.min(1f, maxWidth / (float) textWidth);
-        graphics.pose().pushMatrix();
-        graphics.pose().translation(
+        graphics.pose().pushPose();
+        graphics.pose().translate(
             Rect.xCoordinateFor(point.x, maxWidth, xAlignment) + maxWidth * 0.5f,
-            Rect.yCoordinateFor(point.y, fontRenderer.lineHeight, yAlignment) + fontRenderer.lineHeight * 0.5f
+            Rect.yCoordinateFor(point.y, fontRenderer.lineHeight, yAlignment) + fontRenderer.lineHeight * 0.5f,
+            0f
         );
-        if(scale < 1) graphics.pose().scale(scale, scale);
+        if(scale < 1) graphics.pose().scale(scale, scale, 1f);
         graphics.drawString(
             fontRenderer,
             text,
@@ -119,7 +96,7 @@ public class RenderingUtil {
             color,
             dropShadow
         );
-        graphics.pose().popMatrix();
+        graphics.pose().popPose();
     }
 
     public static void wrapInMatrixEntry(PoseStack matrixStack, Runnable thenDo) {

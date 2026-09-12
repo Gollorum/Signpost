@@ -1,9 +1,10 @@
 package gollorum.signpost.minecraft.gui.widgets;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.minecraft.gui.utils.*;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderPipelines;
 
 public final class ImageInputBox extends InputBox implements Flippable {
 
@@ -25,7 +26,8 @@ public final class ImageInputBox extends InputBox implements Flippable {
         super(
             fontRenderer,
             inputFieldRect,
-            shouldDropShadow
+            shouldDropShadow,
+            zOffset
         );
         this.texture = texture;
         setBordered(false);
@@ -49,10 +51,10 @@ public final class ImageInputBox extends InputBox implements Flippable {
 
     @Override
     public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        graphics.blit(RenderPipelines.GUI_TEXTURED,
+        graphics.blit(
             texture.location,
             backgroundRect.point.x, backgroundRect.point.y,
-            0, 0,
+            0f, 0f,
             backgroundRect.width, backgroundRect.height,
             isFlipped ? -backgroundRect.width : backgroundRect.width, backgroundRect.height);
 

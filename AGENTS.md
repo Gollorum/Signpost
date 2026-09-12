@@ -133,11 +133,11 @@ The run passes only if all of these hold:
 
 1. The server reaches `Done (…s)! For help, type "help"`.
 2. The existing world loads - no world-load failure, and the server does not fall back to
-   generating a fresh one. Note the line `Loading N persistent chunks`: since 1.21.11 a
-   dedicated server loads **only** force-loaded chunks at startup, not a radius around
-   spawn, so if that says `0` no block-entity NBT was deserialized and only the mod's
-   `SavedData` was actually exercised. A corpus save should `/forceload` the area it wants
-   covered - see `testsaves/README.md`.
+   generating a fresh one. On 1.21.1 a dedicated server still loads a radius of spawn chunks
+   at startup (the "force-loaded chunks only" behaviour that makes `Loading N persistent
+   chunks` worth watching arrived in 1.21.11), so block-entity NBT near spawn is deserialized
+   without the corpus having to `/forceload` anything. A corpus that force-loads its area
+   anyway is still the more reliable shape - see `testsaves/README.md`.
 3. The log contains no exception, and specifically none of: `NoClassDefFoundError`,
    `ClassNotFoundException` (client classes on the server), `Mixin apply failed` /
    `InvalidInjectionException`, `Failed to load` / codec or NBT deserialization errors,
@@ -204,6 +204,21 @@ Four shapes of old data meet in the current code and all four have to keep worki
 - Item stacks whose id was the type. `migration/PostItemStackFix` writes the type into the components
   before renaming, so a stockpiled spruce post stays a spruce post.
 
+#### This branch ships 27 post model types, not 28
+
+`pale_oak` is absent. Pale oak wood, `minecraft:pale_oak_sign`, the `pale_oak_logs` item tag and
+both of its block textures arrived in 1.21.4, so the type cannot exist on 1.21.1 at all. It is
+dropped from `neoforge/.../data/PostModelTypes.java`; nothing else refers to it, and because post
+model types live in a datapack registry rather than in the block registry, no save can contain one
+- so unlike a missing *block* id this drops nothing and shifts no palette. Its four lang keys are
+deliberately left in place so the language files stay identical to the 1.21 branch.
+
+For the same reason the `diorite` type's secondary (accent) texture is
+`minecraft:block/quartz_block_side` here rather than the `stripped_pale_oak_log` used on 1.21.11.
+If a texture is ever added to a model type, check it against the 1.21.1 asset set first - the
+whole set can be listed out of
+`common/build/moddev/artifacts/vanilla-<ver>-client-extra-aka-minecraft-resources.jar`.
+
 #### Codec field names are on-disk data
 
 `fieldOf("...")` strings are persisted NBT keys. **Never let them follow a class rename.** The
@@ -212,7 +227,10 @@ it in four codecs (`VillageWaystone.ChunkEntryKey`, `ResourceLocationSerializer`
 `FluidTint`), which made every pre-existing world fail with
 `Failed to parse saved data for 'SavedDataType[signpost_WaystoneLibrary]': No key Identifier`
 and silently drop the entire waystone library. The key stays `"ResourceLocation"`; only the Java
-type changed. Note the failure did **not** crash the server - it logged one ERROR line and carried
+type changed. On this branch the type is called `ResourceLocation` again (1.21.1 predates the
+rename), and the backport reversed the type name **without** touching those four key strings -
+they still read `"ResourceLocation"`, which is what keeps 1.21.11-written and 1.21.1-written
+saves describing the same bytes. Note the failure did **not** crash the server - it logged one ERROR line and carried
 on, which is precisely why the log must be read rather than just watching for a clean startup.
 
 #### Before "fixing" a compatibility break, establish what actually shipped
@@ -293,6 +311,80 @@ Mod compat (`compat/` in each loader) is optional and reflection-free — the de
 `Services.PLATFORM.isModLoaded(...)` reports the mod present. Supported: **Waystones** and
 **Repurposed Structures**.
 
+## Client rendering on 1.21.1
+
+Two things the 1.21.11 branch gets from vanilla APIs that do not exist here. Both fail *silently* -
+they compile, load and log nothing, the thing simply does not appear on screen.
+
+### Post items are drawn by a BEWLR that each loader must bind
+
+1.21.11 names a renderer straight from the item model (`special` + `SpecialModelRenderers`). 1.21.1
+has neither, so `PostItemRenderer` is a `BlockEntityWithoutLevelRenderer`, the generated item models
+parent `builtin/entity` (see `neoforge/.../data/ItemModels.java`), and **the binding is per loader**:
+
+| Loader | Mechanism |
+| --- | --- |
+| fabric | `BuiltinItemRendererRegistry.INSTANCE.register(item, ...)` in `SignpostFabricClient` |
+| neoforge | `RegisterClientExtensionsEvent#registerItem` in `SignpostNeoforge.ModBusEvents` |
+| forge | `Item#initializeClient` - Forge has no such event, hence `forge/.../block/PostItemImpl.java` |
+
+`builtin/entity` with nothing bound to it renders **nothing at all** - no model, no error. If post
+items go invisible, check these three call sites before suspecting the renderer.
+
+`builtin/entity` also inherits **no display transforms**, so `ItemModels.builtinEntity` writes them
+out by hand, and they must stay equal to `minecraft:block/block`'s - that is what the item inherited
+on 1.21.11 through `block/cube_all`. `PostItemRenderer` applies its own per-context rotation *on top*
+of them, so the two are a matched pair: change one and the post renders facing the wrong way. (The
+abandoned 2.03.0 backport carries different numbers here; they are wrong, and produce a post rotated
+roughly 180 degrees in the GUI.)
+
+### Text shadows are suppressed on the Font, not on the widget
+
+1.21.1's `EditBox` has no `setTextShadow` and always calls the shadowed `GuiGraphics.drawString`
+overload, so `InputBox` gives itself a private `Font` copy and turns shadows off on it through the
+`ConfigurableFont` mixin / `IConfigurableFont` duck interface. Copying is the point: the flag lives on
+the `Font` instance, so setting it on Minecraft's shared font would strip shadows from all text.
+
+Two traps here, both hit during the 1.21.1 backport:
+
+- **Do not wrap `GuiGraphics` to intercept `drawString`.** Its `(Minecraft, PoseStack, BufferSource)`
+  constructor is private, so a subclass can only reach the public one, which builds a **fresh identity
+  `PoseStack`**. Everything drawn through the wrapper - text *and* `fill` - then lands outside the
+  screen's transform and is invisible, while input handling keeps working, so the widget looks dead
+  rather than broken.
+- **Name both `drawInternal` overloads explicitly**, not `drawInternal*`. `EditBox` draws through the
+  `FormattedCharSequence` overload, and a wildcard produces a single Fabric refmap entry - which
+  resolves to the `String` overload and silently leaves the one that matters uninjected. Check
+  `signpost.refmap.json` for two `drawInternal` entries after touching that mixin.
+
+### GUI widgets compete on depth, not on draw order
+
+Everything a widget batches into the screen's buffer source is flushed at the end of the frame, so
+anything that flushes *earlier* - notably `GuiModelRenderer`, which draws the 3D sign preview - is
+already in the depth buffer by then. At equal depth the model wins and the widget disappears.
+
+`InputBox` therefore takes a `zOffset`, and `SignGui` passes `100` to the six sign text boxes that sit
+on top of the sign model. `AngleInputBox`, `ColorInputBox` and `ImageInputBox` forward the offset their
+callers already pass. **These parameters exist for exactly this reason** - they look vestigial, because
+1.21.11 does not need them and leaves them unused, and dropping them on this branch makes the sign text
+invisible.
+
+The symptom is very misleading, so recognise it:
+
+- the box takes keystrokes and the caret moves through the text normally;
+- the caret is *visible* - `EditBox` draws it with `RenderType.guiOverlay()`, which ignores depth - and
+  in its own hardcoded light grey (`-3092272`), **not** the configured text colour, so a box set to
+  black text shows a white caret;
+- the hover highlight is missing too, since it is batched the same way;
+- sibling boxes render fine whenever no model overlaps them.
+
+Two things that are *not* the cause, both of which look plausible: the `ConfigurableFont` shadow
+suppression (it works - and if the mixin had failed to apply, the `IConfigurableFont` cast in
+`InputBox` would throw rather than render blank), and `Font.SHADOW_OFFSET`. Vanilla does offset the
+main text pass by +0.03 z when it draws a shadow, but 0.03 is nowhere near enough to clear a 3D model.
+`setBordered(false)` is also worth checking before blaming rendering: the hover highlight is drawn only
+when the box is unbordered, which is why `AngleInputBox` and `ColorInputBox` legitimately have none.
+
 ## Mixins & access transformers
 
 - Common mixins live in `gollorum.signpost.mixin` and are listed in
@@ -322,8 +414,12 @@ the `processResources` block in `buildSrc/src/main/groovy/multiloader-common.gra
 > **Any new property added to `gradle.properties` must also be added to the `expandProps` map in
 > `multiloader-common.gradle`**, otherwise resource expansion fails.
 
-Current targets: Minecraft 1.21.11, Java 21, NeoForge 21.11.45, Fabric Loader 0.18.6 /
-Fabric API 0.141.6, Forge 61.2.1, Parchment 1.21.10.
+Current targets: Minecraft 1.21.1, Java 21, NeoForge 21.1.250, Fabric Loader 0.17.3 /
+Fabric API 0.116.17, Forge 52.1.16, Parchment 1.21.1.
+
+This branch is the **1.21.1 backport of 2.04.0**, made from the 1.21.11 branch. Signpost has
+never had a release on 1.21.1 (2.02.0 was 1.20.1, 2.03.0 was 1.21.10), which is what makes the
+post-id DataFixer viable here - see [Post types are data](#post-types-are-data-and-the-pre-204-ids-are-migrated-by-a-datafixer).
 
 Integration dependency versions live there too (`waystones_version`, `modmenu_version`,
 `cloth_config_version`, `repurposed_structures_fabric_version`,
@@ -350,13 +446,18 @@ These pins are load-bearing and interlock; changing one breaks another:
   "Deprecated Gradle features were used ... incompatible with Gradle 9.0".
 - **Loom is pinned to `1.13.6`** (a release, not the upstream template's `1.13-SNAPSHOT`).
   Loom 1.14 and newer require Gradle 9, so 1.13.6 is the newest usable line here.
-- **Repurposed Structures on Fabric is pinned to `7.5.22+1.21.9-fabric`**, behind the current
-  release, because every RS Fabric build for 1.21.11 is published with Loom 1.14 and Loom
-  refuses to consume a mod built by a newer Loom (`Mod was built with a newer version of
-  Loom (1.14.10), you are using Loom (1.13.6)`). It is compile-only and only
-  `RSConditionsRegistry` is used, so the adapter still works against current RS at runtime.
+- **Waystones is pinned to `21.1.15+1.21.1`**, behind the current release, because Waystones
+  rebuilt every 1.21.1 artifact from `21.1.36` onwards with Loom 1.14.10, and Loom refuses to
+  consume a mod built by a newer Loom (`Mod was built with a newer version of Loom (1.14.10),
+  you are using Loom (1.13.6)`). `21.1.15` is the newest 1.21.1 build still made with Loom 1.7.
+  It is compile-only and only the adapter API is used, so the integration still works against
+  current Waystones at runtime - the run folders can carry a newer jar. The Fabric dependency is
+  also declared `transitive = false`, because Waystones 21.1.x pulls JourneyMap and other
+  CurseForge artifacts in as transitive mod dependencies.
+- Repurposed Structures needs **no** pin here, unlike on the 1.21.11 branch: its 1.21.1 builds
+  are made with Loom 1.6, so both loaders track the current `7.5.22+1.21.1-*`.
 - Consequence: **dropping the Forge subproject is what unblocks Gradle 9, Loom 1.14+, and a
-  current RS-Fabric pin.** They cannot be done separately.
+  current Waystones pin.** They cannot be done separately.
 
 ## Optional mod integrations
 
@@ -391,15 +492,38 @@ These directories are gitignored, so they are per-developer and must be populate
 | forge `clientWithMods` | `forge/runs/client_with_mods/mods` | Balm, Waystones |
 | forge `serverWithMods` | `forge/runs/server_with_mods/mods` | Balm, Waystones |
 
-Required chains when refreshing these, all downloadable from Modrinth: **Waystones needs Balm**
-(`>=21.11.3`), **RS on Fabric needs MidnightLib** (`>=1.5.7`), and **Iris needs Sodium** (`0.8.x`).
+The set currently installed for 1.21.1, all from Modrinth and all verified against the SHA-1 the
+API publishes:
+
+| Mod | Version |
+| --- | --- |
+| Balm | `21.0.65` (`+fabric-`/`+neoforge-`/`+forge-1.21.1`) |
+| Waystones | `21.1.44+1.21.1`, all three loaders |
+| Repurposed Structures | `7.5.22+1.21.1-fabric` / `-neoforge` |
+| MidnightLib | `1.9.3+1.21.1` (fabric) |
+| Sodium | `0.6.13+mc1.21.1` (fabric, client) |
+| Iris | `1.8.8+mc1.21.1` (fabric, client) |
+
+Required chains when refreshing these: **Waystones needs Balm** (`>=21.0.39`), **RS on Fabric
+needs MidnightLib** (`>=1.5.7`), and **Iris needs Sodium**.
 
 **Do not just take the newest of everything** - check each jar's `breaks` block, not only its
-`depends`. Sodium declares which Iris versions it breaks, and the newest pair is *mutually
-incompatible*: Sodium `0.8.13`/`0.8.14` break `iris <=1.10.7`, while `1.10.7` is the newest Iris
-for 1.21.11. Sodium `0.8.12` breaks only `iris <=1.10.6`, so **Iris 1.10.7 + Sodium 0.8.12** is
-the working pair. Fabric refuses to launch otherwise, with a modal error dialog that blocks the
-run until someone clicks Exit.
+`depends`. Two traps on 1.21.1, both of which make Fabric refuse to launch:
+
+- **Sodium and Iris.** The newest of each are *mutually* incompatible: Sodium `0.8.13` breaks
+  `iris <1.8.13`, while the newest Iris *release* for 1.21.1 (`1.8.8`) depends on `sodium 0.6.x`
+  and so cannot satisfy it. The working pair is one line back on Sodium: **Sodium `0.6.13` +
+  Iris `1.8.8`** - `0.6.13` breaks only `iris <1.8.7`. Taking Sodium `0.8.x` would force Iris
+  onto a beta.
+- **Waystones and the Fabric Loader.** Every 1.21.1 Waystones from `21.1.36` up requires
+  `fabricloader >=0.17.3`, which is why `fabric_loader_version` is `0.17.3` rather than a 0.16
+  release. Dropping the loader below that means dropping the run-folder Waystones to `21.1.15`
+  as well. (That pairing does work - `21.1.15` wants a `balm-fabric` dependency, which current
+  Balm still satisfies via `provides: ["balm-fabric"]` - but it would test a much older mod.)
+
+Note the run-folder Waystones (`21.1.44`) is deliberately newer than the `waystones_version`
+compile pin (`21.1.15`); the pin is a Loom constraint, not a runtime one - see
+[Toolchain constraints](#toolchain-constraints).
 Sodium and Iris are client-only. Forge has no Repurposed Structures build, so its folders only
 carry Balm and Waystones. Keep these jars on the same Minecraft version as `minecraft_version`;
 the plain `client`/`server` runs deliberately have empty `mods/` folders.
@@ -411,17 +535,26 @@ still has to be maintained. It is wired up by hand: ForgeGradle (`net.minecraftf
 the SpongePowered `mixin` Gradle plugin and explicit refmap/`MixinConfigs` manifest handling, instead
 of ModDevGradle/Loom.
 
-It builds on 1.21.11 (Forge 61.2.1), but only because of three settings in `gradle.properties`
-that exist solely for it. If `forge` breaks, suspect the build environment before the Java sources:
+It builds on 1.21.1 (Forge 52.1.16). One setting in `gradle.properties` exists solely for it, so
+if `forge` breaks, suspect the build environment before the Java sources:
+`org.gradle.daemon=false` and `org.gradle.parallel=false` - see [Build & run](#build--run).
 
-1. `org.gradle.daemon=false` and `org.gradle.parallel=false` - see [Build & run](#build--run).
-2. `systemProp.net.minecraftforge.gradle.repo.sources.force=true`. ForgeGradle 6.0.54 cannot
-   assemble the patched Minecraft jar for Forge 1.21.11 from binaries: `MinecraftUserRepo.findRaw`
-   copies the binpatched jar and then adds the recompiled MCP inject classes over it, and for this
-   version both contain `mcp/client/Start.class`, so it dies with
-   `java.util.zip.ZipException: duplicate entry: mcp/client/Start.class`. Forcing FG down its
-   sources path decompiles and recompiles Forge instead, avoiding that merge. The first build is
-   slow (a full Forge decompile); afterwards it is cached in `forge/build/fg_cache`.
+Two things the 1.21.11 branch needs and this one deliberately does **not**:
+
+- No `systemProp.net.minecraftforge.gradle.repo.sources.force=true`. That works around a
+  ForgeGradle bug assembling the patched jar for Forge 61 (`ZipException: duplicate entry:
+  mcp/client/Start.class`); Forge 52 assembles from binaries cleanly, so forcing the sources path
+  would only cost a full Forge decompile on every fresh checkout. Verified from a cleared
+  `fg_cache`.
+- No `net.minecraftforge:eventbus-validator` annotation processor. That is an EventBus 7
+  artifact; Forge 52 ships EventBus 6 and the validator dies during `init` with
+  `NullPointerException ... Elements.getTypeElement(...) is null`.
+
+Forge 52 uses **EventBus 6**: `net.minecraftforge.eventbus.api.IEventBus` and
+`net.minecraftforge.eventbus.api.SubscribeEvent`, `context.getModEventBus()`,
+`MinecraftForge.EVENT_BUS` (in `net.minecraftforge.common`), and `bus.addListener(...)` /
+`bus.register(obj)` - not the `BusGroup` / `Event.BUS` / `register(MethodHandles.lookup(), ...)`
+API of EventBus 7.
 
 Forge-specific quirks:
 

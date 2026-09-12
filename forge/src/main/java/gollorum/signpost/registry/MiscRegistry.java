@@ -4,7 +4,7 @@ import gollorum.signpost.minecraft.commands.WaystoneArgument;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import net.minecraft.core.registries.Registries;
-import net.minecraftforge.eventbus.api.bus.BusGroup;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 
 import static gollorum.signpost.Signpost.MOD_ID;
@@ -17,6 +17,6 @@ public class MiscRegistry {
         WAYSTONE_ARGUMENT.register("waystone", () -> ArgumentTypeInfos.registerByClass(WaystoneArgument.class, new WaystoneArgument.Info()));
     }
 
-    public static void register(BusGroup bus){ WAYSTONE_ARGUMENT.register(bus);	}
+    public static void register(IEventBus bus){ WAYSTONE_ARGUMENT.register(bus);	}
 
 }

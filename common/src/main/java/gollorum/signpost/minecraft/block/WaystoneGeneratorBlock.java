@@ -15,10 +15,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
+import gollorum.signpost.minecraft.utils.InteractionResults;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -52,7 +54,6 @@ public class WaystoneGeneratorBlock extends BaseEntityBlock {
 
     private WaystoneGeneratorBlock() {
         super(Properties.of()
-            .setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, REGISTRY_NAME)))
             .mapColor(MapColor.WOOD));
     }
 
@@ -77,8 +78,8 @@ public class WaystoneGeneratorBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected InteractionResult useItemOn(ItemStack item, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        return use(state, world, pos);
+    protected ItemInteractionResult useItemOn(ItemStack item, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        return InteractionResults.forItem(use(state, world, pos));
     }
 
     @Override

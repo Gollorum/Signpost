@@ -3,7 +3,7 @@ package gollorum.signpost.client;
 import gollorum.signpost.minecraft.gui.utils.IFluidTextureProvider;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
@@ -12,27 +12,27 @@ import net.minecraft.world.level.material.WaterFluid;
 
 public class FluidTextureProvider implements IFluidTextureProvider {
     @Override
-    public Identifier getStillTexture(Fluid fluid) {
+    public ResourceLocation getStillTexture(Fluid fluid) {
         return switch (fluid) {
-            case WaterFluid waterFluid -> Identifier.withDefaultNamespace("block/water_still");
-            case LavaFluid lavaFluid -> Identifier.withDefaultNamespace("block/lava_still");
+            case WaterFluid waterFluid -> ResourceLocation.withDefaultNamespace("block/water_still");
+            case LavaFluid lavaFluid -> ResourceLocation.withDefaultNamespace("block/lava_still");
             case null, default -> null;
         };
     }
 
     @Override
-    public Identifier getFlowingTexture(Fluid fluid) {
+    public ResourceLocation getFlowingTexture(Fluid fluid) {
         return switch (fluid) {
-            case WaterFluid waterFluid -> Identifier.withDefaultNamespace("block/water_flow");
-            case LavaFluid lavaFluid -> Identifier.withDefaultNamespace("block/lava_flow");
+            case WaterFluid waterFluid -> ResourceLocation.withDefaultNamespace("block/water_flow");
+            case LavaFluid lavaFluid -> ResourceLocation.withDefaultNamespace("block/lava_flow");
             case null, default -> null;
         };
     }
 
     @Override
-    public Identifier getOverlayTexture(Fluid fluid) {
+    public ResourceLocation getOverlayTexture(Fluid fluid) {
         return switch (fluid) {
-            case WaterFluid waterFluid -> Identifier.withDefaultNamespace("block/water_overlay");
+            case WaterFluid waterFluid -> ResourceLocation.withDefaultNamespace("block/water_overlay");
             case null, default -> null;
         };
     }

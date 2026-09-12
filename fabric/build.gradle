@@ -41,7 +41,9 @@ dependencies {
         // mod dependencies. We only compile against RSConditionsRegistry, so keep them out.
         transitive = false
     }
-    modCompileOnly "net.blay09.mods:waystones-fabric:${waystones_version}"
+    // Waystones 21.1.x pulls JourneyMap and other CurseForge artifacts in as transitive mod
+    // dependencies; only the adapter API is compiled against, so keep them off the classpath.
+    modCompileOnly("net.blay09.mods:waystones-fabric:${waystones_version}") { transitive = false }
 }
 
 loom {

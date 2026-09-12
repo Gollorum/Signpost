@@ -17,7 +17,7 @@ public class ListWaystones {
 
 	public static ArgumentBuilder<CommandSourceStack, ?> register() {
 		return Commands.literal("list")
-			.requires(source -> source.permissions().hasPermission(IConfig.IServer.getInstance().permissions().listPermission()))
+			.requires(source -> source.hasPermission(IConfig.IServer.getInstance().permissions().listPermissionLevel()))
 			.executes(context -> {
 				WaystoneLibrary.getInstance().requestAllWaystoneNames(names ->
 					context.getSource().sendSuccess(() ->

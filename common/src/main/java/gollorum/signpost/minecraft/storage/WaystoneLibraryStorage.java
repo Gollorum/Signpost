@@ -11,10 +11,10 @@ import gollorum.signpost.minecraft.worldgen.VillageWaystone;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.saveddata.SavedData;
-import net.minecraft.world.level.saveddata.SavedDataType;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -70,11 +70,29 @@ public class WaystoneLibraryStorage extends SavedData {
 
     public static final String NAME = Signpost.MOD_ID + "_WaystoneLibrary";
 
-    public static final SavedDataType<WaystoneLibraryStorage> TYPE = new SavedDataType<>(
-        NAME,
+    // 1.21.1 has no SavedDataType: the storage is addressed by a plain name (NAME, which is the file
+    // name on disk) and the codec has to be driven by hand from save/load.
+    public static final SavedData.Factory<WaystoneLibraryStorage> TYPE = new SavedData.Factory<>(
         WaystoneLibraryStorage::new,
-        WaystoneLibraryStorage.CODEC,
+        WaystoneLibraryStorage::load,
         DataFixTypes.SAVED_DATA_MAP_DATA
     );
+
+    private static WaystoneLibraryStorage load(CompoundTag tag, HolderLookup.Provider registries) {
+        return CODEC.parse(registries.createSerializationContext(NbtOps.INSTANCE), tag)
+            .resultOrPartial(error -> Signpost.LOGGER.error("Failed to read the waystone library: " + error))
+            .orElseGet(WaystoneLibraryStorage::new);
+    }
+
+    @Override
+    public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
+        CODEC.encodeStart(registries.createSerializationContext(NbtOps.INSTANCE), this)
+            .resultOrPartial(error -> Signpost.LOGGER.error("Failed to write the waystone library: " + error))
+            .ifPresent(encoded -> {
+                if(encoded instanceof CompoundTag compound) tag.merge(compound);
+                else Signpost.LOGGER.error("Failed to write the waystone library: expected a compound but got " + encoded);
+            });
+        return tag;
+    }
 
 }

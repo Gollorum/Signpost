@@ -2,8 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "i": "minecraft:iron_ingot",
-    "s": "#minecraft:signs"
+    "i": {
+      "item": "minecraft:iron_ingot"
+    },
+    "s": {
+      "tag": "minecraft:signs"
+    }
   },
   "pattern": [
     "i ",

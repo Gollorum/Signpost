@@ -11,7 +11,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
-import net.minecraftforge.eventbus.api.bus.BusGroup;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
 
@@ -19,9 +19,9 @@ import static gollorum.signpost.Signpost.MOD_ID;
 
 public class CreativeModeTabRegistry {
 
-    public static void register(BusGroup bus) {
+    public static void register(IEventBus bus) {
         Register.register(bus);
-        BuildCreativeModeTabContentsEvent.BUS.addListener(CreativeModeTabRegistry::onBuildCreativeModeContents);
+        bus.addListener(CreativeModeTabRegistry::onBuildCreativeModeContents);
     }
 
     private static final DeferredRegister<CreativeModeTab> Register = DeferredRegister.create(BuiltInRegistries.CREATIVE_MODE_TAB.key(), MOD_ID);

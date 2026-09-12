@@ -7,14 +7,14 @@ import gollorum.signpost.utils.serialization.WorldSerializer;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.util.Objects;
 import java.util.Optional;
 
-public record WorldLocation(BlockPos blockPos, Either<Level, Identifier> world) {
+public record WorldLocation(BlockPos blockPos, Either<Level, ResourceLocation> world) {
 
     public static Optional<WorldLocation> from(BlockEntity tile) {
         return tile != null && tile.hasLevel()
@@ -22,10 +22,10 @@ public record WorldLocation(BlockPos blockPos, Either<Level, Identifier> world) 
             : Optional.empty();
     }
 
-    public static WorldLocation from(BlockPos blockPos, Either<Level, Identifier> world) {
+    public static WorldLocation from(BlockPos blockPos, Either<Level, ResourceLocation> world) {
         return new WorldLocation(
             blockPos,
-            world.mapRight(loc -> loc.getPath().equals("") ? Level.OVERWORLD.identifier() : loc)
+            world.mapRight(loc -> loc.getPath().equals("") ? Level.OVERWORLD.location() : loc)
         );
     }
 
@@ -33,13 +33,13 @@ public record WorldLocation(BlockPos blockPos, Either<Level, Identifier> world) 
         return from(blockPos, Either.left(world));
     }
 
-    public static WorldLocation from(BlockPos blockPos, Identifier dimensionKeyLocation) {
+    public static WorldLocation from(BlockPos blockPos, ResourceLocation dimensionKeyLocation) {
         return from(blockPos, Either.right(dimensionKeyLocation));
     }
 
     public WorldLocation withoutExplicitLevel() {
         if(world.isLeft()) {
-            return WorldLocation.from(blockPos, Either.right(world.leftOrThrow().dimension().identifier()));
+            return WorldLocation.from(blockPos, Either.right(world.leftOrThrow().dimension().location()));
         } else {
             return this;
         }
@@ -51,20 +51,20 @@ public record WorldLocation(BlockPos blockPos, Either<Level, Identifier> world) 
         if (o == null || getClass() != o.getClass()) return false;
         WorldLocation that = (WorldLocation) o;
         return blockPos.equals(that.blockPos) &&
-            world.rightOr(w -> w.dimension().identifier())
-                .equals(that.world.rightOr(w -> w.dimension().identifier()));
+            world.rightOr(w -> w.dimension().location())
+                .equals(that.world.rightOr(w -> w.dimension().location()));
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(blockPos, world.rightOr(w -> w.dimension().identifier()));
+        return Objects.hash(blockPos, world.rightOr(w -> w.dimension().location()));
     }
 
     @Override
     public String toString() {
         return String.format("(%d %d %d) in %s",
             blockPos.getX(), blockPos.getY(), blockPos.getZ(),
-            world.match(Level::gatherChunkSourceStats, Identifier::toString)
+            world.match(Level::gatherChunkSourceStats, ResourceLocation::toString)
         );
     }
 

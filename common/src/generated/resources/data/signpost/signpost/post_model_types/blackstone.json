@@ -1,10 +1,20 @@
 {
   "addSignIngredient": [
-    "minecraft:blackstone",
-    "minecraft:gilded_blackstone",
-    "minecraft:polished_blackstone",
-    "minecraft:chiseled_polished_blackstone",
-    "minecraft:polished_blackstone_bricks"
+    {
+      "item": "minecraft:blackstone"
+    },
+    {
+      "item": "minecraft:gilded_blackstone"
+    },
+    {
+      "item": "minecraft:polished_blackstone"
+    },
+    {
+      "item": "minecraft:chiseled_polished_blackstone"
+    },
+    {
+      "item": "minecraft:polished_blackstone_bricks"
+    }
   ],
   "mainTexture": {
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",

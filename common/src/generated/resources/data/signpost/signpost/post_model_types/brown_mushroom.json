@@ -1,5 +1,7 @@
 {
-  "addSignIngredient": "minecraft:brown_mushroom",
+  "addSignIngredient": {
+    "item": "minecraft:brown_mushroom"
+  },
   "mainTexture": {
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",
     "ResourceLocation": "minecraft:block/mushroom_stem"

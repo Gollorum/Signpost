@@ -9,7 +9,7 @@ import gollorum.signpost.minecraft.models.WideSignModel;
 import gollorum.signpost.minecraft.models.modelGeneration.QuadModel;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
@@ -45,7 +45,7 @@ public class WideSignRenderer extends SignRenderer<SmallWideSignBlockPart> {
 	}
 
 	@Override
-	protected void renderText(SmallWideSignBlockPart sign, PoseStack matrix, Font fontRenderer, SubmitNodeCollector nodeCollector, int combinedLights) {
+	protected void renderText(SmallWideSignBlockPart sign, PoseStack matrix, Font fontRenderer, MultiBufferSource buffer, int combinedLights) {
 		RenderingUtil.wrapInMatrixEntry(matrix, () -> {
 			var text = sign.getText().get();
 			if(sign.isMarkedForGeneration()) {
@@ -68,15 +68,16 @@ public class WideSignRenderer extends SignRenderer<SmallWideSignBlockPart> {
 				-3.005 * VoxelSize);
 			matrix.scale(scale, scale * TEXT_RATIO, scale);
 
-            nodeCollector.submitText(
-                matrix, 0, 0,
+            fontRenderer.drawInBatch(
                 Component.literal(text).getVisualOrderText(),
-                false,
-                Font.DisplayMode.POLYGON_OFFSET,
-                combinedLights,
+                0, 0,
                 Colors.withAlpha(sign.getColor(), 0xff),
+                false,
+                matrix.last().pose(),
+                buffer,
+                Font.DisplayMode.POLYGON_OFFSET,
                 0,
-                0
+                combinedLights
             );
 		});
 	}

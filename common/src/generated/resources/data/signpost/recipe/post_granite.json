@@ -4,10 +4,16 @@
   "group": "Signpost",
   "key": {
     "b": [
-      "minecraft:granite",
-      "minecraft:polished_granite"
+      {
+        "item": "minecraft:granite"
+      },
+      {
+        "item": "minecraft:polished_granite"
+      }
     ],
-    "s": "#minecraft:signs"
+    "s": {
+      "tag": "minecraft:signs"
+    }
   },
   "pattern": [
     "s",
@@ -16,9 +22,7 @@
   ],
   "result": {
     "components": {
-      "minecraft:item_name": {
-        "translate": "item.signpost.post.signpost.granite"
-      },
+      "minecraft:item_name": "{\"translate\":\"item.signpost.post.signpost.granite\"}",
       "signpost:post_data": {
         "DataVersion": 2,
         "ModelType": "signpost:granite",

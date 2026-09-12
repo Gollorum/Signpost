@@ -25,7 +25,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -44,10 +44,10 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
         ExternalWaystoneLibrary.onInitialize().addListener(ex -> { ex.registerAdapter(instance); });
     }
 
-    public static Map<Identifier, PacketHandler.Event<?>> getEvents() {
-        var map = new HashMap<Identifier, PacketHandler.Event<?>>();
-        map.put(Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "waystones_adapter_request"), WaystonesAdapter.RequestEvent.INSTANCE);
-        map.put(Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "waystones_adapter_reply"), new WaystonesAdapter.ReplyEvent());
+    public static Map<ResourceLocation, PacketHandler.Event<?>> getEvents() {
+        var map = new HashMap<ResourceLocation, PacketHandler.Event<?>>();
+        map.put(ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "waystones_adapter_request"), WaystonesAdapter.RequestEvent.INSTANCE);
+        map.put(ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "waystones_adapter_reply"), new WaystonesAdapter.ReplyEvent());
         return map;
     }
 
@@ -104,7 +104,7 @@ public final class WaystonesAdapter implements ExternalWaystoneLibrary.Adapter {
 
         @Override
         public WaystoneLocationData loc() {
-            WorldLocation blockPos = WorldLocation.from(wrapped.getPos(), wrapped.getDimension().identifier());
+            WorldLocation blockPos = WorldLocation.from(wrapped.getPos(), wrapped.getDimension().location());
             return new WaystoneLocationData(blockPos, Vector3.fromBlockPos(blockPos.blockPos().relative(spawnInDirection(blockPos))));
         }
 

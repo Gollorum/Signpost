@@ -12,6 +12,7 @@ import gollorum.signpost.minecraft.data.ModelTypeRegistry;
 import gollorum.signpost.minecraft.data.PostData;
 import gollorum.signpost.minecraft.data.WaystoneHandleData;
 import gollorum.signpost.minecraft.items.Wrench;
+import gollorum.signpost.minecraft.utils.NbtCodec;
 import gollorum.signpost.minecraft.utils.SideUtils;
 import gollorum.signpost.minecraft.utils.TileEntityUtils;
 import gollorum.signpost.minecraft.worldgen.VillageSignpost;
@@ -23,7 +24,7 @@ import gollorum.signpost.utils.math.geometry.Ray;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import gollorum.signpost.utils.serialization.*;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.util.Util;
+import net.minecraft.Util;
 import net.minecraft.core.*;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
@@ -33,11 +34,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.entity.Entity;
@@ -48,10 +48,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.TagValueInput;
-import net.minecraft.world.level.storage.TagValueOutput;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -230,19 +226,20 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     }
 
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
-        writeSelf(output);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        writeSelf(tag, registries);
     }
 
-    private void writeSelf(ValueOutput output) {
-        output.store(PostData.CODEC, new PostData(Optional.of(modelTypeKey()), parts));
-        output.store(Codec.optionalField("Owner", PlayerHandle.DIRECT_CODEC, true), owner);
+    private void writeSelf(CompoundTag tag, HolderLookup.Provider registries) {
+        NbtCodec.store(tag, registries, PostData.CODEC, new PostData(Optional.of(modelTypeKey()), parts));
+        NbtCodec.store(tag, registries, Codec.optionalField("Owner", PlayerHandle.DIRECT_CODEC, true), owner);
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        readSelf(input);
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        readSelf(tag, registries);
     }
 
     /**
@@ -257,15 +254,15 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         return postBlock().materialType;
     }
 
-    private void readSelf(ValueInput input) {
-        var data = input.read(PostData.CODEC);
+    private void readSelf(CompoundTag tag, HolderLookup.Provider registries) {
+        var data = NbtCodec.read(tag, registries, PostData.CODEC);
         // Absent for everything written before 2.04; deriveModelType() works it out from the parts instead.
         modelTypeKey = data.flatMap(PostData::modelType).orElse(null);
         modelType = null;
         parts = data
             .map(d -> new ConcurrentHashMap(d.parts()))
             .orElseGet(ConcurrentHashMap::new);
-        owner = input.read(Codec.optionalField("Owner", PlayerHandle.DIRECT_CODEC, true)).flatMap(it -> it);
+        owner = NbtCodec.read(tag, registries, Codec.optionalField("Owner", PlayerHandle.DIRECT_CODEC, true)).flatMap(it -> it);
 
         Runnable init = () -> {
             // Needs the level, because that is what resolves the model type against the datapack registry.
@@ -329,9 +326,9 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
 
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider provider) {
-        var output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, provider);
-        writeSelf(output);
-        return output.buildResult();
+        var tag = new CompoundTag();
+        writeSelf(tag, provider);
+        return tag;
     }
 
     @Override
@@ -383,30 +380,30 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     }
 
     public static class TilePartInfo {
-        public final Identifier dimensionKey;
+        public final ResourceLocation dimensionKey;
         public final BlockPos pos;
         public final UUID identifier;
 
         public TilePartInfo(BlockEntity tile, UUID identifier) {
-            this.dimensionKey = tile.getLevel().dimension().identifier();
+            this.dimensionKey = tile.getLevel().dimension().location();
             this.pos = tile.getBlockPos();
             this.identifier = identifier;
         }
 
-        public TilePartInfo(Identifier dimensionKey, BlockPos pos, UUID identifier) {
+        public TilePartInfo(ResourceLocation dimensionKey, BlockPos pos, UUID identifier) {
             this.dimensionKey = dimensionKey;
             this.pos = pos;
             this.identifier = identifier;
         }
 
         public static final Codec<TilePartInfo> CODEC = RecordCodecBuilder.create(i -> i.group(
-            Identifier.CODEC.fieldOf("Dimension").forGetter(t -> t.dimensionKey),
+            ResourceLocation.CODEC.fieldOf("Dimension").forGetter(t -> t.dimensionKey),
             BlockPosSerializer.CODEC.fieldOf("Pos").forGetter(t -> t.pos),
             UUIDUtil.CODEC.fieldOf("Id").forGetter(t -> t.identifier)
         ).apply(i, TilePartInfo::new));
 
         public static final StreamCodec<ByteBuf, TilePartInfo> STREAM_CODEC = StreamCodec.composite(
-            Identifier.STREAM_CODEC, t -> t.dimensionKey,
+            ResourceLocation.STREAM_CODEC, t -> t.dimensionKey,
             BlockPos.STREAM_CODEC, t -> t.pos,
             UUIDUtil.STREAM_CODEC, t -> t.identifier,
             TilePartInfo::new
@@ -613,7 +610,7 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
                 TileEntityUtils.delayUntilTileEntityExistsAt(
                     message.location,
                     PostTile.getBlockEntityType(),
-                    tile -> tile.loadWithComponents(TagValueInput.create(ProblemReporter.DISCARDING, context.getHolderLookupProvider(), message.tag)),
+                    tile -> tile.loadWithComponents(message.tag, context.getHolderLookupProvider()),
                     20,
                     true,
                     Optional.empty()

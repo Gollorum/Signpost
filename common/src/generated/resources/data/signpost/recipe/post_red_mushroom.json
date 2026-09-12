@@ -3,8 +3,12 @@
   "category": "misc",
   "group": "Signpost",
   "key": {
-    "b": "minecraft:red_mushroom_block",
-    "s": "#minecraft:signs"
+    "b": {
+      "item": "minecraft:red_mushroom_block"
+    },
+    "s": {
+      "tag": "minecraft:signs"
+    }
   },
   "pattern": [
     "s",
@@ -13,9 +17,7 @@
   ],
   "result": {
     "components": {
-      "minecraft:item_name": {
-        "translate": "item.signpost.post.signpost.red_mushroom"
-      },
+      "minecraft:item_name": "{\"translate\":\"item.signpost.post.signpost.red_mushroom\"}",
       "signpost:post_data": {
         "DataVersion": 2,
         "ModelType": "signpost:red_mushroom",

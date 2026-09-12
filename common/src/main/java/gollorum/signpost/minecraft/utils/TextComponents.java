@@ -16,9 +16,9 @@ public final class TextComponents {
 
     public static MutableComponent waystone(ServerPlayer player, String name, boolean shouldHighlight) {
         MutableComponent ret = shouldHighlight ? Colors.wrap(name, Colors.highlight) : Component.literal(name);
-        if(player != null && player.permissions().hasPermission(IConfig.IServer.getInstance().permissions().teleportPermission()))
+        if(player != null && player.hasPermissions(IConfig.IServer.getInstance().permissions().teleportPermissionLevel()))
             ret.setStyle(ret.getStyle()
-                .withClickEvent(new ClickEvent.SuggestCommand("/signpost teleport \"" + name + "\""))
+                .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/signpost teleport \"" + name + "\""))
                 .withUnderlined(true)
             );
         return ret;

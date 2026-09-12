@@ -29,8 +29,9 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
-import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
-import net.minecraftforge.eventbus.api.bus.BusGroup;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -50,10 +51,10 @@ public class SignpostForge {
     public SignpostForge(FMLJavaModLoadingContext context) {
         serverSetter = Signpost.init(Config.INSTANCE, Delay.INSTANCE);
 
-        var forgeBus = BusGroup.DEFAULT;
-        var modBus = context.getModBusGroup();
+        var forgeBus = MinecraftForge.EVENT_BUS;
+        var modBus = context.getModEventBus();
         ModBusEvents.register(modBus);
-        forgeBus.register(MethodHandles.lookup(), new ForgeEvents());
+        forgeBus.register(new ForgeEvents());
 
         BlockRegistry.register(modBus);
         ItemRegistry.register(modBus);
@@ -63,7 +64,7 @@ public class SignpostForge {
         CreativeModeTabRegistry.register(modBus);
         WaystoneDiscoveryEventListener.register(forgeBus);
 
-        forgeBus.register(MethodHandles.lookup(), Delay.INSTANCE);
+        forgeBus.register(Delay.INSTANCE);
 
         Config.INSTANCE.register(context);
 
@@ -76,11 +77,11 @@ public class SignpostForge {
 
     private static class ModBusEvents {
 
-        public static void register(BusGroup busGroup) {
-            FMLCommonSetupEvent.getBus(busGroup).addListener(ModBusEvents::setup);
-            EntityRenderersEvent.RegisterRenderers.BUS.addListener(ModBusEvents::registerEntityRenderers);
-            RegisterEvent.getBus(busGroup).addListener(ModBusEvents::registerStuff);
-            DataPackRegistryEvent.NewRegistry.BUS.addListener(ModBusEvents::registerDataPackRegistries);
+        public static void register(IEventBus busGroup) {
+            busGroup.addListener(ModBusEvents::setup);
+            busGroup.addListener(ModBusEvents::registerEntityRenderers);
+            busGroup.addListener(ModBusEvents::registerStuff);
+            busGroup.addListener(ModBusEvents::registerDataPackRegistries);
         }
 
         public static void setup(final FMLCommonSetupEvent event) {

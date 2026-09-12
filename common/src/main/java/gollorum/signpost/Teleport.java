@@ -18,6 +18,7 @@ import gollorum.signpost.utils.math.Angle;
 import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -26,7 +27,7 @@ import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -37,7 +38,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.apache.logging.log4j.util.TriConsumer;
@@ -117,7 +117,7 @@ public class Teleport {
             var changesDimension = !entity.level().dimension().equals(level.dimension());
 
             var doAfter = new AtomicReference<Either<Consumer<Entity>, Entity>>();
-            entity.teleport(new TeleportTransition(level, pos.asVec3(), Vec3.ZERO, yaw.degrees(), pitch.degrees(), Set.of(), entity2 -> {
+            move(entity, level, pos, yaw, pitch, entity2 -> {
                 var da = doAfter.get();
                 if (da != null && da.isLeft()) da.leftOrThrow().accept(entity2);
                 doAfter.set(Either.right(entity2));
@@ -128,7 +128,7 @@ public class Teleport {
                 for(var p : passengers) {
                     Consumer<Entity> next = p2 -> {
                         if(changesDimension || p.entity instanceof ServerPlayer)
-                            IDelay.onServerForFrames(5, () -> p2.startRiding(entity2, true, true));
+                            IDelay.onServerForFrames(5, () -> p2.startRiding(entity2, true));
                         else entity2.positionRider(p2);
                     };
                     var result = p.teleportWithChildren(level, pos, yaw, pitch);
@@ -136,8 +136,51 @@ public class Teleport {
                         next.accept(result.get().rightOrThrow());
                     else result.set(Either.left(next));
                 }
-            }));
+            });
             return doAfter;
+        }
+
+        /**
+         * 1.21.1 has no {@code Entity.teleport(TeleportTransition)}: {@code Entity.teleportTo} returns
+         * a boolean and drops the entity it creates when the dimension changes, and
+         * {@code Entity.changeDimension(DimensionTransition)} recurses into the passengers itself,
+         * which would fight the recursion in {@link #teleportWithChildren}. So the move is done here
+         * and the resulting entity - a fresh copy across dimensions, the same instance otherwise - is
+         * handed to {@code postTransition}, exactly as the transition callback used to be.
+         */
+        private static void move(
+            Entity entity, ServerLevel level, Vector3 pos, Angle yaw, Angle pitch, Consumer<Entity> postTransition
+        ) {
+            float clampedPitch = Mth.clamp(pitch.degrees(), -90.0f, 90.0f);
+            if(entity.level() == level) {
+                if(entity instanceof ServerPlayer player)
+                    player.teleportTo(level, pos.x(), pos.y(), pos.z(), Set.of(), yaw.degrees(), clampedPitch);
+                else {
+                    entity.moveTo(pos.x(), pos.y(), pos.z(), yaw.degrees(), clampedPitch);
+                    entity.setYHeadRot(yaw.degrees());
+                }
+                postTransition.accept(entity);
+                return;
+            }
+            if(entity instanceof ServerPlayer player) {
+                // ServerPlayer survives the dimension change as the same instance.
+                player.teleportTo(level, pos.x(), pos.y(), pos.z(), Set.of(), yaw.degrees(), clampedPitch);
+                postTransition.accept(player);
+                return;
+            }
+            entity.unRide();
+            Entity copy = entity.getType().create(level);
+            if(copy == null) {
+                Signpost.LOGGER.error("Failed to teleport " + entity.getType() + " to " + level.dimension().location()
+                    + ": the entity type refused to create a copy.");
+                return;
+            }
+            copy.restoreFrom(entity);
+            copy.moveTo(pos.x(), pos.y(), pos.z(), yaw.degrees(), clampedPitch);
+            copy.setYHeadRot(yaw.degrees());
+            entity.setRemoved(Entity.RemovalReason.CHANGED_DIMENSION);
+            level.addDuringTeleport(copy);
+            postTransition.accept(copy);
         }
 
         private static void teleportLeadedAnimals(Entity player, List<TeleportNode> leashed, ServerLevel level, Vector3 pos, Angle yaw, Angle pitch) {
@@ -153,7 +196,7 @@ public class Teleport {
         private void unleash() {
             for(var l : leashed)
                 if (l.entity instanceof Leashable leashable)
-                    leashable.dropLeash();
+                    leashable.dropLeash(true, true);
         }
 
     }
@@ -172,7 +215,7 @@ public class Teleport {
 
     public static ItemStack getCost(ServerPlayer player, Vector3 from, Vector3 to) {
         var item = player.registryAccess().lookup(Registries.ITEM).flatMap(
-            registry -> registry.get(ResourceKey.create(Registries.ITEM, Identifier.parse(IConfig.getInstance().getServer().teleport().costItem())))
+            registry -> registry.get(ResourceKey.create(Registries.ITEM, ResourceLocation.parse(IConfig.getInstance().getServer().teleport().costItem())))
         ).map(Holder.Reference::value).orElse(null);
         if(item == null || item.equals(Items.AIR) || player.isCreative() || player.isSpectator()) return ItemStack.EMPTY;
         int distancePerPayment = IConfig.getInstance().getServer().teleport().distancePerPayment();

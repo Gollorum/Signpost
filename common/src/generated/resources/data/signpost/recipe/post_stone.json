@@ -3,8 +3,12 @@
   "category": "misc",
   "group": "Signpost",
   "key": {
-    "b": "minecraft:stone",
-    "s": "#minecraft:signs"
+    "b": {
+      "item": "minecraft:stone"
+    },
+    "s": {
+      "tag": "minecraft:signs"
+    }
   },
   "pattern": [
     "s",
@@ -13,9 +17,7 @@
   ],
   "result": {
     "components": {
-      "minecraft:item_name": {
-        "translate": "item.signpost.post.signpost.stone"
-      },
+      "minecraft:item_name": "{\"translate\":\"item.signpost.post.signpost.stone\"}",
       "signpost:post_data": {
         "DataVersion": 2,
         "ModelType": "signpost:stone",

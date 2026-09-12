@@ -12,7 +12,7 @@ import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -53,7 +53,7 @@ public class PostModelTypes implements DataProvider {
                     provider,
                     PostBlock.ModelType.CODEC,
                     modelType.value,
-                    pathProvider.json(modelType.getKey().identifier())
+                    pathProvider.json(modelType.getKey().location())
                 )).toArray(CompletableFuture[]::new)
             )
         );
@@ -73,7 +73,7 @@ public class PostModelTypes implements DataProvider {
      */
     private static FakeHolder mkModelType(
         String name,
-        Identifier postTexture, Identifier mainTexture, Identifier secondaryTexture,
+        ResourceLocation postTexture, ResourceLocation mainTexture, ResourceLocation secondaryTexture,
         Ingredient signIngredient, Ingredient baseIngredient, Ingredient addSignIngredient,
         PostBlock.MaterialType materialType, MapColor mapColor
     ) {
@@ -88,8 +88,8 @@ public class PostModelTypes implements DataProvider {
         );
     }
 
-    private static Texture expand(Identifier loc){
-        return new Texture(net.minecraft.resources.Identifier.fromNamespaceAndPath(
+    private static Texture expand(ResourceLocation loc){
+        return new Texture(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
             loc.getNamespace(),
             loc.getPath().startsWith("block/") ? loc.getPath() : "block/"+loc.getPath()
         ));
@@ -101,11 +101,11 @@ public class PostModelTypes implements DataProvider {
 
     public static FakeHolder oak(TaglistResolver<Item> items) {
         return mkModelType("oak",
-            Identifier.parse("oak_log"),
-            Identifier.parse("stripped_oak_log"),
-            Identifier.parse("oak_log"),
+            ResourceLocation.parse("oak_log"),
+            ResourceLocation.parse("stripped_oak_log"),
+            ResourceLocation.parse("oak_log"),
             Ingredient.of(net.minecraft.world.item.Items.OAK_SIGN),
-            Ingredient.of(items.getOrThrow(net.minecraft.tags.ItemTags.OAK_LOGS)),
+            Ingredient.of(net.minecraft.tags.ItemTags.OAK_LOGS),
             Ingredient.of(net.minecraft.world.item.Items.OAK_SIGN),
             PostBlock.MaterialType.Wood,
             MapColor.WOOD
@@ -114,10 +114,10 @@ public class PostModelTypes implements DataProvider {
 
     public static FakeHolder iron(TaglistResolver<Item> items) {
         return mkModelType("iron",
-            Identifier.parse("iron_block"),
-            Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "iron"),
-            Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "iron_dark"),
-            Ingredient.of(items.getOrThrow(net.minecraft.tags.ItemTags.SIGNS)),
+            ResourceLocation.parse("iron_block"),
+            ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "iron"),
+            ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "iron_dark"),
+            Ingredient.of(net.minecraft.tags.ItemTags.SIGNS),
             Ingredient.of(net.minecraft.world.item.Items.IRON_INGOT),
             Ingredient.of(net.minecraft.world.item.Items.IRON_INGOT),
             PostBlock.MaterialType.Metal,
@@ -127,10 +127,10 @@ public class PostModelTypes implements DataProvider {
 
     public static FakeHolder stone(TaglistResolver<Item> items) {
         return mkModelType("stone",
-            Identifier.parse("stone"),
-            Identifier.parse("stone"),
-            Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "stone_dark"),
-            Ingredient.of(items.getOrThrow(net.minecraft.tags.ItemTags.SIGNS)),
+            ResourceLocation.parse("stone"),
+            ResourceLocation.parse("stone"),
+            ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "stone_dark"),
+            Ingredient.of(net.minecraft.tags.ItemTags.SIGNS),
             Ingredient.of(net.minecraft.world.item.Items.STONE),
             Ingredient.of(net.minecraft.world.item.Items.STONE),
             PostBlock.MaterialType.Stone,
@@ -140,10 +140,10 @@ public class PostModelTypes implements DataProvider {
 
     public static FakeHolder redMushroom(TaglistResolver<Item> items) {
         return mkModelType("red_mushroom",
-            Identifier.parse("red_mushroom_block"),
-            Identifier.parse("mushroom_stem"),
-            Identifier.parse("red_mushroom_block"),
-            Ingredient.of(items.getOrThrow(net.minecraft.tags.ItemTags.SIGNS)),
+            ResourceLocation.parse("red_mushroom_block"),
+            ResourceLocation.parse("mushroom_stem"),
+            ResourceLocation.parse("red_mushroom_block"),
+            Ingredient.of(net.minecraft.tags.ItemTags.SIGNS),
             Ingredient.of(net.minecraft.world.item.Items.RED_MUSHROOM_BLOCK),
             Ingredient.of(net.minecraft.world.item.Items.RED_MUSHROOM),
             PostBlock.MaterialType.Mushroom,
@@ -155,83 +155,83 @@ public class PostModelTypes implements DataProvider {
         var ret = new ArrayList<FakeHolder>();
 
         ret.add(mkModelType("acacia",
-            net.minecraft.resources.Identifier.parse("acacia_log"),
-            net.minecraft.resources.Identifier.parse("stripped_acacia_log"),
-            net.minecraft.resources.Identifier.parse("acacia_log"),
+            net.minecraft.resources.ResourceLocation.parse("acacia_log"),
+            net.minecraft.resources.ResourceLocation.parse("stripped_acacia_log"),
+            net.minecraft.resources.ResourceLocation.parse("acacia_log"),
             net.minecraft.world.item.crafting.Ingredient.of(net.minecraft.world.item.Items.ACACIA_SIGN),
-            net.minecraft.world.item.crafting.Ingredient.of(items.getOrThrow(net.minecraft.tags.ItemTags.ACACIA_LOGS)),
+            net.minecraft.world.item.crafting.Ingredient.of(net.minecraft.tags.ItemTags.ACACIA_LOGS),
             Ingredient.of(net.minecraft.world.item.Items.ACACIA_SIGN),
             PostBlock.MaterialType.Wood,
             MapColor.COLOR_ORANGE
         ));
         ret.add(mkModelType("birch",
-            Identifier.parse("birch_log"),
-            Identifier.parse("stripped_birch_log"),
-            Identifier.parse("birch_log"),
+            ResourceLocation.parse("birch_log"),
+            ResourceLocation.parse("stripped_birch_log"),
+            ResourceLocation.parse("birch_log"),
             Ingredient.of(net.minecraft.world.item.Items.BIRCH_SIGN),
-            Ingredient.of(items.getOrThrow(net.minecraft.tags.ItemTags.BIRCH_LOGS)),
+            Ingredient.of(net.minecraft.tags.ItemTags.BIRCH_LOGS),
             Ingredient.of(net.minecraft.world.item.Items.BIRCH_SIGN),
             PostBlock.MaterialType.Wood,
             MapColor.SAND
         ));
         ret.add(iron(items::getOrThrow));
         ret.add(mkModelType("jungle",
-            Identifier.parse("jungle_log"),
-            Identifier.parse("stripped_jungle_log"),
-            Identifier.parse("jungle_log"),
+            ResourceLocation.parse("jungle_log"),
+            ResourceLocation.parse("stripped_jungle_log"),
+            ResourceLocation.parse("jungle_log"),
             Ingredient.of(net.minecraft.world.item.Items.JUNGLE_SIGN),
-            Ingredient.of(items.getOrThrow(net.minecraft.tags.ItemTags.JUNGLE_LOGS)),
+            Ingredient.of(net.minecraft.tags.ItemTags.JUNGLE_LOGS),
             Ingredient.of(net.minecraft.world.item.Items.JUNGLE_SIGN),
             PostBlock.MaterialType.Wood,
             MapColor.DIRT
         ));
         ret.add(oak(items::getOrThrow));
         ret.add(mkModelType("darkoak",
-            Identifier.parse("dark_oak_log"),
-            Identifier.parse("stripped_dark_oak_log"),
-            Identifier.parse("dark_oak_log"),
+            ResourceLocation.parse("dark_oak_log"),
+            ResourceLocation.parse("stripped_dark_oak_log"),
+            ResourceLocation.parse("dark_oak_log"),
             Ingredient.of(net.minecraft.world.item.Items.DARK_OAK_SIGN),
-            Ingredient.of(items.getOrThrow(net.minecraft.tags.ItemTags.DARK_OAK_LOGS)),
+            Ingredient.of(net.minecraft.tags.ItemTags.DARK_OAK_LOGS),
             Ingredient.of(net.minecraft.world.item.Items.DARK_OAK_SIGN),
             PostBlock.MaterialType.Wood,
             MapColor.COLOR_BROWN
         ));
         ret.add(mkModelType("spruce",
-            Identifier.parse("spruce_log"),
-            Identifier.parse("stripped_spruce_log"),
-            Identifier.parse("spruce_log"),
+            ResourceLocation.parse("spruce_log"),
+            ResourceLocation.parse("stripped_spruce_log"),
+            ResourceLocation.parse("spruce_log"),
             Ingredient.of(net.minecraft.world.item.Items.SPRUCE_SIGN),
-            Ingredient.of(items.getOrThrow(net.minecraft.tags.ItemTags.SPRUCE_LOGS)),
+            Ingredient.of(net.minecraft.tags.ItemTags.SPRUCE_LOGS),
             Ingredient.of(net.minecraft.world.item.Items.SPRUCE_SIGN),
             PostBlock.MaterialType.Wood,
             MapColor.PODZOL
         ));
         ret.add(mkModelType("mangrove",
-            Identifier.parse("mangrove_log"),
-            Identifier.parse("stripped_mangrove_log"),
-            Identifier.parse("mangrove_log"),
+            ResourceLocation.parse("mangrove_log"),
+            ResourceLocation.parse("stripped_mangrove_log"),
+            ResourceLocation.parse("mangrove_log"),
             Ingredient.of(net.minecraft.world.item.Items.MANGROVE_SIGN),
-            Ingredient.of(items.getOrThrow(net.minecraft.tags.ItemTags.MANGROVE_LOGS)),
+            Ingredient.of(net.minecraft.tags.ItemTags.MANGROVE_LOGS),
             Ingredient.of(net.minecraft.world.item.Items.MANGROVE_SIGN),
             PostBlock.MaterialType.Wood,
             MapColor.COLOR_RED
         ));
         ret.add(mkModelType("bamboo",
-            Identifier.parse("bamboo_block"),
-            Identifier.parse("stripped_bamboo_block"),
-            Identifier.parse("bamboo_block"),
+            ResourceLocation.parse("bamboo_block"),
+            ResourceLocation.parse("stripped_bamboo_block"),
+            ResourceLocation.parse("bamboo_block"),
             Ingredient.of(net.minecraft.world.item.Items.BAMBOO_SIGN),
-            Ingredient.of(items.getOrThrow(net.minecraft.tags.ItemTags.BAMBOO_BLOCKS)),
+            Ingredient.of(net.minecraft.tags.ItemTags.BAMBOO_BLOCKS),
             Ingredient.of(net.minecraft.world.item.Items.BAMBOO_SIGN),
             PostBlock.MaterialType.Wood,
             MapColor.COLOR_YELLOW
         ));
         ret.add(mkModelType("cherry",
-            Identifier.parse("cherry_log"),
-            Identifier.parse("stripped_cherry_log"),
-            Identifier.parse("cherry_log"),
+            ResourceLocation.parse("cherry_log"),
+            ResourceLocation.parse("stripped_cherry_log"),
+            ResourceLocation.parse("cherry_log"),
             Ingredient.of(net.minecraft.world.item.Items.CHERRY_SIGN),
-            Ingredient.of(items.getOrThrow(net.minecraft.tags.ItemTags.CHERRY_LOGS)),
+            Ingredient.of(net.minecraft.tags.ItemTags.CHERRY_LOGS),
             Ingredient.of(net.minecraft.world.item.Items.CHERRY_SIGN),
             PostBlock.MaterialType.Wood,
             MapColor.TERRACOTTA_WHITE
@@ -239,41 +239,41 @@ public class PostModelTypes implements DataProvider {
         ret.add(stone(items::getOrThrow));
         ret.add(redMushroom(items::getOrThrow));
         ret.add(mkModelType("brown_mushroom",
-            Identifier.parse("brown_mushroom_block"),
-            Identifier.parse("mushroom_stem"),
-            Identifier.parse("brown_mushroom_block"),
-            Ingredient.of(items.getOrThrow(net.minecraft.tags.ItemTags.SIGNS)),
+            ResourceLocation.parse("brown_mushroom_block"),
+            ResourceLocation.parse("mushroom_stem"),
+            ResourceLocation.parse("brown_mushroom_block"),
+            Ingredient.of(net.minecraft.tags.ItemTags.SIGNS),
             Ingredient.of(net.minecraft.world.item.Items.BROWN_MUSHROOM_BLOCK),
             Ingredient.of(net.minecraft.world.item.Items.BROWN_MUSHROOM),
             PostBlock.MaterialType.Mushroom,
             MapColor.DIRT
         ));
         ret.add(mkModelType("warped",
-            Identifier.parse("warped_stem"),
-            Identifier.parse("stripped_warped_stem"),
-            Identifier.parse("warped_stem"),
+            ResourceLocation.parse("warped_stem"),
+            ResourceLocation.parse("stripped_warped_stem"),
+            ResourceLocation.parse("warped_stem"),
             Ingredient.of(net.minecraft.world.item.Items.WARPED_SIGN),
-            Ingredient.of(items.getOrThrow(net.minecraft.tags.ItemTags.WARPED_STEMS)),
+            Ingredient.of(net.minecraft.tags.ItemTags.WARPED_STEMS),
             Ingredient.of(net.minecraft.world.item.Items.WARPED_SIGN),
             PostBlock.MaterialType.Wood,
             MapColor.WARPED_STEM
         ));
         ret.add(mkModelType("crimson",
-            Identifier.parse("crimson_stem"),
-            Identifier.parse("stripped_crimson_stem"),
-            Identifier.parse("crimson_stem"),
+            ResourceLocation.parse("crimson_stem"),
+            ResourceLocation.parse("stripped_crimson_stem"),
+            ResourceLocation.parse("crimson_stem"),
             Ingredient.of(net.minecraft.world.item.Items.CRIMSON_SIGN),
-            Ingredient.of(items.getOrThrow(net.minecraft.tags.ItemTags.CRIMSON_STEMS)),
+            Ingredient.of(net.minecraft.tags.ItemTags.CRIMSON_STEMS),
             Ingredient.of(Items.CRIMSON_SIGN),
             PostBlock.MaterialType.Wood,
             MapColor.CRIMSON_STEM
         ));
         Ingredient sandstone = Ingredient.of(Blocks.SANDSTONE, Blocks.CUT_SANDSTONE, Blocks.CHISELED_SANDSTONE, Blocks.SMOOTH_SANDSTONE);
         ret.add(mkModelType("sandstone",
-            Identifier.parse("sandstone"),
-            Identifier.parse("red_sandstone_bottom"),
-            Identifier.parse("sandstone_bottom"),
-            Ingredient.of(items.getOrThrow(ItemTags.SIGNS)),
+            ResourceLocation.parse("sandstone"),
+            ResourceLocation.parse("red_sandstone_bottom"),
+            ResourceLocation.parse("sandstone_bottom"),
+            Ingredient.of(ItemTags.SIGNS),
             sandstone,
             sandstone,
             PostBlock.MaterialType.Stone,
@@ -281,31 +281,25 @@ public class PostModelTypes implements DataProvider {
         ));
         Ingredient redSandstone = Ingredient.of(Blocks.RED_SANDSTONE, Blocks.CUT_RED_SANDSTONE, Blocks.CHISELED_RED_SANDSTONE, Blocks.SMOOTH_RED_SANDSTONE);
         ret.add(mkModelType("red_sandstone",
-            Identifier.parse("red_sandstone"),
-            Identifier.parse("sandstone_bottom"),
-            Identifier.parse("red_sandstone_bottom"),
-            Ingredient.of(items.getOrThrow(ItemTags.SIGNS)),
+            ResourceLocation.parse("red_sandstone"),
+            ResourceLocation.parse("sandstone_bottom"),
+            ResourceLocation.parse("red_sandstone_bottom"),
+            Ingredient.of(ItemTags.SIGNS),
             redSandstone,
             redSandstone,
             PostBlock.MaterialType.Stone,
             MapColor.COLOR_ORANGE
         ));
-        ret.add(mkModelType("pale_oak",
-            Identifier.parse("pale_oak_log"),
-            Identifier.parse("stripped_pale_oak_log"),
-            Identifier.parse("pale_oak_log"),
-            Ingredient.of(Items.PALE_OAK_SIGN),
-            Ingredient.of(items.getOrThrow(ItemTags.PALE_OAK_LOGS)),
-            Ingredient.of(Items.PALE_OAK_SIGN),
-            PostBlock.MaterialType.Wood,
-            MapColor.QUARTZ
-        ));
+        // No pale_oak post type on 1.21.1: pale oak wood, its sign item and its log tag were added in
+        // 1.21.4. Nothing else refers to the type, and since post model types live in a datapack
+        // registry no existing save can hold one, so dropping it is safe. The lang keys are left in
+        // place, unused, to keep the language files identical to the 1.21 branch.
         Ingredient granite = Ingredient.of(Blocks.GRANITE, Blocks.POLISHED_GRANITE);
         ret.add(mkModelType("granite",
-            Identifier.parse("granite"),
-            Identifier.parse("polished_diorite"),
-            Identifier.parse("granite"),
-            Ingredient.of(items.getOrThrow(ItemTags.SIGNS)),
+            ResourceLocation.parse("granite"),
+            ResourceLocation.parse("polished_diorite"),
+            ResourceLocation.parse("granite"),
+            Ingredient.of(ItemTags.SIGNS),
             granite,
             granite,
             PostBlock.MaterialType.Stone,
@@ -313,10 +307,11 @@ public class PostModelTypes implements DataProvider {
         ));
         Ingredient diorite = Ingredient.of(Blocks.DIORITE, Blocks.POLISHED_DIORITE);
         ret.add(mkModelType("diorite",
-            Identifier.parse("diorite"),
-            Identifier.parse("stripped_pale_oak_log"),
-            Identifier.parse("diorite"),
-            Ingredient.of(items.getOrThrow(ItemTags.SIGNS)),
+            ResourceLocation.parse("diorite"),
+            // 1.21.11 accents diorite with stripped pale oak, which does not exist on 1.21.1.
+            ResourceLocation.parse("quartz_block_side"),
+            ResourceLocation.parse("diorite"),
+            Ingredient.of(ItemTags.SIGNS),
             diorite,
             diorite,
             PostBlock.MaterialType.Stone,
@@ -324,10 +319,10 @@ public class PostModelTypes implements DataProvider {
         ));
         Ingredient andesite = Ingredient.of(Blocks.ANDESITE, Blocks.POLISHED_ANDESITE);
         ret.add(mkModelType("andesite",
-            Identifier.parse("andesite"),
-            Identifier.parse("polished_diorite"),
-            Identifier.parse("andesite"),
-            Ingredient.of(items.getOrThrow(ItemTags.SIGNS)),
+            ResourceLocation.parse("andesite"),
+            ResourceLocation.parse("polished_diorite"),
+            ResourceLocation.parse("andesite"),
+            Ingredient.of(ItemTags.SIGNS),
             andesite,
             andesite,
             PostBlock.MaterialType.Stone,
@@ -335,10 +330,10 @@ public class PostModelTypes implements DataProvider {
         ));
         Ingredient tuff = Ingredient.of(Blocks.TUFF, Blocks.POLISHED_TUFF, Blocks.TUFF_BRICKS, Blocks.CHISELED_TUFF, Blocks.CHISELED_TUFF_BRICKS);
         ret.add(mkModelType("tuff",
-            Identifier.parse("chiseled_tuff_bricks"),
-            Identifier.parse("polished_diorite"),
-            Identifier.parse("chiseled_tuff_bricks"),
-            Ingredient.of(items.getOrThrow(ItemTags.SIGNS)),
+            ResourceLocation.parse("chiseled_tuff_bricks"),
+            ResourceLocation.parse("polished_diorite"),
+            ResourceLocation.parse("chiseled_tuff_bricks"),
+            Ingredient.of(ItemTags.SIGNS),
             tuff,
             tuff,
             PostBlock.MaterialType.Stone,
@@ -346,10 +341,10 @@ public class PostModelTypes implements DataProvider {
         ));
         Ingredient deepslate = Ingredient.of(Blocks.DEEPSLATE, Blocks.COBBLED_DEEPSLATE, Blocks.POLISHED_DEEPSLATE, Blocks.DEEPSLATE_BRICKS, Blocks.DEEPSLATE_TILES, Blocks.CHISELED_DEEPSLATE);
         ret.add(mkModelType("deepslate",
-            Identifier.parse("deepslate_tiles"),
-            Identifier.parse("polished_basalt_side"),
-            Identifier.parse("deepslate_tiles"),
-            Ingredient.of(items.getOrThrow(ItemTags.SIGNS)),
+            ResourceLocation.parse("deepslate_tiles"),
+            ResourceLocation.parse("polished_basalt_side"),
+            ResourceLocation.parse("deepslate_tiles"),
+            Ingredient.of(ItemTags.SIGNS),
             deepslate,
             deepslate,
             PostBlock.MaterialType.Stone,
@@ -357,10 +352,10 @@ public class PostModelTypes implements DataProvider {
         ));
         Ingredient basalt = Ingredient.of(Blocks.BASALT, Blocks.POLISHED_BASALT, Blocks.SMOOTH_BASALT);
         ret.add(mkModelType("basalt",
-            Identifier.parse("basalt_side"),
-            Identifier.parse("polished_basalt_side"),
-            Identifier.parse("basalt_side"),
-            Ingredient.of(items.getOrThrow(ItemTags.SIGNS)),
+            ResourceLocation.parse("basalt_side"),
+            ResourceLocation.parse("polished_basalt_side"),
+            ResourceLocation.parse("basalt_side"),
+            Ingredient.of(ItemTags.SIGNS),
             basalt,
             basalt,
             PostBlock.MaterialType.Stone,
@@ -368,10 +363,10 @@ public class PostModelTypes implements DataProvider {
         ));
         Ingredient blackstone = Ingredient.of(Blocks.BLACKSTONE, Blocks.GILDED_BLACKSTONE, Blocks.POLISHED_BLACKSTONE, Blocks.CHISELED_POLISHED_BLACKSTONE, Blocks.POLISHED_BLACKSTONE_BRICKS);
         ret.add(mkModelType("blackstone",
-            Identifier.parse("blackstone"),
-            Identifier.parse("polished_basalt_side"),
-            Identifier.parse("blackstone"),
-            Ingredient.of(items.getOrThrow(ItemTags.SIGNS)),
+            ResourceLocation.parse("blackstone"),
+            ResourceLocation.parse("polished_basalt_side"),
+            ResourceLocation.parse("blackstone"),
+            Ingredient.of(ItemTags.SIGNS),
             blackstone,
             blackstone,
             PostBlock.MaterialType.Stone,
@@ -379,10 +374,10 @@ public class PostModelTypes implements DataProvider {
         ));
         Ingredient netherBricks = Ingredient.of(Blocks.NETHER_BRICKS, Blocks.CHISELED_NETHER_BRICKS, Blocks.CRACKED_NETHER_BRICKS, Blocks.RED_NETHER_BRICKS);
         ret.add(mkModelType("nether_bricks",
-            Identifier.parse("nether_bricks"),
-            Identifier.parse("netherrack"),
-            Identifier.parse("nether_bricks"),
-            Ingredient.of(items.getOrThrow(ItemTags.SIGNS)),
+            ResourceLocation.parse("nether_bricks"),
+            ResourceLocation.parse("netherrack"),
+            ResourceLocation.parse("nether_bricks"),
+            Ingredient.of(ItemTags.SIGNS),
             netherBricks,
             netherBricks,
             PostBlock.MaterialType.Stone,
@@ -390,20 +385,20 @@ public class PostModelTypes implements DataProvider {
         ));
         Ingredient prismarine = Ingredient.of(Blocks.PRISMARINE, Blocks.PRISMARINE_BRICKS, Blocks.DARK_PRISMARINE);
         ret.add(mkModelType("prismarine",
-            Identifier.parse("dark_prismarine"),
-            Identifier.parse("prismarine_bricks"),
-            Identifier.parse("dark_prismarine"),
-            Ingredient.of(items.getOrThrow(ItemTags.SIGNS)),
+            ResourceLocation.parse("dark_prismarine"),
+            ResourceLocation.parse("prismarine_bricks"),
+            ResourceLocation.parse("dark_prismarine"),
+            Ingredient.of(ItemTags.SIGNS),
             prismarine,
             prismarine,
             PostBlock.MaterialType.Stone,
             MapColor.COLOR_CYAN
         ));
         ret.add(mkModelType("amethyst",
-            Identifier.parse("amethyst_block"),
-            Identifier.parse("pearlescent_froglight_side"),
-            Identifier.parse("amethyst_block"),
-            Ingredient.of(items.getOrThrow(ItemTags.SIGNS)),
+            ResourceLocation.parse("amethyst_block"),
+            ResourceLocation.parse("pearlescent_froglight_side"),
+            ResourceLocation.parse("amethyst_block"),
+            Ingredient.of(ItemTags.SIGNS),
             Ingredient.of(Blocks.AMETHYST_BLOCK),
             Ingredient.of(Items.AMETHYST_SHARD),
             PostBlock.MaterialType.Stone,
@@ -417,7 +412,7 @@ public class PostModelTypes implements DataProvider {
         public ResourceKey<PostBlock.ModelType> getKey() {
             return ResourceKey.create(
                 ModelTypeRegistry.REGISTRY_KEY,
-                Identifier.fromNamespaceAndPath(Signpost.MOD_ID, name));
+                ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, name));
         }
     }
 }

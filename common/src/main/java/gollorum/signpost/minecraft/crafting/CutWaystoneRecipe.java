@@ -26,7 +26,7 @@ public class CutWaystoneRecipe extends StonecutterRecipe {
 
     @Override
     public boolean matches(SingleRecipeInput inv, Level world) {
-        return super.matches(inv, world) && isAllowed(result());
+        return super.matches(inv, world) && isAllowed(this.result);
     }
 
     private static boolean isAllowed(ItemStack result) {

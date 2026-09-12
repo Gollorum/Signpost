@@ -15,10 +15,9 @@
     "StructureTemplatePoolAccessor"
   ],
   "client": [
-    "GuiGraphicsMixin",
+    "ConfigurableFont",
     "LevelRendererAccessor",
-    "ScreenAccessor",
-    "SpecialModelRendererInjector"
+    "ScreenAccessor"
   ],
   "server": [
   ],

@@ -3,8 +3,12 @@
   "category": "misc",
   "group": "Signpost",
   "key": {
-    "b": "#minecraft:birch_logs",
-    "s": "minecraft:birch_sign"
+    "b": {
+      "tag": "minecraft:birch_logs"
+    },
+    "s": {
+      "item": "minecraft:birch_sign"
+    }
   },
   "pattern": [
     "s",
@@ -13,9 +17,7 @@
   ],
   "result": {
     "components": {
-      "minecraft:item_name": {
-        "translate": "item.signpost.post.signpost.birch"
-      },
+      "minecraft:item_name": "{\"translate\":\"item.signpost.post.signpost.birch\"}",
       "signpost:post_data": {
         "DataVersion": 2,
         "ModelType": "signpost:birch",

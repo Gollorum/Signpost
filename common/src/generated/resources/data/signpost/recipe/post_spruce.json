@@ -3,8 +3,12 @@
   "category": "misc",
   "group": "Signpost",
   "key": {
-    "b": "#minecraft:spruce_logs",
-    "s": "minecraft:spruce_sign"
+    "b": {
+      "tag": "minecraft:spruce_logs"
+    },
+    "s": {
+      "item": "minecraft:spruce_sign"
+    }
   },
   "pattern": [
     "s",
@@ -13,9 +17,7 @@
   ],
   "result": {
     "components": {
-      "minecraft:item_name": {
-        "translate": "item.signpost.post.signpost.spruce"
-      },
+      "minecraft:item_name": "{\"translate\":\"item.signpost.post.signpost.spruce\"}",
       "signpost:post_data": {
         "DataVersion": 2,
         "ModelType": "signpost:spruce",

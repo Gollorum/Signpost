@@ -1,5 +1,7 @@
 {
-  "addSignIngredient": "minecraft:amethyst_shard",
+  "addSignIngredient": {
+    "item": "minecraft:amethyst_shard"
+  },
   "mainTexture": {
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",
     "ResourceLocation": "minecraft:block/pearlescent_froglight_side"

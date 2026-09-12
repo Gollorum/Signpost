@@ -23,7 +23,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -51,7 +51,7 @@ public class WaystoneLibrary {
     public static boolean hasInstance() { return instance != null; }
 
     public static void initializeServer(ServerLevel overworld) {
-        var data = overworld.getDataStorage().computeIfAbsent(WaystoneLibraryStorage.TYPE);
+        var data = overworld.getDataStorage().computeIfAbsent(WaystoneLibraryStorage.TYPE, WaystoneLibraryStorage.NAME);
         instance = new WaystoneLibrary(data);
         BlockPartWaystoneUpdateListener.getInstance().initialize();
     }
@@ -432,11 +432,11 @@ public class WaystoneLibrary {
     }
 
     private final long tileEntityExistenceCheckCooldownMillis = 1000 * 60 * 10;
-    private final Map<Identifier, Map<BlockPos, Long>> checkedTileEntities = new HashMap<>();
+    private final Map<ResourceLocation, Map<BlockPos, Long>> checkedTileEntities = new HashMap<>();
 
     private boolean assertTileEntityExists(WaystoneEntry entry) {
         var cache = checkedTileEntities.computeIfAbsent(
-            entry.locationData.block().world().rightOr(l -> l.dimension().identifier()),
+            entry.locationData.block().world().rightOr(l -> l.dimension().location()),
             key -> new HashMap<>()
         );
         var time = System.currentTimeMillis();

@@ -12,8 +12,9 @@ import gollorum.signpost.minecraft.data.WaystoneHandleData;
 import gollorum.signpost.platform.Services;
 import gollorum.signpost.security.WithOwner;
 import gollorum.signpost.utils.*;
-import net.minecraft.util.Util;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import gollorum.signpost.minecraft.utils.NbtCodec;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
@@ -26,8 +27,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -100,13 +99,15 @@ public class WaystoneTile extends BlockEntity implements WithOwner.OfWaystone, W
     }
 
     @Override
-    public void saveAdditional(ValueOutput output) {
-        output.store(PlayerHandle.DIRECT_CODEC.optionalFieldOf("Owner"), owner);
+    public void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        NbtCodec.store(tag, registries, PlayerHandle.DIRECT_CODEC.optionalFieldOf("Owner"), owner);
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        owner = input.read(Codec.optionalField("Owner", PlayerHandle.DIRECT_CODEC, true)).flatMap(it -> it);
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        owner = NbtCodec.read(tag, registries, Codec.optionalField("Owner", PlayerHandle.DIRECT_CODEC, true)).flatMap(it -> it);
     }
 
     @Override

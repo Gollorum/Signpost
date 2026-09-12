@@ -9,10 +9,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
+import gollorum.signpost.minecraft.utils.InteractionResults;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -111,7 +113,6 @@ public class ModelWaystone extends BaseEntityBlock implements SimpleWaterloggedB
 			.noOcclusion()
 			.isViewBlocking((x, y, z) -> false)
 			.requiresCorrectToolForDrops()
-            .setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, variant.registryName)))
 		);
 	}
 
@@ -122,8 +123,8 @@ public class ModelWaystone extends BaseEntityBlock implements SimpleWaterloggedB
 	}
 
     @Override
-    protected InteractionResult useItemOn(ItemStack item, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        return use(world, pos, player);
+    protected ItemInteractionResult useItemOn(ItemStack item, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        return InteractionResults.forItem(use(world, pos, player));
     }
 
     @Override
@@ -176,7 +177,7 @@ public class ModelWaystone extends BaseEntityBlock implements SimpleWaterloggedB
 	}
 
     @Override
-	public boolean propagatesSkylightDown(BlockState state) {
+	public boolean propagatesSkylightDown(BlockState state, BlockGetter level, BlockPos pos) {
 		return !state.getValue(Waterlogged);
 	}
 
@@ -200,10 +201,9 @@ public class ModelWaystone extends BaseEntityBlock implements SimpleWaterloggedB
 	}
 
 	@Override
-	protected ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) {
-        var itemStack = super.getCloneItemStack(level, pos, state, includeData);
-        if (includeData)
-            WaystoneBlock.fillClonedItemStack(itemStack, level, pos);
+	public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
+        var itemStack = super.getCloneItemStack(level, pos, state);
+        WaystoneBlock.fillClonedItemStack(itemStack, level, pos);
         return itemStack;
 	}
 

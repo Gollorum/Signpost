@@ -43,7 +43,8 @@ public class JigsawPlacementPlacerInjector {
         method = "tryPlacingChildren",
         at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/core/Registry;get(Lnet/minecraft/resources/ResourceKey;)Ljava/util/Optional;"
+            // 1.21.1 resolves the pool with Registry.getHolder; Registry.get returns the value itself here.
+            target = "Lnet/minecraft/core/Registry;getHolder(Lnet/minecraft/resources/ResourceKey;)Ljava/util/Optional;"
         )
     )
     private ResourceKey<StructureTemplatePool> signpost$forceWaystonePool(ResourceKey<StructureTemplatePool> poolKey) {

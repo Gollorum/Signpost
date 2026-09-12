@@ -21,11 +21,12 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -67,7 +68,6 @@ public class WaystoneBlock extends BaseEntityBlock {
 
     private WaystoneBlock() {
         this(Properties.of()
-            .setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, REGISTRY_NAME)))
             .mapColor(MapColor.STONE)
             .instrument(NoteBlockInstrument.BASEDRUM)
             .requiresCorrectToolForDrops()
@@ -96,9 +96,9 @@ public class WaystoneBlock extends BaseEntityBlock {
 	}
 
     @Override
-    protected InteractionResult useItemOn(ItemStack p_316304_, BlockState p_316362_, Level level, BlockPos pos, Player player, InteractionHand p_316595_, BlockHitResult p_316140_) {
+    protected ItemInteractionResult useItemOn(ItemStack p_316304_, BlockState p_316362_, Level level, BlockPos pos, Player player, InteractionHand p_316595_, BlockHitResult p_316140_) {
         onRightClick(level, pos, player);
-        return InteractionResult.CONSUME;
+        return ItemInteractionResult.CONSUME;
     }
 
     @Override
@@ -185,7 +185,7 @@ public class WaystoneBlock extends BaseEntityBlock {
 
     // Modified copy of ItemStack.getHoverName()
     private static Optional<String> getCustomName(ItemStack stack) {
-        var component = stack.getCustomName();
+        var component = stack.get(DataComponents.CUSTOM_NAME);
         if (component != null) {
             return Optional.of(component.getString());
         } else {
@@ -207,10 +207,9 @@ public class WaystoneBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) {
-        var itemStack = super.getCloneItemStack(level, pos, state, includeData);
-        if (includeData)
-            itemStack = fillClonedItemStack(itemStack, level, pos);
+    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
+        var itemStack = super.getCloneItemStack(level, pos, state);
+        itemStack = fillClonedItemStack(itemStack, level, pos);
         return itemStack;
     }
 

@@ -1,8 +1,14 @@
 {
   "addSignIngredient": [
-    "minecraft:prismarine",
-    "minecraft:prismarine_bricks",
-    "minecraft:dark_prismarine"
+    {
+      "item": "minecraft:prismarine"
+    },
+    {
+      "item": "minecraft:prismarine_bricks"
+    },
+    {
+      "item": "minecraft:dark_prismarine"
+    }
   ],
   "mainTexture": {
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",

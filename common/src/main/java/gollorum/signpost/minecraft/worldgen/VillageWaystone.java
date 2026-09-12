@@ -9,7 +9,7 @@ import gollorum.signpost.minecraft.config.IConfig;
 import gollorum.signpost.platform.Services;
 import gollorum.signpost.utils.serialization.BlockPosSerializer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 
@@ -21,7 +21,7 @@ public class VillageWaystone {
     public static final Codec<VillageWaystone> CODEC = Entry.CODEC.listOf()
         .xmap(VillageWaystone::new, villageWaystone -> villageWaystone.allEntries);
 
-    public record ChunkEntryKey(ChunkPos chunkPos, Identifier dimensionKey) {
+    public record ChunkEntryKey(ChunkPos chunkPos, ResourceLocation dimensionKey) {
 
         @Override
         public boolean equals(Object o) {
@@ -34,7 +34,7 @@ public class VillageWaystone {
         public static final Codec<ChunkEntryKey> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.INT.fieldOf("x").forGetter(c -> c.chunkPos.x),
             Codec.INT.fieldOf("z").forGetter(c -> c.chunkPos.z),
-            Identifier.CODEC.fieldOf("ResourceLocation").forGetter(ChunkEntryKey::dimensionKey)
+            ResourceLocation.CODEC.fieldOf("ResourceLocation").forGetter(ChunkEntryKey::dimensionKey)
         ).apply(i, (x, z, recloc) -> new ChunkEntryKey(new ChunkPos(x, z), recloc)));
 
     }
@@ -78,7 +78,7 @@ public class VillageWaystone {
     }
     public void register(WaystoneLibrary waystoneLibrary, String name, BlockPos referencePos, ServerLevel world, BlockPos blockPos) {
         waystoneLibrary.getHandleByName(name).ifPresent(handle -> {
-			ChunkEntryKey key = new ChunkEntryKey(new ChunkPos(blockPos), world.dimension().identifier());
+			ChunkEntryKey key = new ChunkEntryKey(new ChunkPos(blockPos), world.dimension().location());
 			generatedWaystones.put(referencePos, handle);
 			generatedWaystonesByChunk.put(key, handle);
             allEntries.add(new Entry(handle, referencePos, key));
@@ -91,7 +91,7 @@ public class VillageWaystone {
         Services.WAYSTONE_DISCOVERY_EVENT_LISTENER.initialize();
     }
 
-	public Set<Map.Entry<BlockPos, WaystoneHandle.Vanilla>> getAllEntries(WaystoneLibrary waystoneLibrary, Identifier dimension) {
+	public Set<Map.Entry<BlockPos, WaystoneHandle.Vanilla>> getAllEntries(WaystoneLibrary waystoneLibrary, ResourceLocation dimension) {
 		var toRemove = allEntries.stream()
             .filter(e -> waystoneLibrary.getData(e.handle).isEmpty())
             .toList();
@@ -107,7 +107,7 @@ public class VillageWaystone {
             .collect(Collectors.toSet());
 	}
 
-    private Optional<Identifier> dimensionOf(WaystoneHandle.Vanilla handle) {
+    private Optional<ResourceLocation> dimensionOf(WaystoneHandle.Vanilla handle) {
         return generatedWaystonesByChunk.entrySet().stream()
             .filter(e -> e.getValue().equals(handle))
             .findFirst()

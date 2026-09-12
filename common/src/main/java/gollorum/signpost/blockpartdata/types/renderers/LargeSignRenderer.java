@@ -10,7 +10,6 @@ import gollorum.signpost.minecraft.models.modelGeneration.QuadModel;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
@@ -47,24 +46,24 @@ public class LargeSignRenderer extends SignRenderer<LargeSignBlockPart> {
 	}
 
 	@Override
-	public void renderText(LargeSignBlockPart sign, PoseStack matrix, Font fontRenderer, SubmitNodeCollector nodeCollector, int combinedLights) {
+	public void renderText(LargeSignBlockPart sign, PoseStack matrix, Font fontRenderer, MultiBufferSource buffer, int combinedLights) {
 		RenderingUtil.wrapInMatrixEntry(matrix, () -> {
 			matrix.translate(0, 3.5f * VoxelSize, -3.005 * VoxelSize);
 
-			RenderingUtil.wrapInMatrixEntry(matrix, () -> render(sign, fontRenderer, sign.getText()[3].get(), matrix, nodeCollector, combinedLights, false));
+			RenderingUtil.wrapInMatrixEntry(matrix, () -> render(sign, fontRenderer, sign.getText()[3].get(), matrix, buffer, combinedLights, false));
 			matrix.translate(0, -7 / 3f * VoxelSize, 0);
 
-			RenderingUtil.wrapInMatrixEntry(matrix, () -> render(sign, fontRenderer, sign.getText()[2].get(), matrix, nodeCollector, combinedLights, false));
+			RenderingUtil.wrapInMatrixEntry(matrix, () -> render(sign, fontRenderer, sign.getText()[2].get(), matrix, buffer, combinedLights, false));
 			matrix.translate(0, -7 / 3f * VoxelSize, 0);
 
-			RenderingUtil.wrapInMatrixEntry(matrix, () -> render(sign, fontRenderer, sign.getText()[1].get(), matrix, nodeCollector, combinedLights, false));
+			RenderingUtil.wrapInMatrixEntry(matrix, () -> render(sign, fontRenderer, sign.getText()[1].get(), matrix, buffer, combinedLights, false));
 			matrix.translate(0, -7 / 3f * VoxelSize, 0);
 
-			RenderingUtil.wrapInMatrixEntry(matrix, () -> render(sign, fontRenderer, sign.getText()[0].get(), matrix, nodeCollector, combinedLights, false));
+			RenderingUtil.wrapInMatrixEntry(matrix, () -> render(sign, fontRenderer, sign.getText()[0].get(), matrix, buffer, combinedLights, false));
 		});
 	}
 
-	private void render(LargeSignBlockPart sign, Font fontRenderer, String txt, PoseStack matrix, SubmitNodeCollector nodeCollector, int combinedLights, boolean isLong) {
+	private void render(LargeSignBlockPart sign, Font fontRenderer, String txt, PoseStack matrix, MultiBufferSource buffer, int combinedLights, boolean isLong) {
 		RenderingUtil.wrapInMatrixEntry(matrix, () -> {
 			var text = txt;
 			if(sign.isMarkedForGeneration()) {
@@ -83,15 +82,16 @@ public class LargeSignRenderer extends SignRenderer<LargeSignBlockPart> {
 			);
 			matrix.scale(scale, scale * TEXT_RATIO, scale);
 
-            nodeCollector.submitText(
-                matrix, 0, 0,
+            fontRenderer.drawInBatch(
                 Component.literal(text).getVisualOrderText(),
-                false,
-                Font.DisplayMode.POLYGON_OFFSET,
-                combinedLights,
+                0, 0,
                 Colors.withAlpha(sign.getColor(), 0xff),
+                false,
+                matrix.last().pose(),
+                buffer,
+                Font.DisplayMode.POLYGON_OFFSET,
                 0,
-                0
+                combinedLights
             );
 		});
 	}

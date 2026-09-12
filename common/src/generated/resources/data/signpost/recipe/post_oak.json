@@ -3,8 +3,12 @@
   "category": "misc",
   "group": "Signpost",
   "key": {
-    "b": "#minecraft:oak_logs",
-    "s": "minecraft:oak_sign"
+    "b": {
+      "tag": "minecraft:oak_logs"
+    },
+    "s": {
+      "item": "minecraft:oak_sign"
+    }
   },
   "pattern": [
     "s",
@@ -13,9 +17,7 @@
   ],
   "result": {
     "components": {
-      "minecraft:item_name": {
-        "translate": "item.signpost.post.signpost.oak"
-      },
+      "minecraft:item_name": "{\"translate\":\"item.signpost.post.signpost.oak\"}",
       "signpost:post_data": {
         "DataVersion": 2,
         "ModelType": "signpost:oak",

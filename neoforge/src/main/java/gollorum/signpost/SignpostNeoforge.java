@@ -7,6 +7,7 @@ import gollorum.signpost.minecraft.block.PostBlock;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.data.ModelTypeRegistry;
 import gollorum.signpost.minecraft.loot.LootEntries;
+import gollorum.signpost.minecraft.rendering.PostItemRenderer;
 import gollorum.signpost.minecraft.rendering.PostRenderer;
 import gollorum.signpost.minecraft.worldgen.JigsawDeserializers;
 import gollorum.signpost.networking.NeoForgePacketHandler;
@@ -17,7 +18,7 @@ import gollorum.signpost.worldgen.Villages;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -26,9 +27,11 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
+import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
@@ -84,6 +87,23 @@ public class SignpostNeoforge {
         @SubscribeEvent
         public void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
             event.registerBlockEntityRenderer(PostTile.getBlockEntityType(), PostRenderer::new);
+        }
+
+        /**
+         * The post items' models are {@code builtin/entity}, which draws nothing by itself - 1.21.1 has
+         * no {@code special} item model to name a renderer, so {@link PostItemRenderer} is bound to each
+         * post item as a client item extension instead.
+         */
+        @SubscribeEvent
+        public void registerClientExtensions(RegisterClientExtensionsEvent event) {
+            IClientItemExtensions postRenderer = new IClientItemExtensions() {
+                @Override
+                public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                    return PostItemRenderer.getInstance();
+                }
+            };
+            for(var item : ItemRegistry.POSTS_ITEMS)
+                event.registerItem(postRenderer, item.get());
         }
 
         @SubscribeEvent

@@ -8,66 +8,43 @@ import gollorum.signpost.mixin.LevelRendererAccessor;
 import gollorum.signpost.utils.BlockPartInstance;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.state.CameraRenderState;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.server.level.BlockDestructionProgress;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class PostRenderer implements BlockEntityRenderer<PostTile, PostRenderer.PostRenderState> {
-
-    public static class PostRenderState extends BlockEntityRenderState {
-        PostTile tile;
-    }
+public class PostRenderer implements BlockEntityRenderer<PostTile> {
 
     private static final double randomOffset = 0.001;
 
-    private final MaterialSet materials;
-
-    public PostRenderer(BlockEntityRendererProvider.Context ctx) {
-        materials = ctx.materials();
-    }
+    public PostRenderer(BlockEntityRendererProvider.Context ctx) { }
 
     @Override
-    public PostRenderState createRenderState() {
-        return new PostRenderState();
-    }
-
-    @Override
-    public void extractRenderState(PostTile blockEntity, PostRenderState renderState, float partialTick, Vec3 cameraPosition, @Nullable ModelFeatureRenderer.CrumblingOverlay breakProgress) {
-        BlockEntityRenderer.super.extractRenderState(blockEntity, renderState, partialTick, cameraPosition, breakProgress);
-        renderState.tile = blockEntity;
-    }
-
-    @Override
-    public void submit(PostRenderState renderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState) {
-        long randomSeed = renderState.tile.hashCode();
+    public void render(
+        PostTile tile, float partialTicks, PoseStack poseStack,
+        MultiBufferSource buffer, int combinedLight, int combinedOverlay
+    ) {
+        long randomSeed = tile.hashCode();
         RandomSource random = RandomSource.create(randomSeed);
-        SortedSet<BlockDestructionProgress> destructionProgresses = ((LevelRendererAccessor)Minecraft.getInstance().levelRenderer).getDestructionProgress().get(renderState.blockPos.asLong());
+        SortedSet<BlockDestructionProgress> destructionProgresses = ((LevelRendererAccessor)Minecraft.getInstance().levelRenderer).getDestructionProgress().get(tile.getBlockPos().asLong());
         Set<BlockPartInstance> partsBeingBroken = destructionProgresses == null ? null : destructionProgresses.stream()
-            .map(progress -> Optional.ofNullable(renderState.tile.getLevel().getEntity(progress.getId()))
-                .flatMap(renderState.tile::trace)
+            .map(progress -> Optional.ofNullable(tile.getLevel().getEntity(progress.getId()))
+                .flatMap(tile::trace)
                 .map(res -> res.part))
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(Collectors.toSet());
+        // The buffer we were handed is already wrapped in the destroy-progress decal generator when
+        // this block is being broken. That wrapping applies to every part, so parts that are not the
+        // one being hit are drawn into the plain buffer source instead.
         boolean shouldUseOriginalBuffer = partsBeingBroken == null || partsBeingBroken.isEmpty() || partsBeingBroken.stream().anyMatch(i -> i.blockPart() instanceof PostBlockPart);
         RenderingUtil.wrapInMatrixEntry(poseStack, () -> {
             poseStack.translate(0.5, 0, 0.5);
-            for (BlockPartInstance now: renderState.tile.getParts()) {
+            for (BlockPartInstance now: tile.getParts()) {
                 RenderingUtil.wrapInMatrixEntry(poseStack, () -> {
                     poseStack.translate(
                         now.offset().x() + randomOffset * random.nextDouble(),
@@ -75,15 +52,15 @@ public class PostRenderer implements BlockEntityRenderer<PostTile, PostRenderer.
                         now.offset().z() + randomOffset * random.nextDouble());
                     BlockPartRenderer.renderDynamic(
                         now.blockPart(),
-                        renderState.tile.getLevel(),
-                        renderState.blockPos,
+                        tile.getLevel(),
+                        tile.getBlockPos(),
                         poseStack,
-                        submitNodeCollector,
-                        materials,
-                        renderState.lightCoords,
-                        OverlayTexture.NO_OVERLAY,
-                        t -> RenderTypes.cutoutMovingBlock(),
-                        shouldUseOriginalBuffer || partsBeingBroken.contains(now) ? renderState.breakProgress : null
+                        shouldUseOriginalBuffer || partsBeingBroken.contains(now)
+                            ? buffer
+                            : Minecraft.getInstance().renderBuffers().bufferSource(),
+                        combinedLight,
+                        combinedOverlay,
+                        t -> RenderType.cutout()
                     );
                 });
             }

@@ -3,8 +3,12 @@
   "category": "misc",
   "group": "Signpost",
   "key": {
-    "b": "#minecraft:cherry_logs",
-    "s": "minecraft:cherry_sign"
+    "b": {
+      "tag": "minecraft:cherry_logs"
+    },
+    "s": {
+      "item": "minecraft:cherry_sign"
+    }
   },
   "pattern": [
     "s",
@@ -13,9 +17,7 @@
   ],
   "result": {
     "components": {
-      "minecraft:item_name": {
-        "translate": "item.signpost.post.signpost.cherry"
-      },
+      "minecraft:item_name": "{\"translate\":\"item.signpost.post.signpost.cherry\"}",
       "signpost:post_data": {
         "DataVersion": 2,
         "ModelType": "signpost:cherry",

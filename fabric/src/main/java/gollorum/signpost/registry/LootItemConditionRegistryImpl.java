@@ -5,7 +5,7 @@ import gollorum.signpost.minecraft.loot.ILootItemConditionRegistry;
 import gollorum.signpost.minecraft.loot.PermissionCheck;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
 
 public class LootItemConditionRegistryImpl implements ILootItemConditionRegistry {
@@ -18,7 +18,7 @@ public class LootItemConditionRegistryImpl implements ILootItemConditionRegistry
     }
 
     public static void register(){
-        Registry.register(BuiltInRegistries.LOOT_CONDITION_TYPE, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "permission_check"), permissionCheck);
+        Registry.register(BuiltInRegistries.LOOT_CONDITION_TYPE, ResourceLocation.fromNamespaceAndPath(Signpost.MOD_ID, "permission_check"), permissionCheck);
     }
 
 }

@@ -4,12 +4,10 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.blockpartdata.types.renderers.*;
 import gollorum.signpost.utils.BlockPart;
-import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 
 import java.util.Map;
@@ -48,12 +46,10 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
         Level level,
         BlockPos pos,
         PoseStack blockToView,
-        SubmitNodeCollector nodeCollector,
-        MaterialSet materials,
+        MultiBufferSource buffer,
         int combinedLights,
         int combinedOverlay,
-        Function<Identifier, RenderType> renderTypeFactory,
-        ModelFeatureRenderer.CrumblingOverlay crumblingOverlay
+        Function<ResourceLocation, RenderType> renderTypeFactory
     ) {
         Optional<BlockPartRenderer<T>> renderer = BlockPartRenderer.getFor((Class<T>) part.getClass());
         if(renderer.isPresent()) {
@@ -62,12 +58,10 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
                 level,
                 pos,
                 blockToView,
-                nodeCollector,
-                materials,
+                buffer,
                 combinedLights,
                 combinedOverlay,
-                renderTypeFactory,
-                crumblingOverlay
+                renderTypeFactory
             );
         } else {
             Signpost.LOGGER.error("Block part renderer was not found for " + part.getClass());
@@ -79,11 +73,10 @@ public abstract class BlockPartRenderer<T extends BlockPart<T>> {
         Level level,
         BlockPos blockPos,
         PoseStack blockToView,
-        SubmitNodeCollector nodeCollector,
-        MaterialSet materials, int combinedLights,
+        MultiBufferSource buffer,
+        int combinedLights,
         int combinedOverlay,
-        Function<Identifier, RenderType> renderTypeFactory,
-        ModelFeatureRenderer.CrumblingOverlay crumblingOverlay
+        Function<ResourceLocation, RenderType> renderTypeFactory
     );
 
 }

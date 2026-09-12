@@ -1,7 +1,7 @@
 package gollorum.signpost.minecraft.utils;
 
 import gollorum.signpost.Signpost;
-import net.minecraft.util.Util;
+import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -17,7 +17,7 @@ public class Inventory {
 		List<ItemStack> ret = new ArrayList<>();
 		ret.add(player.getMainHandItem());
 		ret.add(player.getOffhandItem());
-		for (var item : player.getInventory()){
+		for (var item : player.getInventory().items){
 			if (item != null && !item.isEmpty()) {
 				ret.add(item);
 			}

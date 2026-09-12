@@ -10,9 +10,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.WidgetSprites;
-import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
@@ -136,19 +134,22 @@ public class DropDownSelection<EntryType> extends ImageButton {
     }
 
     @Override
-    public void renderContents(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        super.renderContents(graphics, mouseX, mouseY, partialTicks);
+    public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+        graphics.pose().pushPose();
+//        graphics.pose().translate(0, 0, 100);
+        super.renderWidget(graphics, mouseX, mouseY, partialTicks);
         int yTexStart = this.isHovered ? texture.size.height : 0;
         int xTexStart = this.isListVisible ? texture.size.width : 0;
 
-        graphics.blit(RenderPipelines.GUI_TEXTURED,
+        graphics.blit(
             texture.location,
             getX(), getY(),
-            xTexStart, yTexStart,
+            (float) xTexStart, (float) yTexStart,
             this.width, this.height,
             texture.fileSize.height, texture.fileSize.width
         );
         if(isListVisible) list.render(graphics, mouseX, mouseY, partialTicks);
+        graphics.pose().popPose();
     }
 
     public class List extends ObjectSelectionList<List.Entry> {
@@ -169,7 +170,7 @@ public class DropDownSelection<EntryType> extends ImageButton {
 
         public void updateContent() {
             this.replaceEntries(allEntries.stream().filter(filter).map(Entry::new).collect(Collectors.toList()));
-            setScrollAmount(scrollAmount());
+            setScrollAmount(getScrollAmount());
         }
 
         @Override
@@ -210,7 +211,10 @@ public class DropDownSelection<EntryType> extends ImageButton {
             }
 
             @Override
-            public void renderContent(GuiGraphics graphics, int mouseX, int mouseY, boolean isHovering, float partialTick) {
+            public void render(
+                GuiGraphics graphics, int index, int top, int left, int entryWidth, int entryHeight,
+                int mouseX, int mouseY, boolean isHovering, float partialTick
+            ) {
                 int brightness = 255;
 //                if(this.isMouseOver(mouseX, mouseY))
 //                    brightness = (int) (brightness * 0.8f);
@@ -220,7 +224,7 @@ public class DropDownSelection<EntryType> extends ImageButton {
                     graphics,
                     fontRenderer,
                     content.toString(),
-                    new Point(getContentX(), this.getContentY()),
+                    new Point(left, top),
                     Rect.XAlignment.Center, Rect.YAlignment.Top,
                     Colors.from(brightness, brightness, brightness),
                     width - 6,
@@ -234,7 +238,7 @@ public class DropDownSelection<EntryType> extends ImageButton {
             }
 
             @Override
-            public boolean mouseClicked(MouseButtonEvent p_446815_, boolean p_432750_) {
+            public boolean mouseClicked(double mouseX, double mouseY, int button) {
                 DropDownSelection.this.selectedIndex = allEntries.indexOf(this.content);
                 onSelectionChanged.accept(this.content);
                 return true;

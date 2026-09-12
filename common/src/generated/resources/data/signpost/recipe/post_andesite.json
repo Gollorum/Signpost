@@ -4,10 +4,16 @@
   "group": "Signpost",
   "key": {
     "b": [
-      "minecraft:andesite",
-      "minecraft:polished_andesite"
+      {
+        "item": "minecraft:andesite"
+      },
+      {
+        "item": "minecraft:polished_andesite"
+      }
     ],
-    "s": "#minecraft:signs"
+    "s": {
+      "tag": "minecraft:signs"
+    }
   },
   "pattern": [
     "s",
@@ -16,9 +22,7 @@
   ],
   "result": {
     "components": {
-      "minecraft:item_name": {
-        "translate": "item.signpost.post.signpost.andesite"
-      },
+      "minecraft:item_name": "{\"translate\":\"item.signpost.post.signpost.andesite\"}",
       "signpost:post_data": {
         "DataVersion": 2,
         "ModelType": "signpost:andesite",

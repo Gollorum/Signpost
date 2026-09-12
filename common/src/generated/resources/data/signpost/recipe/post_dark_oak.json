@@ -3,8 +3,12 @@
   "category": "misc",
   "group": "Signpost",
   "key": {
-    "b": "#minecraft:dark_oak_logs",
-    "s": "minecraft:dark_oak_sign"
+    "b": {
+      "tag": "minecraft:dark_oak_logs"
+    },
+    "s": {
+      "item": "minecraft:dark_oak_sign"
+    }
   },
   "pattern": [
     "s",
@@ -13,9 +17,7 @@
   ],
   "result": {
     "components": {
-      "minecraft:item_name": {
-        "translate": "item.signpost.post.signpost.darkoak"
-      },
+      "minecraft:item_name": "{\"translate\":\"item.signpost.post.signpost.darkoak\"}",
       "signpost:post_data": {
         "DataVersion": 2,
         "ModelType": "signpost:darkoak",

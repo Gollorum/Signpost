@@ -4,7 +4,7 @@ import gollorum.signpost.minecraft.block.tiles.PostTile;
 import gollorum.signpost.minecraft.block.tiles.WaystoneGeneratorEntity;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraftforge.eventbus.api.bus.BusGroup;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -24,7 +24,7 @@ public class TileEntityRegistry {
     private static final RegistryObject<BlockEntityType<WaystoneGeneratorEntity>> WaystoneGenerator =
         REGISTER.register(WaystoneGeneratorEntity.REGISTRY_NAME, WaystoneGeneratorEntity::createType);
 
-    public static void register(BusGroup bus){
+    public static void register(IEventBus bus){
         REGISTER.register(bus);
     }
 }

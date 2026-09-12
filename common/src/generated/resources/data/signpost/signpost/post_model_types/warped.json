@@ -1,5 +1,7 @@
 {
-  "addSignIngredient": "minecraft:warped_sign",
+  "addSignIngredient": {
+    "item": "minecraft:warped_sign"
+  },
   "mainTexture": {
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",
     "ResourceLocation": "minecraft:block/stripped_warped_stem"

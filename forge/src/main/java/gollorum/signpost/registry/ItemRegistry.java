@@ -1,15 +1,16 @@
 package gollorum.signpost.registry;
 
 import gollorum.signpost.Signpost;
+import gollorum.signpost.block.PostItemImpl;
 import gollorum.signpost.minecraft.block.*;
 import gollorum.signpost.minecraft.items.*;
 import gollorum.signpost.utils.Tuple;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.eventbus.api.bus.BusGroup;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -35,8 +36,7 @@ public class ItemRegistry {
 
     public static final RegistryObject<Item> WaystoneGeneratorItem =
         REGISTER.register(WaystoneGeneratorBlock.REGISTRY_NAME,
-            () -> new BlockItem(BlockRegistry.WaystoneGenerator.get(), new Item.Properties()
-                .setId(ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, WaystoneGeneratorBlock.REGISTRY_NAME)))));
+            () -> new BlockItem(BlockRegistry.WaystoneGenerator.get(), new Item.Properties()));
 
     public static final RegistryObject<Item> WRENCH = REGISTER.register(Wrench.registryName, Wrench::new);
 
@@ -47,7 +47,7 @@ public class ItemRegistry {
     private static RegistryObject<Item> registerPostItem(PostBlock.MaterialType postVariant){
         return REGISTER.register(
             postVariant.blockRegistryName,
-            () -> new PostItem(postVariant.getBlock(), new Item.Properties()));
+            () -> new PostItemImpl(postVariant.getBlock(), new Item.Properties()));
     }
 
     private static Tuple<ModelWaystone.Variant, RegistryObject<Item>> registerModelWaystoneItem(ModelWaystone.Variant variant){
@@ -56,7 +56,7 @@ public class ItemRegistry {
             () -> new WaystoneItem(variant.getBlock(), new Item.Properties())));
     }
 
-    public static void register(BusGroup bus){
+    public static void register(IEventBus bus){
         REGISTER.register(bus);
     }
 }

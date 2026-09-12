@@ -35,13 +35,13 @@ public class PostBlockPartDropLoot extends LootPoolSingletonContainer {
 
     @Override
     protected void createItemStack(Consumer<ItemStack> consumer, LootContext lootContext) {
-        if (lootContext.getOptionalParameter(LootContextParams.BLOCK_ENTITY) instanceof PostTile postTile)
+        if (lootContext.getParamOrNull(LootContextParams.BLOCK_ENTITY) instanceof PostTile postTile)
             for (var part : postTile.getParts()) {
                 for (var item : ((BlockPart<?>)part.blockPart()).getDrops()) {
                     consumer.accept(item);
                 }
             }
-        else if (lootContext.getOptionalParameter(LootContextParams.BLOCK_ENTITY) instanceof WaystoneTile) {
+        else if (lootContext.getParamOrNull(LootContextParams.BLOCK_ENTITY) instanceof WaystoneTile) {
             consumer.accept(new ItemStack(Items.GLOW_ITEM_FRAME, 13));
         }
     }

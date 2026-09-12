@@ -1,9 +1,17 @@
 {
   "addSignIngredient": [
-    "minecraft:sandstone",
-    "minecraft:cut_sandstone",
-    "minecraft:chiseled_sandstone",
-    "minecraft:smooth_sandstone"
+    {
+      "item": "minecraft:sandstone"
+    },
+    {
+      "item": "minecraft:cut_sandstone"
+    },
+    {
+      "item": "minecraft:chiseled_sandstone"
+    },
+    {
+      "item": "minecraft:smooth_sandstone"
+    }
   ],
   "mainTexture": {
     "AtlasLocation": "minecraft:textures/atlas/blocks.png",

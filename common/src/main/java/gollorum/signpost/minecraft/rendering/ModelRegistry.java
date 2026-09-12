@@ -6,9 +6,8 @@ import gollorum.signpost.blockpartdata.types.SignBlockPart;
 import gollorum.signpost.blockpartdata.types.SmallShortSignBlockPart;
 import gollorum.signpost.blockpartdata.types.SmallWideSignBlockPart;
 import gollorum.signpost.minecraft.gui.PostModelResources;
-import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.resources.model.ModelState;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -63,18 +62,18 @@ public class ModelRegistry<M> {
 //	);
 //
 //	public interface ModelConstructor<M> {
-//		M makeModel(Identifier mainTexture, Identifier secondaryTexture, ModelState modelState);
+//		M makeModel(ResourceLocation mainTexture, ResourceLocation secondaryTexture, ModelState modelState);
 //	}
 //
 //	public interface OverlayModelConstructor<M> {
-//		M makeOverlayModel(Identifier overlayTexture, ModelState modelState);
+//		M makeOverlayModel(ResourceLocation overlayTexture, ModelState modelState);
 //	}
 //
-//	private final Map<Identifier, Map<Identifier, M>> cachedModels = new ConcurrentHashMap<>();
-//	private final Map<Identifier, M> cachedOverlayModels = new ConcurrentHashMap<>();
+//	private final Map<ResourceLocation, Map<ResourceLocation, M>> cachedModels = new ConcurrentHashMap<>();
+//	private final Map<ResourceLocation, M> cachedOverlayModels = new ConcurrentHashMap<>();
 //
-//	private final Map<Identifier, Map<Identifier, M>> cachedFlippedModels = new ConcurrentHashMap<>();
-//	private final Map<Identifier, M> cachedFlippedOverlayModels = new ConcurrentHashMap<>();
+//	private final Map<ResourceLocation, Map<ResourceLocation, M>> cachedFlippedModels = new ConcurrentHashMap<>();
+//	private final Map<ResourceLocation, M> cachedFlippedOverlayModels = new ConcurrentHashMap<>();
 //
 //	private final ModelConstructor<M> modelConstructor;
 //	private final OverlayModelConstructor<M> overlayModelConstructor;
@@ -112,7 +111,7 @@ public class ModelRegistry<M> {
 //	}
 //
 //	public M makeOverlayModel(SignBlockPart sign, Overlay overlay) {
-//		Identifier texture = overlay.textureFor(signClass);
+//		ResourceLocation texture = overlay.textureFor(signClass);
 //		return (sign.isFlipped() ? cachedFlippedOverlayModels : cachedOverlayModels)
 //			.computeIfAbsent(texture,
 //				x -> (sign.isFlipped() ? flippedOverlayModelConstructor : overlayModelConstructor)
