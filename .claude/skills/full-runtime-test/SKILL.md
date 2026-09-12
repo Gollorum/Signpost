@@ -37,6 +37,22 @@ game. They just silently discard the player's data.
 
 ## Prerequisites
 
+### The run-folder mods
+
+The six `*WithMods` runs read real mod jars from gitignored `mods/` folders, so a fresh clone,
+a new worktree or a just-upgraded tree has none. **That does not fail - it silently turns those
+six runs into duplicates of the plain six**, and the matrix still reports 12/12. Fill them first:
+
+```bash
+powershell -NoProfile -ExecutionPolicy Bypass -File .claude/skills/full-runtime-test/fetch-mod-jars.ps1
+```
+
+Jars are cached beside the repo in `../mod-jar-cache/<minecraft_version>/` and verified against
+the Modrinth SHA-1, so this is a no-op once populated. Read the `depends`/`breaks` it prints -
+it downloads, it does not adjudicate. See AGENTS.md, *Testing against the real mods*.
+
+### The corpus
+
 The corpus at `testsaves/<signpost>/<minecraft>/world/` must exist. It is gitignored, so a fresh clone
 has none, and the harness will exit with code 2 and instructions rather than pass vacuously.
 See `testsaves/README.md` for how to populate it. **Never** point the corpus at a save

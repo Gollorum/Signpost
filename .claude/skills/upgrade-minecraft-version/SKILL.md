@@ -139,16 +139,38 @@ files than before means a provider stopped registering. Never hand-edit generate
 
 ## Phase 5 - Refresh the run-folder mods
 
-Update every jar in the `*WithMods` folders to the target version - see AGENTS.md, *Testing
-against the real mods*, for the folder table and required chains.
+Every jar in the `*WithMods` folders is for the *previous* Minecraft version at this point, and
+a stale jar is worse than none - the loader may still accept it, and the run then tests the
+wrong thing while reporting PASS. Refresh them with:
 
-**Read each jar's `breaks` block, not just its `depends`.** Taking the newest of everything is
-how you get a pair Fabric refuses to launch: Sodium declares which Iris versions it breaks, and
-the newest Sodium and newest Iris are routinely incompatible. Verify downloads by the SHA-1
-that the Modrinth API publishes.
+```bash
+powershell -NoProfile -ExecutionPolicy Bypass -File .claude/skills/full-runtime-test/fetch-mod-jars.ps1
+```
 
-If an integration has no build for the target yet, say so explicitly in the final report -
-that loader loses that coverage until it ships.
+It reads `minecraft_version` from `gradle.properties`, downloads into the cache beside the repo
+(`../mod-jar-cache/<minecraft_version>/`), verifies every jar against the Modrinth SHA-1, clears
+each run folder and installs the right set. Cached jars are not re-downloaded, so re-running it
+is cheap. `-List` shows candidates without downloading; `-NoInstall` fills the cache only.
+
+**It does not resolve dependency conflicts for you** - it prints each Fabric jar's `depends` and
+`breaks`, and you read them:
+
+- **Never take "newest of everything" on trust.** Sodium declares which Iris versions it breaks
+  and the newest pair is regularly incompatible. On 26.1.2, Sodium `0.9.2` breaks
+  `iris <=1.11.3` while `1.11.3` is the newest Iris, so the run needs
+  `-Pin sodium=mc26.1.2-0.9.1-fabric`. Check this every upgrade; it changes.
+- **Chains move between Minecraft versions.** Waystones gained a second BlayTheNinth library
+  (Shogi) on 26.x, and dropped Forge entirely. Read the `depends` block rather than assuming
+  last version's chain.
+- **A project may not have a build yet.** The script prints `NOT PUBLISHED for <version>` and
+  installs nothing for it. Say so explicitly in the final report - that loader loses that
+  coverage until it ships.
+- **Version tags are not uniform.** Most projects publish against the full `26.1.2`; Repurposed
+  Structures tags `26.1`. The script falls back to the `<major>.<minor>` prefix and flags it as
+  `tagged 26.1, not 26.1.2`. Glance at those.
+
+If the set of mods itself changes - a new required library, a loader losing a build - edit
+`.claude/skills/full-runtime-test/mod-jars.json` and the matching table in AGENTS.md together.
 
 ## Phase 6 - Prove it runs
 

@@ -1,0 +1,52 @@
+{
+  "_comment": [
+    "Which third-party mods each *WithMods run folder carries, and where to get them.",
+    "This is the machine-readable twin of AGENTS.md, 'Testing against the real mods' - keep the",
+    "two in step. fetch-mod-jars.ps1 reads this; nothing else does.",
+    "",
+    "'slug' is the Modrinth project slug. 'loaders' is what that project publishes that we use -",
+    "Repurposed Structures ships its NeoForge build under the '-forge' slug, which is why the two",
+    "entries below point at different projects.",
+    "",
+    "The set changes across Minecraft versions: Shogi only became a Waystones dependency on 26.x,",
+    "and Forge lost both Waystones and Repurposed Structures. When a version upgrade changes the",
+    "set, edit this file - do not special-case it in the script."
+  ],
+  "projects": {
+    "balm":        { "slug": "balm" },
+    "shogi":       { "slug": "shogi" },
+    "waystones":   { "slug": "waystones" },
+    "rs-fabric":   { "slug": "repurposed-structures-fabric" },
+    "rs-neoforge": { "slug": "repurposed-structures-forge" },
+    "midnightlib": { "slug": "midnightlib" },
+    "sodium":      { "slug": "sodium" },
+    "iris":        { "slug": "iris" }
+  },
+  "folders": [
+    {
+      "dir": "fabric/runs/client_with_mods/mods",
+      "loader": "fabric",
+      "projects": ["balm", "shogi", "waystones", "rs-fabric", "midnightlib", "sodium", "iris"]
+    },
+    {
+      "dir": "fabric/runs/server_with_mods/mods",
+      "loader": "fabric",
+      "projects": ["balm", "shogi", "waystones", "rs-fabric", "midnightlib"]
+    },
+    {
+      "dir": "neoforge/run_with_mods/mods",
+      "loader": "neoforge",
+      "projects": ["balm", "shogi", "waystones", "rs-neoforge"]
+    },
+    {
+      "dir": "forge/runs/client_with_mods/mods",
+      "loader": "forge",
+      "projects": ["balm"]
+    },
+    {
+      "dir": "forge/runs/server_with_mods/mods",
+      "loader": "forge",
+      "projects": ["balm"]
+    }
+  ]
+}

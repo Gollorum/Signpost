@@ -423,7 +423,27 @@ duplicate Mod Menu off the classpath.
 ### Testing against the real mods
 
 The `*WithMods` runs load real mod jars from a `mods/` folder inside their game directory.
-These directories are gitignored, so they are per-developer and must be populated by hand:
+These directories are gitignored, so they are per-developer and start out empty - in a fresh
+clone, a new worktree, and after every Minecraft upgrade.
+
+**An empty `mods/` folder does not fail a run.** It just turns that run into a second copy of
+the plain one, so half the matrix reports PASS while proving nothing. Populate them before
+running the test:
+
+```bash
+powershell -NoProfile -ExecutionPolicy Bypass -File .claude/skills/full-runtime-test/fetch-mod-jars.ps1
+```
+
+That downloads what each folder needs into a **cache beside the repo**,
+`../mod-jar-cache/<minecraft_version>/`, verifies every jar against the SHA-1 the Modrinth API
+publishes, installs them, and prints each Fabric jar's `depends`/`breaks` so the chain can be
+checked rather than assumed. The cache lives outside the working tree deliberately: it survives
+`git clean`, branch switches and worktree deletion, and one download serves every checkout on
+the machine. Add `-List` to see candidates without downloading, `-Pin <project>=<version>` to
+hold one back, `-NoInstall` to fill the cache only.
+
+Which project goes in which folder is `.claude/skills/full-runtime-test/mod-jars.json`; the
+table below is its human-readable twin, so change both together.
 
 | Run | Game directory | Installed |
 | --- | --- | --- |
@@ -441,12 +461,20 @@ Sodium** (`0.9.x`). Read the `depends` block of each jar you install rather than
 chain is the same as last time - these move.
 
 **Do not just take the newest of everything** - check each jar's `breaks` block, not only its
-`depends`. Sodium declares which Iris versions it breaks, and the newest pair is *mutually
+`depends`. This is not theoretical on 26.1.2 either: Sodium `0.9.2` declares `breaks iris
+<=1.11.3`, and `1.11.3` is the newest Iris, so plain "newest of each" installs a pair Fabric
+refuses. `fetch-mod-jars.ps1` therefore prints every `breaks` line and needs
+`-Pin sodium=mc26.1.2-0.9.1-fabric` here; it does not resolve the conflict for you. Sodium declares which Iris versions it breaks, and the newest pair is *mutually
 incompatible on 1.21.11, where Sodium had to be held back. On 26.1.2 the newest of each happens
 to agree - Sodium `0.9.1` breaks `iris <=1.11.1` and Iris `1.11.3` requires `sodium 0.9.x`, so
 **Iris 1.11.3 + Sodium 0.9.1** is the working pair - but that is luck, not a rule, so check again
 every time. Fabric refuses to launch on a bad pair, with a modal error dialog that blocks the run
 until someone clicks Exit.
+Projects do not agree on how precisely they tag a Minecraft version: most publish against
+`26.1.2`, but Repurposed Structures tags its builds `26.1`. `fetch-mod-jars.ps1` falls back to
+the `<major>.<minor>` prefix when the exact version returns nothing, and says so in its output
+(`tagged 26.1, not 26.1.2`) - a looser match is worth a glance, not a silent drop.
+
 Sodium and Iris are client-only. Forge has neither Repurposed Structures nor (since 26.x)
 Waystones, so its folders carry Balm alone. Keep these jars on the same Minecraft version as `minecraft_version`;
 the plain `client`/`server` runs deliberately have empty `mods/` folders.
