@@ -1,6 +1,6 @@
 package gollorum.signpost.minecraft.gui.utils;
 
-import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextColor;
@@ -33,7 +33,7 @@ public class Colors {
      * <div style="border:1px solid black;width:40px;height:20px;background-color:#000000;float:right;margin: 0 10px 0 0"></div><br/><br/>
      */
     public static final int black = 0xff000000;
-    public static final int highlight = ChatFormatting.AQUA.getColor();
+    public static final int highlight = TextColor.AQUA.getValue();
 
     /**
      * <div style="border:1px solid black;width:40px;height:20px;background-color:#ffffff;float:right;margin: 0 10px 0 0"></div><br/><br/>

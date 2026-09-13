@@ -15,7 +15,7 @@ public class PaintPostGui extends PaintBlockPartGui<PostBlockPart> {
     }
 
 	public static void display(PostTile tile, PostBlockPart post, UUID identifier) {
-        Minecraft.getInstance().setScreen(new PaintPostGui(tile, post, identifier));
+        Minecraft.getInstance().gui.setScreen(new PaintPostGui(tile, post, identifier));
 	}
 
     @Override

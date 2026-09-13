@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.*;
 import gollorum.signpost.minecraft.gui.utils.Point;
 import gollorum.signpost.minecraft.gui.utils.Rect;
 import gollorum.signpost.minecraft.models.modelGeneration.QuadModel;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.*;
@@ -31,38 +30,46 @@ public class RenderingUtil {
         ModelFeatureRenderer.CrumblingOverlay crumblingOverlay
     ) {
         var renderType = model.texture().renderType(renderTypeFactory);
-        SubmitNodeCollector.CustomGeometryRenderer doRender = (pose, vertexConsumer) -> {
-            render(
+        submit(nodeCollector, blockToView, renderType, model.texture().atlasLocation(), (pose, vertexConsumer) -> render(
+            pose,
+            model.model(),
+            materials.get(model.texture()).wrap(vertexConsumer),
+            combinedLights,
+            combinedOverlay,
+            model.tint(),
+            0f
+        ));
+
+        if (crumblingOverlay != null && renderType.affectsCrumbling()) {
+            // 26.2 removed RenderBuffers#crumblingBufferSource, so there is no buffer source to
+            // reach into mid-draw any more. The crumbling overlay becomes a second submit against
+            // the destroy render type, with the buffer wrapped in a SheetedDecalTextureGenerator -
+            // the same shape vanilla's ModelFeatureRenderer uses.
+            var crumblingRenderType = ModelBakery.DESTROY_TYPES.get(crumblingOverlay.progress());
+            submit(nodeCollector, blockToView, crumblingRenderType, model.texture().atlasLocation(), (pose, vertexConsumer) -> render(
                 pose,
                 model.model(),
-                materials.get(model.texture()).wrap(vertexConsumer),
+                materials.get(model.texture()).wrap(
+                    new SheetedDecalTextureGenerator(vertexConsumer, crumblingOverlay.cameraPose(), 1f)
+                ),
                 combinedLights,
                 combinedOverlay,
                 model.tint(),
-                0f
-            );
+                0.001f
+            ));
+        }
+    }
 
-            if (crumblingOverlay != null && renderType.affectsCrumbling()) {
-                var crumblingTenderType = ModelBakery.DESTROY_TYPES.get(crumblingOverlay.progress());
-
-                    VertexConsumer vertexconsumer2 = new SheetedDecalTextureGenerator(
-                        Minecraft.getInstance().renderBuffers().crumblingBufferSource().getBuffer(crumblingTenderType),
-                        crumblingOverlay.cameraPose(),
-                        1f
-                    );
-                    render(
-                        pose,
-                        model.model(),
-                        materials.get(model.texture()).wrap(vertexconsumer2),
-                        combinedLights,
-                        combinedOverlay,
-                        model.tint(),
-                        0.001f
-                    );
-            }
-        };
+    private static void submit(
+        SubmitNodeCollector nodeCollector,
+        PoseStack blockToView,
+        RenderType renderType,
+        Identifier atlasLocation,
+        SubmitNodeCollector.CustomGeometryRenderer doRender
+    ) {
+        // The GUI collector has to be told which atlas to bind; the real one already knows.
         if (nodeCollector instanceof GuiFakeCollector gfc)
-            gfc.submitCustomGeometry(blockToView, renderType, doRender, model.texture().atlasLocation());
+            gfc.submitCustomGeometry(blockToView, renderType, doRender, atlasLocation);
         else nodeCollector.submitCustomGeometry(blockToView, renderType, doRender);
     }
 

@@ -60,7 +60,7 @@ public class ConfirmTeleportGui extends Screen {
 		Either<String, Teleport.RequestGui.Package.Info> data,
 		Optional<SignInfo> signInfo
 	) {
-		Minecraft.getInstance().setScreen(new ConfirmTeleportGui(data, signInfo));
+		Minecraft.getInstance().gui.setScreen(new ConfirmTeleportGui(data, signInfo));
 	}
 
 	@Override
@@ -170,7 +170,7 @@ public class ConfirmTeleportGui extends Screen {
 	}
 
 	private void confirm() {
-		minecraft.setScreen(null);
+		minecraft.gui.setScreen(null);
 		data.consume(
 			langKey -> minecraft.player.sendOverlayMessage(Component.translatable(langKey)),
 			data -> PacketHandler.getInstance().sendToServer(new Teleport.Request.Package(data.waystoneName(), data.handle()))
@@ -178,7 +178,7 @@ public class ConfirmTeleportGui extends Screen {
 	}
 
 	private void cancel() {
-		minecraft.setScreen(null);
+		minecraft.gui.setScreen(null);
 	}
 
 }

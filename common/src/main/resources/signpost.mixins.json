@@ -16,7 +16,6 @@
   "client": [
     "GuiGraphicsMixin",
     "ItemStackRenderStateInjector",
-    "LevelRendererAccessor",
     "ScreenAccessor",
     "SpecialModelRendererInjector"
   ],

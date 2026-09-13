@@ -7,6 +7,7 @@ import gollorum.signpost.minecraft.block.WaystoneBlock;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
@@ -26,21 +27,24 @@ public class BlockTags extends BlockTagsProvider {
     @Override
     protected void addTags(HolderLookup.Provider lookupProvider) {
         this.tag(WaystoneTag)
-            .add(ModelWaystone.variants.stream().map(ModelWaystone.Variant::getBlock).toArray(Block[]::new))
-            .add(WaystoneBlock.getInstance());
+            .add(ModelWaystone.variants.stream().map(v -> key(v.getBlock())).toArray(ResourceKey[]::new))
+            .add(key(WaystoneBlock.getInstance()));
 
         this.tag(SignpostTag)
-            .add(PostBlock.all().toArray(Block[]::new));
+            .add(PostBlock.all().map(BlockTags::key).toArray(ResourceKey[]::new));
         this.tag(net.minecraft.tags.BlockTags.MINEABLE_WITH_AXE)
             .add(PostBlock.all()
                 .filter(v -> v.materialType.tool == PostBlock.RequiredTool.Axe)
-                .toArray(Block[]::new));
+                .map(BlockTags::key).toArray(ResourceKey[]::new));
         this.tag(net.minecraft.tags.BlockTags.MINEABLE_WITH_PICKAXE)
             .add(PostBlock.all()
                 .filter(v -> v.materialType.tool == PostBlock.RequiredTool.Pickaxe)
-                .toArray(Block[]::new))
-            .add(ModelWaystone.variants.stream().map(ModelWaystone.Variant::getBlock).toArray(Block[]::new))
-            .add(WaystoneBlock.getInstance());
+                .map(BlockTags::key).toArray(ResourceKey[]::new))
+            .add(ModelWaystone.variants.stream().map(v -> key(v.getBlock())).toArray(ResourceKey[]::new))
+            .add(key(WaystoneBlock.getInstance()));
     }
 
+    private static ResourceKey<Block> key(Block block) {
+        return block.builtInRegistryHolder().key();
+    }
 }

@@ -5,5 +5,5 @@ plugins {
     // ('net.fabricmc.fabric-loom-remap' is the one for 1.21.11 and older).
     id 'net.fabricmc.fabric-loom' version '1.17.20' apply false
     // see https://projects.neoforged.net/neoforged/moddevgradle for new versions
-    id 'net.neoforged.moddev' version '2.0.146' apply false
+    id 'net.neoforged.moddev' version '2.0.147' apply false
 }

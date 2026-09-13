@@ -140,12 +140,12 @@ public class SignGui extends Screen {
     private TextDisplay noWaystonesInfo;
 
     public static void display(PostTile tile, ResourceKey<PostBlock.ModelType> modelType, Vector3 localHitPos, Optional<ItemStack> itemToDropOnBreak) {
-        Minecraft.getInstance().setScreen(new SignGui(tile, modelType, localHitPos, itemToDropOnBreak));
+        Minecraft.getInstance().gui.setScreen(new SignGui(tile, modelType, localHitPos, itemToDropOnBreak));
     }
 
     public static void display(PostTile tile, SignBlockPart oldSign, Vector3 oldOffset, PostTile.TilePartInfo oldTilePartInfo) {
         if(oldSign.hasThePermissionToEdit(tile, Minecraft.getInstance().player))
-            Minecraft.getInstance().setScreen(new SignGui(tile, oldSign, oldOffset, oldTilePartInfo));
+            Minecraft.getInstance().gui.setScreen(new SignGui(tile, oldSign, oldOffset, oldTilePartInfo));
     }
 
     public SignGui(PostTile tile, ResourceKey<PostBlock.ModelType> modelType, Vector3 localHitPos, Optional<ItemStack> itemToDropOnBreak) {
@@ -1023,12 +1023,12 @@ public class SignGui extends Screen {
                 oldTilePartInfo.get(), true
             ));
         else Signpost.LOGGER.error("Tried to remove a sign, but the necessary information was missing.");
-        minecraft.setScreen(null);
+        minecraft.gui.setScreen(null);
     }
 
     private void done() {
         apply(asValidWaystone(waystoneInputBox.getValue()).map(w -> w.handle));
-        minecraft.setScreen(null);
+        minecraft.gui.setScreen(null);
         isClosed = true;
     }
 

@@ -26,6 +26,16 @@ neoForge {
             client() // same setup as normal client
             ideName = "runClient with Mods (${project.path})"
             gameDirectory = project.file('run_with_mods')
+            // 26.2 deprecated the `logoFile` mods.toml property and the `fml.menu.mods.info.*`
+            // translation keys, and NeoForge raises a *blocking* warning screen for each in dev.
+            // Waystones, Shogi, Repurposed Structures, Kuma API and Balm have not migrated yet, so
+            // this run cannot reach the main menu on third-party jars we do not control - it just
+            // times out. These two properties suppress exactly those two deprecation categories
+            // (not warnings in general - a real mod-loading error still stops the run).
+            // Deliberately NOT set on the plain `client` run above: signpost's own mods.toml must
+            // stay honest there, and that run is what would catch us regressing to `logoFile`.
+            systemProperty('neoforge.warnings.logofile.hide', 'true')
+            systemProperty('neoforge.warnings.mods.info.description.hide', 'true')
             if (project.hasProperty('signpostQuickPlay')) programArguments.addAll('--quickPlaySingleplayer', project.signpostQuickPlay)
         }
         data {

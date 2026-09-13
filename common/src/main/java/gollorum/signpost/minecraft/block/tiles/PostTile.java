@@ -1,5 +1,6 @@
 package gollorum.signpost.minecraft.block.tiles;
 
+import com.mojang.datafixers.util.Pair;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -38,7 +39,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ProblemReporter;
-import net.minecraft.util.Tuple;
 import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -219,14 +219,14 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
         Vec3 look = player.getLookAngle();
         Ray ray = new Ray(Vector3.fromVec3d(head).subtract(Vector3.fromBlockPos(getBlockPos())), Vector3.fromVec3d(look));
 
-        Optional<Tuple<UUID, Float>> closestTrace = Optional.empty();
+        Optional<Pair<UUID, Float>> closestTrace = Optional.empty();
         for(Map.Entry<UUID, BlockPartInstance> t : parts.entrySet()){
             Optional<Float> now = t.getValue().blockPart().intersectWith(ray, t.getValue().offset());
-            if(now.isPresent() && (!closestTrace.isPresent() || closestTrace.get().getB() > now.get()))
-                closestTrace = Optional.of(new Tuple<>(t.getKey(), now.get()));
+            if(now.isPresent() && (!closestTrace.isPresent() || closestTrace.get().getSecond() > now.get()))
+                closestTrace = Optional.of(Pair.of(t.getKey(), now.get()));
         }
 
-        return closestTrace.map(trace -> new TraceResult(parts.get(trace.getA()), trace.getA(), ray.atDistance(trace.getB()), ray));
+        return closestTrace.map(trace -> new TraceResult(parts.get(trace.getFirst()), trace.getFirst(), ray.atDistance(trace.getSecond()), ray));
     }
 
     @Override

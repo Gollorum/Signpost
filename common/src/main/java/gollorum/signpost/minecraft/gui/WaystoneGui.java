@@ -60,7 +60,7 @@ public class WaystoneGui extends Screen {
     }
 
 	public static void display(WorldLocation location, Optional<WaystoneData> oldData) {
-        Minecraft.getInstance().setScreen(new WaystoneGui(location, oldData));
+        Minecraft.getInstance().gui.setScreen(new WaystoneGui(location, oldData));
 	}
 
 	private int getCenterX() { return this.width / 2; }

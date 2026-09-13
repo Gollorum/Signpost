@@ -10,7 +10,6 @@ import gollorum.signpost.minecraft.models.modelGeneration.QuadModel;
 import gollorum.signpost.minecraft.rendering.RenderingUtil;
 import gollorum.signpost.utils.math.MathUtils;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;

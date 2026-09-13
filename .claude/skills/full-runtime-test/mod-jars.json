@@ -10,7 +10,11 @@
     "",
     "The set changes across Minecraft versions: Shogi only became a Waystones dependency on 26.x,",
     "and Forge lost both Waystones and Repurposed Structures. When a version upgrade changes the",
-    "set, edit this file - do not special-case it in the script."
+    "set, edit this file - do not special-case it in the script.",
+    "",
+    "As of 26.2 Balm has no Forge build either, so both forge folders install nothing and the",
+    "script reports 'NOT PUBLISHED'. The entries are kept deliberately: they cost nothing while",
+    "the build is missing and pick it up automatically the moment Balm ships for 26.2."
   ],
   "projects": {
     "balm":        { "slug": "balm" },

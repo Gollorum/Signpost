@@ -143,8 +143,13 @@ The run passes only if all of these hold:
    generating a fresh one. Note the line `Loading N persistent chunks`: since 1.21.11 a
    dedicated server loads **only** force-loaded chunks at startup, not a radius around
    spawn, so if that says `0` no block-entity NBT was deserialized and only the mod's
-   `SavedData` was actually exercised. A corpus save should `/forceload` the area it wants
-   covered - see `testsaves/README.md`.
+   `SavedData` was actually exercised. Every corpus entry force-loads, so this should be a
+   three-digit number, not `0` - `2.04.0/26.1.2` logs `Loading 91 persistent chunks`.
+   **Trust that line over the auditor.** `audit-test-save.py` reported `forced chunks: 0`
+   for every entry until 2026-09-13, because 26.1 renamed *and* moved the chunk-ticket file
+   and changed its encoding; it now reads both eras and its count is cross-checked against
+   this log line. A corpus save should `/forceload` the area it wants covered - see
+   `testsaves/README.md`.
 3. The log contains no exception, and specifically none of: `NoClassDefFoundError`,
    `ClassNotFoundException` (client classes on the server), `Mixin apply failed` /
    `InvalidInjectionException`, `Failed to load` / codec or NBT deserialization errors,
@@ -341,14 +346,15 @@ the `processResources` block in `buildSrc/src/main/groovy/multiloader-common.gra
 > **Any new property added to `gradle.properties` must also be added to the `expandProps` map in
 > `multiloader-common.gradle`**, otherwise resource expansion fails.
 
-Current targets: Minecraft 26.1.2, Java 25 (21 bytecode), NeoForge 26.1.2.107, Fabric Loader
-0.19.5 / Fabric API 0.155.3, Forge 64.1.3. **No Parchment** - it has published nothing for the
-26.x line, and 26.1 ships deobfuscated vanilla carrying Mojang's own parameter names, so the
+Current targets: Minecraft 26.2, Java 25 (21 bytecode), NeoForge 26.2.0.87, Fabric Loader
+0.19.5 / Fabric API 0.160.0, Forge 65.1.3. **No Parchment** - it has published nothing for the
+26.x line, and 26.x ships deobfuscated vanilla carrying Mojang's own parameter names, so the
 layer has no purpose; the `parchment { }` blocks are gone from `common` and `neoforge`.
 
 Minecraft's versioning changed with 26.1: after 1.21.11 come `26.1`, `26.1.1`, `26.1.2`, `26.2`.
 Do not assume a `1.x.y` shape, and do not treat `26.1` as the whole line - `26.1.2` is a distinct
-Minecraft version with its own NeoForm, NeoForge and Forge builds.
+Minecraft version with its own NeoForm, NeoForge and Forge builds. `26.2` in turn has no patch
+releases: NeoForm, NeoForge and Forge all publish against the bare `26.2`.
 
 Integration dependency versions live there too (`waystones_fabric_version`,
 `waystones_neoforge_version`, `modmenu_version`, `cloth_config_version`,
@@ -372,7 +378,7 @@ for a target version and which blockers stand in the way, without changing anyth
 
 These pins are load-bearing and interlock; changing one breaks another:
 
-- **Gradle 9.5.0 / Java 25.** Minecraft 26.1 requires Java 25, and Loom 1.17 requires Gradle
+- **Gradle 9.5.0 / Java 25.** Minecraft 26.x requires Java 25, and Loom 1.17 requires Gradle
   9.5. Both are floors, not preferences.
 - **ForgeGradle 7, not 6.** FG6 refuses to apply on Gradle 9 outright ("Found Gradle version
   Gradle 9.5.0. Versions Gradle 9.0 and newer are not supported yet"), and it is published
@@ -450,33 +456,34 @@ table below is its human-readable twin, so change both together.
 | fabric `clientWithMods` | `fabric/runs/client_with_mods/mods` | Balm, Shogi, Waystones, Repurposed Structures, MidnightLib, Sodium, Iris |
 | fabric `serverWithMods` | `fabric/runs/server_with_mods/mods` | Balm, Shogi, Waystones, Repurposed Structures, MidnightLib |
 | neoforge `clientWithMods` / `serverWithMods` | `neoforge/run_with_mods/mods` | Balm, Shogi, Waystones, Repurposed Structures |
-| forge `clientWithMods` | `forge/runs/client_with_mods/mods` | Balm |
-| forge `serverWithMods` | `forge/runs/server_with_mods/mods` | Balm |
+| forge `clientWithMods` | `forge/runs/client_with_mods/mods` | Balm — **no 26.2 build yet, folder is empty** |
+| forge `serverWithMods` | `forge/runs/server_with_mods/mods` | Balm — **no 26.2 build yet, folder is empty** |
 
 Required chains when refreshing these, all downloadable from Modrinth: **Waystones needs both
-Balm and Shogi** (26.1.2.15 wants `balm >=26.1.2.12` and `shogi >=26.1.2.8`; Shogi is a second
+Balm and Shogi** (26.2.0.12 wants `balm >=26.2.0.7` and `shogi >=26.2.0.5`; Shogi is a second
 BlayTheNinth library that Waystones started requiring on 26.x, and it is easy to miss because
 nothing else references it), **RS on Fabric needs MidnightLib** (`>=1.5.7`), and **Iris needs
 Sodium** (`0.9.x`). Read the `depends` block of each jar you install rather than assuming the
 chain is the same as last time - these move.
 
 **Do not just take the newest of everything** - check each jar's `breaks` block, not only its
-`depends`. This is not theoretical on 26.1.2 either: Sodium `0.9.2` declares `breaks iris
-<=1.11.3`, and `1.11.3` is the newest Iris, so plain "newest of each" installs a pair Fabric
-refuses. `fetch-mod-jars.ps1` therefore prints every `breaks` line and needs
-`-Pin sodium=mc26.1.2-0.9.1-fabric` here; it does not resolve the conflict for you. Sodium declares which Iris versions it breaks, and the newest pair is *mutually
-incompatible on 1.21.11, where Sodium had to be held back. On 26.1.2 the newest of each happens
-to agree - Sodium `0.9.1` breaks `iris <=1.11.1` and Iris `1.11.3` requires `sodium 0.9.x`, so
-**Iris 1.11.3 + Sodium 0.9.1** is the working pair - but that is luck, not a rule, so check again
-every time. Fabric refuses to launch on a bad pair, with a modal error dialog that blocks the run
-until someone clicks Exit.
-Projects do not agree on how precisely they tag a Minecraft version: most publish against
-`26.1.2`, but Repurposed Structures tags its builds `26.1`. `fetch-mod-jars.ps1` falls back to
-the `<major>.<minor>` prefix when the exact version returns nothing, and says so in its output
-(`tagged 26.1, not 26.1.2`) - a looser match is worth a glance, not a silent drop.
+`depends`. The Sodium/Iris pair has now needed a pin on three Minecraft versions running. On
+26.2, Sodium `0.9.2` declares `breaks iris <=1.11.2` and `1.11.2` is the newest Iris, so plain
+"newest of each" installs a pair Fabric refuses. `fetch-mod-jars.ps1` prints every `breaks` line
+but does not resolve the conflict; this version needs
+`-Pin sodium=mc26.2-0.9.1-fabric`. Sodium `0.9.1` breaks only `iris <=1.11.1`, and Iris `1.11.2`
+requires `sodium 0.9.x`, so **Iris 1.11.2 + Sodium 0.9.1** is the working pair on 26.2. Which
+version has to be held back changes every time - check again on every upgrade. Fabric refuses to
+launch on a bad pair, with a modal error dialog that blocks the run until someone clicks Exit.
+Projects do not agree on how precisely they tag a Minecraft version. `fetch-mod-jars.ps1` falls
+back to the `<major>.<minor>` prefix when the exact version returns nothing and says so in its
+output - a looser match is worth a glance, not a silent drop. On 26.2 every project tags the bare
+`26.2`, so nothing currently needs the fallback.
 
 Sodium and Iris are client-only. Forge has neither Repurposed Structures nor (since 26.x)
-Waystones, so its folders carry Balm alone. Keep these jars on the same Minecraft version as `minecraft_version`;
+Waystones, and **as of 26.2 Balm has no Forge build either, so both Forge `*WithMods` folders are
+empty** and those two runs currently test the same thing as the plain `client`/`server` runs. Put
+Balm back the moment it ships for 26.2. Keep these jars on the same Minecraft version as `minecraft_version`;
 the plain `client`/`server` runs deliberately have empty `mods/` folders.
 
 ## Forge
@@ -485,7 +492,7 @@ The upstream MultiLoader-Template dropped Forge, but this repo keeps the subproj
 still has to be maintained. It is wired up by hand with ForgeGradle
 (`net.minecraftforge.gradle`), instead of ModDevGradle/Loom.
 
-It builds on 26.1.2 (Forge 64.1.3) with **ForgeGradle 7**. FG6 cannot be used at all here: it
+It builds on 26.2 (Forge 65.1.3) with **ForgeGradle 7**. FG6 cannot be used at all here: it
 refuses to apply on Gradle 9, and FG7 is published under a different artifact coordinate
 (`net.minecraftforge:forgegradle`, not `net.minecraftforge:ForgeGradle`) behind the same plugin
 id - so a version probe that only knows the old coordinate reports "6.0.54 is the newest" and

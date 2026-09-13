@@ -4,10 +4,9 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import gollorum.signpost.blockpartdata.types.PostBlockPart;
 import gollorum.signpost.blockpartdata.types.BlockPartRenderer;
 import gollorum.signpost.minecraft.block.tiles.PostTile;
-import gollorum.signpost.mixin.LevelRendererAccessor;
 import gollorum.signpost.utils.BlockPartInstance;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
@@ -56,7 +55,10 @@ public class PostRenderer implements BlockEntityRenderer<PostTile, PostRenderer.
     public void submit(PostRenderState renderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState) {
         long randomSeed = renderState.tile.hashCode();
         RandomSource random = RandomSource.create(randomSeed);
-        SortedSet<BlockDestructionProgress> destructionProgresses = ((LevelRendererAccessor)Minecraft.getInstance().levelRenderer).getDestructionProgress().get(renderState.blockPos.asLong());
+        ClientLevel clientLevel = Minecraft.getInstance().level;
+        SortedSet<BlockDestructionProgress> destructionProgresses = clientLevel == null
+            ? null
+            : clientLevel.destructionProgress().get(renderState.blockPos.asLong());
         Set<BlockPartInstance> partsBeingBroken = destructionProgresses == null ? null : destructionProgresses.stream()
             .map(progress -> Optional.ofNullable(renderState.tile.getLevel().getEntity(progress.getId()))
                 .flatMap(renderState.tile::trace)
