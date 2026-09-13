@@ -395,16 +395,35 @@ def audit(world, props):
     return r
 
 
+def corpus_worlds(root=None):
+    """Every save folder in the corpus, both layouts.
+
+    An entry is testsaves/<signpost>/<minecraft>/world - one Signpost release can have a
+    save per Minecraft version, because a port breaks serialization just as readily as a
+    mod release does. The older flat testsaves/<signpost>/world is still recognised so a
+    half-migrated corpus audits instead of silently reporting nothing.
+    """
+    root = root or os.path.join(repo_root(), 'testsaves')
+    found = glob.glob(os.path.join(root, '*', 'world'))
+    found += glob.glob(os.path.join(root, '*', '*', 'world'))
+    return sorted(set(os.path.normpath(f) for f in found))
+
+
 def main(argv):
     props = current_props()
     targets = []
     if len(argv) > 1:
         for a in argv[1:]:
             a = os.path.abspath(a)
-            targets.append(os.path.join(a, 'world') if os.path.isdir(os.path.join(a, 'world')) else a)
+            if os.path.isdir(os.path.join(a, 'world')):
+                targets.append(os.path.join(a, 'world'))
+            else:
+                # A Signpost-version directory holding one entry per Minecraft version:
+                # audit all of them. This is what the harness passes for -SaveVersion 2.04.0.
+                nested = corpus_worlds(a)
+                targets.extend(nested if nested else [a])
     else:
-        root = os.path.join(repo_root(), 'testsaves')
-        targets = sorted(glob.glob(os.path.join(root, '*', 'world')))
+        targets = corpus_worlds()
         if not targets:
             print('No corpus entries found under testsaves/. See testsaves/README.md.')
             return 1
