@@ -348,19 +348,41 @@ BRAND = "signpost-prod-test"
 BRAND_ARG = "-Dsignpost.prodtest=" + BRAND
 
 
-def server_installed(server_dir):
-    """True when a server install is already present, so the installer can be skipped."""
-    if os.path.exists(os.path.join(server_dir, "fabric-server-launch.jar")):
-        return True
-    for root, _dirs, files in os.walk(os.path.join(server_dir, "libraries")):
+INSTALL_MARKER = ".signpost-prodtest-install"
+
+
+def server_installed(server_dir, loader, mc, loader_version):
+    """True when THIS server install is already present, so the installer can be skipped.
+
+    The identity matters as much as the presence. A server is built for one exact Minecraft
+    and loader version, and an install left over from another branch starts and then refuses
+    every mod with "Missing or unsupported mandatory dependencies" - which reads like a
+    Signpost failure and is not. The harness keeps these in per-version directories so this
+    should not arise, but a half-finished install would otherwise also look complete.
+    """
+    marker = os.path.join(server_dir, INSTALL_MARKER)
+    if not os.path.exists(marker):
+        return False
+    try:
+        with open(marker, encoding="utf-8") as f:
+            got = json.load(f)
+    except Exception:
+        return False
+    if got != {"loader": loader, "mc": mc, "loader_version": loader_version}:
+        log("server install here is %s %s/%s, not %s %s/%s - reinstalling"
+            % (got.get("loader"), got.get("mc"), got.get("loader_version"),
+               loader, mc, loader_version))
+        return False
+    launcher_present = os.path.exists(os.path.join(server_dir, "fabric-server-launch.jar"))
+    for _root, _dirs, files in os.walk(os.path.join(server_dir, "libraries")):
         if "win_args.txt" in files or "unix_args.txt" in files:
-            return True
-    return False
+            launcher_present = True
+    return launcher_present
 
 
 def cmd_server(a):
     os.makedirs(a.server_dir, exist_ok=True)
-    already = server_installed(a.server_dir)
+    already = server_installed(a.server_dir, a.loader, a.mc, a.loader_version)
     if already:
         log("server already installed - refreshing start.cmd and settings only")
     with tempfile.TemporaryDirectory() as work:
@@ -393,6 +415,9 @@ def cmd_server(a):
                     "view-distance=10\n"
                     "simulation-distance=10\n"
                     "motd=Signpost production test\n")
+    # Written last, so an install interrupted half way is not mistaken for a finished one.
+    with open(os.path.join(a.server_dir, INSTALL_MARKER), "w", encoding="utf-8") as f:
+        json.dump({"loader": a.loader, "mc": a.mc, "loader_version": a.loader_version}, f)
     log("server installed in %s" % a.server_dir)
     return 0
 
