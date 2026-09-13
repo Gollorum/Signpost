@@ -10,6 +10,7 @@
 *.jar binary
 *.lzma binary
 *.zip binary
+*.pyc binary
 *.pyd binary
 *.cfg text eol=lf
 *.jks binary

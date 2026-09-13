@@ -166,16 +166,21 @@ the worldgen path.
 
 **Putting the village at spawn is not what makes it load.** Since 1.21.11 a dedicated
 server no longer loads a radius around the world spawn on startup:
-`MinecraftServer.prepareLevels()` only re-activates *persistent tickets*. Our own runs prove
-it - every one of them logs `Loading 0 persistent chunks` and finishes the spawn area in
-~12 ms, which means the server-side tests currently deserialize **no chunks at all** and
-validate only the `WaystoneLibrary` SavedData.
+`MinecraftServer.prepareLevels()` only re-activates *persistent tickets*. A save with no
+forceloads logs `Loading 0 persistent chunks`, finishes the spawn area in ~12 ms, and
+deserializes **no chunks at all** - validating only the `WaystoneLibrary` SavedData.
+
+Every entry in this corpus does force-load, so this is covered: `2.04.0/26.1.2` logs
+`Loading 91 persistent chunks`. Note that the count is much larger than the number of
+`/forceload` tickets, because a forced ticket is registered at level 31 and propagates one
+level per chunk until it passes 33 - so each ticket drags in the **5x5** around it. Six
+tickets become 91 chunks.
 
 Two different levers, and you want both:
 
 | Coverage | Lever |
 | --- | --- |
-| Server runs | `/forceload add` over the village. The tickets are saved in `data/chunks.dat` and re-activated on every load, so those chunks and their block entities are deserialized at startup. |
+| Server runs | `/forceload add` over the village. The tickets are saved in the chunk-ticket file and re-activated on every load, so those chunks and their block entities are deserialized at startup. 26.1 both renamed and moved that file: pre-26.1 it is `<world>/data/chunks.dat` holding `data.Forced` (packed `ChunkPos` longs); from 26.1 it is `<world>/dimensions/minecraft/overworld/data/minecraft/chunk_tickets.dat` holding `data.tickets` (compounds of `chunk_pos`/`level`/`type`). The auditor reads both. |
 | Client runs | The **player position** stored in the save. A client loads chunks around the player, so leave the player standing in the village before quitting (`/setworldspawn` there too, for a fresh profile). |
 
 ### Recipe
@@ -198,9 +203,13 @@ Fly around the whole village so every piece generates, then:
 chunks per command, which is far more than a village needs. Include the area where you
 hand-placed your own signposts as well. Then stand in the village, quit to title, and exit.
 
-`/forceload query` lists what is marked, and the auditor reports it as `forced chunks`
-together with `loaded on start: N of M signpost block entities are in forced chunks`. If
-that says `0 of M`, the save will not validate any block-entity NBT on a server run.
+`/forceload query` lists what is marked, and the auditor reports it as
+`forced chunks: T ticket(s) -> N chunk(s) loaded at startup`, together with
+`loaded on start: N of M signpost block entities are in chunks the server loads`. If that
+says `0 of M`, the save will not validate any block-entity NBT on a server run. Cross-check
+the chunk count against the server's own `Loading N persistent chunks` line - they should
+agree exactly, and a disagreement means the auditor is misreading the save, not that the
+save is wrong.
 
 ## What a good test save contains
 

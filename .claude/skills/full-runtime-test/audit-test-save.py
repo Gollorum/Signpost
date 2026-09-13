@@ -146,6 +146,80 @@ def overworld_regions(world):
     return []
 
 
+def overworld_chunk_tickets(world):
+    """
+    The overworld's forced-chunk file, in either layout, or None.
+
+    26.1 gave every dimension its own folder AND renamed the file, so
+    <world>/data/chunks.dat became
+    <world>/dimensions/minecraft/overworld/data/minecraft/chunk_tickets.dat.
+    """
+    for rel in (os.path.join('dimensions', 'minecraft', 'overworld', 'data', 'minecraft',
+                             'chunk_tickets.dat'),
+                os.path.join('data', 'chunks.dat')):
+        path = os.path.join(world, rel)
+        if os.path.exists(path):
+            return path
+    return None
+
+
+def _unpack_chunk_pos(packed):
+    """ChunkPos.toLong packs x into the low 32 bits and z into the high 32, both signed."""
+    x = packed & 0xFFFFFFFF
+    z = (packed >> 32) & 0xFFFFFFFF
+    if x >= 0x80000000:
+        x -= 0x100000000
+    if z >= 0x80000000:
+        z -= 0x100000000
+    return (x, z)
+
+
+def forced_chunks(world):
+    """
+    The (x, z) chunks this save force-loads, and the file they came from.
+
+    Two eras, two encodings, and understanding only one of them yields an empty set that
+    the audit then reports as "this save force-loads nothing" - the exact opposite of the
+    truth, and worse than an error because it reads as a finding:
+
+      * <= 1.21.x   data.Forced  - a list of packed ChunkPos longs
+      * 26.1+       data.tickets - compounds of {chunk_pos: [x, z], level, type}
+
+    Both are read, so a corpus written by either era audits correctly.
+    """
+    path = overworld_chunk_tickets(world)
+    if path is None:
+        return set(), None
+    data = nbt_load(path).get('data') or {}
+    out = set()
+    for ticket in (data.get('tickets') or []):
+        pos = ticket.get('chunk_pos') if isinstance(ticket, dict) else None
+        if isinstance(pos, list) and len(pos) == 2:
+            out.add((pos[0], pos[1]))
+    for packed in (data.get('Forced') or []):
+        if isinstance(packed, int):
+            out.add(_unpack_chunk_pos(packed))
+    return out, path
+
+
+# A forced ticket is registered at level 31 and propagates outwards one level per chunk
+# until it passes 33, the level at which a chunk stops being loaded - so each ticket brings
+# in the 5x5 around it, not just its own chunk. Verified against the server's own
+# "Loading N persistent chunks" line on two corpus entries: 6 tickets -> 91 chunks on
+# 2.04.0/26.1.2, and 5 -> 89 on 2.04.0/1.21.1, both exact.
+FORCED_TICKET_RADIUS = 2
+
+
+def loaded_on_start(tickets, radius=FORCED_TICKET_RADIUS):
+    """Every chunk a dedicated server pulls in at startup for these forced tickets."""
+    out = set()
+    for (x, z) in tickets:
+        for dx in range(-radius, radius + 1):
+            for dz in range(-radius, radius + 1):
+                out.add((x + dx, z + dz))
+    return out
+
+
 def find_waystone_library(world):
     """The waystone library file in this world, whichever layout it uses, or None."""
     for rel in (CURRENT_LIB_REL, LEGACY_LIB_REL):
@@ -408,17 +482,18 @@ def audit(world, props):
     # chunks whose block entities get deserialized on a server load test are the ones
     # /forceload has marked, stored in data/chunks.dat.
     forced = set()
-    cd = os.path.join(world, 'data', 'chunks.dat')
-    if os.path.exists(cd):
-        try:
-            tickets = (nbt_load(cd).get('data') or {}).get('tickets') or []
-            for t in tickets:
-                cp = t.get('chunk_pos') if isinstance(t, dict) else None
-                if isinstance(cp, list) and len(cp) == 2:
-                    forced.add((cp[0], cp[1]))
-        except Exception as e:
-            r.w('data/chunks.dat could not be parsed: %s' % e)
-    r.i('forced chunks  : %d' % len(forced))
+    ticket_file = None
+    try:
+        forced, ticket_file = forced_chunks(world)
+    except Exception as e:
+        r.w('the forced-chunk file could not be parsed: %s' % e)
+    loaded = loaded_on_start(forced)
+    if ticket_file is None:
+        r.i('forced chunks  : 0 (no chunk-ticket file in this save)')
+    else:
+        r.i('forced chunks  : %d ticket(s) -> %d chunk(s) loaded at startup (from %s)'
+            % (len(forced), len(loaded),
+               os.path.relpath(ticket_file, world).replace(os.sep, '/')))
 
     # --- block entities ---------------------------------------------------------------
     regions = sorted(overworld_regions(world))
@@ -427,7 +502,7 @@ def audit(world, props):
     for f in regions:
         for ch in region_chunks(f):
             cx, cz = ch.get('xPos'), ch.get('zPos')
-            hot = (cx, cz) in forced
+            hot = (cx, cz) in loaded
             for be in (ch.get('block_entities') or []):
                 bid = str(be.get('id', ''))
                 if not bid.startswith('signpost:'):
@@ -442,17 +517,18 @@ def audit(world, props):
                     in_forced += 1
     total_be = posts + waystones + generators
     r.i('block entities : %d post, %d waystone, %d other signpost' % (posts, waystones, generators))
-    r.i('loaded on start: %d of %d signpost block entities are in forced chunks' % (in_forced, total_be))
+    r.i('loaded on start: %d of %d signpost block entities are in chunks the server '
+        'loads' % (in_forced, total_be))
 
     if total_be > 0 and not forced:
         r.w('the save force-loads no chunks, so a dedicated-server run deserializes none of '
             'its %d signpost block entities - only the WaystoneLibrary SavedData is '
             'exercised. Use /forceload add over the area you want covered (a village, for '
-            'instance) and re-save; the tickets persist in data/chunks.dat and are '
+            'instance) and re-save; the tickets persist in the chunk-ticket file and are '
             're-activated on every load.' % total_be)
     elif total_be > 0 and in_forced == 0:
-        r.w('%d chunk(s) are force-loaded but none of them contain signpost block entities, '
-            'so none are deserialized on a server load.' % len(forced))
+        r.w('%d chunk(s) are loaded at startup but none contain signpost block entities, '
+            'so none are deserialized on a server load.' % len(loaded))
     if posts == 0:
         r.w('no signpost:post block entities in any region - block-entity NBT will not be '
             'exercised on chunk load.')
