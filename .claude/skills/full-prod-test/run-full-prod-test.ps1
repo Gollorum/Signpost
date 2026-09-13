@@ -144,16 +144,22 @@ $BenignPatterns = @(
     'SERVER IS RUNNING IN OFFLINE/INSECURE MODE',
     'Ambiguity between arguments',
     'Shader .* could not find sampler named',
-    # The offline access token this harness launches with cannot talk to Mojang's services,
-    # so the client logs these at ERROR on every run. Singleplayer needs neither.
-    'Failed to fetch user properties',
-    'Failed to fetch Realms feature flags',
+    # Everything the client does with Mojang's services runs on its "Download-N" worker
+    # threads, and none of it can succeed with the offline access token this harness launches
+    # with: user properties, the profile key pair, Realms feature flags. All are logged at
+    # ERROR and none matters to a singleplayer world load. Excusing the thread rather than
+    # each message ends the whack-a-mole - Signpost never logs from those threads.
+    '\[Download-\d+/(ERROR|FATAL)\]',
     # Third-party mods ship OPTIONAL mixins aimed at mods that are not installed; Mixin probes
     # for the target class, fails, and logs it. kuma_api (bundled inside Balm) does this for
     # the "Controlling" mod, which fails every "-mods" run. The negative lookahead keeps this
     # narrow: the same message about one of OUR classes is still a real failure.
     'Error loading class: (?!.*signpost).*ClassNotFoundException',
     '@Mixin target (?!.*signpost).* was not found',
+    # oshi, the hardware-info library Minecraft bundles, cannot read Windows performance
+    # counters unless they are present in English. It says so at ERROR on every launch on a
+    # non-English Windows and the game carries on regardless.
+    'Unable to locate English counter names in registry Perflib',
     # Vanilla logs this at ERROR the first time a server starts in a directory, then writes
     # the defaults and carries on. provision.py writes the file up front so this should not
     # appear, but a hand-made server install would still hit it.
@@ -231,6 +237,10 @@ function Invoke-Provision {
     $p = Start-Process -FilePath $python.Source -ArgumentList $quoted -WorkingDirectory $RepoRoot `
                        -RedirectStandardOutput $logFile -RedirectStandardError "$logFile.err" `
                        -PassThru -NoNewWindow
+    # Touching .Handle caches it, which is what makes ExitCode readable after the process
+    # ends. Without it Start-Process -PassThru (no -Wait) leaves ExitCode $null, and "$null
+    # -ne 0" then reports every successful run as a failure.
+    $null = $p.Handle
     $p.WaitForExit()
     Get-Content $logFile -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_ }
     if ($p.ExitCode -ne 0) {
@@ -434,23 +444,50 @@ $missingLoaders = @($AllLoaders | Where-Object { -not $profiles.ContainsKey($_) 
 # ---------------------------------------------------------------------------------------
 if (-not (Test-Path $SaveRoot)) { Fail-Setup "No test-save corpus at $SaveRoot - see testsaves/README.md." }
 
-if (-not $SaveVersion) {
-    $candidates = @(Get-ChildItem -Directory $SaveRoot -ErrorAction SilentlyContinue |
-                    Where-Object { Test-Path (Join-Path $_.FullName "$McVersion\world") } |
-                    Sort-Object Name)
-    if ($candidates.Count -eq 0) {
-        Fail-Setup @"
-No testsaves/<version>/$McVersion/world/ found under $SaveRoot.
+# Corpus ids are <signpost>/<minecraft>. A save from an OLDER Minecraft is a legitimate
+# entry - loading it is the port under test - but one from a NEWER Minecraft cannot be read
+# at all, so those are never candidates.
+function Get-CorpusEntries {
+    $ids = @()
+    foreach ($sp in @(Get-ChildItem -Directory $SaveRoot -ErrorAction SilentlyContinue)) {
+        foreach ($mc in @(Get-ChildItem -Directory $sp.FullName -ErrorAction SilentlyContinue)) {
+            if (Test-Path (Join-Path $mc.FullName 'world')) { $ids += "$($sp.Name)/$($mc.Name)" }
+        }
+    }
+    return @($ids | Sort-Object { (($_ -split '[/.]') | ForEach-Object {
+        if ($_ -match '^\d+$') { $_.PadLeft(6, '0') } else { $_ } }) -join '.' })
+}
 
-This harness loads a save written by a PREVIOUS RELEASED VERSION on this Minecraft version,
-so the corpus cannot be generated from the current build. See testsaves/README.md.
+$AllEntries = Get-CorpusEntries
+$SaveMcVersion = $McVersion
+
+if (-not $SaveVersion) {
+    $forThisMc = @($AllEntries | Where-Object { $_ -like "*/$McVersion" })
+    if ($forThisMc.Count -gt 0) {
+        $SaveVersion = ($forThisMc[-1] -split '/')[0]
+    }
+    elseif ($AllEntries.Count -gt 0) {
+        # No save made on this Minecraft version yet - the usual case on a freshly ported
+        # branch. Fall back to the newest one that exists and say so: it still exercises
+        # Signpost's own serialization, with vanilla's DataFixers running underneath.
+        $fallback = $AllEntries[-1] -split '/'
+        $SaveVersion, $SaveMcVersion = $fallback[0], $fallback[1]
+        Write-Host ("  WARN  no corpus entry for Minecraft $McVersion; using " +
+                    "$SaveVersion/$SaveMcVersion. That is a cross-version load, so a failure " +
+                    "may be the Minecraft port rather than Signpost.") -ForegroundColor DarkYellow
+    }
+    else {
+        Fail-Setup @"
+No testsaves/<signpost>/<minecraft>/world/ found under $SaveRoot.
+
+This harness loads a save written by a PREVIOUS RELEASED VERSION, so the corpus cannot be
+generated from the current build. See testsaves/README.md.
 "@
     }
-    $SaveVersion = $candidates[-1].Name
 }
-$PristineWorld = Join-Path $SaveRoot "$SaveVersion\$McVersion\world"
+$PristineWorld = Join-Path $SaveRoot "$SaveVersion\$SaveMcVersion\world"
 if (-not (Test-Path (Join-Path $PristineWorld 'level.dat'))) {
-    Fail-Setup "testsaves/$SaveVersion/$McVersion/world/level.dat is missing - that is not a save folder."
+    Fail-Setup "testsaves/$SaveVersion/$SaveMcVersion/world/level.dat is missing - that is not a save folder."
 }
 if ($SaveVersion -eq $ModVersion) {
     Fail-Setup "The corpus at testsaves/$SaveVersion was written by the version being built ($ModVersion). That tests nothing."
@@ -480,7 +517,7 @@ Write-Head 'Signpost production runtime test'
 Write-Host "  repo        : $RepoRoot"
 Write-Host "  minecraft   : $McVersion   (.minecraft at $MinecraftHome)"
 Write-Host "  mod version : $ModVersion"
-Write-Host "  save corpus : testsaves/$SaveVersion/$McVersion  (pristine, freshly copied per run)"
+Write-Host "  save corpus : testsaves/$SaveVersion/$SaveMcVersion  (pristine, freshly copied per run)"
 Write-Host "  java        : $JavaExe"
 Write-Host "  logs        : $OutDir"
 foreach ($l in $AllLoaders) {
@@ -492,15 +529,18 @@ foreach ($l in $missingLoaders) {
             else { 'not in this run''s filter' }
     Write-Host "  profile     : $l -> NOT INSTALLED ($fate)" -ForegroundColor DarkYellow
 }
-if ($profiles.Count -eq 0) {
+# Nothing installed is only fatal when we are not allowed to install it. Otherwise this is
+# just a freshly ported branch, and provisioning below is exactly the answer - the check runs
+# again after it, on what actually got installed.
+if ($profiles.Count -eq 0 -and $NoDownload) {
     Fail-Setup @"
-None of the three loaders is installed for $McVersion in $MinecraftHome.
+None of the three loaders is installed for $McVersion in $MinecraftHome, and -NoDownload
+forbids installing them.
 
-Install the matching profile once, from each loader's own installer:
+Install the matching profile from each loader's own installer, or drop -NoDownload:
   fabric   : any fabric-loader-*-$McVersion
   neoforge : neoforge-$($props['neoforge_version'])
   forge    : $McVersion-forge-$($props['forge_version'])
-Then launch it once from the official launcher so its libraries and assets are downloaded.
 "@
 }
 
@@ -558,6 +598,13 @@ if (-not $NoDownload -and $missingLoaders.Count -gt 0) {
     $missingLoaders = @($AllLoaders | Where-Object { -not $profiles.ContainsKey($_) })
 }
 
+if ($profiles.Count -eq 0) {
+    Fail-Setup @"
+No loader profile could be installed for $McVersion in $MinecraftHome.
+See the provisioning log in $OutDir for what the installers reported.
+"@
+}
+
 if (-not $SkipBuild) {
     Write-Head 'Building mod jars'
     # Gradle takes its JDK from JAVA_HOME, and a JDK newer than the project's Java 21
@@ -585,6 +632,7 @@ if (-not $SkipBuild) {
                         -WorkingDirectory $RepoRoot `
                         -RedirectStandardOutput $buildLog -RedirectStandardError "$buildLog.err" `
                         -PassThru -NoNewWindow
+    $null = $bp.Handle   # see Invoke-Provision: without this ExitCode is $null
     $bp.WaitForExit()
     if ($bp.ExitCode -ne 0) {
         Write-Host (Get-Content "$buildLog.err" -Raw -ErrorAction SilentlyContinue) -ForegroundColor Red
@@ -770,7 +818,7 @@ foreach ($r in $runs) {
                                   -RedirectStandardOutput $log -RedirectStandardError "$log.err" `
                                   -PassThru -NoNewWindow
         }
-        Write-Host "  planted save from testsaves/$SaveVersion/$McVersion"
+        Write-Host "  planted save from testsaves/$SaveVersion/$SaveMcVersion"
 
         $timeout  = if ($r.side -eq 'server') { $ServerTimeoutSec } else { $ClientTimeoutSec }
         $deadline = (Get-Date).AddSeconds($timeout)
