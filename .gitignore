@@ -36,3 +36,7 @@ testsaves/*
 # installs. See prodtest/README.md.
 prodtest/*
 !prodtest/README.md
+
+# Python bytecode from the skill scripts.
+__pycache__/
+*.pyc
