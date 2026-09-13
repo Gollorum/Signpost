@@ -12,12 +12,18 @@ Everything below is gitignored except this README; a fresh clone starts empty.
 
 ```
 prodtest/
-  deps/<loader>/       dependencies Signpost needs in order to load at all
-  extras/<loader>/     optional companion mods -> enables the "-mods" runs
-  servers/<loader>/    a prepared production server install -> enables the server runs
+  deps/<loader>/<mc>/       dependencies Signpost needs in order to load at all
+  extras/<loader>/<mc>/     optional companion mods -> the "-mods" runs
+  servers/<loader>/<mc>/    a production server install -> the server runs
 ```
 
-`<loader>` is `fabric`, `neoforge` or `forge`.
+`<loader>` is `fabric`, `neoforge` or `forge`; `<mc>` is the Minecraft version.
+
+Everything is scoped by Minecraft version on purpose. A server install is built for one
+exact Minecraft and loader version, and one left over from another branch starts and then
+rejects every mod with "Missing or unsupported mandatory dependencies" - which reads like a
+Signpost failure and is not. Scoping also means switching branches back and forth
+re-downloads nothing.
 
 ### deps/
 

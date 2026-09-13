@@ -144,6 +144,16 @@ $BenignPatterns = @(
     'SERVER IS RUNNING IN OFFLINE/INSECURE MODE',
     'Ambiguity between arguments',
     'Shader .* could not find sampler named',
+    # The offline access token this harness launches with cannot talk to Mojang's services,
+    # so the client logs these at ERROR on every run. Singleplayer needs neither.
+    'Failed to fetch user properties',
+    'Failed to fetch Realms feature flags',
+    # Third-party mods ship OPTIONAL mixins aimed at mods that are not installed; Mixin probes
+    # for the target class, fails, and logs it. kuma_api (bundled inside Balm) does this for
+    # the "Controlling" mod, which fails every "-mods" run. The negative lookahead keeps this
+    # narrow: the same message about one of OUR classes is still a real failure.
+    'Error loading class: (?!.*signpost).*ClassNotFoundException',
+    '@Mixin target (?!.*signpost).* was not found',
     # Vanilla logs this at ERROR the first time a server starts in a directory, then writes
     # the defaults and carries on. provision.py writes the file up front so this should not
     # appear, but a hand-made server install would still hit it.
@@ -579,8 +589,13 @@ if (-not $SkipBuild) {
 # and is idempotent, so this costs one API round trip per project when everything is present.
 #
 # Where things land:
-#   prodtest/deps|extras/<loader>/   mod jars                      (inside the repo)
-#   prodtest/servers/<loader>/       a dedicated server install     (inside the repo)
+#   prodtest/deps|extras/<loader>/<mc>/   mod jars                 (inside the repo)
+#   prodtest/servers/<loader>/<mc>/        a server install         (inside the repo)
+#
+# Everything is scoped by Minecraft version. A server install is built for one exact
+# Minecraft and loader version, and reusing one across branches fails at mod load with
+# "Missing or unsupported mandatory dependencies" - which reads like a Signpost bug and is
+# not. Scoping by version also means switching branches back and forth re-downloads nothing.
 #   <MinecraftHome>/versions/        a loader profile               (OUTSIDE the repo)
 #
 # -NoDownload turns all of this off and restores plain SKIP reporting.
@@ -593,14 +608,14 @@ if (-not $NoDownload) {
         if (-not (Test-LoaderInScope $loader)) { continue }
         $jar = Join-Path $RepoRoot "$loader\build\libs\signpost-$loader-$McVersion-$ModVersion.jar"
         $modArgs = @('mods', '--loader', $loader, '--mc', $McVersion,
-                     '--deps-dir', (Join-Path $ProdRoot "deps\$loader"),
-                     '--extras-dir', (Join-Path $ProdRoot "extras\$loader"))
+                     '--deps-dir', (Join-Path $ProdRoot "deps\$loader\$McVersion"),
+                     '--extras-dir', (Join-Path $ProdRoot "extras\$loader\$McVersion"))
         if (Test-Path $jar) { $modArgs += @('--jar', $jar) }
         if (-not (Invoke-Provision $modArgs "mods-$loader")) {
             $provisionFailed[$loader] = 'mod download failed'
         }
 
-        $serverDir = Join-Path $ProdRoot "servers\$loader"
+        $serverDir = Join-Path $ProdRoot "servers\$loader\$McVersion"
         if (-not (Test-Path (Join-Path $serverDir 'start.cmd'))) {
             Write-Host "  $loader : no server install, creating one"
             if (-not (Invoke-Provision @('server', '--loader', $loader, '--mc', $McVersion,
@@ -619,9 +634,9 @@ if (-not $NoDownload) {
 $Matrix = @()
 foreach ($loader in $AllLoaders) {
     if (-not $profiles.ContainsKey($loader)) { continue }
-    $extras = Join-Path $ProdRoot "extras\$loader"
+    $extras = Join-Path $ProdRoot "extras\$loader\$McVersion"
     $hasExtras = (Test-Path $extras) -and @(Get-ChildItem $extras -Filter *.jar -ErrorAction SilentlyContinue).Count -gt 0
-    $serverStart = Join-Path $ProdRoot "servers\$loader\start.cmd"
+    $serverStart = Join-Path $ProdRoot "servers\$loader\$McVersion\start.cmd"
 
     # After provisioning these should all be present, so say why they are not. A missing piece
     # with -NoDownload is a choice; without it, it is a failure worth naming.
@@ -699,10 +714,10 @@ foreach ($r in $runs) {
         }
         Copy-Item $built[0].FullName $modsDir
 
-        $deps = Join-Path $ProdRoot "deps\$($r.loader)"
+        $deps = Join-Path $ProdRoot "deps\$($r.loader)\$McVersion"
         if (Test-Path $deps) { Get-ChildItem $deps -Filter *.jar | Copy-Item -Destination $modsDir }
         if ($r.extras) {
-            Get-ChildItem (Join-Path $ProdRoot "extras\$($r.loader)") -Filter *.jar | Copy-Item -Destination $modsDir
+            Get-ChildItem (Join-Path $ProdRoot "extras\$($r.loader)\$McVersion") -Filter *.jar | Copy-Item -Destination $modsDir
         }
         Write-Host "  mods: $(@(Get-ChildItem $modsDir -Filter *.jar).Count) jar(s)"
 
