@@ -31,3 +31,8 @@ runs
 # See testsaves/README.md.
 testsaves/*
 !testsaves/README.md
+
+# Production-test staging: third-party mod jars we may not redistribute, and full server
+# installs. See prodtest/README.md.
+prodtest/*
+!prodtest/README.md

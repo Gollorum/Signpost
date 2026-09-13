@@ -146,6 +146,29 @@ function Wait-PortFree([int] $Port, [int] $TimeoutSec = 30) {
     return $false
 }
 
+function Disable-AccessibilityOnboarding([string] $GameDir) {
+    # On a game directory it has never run in, the client opens the accessibility onboarding
+    # screen ("Would you like to enable the Narrator...") and waits for a human to click
+    # Continue. Minecraft.java gates that on Options.onboardAccessibility, which defaults to
+    # true, so quickPlay never happens and the run burns its whole timeout at the menu - which
+    # looks exactly like a load failure. Existing settings are preserved; only this key is set.
+    $optionsFile = Join-Path $GameDir 'options.txt'
+    $setting = 'onboardAccessibility:false'
+    if (-not (Test-Path $optionsFile)) {
+        New-Item -ItemType Directory -Force -Path $GameDir | Out-Null
+        Set-Content -Path $optionsFile -Value $setting -Encoding ascii
+        return
+    }
+    $lines = @(Get-Content $optionsFile)
+    if ($lines -match '^onboardAccessibility:') {
+        $lines = $lines -replace '^onboardAccessibility:.*$', $setting
+    }
+    else {
+        $lines += $setting
+    }
+    Set-Content -Path $optionsFile -Value $lines -Encoding ascii
+}
+
 $PlantMarker = '.signpost-runtime-test'
 
 function Copy-PristineSave([string] $SourceWorld, [string] $DestPath) {
@@ -221,12 +244,32 @@ if ($AllEntries.Count -eq 0) {
     exit 2
 }
 
+# The corpus spans Minecraft versions, and a save from a NEWER Minecraft cannot be loaded by
+# an older one at all - so the highest-sorting entry is the wrong default on any branch that
+# is not the leading one. Prefer the newest Signpost release that has a save for the
+# Minecraft version this branch builds.
+$McVersion = ''
+Get-Content (Join-Path $RepoRoot 'gradle.properties') | ForEach-Object {
+    if ($_ -match '^\s*minecraft_version\s*=\s*(.+?)\s*$') { $McVersion = $Matches[1] }
+}
+
 if (-not $SaveVersion) {
-    $SaveVersion = $AllEntries[-1]
+    $forThisMc = @($AllEntries | Where-Object { $_ -like "*/$McVersion" })
+    if ($forThisMc.Count -gt 0) {
+        $SaveVersion = $forThisMc[-1]
+    }
+    else {
+        $SaveVersion = $AllEntries[-1]
+        Write-Host ("  WARN  no corpus entry for Minecraft $McVersion; falling back to $SaveVersion. " +
+                    'A save from a different Minecraft version tests the vanilla upgrade path as much as Signpost.') -ForegroundColor DarkYellow
+    }
 } elseif ($AllEntries -notcontains $SaveVersion) {
-    # A bare Signpost version selects the highest Minecraft version recorded under it.
+    # A bare Signpost version selects this branch's Minecraft version, or the highest under it.
     $nested = @($AllEntries | Where-Object { $_ -like "$SaveVersion/*" })
-    if ($nested.Count -gt 0) {
+    $nestedForMc = @($nested | Where-Object { $_ -like "*/$McVersion" })
+    if ($nestedForMc.Count -gt 0) {
+        $SaveVersion = $nestedForMc[-1]
+    } elseif ($nested.Count -gt 0) {
         $SaveVersion = $nested[-1]
     } else {
         Write-Host "No corpus entry '$SaveVersion'. Available:" -ForegroundColor Red
@@ -387,6 +430,7 @@ foreach ($r in $runs) {
         }
         else {
             Copy-PristineSave $ClientWorld (Join-Path $gameDir "saves\$QuickPlayName")
+            Disable-AccessibilityOnboarding $gameDir
         }
         $plantedFrom = if ($r.side -eq 'client' -and $ClientWorld -ne $PristineWorld) {
             "testsaves/$SaveVersion (upgraded by the pre-pass)"
