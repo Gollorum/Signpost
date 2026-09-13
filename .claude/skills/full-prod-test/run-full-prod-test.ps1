@@ -219,13 +219,19 @@ function Disable-AccessibilityOnboarding([string] $GameDir) {
     Set-Content -Path $optionsFile -Value $lines -Encoding ascii
 }
 
+# Start-Process -Wait does NOT simply wait for the process: with redirected output it waits
+# for the redirect streams to close, and any grandchild that inherited those handles keeps
+# them open. Gradle's daemon does exactly that - it outlives the wrapper by hours - so -Wait
+# hangs forever on a build that succeeded. WaitForExit() waits on the process itself, which
+# is what was meant. (The build also passes --no-daemon, so none is left behind at all.)
 function Invoke-Provision {
     param([string[]] $Arguments, [string] $What)
     $quoted = @(@($Provisioner) + $Arguments | ForEach-Object { '"' + $_ + '"' })
     $logFile = Join-Path $OutDir ("provision-" + ($What -replace '[^\w.-]', '-') + ".log")
     $p = Start-Process -FilePath $python.Source -ArgumentList $quoted -WorkingDirectory $RepoRoot `
                        -RedirectStandardOutput $logFile -RedirectStandardError "$logFile.err" `
-                       -PassThru -NoNewWindow -Wait
+                       -PassThru -NoNewWindow
+    $p.WaitForExit()
     Get-Content $logFile -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_ }
     if ($p.ExitCode -ne 0) {
         Get-Content "$logFile.err" -ErrorAction SilentlyContinue |
@@ -558,11 +564,16 @@ if (-not $SkipBuild) {
     # toolchain dies in buildSrc with "Unsupported class file major version". An inherited
     # JAVA_HOME pointing at a newer JDK is the normal case on a dev machine, so check it
     # rather than trusting it.
+    # The BUILD's Java is the project's toolchain (java_version), not the game's. They agree
+    # today - 21 on 1.21.x, 25 on 26.x - but they are separate settings and a branch is free
+    # to build on one and run on another.
+    $buildMajor = $JavaMajor
+    if ($props['java_version'] -match '^\d+$') { $buildMajor = [int]$props['java_version'] }
     $currentHomeJava = if ($env:JAVA_HOME) { Join-Path $env:JAVA_HOME 'bin\java.exe' } else { '' }
-    if (-not ($currentHomeJava -and (Test-Path $currentHomeJava) -and (Get-JavaMajor $currentHomeJava) -eq $JavaMajor)) {
-        $buildHome = Resolve-BuildJavaHome $JavaMajor
+    if (-not ($currentHomeJava -and (Test-Path $currentHomeJava) -and (Get-JavaMajor $currentHomeJava) -eq $buildMajor)) {
+        $buildHome = Resolve-BuildJavaHome $buildMajor
         if (-not $buildHome) {
-            Fail-Setup "Gradle needs a JDK $JavaMajor (with javac). None found - install one, or run with -SkipBuild."
+            Fail-Setup "Gradle needs a JDK $buildMajor (with javac) for this project's toolchain. None found - install one, or run with -SkipBuild."
         }
         Write-Host "  JAVA_HOME -> $buildHome (was: $(if ($env:JAVA_HOME) { $env:JAVA_HOME } else { '<unset>' }))"
         $env:JAVA_HOME = $buildHome
@@ -570,10 +581,11 @@ if (-not $SkipBuild) {
     $tasks = @($profiles.Keys | ForEach-Object { ":${_}:build" })
     $buildLog = Join-Path $OutDir 'build.log'
     $bp = Start-Process -FilePath (Join-Path $RepoRoot 'gradlew.bat') `
-                        -ArgumentList (@($tasks) + @('-x', 'test', '--console=plain')) `
+                        -ArgumentList (@($tasks) + @('-x', 'test', '--console=plain', '--no-daemon')) `
                         -WorkingDirectory $RepoRoot `
                         -RedirectStandardOutput $buildLog -RedirectStandardError "$buildLog.err" `
-                        -PassThru -NoNewWindow -Wait
+                        -PassThru -NoNewWindow
+    $bp.WaitForExit()
     if ($bp.ExitCode -ne 0) {
         Write-Host (Get-Content "$buildLog.err" -Raw -ErrorAction SilentlyContinue) -ForegroundColor Red
         Fail-Setup "Build failed (exit $($bp.ExitCode)). See $buildLog"
