@@ -10,13 +10,30 @@ folder — these copies stay authoritative.
 ```
 testsaves/
   2.03.0/
-    world/          <- a complete save folder: level.dat, region/, data/, entities/, ...
+    1.21.10/
+      world/        <- a complete save folder: level.dat, region/, data/, entities/, ...
+      SOURCE.txt
   2.04.0/
-    world/
+    1.21.1/
+      world/
+      SOURCE.txt
 ```
 
-The directory name is the **Signpost version that last wrote the save**. The harness picks
-the highest-sorting version by default; override with `-SaveVersion 2.03.0`.
+An entry is identified by **both** versions: `<signpost>/<minecraft>` — the Signpost
+version that last wrote the save, then the Minecraft version it was written on.
+
+The two axes are separate because they break things separately. A Signpost release can
+change the mod's own serialization; a Minecraft port changes the formats underneath it and
+runs vanilla's DataFixers over the world. Either can break loading on its own, so the
+current Signpost version paired with an older Minecraft version is a legitimate entry —
+it tests the port.
+
+The harness defaults to the newest entry **written on the Minecraft version this branch
+builds** (`minecraft_version` in `gradle.properties`), which matters on a backport branch:
+the highest-sorting entry overall may be a save from a newer Minecraft, and an older
+Minecraft cannot load one at all. Override with a full id (`-SaveVersion 2.03.0/1.21.10`)
+or a bare Signpost version (`-SaveVersion 2.03.0`), which again prefers this branch's
+Minecraft version. Numeric segments are compared as numbers, so 1.21.9 sorts before 1.21.10.
 
 ## Why this is not in git
 
@@ -46,11 +63,12 @@ it cannot prove the jar matches what players actually run, and a save made from 
    pointing at that waystone. The GUI work is why this step is manual — `/setblock` places
    the block but leaves the block-entity data empty, which is the data that matters.
 6. Quit to title and exit **cleanly**, so the save is flushed and consistent.
-7. Copy the world folder to `testsaves/<version>/world/`.
-8. Write `testsaves/<version>/SOURCE.txt` (see below).
-9. Audit it: `python .claude/skills/full-runtime-test/audit-test-save.py testsaves/<version>`
+7. Copy the world folder to `testsaves/<signpost>/<minecraft>/world/`.
+8. Write `testsaves/<signpost>/<minecraft>/SOURCE.txt` (see below).
+9. Audit it: `python .claude/skills/full-runtime-test/audit-test-save.py testsaves/<signpost>/<minecraft>`
+   (a bare `testsaves/<signpost>` audits every Minecraft entry under it).
 10. Prove it loads before trusting it:
-    `... run-full-runtime-test.ps1 -SaveVersion <version> -ServersOnly`
+    `... run-full-runtime-test.ps1 -SaveVersion <signpost>/<minecraft> -ServersOnly`
 
 ## SOURCE.txt
 

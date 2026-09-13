@@ -122,7 +122,7 @@ Waystones or Repurposed Structures interact with.
 
 Load a world written by an **older, released** build - that is what catches serialization and
 compatibility breakage. A freshly generated world proves nothing. The authoritative saves live
-in `testsaves/<version>/world/` (gitignored, see `testsaves/README.md`); the worlds sitting in
+in `testsaves/<signpost>/<minecraft>/world/` (gitignored, see `testsaves/README.md`); the worlds sitting in
 the run directories are dev scratch, and the full-runtime-test harness moves any it finds aside
 to `world.preserved-<timestamp>` the first time it plants a corpus save, rather than deleting
 them. **Do the same by hand** - `mv` the existing `world` to `world.preserved-<timestamp>` before

@@ -136,6 +136,29 @@ function Wait-PortFree([int] $Port, [int] $TimeoutSec = 30) {
     return $false
 }
 
+function Disable-AccessibilityOnboarding([string] $GameDir) {
+    # On a game directory it has never run in, the client opens the accessibility onboarding
+    # screen ("Would you like to enable the Narrator...") and waits for a human to click
+    # Continue. Minecraft.java gates that on Options.onboardAccessibility, which defaults to
+    # true, so quickPlay never happens and the run burns its whole timeout at the menu - which
+    # looks exactly like a load failure. Existing settings are preserved; only this key is set.
+    $optionsFile = Join-Path $GameDir 'options.txt'
+    $setting = 'onboardAccessibility:false'
+    if (-not (Test-Path $optionsFile)) {
+        New-Item -ItemType Directory -Force -Path $GameDir | Out-Null
+        Set-Content -Path $optionsFile -Value $setting -Encoding ascii
+        return
+    }
+    $lines = @(Get-Content $optionsFile)
+    if ($lines -match '^onboardAccessibility:') {
+        $lines = $lines -replace '^onboardAccessibility:.*$', $setting
+    }
+    else {
+        $lines += $setting
+    }
+    Set-Content -Path $optionsFile -Value $lines -Encoding ascii
+}
+
 $PlantMarker = '.signpost-runtime-test'
 
 function Copy-PristineSave([string] $SourceWorld, [string] $DestPath) {
@@ -168,10 +191,10 @@ $corpusHelp = @"
 This harness loads a save written by a PREVIOUS RELEASED VERSION, so the corpus cannot be
 generated from the current build. Populate it once per release:
 
-  testsaves/<released-version>/world/    <- a complete save folder (level.dat, region/, data/, ...)
+  testsaves/<signpost>/<minecraft>/world/   <- a complete save folder (level.dat, region/, ...)
 
-for example testsaves/2.03.0/world/, copied from a world last saved by Signpost 2.03.0.
-The directory is gitignored on purpose; see testsaves/README.md.
+for example testsaves/2.03.0/1.21.1/world/, copied from a world last saved by Signpost 2.03.0
+on Minecraft 1.21.1. The directory is gitignored on purpose; see testsaves/README.md.
 "@
 
 if (-not (Test-Path $SaveRoot)) {
@@ -180,19 +203,76 @@ if (-not (Test-Path $SaveRoot)) {
     exit 2
 }
 
-if (-not $SaveVersion) {
-    $candidates = @(Get-ChildItem -Directory $SaveRoot -ErrorAction SilentlyContinue |
-                    Where-Object { Test-Path (Join-Path $_.FullName 'world') } |
-                    Sort-Object Name)
-    if ($candidates.Count -eq 0) {
-        Write-Host "No testsaves/<version>/world/ directory found under $SaveRoot" -ForegroundColor Red
-        Write-Host $corpusHelp -ForegroundColor Red
-        exit 2
+# Corpus ids are '<signpost>/<minecraft>', e.g. 2.04.0/1.21.1 - one Signpost release can
+# carry a save per Minecraft version, since a port breaks serialization as readily as a mod
+# release. The older flat testsaves/<signpost>/world is still accepted as an id of its own.
+function Get-CorpusEntries {
+    param([string] $Root)
+    $ids = @()
+    foreach ($sp in @(Get-ChildItem -Directory $Root -ErrorAction SilentlyContinue)) {
+        if (Test-Path (Join-Path $sp.FullName 'world')) { $ids += $sp.Name }
+        foreach ($mc in @(Get-ChildItem -Directory $sp.FullName -ErrorAction SilentlyContinue)) {
+            if (Test-Path (Join-Path $mc.FullName 'world')) { $ids += "$($sp.Name)/$($mc.Name)" }
+        }
     }
-    $SaveVersion = $candidates[-1].Name
+    return @($ids | Sort-Object { Get-VersionSortKey $_ })
 }
 
-$PristineWorld = Join-Path $SaveRoot "$SaveVersion\world"
+# Zero-pad numeric segments so 1.21.9 sorts before 1.21.10 and 26.1.2 after both. Plain
+# string sort gets both of those backwards, and the default entry is the highest one.
+function Get-VersionSortKey {
+    param([string] $Id)
+    return (($Id -split '[/.]') | ForEach-Object {
+        if ($_ -match '^\d+$') { $_.PadLeft(6, '0') } else { $_ }
+    }) -join '.'
+}
+
+$AllEntries = Get-CorpusEntries $SaveRoot
+if ($AllEntries.Count -eq 0) {
+    Write-Host "No testsaves/<signpost>/<minecraft>/world/ directory found under $SaveRoot" -ForegroundColor Red
+    Write-Host $corpusHelp -ForegroundColor Red
+    exit 2
+}
+
+# The corpus spans Minecraft versions, and a save from a NEWER Minecraft cannot be loaded by
+# an older one at all - so on a backport branch the highest-sorting entry is the wrong
+# default. Prefer the newest Signpost release that has a save for the Minecraft version this
+# branch builds. (On a leading branch that is the highest entry anyway.)
+$McVersion = ''
+Get-Content (Join-Path $RepoRoot 'gradle.properties') | ForEach-Object {
+    if ($_ -match '^\s*minecraft_version\s*=\s*(.+?)\s*$') { $McVersion = $Matches[1] }
+}
+
+if (-not $SaveVersion) {
+    $forThisMc = @($AllEntries | Where-Object { $_ -like "*/$McVersion" })
+    if ($forThisMc.Count -gt 0) {
+        $SaveVersion = $forThisMc[-1]
+    }
+    else {
+        $SaveVersion = $AllEntries[-1]
+        Write-Host ("  WARN  no corpus entry for Minecraft $McVersion; falling back to $SaveVersion. " +
+                    'A save from a different Minecraft version tests the vanilla upgrade path as much as Signpost.') -ForegroundColor DarkYellow
+    }
+} elseif ($AllEntries -notcontains $SaveVersion) {
+    # A bare Signpost version selects the entry for this branch's Minecraft version, or the
+    # highest recorded under it when there is none.
+    $nested = @($AllEntries | Where-Object { $_ -like "$SaveVersion/*" })
+    $nestedForMc = @($nested | Where-Object { $_ -like "*/$McVersion" })
+    if ($nestedForMc.Count -gt 0) {
+        $SaveVersion = $nestedForMc[-1]
+    } elseif ($nested.Count -gt 0) {
+        $SaveVersion = $nested[-1]
+    } else {
+        Write-Host "No corpus entry '$SaveVersion'. Available:" -ForegroundColor Red
+        $AllEntries | ForEach-Object { Write-Host "  $_" -ForegroundColor Red }
+        exit 2
+    }
+}
+
+# Build the path segment by segment; the id uses '/' regardless of platform separator.
+$EntryDir = $SaveRoot
+foreach ($seg in $SaveVersion.Split('/')) { $EntryDir = Join-Path $EntryDir $seg }
+$PristineWorld = Join-Path $EntryDir 'world'
 if (-not (Test-Path (Join-Path $PristineWorld 'level.dat'))) {
     Write-Host "testsaves/$SaveVersion/world/level.dat is missing - that is not a save folder." -ForegroundColor Red
     exit 2
@@ -211,7 +291,7 @@ if (Test-Path $auditScript) {
     $py = Get-Command python -ErrorAction SilentlyContinue
     if ($py) {
         Write-Head "Corpus audit"
-        & $py.Source $auditScript (Join-Path $SaveRoot $SaveVersion)
+        & $py.Source $auditScript $EntryDir
         if ($LASTEXITCODE -ne 0) {
             $global:LASTEXITCODE = 0
             Write-Host 'The corpus audit found a blocking problem. Fix the save before running the matrix.' -ForegroundColor Red
@@ -271,6 +351,7 @@ foreach ($r in $runs) {
         }
         else {
             Copy-PristineSave $PristineWorld (Join-Path $gameDir "saves\$QuickPlayName")
+            Disable-AccessibilityOnboarding $gameDir
         }
         Write-Host "  planted save from testsaves/$SaveVersion"
 

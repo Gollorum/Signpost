@@ -37,7 +37,7 @@ game. They just silently discard the player's data.
 
 ## Prerequisites
 
-The corpus at `testsaves/<version>/world/` must exist. It is gitignored, so a fresh clone
+The corpus at `testsaves/<signpost>/<minecraft>/world/` must exist. It is gitignored, so a fresh clone
 has none, and the harness will exit with code 2 and instructions rather than pass vacuously.
 See `testsaves/README.md` for how to populate it. **Never** point the corpus at a save
 produced by the current working tree — it must come from a released build, otherwise the
