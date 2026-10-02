@@ -185,7 +185,12 @@ public class PostTile extends BlockEntity implements WithOwner.OfSignpost, WithO
     public BlockPartInstance removePart(UUID id) {
         BlockPartInstance oldPart = parts.remove(id);
         if(oldPart == null) {
-            Signpost.LOGGER.error("Failed to remove post block part with id " + id);
+            // On the client this is an expected race, not a bug: when the server removes a part (e.g. a village
+            // signpost consuming its generator part on first load) before this client has the tile, the
+            // PartRemovedEvent waits for the tile, which then arrives from chunk data that already lacks the part.
+            if(getLevel() != null && getLevel().isClientSide())
+                Signpost.LOGGER.debug("Post block part with id " + id + " was already gone on the client");
+            else Signpost.LOGGER.error("Failed to remove post block part with id " + id);
             return oldPart;
         }
         if(getLevel() != null && !getLevel().isClientSide())

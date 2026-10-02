@@ -489,8 +489,11 @@ $PristineWorld = Join-Path $SaveRoot "$SaveVersion\$SaveMcVersion\world"
 if (-not (Test-Path (Join-Path $PristineWorld 'level.dat'))) {
     Fail-Setup "testsaves/$SaveVersion/$SaveMcVersion/world/level.dat is missing - that is not a save folder."
 }
-if ($SaveVersion -eq $ModVersion) {
-    Fail-Setup "The corpus at testsaves/$SaveVersion was written by the version being built ($ModVersion). That tests nothing."
+# Only a save matching BOTH axes tests nothing. The current Signpost version on an older Minecraft
+# version is a legitimate entry - it tests the port (testsaves/README.md) - and rejecting it on the
+# Signpost version alone made the harness unusable for a port, when nothing else has been bumped yet.
+if ($SaveVersion -eq $ModVersion -and $SaveMcVersion -eq $McVersion) {
+    Fail-Setup "The corpus at testsaves/$SaveVersion/$SaveMcVersion was written by the version being built ($ModVersion on $McVersion). That tests nothing."
 }
 
 # The Minecraft version itself says which Java it wants; do not guess it.

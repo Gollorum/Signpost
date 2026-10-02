@@ -33,7 +33,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
-import net.neoforged.neoforge.registries.DataPackRegistryEvent;
+import net.neoforged.neoforge.registries.NewDatapackRegistryEvent;
 import net.neoforged.neoforge.registries.NewRegistryEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
 import net.neoforged.neoforge.registries.RegistryBuilder;
@@ -93,8 +93,8 @@ public class SignpostNeoforge {
         }
 
         @SubscribeEvent
-        public void registerDataPackRegistries(DataPackRegistryEvent.NewRegistry event) {
-            event.dataPackRegistry(
+        public void registerDataPackRegistries(NewDatapackRegistryEvent event) {
+            event.worldRegistry(
                 ModelTypeRegistry.REGISTRY_KEY,
                 PostBlock.ModelType.CODEC,
                 PostBlock.ModelType.CODEC

@@ -65,7 +65,7 @@ public class ShortSignRenderer extends SignRenderer<SmallShortSignBlockPart> {
 			float MAX_WIDTH_FRAC = fontRenderer.width(text) * scale / MAXIMUM_TEXT_WIDTH;
 			scale /= Math.max(1, MAX_WIDTH_FRAC);
 			boolean flipped = isFlipped ^ sign.isFlipped();
-			if(isFlipped) matrix.mulPose(new Quaternionf(new AxisAngle4d(Math.PI, new Vector3f(0, 1, 0))));
+			if(isFlipped) matrix.rotate(new Quaternionf(new AxisAngle4d(Math.PI, new Vector3f(0, 1, 0))));
 			float offset = MathUtils.lerp(TEXT_OFFSET_RIGHT, (TEXT_OFFSET_RIGHT - TEXT_OFFSET_LEFT) / 2f, 1 - Math.min(1, MAX_WIDTH_FRAC));
 			matrix.translate(
 				flipped ? offset - fontRenderer.width(text) * scale : -offset,

@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "signpost:post_brown_mushroom"
+        "recipes": "signpost:post_brown_mushroom"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

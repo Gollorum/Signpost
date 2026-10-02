@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "signpost:post_prismarine"
+        "recipes": "signpost:post_prismarine"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

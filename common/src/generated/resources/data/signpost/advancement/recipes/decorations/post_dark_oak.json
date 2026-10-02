@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "signpost:post_dark_oak"
+        "recipes": "signpost:post_dark_oak"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

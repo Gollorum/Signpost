@@ -10,7 +10,7 @@ import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.block.MovingBlockRenderState;
-import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.geometry.ItemQuads;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
@@ -19,7 +19,7 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.gizmos.DrawableGizmoPrimitives;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.UvMapping;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
@@ -81,6 +81,11 @@ public class GuiFakeCollector implements SubmitNodeCollector {
     }
 
     @Override
+    public void submitTextBackground(PoseStack poseStack, float x0, float y0, float x1, float y1, int color, Font.DisplayMode displayMode, int lightCoords) {
+        throw new RuntimeException("Not supported");
+    }
+
+    @Override
     public void submitFlame(PoseStack poseStack, EntityRenderState entityRenderState, Quaternionf quaternionf) {
         throw new RuntimeException("Not supported");
     }
@@ -91,7 +96,12 @@ public class GuiFakeCollector implements SubmitNodeCollector {
     }
 
     @Override
-    public <S> void submitModel(Model<? super S> model, S s, PoseStack poseStack, RenderType renderType, int i, int i1, int i2, @Nullable TextureAtlasSprite textureAtlasSprite, int i3, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
+    public <S> void submitModel(Model<? super S> model, S s, PoseStack poseStack, RenderType renderType, int i, int i1, int i2, @Nullable UvMapping uvMapping, int i3) {
+        throw new RuntimeException("Not supported");
+    }
+
+    @Override
+    public <S> void submitCrumblingOverlay(Model<? super S> model, S s, PoseStack poseStack, RenderType renderType, int lightCoords, int overlayCoords, int tintedColor, ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
         throw new RuntimeException("Not supported");
     }
 
@@ -106,12 +116,12 @@ public class GuiFakeCollector implements SubmitNodeCollector {
     }
 
     @Override
-    public void submitBreakingBlockModel(PoseStack poseStack, List<BlockStateModelPart> parts, int progress) {
+    public void submitBreakingBlockModel(PoseStack poseStack, List<BlockStateModelPart> parts, int progress, boolean isBlockTranslucent) {
         throw new RuntimeException("Not supported");
     }
 
     @Override
-    public void submitItem(PoseStack poseStack, ItemDisplayContext itemDisplayContext, int i, int i1, int i2, int[] ints, List<BakedQuad> list, ItemStackRenderState.FoilType foilType) {
+    public void submitItem(PoseStack poseStack, ItemDisplayContext itemDisplayContext, int i, int i1, int i2, int[] ints, ItemQuads quads, ItemStackRenderState.FoilType foilType) {
         throw new RuntimeException("Not supported");
     }
 

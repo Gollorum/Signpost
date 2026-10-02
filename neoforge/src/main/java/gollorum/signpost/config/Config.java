@@ -1,5 +1,6 @@
 package gollorum.signpost.config;
 
+import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.config.IConfig;
 import gollorum.signpost.minecraft.config.IPermissionConfig;
@@ -45,8 +46,10 @@ public class Config implements IConfig {
     }
 
     public void register() {
-        ModLoadingContext.get().getActiveContainer().registerConfig(ModConfig.Type.SERVER, ServerConfig);
-        ModLoadingContext.get().getActiveContainer().registerConfig(ModConfig.Type.COMMON, CommonConfig);
+        // 26.3 renamed SERVER to SYNCED and COMMON to LOCAL, and the default file name follows the type
+        // (signpost-synced.toml, signpost-local.toml). The names are pinned so existing config files keep loading.
+        ModLoadingContext.get().getActiveContainer().registerConfig(ModConfig.Type.SYNCED, ServerConfig, Signpost.MOD_ID + "-server.toml");
+        ModLoadingContext.get().getActiveContainer().registerConfig(ModConfig.Type.LOCAL, CommonConfig, Signpost.MOD_ID + "-common.toml");
         ModLoadingContext.get().getActiveContainer().registerConfig(ModConfig.Type.CLIENT, ClientConfig);
     }
 

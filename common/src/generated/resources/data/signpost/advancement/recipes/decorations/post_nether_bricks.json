@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "signpost:post_nether_bricks"
+        "recipes": "signpost:post_nether_bricks"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

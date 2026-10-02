@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "signpost:post_deepslate"
+        "recipes": "signpost:post_deepslate"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

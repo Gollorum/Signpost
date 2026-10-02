@@ -22,6 +22,7 @@ public class SideUtils {
 			if (!player.isCreative())
 				player.getInventory().clearOrCountMatchingItems(
 					i -> i.getItem().equals(cost.getItem()),
+					false,
 					cost.getCount(),
 					player.inventoryMenu.getCraftSlots()
 				);
@@ -38,6 +39,7 @@ public class SideUtils {
 		if (!player.isCreative())
 			player.getInventory().clearOrCountMatchingItems(
 				i -> i.getItem().equals(cost.getItem()),
+				false,
 				cost.getCount(),
 				player.inventoryMenu.getCraftSlots()
 			);

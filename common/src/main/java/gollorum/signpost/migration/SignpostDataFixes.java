@@ -3,7 +3,7 @@ package gollorum.signpost.migration;
 import com.mojang.datafixers.DataFixerBuilder;
 import com.mojang.datafixers.schemas.Schema;
 import net.minecraft.SharedConstants;
-import net.minecraft.util.datafix.fixes.BlockRenameFix;
+import net.minecraft.util.datafix.fixes.LegacyBlockRenameFix;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 /**
@@ -26,7 +26,7 @@ public final class SignpostDataFixes {
         Schema schema = builder.addSchema(
             SharedConstants.getCurrentVersion().dataVersion().version(), 1,
             NamespacedSchema::new);
-        builder.addFixer(BlockRenameFix.create(schema, "Signpost post block types", LegacyPostTypes::rename));
+        builder.addFixer(LegacyBlockRenameFix.create(schema, "Signpost post block types", LegacyPostTypes::rename));
         builder.addFixer(new PostItemStackFix(schema));
     }
 

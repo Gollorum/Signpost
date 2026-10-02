@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "signpost:post_birch"
+        "recipes": "signpost:post_birch"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

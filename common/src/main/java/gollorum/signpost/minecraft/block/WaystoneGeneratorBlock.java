@@ -1,6 +1,5 @@
 package gollorum.signpost.minecraft.block;
 
-import com.mojang.serialization.MapCodec;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.WaystoneLibrary;
 import gollorum.signpost.minecraft.block.tiles.WaystoneGeneratorEntity;
@@ -178,8 +177,4 @@ public class WaystoneGeneratorBlock extends BaseEntityBlock {
 		return allowedWaystones.get(random.nextInt(allowedWaystones.size()));
 	}
 
-    @Override
-    protected @NotNull MapCodec<? extends BaseEntityBlock> codec() {
-        return MapCodec.unit(WaystoneGeneratorBlock.instance);
-    }
 }

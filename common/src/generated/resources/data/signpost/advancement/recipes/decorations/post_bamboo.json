@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "signpost:post_bamboo"
+        "recipes": "signpost:post_bamboo"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

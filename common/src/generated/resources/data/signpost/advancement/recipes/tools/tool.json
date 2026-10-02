@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "signpost:tool"
+        "recipes": "signpost:tool"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

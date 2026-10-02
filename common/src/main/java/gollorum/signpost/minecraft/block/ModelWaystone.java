@@ -1,8 +1,5 @@
 package gollorum.signpost.minecraft.block;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
 import net.minecraft.core.BlockPos;
@@ -109,7 +106,7 @@ public class ModelWaystone extends BaseEntityBlock implements SimpleWaterloggedB
 			.instrument(NoteBlockInstrument.BASEDRUM)
 			.strength(1.5F, 6.0F)
 			.noOcclusion()
-			.isViewBlocking((x, y, z) -> false)
+			.isViewBlocking((state, level, pos, nearPlaneBox) -> false)
 			.requiresCorrectToolForDrops()
             .setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, variant.registryName)))
 		);
@@ -207,16 +204,4 @@ public class ModelWaystone extends BaseEntityBlock implements SimpleWaterloggedB
         return itemStack;
 	}
 
-    @Override
-    protected @NotNull MapCodec<? extends BaseEntityBlock> codec() {
-        return RecordCodecBuilder.mapCodec((builder) -> builder.group(
-            propertiesCodec(),
-            Codec.STRING.fieldOf("variant").forGetter(block -> ((ModelWaystone)block).variant.name)
-        ).apply(builder, (properties, variantName) ->
-            ModelWaystone.variants.stream().filter(v -> Objects.equals(v.name, variantName)).findAny().orElseThrow().createBlock(v -> new ModelWaystone(
-                v,
-                properties
-            ))
-        ));
-    }
 }

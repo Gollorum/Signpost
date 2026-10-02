@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "signpost:post_diorite"
+        "recipes": "signpost:post_diorite"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

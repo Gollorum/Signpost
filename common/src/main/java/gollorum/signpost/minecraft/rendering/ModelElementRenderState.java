@@ -1,10 +1,10 @@
 package gollorum.signpost.minecraft.rendering;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.SamplerCache;
-import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.renderpearl.api.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import gollorum.signpost.minecraft.gui.utils.Rect;
 import net.minecraft.client.Minecraft;

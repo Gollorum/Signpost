@@ -1,6 +1,5 @@
 package gollorum.signpost.data;
 
-import com.google.common.collect.ImmutableList;
 import gollorum.signpost.Signpost;
 import gollorum.signpost.minecraft.block.ModelWaystone;
 import gollorum.signpost.minecraft.block.PostBlock;
@@ -15,18 +14,16 @@ import net.minecraft.advancements.predicates.DataComponentMatchers;
 import net.minecraft.advancements.predicates.EnchantmentPredicate;
 import net.minecraft.advancements.predicates.ItemPredicate;
 import net.minecraft.advancements.predicates.MinMaxBounds;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.component.predicates.DataComponentPredicates;
 import net.minecraft.core.component.predicates.EnchantmentsPredicate;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.PackOutput;
 import net.minecraft.data.loot.LootTableProvider;
-import net.minecraft.data.loot.packs.VanillaLootTableProvider;
+import net.minecraft.data.loot.LootTableSubProvider;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.block.Block;
@@ -38,48 +35,49 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.MatchTool;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.BiConsumer;
 
-public class LootTables extends LootTableProvider {
+// 26.3 made loot tables a reloadable datapack registry: the provider is now a bootstrap for Registries.LOOT_TABLE,
+// and each sub provider writes through the LootTableSubProvider.Context it is constructed with.
+public class LootTables implements LootTableSubProvider {
 
-    public LootTables(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> registryAccess) {
-        super(packOutput, Set.of(), VanillaLootTableProvider.create(packOutput, registryAccess).getTables(), registryAccess);
+    public static LootTableProvider create() {
+        return new LootTableProvider(Set.of(), List.of(new LootTableProvider.SubProviderEntry(LootTables::new, LootContextParamSets.BLOCK)));
+    }
+
+    private final LootTableSubProvider.Context builder;
+    private final HolderGetter<Enchantment> enchantments;
+
+    private LootTables(LootTableSubProvider.Context builder) {
+        this.builder = builder;
+        this.enchantments = builder.lookup(Registries.ENCHANTMENT);
     }
 
     @Override
-    public List<SubProviderEntry> getTables() {
-        return ImmutableList.of(new SubProviderEntry(
-            registryAccess -> builder -> generateBlockLootTables(registryAccess, builder),
-            LootContextParamSets.BLOCK));
-    }
-
-
-    private void generateBlockLootTables(HolderLookup.Provider registryAccess, BiConsumer<ResourceKey<LootTable>, LootTable.Builder> builder) {
+    public void run() {
         PostBlock.all().forEach(block ->
             builder.accept(
                 ResourceKey.create(Registries.LOOT_TABLE, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "blocks/" + BuiltInRegistries.BLOCK.getKey(block).getPath())),
-                mkPostLootTable(registryAccess, block)
+                mkPostLootTable(block)
             ));
 
         builder.accept(
             ResourceKey.create(Registries.LOOT_TABLE, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "blocks/" + BuiltInRegistries.BLOCK.getKey(WaystoneBlock.getInstance()).getPath())),
-            mkWaystoneLootTable(registryAccess, WaystoneBlock.getInstance()));
+            mkWaystoneLootTable(WaystoneBlock.getInstance()));
         for(ModelWaystone.Variant variant : ModelWaystone.variants)
             builder.accept(
                 ResourceKey.create(Registries.LOOT_TABLE, Identifier.fromNamespaceAndPath(Signpost.MOD_ID, "blocks/" + BuiltInRegistries.BLOCK.getKey(variant.getBlock()).getPath())),
-                mkWaystoneLootTable(registryAccess, variant.getBlock()));
+                mkWaystoneLootTable(variant.getBlock()));
     }
 
-    private LootTable.Builder mkWaystoneLootTable(HolderLookup.Provider registryAccess, Block block) {
-        var includeDataCondition = hasSilkTouch(registryAccess).and(new PermissionCheck.Builder(PermissionCheck.Type.CanPickWaystone));
+    private LootTable.Builder mkWaystoneLootTable(Block block) {
+        var includeDataCondition = hasSilkTouch().and(new PermissionCheck.Builder(PermissionCheck.Type.CanPickWaystone));
         return LootTable.lootTable()
             .withPool(LootPool.lootPool()
-                .setRolls(ConstantValue.exactly(1))
+                .setRolls(ContextIntProviders.exactly(1))
                 .add(LootItem.lootTableItem(block)
                     .apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY)
                         .include(WaystoneHandleData.TYPE)
@@ -88,26 +86,25 @@ public class LootTables extends LootTableProvider {
                     .otherwise(LootItem.lootTableItem(block))));
     }
 
-    private LootTable.Builder mkPostLootTable(HolderLookup.Provider registryAccess, PostBlock block) {
+    private LootTable.Builder mkPostLootTable(PostBlock block) {
         var drop = block.materialType.getBlock();
         return LootTable.lootTable()
             .withPool(LootPool.lootPool()
-                .setRolls(ConstantValue.exactly(1))
+                .setRolls(ContextIntProviders.exactly(1))
                 .add(LootItem.lootTableItem(drop)
                     .apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY)
                         .include(WaystoneHandleData.TYPE)
                         .include(DataComponents.CUSTOM_NAME)
                         .include(PostData.TYPE))
-                    .when(hasSilkTouch(registryAccess))
+                    .when(hasSilkTouch())
                     .otherwise(LootItem.lootTableItem(drop))))
             .withPool(LootPool.lootPool()
-                .setRolls(ConstantValue.exactly(1))
+                .setRolls(ContextIntProviders.exactly(1))
                 .add(PostBlockPartDropLoot.createBuilder()
-                    .when(hasSilkTouch(registryAccess).invert())));
+                    .when(hasSilkTouch().invert())));
     }
 
-    private LootItemCondition.Builder hasSilkTouch(HolderLookup.Provider registryAccess) {
-        HolderLookup.RegistryLookup<Enchantment> registrylookup = registryAccess.lookupOrThrow(Registries.ENCHANTMENT);
+    private LootItemCondition.Builder hasSilkTouch() {
         return MatchTool.toolMatches(
             ItemPredicate.Builder.item()
                 .withComponents(
@@ -117,7 +114,7 @@ public class LootTables extends LootTableProvider {
                             EnchantmentsPredicate.enchantments(
                                 List.of(
                                     new EnchantmentPredicate(
-                                        registrylookup.getOrThrow(Enchantments.SILK_TOUCH), MinMaxBounds.Ints.atLeast(1)
+                                        enchantments.getOrThrow(Enchantments.SILK_TOUCH), MinMaxBounds.Ints.atLeast(1)
                                     )
                                 )
                             )

@@ -1,8 +1,8 @@
 package gollorum.signpost.minecraft.rendering;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.FilterMode;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.gui.font.TextRenderable;
 import net.minecraft.client.gui.navigation.ScreenRectangle;

@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "signpost:post_acacia"
+        "recipes": "signpost:post_acacia"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

@@ -25,8 +25,10 @@ public final class PermissionCheck implements LootItemCondition {
         Type(String name) { this.name = name; }
     }
 
+    // Not "type": since 26.3 that is the key LootItemCondition dispatches on, so a field of the same name collides
+    // with it. This is loot table JSON the mod generates itself, not save data, so the name is free to change.
     public static MapCodec<PermissionCheck> createConditionCodec() {
-        return Codec.STRING.fieldOf("type").flatXmap(
+        return Codec.STRING.fieldOf("permission").flatXmap(
         str -> Arrays.stream(Type.values()).filter(t -> t.name.equals(str)).findFirst().map(PermissionCheck::new).map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Unknown permission check type: " + str)),
         check -> DataResult.success(check.type.name)
     ); }
@@ -45,11 +47,11 @@ public final class PermissionCheck implements LootItemCondition {
     @Override
     public boolean test(LootContext lootContext) {
         if(!lootContext.hasParameter(LootContextParams.LAST_DAMAGE_PLAYER)) return true;
-        Player thisEntity = lootContext.getParameter(LootContextParams.LAST_DAMAGE_PLAYER);
+        Player thisEntity = lootContext.getOptional(LootContextParams.LAST_DAMAGE_PLAYER);
         if(thisEntity.permissions().hasPermission(IConfig.IServer.getInstance().permissions().pickUnownedWaystonePermission())) return true;
 
         if(!lootContext.hasParameter(LootContextParams.BLOCK_ENTITY)) return false;
-        BlockEntity blockEntity = lootContext.getParameter(LootContextParams.BLOCK_ENTITY);
+        BlockEntity blockEntity = lootContext.getOptional(LootContextParams.BLOCK_ENTITY);
         if(!(blockEntity instanceof WaystoneTile)) return false;
         WaystoneTile waystoneTile = (WaystoneTile) blockEntity;
         return waystoneTile.getWaystoneOwner()

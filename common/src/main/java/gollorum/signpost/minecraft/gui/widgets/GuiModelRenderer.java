@@ -56,7 +56,7 @@ public class GuiModelRenderer implements Renderable, Flippable {
         PoseStack matrixStack = new PoseStack();
         matrixStack.translate(center.x, center.y, 0);
         matrixStack.scale(scale, -scale, scale);
-        if (isFlipped) matrixStack.mulPose(new Quaternionf(new AxisAngle4d(Math.PI, new Vector3f(0, 1, 0))));
+        if (isFlipped) matrixStack.rotate(new Quaternionf(new AxisAngle4d(Math.PI, new Vector3f(0, 1, 0))));
         matrixStack.translate(modelSpaceXOffset, modelSpaceYOffset, 0);
         for (var moo : model.get(isFlipped))
             renderState.addGuiElement(new ModelElementRenderState(rect, moo.texture().atlasLocation(), RenderPipelines.CUTOUT_BLOCK, buffer -> {

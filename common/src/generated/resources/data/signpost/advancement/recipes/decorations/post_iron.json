@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "signpost:post_iron"
+        "recipes": "signpost:post_iron"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

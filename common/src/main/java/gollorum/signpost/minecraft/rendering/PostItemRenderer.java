@@ -89,17 +89,17 @@ public class PostItemRenderer implements SpecialModelRenderer<PostData> {
             poseStack.translate(0.5, 0, 0.5);
             switch (displayContext) {
                 case GUI -> {
-                    poseStack.mulPose(Axis.YP.rotationDegrees(90));
+                    poseStack.rotate(Axis.YP.rotationDegrees(90));
                     poseStack.scale(0.9f, 0.9f, 0.9f);
                 }
                 case FIRST_PERSON_RIGHT_HAND, FIRST_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND -> {
-                    poseStack.mulPose(Axis.YP.rotationDegrees(270));
+                    poseStack.rotate(Axis.YP.rotationDegrees(270));
                 }
                 case THIRD_PERSON_LEFT_HAND -> {
-                    poseStack.mulPose(Axis.YP.rotationDegrees(90));
+                    poseStack.rotate(Axis.YP.rotationDegrees(90));
                 }
                 case FIXED -> {
-                    poseStack.mulPose(Axis.YP.rotationDegrees(180));
+                    poseStack.rotate(Axis.YP.rotationDegrees(180));
                 }
             }
 

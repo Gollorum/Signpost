@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "signpost:post_red_sandstone"
+        "recipes": "signpost:post_red_sandstone"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

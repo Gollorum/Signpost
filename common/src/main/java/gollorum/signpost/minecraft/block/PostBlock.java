@@ -1,7 +1,6 @@
 package gollorum.signpost.minecraft.block;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gollorum.signpost.PlayerHandle;
 import gollorum.signpost.Signpost;
@@ -30,7 +29,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.RegistryFixedCodec;
+import net.minecraft.core.registries.codec.RegistryFixedCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -389,13 +388,5 @@ public final class PostBlock extends BaseEntityBlock implements SimpleWaterlogge
         return ret;
     }
 
-    @Override
-    protected @NotNull MapCodec<? extends BaseEntityBlock> codec() {
-        return RecordCodecBuilder.mapCodec((builder) -> builder.group(
-            Codec.STRING.fieldOf("materialType").forGetter(block -> ((PostBlock)block).materialType.id)
-        ).apply(builder, materialTypeId ->
-            all().filter(v -> Objects.equals(v.materialType.id, materialTypeId)).findAny().orElseThrow()
-        ));
-    }
 
 }

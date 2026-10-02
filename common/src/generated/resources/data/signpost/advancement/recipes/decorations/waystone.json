@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "signpost:waystone"
+        "recipes": "signpost:waystone"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

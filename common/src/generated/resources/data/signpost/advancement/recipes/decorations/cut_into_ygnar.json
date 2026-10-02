@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "signpost:cut_into_ygnar"
+        "recipes": "signpost:cut_into_ygnar"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

@@ -1,6 +1,5 @@
 package gollorum.signpost.minecraft.block;
 
-import com.mojang.serialization.MapCodec;
 import gollorum.signpost.*;
 import gollorum.signpost.minecraft.block.tiles.WaystoneTile;
 import gollorum.signpost.minecraft.data.WaystoneHandleData;
@@ -225,8 +224,4 @@ public class WaystoneBlock extends BaseEntityBlock {
         return stack;
     }
 
-    @Override
-    protected @NotNull MapCodec<? extends BaseEntityBlock> codec() {
-        return simpleCodec(WaystoneBlock::new);
-    }
 }

@@ -65,8 +65,8 @@ public class GuiBlockPartRenderer extends AbstractWidget {
             ms.translate(0, 0, 100);
             ms.translate(center.x, center.y, 0);
             ms.scale(scale, -scale, scale);
-            ms.mulPose(new Quaternionf(new AxisAngle4f(pitch.radians(), new Vector3f(1, 0, 0))));
-            ms.mulPose(new Quaternionf(new AxisAngle4f(yaw.radians(), new Vector3f(0, 1, 0))));
+            ms.rotate(new Quaternionf(new AxisAngle4f(pitch.radians(), new Vector3f(1, 0, 0))));
+            ms.rotate(new Quaternionf(new AxisAngle4f(yaw.radians(), new Vector3f(0, 1, 0))));
             ms.translate(0, -0.5, 0);
             for(BlockPartInstance bpi : partsToRender) {
                 RenderingUtil.wrapInMatrixEntry(ms, () -> {

@@ -12,9 +12,9 @@
     "and Forge lost both Waystones and Repurposed Structures. When a version upgrade changes the",
     "set, edit this file - do not special-case it in the script.",
     "",
-    "As of 26.2 Balm has no Forge build either, so both forge folders install nothing and the",
-    "script reports 'NOT PUBLISHED'. The entries are kept deliberately: they cost nothing while",
-    "the build is missing and pick it up automatically the moment Balm ships for 26.2."
+    "Since 26.2 Balm has no Forge build either (still none for 26.3), so both forge folders install",
+    "nothing and the script reports 'NOT PUBLISHED'. The entries are kept deliberately: they cost",
+    "nothing while the build is missing and pick it up automatically the moment Balm ships."
   ],
   "projects": {
     "balm":        { "slug": "balm" },

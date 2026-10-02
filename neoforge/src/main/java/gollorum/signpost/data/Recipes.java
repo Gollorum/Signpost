@@ -8,24 +8,43 @@ import gollorum.signpost.minecraft.crafting.CutWaystoneRecipe;
 import gollorum.signpost.migration.LegacyPostTypes;
 import gollorum.signpost.minecraft.data.PostData;
 import gollorum.signpost.registry.ItemRegistry;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.advancements.Advancement;
+import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.registries.MultiRegistryBootstrap;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.PackOutput;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.recipes.*;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Recipe;
 
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import java.util.Set;
 
 public class Recipes extends RecipeProvider {
 
-    protected Recipes(HolderLookup.Provider registries, RecipeOutput output) {
-        super(registries, output);
+    protected Recipes(BootstrapContext<Recipe<?>> recipeOutput, BootstrapContext<Advancement> advancementOutput) {
+        super(recipeOutput, advancementOutput);
+    }
+
+    // 26.3 made recipes and advancements reloadable datapack registries, so RecipeProvider.Runner is gone and
+    // the provider is run as a bootstrap for both registries instead.
+    public static MultiRegistryBootstrap create() {
+        return new MultiRegistryBootstrap() {
+            @Override
+            public Set<ResourceKey<? extends Registry<?>>> requestedRegistries() {
+                return Set.of(Registries.RECIPE, Registries.ADVANCEMENT);
+            }
+
+            @Override
+            public void run(MultiRegistryBootstrap.BootstrapGetter registries) {
+                new Recipes(registries.get(Registries.RECIPE), registries.get(Registries.ADVANCEMENT)).buildRecipes();
+            }
+        };
     }
 
     @Override
@@ -50,7 +69,7 @@ public class Recipes extends RecipeProvider {
 
 
     public void registerPosts() {
-        for(var variant : PostModelTypes.getAll(registries.lookupOrThrow(Registries.ITEM))) {
+        for(var variant : PostModelTypes.getAll(output.lookup(Registries.ITEM))) {
             shaped(RecipeCategory.DECORATIONS, variant.value().getItemStackTemplate(variant.getKey(), 2))
                 .define('s', variant.signIngredient())
                 .define('b', variant.baseIngredient())
@@ -105,21 +124,5 @@ public class Recipes extends RecipeProvider {
             .pattern("s ")
             .unlockedBy("has_signpost", has(ItemTags.SignpostTag))
             .save(output);
-    }
-    
-    public static class Runner extends net.minecraft.data.recipes.RecipeProvider.Runner {
-        public Runner(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider) {
-            super(output, lookupProvider);
-        }
-
-        @Override
-        protected net.minecraft.data.recipes.RecipeProvider createRecipeProvider(HolderLookup.Provider registries, net.minecraft.data.recipes.RecipeOutput output) {
-            return new Recipes(registries, output);
-        }
-
-        @Override
-        public String getName() {
-            return "Signpost Recipes";
-        }
     }
 }

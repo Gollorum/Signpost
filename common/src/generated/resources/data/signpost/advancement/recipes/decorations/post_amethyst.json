@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "signpost:post_amethyst"
+        "recipes": "signpost:post_amethyst"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

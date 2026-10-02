@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "signpost:post_blackstone"
+        "recipes": "signpost:post_blackstone"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "signpost:cut_into_detailed_0"
+        "recipes": "signpost:cut_into_detailed_0"
       },
       "trigger": "minecraft:recipe_unlocked"
     },
