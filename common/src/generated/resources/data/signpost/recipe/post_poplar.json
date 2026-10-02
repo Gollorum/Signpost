@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "Signpost",
+  "key": {
+    "b": "#minecraft:poplar_logs",
+    "s": "minecraft:poplar_sign"
+  },
+  "pattern": [
+    "s",
+    "s",
+    "b"
+  ],
+  "result": {
+    "components": {
+      "minecraft:item_name": {
+        "translate": "item.signpost.post.signpost.poplar"
+      },
+      "signpost:post_data": {
+        "DataVersion": 2,
+        "ModelType": "signpost:poplar",
+        "Parts": {}
+      }
+    },
+    "count": 2,
+    "id": "signpost:post_wood"
+  }
+}

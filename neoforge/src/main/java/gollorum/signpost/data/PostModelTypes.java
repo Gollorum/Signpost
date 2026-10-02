@@ -410,6 +410,16 @@ public class PostModelTypes implements DataProvider {
             PostBlock.MaterialType.Stone,
             MapColor.COLOR_PURPLE
         ));
+        ret.add(mkModelType("poplar",
+            Identifier.parse("poplar_log"),
+            Identifier.parse("stripped_poplar_log"),
+            Identifier.parse("poplar_log"),
+            Ingredient.of(Items.POPLAR_SIGN),
+            Ingredient.of(items.getOrThrow(ItemTags.POPLAR_LOGS)),
+            Ingredient.of(Items.POPLAR_SIGN),
+            PostBlock.MaterialType.Wood,
+            MapColor.PODZOL
+        ));
 
         return ret;
     }
