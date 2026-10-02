@@ -389,6 +389,11 @@ These pins are load-bearing and interlock; changing one breaks another:
   9.7. Both are floors, not preferences. Loom refuses to configure on an older Gradle, so the
   wrapper task cannot run until `distributionUrl` already points at the new version - edit that
   line first, then run `./gradlew wrapper --gradle-version <v>` to regenerate the jar and scripts.
+  Loom 1.18 also needs **Gradle itself to run on Java 25**, not just the compile toolchain - on a
+  Java 21 JVM it fails at configuration with `Dependency requires at least JVM runtime version 25`.
+  `gradle/gradle-daemon-jvm.properties` (written by `./gradlew updateDaemonJvm --jvm-version=25`)
+  pins that for the CLI and for IntelliJ; if an IDE sync still fails, its *Gradle JVM* setting
+  points at an older JDK.
 - **ForgeGradle 7, not 6.** FG6 refuses to apply on Gradle 9 outright ("Found Gradle version
   Gradle 9.5.0. Versions Gradle 9.0 and newer are not supported yet"), and it is published
   under a *different* artifact (`net.minecraftforge:ForgeGradle`) than FG7
