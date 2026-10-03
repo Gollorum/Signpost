@@ -323,6 +323,7 @@ public class SignGui extends Screen {
                 typeSelectionButtonsScale,
                 Rect.XAlignment.Center, Rect.YAlignment.Top,
                 rect -> rect.withPoint(p -> p.add(-4, 0)).scaleCenter(0.75f),
+                Component.translatable(LangKeys.wideSign),
                 this::switchToWide,
                 new ModelButton.ModelData(postModel, 0, -0.5f, itemStack),
                 new ModelButton.ModelData(wideModel, 0, 0.25f, itemStack)
@@ -336,6 +337,7 @@ public class SignGui extends Screen {
                 typeSelectionButtonsScale,
                 Rect.XAlignment.Center, Rect.YAlignment.Top,
                 rect -> rect.withPoint(p -> p.add(-11, 0)).scaleCenter(0.75f),
+                Component.translatable(LangKeys.shortSign),
                 this::switchToShort,
                 new ModelButton.ModelData(postModel, 0, -0.5f, itemStack),
                 new ModelButton.ModelData(shortModel, 0, 0.25f, itemStack)
@@ -349,6 +351,7 @@ public class SignGui extends Screen {
                 typeSelectionButtonsScale,
                 Rect.XAlignment.Center, Rect.YAlignment.Top,
                 rect -> rect.withPoint(p -> p.add(-3, 0)).scaleCenter(0.75f),
+                Component.translatable(LangKeys.largeSign),
                 this::switchToLarge,
                 new ModelButton.ModelData(postModel, 0, -0.5f, itemStack),
                 new ModelButton.ModelData(largeModel, 0, 0, itemStack)
@@ -382,6 +385,8 @@ public class SignGui extends Screen {
             b -> lockButton.setLocked(!lockButton.isLocked())
         );
         lockButton.setLocked(oldSign.map(SignBlockPart::isLocked).orElse(false));
+        lockButton.setMessage(Component.translatable(LangKeys.lockSign));
+        lockButton.setTooltip(Tooltip.create(Component.translatable(LangKeys.lockSignTooltip)));
         addRenderableWidget(lockButton);
 
         Collection<WaystoneEntry> waystoneDropdownEntry = hasBeenInitialized
@@ -394,6 +399,7 @@ public class SignGui extends Screen {
             (int)(waystoneNameTexture.size.width * waystoneBoxScale) + 3 + DropDownSelection.size.width,
             100,
             (int)((waystoneNameTexture.size.height * waystoneBoxScale) - DropDownSelection.size.height) / 2,
+            Component.translatable(LangKeys.chooseWaystone),
             e -> {
                 addWidget(e);
                 hideStuffOccludedByWaystoneDropdown();
@@ -422,6 +428,7 @@ public class SignGui extends Screen {
             true, 100);
 //        waystoneInputBox.setBlitOffset(100);
         waystoneInputBox.setMaxLength(200);
+        waystoneInputBox.setMessage(Component.translatable(LangKeys.destination));
         waystoneInputBox.setResponder(this::onWaystoneSelected);
         noWaystonesInfo = new TextDisplay(
             Component.translatable(LangKeys.noWaystones),
@@ -436,6 +443,7 @@ public class SignGui extends Screen {
             new Point(rotationLabelWidth + 10, waystoneInputRect.height + 20),
             new Point(0, waystoneInputRect.height + 20));
         rotationInputField = new AngleInputBox(font, rotationInputBoxRect, 0);
+        rotationInputField.setMessage(Component.translatable(LangKeys.rotation));
         addRenderableWidget(rotationInputField);
         angleDropDown = new DropDownSelection<>(
             font,
@@ -445,6 +453,7 @@ public class SignGui extends Screen {
             (int)(waystoneNameTexture.size.width * waystoneBoxScale) + DropDownSelection.size.width,
             75,
             (int)((waystoneNameTexture.size.height * waystoneBoxScale) - DropDownSelection.size.height) / 2,
+            Component.translatable(LangKeys.chooseRotation),
             e -> {
                 addWidget(e);
                 for(AbstractWidget b : overlaySelectionButtons)
@@ -494,6 +503,7 @@ public class SignGui extends Screen {
         wideSignInputBox = new InputBox(font, wideInputRect, false, inputBoxesZOffset);
         wideSignInputBox.setBordered(false);
         wideSignInputBox.setTextColor(Colors.black);
+        wideSignInputBox.setMessage(Component.translatable(LangKeys.signText));
         widgetsToFlip.add(new FlippableAtPivot(wideSignInputBox, modelRectTop.x));
 
         wideSignRenderer = new GuiModelRenderer(
@@ -509,6 +519,7 @@ public class SignGui extends Screen {
         shortSignInputBox = new InputBox(font, shortInputRect, false, inputBoxesZOffset);
         shortSignInputBox.setBordered(false);
         shortSignInputBox.setTextColor(Colors.black);
+        shortSignInputBox.setMessage(Component.translatable(LangKeys.signText));
         widgetsToFlip.add(new FlippableAtPivot(shortSignInputBox, modelRectTop.x));
 
         shortSignRenderer = new GuiModelRenderer(
@@ -554,6 +565,8 @@ public class SignGui extends Screen {
         widgetsToFlip.add(largeSignRenderer);
 
         largeSignInputBoxes = ImmutableList.of(firstLarge, secondLarge, thirdLarge, fourthLarge);
+        for(int line = 0; line < largeSignInputBoxes.size(); line++)
+            largeSignInputBoxes.get(line).setMessage(Component.translatable(LangKeys.signTextLine, line + 1));
         allSignInputBoxes = ImmutableList.of(wideSignInputBox, shortSignInputBox, firstLarge, secondLarge, thirdLarge, fourthLarge);
 
         Button switchDirectionButton = newImageButton(
@@ -562,6 +575,7 @@ public class SignGui extends Screen {
             new Point(modelRect.point.x, modelRect.max().y + centerGap),
             1,
             Rect.XAlignment.Left, Rect.YAlignment.Top,
+            Component.translatable(LangKeys.flipDirection),
             this::flip
         );
         addRenderableWidget(switchDirectionButton);
@@ -572,6 +586,7 @@ public class SignGui extends Screen {
                 80, 20,
                 Rect.XAlignment.Left, Rect.YAlignment.Center
             ), 0);
+        colorInputBox.setMessage(Component.translatable(LangKeys.textColor));
         colorInputBox.setColorResponder(color -> allSignInputBoxes.forEach(b -> b.setTextColor(color)));
         addRenderableWidget(colorInputBox);
 
@@ -598,6 +613,7 @@ public class SignGui extends Screen {
                 TextureResource.signTypeSelection, new Point(getCenterX() - centerGap - i * 37, rotationInputBoxRect.max().y + 15),
                 overlayButtonsScale, Rect.XAlignment.Right, Rect.YAlignment.Top,
                 rect -> rect.withPoint(p -> p.add(Math.round(-4 / typeSelectionButtonsScale * overlayButtonsScale), 0)).scaleCenter(0.75f),
+                Component.translatable(LangKeys.overlay, overlay.getDisplayName()),
                 () -> switchOverlay(Optional.of(overlay)),
                 new ModelButton.ModelData(postModel, 0, -0.5f, itemStack),
                 new ModelButton.ModelData(wideModel, 0, 0.25f, itemStack),
@@ -610,6 +626,7 @@ public class SignGui extends Screen {
                 TextureResource.signTypeSelection, new Point(getCenterX() - centerGap - i * 37, rotationInputBoxRect.max().y + 15),
                 overlayButtonsScale, Rect.XAlignment.Right, Rect.YAlignment.Top,
                 rect -> rect.withPoint(p -> p.add(Math.round(-4 / typeSelectionButtonsScale * overlayButtonsScale), 0)).scaleCenter(0.75f),
+                Component.translatable(LangKeys.noOverlay),
                 () -> switchOverlay(Optional.empty()),
                 new ModelButton.ModelData(postModel, 0, -0.5f, itemStack),
                 new ModelButton.ModelData(wideModel, 0, 0.25f, itemStack)
@@ -830,12 +847,14 @@ public class SignGui extends Screen {
         float scale,
         Rect.XAlignment xAlignment,
         Rect.YAlignment yAlignment,
+        Component message,
         Runnable onClick
     ){
         Rect rect = new Rect(referencePoint, texture.size.scale(scale), xAlignment, yAlignment);
         return new SignpostImageButton(
             texture,
             rect,
+            message,
 //            (int) (index * texture.size.width * scale), 0, (int) (texture.size.height * scale),
 //            texture.identifier,
 //            (int) (texture.fileSize.width * scale), (int) (texture.fileSize.height * scale),
