@@ -24,12 +24,13 @@ public class SpriteSelectionButton extends AbstractButton {
         Rect rect,
         Either<TextureAtlasSprite, SpriteId> material,
         int tint,
+        Component message,
         Consumer<SpriteSelectionButton> pressedAction
     ) {
         super(
             rect.point.x, rect.point.y,
             rect.width, rect.height,
-            Component.literal("")
+            message
         );
         onPressed = pressedAction;
         this.material = material;
@@ -61,7 +62,7 @@ public class SpriteSelectionButton extends AbstractButton {
     }
 
     @Override
-    public void updateWidgetNarration(NarrationElementOutput p_169152_) {
-
+    public void updateWidgetNarration(NarrationElementOutput output) {
+        defaultButtonNarrationText(output);
     }
 }

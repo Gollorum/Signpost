@@ -14,6 +14,7 @@ import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.LockIconButton;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
@@ -54,7 +55,7 @@ public class WaystoneGui extends Screen {
         });
 
     public WaystoneGui(WorldLocation location, Optional<WaystoneData> oldData) {
-        super(Component.literal("Waystone"));
+        super(Component.translatable(LangKeys.waystoneGuiTitle));
         this.location = location;
         this.oldData = oldData;
     }
@@ -91,6 +92,8 @@ public class WaystoneGui extends Screen {
             inputBox.getY() + inputBox.getHeight() / 2 - 10,
             b -> lockButton.setLocked(!lockButton.isLocked())
         );
+        lockButton.setMessage(Component.translatable(LangKeys.lockWaystone));
+        lockButton.setTooltip(Tooltip.create(Component.translatable(LangKeys.lockWaystoneTooltip)));
         addRenderableWidget(lockButton);
         oldData.ifPresent(data -> {
             inputBox.setValue(data.name());
@@ -110,6 +113,7 @@ public class WaystoneGui extends Screen {
         inputBox.setTextColor(Colors.valid);
         inputBox.setTextColorUneditable(Colors.validInactive);
         inputBox.setMaxLength(200);
+        inputBox.setMessage(Component.translatable(LangKeys.waystoneName));
         inputBox.setResponder(name -> {
             if(isValid(name)){
                 inputBox.setTextColor(Colors.valid);

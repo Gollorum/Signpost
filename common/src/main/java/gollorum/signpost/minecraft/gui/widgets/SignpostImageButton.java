@@ -8,7 +8,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
 
 public class SignpostImageButton extends Button {
 
@@ -20,11 +20,13 @@ public class SignpostImageButton extends Button {
         float scale,
         Rect.XAlignment xAlignment,
         Rect.YAlignment yAlignment,
+        Component message,
         Runnable onPress
     ) {
         this(
             background,
             new Rect(point, background.size.scale(scale), xAlignment, yAlignment),
+            message,
             b -> onPress.run()
         );
     }
@@ -32,12 +34,13 @@ public class SignpostImageButton extends Button {
     public SignpostImageButton(
         TextureResource background,
         Rect rect,
+        Component message,
         Button.OnPress onPress
     ){
         super(
             rect.point.x, rect.point.y,
             rect.width, rect.height,
-            CommonComponents.EMPTY,
+            message,
             onPress,
             DEFAULT_NARRATION
         );

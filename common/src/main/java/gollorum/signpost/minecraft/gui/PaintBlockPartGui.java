@@ -13,6 +13,7 @@ import gollorum.signpost.minecraft.utils.Texture;
 import gollorum.signpost.minecraft.utils.tints.FluidTint;
 import gollorum.signpost.mixin.BucketAccessor;
 import gollorum.signpost.networking.PacketHandler;
+import gollorum.signpost.minecraft.utils.LangKeys;
 import gollorum.signpost.utils.*;
 import gollorum.signpost.utils.math.Angle;
 import net.minecraft.client.Minecraft;
@@ -47,7 +48,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Screen {
     private final UUID identifier;
 
     public PaintBlockPartGui(PostTile tile, T part, T displayPart, UUID identifier, Texture oldTexture) {
-        super(Component.literal("Paint Post"));
+        super(Component.translatable(LangKeys.paintGuiTitle));
         this.tile = tile;
         this.part = part;
         this.displayPart = displayPart;
@@ -162,6 +163,12 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Screen {
             .collect(Collectors.toList());
     }
 
+    // Sprites carry no translatable name, so the narrator gets the file name: block/oak_planks -> "oak planks".
+    private static String spriteName(Either<TextureAtlasSprite, SpriteId> sprite) {
+        String path = sprite.match(tas -> tas.contents().name(), SpriteId::texture).getPath();
+        return path.substring(path.lastIndexOf('/') + 1).replace('_', ' ');
+    }
+
     private void setupTextureButtonsFor(List<Tuple<Either<TextureAtlasSprite, SpriteId>, Optional<Tint>>> sprites) {
         clearSelection();
 
@@ -182,6 +189,7 @@ public abstract class PaintBlockPartGui<T extends BlockPart<T>> extends Screen {
                     Rect.XAlignment.Left, Rect.YAlignment.Center
                 ),
                 sprite._1(), sprite._2().map(t -> t.getColorAt(minecraft.level, minecraft.player.blockPosition())).orElse(Colors.white),
+                Component.translatable(LangKeys.textureOption, x + 1, sprites.size(), spriteName(sprite._1())),
                 imgButton -> setTexture(
                     displayPart,
                     new Texture(
