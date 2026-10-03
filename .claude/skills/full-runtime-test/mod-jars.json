@@ -14,7 +14,12 @@
     "",
     "Since 26.2 Balm has no Forge build either (still none for 26.3), so both forge folders install",
     "nothing and the script reports 'NOT PUBLISHED'. The entries are kept deliberately: they cost",
-    "nothing while the build is missing and pick it up automatically the moment Balm ships."
+    "nothing while the build is missing and pick it up automatically the moment Balm ships.",
+    "",
+    "The neoforge folder deliberately carries no Waystones (nor Balm and Shogi, which are only",
+    "there for it) on 26.3: Waystones 26.3.0.1 dies on NeoForge 26.3.0.37-beta's ModConfig.Type",
+    "rename and Balm 26.3.0.2 on its BiomeModifier change (#3546), so the runs would only test",
+    "their crash. Put all three back into that folder once compatible builds ship."
   ],
   "projects": {
     "balm":        { "slug": "balm" },
@@ -40,7 +45,7 @@
     {
       "dir": "neoforge/run_with_mods/mods",
       "loader": "neoforge",
-      "projects": ["balm", "shogi", "waystones", "rs-neoforge"]
+      "projects": ["rs-neoforge"]
     },
     {
       "dir": "forge/runs/client_with_mods/mods",

@@ -469,7 +469,7 @@ table below is its human-readable twin, so change both together.
 | --- | --- | --- |
 | fabric `clientWithMods` | `fabric/runs/client_with_mods/mods` | Balm, Shogi, Waystones, Repurposed Structures, MidnightLib, Sodium, Iris |
 | fabric `serverWithMods` | `fabric/runs/server_with_mods/mods` | Balm, Shogi, Waystones, Repurposed Structures, MidnightLib |
-| neoforge `clientWithMods` / `serverWithMods` | `neoforge/run_with_mods/mods` | Balm, Shogi, Waystones, Repurposed Structures |
+| neoforge `clientWithMods` / `serverWithMods` | `neoforge/run_with_mods/mods` | Repurposed Structures — **Waystones, Balm and Shogi held back on 26.3, see below** |
 | forge `clientWithMods` | `forge/runs/client_with_mods/mods` | Balm — **no 26.3 build yet, folder is empty** |
 | forge `serverWithMods` | `forge/runs/server_with_mods/mods` | Balm — **no 26.3 build yet, folder is empty** |
 
@@ -500,16 +500,21 @@ Waystones, and **since 26.2 Balm has no Forge build either (still none for 26.3)
 `*WithMods` folders are empty** and those two runs currently test the same thing as the plain
 `client`/`server` runs. `mod-jars.json` keeps the entries, so they pick Balm up the moment it ships.
 
-**On 26.3 both NeoForge `*WithMods` runs are expected to fail until BlayTheNinth ships updates.**
-The failures are in their mods, not in Signpost:
+**On 26.3 Waystones is held back from both NeoForge `*WithMods` runs**, in the runtime test
+(`mod-jars.json`) and the prod test (`HELD_BACK` in `full-prod-test/provision.py`), together with
+Balm and Shogi, which are only there for it. Neither has a build that loads on current NeoForge, so
+the runs would only test their crash:
 - Balm 26.3.0.2 predates NeoForge #3546 (26.3.0.24-beta, which added a `RegistryAccess`
   parameter to `BiomeModifier.modify`), so it dies with an `AbstractMethodError` on world load.
 - Waystones 26.3.0.1 still references `ModConfig.Type.COMMON`, which .37 renamed, so it fails at
   mod construction with a `NoSuchFieldError`.
 
 No NeoForge build newer than .23 runs both. Pinning an old beta to get green runs was rejected,
-because it would test a combination players on current NeoForge cannot run anyway. Re-check with
-`fetch-mod-jars.ps1` and re-run those two runs once new Balm and Waystones builds appear. Keep these jars on the same Minecraft version as `minecraft_version`;
+because it would test a combination players on current NeoForge cannot run anyway. Until they
+ship, the NeoForge `*WithMods` runs cover Repurposed Structures only and **do not exercise the
+NeoForge Waystones integration at all**. Once compatible Balm and Waystones builds appear, put
+`balm`, `shogi` and `waystones` back into the neoforge folder in `mod-jars.json`, delete the
+`HELD_BACK` entry, and re-run. Keep these jars on the same Minecraft version as `minecraft_version`;
 the plain `client`/`server` runs deliberately have empty `mods/` folders.
 
 ## Forge

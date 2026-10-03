@@ -56,6 +56,16 @@ PLATFORM_IDS = {"minecraft", "java", "fabricloader", "fabric", "neoforge", "forg
 # Companions the "-mods" runs exist to test against, when a jar declares none of its own.
 DEFAULT_EXTRAS = ["waystones", "repurposed_structures"]
 
+# (mod id, loader) -> why it is deliberately left out of the "-mods" runs. Only for a companion
+# whose newest build cannot load on the current loader at all, so the run would test nothing
+# but the other mod's crash. Its own dependencies (Balm, Shogi for Waystones) drop out with it.
+# Remove an entry the moment a compatible build ships.
+HELD_BACK = {
+    ("waystones", "neoforge"):
+        "Waystones 26.3.0.1 references ModConfig.Type.COMMON, renamed in NeoForge 26.3.0.37-beta, "
+        "and its Balm 26.3.0.2 predates the BiomeModifier.modify signature change (#3546)",
+}
+
 
 def log(msg):
     print("  " + msg, flush=True)
@@ -219,6 +229,10 @@ def cmd_mods(a):
         print("%s mods for %s (%s):" % (label, a.loader, a.mc), flush=True)
         wanted = []
         for mod_id in ids:
+            held = HELD_BACK.get((mod_id, a.loader))
+            if held and not is_required:
+                log("%-30s HELD BACK - %s" % (mod_id, held))
+                continue
             slug = slug_for(mod_id, a.loader)
             if not slug:
                 if is_required:
