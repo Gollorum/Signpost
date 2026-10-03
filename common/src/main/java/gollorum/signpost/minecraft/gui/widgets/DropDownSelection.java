@@ -62,6 +62,7 @@ public class DropDownSelection<EntryType> extends ImageButton {
         Rect.YAlignment yAlignment,
         int width, int height,
         int yOffset,
+        Component message,
         Consumer<List> onShow,
         Consumer<List> onHide,
         Consumer<EntryType> onSelectionChanged
@@ -70,15 +71,16 @@ public class DropDownSelection<EntryType> extends ImageButton {
         new Rect(position, size, xAlignment, yAlignment),
         width, height,
         yOffset,
+        message,
         onShow, onHide, onSelectionChanged
     ); }
 
     private DropDownSelection(
         Font fontRenderer,
-        Rect rect, int width, int height, int yOffset,
+        Rect rect, int width, int height, int yOffset, Component message,
         Consumer<List> onShow, Consumer<List> onHide, Consumer<EntryType> onSelectionChanged
     ){
-        super(rect.point.x, rect.point.y, rect.width, rect.height, new WidgetSprites(texture.location, texture.location), b -> ((DropDownSelection)b).toggle());
+        super(rect.point.x, rect.point.y, rect.width, rect.height, new WidgetSprites(texture.location, texture.location), b -> ((DropDownSelection)b).toggle(), message);
         this.rect = rect;
         this.fontRenderer = fontRenderer;
         list = new List(Minecraft.getInstance(), new Point(rect.point.x + size.width, rect.point.y + size.height + yOffset), width, height);
@@ -230,7 +232,7 @@ public class DropDownSelection<EntryType> extends ImageButton {
 
             @Override
             public Component getNarration() {
-                return Component.literal("");
+                return Component.translatable("narrator.select", content.toString());
             }
 
             @Override
