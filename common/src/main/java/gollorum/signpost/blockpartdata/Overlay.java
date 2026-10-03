@@ -12,9 +12,11 @@ import gollorum.signpost.minecraft.utils.tints.GrassTint;
 import gollorum.signpost.utils.Tint;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.resources.model.sprite.SpriteId;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.block.Blocks;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -38,12 +40,19 @@ public abstract class Overlay {
 
     public abstract SpriteId materialFor(Class<? extends SignBlockPart> signClass);
 
+    public abstract Component getDisplayName();
+
     private static <T> T logErrorAndReturn(String error, T t) {
         Signpost.LOGGER.error(error);
         return t;
     }
 
     public static final Overlay Gras = new Overlay(Optional.of(GrassTint.INSTANCE), "gras") {
+        @Override
+        public Component getDisplayName() {
+            return Blocks.GRASS_BLOCK.getName();
+        }
+
         @Override
         public SpriteId materialFor(Class<? extends SignBlockPart> signClass) {
             return new SpriteId(
@@ -60,6 +69,11 @@ public abstract class Overlay {
 
     public static final Overlay Vine = new Overlay(Optional.of(FoliageTint.INSTANCE), "vine") {
         @Override
+        public Component getDisplayName() {
+            return Blocks.VINE.getName();
+        }
+
+        @Override
         public SpriteId materialFor(Class<? extends SignBlockPart> signClass) {
             return new SpriteId(
                 TextureResource.blockAtlas,
@@ -75,6 +89,11 @@ public abstract class Overlay {
 
     public static final Overlay Snow = new Overlay(Optional.empty(), "snow") {
         @Override
+        public Component getDisplayName() {
+            return Blocks.SNOW.getName();
+        }
+
+        @Override
         public SpriteId materialFor(Class<? extends SignBlockPart> signClass) {
             return new SpriteId(
                 TextureResource.blockAtlas,signClass.equals(SmallWideSignBlockPart.class)
@@ -88,6 +107,11 @@ public abstract class Overlay {
     };
 
     public static final Overlay Mycelium = new Overlay(Optional.empty(), "mycelium") {
+        @Override
+        public Component getDisplayName() {
+            return Blocks.MYCELIUM.getName();
+        }
+
         @Override
         public SpriteId materialFor(Class<? extends SignBlockPart> signClass) {
             return new SpriteId(

@@ -4,7 +4,6 @@ import gollorum.signpost.minecraft.gui.utils.Rect;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.function.Consumer;
@@ -28,7 +27,7 @@ public class ItemButton extends Button {
             Rect.xCoordinateFor(x, width, xAlignment),
             Rect.yCoordinateFor(y, height, yAlignment),
             width, height,
-            Component.literal(""),
+            stack.getHoverName(),
             b -> pressedAction.accept((ItemButton)b),
             Button.DEFAULT_NARRATION
         );

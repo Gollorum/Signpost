@@ -9,7 +9,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
@@ -30,13 +30,14 @@ public class ModelButton extends SignpostImageButton {
         Rect.XAlignment xAlignment,
         Rect.YAlignment yAlignment,
         Function<Rect, Rect> rectBuilder,
+        Component message,
         Runnable onPress,
         ModelData... modelData
     ) {
         this(
             background,
             new Rect(point, background.size.scale(scale), xAlignment, yAlignment),
-            scale, rectBuilder, b -> onPress.run(), modelData
+            scale, rectBuilder, message, b -> onPress.run(), modelData
         );
     }
 
@@ -45,12 +46,14 @@ public class ModelButton extends SignpostImageButton {
         Rect rect,
         float scale,
         Function<Rect, Rect> rectBuilder,
+        Component message,
         Button.OnPress onPress,
         ModelData... modelData
     ){
         super(
             background,
             rect,
+            message,
             onPress
         );
         this.background = background;

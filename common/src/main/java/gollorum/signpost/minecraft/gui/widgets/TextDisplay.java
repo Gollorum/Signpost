@@ -14,6 +14,8 @@ public class TextDisplay implements Renderable {
     public final Rect rect;
     private final Font fontRenderer;
 
+    public Component getText() { return text; }
+
     public TextDisplay(Component text, Point point, Rect.XAlignment xAlignment, Rect.YAlignment yAlignment, Font fontRenderer) {
         this.text = text;
         this.rect = new Rect(

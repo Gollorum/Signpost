@@ -15,8 +15,11 @@ import gollorum.signpost.utils.math.geometry.Vector3;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -46,6 +49,8 @@ public class ConfirmTeleportGui extends Screen {
 
 	private final Either<String, Teleport.RequestGui.Package.Info> data;
 	private final Optional<SignInfo> signInfo;
+	// Everything this screen says is drawn by TextDisplays, which the narrator cannot see.
+	private final List<Component> narratedText = new ArrayList<>();
 
 	public ConfirmTeleportGui(
 		Either<String, Teleport.RequestGui.Package.Info> data,
@@ -66,10 +71,11 @@ public class ConfirmTeleportGui extends Screen {
 	@Override
 	protected void init() {
 		super.init();
+		narratedText.clear();
 		AtomicInteger editButtonTop = new AtomicInteger();
 		data.consume(
 			langKey -> {
-				addRenderableOnly(new TextDisplay(
+				addText(new TextDisplay(
 					Component.translatable(langKey),
 					new Point(width / 2, height / 2 - 20),
 					Rect.XAlignment.Center, Rect.YAlignment.Bottom,
@@ -80,7 +86,7 @@ public class ConfirmTeleportGui extends Screen {
 			d -> {
 				boolean isTooFarAway = d.maxDistance() > 0 && d.distance() > d.maxDistance();
 				if(d.cannotTeleportBecause().isEmpty() && !isTooFarAway) {
-					addRenderableOnly(new TextDisplay(
+					addText(new TextDisplay(
 						Component.translatable(LangKeys.confirmTeleport, Colors.wrap(d.waystoneName(), Colors.highlight)),
 						new Point(width / 2, height / 2 - 20),
 						Rect.XAlignment.Center, Rect.YAlignment.Bottom,
@@ -88,7 +94,7 @@ public class ConfirmTeleportGui extends Screen {
 					));
 
 					if (!d.cost().isEmpty()) {
-						addRenderableOnly(new TextDisplay(
+						addText(new TextDisplay(
 							Component.translatable(LangKeys.cost),
 							new Point(width / 2 - costCenterSpace / 2, height / 2),
 							Rect.XAlignment.Right, Rect.YAlignment.Center,
@@ -107,6 +113,7 @@ public class ConfirmTeleportGui extends Screen {
 							new Rect(itemRect.center(), 16, 16, Rect.XAlignment.Center, Rect.YAlignment.Center),
                             d.cost()
 						));
+						narratedText.add(Component.literal(d.cost().getCount() + " ").append(d.cost().getHoverName()));
 					}
 
 					Rect confirmRect = new Rect(
@@ -136,14 +143,14 @@ public class ConfirmTeleportGui extends Screen {
 					editButtonTop.set(cancelRect.max().y + 20);
 				} else {
 					d.cannotTeleportBecause().ifPresent(reason ->
-						addRenderableOnly(new TextDisplay(
+						addText(new TextDisplay(
 							reason,
 							new Point(width / 2, height / 2 - 20),
 							Rect.XAlignment.Center, Rect.YAlignment.Bottom,
 							font
 						)));
 					if(isTooFarAway)
-						addRenderableOnly(new TextDisplay(
+						addText(new TextDisplay(
 							Component.translatable(
 								LangKeys.tooFarAway,
 								Colors.wrap(Integer.toString(d.distance()), Colors.highlight),
@@ -163,10 +170,24 @@ public class ConfirmTeleportGui extends Screen {
 				addRenderableWidget(new SignpostImageButton(
                     TextureResource.edit,
 					editRect,
+					Component.translatable(LangKeys.editSign),
 					b -> SignGui.display(info.tile, info.sign, info.offset, info.tilePartInfo)
 				));
 			}
 		});
+	}
+
+	private void addText(TextDisplay text) {
+		addRenderableOnly(text);
+		narratedText.add(text.getText());
+	}
+
+	@Override
+	public Component getNarrationMessage() {
+		List<Component> all = new ArrayList<>();
+		all.add(super.getNarrationMessage());
+		all.addAll(narratedText);
+		return CommonComponents.joinForNarration(all.toArray(Component[]::new));
 	}
 
 	private void confirm() {
